@@ -1,7 +1,27 @@
+import inspect
 import logging
+from typing import Union, List, Optional
+
+from appium.options.android import UiAutomator2Options
+from appium.options.common import AppiumOptions
 
 from appium import webdriver
-from appium.options.android import UiAutomator2Options
+from appium.webdriver.webdriver import WebDriver
+
+
+class WebDriverSingleton(WebDriver):
+    _instance = None
+    _driver = None
+
+    def __new__(cls, *args, **kwargs):
+        if cls._instance is None:
+            cls._instance = super().__new__(cls)
+            cls._driver = webdriver.Remote(*args, **kwargs)
+        return cls._driver
+
+    @classmethod
+    def get_driver(cls):
+        return cls._driver
 
 
 class SBase:
@@ -9,14 +29,20 @@ class SBase:
         self.driver = None
 
     def connect(self,
-                capabilities: dict = None,
-                options: UiAutomator2Options = None,
                 server_ip: str = '127.0.0.1',
-                server_port: int = 4723) -> None:
+                server_port: int = 4723,
+                capabilities: dict = None,
+                options: Union[AppiumOptions, List[AppiumOptions], None] = None,
+                keep_alive: bool = True,
+                direct_connection: bool = True,
+                extensions: Optional[List['WebDriver']] = None,
+                strict_ssl: bool = True
+                ) -> None:
         """
         Подключение к устройству
         """
-        if not options:
+        logging.debug(f"{inspect.currentframe().f_code.co_name}")
+        if capabilities is not None and options is None:
             options = UiAutomator2Options()
             if "platformName" in capabilities.keys():
                 options.platform_name = capabilities["platformName"]
@@ -36,13 +62,14 @@ class SBase:
                 options.auto_grant_permissions = capabilities["appium:autoGrantPermissions"]
             if "appium:newCommandTimeout" in capabilities.keys():
                 options.new_command_timeout = capabilities["appium:newCommandTimeout"]
-
         url = f'http://{server_ip}:{str(server_port)}/wd/hub'
         logging.info(f"Подключение к серверу: {url}")
-        self.driver = webdriver.Remote(command_executor=url,
-                                       desired_capabilities=capabilities,
-                                       options=options,
-                                       keep_alive=True)
+        self.driver = WebDriverSingleton(command_executor=url,
+                                         options=options,
+                                         keep_alive=keep_alive,
+                                         direct_connection=direct_connection,
+                                         extensions=extensions,
+                                         strict_ssl=strict_ssl)
 
     def disconnect(self) -> None:
         """
@@ -52,4 +79,3 @@ class SBase:
             logging.debug(f"Отключение от сессии №: {self.driver.session_id}")
             self.driver.quit()
             self.driver = None
-

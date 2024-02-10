@@ -13,11 +13,12 @@ class Shadowstep(SBase):
     def __init__(self):
         super().__init__()
 
-    def get_element(self,
-                    locator: Union[Tuple, Dict[str, str], str] = None,
+    @staticmethod
+    def get_element(locator: Union[Tuple, Dict[str, str]] = None,
                     contains: bool = True):
-        return Element(locator=locator,
-                       contains=contains)
+        element = Element(locator=locator,
+                          contains=contains)
+        return element
 
     def get_elements(self):
         ...
@@ -30,24 +31,3 @@ class Shadowstep(SBase):
 
     def get_text(self):
         ...
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
