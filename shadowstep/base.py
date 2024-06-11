@@ -8,6 +8,8 @@ from appium.options.common import AppiumOptions
 from appium import webdriver
 from appium.webdriver.webdriver import WebDriver
 
+from shadowstep.terminal.terminal import Terminal
+
 
 class WebDriverSingleton(WebDriver):
     _instance = None
@@ -28,6 +30,17 @@ class SBase:
     def __init__(self):
         self.driver = None
 
+        self.server_ip = None
+        self.server_port = None
+        self.capabilities = None
+        self.options = None
+        self.keep_alive = None
+        self.direct_connection = None
+        self.extensions = None
+        self.strict_ssl = None
+
+        self.terminal = None
+
     def connect(self,
                 server_ip: str = '127.0.0.1',
                 server_port: int = 4723,
@@ -39,7 +52,20 @@ class SBase:
                 strict_ssl: bool = True
                 ) -> None:
         """
-        Подключение к устройству
+        Connect to a device using Appium server. Provide driver attribute after connect.
+
+        :param server_ip: The IP address of the Appium server. Defaults to '127.0.0.1'.
+        :param server_port: The port of the Appium server. Defaults to 4723.
+        :param capabilities: A dictionary specifying the desired capabilities for the session.
+        :param options: An instance or a list of instances of AppiumOptions to configure the Appium session.
+        :param keep_alive: Whether to keep the connection alive after a session ends. Defaults to True.
+        Inherited from WebDriver.
+        :param direct_connection:
+        Whether to use direct connection without intermediate proxies. Defaults to True. Inherited from WebDriver.
+        :param extensions: Optional list of WebDriver extensions. Inherited from WebDriver.
+        :param strict_ssl: Whether to enforce strict SSL certificates handling. Defaults to True.
+        Inherited from WebDriver.
+        :return: None
         """
         logging.debug(f"{inspect.currentframe().f_code.co_name}")
         if capabilities is not None and options is None:
@@ -70,12 +96,39 @@ class SBase:
                                          direct_connection=direct_connection,
                                          extensions=extensions,
                                          strict_ssl=strict_ssl)
+        self.server_ip = server_ip
+        self.server_port = server_port
+        self.capabilities = capabilities
+        self.options = options
+        self.keep_alive = keep_alive
+        self.direct_connection = direct_connection
+        self.extensions = extensions
+        self.strict_ssl = strict_ssl
+
+        self.terminal = Terminal(base=self)
 
     def disconnect(self) -> None:
         """
-        Отключение от устройства
+        Disconnect from device using Appium server.
+        :return: None
         """
         if self.driver:
             logging.debug(f"Отключение от сессии №: {self.driver.session_id}")
             self.driver.quit()
             self.driver = None
+
+    def reconnect(self):
+        """
+        Reconnect to device using Appium server.
+        :return: None
+        """
+        logging.error("Reconnecting")
+        self.connect(server_ip=self.server_ip,
+                     server_port=self.server_port,
+                     capabilities=self.capabilities,
+                     options=self.options,
+                     keep_alive=self.keep_alive,
+                     direct_connection=self.direct_connection,
+                     extensions=self.extensions,
+                     strict_ssl=self.strict_ssl
+                     )
