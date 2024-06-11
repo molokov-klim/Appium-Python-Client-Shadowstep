@@ -1,0 +1,41 @@
+name: Сборка и развертывание Jekyll сайта
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Получение кода
+      uses: actions/checkout@v2
+
+    - name: Установка Ruby и Jekyll
+      uses: ruby/setup-ruby@v1
+      with:
+        ruby-version: '2.7'
+        bundler-cache: true
+
+    - name: Сборка Jekyll сайта
+      run: |
+        bundle install
+        bundle exec jekyll build
+
+    - name: Развертывание на GitHub Pages
+      if: github.ref == 'refs/heads/main'
+      uses: peaceiris/actions-gh-pages@v3
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        publish_dir: ./_site  # папка, в которой Jekyll сгенерировал ваш сайт
