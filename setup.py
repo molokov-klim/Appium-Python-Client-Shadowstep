@@ -30,6 +30,9 @@ setup(
         'pytesseract==0.3.10',
         'numpy==1.25.1',
         'selenium==4.10.0',
+        'paramiko==3.4.0',
+        'scp==0.14.5',
+
     ],
     long_description_content_type='text/markdown',
     classifiers=[
