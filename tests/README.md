@@ -1,5 +1,6 @@
 
 # commands to install and run appium server
+# use Google Pixel virtual device for testing
 
 ```commandline
 npm i -g appium@next

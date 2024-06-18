@@ -8,7 +8,9 @@ from appium.options.common import AppiumOptions
 from appium import webdriver
 from appium.webdriver.webdriver import WebDriver
 
+from shadowstep.terminal.adb import Adb
 from shadowstep.terminal.terminal import Terminal
+from shadowstep.terminal.transport import Transport
 
 
 class WebDriverSingleton(WebDriver):
@@ -28,18 +30,21 @@ class WebDriverSingleton(WebDriver):
 
 class SBase:
     def __init__(self):
-        self.driver = None
+        self.server_ip: str = None
+        self.server_port: int = None
+        self.capabilities: dict = None
+        self.options: UiAutomator2Options = None
+        self.keep_alive: bool = None
+        self.direct_connection: bool = None
+        self.extensions: Optional[List['WebDriver']] = None
+        self.strict_ssl: bool = None
+        self.ssh_password: str = None
+        self.ssh_user: str = None
+        self.driver: WebDriver = None
 
-        self.server_ip = None
-        self.server_port = None
-        self.capabilities = None
-        self.options = None
-        self.keep_alive = None
-        self.direct_connection = None
-        self.extensions = None
-        self.strict_ssl = None
-
-        self.terminal = None
+        self.adb: Adb = None
+        self.transport: Transport = None
+        self.terminal: Terminal = None
 
     def connect(self,
                 server_ip: str = '127.0.0.1',
@@ -49,7 +54,9 @@ class SBase:
                 keep_alive: bool = True,
                 direct_connection: bool = True,
                 extensions: Optional[List['WebDriver']] = None,
-                strict_ssl: bool = True
+                strict_ssl: bool = True,
+                ssh_user: str = None,
+                ssh_password: str = None
                 ) -> None:
         """
         Connect to a device using Appium server. Provide driver attribute after connect.
@@ -104,8 +111,16 @@ class SBase:
         self.direct_connection = direct_connection
         self.extensions = extensions
         self.strict_ssl = strict_ssl
+        self.ssh_user = ssh_user
+        self.ssh_password = ssh_password
 
+        if ssh_user and ssh_password:
+            self.transport = Transport(server=self.server_ip,
+                                       port=self.server_port,
+                                       user=self.ssh_user,
+                                       password=self.ssh_password)
         self.terminal = Terminal(base=self)
+        self.adb = Adb()
 
     def disconnect(self) -> None:
         """
