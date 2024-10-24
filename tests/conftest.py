@@ -1,7 +1,5 @@
 import logging
-import os
 import subprocess
-
 import pytest
 
 from shadowstep.shadowstep import Shadowstep

@@ -25,11 +25,22 @@ class WebDriverSingleton(WebDriver):
 
     @classmethod
     def get_driver(cls):
+        """
+        Get the WebDriver instance.
+
+        Returns:
+            WebDriver
+                The current WebDriver instance.
+        """
         return cls._driver
 
 
 class SBase:
+    """
+    A base class for interacting with an Appium server and managing the WebDriver instance.
+    """
     def __init__(self):
+        self.driver: WebDriver = None
         self.server_ip: str = None
         self.server_port: int = None
         self.capabilities: dict = None
@@ -40,7 +51,6 @@ class SBase:
         self.strict_ssl: bool = None
         self.ssh_password: str = None
         self.ssh_user: str = None
-        self.driver: WebDriver = None
 
         self.adb: Adb = None
         self.transport: Transport = None
@@ -59,20 +69,32 @@ class SBase:
                 ssh_password: str = None
                 ) -> None:
         """
-        Connect to a device using Appium server. Provide driver attribute after connect.
+        Connect to a device using the Appium server and initialize the driver.
 
-        :param server_ip: The IP address of the Appium server. Defaults to '127.0.0.1'.
-        :param server_port: The port of the Appium server. Defaults to 4723.
-        :param capabilities: A dictionary specifying the desired capabilities for the session.
-        :param options: An instance or a list of instances of AppiumOptions to configure the Appium session.
-        :param keep_alive: Whether to keep the connection alive after a session ends. Defaults to True.
-        Inherited from WebDriver.
-        :param direct_connection:
-        Whether to use direct connection without intermediate proxies. Defaults to True. Inherited from WebDriver.
-        :param extensions: Optional list of WebDriver extensions. Inherited from WebDriver.
-        :param strict_ssl: Whether to enforce strict SSL certificates handling. Defaults to True.
-        Inherited from WebDriver.
-        :return: None
+        Args:
+            server_ip : str, optional
+                The IP address of the Appium server. Defaults to '127.0.0.1'.
+            server_port : int, optional
+                The port of the Appium server. Defaults to 4723.
+            capabilities : dict, optional
+                A dictionary specifying the desired capabilities for the session.
+            options : Union[AppiumOptions, List[AppiumOptions], None], optional
+                An instance or a list of instances of AppiumOptions to configure the Appium session.
+            keep_alive : bool, optional
+                Whether to keep the connection alive after a session ends. Defaults to True.
+            direct_connection : bool, optional
+                Whether to use direct connection without intermediate proxies. Defaults to True.
+            extensions : Optional[List[WebDriver]], optional
+                An optional list of WebDriver extensions.
+            strict_ssl : bool, optional
+                Whether to enforce strict SSL certificates handling. Defaults to True.
+            ssh_user : str, optional
+                The SSH username for connecting via SSH, if applicable.
+            ssh_password : str, optional
+                The SSH password for connecting via SSH, if applicable.
+
+        Returns:
+            None
         """
         logging.debug(f"{inspect.currentframe().f_code.co_name}")
         if capabilities is not None and options is None:
@@ -124,8 +146,10 @@ class SBase:
 
     def disconnect(self) -> None:
         """
-        Disconnect from device using Appium server.
-        :return: None
+        Disconnect from the device using the Appium server.
+
+        Returns:
+            None
         """
         if self.driver:
             logging.debug(f"Отключение от сессии №: {self.driver.session_id}")
@@ -134,8 +158,10 @@ class SBase:
 
     def reconnect(self):
         """
-        Reconnect to device using Appium server.
-        :return: None
+        Reconnect to the device using the Appium server.
+
+        Returns:
+            None
         """
         logging.error("Reconnecting")
         self.connect(server_ip=self.server_ip,

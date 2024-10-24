@@ -14,9 +14,19 @@ logger = logging.getLogger(__name__)
 
 
 class Adb:
-
+    """
+    A class to interact with Android Debug Bridge (ADB) for device management.
+    Use only if Appium server is running locally where the test is being performed
+    """
     @staticmethod
     def get_devices() -> Union[List[str], None]:
+        """
+        Retrieve a list of connected devices via ADB.
+
+        Returns:
+            Union[List[str], None]
+                A list of connected device identifiers (UUIDs) or None if no devices are found or an error occurs.
+        """
         logger.debug(f"{inspect.currentframe().f_code.co_name}")
 
         # Определение команды для выполнения с помощью adb для получения списка устройств
@@ -45,6 +55,18 @@ class Adb:
 
     @staticmethod
     def get_device_model(udid: str = None) -> Union[str, None]:
+        """
+        Retrieve the model of the connected device using ADB.
+
+        Args:
+            udid : str, optional
+                The unique device identifier for the connected device (default is None).
+                Not required if only one device is connected.
+
+        Returns:
+            Union[str, None]
+                The model of the device as a string, or None if an error occurs or the model cannot be retrieved.
+        """
         logger.debug(f"{inspect.currentframe().f_code.co_name} < {udid}")
         s_udid = f"-s {udid}" if udid else ""
         command = [f"adb {s_udid}", "shell", "getprop", "ro.product.model"]
@@ -63,7 +85,21 @@ class Adb:
 
     @staticmethod
     def push(source: str, destination: str, udid: str = None) -> bool:
-        # USE LINUX STYLE DESTINATION!
+        """
+        Push a file from the local machine to the connected device using ADB.
+
+        Args:
+            source : str
+                The path to the source file on the local machine.
+            destination : str
+                The destination path on the connected device (use Linux-style paths).
+            udid : str, optional
+                The unique device identifier for the connected device (default is None).
+
+        Returns:
+            bool
+                True if the file was successfully pushed, False otherwise.
+        """
         logger.debug(f"{inspect.currentframe().f_code.co_name} < {source=}, {destination=}")
 
         if not os.path.exists(source):
@@ -83,7 +119,21 @@ class Adb:
 
     @staticmethod
     def pull(source: str, destination: str, udid: str = None) -> bool:
-        # USE LINUX STYLE SOURCE!
+        """
+        Pull a file from the connected device to the local machine using ADB.
+
+        Args:
+            source : str
+                The path to the source file on the connected device (use Linux-style paths).
+            destination : str
+                The destination path on the local machine.
+            udid : str, optional
+                The unique device identifier for the connected device (default is None).
+
+        Returns:
+            bool
+                True if the file was successfully pulled, False otherwise.
+        """
         logger.debug(f"{inspect.currentframe().f_code.co_name} < {source=}, {destination=}")
         s_udid = f"-s {udid}" if udid else ""
         command = f"adb {s_udid} pull {source} {destination}"
@@ -99,6 +149,19 @@ class Adb:
 
     @staticmethod
     def install_app(source: str, udid: str) -> bool:
+        """
+        Install an application on the connected device using ADB.
+
+        Args:
+            source : str
+                The path to the APK file on the local machine.
+            udid : str
+                The unique device identifier for the connected device.
+
+        Returns:
+            bool
+                True if the application was successfully installed, False otherwise.
+        """
         logger.debug(f"install() < {source=}")
         s_udid = f"-s {udid}" if udid else ""
         command = f"adb {s_udid} install -r {source}"
@@ -115,7 +178,15 @@ class Adb:
     @staticmethod
     def is_app_installed(package) -> bool:
         """
-        Проверяет, установлен ли пакет.
+        Check if the specified package is installed on the connected device.
+
+        Args:
+            package : str
+                The package name of the application to check.
+
+        Returns:
+            bool
+                True if the application is installed, False otherwise.
         """
         logger.debug(f"is_installed() < {package=}")
 
@@ -137,13 +208,15 @@ class Adb:
     @staticmethod
     def uninstall_app(package: str) -> bool:
         """
-        Удаляет указанный пакет с помощью ADB.
+        Removes the specified package using ADB.
 
-        Аргументы:
-            package (str): Название пакета приложения для удаления.
+        Args:
+            package : str
+                The package name of the application to remove.
 
-        Возвращает:
-            bool: True, если приложение успешно удалено, False в противном случае.
+        Returns:
+            bool
+                True, if the application was successfully removed, False otherwise.
         """
         logger.debug(f"uninstall_app() < {package=}")
 
@@ -161,14 +234,17 @@ class Adb:
     @staticmethod
     def start_activity(package: str, activity: str) -> bool:
         """
-        Запускает активность на подключенном устройстве.
+        Starts the specified activity of the application on the device using ADB.
 
-        Аргументы:
-            package (str): Название пакета активности.
-            activity (str): Название запускаемой активности.
+        Args:
+            package : str
+                The package name of the application containing the activity.
+            activity : str
+                The name of the activity to be launched.
 
-        Возвращает:
-            bool: True, если активность была успешно запущена, False в противном случае.
+        Returns:
+            bool
+                True if the activity was successfully started, False otherwise.
         """
         logger.debug(f"start_activity() < {package=}, {activity=}")
 
@@ -186,13 +262,12 @@ class Adb:
     @staticmethod
     def get_current_activity() -> Union[str, None]:
         """
-        Получает активити текущего запущенного приложения на устройстве с помощью ADB.
-        Возвращает имя активити в виде строки или None, если произошла ошибка.
+        Retrieve the name of the current activity running on the device.
 
-        Возвращает:
-            str: Название активити текущего запущенного приложения, либо None, если произошла ошибка.
+        Returns:
+            Union[str, None]
+                The name of the current activity if found, None otherwise.
         """
-
         # Вывод информации о запуске функции в лог
         logger.debug("get_current_activity()")
 
@@ -232,11 +307,11 @@ class Adb:
     @staticmethod
     def get_current_package() -> Union[str, None]:
         """
-        Получает пакет текущего запущенного приложения на устройстве с помощью ADB.
-        Возвращает имя пакета в виде строки или None, если произошла ошибка.
+        Retrieve the name of the current application package running on the device.
 
-        Возвращает:
-            str: Название пакета текущего запущенного приложения, либо None, если произошла ошибка.
+        Returns:
+            Union[str, None]
+                The name of the current application package if found, None otherwise.
         """
         # Вывод информации о запуске функции в лог
         logger.debug("get_current_app_package()")
@@ -277,13 +352,15 @@ class Adb:
     @staticmethod
     def close_app(package: str) -> bool:
         """
-        Принудительно останавливает указанный пакет с помощью ADB.
+        Close the specified application on the device using ADB.
 
-        Аргументы:
-            package (str): Название пакета приложения для закрытия.
+        Args:
+            package : str
+                The package name of the application to be closed.
 
-        Возвращает:
-            bool: True, если приложение успешно закрыто, False в противном случае.
+        Returns:
+            bool
+                True if the application was successfully closed, False otherwise.
         """
         logger.debug(f"close_app() < {package=}")
 
@@ -301,14 +378,17 @@ class Adb:
     @staticmethod
     def reboot_app(package: str, activity: str) -> bool:
         """
-        Перезапускает приложение, закрывая его и затем запуская указанную активность.
+        Reboot the specified application by closing and then starting its activity.
 
-        Аргументы:
-            package (str): Название пакета приложения.
-            activity (str): Название активности для запуска.
+        Args:
+            package : str
+                The package name of the application to be rebooted.
+            activity : str
+                The name of the activity to be launched after the application is closed.
 
-        Возвращает:
-            bool: True, если перезапуск приложения выполнен успешно, False в противном случае.
+        Returns:
+            bool
+                True if the application was successfully rebooted, False otherwise.
         """
         logger.debug(f"reboot_app() < {package=}, {activity=}")
 
@@ -327,10 +407,11 @@ class Adb:
     @staticmethod
     def press_home() -> bool:
         """
-        Отправляет событие нажатия кнопки Home на устройство с помощью ADB.
+        Simulate pressing the home button on the device using ADB.
 
-        Возвращает:
-            bool: True, если команда была успешно выполнена, False в противном случае.
+        Returns:
+            bool
+                True if the home button press was successfully executed, False otherwise.
         """
         logger.debug("press_home()")
 
@@ -348,12 +429,12 @@ class Adb:
     @staticmethod
     def press_back() -> bool:
         """
-        Отправляет событие нажатия кнопки Back на устройство с помощью ADB.
+        Simulate pressing the back button on the device using ADB.
 
-        Возвращает:
-            bool: True, если команда была успешно выполнена, False в противном случае.
+        Returns:
+            bool
+                True if the back button press was successfully executed, False otherwise.
         """
-
         logger.debug("press_back()")
 
         command = ['adb', 'shell', 'input', 'keyevent', 'KEYCODE_BACK']
@@ -370,12 +451,12 @@ class Adb:
     @staticmethod
     def press_menu() -> bool:
         """
-        Отправляет событие нажатия кнопки Menu на устройство с помощью ADB.
+        Simulate pressing the menu button on the device using ADB.
 
-        Возвращает:
-            bool: True, если команда была успешно выполнена, False в противном случае.
+        Returns:
+            bool
+                True if the menu button press was successfully executed, False otherwise.
         """
-
         logger.debug("press_menu()")
 
         command = ['adb', 'shell', 'input', 'keyevent', 'KEYCODE_MENU']
@@ -392,16 +473,16 @@ class Adb:
     @staticmethod
     def input_keycode_num_(num: int) -> bool:
         """
-        Отправляет событие нажатия клавиши с числовым значением на устройство с помощью ADB.
-        Допустимые значения: 0-9, ADD, COMMA, DIVIDE, DOT, ENTER, EQUALS
+        Simulate pressing a number key on the device's numpad using ADB.
 
-        Аргументы:
-            num (int): Числовое значение клавиши для нажатия.
+        Args:
+            num : int
+                The number corresponding to the KEYCODE_NUMPAD to press (0-9).
 
-        Возвращает:
-            bool: True, если команда была успешно выполнена, False в противном случае.
+        Returns:
+            bool
+                True if the key press was successfully executed, False otherwise.
         """
-
         logger.debug(f"input_keycode_num_() < {num=}")
 
         command = ['adb', 'shell', 'input', 'keyevent', f'KEYCODE_NUMPAD_{num}']
@@ -418,15 +499,16 @@ class Adb:
     @staticmethod
     def input_keycode(keycode: str) -> bool:
         """
-        Вводит указанный код клавиши на устройстве с помощью ADB.
+        Simulate pressing a specified key on the device using ADB.
 
-        Аргументы:
-            keycode (str): Код клавиши для ввода.
+        Args:
+            keycode : str
+                The keycode corresponding to the key to be pressed.
 
-        Возвращает:
-            bool: True, если команда была успешно выполнена, False в противном случае.
+        Returns:
+            bool
+                True if the key press was successfully executed, False otherwise.
         """
-
         logger.debug(f"input_keycode() < {keycode=}")
 
         command = ['adb', 'shell', 'input', 'keyevent', f'{keycode}']
@@ -443,17 +525,19 @@ class Adb:
     @staticmethod
     def input_by_virtual_keyboard(text: str, keyboard: Dict[str, tuple]) -> bool:
         """
-        Вводит строку символов с помощью виртуальной клавиатуры.
+        Input text using a virtual keyboard by tapping on the corresponding coordinates for each character.
 
-        Аргументы:
-            key (str): Строка символов для ввода.
-            keyboard (dict): Словарь с маппингом символов на координаты нажатий.
+        Args:
+            text : str
+                The text to be inputted.
+            keyboard : Dict[str, tuple]
+                A dictionary mapping each character to its corresponding coordinates on the virtual keyboard.
 
-        Возвращает:
-            bool: True, если ввод выполнен успешно, False в противном случае.
+        Returns:
+            bool
+                True if the input was successfully executed, False otherwise.
         """
         logger.debug(f"input_by_virtual_keyboard() < {text=}, {keyboard=}")
-
         try:
             for char in text:
                 # Вызываем функцию tap с координатами, соответствующими символу char
@@ -469,15 +553,16 @@ class Adb:
     @staticmethod
     def input_text(text: str) -> bool:
         """
-        Вводит указанный текст на устройстве с помощью ADB.
+        Input the specified text on the device using ADB.
 
-        Аргументы:
-            text (str): Текст для ввода.
+        Args:
+            text : str
+                The text to be inputted.
 
-        Возвращает:
-            bool: True, если команда была успешно выполнена, False в противном случае.
+        Returns:
+            bool
+                True if the text was successfully inputted, False otherwise.
         """
-
         logger.debug(f"input_text() < {text=}")
 
         # Формируем команду для ввода текста с использованием ADB
@@ -496,16 +581,18 @@ class Adb:
     @staticmethod
     def tap(x: Union[str, int], y: Union[str, int]) -> bool:
         """
-        Выполняет нажатие на указанные координаты на устройстве с помощью ADB.
+        Simulate a tap at the specified screen coordinates on the device using ADB.
 
-        Аргументы:
-            x: Координата X для нажатия.
-            y: Координата Y для нажатия.
+        Args:
+            x : Union[str, int]
+                The x-coordinate of the tap location.
+            y : Union[str, int]
+                The y-coordinate of the tap location.
 
-        Возвращает:
-            bool: True, если команда была успешно выполнена, False в противном случае.
+        Returns:
+            bool
+                True if the tap was successfully executed, False otherwise.
         """
-
         logger.debug(f"tap() < {x=}, {y=}")
 
         # Формируем команду для выполнения нажатия по указанным координатам с использованием ADB
@@ -525,19 +612,24 @@ class Adb:
               end_x: Union[str, int], end_y: Union[str, int],
               duration: int = 300) -> bool:
         """
-        Выполняет свайп (перетаскивание) с одной точки на экране в другую на устройстве с помощью ADB.
+        Simulate a swipe gesture from the starting coordinates to the ending coordinates on the device using ADB.
 
-        Аргументы:
-            start_x: Координата X начальной точки свайпа.
-            start_y: Координата Y начальной точки свайпа.
-            end_x: Координата X конечной точки свайпа.
-            end_y: Координата Y конечной точки свайпа.
-            duration (int): Длительность свайпа в миллисекундах (по умолчанию 300).
+        Args:
+            start_x : Union[str, int]
+                The starting x-coordinate of the swipe.
+            start_y : Union[str, int]
+                The starting y-coordinate of the swipe.
+            end_x : Union[str, int]
+                The ending x-coordinate of the swipe.
+            end_y : Union[str, int]
+                The ending y-coordinate of the swipe.
+            duration : int, optional
+                The duration of the swipe in milliseconds (default is 300).
 
-        Возвращает:
-            bool: True, если команда была успешно выполнена, False в противном случае.
+        Returns:
+            bool
+                True if the swipe was successfully executed, False otherwise.
         """
-
         logger.debug(f"swipe() < {start_x=}, {start_y=}, {end_x=}, {end_y=}, {duration=}")
 
         # Формируем команду для выполнения свайпа с использованием ADB
@@ -556,13 +648,15 @@ class Adb:
     @staticmethod
     def check_vpn(ip_address: str = '') -> bool:
         """
-        Проверяет, активно ли VPN-соединение на устройстве с помощью ADB.
+        Check if a VPN connection is established with the specified IP address.
 
-        Аргументы:
-            ip_address (str): IP-адрес для проверки VPN-соединения. Если не указан, используется значение из конфигурации.
+        Args:
+            ip_address : str, optional
+                The IP address to check for an established VPN connection (default is an empty string).
 
-        Возвращает:
-            bool: True, если VPN-соединение активно, False в противном случае.
+        Returns:
+            bool
+                True if the VPN connection is established with the specified IP address, False otherwise.
         """
         logger.debug(f"check_vpn() < {ip_address=}")
 
@@ -589,10 +683,11 @@ class Adb:
     @staticmethod
     def stop_logcat() -> bool:
         """
-        Останавливает выполнение logcat на устройстве с помощью ADB.
+        Stop the logcat process if it is currently running.
 
-        Возвращает:
-            bool: True, если выполнение logcat остановлено успешно, False в противном случае.
+        Returns:
+            bool
+                True if the logcat process was successfully stopped, False otherwise.
         """
         logger.debug("stop_logcat()")
         if Adb.is_process_exist(name='logcat'):
@@ -606,13 +701,15 @@ class Adb:
     @staticmethod
     def is_process_exist(name) -> bool:
         """
-        Проверяет, запущен ли процесс, используя adb shell ps.
+        Check if a process with the specified name is currently running on the device.
 
-        Параметры:
-            name (str): Имя процесса.
+        Args:
+            name : str
+                The name of the process to check for existence.
 
-        Возвращает:
-            bool: True если процесс с указанным именем существует, False в ином случае.
+        Returns:
+            bool
+                True if the process is running, False otherwise.
         """
         logger.debug(f"is_process_exist() < {name=}")
         command = ['adb', 'shell', 'ps']
@@ -644,17 +741,18 @@ class Adb:
     @staticmethod
     def run_background_process(command: str, process: str = "") -> bool:
         """
-        Запускает процесс в фоновом режиме на устройстве Android с использованием ADB.
+        Run a specified command as a background process.
 
-        Аргументы:
-            command (str): Команда для выполнения на устройстве.
-            process (str): Название процесса, который будет запущен. По умолчанию "".
-            Если process == "", то не будет проверяться его запуск в системе.
+        Args:
+            command : str
+                The command to be executed in the background.
+            process : str, optional
+                The name of the process to check for existence after starting (default is an empty string).
 
-        Возвращает:
-            bool: True, если процесс был успешно запущен, False в противном случае.
+        Returns:
+            bool
+                True if the process was successfully started and exists, False otherwise.
         """
-
         logger.debug(f"run_background_process() < {command=}")
 
         command = f"{command} nohup > /dev/null 2>&1 &"
@@ -675,10 +773,11 @@ class Adb:
     @staticmethod
     def reload_adb() -> bool:
         """
-        Перезапускает adb-сервер на устройстве.
+        Reload the ADB server by killing and then starting it again.
 
-        Возвращает:
-            bool: True, если adb-сервер успешно перезапущен, False в противном случае.
+        Returns:
+            bool
+                True if the ADB server was successfully reloaded, False otherwise.
         """
         logger.debug("reload_adb()")
 
@@ -706,15 +805,16 @@ class Adb:
     @staticmethod
     def know_pid(name: str) -> Union[int, None]:
         """
-        Находит Process ID (PID) процесса по его имени, используя adb shell ps.
+        Retrieve the process ID (PID) of a running process with the specified name.
 
-        Параметры:
-            name (str): Имя процесса, PID которого нужно найти.
+        Args:
+            name : str
+                The name of the process to find.
 
-        Возвращает:
-            Union[int, None]: PID процесса, если он найден, или None, если процесс не найден.
+        Returns:
+            Union[int, None]
+                The PID of the process if found, None otherwise.
         """
-
         logger.debug(f"know_pid() < {name=}")
         command = ['adb', 'shell', 'ps']
         try:
@@ -746,15 +846,16 @@ class Adb:
     @staticmethod
     def kill_by_pid(pid: Union[str, int]) -> bool:
         """
-        Отправляет сигнал SIGINT для остановки процесса по указанному идентификатору PID с помощью ADB.
+        Terminate a process with the specified PID using ADB.
 
-        Аргументы:
-            pid (str): Идентификатор PID процесса для остановки.
+        Args:
+            pid : Union[str, int]
+                The process ID of the process to terminate.
 
-        Возвращает:
-            bool: True, если процесс успешно остановлен, False в противном случае.
+        Returns:
+            bool
+                True if the process was successfully terminated, False otherwise.
         """
-
         logger.debug(f"kill_by_pid() < {pid=}")
 
         command = ['adb', 'shell', 'kill', '-s', 'SIGINT', str(pid)]
@@ -771,15 +872,16 @@ class Adb:
     @staticmethod
     def kill_by_name(name: str) -> bool:
         """
-        Останавливает все процессы с указанным именем на устройстве с помощью ADB.
+        Terminate processes with the specified name using ADB.
 
-        Аргументы:
-            name (str): Имя процесса для остановки.
+        Args:
+            name : str
+                The name of the process to terminate.
 
-        Возвращает:
-            bool: True, если все процессы успешно остановлены, False в противном случае.
+        Returns:
+            bool
+                True if the process was successfully terminated, False otherwise.
         """
-
         logger.debug(f"kill_by_name() < {name=}")
 
         command = ['adb', 'shell', 'pkill', '-l', 'SIGINT', str(name)]
@@ -796,15 +898,16 @@ class Adb:
     @staticmethod
     def kill_all(name: str) -> bool:
         """
-        Останавливает все процессы, соответствующие указанному имени, на устройстве с помощью ADB.
+        Terminate all processes with the specified name using ADB.
 
-        Аргументы:
-            name (str): Имя процесса или шаблон имени для остановки.
+        Args:
+            name : str
+                The name of the processes to terminate.
 
-        Возвращает:
-            bool: True, если все процессы успешно остановлены, False в противном случае.
+        Returns:
+            bool
+                True if the processes were successfully terminated, False otherwise.
         """
-
         logger.debug(f"kill_all() < {name=}")
 
         command = ['adb', 'shell', 'pkill', '-f', str(name)]
@@ -821,15 +924,16 @@ class Adb:
     @staticmethod
     def delete_files_from_internal_storage(path: str) -> bool:
         """
-        Удаляет файлы из внутреннего хранилища устройства с помощью ADB.
+        Delete all files from the specified internal storage path on the device using ADB.
 
-        Аргументы:
-            path (str): Путь к файлам для удаления.
+        Args:
+            path : str
+                The path from which to delete files. The path should end with a directory name.
 
-        Возвращает:
-            bool: True, если файлы успешно удалены, False в противном случае.
+        Returns:
+            bool
+                True if the files were successfully deleted, False otherwise.
         """
-
         logger.debug(f"delete_files_from_internal_storage() < {path=}")
 
         command = ['adb', 'shell', 'rm', '-rf', f'{path}*']
@@ -846,17 +950,21 @@ class Adb:
     @staticmethod
     def pull_video(source: str = None, destination: str = ".", delete: bool = True) -> bool:
         """
-        Копирует видеофайлы с устройства на компьютер с помощью ADB.
+        Pull videos from the specified source directory on the device to the destination directory on the local machine.
 
-        Аргументы:
-            wherefrom (str): Путь к исходным видеофайлам на устройстве.
-            destination (str): Путь для сохранения скопированных видеофайлов.
-            delete (bool): Удалять исходные видеофайлы с устройства после копирования (по умолчанию True).
+        Args:
+            source : str, optional
+                The source directory on the device from which to pull videos.
+                Defaults to '/sdcard/Movies/' if not provided.
+            destination : str, optional
+                The destination directory on the local machine where videos will be saved (default is the current directory).
+            delete : bool, optional
+                Whether to delete the pulled videos from the source directory after pulling (default is True).
 
-        Возвращает:
-            bool: True, если видеофайлы успешно скопированы, False в противном случае.
+        Returns:
+            bool
+                True if the videos were successfully pulled and deleted (if specified), False otherwise.
         """
-
         logger.debug(f"pull_video() < {destination=}")
 
         if not source:
@@ -891,12 +999,12 @@ class Adb:
     @staticmethod
     def stop_video() -> bool:
         """
-        Останавливает запись видео на устройстве с помощью ADB.
+        Stop the video recording on the device by terminating the screenrecord process using ADB.
 
-        Возвращает:
-            bool: True, если запись видео успешно остановлена, False в противном случае.
+        Returns:
+            bool
+                True if the video recording was successfully stopped, False otherwise.
         """
-
         logger.debug("stop_video()")
 
         command = ['adb', 'shell', 'pkill', '-l', 'SIGINT', 'screenrecord']
@@ -914,16 +1022,18 @@ class Adb:
     def record_video(path: str = "sdcard/Movies/", filename: str = "screenrecord.mp4") -> \
             Union[subprocess.Popen[bytes], subprocess.Popen[Union[Union[str, bytes], Any]]]:
         """
-        Записывает видео на устройстве с помощью ADB.
+        Start recording a video on the device using ADB.
 
-        Аргументы:
-            path (str): Путь куда сохранить файл
-            filename (str): Имя файла для сохранения видео.
+        Args:
+            path : str, optional
+                The path where the recorded video will be saved (default is 'sdcard/Movies/').
+            filename : str, optional
+                The name of the recorded video file (default is 'screenrecord.mp4').
 
-        Возвращает:
-            subprocess.CompletedProcess: Процесс записи видео.
+        Returns:
+            Union[subprocess.Popen[bytes], subprocess.Popen[Union[Union[str, bytes], Any]]]
+                The Popen object representing the running video recording process if successful, None otherwise.
         """
-
         logger.debug(f"record_video() < {filename}")
         if path.endswith('/'):
             path = path[:-1]
@@ -943,14 +1053,17 @@ class Adb:
     @staticmethod
     def start_record_video(path: str = "sdcard/Movies/", filename: str = "screenrecord.mp4") -> bool:
         """
-        Отправляет команду на устройство для начала записи видео.
+        Start recording a video on the device using ADB.
 
-        Аргументы:
-            path (str): Путь куда сохранить файл
-            filename (str): Имя файла для сохранения видео.
+        Args:
+            path : str, optional
+                The path where the recorded video will be saved (default is 'sdcard/Movies/').
+            filename : str, optional
+                The name of the recorded video file (default is 'screenrecord.mp4').
 
-        Возвращает:
-            bool: True, если запись видео успешно начата, False в противном случае.
+        Returns:
+            bool
+                True if the video recording was successfully started, False otherwise.
         """
         if path.endswith('/'):
             path = path[:-1]
@@ -971,12 +1084,12 @@ class Adb:
     @staticmethod
     def reboot() -> bool:
         """
-        Перезагружает устройство с помощью ADB.
+        Reboot the device using ADB.
 
-        Возвращает:
-            bool: True, если перезагрузка успешно запущена, False в противном случае.
+        Returns:
+            bool
+                True if the reboot command was successfully executed, False otherwise.
         """
-
         logger.debug("reboot()")
 
         command = ['adb', 'shell', 'reboot']
@@ -993,12 +1106,12 @@ class Adb:
     @staticmethod
     def get_screen_resolution() -> Union[Tuple[int, int], None]:
         """
-        Возвращает разрешение экрана устройства с помощью ADB.
+        Retrieve the screen resolution of the connected device.
 
-        Возвращает:
-            tuple[int, int] or None: Кортеж с шириной и высотой экрана в пикселях, или None в случае ошибки.
+        Returns:
+            Union[Tuple[int, int], None]
+                A tuple containing the width and height of the screen in pixels if successful, None otherwise.
         """
-
         logger.debug("get_screen_resolution()")
 
         command = ['adb', 'shell', 'wm', 'size']
@@ -1017,6 +1130,13 @@ class Adb:
         return None
 
     def get_packages_list(self) -> list:
+        """
+        Retrieve a list of all installed packages on the device.
+
+        Returns:
+            list
+                A list of package names installed on the device.
+        """
         packages_raw = self.execute(command="shell pm list packages")
         # Используем регулярное выражение для удаления "package:" из каждой строки
         packages_raw = re.sub(r'package:', '', packages_raw)
@@ -1026,6 +1146,17 @@ class Adb:
 
     @staticmethod
     def execute(command: str):
+        """
+        Execute a specified ADB command and return the output.
+
+        Args:
+            command : str
+                The ADB command to execute, excluding the 'adb' prefix.
+
+        Returns:
+            str
+                The output of the executed command as a string.
+        """
         logger.debug(f"execute() < {command}")
         execute_command = ['adb', *command.split()]
         return subprocess.check_output(execute_command).decode()

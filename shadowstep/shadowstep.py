@@ -1,8 +1,4 @@
-from typing import Union, Tuple, Dict, List
-
-from appium.webdriver.common.appiumby import AppiumBy
-from appium.webdriver.common.mobileby import MobileBy
-from selenium.webdriver.common.by import By
+from typing import Union, Tuple, Dict
 
 from shadowstep.base import SBase
 from shadowstep.element.element import Element
@@ -16,6 +12,19 @@ class Shadowstep(SBase):
     @staticmethod
     def get_element(locator: Union[Tuple, Dict[str, str]] = None,
                     contains: bool = True):
+        """
+        Retrieve an element based on the specified locator.
+
+        Args:
+            locator : Union[Tuple, Dict[str, str]], optional
+                The locator used to find the element (default is None).
+            contains : bool, optional
+                Indicates whether to match the locator partially (default is True).
+
+        Returns:
+            Element
+                An instance of the Element class corresponding to the locator.
+        """
         element = Element(locator=locator,
                           contains=contains)
         return element

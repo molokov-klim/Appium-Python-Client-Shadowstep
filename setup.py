@@ -11,14 +11,14 @@ VERSION = '0.0.3'
 
 
 setup(
-    name='shadowstep',
+    name='Appium-Python-Client-Shadowstep',
     version=VERSION,
     description='UI Testing Framework powered by Appium Python Client',
     long_description=long_description,
     author='molokov-klim',
     packages=find_packages(),
     install_requires=[
-        'Appium-Python-Client==2.11.1',
+        'Appium-Python-Client==4.2.0',
         'allure-pytest==2.13.2',
         "zlib-compress==0.0.1",
         "zlib-decompress==0.0.2",
@@ -29,7 +29,7 @@ setup(
         'opencv-python==4.8.0.74',
         'pytesseract==0.3.10',
         'numpy==1.25.1',
-        'selenium==4.10.0',
+        'selenium~=4.12',
         'paramiko==3.4.0',
         'scp==0.14.5',
 
