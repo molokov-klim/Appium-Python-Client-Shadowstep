@@ -1,4 +1,8 @@
 import logging
+import sys
+
+from icecream import ic
+from loguru import logger
 import subprocess
 import pytest
 
@@ -7,13 +11,13 @@ from shadowstep.shadowstep import Shadowstep
 # Please use virtual device Google Pixel 10.0
 UDID = '192.168.208.101:5555'
 
-logger = logging.getLogger(__name__)
-logger.setLevel(level=logging.DEBUG)
-ch = logging.StreamHandler()
-ch.setLevel(logging.DEBUG)
-formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-ch.setFormatter(formatter)
-logger.addHandler(ch)
+logger.remove()
+format_string = (
+    "<green>{time:YYYY-MM-DD HH:mm:ss}</green> | "
+    "<level>{level: <8}</level>| "
+    "<cyan>{name}</cyan>:<cyan>{function}</cyan>:<cyan>{line}</cyan> - <level>{message}</level>"
+)
+logger.add(sys.stdout, format=format_string, level=logging.INFO, colorize=True)
 
 
 # Appium server must be run on localhost
@@ -27,8 +31,8 @@ def app(request):
         "appium:automationName": "uiautomator2",
         "appium:UDID": UDID,
         "appium:noReset": True,
-        "appium: autoGrantPermissions": True,
-        "appium: newCommandTimeout": 600000,
+        "appium:autoGrantPermissions": True,
+        "appium:newCommandTimeout": 900,
     }
     application.connect(server_ip='127.0.0.1',
                         server_port=4723,
@@ -36,7 +40,6 @@ def app(request):
 
     def app_finalizer(application):
         application.disconnect()
-
     yield application
 
     request.addfinalizer(lambda: app_finalizer(application))
