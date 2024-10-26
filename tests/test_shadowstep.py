@@ -146,6 +146,7 @@ class TestAdb:
 
         Asserts:
             Asserts that the application was installed and can be found in the list of installed packages.
+            And not in the list after uninstall.
         """
         app.adb.install_app(source=os.path.join('apk', 'notepad.apk'),
                             udid=udid)
@@ -154,4 +155,10 @@ class TestAdb:
         assert any([line.strip().endswith(package) for line in result.splitlines()])
         subprocess.run(f"adb -s {udid} uninstall com.farmerbb.notepad")
         time.sleep(55)
+        result = subprocess.check_output(f"adb -s {udid} shell pm list packages").decode().strip()
         assert not any([line.strip().endswith(package) for line in result.splitlines()])
+
+
+
+
+
