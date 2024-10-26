@@ -163,3 +163,5 @@ cython_debug/
 #.idea/
 /debug.py
 /TODO
+/tests/test_new.py
+/requirements.txt
