@@ -64,7 +64,7 @@ class WebDriverSingleton(WebDriver):
         return cls._driver
 
 
-class SBase:
+class ShadowstepBase:
     """
     A base class for interacting with an Appium server and managing the WebDriver instance.
     """
