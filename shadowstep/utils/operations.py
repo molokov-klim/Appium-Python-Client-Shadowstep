@@ -4,7 +4,7 @@ import logging
 import serial.tools.list_ports
 import shutil
 import json
-from typing import Optional
+from typing import Optional, Union, Tuple, List
 
 START_DIR = os.getcwd()
 
@@ -13,44 +13,47 @@ logger = logging.getLogger(__name__)
 
 def extract_numeric(variable: str) -> Optional[float]:
     """
-    Извлекает числовое значение из переменной.
+    Extract a numeric value from a given string.
 
-    Аргументы:
-        variable (str): Переменная, из которой нужно извлечь числовое значение.
+    Args:
+        variable : str
+            The input string from which to extract the numeric value.
 
-    Возвращает:
-        Optional[float]: Числовое значение, извлеченное из переменной.
-        Если числовое значение не найдено, возвращает None.
+    Returns:
+        Optional[float]
+            The extracted numeric value as a float if found; otherwise, None.
     """
-    number: Optional[float] = None  # Инициализируем переменную number значением None
-    regex = r'-?\d+(?:,\d+)?'  # Регулярное выражение для поиска числового значения
-    match = re.search(regex, variable)  # Поиск совпадения в переменной с помощью регулярного выражения
+    number: Optional[float] = None  # Initialize the number variable as None
+    regex = r'-?\d+(?:,\d+)?'  # Regular expression to find a numeric value
+    match = re.search(regex, variable)  # Search for a match in the variable using the regex
     if match:
-        # Если найдено совпадение, извлекаем числовое значение и преобразуем его в тип float
+        # If a match is found, extract the numeric value and convert it to a float
         number = float(match.group().replace(',', '.'))
     return number
 
 
 def find_latest_folder(path: str) -> Optional[str]:
     """
-    Находит последнюю папку по указанному пути.
+    Find the latest folder in the specified directory that matches a date-time pattern.
 
-    Аргументы:
-        path (str): Путь, в котором нужно найти последнюю папку.
+    Args:
+        path : str
+            The path to the directory in which to search for the latest folder.
 
-    Возвращает:
-        Optional[str]: Имя последней найденной папки. Если папки не найдены, возвращает None.
+    Returns:
+        Optional[str]
+            The name of the latest folder matching the pattern if found; otherwise, None.
     """
-    # Шаблон имени папки
+    # Folder name pattern
     pattern = re.compile(r"launch_\d{4}-\d{2}-\d{2}_\d{2}-\d{2}-\d{2}")
-    # Получение списка папок в указанном пути
+    # Retrieve a list of folders in the specified path
     dirs = [d for d in os.listdir(path) if os.path.isdir(os.path.join(path, d))]
-    # Фильтрация папок по шаблону имени
+    # Filter folders by matching the name pattern
     dirs = [d for d in dirs if pattern.match(d)]
-    # Сортировка папок в обратном порядке
+    # Sort folders in reverse order
     dirs.sort(reverse=True)
     if dirs:
-        # Последняя папка в отсортированном списке
+        # Latest folder in the sorted list
         latest_dir = dirs[0]
         return str(latest_dir)
     else:
@@ -59,110 +62,151 @@ def find_latest_folder(path: str) -> Optional[str]:
 
 def get_com() -> Optional[str]:
     """
-    Возвращает номер COM-порта для подключенного устройства.
+    Retrieve the number of the first available COM port with a number greater than 10.
 
-    Возвращает:
-        Optional[str]: Номер COM-порта. Если порт не найден, возвращает None.
+    Returns:
+        Optional[str]
+            The number of the COM port (excluding the "COM" prefix) if found; otherwise, None.
     """
-    ports = serial.tools.list_ports.comports()  # Получение списка доступных COM-портов
+    ports = serial.tools.list_ports.comports()  # Retrieve a list of available COM ports
     for port in ports:
-        if int(port.device[3:]) > 10:  # Проверка, является ли номер порта числом больше 10
+        if int(port.device[3:]) > 10:  # Check if the port number is greater than 10
             try:
-                ser = serial.Serial(port.device)  # Попытка открыть последовательное соединение с портом
-                ser.close()  # Закрытие соединения
-                return port.device[3:]  # Возврат номера порта (без префикса "COM")
+                ser = serial.Serial(port.device)  # Attempt to open a serial connection to the port
+                ser.close()  # Close the connection
+                return port.device[3:]  # Return the port number without the "COM" prefix
             except serial.SerialException:
                 pass
-    return None  # Если порт не найден, возвращается None
+    return None  # Return None if no suitable port is found
 
 
 def copy_file(source: str, destination: str) -> None:
     """
-    Копирует файл из исходного пути в целевой путь.
+    Copy a file from a source path to a destination path.
 
-    Аргументы:
-        source (str): Исходный путь файла.
-        destination (str): Целевой путь для копирования файла.
+    Args:
+        source : str
+            The path to the source file.
+        destination : str
+            The path to the destination where the file should be copied.
 
-    Возвращает:
+    Returns:
         None
+            This function does not return a value.
     """
-    # Отладочное сообщение с выводом исходного и целевого пути
+    # Debug message with source and destination paths
     logging.debug("copy_file() source %s, destination %s", source, destination)
     try:
-        # Копирование файла из исходного пути в целевой путь
+        # Copy the file from source to destination
         shutil.copy(source, destination)
-        # Отладочное сообщение об успешном копировании файла
+        # Debug message indicating successful file copy
         logging.debug("File copied successfully!")
     except IOError as e:
-        # Сообщение об ошибке при копировании файла
-        logging.error("Unable to copy file: %s" % e)
+        # Error message if file copy fails
+        logging.error("Unable to copy file: %s", e)
 
 
-def count_currency_numbers(number: int) -> tuple:
+def count_currency_numbers(number: int) -> Tuple[int, int, int, int]:
     """
-    Вычисляет количество вхождений купюр разных достоинств в заданную сумму.
+    Calculate the number of bills required to make up a given amount in denominations of 5000, 1000, 500, and 100.
 
-    Аргументы:
-        number (int): Сумма, для которой нужно вычислить количество купюр.
+    Args:
+        number : int
+            The total amount to be divided into bills.
 
-    Возвращает:
-        tuple: Кортеж, содержащий количество купюр разных достоинств в порядке убывания достоинства:
-               (количество купюр 5000, количество купюр 1000, количество купюр 500, количество купюр 100).
+    Returns:
+        Tuple[int, int, int, int]
+            A tuple representing the count of bills in denominations of 5000, 1000, 500, and 100.
     """
     if number < 100:
-        number = 100  # Если сумма меньше 100, устанавливаем ее равной 100 (важно для вычисления сдачи)
-    count_5000 = number // 5000  # Вычисляем количество купюр достоинством 5000
-    remainder = number % 5000  # Вычисляем остаток после вычета купюр достоинством 5000
-    count_1000 = remainder // 1000  # Вычисляем количество купюр достоинством 1000
-    remainder = remainder % 1000  # Вычисляем остаток после вычета купюр достоинством 1000
-    count_500 = remainder // 500  # Вычисляем количество купюр достоинством 500
-    remainder = remainder % 500  # Вычисляем остаток после вычета купюр достоинством 500
-    count_100 = remainder // 100  # Вычисляем количество купюр достоинством 100
-    return count_5000, count_1000, count_500, count_100  # Возвращаем кортеж с количеством купюр разных достоинств
+        number = 100  # If the amount is less than 100, set it to 100 (important for change calculation)
+    count_5000 = number // 5000  # Calculate the number of 5000 denomination bills
+    remainder = number % 5000  # Calculate the remainder after 5000 bills
+    count_1000 = remainder // 1000  # Calculate the number of 1000 denomination bills
+    remainder = remainder % 1000  # Calculate the remainder after 1000 bills
+    count_500 = remainder // 500  # Calculate the number of 500 denomination bills
+    remainder = remainder % 500  # Calculate the remainder after 500 bills
+    count_100 = remainder // 100  # Calculate the number of 100 denomination bills
+    return count_5000, count_1000, count_500, count_100  # Return a tuple with the count of each bill denomination
 
 
-def read_json(path: str, filename: str):
+def read_json_file(path: str, filename: str) -> Optional[Any]:
     """
-    Читает JSON-файл из указанного пути и возвращает его данные.
+    Read and load data from a JSON file.
 
-    Аргументы:
-        path (str): Относительный путь к директории, где находится JSON-файл.
-        filename (str): Имя JSON-файла.
+    Args:
+        path : str
+            The path to the directory containing the JSON file, relative to START_DIR.
+        filename : str
+            The name of the JSON file to read.
 
-    Возвращает:
-        dict: Данные JSON-файла. Если файл не найден, возвращает None.
+    Returns:
+        Optional[Any]
+            The data loaded from the JSON file if successful; otherwise, None if the file is not found.
     """
-    filepath = os.path.join(START_DIR, path, filename)  # Формируем полный путь к JSON-файлу
+    filepath = os.path.join(START_DIR, path, filename)  # Construct the full file path to the JSON file
     try:
-        with open(filepath, 'r', encoding='utf-8') as f:  # Открываем JSON-файл для чтения
-            data = json.load(f)  # Загружаем данные из JSON-файла
+        with open(filepath, 'r', encoding='utf-8') as f:  # Open the JSON file for reading
+            data = json.load(f)  # Load data from the JSON file
     except FileNotFoundError:
-        logging.error("Файл не найден")  # Выводим сообщение об ошибке, если файл не найден
+        logging.error("Файл не найден")  # Log an error if the file is not found
         return None
-    return data  # Возвращаем данные из JSON-файла
+    return data  # Return the data from the JSON file
 
 
 def str_to_float(number: str) -> float:
     """
-    Преобразует строковое представление суммы в формате float.
+    Convert a formatted string representing a monetary value to a float.
 
-    Аргументы:
-        number (str): Строковое представление суммы.
+    Args:
+        number : str
+            The string containing a monetary value, which may include commas, spaces, or currency symbols.
 
-    Возвращает:
-        float: Сумма в формате float.
+    Returns:
+        float
+            The numeric value as a float.
     """
-    # Преобразуем аргумент в строку (на случай, если он уже является строкой)
+    # Convert argument to string (in case it is already a string)
     number = str(number)
-    # Заменяем запятую на точку и удаляем символы "₽" и пробелы, затем преобразуем в float
+    # Replace commas with dots, remove currency symbols and spaces, then convert to float
     number = float(number.replace(',', '.').replace('₽', '').replace(' ', ''))
-    # Возвращаем сумму в формате float
-    return number
+    return number  # Return the amount as a float
 
 
-def grep_pattern(input_string, pattern):
-    lines = input_string.split('\n')
-    regex = re.compile(pattern)
-    matched_lines = [line for line in lines if regex.search(line)]
+def grep_pattern(input_string: str, pattern: str) -> List[str]:
+    """
+    Search for lines matching a specified pattern within an input string.
+
+    Args:
+        input_string : str
+            The input string containing multiple lines to be searched.
+        pattern : str
+            The regular expression pattern to match against each line.
+
+    Returns:
+        List[str]
+            A list of lines that contain matches for the specified pattern.
+    """
+    lines = input_string.split('\n')  # Split the input string into lines
+    regex = re.compile(pattern)  # Compile the regex pattern
+    matched_lines = [line for line in lines if regex.search(line)]  # Filter lines matching the pattern
     return matched_lines
+
+
+def calculate_rectangle_center(coordinates: Tuple[int, int, int, int]) -> Union[Tuple[int, int], None]:
+    """
+    Calculate the center coordinates of a rectangle given its boundary coordinates.
+
+    Args:
+        coordinates : Tuple[int, int, int, int]
+            A tuple representing the left, top, right, and bottom boundaries of the rectangle.
+
+    Returns:
+        Union[Tuple[int, int], None]
+            A tuple containing the x and y coordinates of the rectangle's center.
+    """
+    left, top, right, bottom = coordinates
+    # Calculate the center coordinates of the rectangle
+    x = int((left + right) / 2)
+    y = int((top + bottom) / 2)
+    return x, y
