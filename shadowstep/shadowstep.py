@@ -1,17 +1,17 @@
 from typing import Union, Tuple, Dict
 
-from shadowstep.base import SBase
+from shadowstep.base import ShadowstepBase
 from shadowstep.element.element import Element
 
 
-class Shadowstep(SBase):
+class Shadowstep(ShadowstepBase):
 
     def __init__(self):
         super().__init__()
 
     @staticmethod
     def get_element(locator: Union[Tuple, Dict[str, str]] = None,
-                    contains: bool = True):
+                    contains: bool = True) -> Element:
         """
         Retrieve an element based on the specified locator.
 
