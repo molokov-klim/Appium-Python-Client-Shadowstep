@@ -4,10 +4,12 @@ import logging
 import serial.tools.list_ports
 import shutil
 import json
-from typing import Optional, Union, Tuple, List
+from typing import Optional, Union, Tuple, List, Any
 
 START_DIR = os.getcwd()
 
+# Configure the root logger (basic configuration)
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
 
 

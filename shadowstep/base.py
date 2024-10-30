@@ -18,6 +18,10 @@ from shadowstep.terminal.adb import Adb
 from shadowstep.terminal.terminal import Terminal
 from shadowstep.terminal.transport import Transport
 
+# Configure the root logger (basic configuration)
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+logger = logging.getLogger(__name__)
+
 
 class WebDriverSingleton(WebDriver):
     _instance = None
@@ -25,15 +29,10 @@ class WebDriverSingleton(WebDriver):
     _command_executor = None
 
     def __new__(cls, *args, **kwargs):
-        ic()
-        ic()
-        ic(cls._driver)
         if cls._instance is None:
             cls._instance = super().__new__(cls)
             cls._driver = webdriver.Remote(*args, **kwargs)
             cls._command_executor = kwargs['command_executor']
-        ic()
-        ic(cls._driver)
         return cls._driver
 
     @classmethod
@@ -70,6 +69,7 @@ class ShadowstepBase:
     """
 
     def __init__(self):
+        self.logger = logging.getLogger(f"{__name__}.{self.__class__.__name__}")
         self.driver: WebDriver = None
         self.server_ip: str = None
         self.server_port: int = None

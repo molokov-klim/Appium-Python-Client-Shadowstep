@@ -10,6 +10,8 @@ from typing import Dict, Union, Tuple, Optional, Any, List
 
 from shadowstep.utils import operations
 
+# Configure the root logger (basic configuration)
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
 
 

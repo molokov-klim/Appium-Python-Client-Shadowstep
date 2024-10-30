@@ -1,5 +1,6 @@
 import inspect
 import logging
+import typing
 from typing import Union, List, Optional, Tuple, Dict
 
 from selenium.types import WaitExcTypes
@@ -9,14 +10,31 @@ from selenium.webdriver.support.wait import WebDriverWait
 from appium.webdriver import WebElement
 
 from shadowstep.base import WebDriverSingleton
+from shadowstep.element.element import Element
+
+# Configure the root logger (basic configuration)
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+logger = logging.getLogger(__name__)
 
 
 class ElementBase:
     """
     A base class for interacting with web elements in the Shadowstep application.
     """
-    def __init__(self):
+
+    def __init__(self,
+                 locator: Union[Tuple, Dict[str, str], str, WebElement] = None,
+                 base=None,
+                 timeout: int = 30,
+                 poll_frequency: float = 0.5,
+                 ignored_exceptions: typing.Optional[WaitExcTypes] = None):
+        self.logger = logging.getLogger(f"{__name__}.{self.__class__.__name__}")
         self.driver = None
+        self.locator = locator
+        self.base = base  # Shadowstep instance
+        self.timeout = timeout
+        self.poll_frequency = poll_frequency
+        self.ignored_exceptions = ignored_exceptions
 
     def _get_element(self, locator: Union[Tuple, Dict[str, str]], timeout: float = 3,
                      poll_frequency: float = 0.5,
@@ -45,39 +63,39 @@ class ElementBase:
             element = wait.until(EC.presence_of_element_located(locator))
             return element
         except NoSuchElementException:
+            logging.debug(f"{inspect.currentframe().f_code.co_name}")
             return None
         except TimeoutException as error:
-            logging.debug(f"Элемент не обнаружен!\n"
-                          f"{locator=}\n"
-                          f"{timeout=}\n\n" +
-                          f"{error=}\n")
+            logging.debug(f"{inspect.currentframe().f_code.co_name}")
             return None
         except WebDriverException as error:
-            logging.debug(f"Элемент не обнаружен!\n"
-                          f"{locator=}\n"
-                          f"{timeout=}\n\n" +
-                          f"{error=}\n")
+            logging.debug(f"{inspect.currentframe().f_code.co_name}")
             return None
 
-    def handle_locator(self, locator):
+    def handle_locator(self, locator: Union[Tuple, Dict[str, str], str, WebElement, 'Element']):
         """
         Handle the provided locator and convert it if necessary.
 
         Args:
-            locator : Union[Tuple, Dict[str, str]]
+            locator : Union[Tuple, Dict[str, str], str, WebElement, 'Element']
                 The locator to be processed.
 
         Returns:
             Union[Tuple, None]
                 The processed locator or None if not valid.
         """
-        if isinstance(locator, dict):
+        if isinstance(locator, tuple):
+            return locator
+        elif isinstance(locator, WebElement):
+            raise NotImplementedError
+        elif isinstance(locator, Element):
+            raise NotImplementedError
+        elif isinstance(locator, dict):
             locator = self.handle_dict_locator(locator)
         return locator
 
     @staticmethod
-    def handle_dict_locator(locator,
-                            contains: bool = False) -> Union[Tuple, None]:
+    def handle_dict_locator(locator) -> Union[Tuple, None]:
         """
         Convert a dictionary locator to an XPath locator.
 
@@ -96,9 +114,8 @@ class ElementBase:
         else:
             xpath = "//" + locator['class']
         try:
-            if contains:
-                for attr, value in locator.items():
-                    xpath += f"[contains(@{attr}, '{value}')]"
+            for attr, value in locator.items():
+                xpath += f"[contains(@{attr}, '{value}')]"
                 new_locator = ("xpath", xpath)
                 return new_locator
             for attr, value in locator.items():
@@ -106,7 +123,7 @@ class ElementBase:
             new_locator = ("xpath", xpath)
             return new_locator
         except KeyError as e:
-            logging.error(f"Ошибка dict: {locator}")
+            logging.error(f"{inspect.currentframe().f_code.co_name}")
             logging.error(f"{str(e)}")
             return None
 
