@@ -2,6 +2,7 @@ import os
 import subprocess
 import time
 
+from shadowstep.element.element import Element
 from shadowstep.shadowstep import Shadowstep
 
 
@@ -20,6 +21,18 @@ class TestShadowstep:
         Asserts:
             Asserts that the locator of the retrieved element matches the expected locator.
         """
-        element = app.get_element(locator={'content-desc': 'Phone'})
+        element = app.get_element(locator={'content-desc': 'Phone'},
+                                  timeout=29,
+                                  poll_frequency=0.7,
+                                  ignored_exceptions=[TimeoutError],
+                                  contains=True)
         assert element.locator == {'content-desc': 'Phone'}
-
+        assert isinstance(element, Element)
+        assert element.driver is None
+        assert element.base is not None
+        assert element.timeout == 29
+        assert element.poll_frequency == 0.7
+        assert element.ignored_exceptions == [TimeoutError]
+        assert element.contains is True
+        element.tap()
+        assert element.driver is not None

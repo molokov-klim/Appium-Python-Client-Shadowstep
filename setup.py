@@ -6,9 +6,7 @@ from setuptools import setup, find_packages
 with open("README.md", "r", encoding="utf-8") as f:
     long_description = f.read()
 
-
 VERSION = '0.0.3'
-
 
 setup(
     name='Appium-Python-Client-Shadowstep',
@@ -17,6 +15,7 @@ setup(
     long_description=long_description,
     author='molokov-klim',
     packages=find_packages(),
+    python_requires='>=3.9',
     install_requires=[
         'Appium-Python-Client==4.2.0',
         'allure-pytest==2.13.2',
@@ -32,7 +31,6 @@ setup(
         'selenium~=4.12',
         'paramiko==3.4.0',
         'scp==0.14.5',
-
     ],
     long_description_content_type='text/markdown',
     classifiers=[

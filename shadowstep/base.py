@@ -1,10 +1,11 @@
 import gc
 import json
+import time
 
 import requests
 import inspect
-import logging
-from typing import Union, List, Optional
+from loguru import logger
+from typing import Union, List, Optional, Set
 
 from appium.options.android import UiAutomator2Options
 from appium.options.common import AppiumOptions
@@ -12,15 +13,11 @@ from appium.options.common import AppiumOptions
 from appium import webdriver
 from appium.webdriver.webdriver import WebDriver
 from icecream import ic
-from selenium.common import InvalidSessionIdException
+from selenium.common.exceptions import NoSuchDriverException, WebDriverException, InvalidSessionIdException
 
 from shadowstep.terminal.adb import Adb
 from shadowstep.terminal.terminal import Terminal
 from shadowstep.terminal.transport import Transport
-
-# Configure the root logger (basic configuration)
-logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-logger = logging.getLogger(__name__)
 
 
 class WebDriverSingleton(WebDriver):
@@ -37,6 +34,7 @@ class WebDriverSingleton(WebDriver):
 
     @classmethod
     def _get_session_id(cls, kwargs):
+        logger.info(f"{inspect.currentframe().f_code.co_name}")
         res = requests.get(kwargs['command_executor'] + '/sessions')
         res_json = json.loads(res.text)
         sessions = res_json.get("value", [])
@@ -47,6 +45,7 @@ class WebDriverSingleton(WebDriver):
     @classmethod
     def clear_instance(cls):
         """Удаляет текущий экземпляр и очищает ресурсы WebDriverSingleton."""
+        logger.info(f"{inspect.currentframe().f_code.co_name}")
         cls._driver = None
         cls._instance = None  # Убирает ссылку на экземпляр для высвобождения памяти
         gc.collect()
@@ -60,6 +59,7 @@ class WebDriverSingleton(WebDriver):
             WebDriver
                 The current WebDriver instance.
         """
+        logger.info(f"{inspect.currentframe().f_code.co_name}")
         return cls._driver
 
 
@@ -69,7 +69,7 @@ class ShadowstepBase:
     """
 
     def __init__(self):
-        self.logger = logging.getLogger(f"{__name__}.{self.__class__.__name__}")
+        self.logger = logger
         self.driver: WebDriver = None
         self.server_ip: str = None
         self.server_port: int = None
@@ -81,7 +81,7 @@ class ShadowstepBase:
         self.strict_ssl: bool = None
         self.ssh_password: str = None
         self.ssh_user: str = None
-        self.url = None
+        self.command_executor: str = None
 
         self.adb: Adb = None
         self.transport: Transport = None
@@ -97,7 +97,8 @@ class ShadowstepBase:
                 extensions: Optional[List['WebDriver']] = None,
                 strict_ssl: bool = True,
                 ssh_user: str = None,
-                ssh_password: str = None
+                ssh_password: str = None,
+                command_executor: str = None,
                 ) -> None:
         """
         Connect to a device using the Appium server and initialize the driver.
@@ -123,11 +124,13 @@ class ShadowstepBase:
                 The SSH username for connecting via SSH, if applicable.
             ssh_password : str, optional
                 The SSH password for connecting via SSH, if applicable.
+            command_executor: str
+                URL address of appium server entry point
 
         Returns:
             None
         """
-        logging.debug(f"{inspect.currentframe().f_code.co_name}")
+        self.logger.info(f"{inspect.currentframe().f_code.co_name}")
         # if provided caps instead options, redeclare caps to options
         # see https://github.com/appium/appium-uiautomator2-driver
         if capabilities is not None and options is None:
@@ -364,8 +367,8 @@ class ShadowstepBase:
                 options.new_command_timeout = capabilities["appium:newCommandTimeout"]
             if "appium:skipLogcatCapture" in capabilities.keys():
                 options.skip_logcat_capture = capabilities["appium:skipLogcatCapture"]
-        url = f'http://{server_ip}:{str(server_port)}/wd/hub'
-        logging.info(f"Подключение к серверу: {url}")
+        command_executor = f'http://{server_ip}:{str(server_port)}/wd/hub' if command_executor is None else command_executor
+        self.logger.info(f"Подключение к серверу: {command_executor}")
         self.server_ip = server_ip
         self.server_port = server_port
         self.capabilities = capabilities
@@ -376,13 +379,13 @@ class ShadowstepBase:
         self.strict_ssl = strict_ssl
         self.ssh_user = ssh_user
         self.ssh_password = ssh_password
-        self.url = url
-        self.driver = WebDriverSingleton(command_executor=url,
-                                         options=options,
-                                         keep_alive=keep_alive,
-                                         direct_connection=direct_connection,
-                                         extensions=extensions,
-                                         strict_ssl=strict_ssl)
+        self.command_executor = command_executor
+        self.driver = WebDriverSingleton(command_executor=self.command_executor,
+                                         options=self.options,
+                                         keep_alive=self.keep_alive,
+                                         direct_connection=self.direct_connection,
+                                         extensions=self.extensions,
+                                         strict_ssl=self.strict_ssl)
         if ssh_user and ssh_password:
             self.transport = Transport(server=self.server_ip,
                                        port=self.server_port,
@@ -398,12 +401,19 @@ class ShadowstepBase:
         Returns:
             None
         """
+        self.logger.info(f"{inspect.currentframe().f_code.co_name}")
         try:
             if self.driver:
+                response = requests.delete(f"{self.command_executor}/session/{self.driver.session_id}")
+                self.logger.info(f"{response=}")
                 self.driver.quit()
                 self.driver = None
         except InvalidSessionIdException as error:
-            logging.error(error)
+            self.logger.debug(f"{inspect.currentframe().f_code.co_name} {error}")
+            pass
+        except NoSuchDriverException as error:
+            self.logger.debug(f"{inspect.currentframe().f_code.co_name} {error}")
+            pass
 
     def reconnect(self):
         """
@@ -412,14 +422,9 @@ class ShadowstepBase:
         Returns:
             None
         """
-        logging.error("Reconnecting")
-        ic()
-        ic()
-        ic(self.driver)
+        self.logger.info(f"{inspect.currentframe().f_code.co_name}")
         self.disconnect()
         WebDriverSingleton.clear_instance()
-        ic()
-        ic(self.driver)
         self.connect(server_ip=self.server_ip,
                      server_port=self.server_port,
                      capabilities=self.capabilities,
@@ -429,5 +434,21 @@ class ShadowstepBase:
                      extensions=self.extensions,
                      strict_ssl=self.strict_ssl
                      )
-        ic()
-        ic(self.driver)
+        time.sleep(3)
+
+    def is_connected(self) -> bool:
+        self.logger.info(f"{inspect.currentframe().f_code.co_name}")
+        try:
+            response = requests.get(f"{self.command_executor}/sessions")
+            response_json = response.json().get("value", {})
+            response.raise_for_status()
+            nodes = response_json
+            for node in nodes:
+                session_id = node.get("id", None)
+                node.get("ready", False)
+                if self.driver.session_id == session_id:
+                    return True
+            return False
+        except Exception as error:
+            self.logger.error(f"{inspect.currentframe().f_code.co_name} {error}")
+            return False

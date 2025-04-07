@@ -37,8 +37,10 @@ def app(request):
     application.connect(server_ip='127.0.0.1',
                         server_port=4723,
                         capabilities=caps)
+    application.adb.press_home()
 
     def app_finalizer(application):
+        application.adb.press_home()
         application.disconnect()
     yield application
 
@@ -51,6 +53,7 @@ def udid():
 
 
 @pytest.fixture(scope="function", autouse=True)
-def press_home():
-    command = ['adb', 'shell', 'input', 'keyevent', 'KEYCODE_HOME']
-    subprocess.run(command, check=True)
+def press_home(app):
+    app.adb.press_home()
+    # command = ['adb', 'shell', 'input', 'keyevent', 'KEYCODE_HOME']
+    # subprocess.run(command, check=True)

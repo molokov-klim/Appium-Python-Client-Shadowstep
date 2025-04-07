@@ -1,5 +1,10 @@
+import inspect
 import logging
+import typing
 from typing import Union, Tuple, Dict
+
+from appium.webdriver import WebElement
+from selenium.types import WaitExcTypes
 
 from shadowstep.base import ShadowstepBase
 from shadowstep.element.element import Element
@@ -15,30 +20,33 @@ class Shadowstep(ShadowstepBase):
         super().__init__()
         self.logger = logging.getLogger(f"{__name__}.{self.__class__.__name__}")
 
-    @staticmethod
-    def get_element(locator: Union[Tuple, Dict[str, str]] = None) -> Element:
-        """
-        Retrieve an element based on the specified locator.
-
-        Args:
-            locator : Union[Tuple, Dict[str, str]], optional
-                The locator used to find the element (default is None).
-
-        Returns:
-            Element
-                An instance of the Element class corresponding to the locator.
-        """
-        element = Element(locator=locator)
+    def get_element(self,
+                    locator: Union[Tuple, Dict[str, str], str, WebElement, 'Element'] = None,
+                    timeout: int = 30,
+                    poll_frequency: float = 0.5,
+                    ignored_exceptions: typing.Optional[WaitExcTypes] = None,
+                    contains: bool = False) -> Element:
+        self.logger.info(f"{inspect.currentframe().f_code.co_name}")
+        element = Element(locator=locator,
+                          timeout=timeout,
+                          poll_frequency=poll_frequency,
+                          ignored_exceptions=ignored_exceptions,
+                          contains=contains,
+                          base=self)
         return element
 
     def get_elements(self):
-        ...
+        self.logger.info(f"{inspect.currentframe().f_code.co_name}")
+        raise NotImplementedError
 
     def get_image(self):
-        ...
+        self.logger.info(f"{inspect.currentframe().f_code.co_name}")
+        raise NotImplementedError
 
     def get_images(self):
-        ...
+        self.logger.info(f"{inspect.currentframe().f_code.co_name}")
+        raise NotImplementedError
 
     def get_text(self):
-        ...
+        self.logger.info(f"{inspect.currentframe().f_code.co_name}")
+        raise NotImplementedError

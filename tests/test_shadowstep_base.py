@@ -31,9 +31,6 @@ class TestBase:
         """Тест автоматического переподключения при разорванной сессии"""
         app.reconnect()  # Переподключение
         try:
-            ic()
-            ic()
-            ic(app.driver)
             app.driver.get_screenshot_as_png()  # Попытка выполнить команду
             assert app.driver.session_id is not None, "Не удалось переподключиться"
         except NoSuchDriverException:
@@ -72,9 +69,10 @@ class TestBase:
 
     def test_reconnect_without_active_session(self, app: Shadowstep):
         """Тест вызова reconnect при отсутствии активной сессии"""
-        app.driver = None  # Эмулируем отсутствие сессии
+        app.disconnect()
         app.reconnect()
-        assert app.driver is not None and app.driver.session_id, "Сессия не была создана при переподключении"
+        assert app.driver is not None, "Сессия не была создана при переподключении"
+        assert app.driver.session_id is not None, "Сессия не была создана при переподключении"
 
     def test_session_state_before_command_execution(self, app: Shadowstep):
         """Тест состояния сессии перед выполнением WebDriver команд"""
@@ -94,3 +92,13 @@ class TestBase:
         assert app.driver is not None, "Сессия не была создана с новыми параметрами capabilities"
         assert app.options.auto_grant_permissions is False, "Параметр autoGrantPermissions не применился"
         app.connect(server_ip='127.0.0.1', server_port=4723, capabilities=caps)
+
+    def test_is_connected_when_connected(self, app: Shadowstep):
+        app.reconnect()
+        assert app.is_connected()
+
+    def test_is_connected_when_disconnected(self, app: Shadowstep):
+        app.disconnect()
+        assert not app.is_connected()
+        app.connect()
+

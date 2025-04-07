@@ -1,20 +1,20 @@
 import inspect
 import logging
+from loguru import logger
 import typing
 from typing import Union, List, Optional, Tuple, Dict
 
+from icecream import ic
 from selenium.types import WaitExcTypes
 from selenium.webdriver.support import expected_conditions as EC
-from selenium.common.exceptions import WebDriverException, TimeoutException, NoSuchElementException
+from selenium.common.exceptions import WebDriverException, TimeoutException, NoSuchElementException, \
+    NoSuchDriverException, InvalidSessionIdException
 from selenium.webdriver.support.wait import WebDriverWait
+
+from appium.webdriver.webdriver import WebDriver
 from appium.webdriver import WebElement
 
 from shadowstep.base import WebDriverSingleton
-from shadowstep.element.element import Element
-
-# Configure the root logger (basic configuration)
-logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-logger = logging.getLogger(__name__)
 
 
 class ElementBase:
@@ -27,18 +27,24 @@ class ElementBase:
                  base=None,
                  timeout: int = 30,
                  poll_frequency: float = 0.5,
-                 ignored_exceptions: typing.Optional[WaitExcTypes] = None):
-        self.logger = logging.getLogger(f"{__name__}.{self.__class__.__name__}")
-        self.driver = None
-        self.locator = locator
+                 ignored_exceptions: typing.Optional[WaitExcTypes] = None,
+                 contains: bool = False):
+        self.logger = logger
+        self.driver: WebDriver = None
+        self.locator: Union[Tuple, Dict[str, str], str, WebElement] = locator
         self.base = base  # Shadowstep instance
-        self.timeout = timeout
-        self.poll_frequency = poll_frequency
-        self.ignored_exceptions = ignored_exceptions
+        self.timeout: int = timeout
+        self.poll_frequency: float = poll_frequency
+        self.ignored_exceptions: typing.Optional[WaitExcTypes] = ignored_exceptions
+        self.contains: bool = contains
+        self.id = None
 
-    def _get_element(self, locator: Union[Tuple, Dict[str, str]], timeout: float = 3,
+    def _get_element(self,
+                     locator: Union[Tuple, Dict[str, str], WebElement],
+                     timeout: float = 3,
                      poll_frequency: float = 0.5,
-                     ignored_exceptions: Optional[WaitExcTypes] = None) -> Union[WebElement, None]:
+                     ignored_exceptions: Optional[WaitExcTypes] = None,
+                     contains: bool = False) -> Union[WebElement, None]:
         """
         Retrieve a web element based on the specified locator.
 
@@ -56,46 +62,53 @@ class ElementBase:
             Union[WebElement, None]
                 The located web element, or None if not found.
         """
+        self.logger.info(f"{inspect.currentframe().f_code.co_name}")
+        self._get_driver()
+        if isinstance(locator, WebElement):
+            return locator
         wait = WebDriverWait(driver=self.driver, timeout=timeout,
                              poll_frequency=poll_frequency, ignored_exceptions=ignored_exceptions)
-        locator = self.handle_locator(locator)
+        locator = self.handle_locator(locator, contains)
         try:
             element = wait.until(EC.presence_of_element_located(locator))
+            self.id = element.id
             return element
-        except NoSuchElementException:
-            logging.debug(f"{inspect.currentframe().f_code.co_name}")
-            return None
+        except NoSuchElementException as error:
+            ic()
+            self.logger.error(f"{inspect.currentframe().f_code.co_name} {locator=} {error}")
+            raise
         except TimeoutException as error:
-            logging.debug(f"{inspect.currentframe().f_code.co_name}")
+            ic()
+            ic(error)
+            ic(error.stacktrace)
+            self.logger.error(f"{inspect.currentframe().f_code.co_name} {locator=} {error}")
+            for stack in error.stacktrace:
+                if 'NoSuchElementError' in stack:
+                    ic(True)
+                    raise NoSuchElementException(msg=error.msg,
+                                                 screen=error.screen,
+                                                 stacktrace=error.stacktrace)
+            raise
+        except InvalidSessionIdException as error:
+            ic()
+            self.logger.error(f"{inspect.currentframe().f_code.co_name} {locator=} {error}")
             return None
         except WebDriverException as error:
-            logging.debug(f"{inspect.currentframe().f_code.co_name}")
+            ic()
+            self.logger.error(f"{inspect.currentframe().f_code.co_name} {locator} {error}")
             return None
 
-    def handle_locator(self, locator: Union[Tuple, Dict[str, str], str, WebElement, 'Element']):
-        """
-        Handle the provided locator and convert it if necessary.
-
-        Args:
-            locator : Union[Tuple, Dict[str, str], str, WebElement, 'Element']
-                The locator to be processed.
-
-        Returns:
-            Union[Tuple, None]
-                The processed locator or None if not valid.
-        """
+    def handle_locator(self,
+                       locator: Union[Tuple, Dict[str, str], str, WebElement],
+                       contains: bool = False) -> Union[Tuple, None]:
+        self.logger.info(f"{inspect.currentframe().f_code.co_name}")
         if isinstance(locator, tuple):
             return locator
-        elif isinstance(locator, WebElement):
-            raise NotImplementedError
-        elif isinstance(locator, Element):
-            raise NotImplementedError
         elif isinstance(locator, dict):
-            locator = self.handle_dict_locator(locator)
+            locator = self.handle_dict_locator(locator, contains)
         return locator
 
-    @staticmethod
-    def handle_dict_locator(locator) -> Union[Tuple, None]:
+    def handle_dict_locator(self, locator, contains: bool = False) -> Union[Tuple, None]:
         """
         Convert a dictionary locator to an XPath locator.
 
@@ -109,13 +122,15 @@ class ElementBase:
             Union[Tuple, None]
                 The XPath locator as a tuple, or None if there was an error.
         """
+        self.logger.info(f"{inspect.currentframe().f_code.co_name}")
         if 'class' not in locator:
             xpath = "//*"
         else:
             xpath = "//" + locator['class']
         try:
-            for attr, value in locator.items():
-                xpath += f"[contains(@{attr}, '{value}')]"
+            if contains:
+                for attr, value in locator.items():
+                    xpath += f"[contains(@{attr}, '{value}')]"
                 new_locator = ("xpath", xpath)
                 return new_locator
             for attr, value in locator.items():
@@ -123,8 +138,8 @@ class ElementBase:
             new_locator = ("xpath", xpath)
             return new_locator
         except KeyError as e:
-            logging.error(f"{inspect.currentframe().f_code.co_name}")
-            logging.error(f"{str(e)}")
+            self.logger.error(f"Ошибка dict: {locator}")
+            self.logger.error(f"{str(e)}")
             return None
 
     def _get_driver(self):
@@ -135,5 +150,5 @@ class ElementBase:
             WebDriverSingleton
                 The WebDriver instance.
         """
-        if self.driver is None:
-            self.driver = WebDriverSingleton.get_driver()
+        self.logger.info(f"{inspect.currentframe().f_code.co_name}")
+        self.driver = WebDriverSingleton.get_driver()

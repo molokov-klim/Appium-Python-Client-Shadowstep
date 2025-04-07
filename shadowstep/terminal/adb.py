@@ -1,5 +1,5 @@
 import inspect
-import logging
+from loguru import logger
 import os
 import re
 import subprocess
@@ -10,16 +10,13 @@ from typing import Dict, Union, Tuple, Optional, Any, List
 
 from shadowstep.utils import operations
 
-# Configure the root logger (basic configuration)
-logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-logger = logging.getLogger(__name__)
-
 
 class Adb:
     """
     A class to interact with Android Debug Bridge (ADB) for device management.
     Use only if Appium server is running locally where the test is being performed
     """
+        
     @staticmethod
     def get_devices() -> Union[List[str], None]:
         """
@@ -29,7 +26,7 @@ class Adb:
             Union[List[str], None]
                 A list of connected device identifiers (UUIDs) or None if no devices are found or an error occurs.
         """
-        logger.debug(f"{inspect.currentframe().f_code.co_name}")
+        logger.info(f"{inspect.currentframe().f_code.co_name}")
 
         # Определение команды для выполнения с помощью adb для получения списка устройств
         command = ['adb', 'devices']
@@ -43,7 +40,7 @@ class Adb:
 
             try:
                 # Возвращение первого устройства из списка (UUID подключенного устройства Android)
-                logger.debug(f"{inspect.currentframe().f_code.co_name} > {devices_list}")
+                logger.info(f"{inspect.currentframe().f_code.co_name} > {devices_list}")
                 return devices_list
             except IndexError:
                 logger.error(f"{inspect.currentframe().f_code.co_name} > None")
@@ -69,7 +66,7 @@ class Adb:
             Union[str, None]
                 The model of the device as a string, or None if an error occurs or the model cannot be retrieved.
         """
-        logger.debug(f"{inspect.currentframe().f_code.co_name} < {udid}")
+        logger.info(f"{inspect.currentframe().f_code.co_name} < {udid}")
         s_udid = f"-s {udid}" if udid else ""
         command = [f"adb {s_udid}", "shell", "getprop", "ro.product.model"]
         try:
@@ -77,7 +74,7 @@ class Adb:
             model = subprocess.check_output(command)
             # Преобразование байтовой строки в обычную строку и удаление пробельных символов и символов перевода строки
             model = model.decode().strip()
-            logger.debug(f"{inspect.currentframe().f_code.co_name} > {model}")
+            logger.info(f"{inspect.currentframe().f_code.co_name} > {model}")
             return model
         except subprocess.CalledProcessError as e:
             logger.error(f"{inspect.currentframe().f_code.co_name} > None")
@@ -102,7 +99,7 @@ class Adb:
             bool
                 True if the file was successfully pushed, False otherwise.
         """
-        logger.debug(f"{inspect.currentframe().f_code.co_name} < {source=}, {destination=}")
+        logger.info(f"{inspect.currentframe().f_code.co_name} < {source=}, {destination=}")
 
         if not os.path.exists(source):
             logger.error(f"Source path does not exist: {source=}")
@@ -111,7 +108,7 @@ class Adb:
         command = f"adb {s_udid} push {source} {destination}"
         try:
             subprocess.run(command, check=True)
-            logger.debug(f"{inspect.currentframe().f_code.co_name} > True")
+            logger.info(f"{inspect.currentframe().f_code.co_name} > True")
             return True
         except subprocess.CalledProcessError as e:
             logger.error(f"{inspect.currentframe().f_code.co_name} > None")
@@ -136,12 +133,12 @@ class Adb:
             bool
                 True if the file was successfully pulled, False otherwise.
         """
-        logger.debug(f"{inspect.currentframe().f_code.co_name} < {source=}, {destination=}")
+        logger.info(f"{inspect.currentframe().f_code.co_name} < {source=}, {destination=}")
         s_udid = f"-s {udid}" if udid else ""
         command = f"adb {s_udid} pull {source} {destination}"
         try:
             subprocess.run(command, check=True)
-            logger.debug(f"{inspect.currentframe().f_code.co_name} > True")
+            logger.info(f"{inspect.currentframe().f_code.co_name} > True")
             return True
         except subprocess.CalledProcessError as e:
             logger.error(f"{inspect.currentframe().f_code.co_name} > None")
@@ -164,12 +161,12 @@ class Adb:
             bool
                 True if the application was successfully installed, False otherwise.
         """
-        logger.debug(f"install() < {source=}")
+        logger.info(f"install() < {source=}")
         s_udid = f"-s {udid}" if udid else ""
         command = f"adb {s_udid} install -r {source}"
         try:
             subprocess.run(command, check=True)
-            logger.debug("install() > True")
+            logger.info("install() > True")
             return True
         except subprocess.CalledProcessError as e:
             logger.error(f"{inspect.currentframe().f_code.co_name} > None")
@@ -190,16 +187,16 @@ class Adb:
             bool
                 True if the application is installed, False otherwise.
         """
-        logger.debug(f"is_installed() < {package=}")
+        logger.info(f"is_installed() < {package=}")
 
         command = "adb shell pm list packages"
         try:
             result = subprocess.check_output(command, shell=True).decode().strip()
             # Фильтруем пакеты
             if any([line.strip().endswith(package) for line in result.splitlines()]):
-                logger.debug("install() > True")
+                logger.info("install() > True")
                 return True
-            logger.debug("install() > False")
+            logger.info("install() > False")
             return False
         except subprocess.CalledProcessError as e:
             logger.error(f"{inspect.currentframe().f_code.co_name} > None")
@@ -220,12 +217,12 @@ class Adb:
             bool
                 True, if the application was successfully removed, False otherwise.
         """
-        logger.debug(f"uninstall_app() < {package=}")
+        logger.info(f"uninstall_app() < {package=}")
 
         command = ['adb', 'uninstall', package]
         try:
             subprocess.run(command, check=True)
-            logger.debug("uninstall_app() > True")
+            logger.info("uninstall_app() > True")
             return True
         except subprocess.CalledProcessError as e:
             logger.error(f"{inspect.currentframe().f_code.co_name} > None")
@@ -248,12 +245,12 @@ class Adb:
             bool
                 True if the activity was successfully started, False otherwise.
         """
-        logger.debug(f"start_activity() < {package=}, {activity=}")
+        logger.info(f"start_activity() < {package=}, {activity=}")
 
         command = ['adb', 'shell', 'am', 'start', '-n', f'{package}/{activity}']
         try:
             subprocess.check_output(command)
-            logger.debug("start_activity() > True")
+            logger.info("start_activity() > True")
             return True
         except subprocess.CalledProcessError as e:
             logger.error(f"{inspect.currentframe().f_code.co_name} > None")
@@ -271,7 +268,7 @@ class Adb:
                 The name of the current activity if found, None otherwise.
         """
         # Вывод информации о запуске функции в лог
-        logger.debug("get_current_activity()")
+        logger.info("get_current_activity()")
 
         # Команда для ADB для получения информации о текущих окнах
         command = ['adb', 'shell', 'dumpsys', 'window', 'windows']
@@ -294,7 +291,7 @@ class Adb:
                     if match:
                         # Возвращаем найденное значение, исключая '/'
                         activity_name = match.group(1)
-                        logger.debug(f"get_current_activity() > {activity_name}")
+                        logger.info(f"get_current_activity() > {activity_name}")
                         return activity_name
 
             # Если не удалось найти активити, возвращаем None
@@ -316,7 +313,7 @@ class Adb:
                 The name of the current application package if found, None otherwise.
         """
         # Вывод информации о запуске функции в лог
-        logger.debug("get_current_app_package()")
+        logger.info("get_current_app_package()")
 
         # Команда для ADB для получения информации о текущих окнах
         command = ['adb', 'shell', 'dumpsys', 'window', 'windows']
@@ -339,7 +336,7 @@ class Adb:
                     if match:
                         # Возвращаем найденное значение
                         package_name = match.group(1)
-                        logger.debug(f"get_current_app_package() > {package_name}")
+                        logger.info(f"get_current_app_package() > {package_name}")
                         return package_name
 
             # Если не удалось найти имя пакета, возвращаем None
@@ -364,12 +361,12 @@ class Adb:
             bool
                 True if the application was successfully closed, False otherwise.
         """
-        logger.debug(f"close_app() < {package=}")
+        logger.info(f"close_app() < {package=}")
 
         command = ['adb', 'shell', 'am', 'force-stop', package]
         try:
             subprocess.run(command, check=True)
-            logger.debug("close_app() > True")
+            logger.info("close_app() > True")
             return True
         except subprocess.CalledProcessError as e:
             logger.error(f"{inspect.currentframe().f_code.co_name} > None")
@@ -392,7 +389,7 @@ class Adb:
             bool
                 True if the application was successfully rebooted, False otherwise.
         """
-        logger.debug(f"reboot_app() < {package=}, {activity=}")
+        logger.info(f"reboot_app() < {package=}, {activity=}")
 
         # Закрытие приложения
         if not Adb.close_app(package=package):
@@ -403,7 +400,7 @@ class Adb:
         if not Adb.start_activity(package=package, activity=activity):
             logger.error("reboot_app() > False")
             return False
-        logger.debug("reboot_app() > True")
+        logger.info("reboot_app() > True")
         return True
 
     @staticmethod
@@ -415,12 +412,12 @@ class Adb:
             bool
                 True if the home button press was successfully executed, False otherwise.
         """
-        logger.debug("press_home()")
+        logger.info("press_home()")
 
         command = ['adb', 'shell', 'input', 'keyevent', 'KEYCODE_HOME']
         try:
             subprocess.run(command, check=True)
-            logger.debug("press_home() > True")
+            logger.info("press_home() > True")
             return True
         except subprocess.CalledProcessError as e:
             logger.error(f"{inspect.currentframe().f_code.co_name} > None")
@@ -437,12 +434,12 @@ class Adb:
             bool
                 True if the back button press was successfully executed, False otherwise.
         """
-        logger.debug("press_back()")
+        logger.info("press_back()")
 
         command = ['adb', 'shell', 'input', 'keyevent', 'KEYCODE_BACK']
         try:
             subprocess.run(command, check=True)
-            logger.debug("press_back() > True")
+            logger.info("press_back() > True")
             return True
         except subprocess.CalledProcessError as e:
             logger.error(f"{inspect.currentframe().f_code.co_name} > None")
@@ -459,12 +456,12 @@ class Adb:
             bool
                 True if the menu button press was successfully executed, False otherwise.
         """
-        logger.debug("press_menu()")
+        logger.info("press_menu()")
 
         command = ['adb', 'shell', 'input', 'keyevent', 'KEYCODE_MENU']
         try:
             subprocess.run(command, check=True)
-            logger.debug("press_menu() > True")
+            logger.info("press_menu() > True")
             return True
         except subprocess.CalledProcessError as e:
             logger.error(f"{inspect.currentframe().f_code.co_name} > None")
@@ -485,12 +482,12 @@ class Adb:
             bool
                 True if the key press was successfully executed, False otherwise.
         """
-        logger.debug(f"input_keycode_num_() < {num=}")
+        logger.info(f"input_keycode_num_() < {num=}")
 
         command = ['adb', 'shell', 'input', 'keyevent', f'KEYCODE_NUMPAD_{num}']
         try:
             subprocess.run(command, check=True)
-            logger.debug("input_keycode_num_() > True")
+            logger.info("input_keycode_num_() > True")
             return True
         except subprocess.CalledProcessError as e:
             logger.error(f"{inspect.currentframe().f_code.co_name} > None")
@@ -511,12 +508,12 @@ class Adb:
             bool
                 True if the key press was successfully executed, False otherwise.
         """
-        logger.debug(f"input_keycode() < {keycode=}")
+        logger.info(f"input_keycode() < {keycode=}")
 
         command = ['adb', 'shell', 'input', 'keyevent', f'{keycode}']
         try:
             subprocess.run(command, check=True)
-            logger.debug("input_keycode() > True")
+            logger.info("input_keycode() > True")
             return True
         except subprocess.CalledProcessError as e:
             logger.error(f"{inspect.currentframe().f_code.co_name} > None")
@@ -539,12 +536,12 @@ class Adb:
             bool
                 True if the input was successfully executed, False otherwise.
         """
-        logger.debug(f"input_by_virtual_keyboard() < {text=}, {keyboard=}")
+        logger.info(f"input_by_virtual_keyboard() < {text=}, {keyboard=}")
         try:
             for char in text:
                 # Вызываем функцию tap с координатами, соответствующими символу char
                 Adb.tap(*keyboard[char])
-            logger.debug("input_by_virtual_keyboard() > True")
+            logger.info("input_by_virtual_keyboard() > True")
             return True
         except subprocess.CalledProcessError as e:
             logger.error(f"{inspect.currentframe().f_code.co_name} > None")
@@ -565,14 +562,14 @@ class Adb:
             bool
                 True if the text was successfully inputted, False otherwise.
         """
-        logger.debug(f"input_text() < {text=}")
+        logger.info(f"input_text() < {text=}")
 
         # Формируем команду для ввода текста с использованием ADB
         command = ['adb', 'shell', 'input', 'text', text]
         try:
             # Выполняем команду
             subprocess.run(command, check=True)
-            logger.debug("input_text() > True")
+            logger.info("input_text() > True")
             return True
         except subprocess.CalledProcessError as e:
             logger.error(f"{inspect.currentframe().f_code.co_name} > None")
@@ -595,13 +592,13 @@ class Adb:
             bool
                 True if the tap was successfully executed, False otherwise.
         """
-        logger.debug(f"tap() < {x=}, {y=}")
+        logger.info(f"tap() < {x=}, {y=}")
 
         # Формируем команду для выполнения нажатия по указанным координатам с использованием ADB
         command = ['adb', 'shell', 'input', 'tap', str(x), str(y)]
         try:
             subprocess.run(command, check=True)
-            logger.debug("tap() > True")
+            logger.info("tap() > True")
             return True
         except subprocess.CalledProcessError as e:
             logger.error(f"{inspect.currentframe().f_code.co_name} > None")
@@ -632,14 +629,14 @@ class Adb:
             bool
                 True if the swipe was successfully executed, False otherwise.
         """
-        logger.debug(f"swipe() < {start_x=}, {start_y=}, {end_x=}, {end_y=}, {duration=}")
+        logger.info(f"swipe() < {start_x=}, {start_y=}, {end_x=}, {end_y=}, {duration=}")
 
         # Формируем команду для выполнения свайпа с использованием ADB
         command = ['adb', 'shell', 'input', 'swipe', str(start_x), str(start_y), str(end_x), str(end_y), str(duration)]
         try:
             # Выполняем команду
             subprocess.run(command, check=True)
-            logger.debug("swipe() > True")
+            logger.info("swipe() > True")
             return True
         except subprocess.CalledProcessError as e:
             logger.error(f"{inspect.currentframe().f_code.co_name} > None")
@@ -660,7 +657,7 @@ class Adb:
             bool
                 True if the VPN connection is established with the specified IP address, False otherwise.
         """
-        logger.debug(f"check_vpn() < {ip_address=}")
+        logger.info(f"check_vpn() < {ip_address=}")
 
         # Определяем команду в виде строки
         command = "adb shell netstat"
@@ -672,9 +669,9 @@ class Adb:
             lines = output.stdout.split("\n")
             for line in lines:
                 if "ESTABLISHED" in line and ip_address in line:
-                    logger.debug("check_vpn() True")
+                    logger.info("check_vpn() True")
                     return True
-            logger.debug("check_vpn() False")
+            logger.info("check_vpn() False")
             return False
         except subprocess.CalledProcessError as e:
             logger.error(f"{inspect.currentframe().f_code.co_name} > None")
@@ -691,13 +688,13 @@ class Adb:
             bool
                 True if the logcat process was successfully stopped, False otherwise.
         """
-        logger.debug("stop_logcat()")
+        logger.info("stop_logcat()")
         if Adb.is_process_exist(name='logcat'):
             if Adb.kill_all(name='logcat'):
-                logger.debug("stop_logcat() > True")
+                logger.info("stop_logcat() > True")
                 return True
         logger.error("stop_logcat() > False")
-        logger.debug("stop_logcat() [Запущенного процесса logcat не обнаружено]")
+        logger.info("stop_logcat() [Запущенного процесса logcat не обнаружено]")
         return False
 
     @staticmethod
@@ -713,7 +710,7 @@ class Adb:
             bool
                 True if the process is running, False otherwise.
         """
-        logger.debug(f"is_process_exist() < {name=}")
+        logger.info(f"is_process_exist() < {name=}")
         command = ['adb', 'shell', 'ps']
         try:
             processes = subprocess.check_output(command, shell=True).decode().strip()
@@ -734,10 +731,10 @@ class Adb:
                 _, process_name = columns[1], columns[8]
                 # Сравнение имени процесса с искомым именем
                 if name == process_name:
-                    logger.debug("is_process_exist() > True")
+                    logger.info("is_process_exist() > True")
                     return True
         # Возврат None, если процесс с заданным именем не найден
-        logger.debug("is_process_exist() > False")
+        logger.info("is_process_exist() > False")
         return False
 
     @staticmethod
@@ -755,7 +752,7 @@ class Adb:
             bool
                 True if the process was successfully started and exists, False otherwise.
         """
-        logger.debug(f"run_background_process() < {command=}")
+        logger.info(f"run_background_process() < {command=}")
 
         command = f"{command} nohup > /dev/null 2>&1 &"
         try:
@@ -764,7 +761,7 @@ class Adb:
                 time.sleep(1)
                 if not Adb.is_process_exist(name=process):
                     return False
-            logger.debug("run_background_process() > True")
+            logger.info("run_background_process() > True")
             return True
         except subprocess.CalledProcessError as e:
             logger.error(f"{inspect.currentframe().f_code.co_name} > None")
@@ -781,7 +778,7 @@ class Adb:
             bool
                 True if the ADB server was successfully reloaded, False otherwise.
         """
-        logger.debug("reload_adb()")
+        logger.info("reload_adb()")
 
         try:
             command = ['adb', 'kill-server']
@@ -801,7 +798,7 @@ class Adb:
             traceback_info = "".join(traceback.format_tb(sys.exc_info()[2]))
             logger.error(f"{sys.exc_info()[0]}\n{traceback_info}{sys.exc_info()[1]}")
             return False
-        logger.debug("reload_adb() > True")
+        logger.info("reload_adb() > True")
         return True
 
     @staticmethod
@@ -817,7 +814,7 @@ class Adb:
             Union[int, None]
                 The PID of the process if found, None otherwise.
         """
-        logger.debug(f"know_pid() < {name=}")
+        logger.info(f"know_pid() < {name=}")
         command = ['adb', 'shell', 'ps']
         try:
             processes = subprocess.check_output(command, shell=True).decode().strip()
@@ -838,7 +835,7 @@ class Adb:
                 pid, process_name = columns[1], columns[8]
                 # Сравнение имени процесса с искомым именем
                 if name == process_name:
-                    logger.debug(f"know_pid() > {pid=}")
+                    logger.info(f"know_pid() > {pid=}")
                     return int(pid)
         # Возврат None, если процесс с заданным именем не найден
         logger.error("know_pid() > None")
@@ -858,7 +855,7 @@ class Adb:
             bool
                 True if the process was successfully terminated, False otherwise.
         """
-        logger.debug(f"kill_by_pid() < {pid=}")
+        logger.info(f"kill_by_pid() < {pid=}")
 
         command = ['adb', 'shell', 'kill', '-s', 'SIGINT', str(pid)]
         try:
@@ -868,7 +865,7 @@ class Adb:
             traceback_info = "".join(traceback.format_tb(sys.exc_info()[2]))
             logger.error(f"{sys.exc_info()[0]}\n{traceback_info}{sys.exc_info()[1]}")
             return False
-        logger.debug("kill_by_pid() > True")
+        logger.info("kill_by_pid() > True")
         return True
 
     @staticmethod
@@ -884,7 +881,7 @@ class Adb:
             bool
                 True if the process was successfully terminated, False otherwise.
         """
-        logger.debug(f"kill_by_name() < {name=}")
+        logger.info(f"kill_by_name() < {name=}")
 
         command = ['adb', 'shell', 'pkill', '-l', 'SIGINT', str(name)]
         try:
@@ -894,7 +891,7 @@ class Adb:
             traceback_info = "".join(traceback.format_tb(sys.exc_info()[2]))
             logger.error(f"{sys.exc_info()[0]}\n{traceback_info}{sys.exc_info()[1]}")
             return False
-        logger.debug("kill_by_name() > True")
+        logger.info("kill_by_name() > True")
         return True
 
     @staticmethod
@@ -910,7 +907,7 @@ class Adb:
             bool
                 True if the processes were successfully terminated, False otherwise.
         """
-        logger.debug(f"kill_all() < {name=}")
+        logger.info(f"kill_all() < {name=}")
 
         command = ['adb', 'shell', 'pkill', '-f', str(name)]
         try:
@@ -920,7 +917,7 @@ class Adb:
             traceback_info = "".join(traceback.format_tb(sys.exc_info()[2]))
             logger.error(f"{sys.exc_info()[0]}\n{traceback_info}{sys.exc_info()[1]}")
             return False
-        logger.debug("kill_all() > True")
+        logger.info("kill_all() > True")
         return True
 
     @staticmethod
@@ -936,7 +933,7 @@ class Adb:
             bool
                 True if the files were successfully deleted, False otherwise.
         """
-        logger.debug(f"delete_files_from_internal_storage() < {path=}")
+        logger.info(f"delete_files_from_internal_storage() < {path=}")
 
         command = ['adb', 'shell', 'rm', '-rf', f'{path}*']
         try:
@@ -946,7 +943,7 @@ class Adb:
             traceback_info = "".join(traceback.format_tb(sys.exc_info()[2]))
             logger.error(f"{sys.exc_info()[0]}\n{traceback_info}{sys.exc_info()[1]}")
             return False
-        logger.debug("delete_files_from_internal_storage() > True")
+        logger.info("delete_files_from_internal_storage() > True")
         return True
 
     @staticmethod
@@ -967,7 +964,7 @@ class Adb:
             bool
                 True if the videos were successfully pulled and deleted (if specified), False otherwise.
         """
-        logger.debug(f"pull_video() < {destination=}")
+        logger.info(f"pull_video() < {destination=}")
 
         if not source:
             source = '/sdcard/Movies/'
@@ -995,7 +992,7 @@ class Adb:
                 logger.error(f"{sys.exc_info()[0]}\n{traceback_info}{sys.exc_info()[1]}")
                 return False
 
-            logger.debug("pull_video() > True")
+            logger.info("pull_video() > True")
         return True
 
     @staticmethod
@@ -1007,7 +1004,7 @@ class Adb:
             bool
                 True if the video recording was successfully stopped, False otherwise.
         """
-        logger.debug("stop_video()")
+        logger.info("stop_video()")
 
         command = ['adb', 'shell', 'pkill', '-l', 'SIGINT', 'screenrecord']
         try:
@@ -1017,7 +1014,7 @@ class Adb:
             traceback_info = "".join(traceback.format_tb(sys.exc_info()[2]))
             logger.error(f"{sys.exc_info()[0]}\n{traceback_info}{sys.exc_info()[1]}")
             return False
-        logger.debug("stop_video() > True")
+        logger.info("stop_video() > True")
         return True
 
     @staticmethod
@@ -1036,7 +1033,7 @@ class Adb:
             Union[subprocess.Popen[bytes], subprocess.Popen[Union[Union[str, bytes], Any]]]
                 The Popen object representing the running video recording process if successful, None otherwise.
         """
-        logger.debug(f"record_video() < {filename}")
+        logger.info(f"record_video() < {filename}")
         if path.endswith('/'):
             path = path[:-1]
         if filename.endswith('.mp4'):
@@ -1092,7 +1089,7 @@ class Adb:
             bool
                 True if the reboot command was successfully executed, False otherwise.
         """
-        logger.debug("reboot()")
+        logger.info("reboot()")
 
         command = ['adb', 'shell', 'reboot']
         try:
@@ -1102,7 +1099,7 @@ class Adb:
             traceback_info = "".join(traceback.format_tb(sys.exc_info()[2]))
             logger.error(f"{sys.exc_info()[0]}\n{traceback_info}{sys.exc_info()[1]}")
             return False
-        logger.debug("reboot() > True")
+        logger.info("reboot() > True")
         return True
 
     @staticmethod
@@ -1114,7 +1111,7 @@ class Adb:
             Union[Tuple[int, int], None]
                 A tuple containing the width and height of the screen in pixels if successful, None otherwise.
         """
-        logger.debug("get_screen_resolution()")
+        logger.info("get_screen_resolution()")
 
         command = ['adb', 'shell', 'wm', 'size']
         try:
@@ -1122,7 +1119,7 @@ class Adb:
             if "Physical size" in output:
                 resolution_str = output.split(":")[1].strip()
                 width, height = resolution_str.split("x")
-                logger.debug(f"get_screen_resolution() > {width=}, {height=}")
+                logger.info(f"get_screen_resolution() > {width=}, {height=}")
                 return int(width), int(height)
             logger.error(f"Unexpected output from adb: {output}")
         except (subprocess.CalledProcessError, ValueError) as e:
@@ -1159,6 +1156,6 @@ class Adb:
             str
                 The output of the executed command as a string.
         """
-        logger.debug(f"execute() < {command}")
+        logger.info(f"execute() < {command}")
         execute_command = ['adb', *command.split()]
         return subprocess.check_output(execute_command).decode()
