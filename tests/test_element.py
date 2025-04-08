@@ -177,9 +177,13 @@ class TestElement:
         assert phone_info_title.get_attribute('text') == 'App info'
         assert phone_info_storage.get_attribute('text') == 'Storage & cache'
 
-    @pytest.mark.skip(reason="Not implemented yet")
     def test_click_double(self, app: Shadowstep):
-        ...
+        search = app.get_element(locator={'resource-id': 'com.android.quicksearchbox:id/search_widget_text'})
+        search.click_double()
+        time.sleep(5)
+        search_src_text = app.get_element(locator={'resource-id': 'com.android.quicksearchbox:id/search_src_text'})
+        app.terminal.past_text(text="some_text")
+        assert 'some_text' in search_src_text.get_attribute('text')
 
     @pytest.mark.skip(reason="Not implemented yet")
     def test_click_and_move(self, app: Shadowstep):
