@@ -10,7 +10,7 @@ import xml.etree.ElementTree as ET
 from appium.webdriver import WebElement
 from icecream import ic
 from selenium.common import NoSuchDriverException, InvalidSessionIdException, WebDriverException, \
-    StaleElementReferenceException
+    StaleElementReferenceException, NoSuchElementException
 from selenium.types import WaitExcTypes
 from selenium.webdriver import ActionChains
 from selenium.webdriver.common.actions import interaction
@@ -57,19 +57,19 @@ class Element(ElementBase):
 
     def get_element(self,
                     locator: Union[Tuple, Dict[str, str]],
-                    timeout: int = 3,
+                    timeout: int = 30,
                     poll_frequency: float = 0.5,
                     ignored_exceptions: Optional[WaitExcTypes] = None,
                     contains: bool = False) -> Union['Element', None]:
         self.logger.info(f"{inspect.currentframe().f_code.co_name}")
         try:
             self._get_driver()
-            locator = self.handle_locator(locator, contains)
+            locator = self.handle_locator(locator, self.contains)
             current_element = self._get_element(locator=self.locator,
                                                 timeout=self.timeout,
                                                 poll_frequency=self.poll_frequency,
                                                 ignored_exceptions=self.ignored_exceptions,
-                                                contains=contains)
+                                                contains=self.contains)
             inner_element = current_element.find_element(*locator)
             return Element(locator=inner_element,
                            base=self.base,
@@ -88,16 +88,26 @@ class Element(ElementBase):
 
     def get_elements(self,
                      locator: Union[Tuple, Dict[str, str], str] = None,
+                     timeout: int = 30,
                      contains: bool = False) -> Union[typing.List['Element'], None]:
         self.logger.info(f"{inspect.currentframe().f_code.co_name}")
         try:
             self._get_driver()
             locator = self.handle_locator(locator, contains)
-            current_element = self._get_element(locator=self.locator)
+            current_element = self._get_element(locator=self.locator,
+                                                timeout=self.timeout,
+                                                poll_frequency=self.poll_frequency,
+                                                ignored_exceptions=self.ignored_exceptions,
+                                                contains=self.contains)
             inner_elements = current_element.find_elements(*locator)
             elements = []
             for element in inner_elements:
-                elements.append(Element(element, self.base))
+                elements.append(Element(locator=element,
+                                        base=self.base,
+                                        timeout=timeout,
+                                        poll_frequency=self.poll_frequency,
+                                        ignored_exceptions=self.ignored_exceptions,
+                                        contains=contains))
             return elements
         except NoSuchDriverException:
             self.logger.error(f"{inspect.currentframe().f_code.co_name} NoSuchDriverException")
@@ -109,10 +119,10 @@ class Element(ElementBase):
             return None
 
     def get_attributes(self,
-                       desired_attributes: typing.List[str] = None,
-                       tries: int = 3) -> Dict[str, str]:
+                       desired_attributes: typing.List[str] = None) -> Optional[Dict[str, str]]:
         self.logger.info(f"{inspect.currentframe().f_code.co_name}")
-        for _ in range(tries):
+        start_time = time.time()
+        while time.time() - start_time < self.timeout:
             try:
                 self._get_driver()
                 # Инициализация пустого словаря для хранения атрибутов
@@ -155,6 +165,7 @@ class Element(ElementBase):
                 return result
             except StaleElementReferenceException:
                 continue
+        return None
 
     def tap(self, duration: Optional[int] = None) -> Union['Element', None]:
         self.logger.info(f"{inspect.currentframe().f_code.co_name}")
@@ -162,8 +173,7 @@ class Element(ElementBase):
         while time.time() - start_time < self.timeout:
             try:
                 self._get_driver()
-                element = self._get_element(locator=self.locator)
-                x, y = self.get_center(element)
+                x, y = self.get_center()
                 if x is None or y is None:
                     continue
                 self.driver.tap(positions=[(x, y)], duration=duration)
@@ -194,8 +204,7 @@ class Element(ElementBase):
                 self._get_driver()
 
                 # Получение координат центра исходного элемента
-                element = self._get_element(locator=self.locator)
-                x1, y1 = self.get_center(element)
+                x1, y1 = self.get_center()
 
                 # Настройка жеста
                 actions = ActionChains(self.driver)
@@ -357,10 +366,17 @@ class Element(ElementBase):
     # swipe
     # https://github.com/appium/appium-uiautomator2-driver/blob/master/docs/android-mobile-gestures.md#mobile-swipegesture
 
-    def get_center(self, element: WebElement) -> Union[Tuple[int, int], None]:
+    def get_center(self, element: WebElement = None) -> Union[Tuple[int, int], None]:
         self.logger.info(f"{inspect.currentframe().f_code.co_name}")
         try:
-            left, top, right, bottom = self.get_coordinates(element)
+            if element is None:
+                left, top, right, bottom = self.get_coordinates(self._get_element(locator=self.locator,
+                                                                                  timeout=self.timeout,
+                                                                                  poll_frequency=self.poll_frequency,
+                                                                                  ignored_exceptions=self.ignored_exceptions,
+                                                                                  contains=self.contains))
+            else:
+                left, top, right, bottom = self.get_coordinates(element)
             # Расчет координат центра элемента
             x = int((left + right) / 2)
             y = int((top + bottom) / 2)
@@ -392,33 +408,51 @@ class Element(ElementBase):
 
     ################ override from appium/webdriver/webelement.py
 
+    def is_within_screen(self) -> bool:
+        self.logger.info(f"{inspect.currentframe().f_code.co_name}")
+        start_time = time.time()
+        while time.time() - start_time < self.timeout:
+            try:
+                screen_size = self.base.terminal.get_screen_resolution()  # Получаем размеры экрана
+                screen_width = screen_size[0]  # Ширина экрана
+                screen_height = screen_size[1]  # Высота экрана
+                current_element = self._get_element(locator=self.locator,
+                                                    timeout=self.timeout,
+                                                    poll_frequency=self.poll_frequency,
+                                                    ignored_exceptions=self.ignored_exceptions,
+                                                    contains=self.contains)
+                if current_element is None:
+                    return False
+                if not current_element.get_attribute('displayed') == 'true':
+                    # Если элемент не отображается на экране
+                    return False
+                element_location = current_element.location  # Получаем координаты элемента
+                element_size = current_element.size  # Получаем размеры элемента
+                if (
+                        element_location['y'] + element_size['height'] > screen_height or
+                        element_location['x'] + element_size['width'] > screen_width or
+                        element_location['y'] < 0 or
+                        element_location['x'] < 0
+                ):
+                    # Если элемент находится за пределами экрана
+                    return False
+                # Если элемент находится на экране
+                return True
+            except NoSuchElementException:
+                return False
+            except NoSuchDriverException as error:
+                self._handle_driver_error(error)
+            except InvalidSessionIdException as error:
+                self._handle_driver_error(error)
+            except AttributeError as error:
+                self._handle_driver_error(error)
+        raise GeneralElementException(
+            msg=f"Failed to {inspect.currentframe().f_code.co_name} within {self.timeout=}",
+            stacktrace=traceback.format_stack()
+        )
+
     # Override
     def get_attribute(self, name: str) -> Optional[Union[str, Dict]]:
-        """Gets the given attribute or property of the element.
-
-        Override for Appium
-
-        This method will first try to return the value of a property with the
-        given name. If a property with that name doesn't exist, it returns the
-        value of the attribute with the same name. If there's no attribute with
-        that name, ``None`` is returned.
-
-        Values which are considered truthy, that is equals "true" or "false",
-        are returned as booleans.  All other non-``None`` values are returned
-        as strings.  For attributes or properties which do not exist, ``None``
-        is returned.
-
-        Args:
-            name: Name of the attribute/property to retrieve.
-
-        Usage:
-            # Check if the "active" CSS class is applied to an element.
-
-            is_active = "active" in target_element.get_attribute("class")
-
-        Returns:
-            The given attribute or property of the element
-        """
         self.logger.info(f"{inspect.currentframe().f_code.co_name}")
         try:
             self._get_driver()
@@ -432,10 +466,6 @@ class Element(ElementBase):
             self.base.reconnect()
             return None
         except InvalidSessionIdException as error:
-            self.logger.error(f"{inspect.currentframe().f_code.co_name} {error}")
-            self.base.reconnect()
-            return None
-        except WebDriverException as error:
             self.logger.error(f"{inspect.currentframe().f_code.co_name} {error}")
             self.base.reconnect()
             return None

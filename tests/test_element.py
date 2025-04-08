@@ -186,7 +186,31 @@ class TestElement:
         assert 'some_text' in search_src_text.get_attribute('text')
 
     def test_drag(self, app: Shadowstep):
-        ...
+        phone = app.get_element(locator={"content-desc": "Phone"}).tap_and_move(x=100, y=500)
+        time.sleep(3)
+        dev_settings = app.get_element(locator={"content-desc": "Dev Settings"})
+        end_x, end_y = phone.get_center()
+        dev_settings.drag(end_x=end_x, end_y=end_y)
+        search = app.get_element(locator={'resource-id': 'com.android.quicksearchbox:id/search_widget_text'})
+        assert 'com.android.quicksearchbox' in search.get_attribute('package')
+        end_x, end_y = search.get_center()
+        dev_settings.drag(end_x=end_x, end_y=end_y)
+        time.sleep(5)
+        try:
+            attr_text = dev_settings.get_attribute('text')
+            assert False
+        except NoSuchElementException:
+            assert True
+
+    def test_is_within_screen(self, app: Shadowstep):
+        phone = app.get_element(locator={"content-desc": "Phone"}, timeout=5)
+        search = app.get_element(locator={'resource-id': 'com.android.quicksearchbox:id/search_widget_text'}, timeout=5)
+        assert search.is_within_screen() is True
+        assert phone.is_within_screen() is True
+        phone.tap()
+        time.sleep(3)
+        assert phone.is_within_screen() is False
+        assert search.is_within_screen() is False
 
     @pytest.mark.skip(reason="Not implemented yet")
     def test_scroll_down(self, app: Shadowstep):
