@@ -185,8 +185,7 @@ class TestElement:
         app.terminal.past_text(text="some_text")
         assert 'some_text' in search_src_text.get_attribute('text')
 
-    @pytest.mark.skip(reason="Not implemented yet")
-    def test_click_and_move(self, app: Shadowstep):
+    def test_drag(self, app: Shadowstep):
         ...
 
     @pytest.mark.skip(reason="Not implemented yet")

@@ -283,8 +283,27 @@ class Element(ElementBase):
             stacktrace=traceback.format_stack()
         )
 
-    def drag(self):
+    def drag(self, end_x: int, end_y: int, speed: int = 2500):
         self.logger.info(f"{inspect.currentframe().f_code.co_name}")
+        start_time = time.time()
+        while time.time() - start_time < self.timeout:
+            try:
+                self._get_driver()
+                self._get_element(locator=self.locator)
+                self._mobile_gesture('mobile: dragGesture', {'elementId': self.id,
+                                                             'endX': end_x, 'endY': end_y,
+                                                             'speed': speed})
+                return cast('Element', self)
+            except NoSuchDriverException as error:
+                self._handle_driver_error(error)
+            except InvalidSessionIdException as error:
+                self._handle_driver_error(error)
+            except AttributeError as error:
+                self._handle_driver_error(error)
+        raise GeneralElementException(
+            msg=f"Failed to {inspect.currentframe().f_code.co_name} within {self.timeout=}",
+            stacktrace=traceback.format_stack()
+        )
 
     # flinggesture
     # https://github.com/appium/appium-uiautomator2-driver/blob/master/docs/android-mobile-gestures.md#mobile-flinggesture
