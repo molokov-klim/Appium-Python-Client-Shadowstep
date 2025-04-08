@@ -127,16 +127,58 @@ class TestElement:
             assert inner_element.get_attribute('class') == 'android.widget.TextView'
         app.adb.press_home()
 
-    @pytest.mark.skip(reason="Not implemented yet")
     def test_get_attributes(self, app: Shadowstep):
-        ...
+        element = app.get_element(locator={'package': 'com.android.launcher3',
+                                           'class': 'android.view.ViewGroup',
+                                           'resource-id': 'com.android.launcher3:id/hotseat',
+                                           })
+        attrs = element.get_attributes()
+        assert isinstance(attrs, dict)
+        assert 'bounds' in attrs.keys()
 
-    @pytest.mark.skip(reason="Not implemented yet")
-    def test_tap_and_move(self, app: Shadowstep):
-        ...
+    @pytest.mark.parametrize("params", [
+        {"x": 100, "y": 500},  # Прямые координаты
+        {"locator": {"package": "com.android.quicksearchbox",
+                     'class': 'android.widget.TextView',
+                     'resource-id': 'com.android.quicksearchbox:id/search_widget_text'}},  # Локатор
+        {"direction": 0, "distance": 1000},  # Вверх
+    ])
+    def test_tap_and_move(self, app: Shadowstep, params):
+        element = app.get_element(locator={"content-desc": "Phone"})
+        target_element = app.get_element(locator={'resource-id': 'com.android.launcher3:id/search_container_all_apps'})
+        element.tap_and_move(**params)
+        time.sleep(5)
+        assert 'Search apps' in target_element.get_attribute(name='text')
+        assert isinstance(element, Element)
 
-    @pytest.mark.skip(reason="Not implemented yet")
     def test_click(self, app: Shadowstep):
+        element = app.get_element(locator={'content-desc': 'Phone'})
+        element.click()
+        time.sleep(3)
+        response = str(subprocess.check_output('adb shell "dumpsys window windows | grep -E \'mSurface\'"'))
+        assert "com.android.dialer" in response
+
+    def test_click_duration(self, app: Shadowstep):
+        phone = app.get_element(locator={'content-desc': 'Phone'})
+        phone.click(duration=3000)
+        bubble = app.get_element(locator={'package': 'com.android.launcher3',
+                                          'class': 'android.widget.TextView',
+                                          'text': 'App info',
+                                          'resource-id': 'com.android.launcher3:id/bubble_text'})
+        bubble.click()
+        time.sleep(3)
+        phone_info_title = app.get_element(locator={'package': 'com.android.settings',
+                                                    'class': 'android.widget.TextView',
+                                                    'text': 'App info'})
+        phone_info_storage = app.get_element(locator={'package': 'com.android.settings',
+                                                      'class': 'android.widget.TextView',
+                                                      'text': 'Storage & cache',
+                                                      'resource-id': 'android:id/title'})
+        assert phone_info_title.get_attribute('text') == 'App info'
+        assert phone_info_storage.get_attribute('text') == 'Storage & cache'
+
+    @pytest.mark.skip(reason="Not implemented yet")
+    def test_click_double(self, app: Shadowstep):
         ...
 
     @pytest.mark.skip(reason="Not implemented yet")

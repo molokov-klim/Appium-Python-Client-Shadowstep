@@ -5,13 +5,21 @@ import traceback
 import typing
 from typing import Union, Tuple, Dict, Optional, cast
 
+import xml.etree.ElementTree as ET
+
 from appium.webdriver import WebElement
 from icecream import ic
-from selenium.common import NoSuchDriverException, InvalidSessionIdException, WebDriverException
+from selenium.common import NoSuchDriverException, InvalidSessionIdException, WebDriverException, \
+    StaleElementReferenceException
 from selenium.types import WaitExcTypes
+from selenium.webdriver import ActionChains
+from selenium.webdriver.common.actions import interaction
+from selenium.webdriver.common.actions.action_builder import ActionBuilder
+from selenium.webdriver.common.actions.pointer_input import PointerInput
 from selenium.webdriver.remote.shadowroot import ShadowRoot
 
 from shadowstep.element.base import ElementBase
+from shadowstep.utils.utils import find_coordinates_by_vector
 
 # Configure the root logger (basic configuration)
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
@@ -100,9 +108,53 @@ class Element(ElementBase):
             self.base.reconnect()
             return None
 
-    def get_attributes(self):
+    def get_attributes(self,
+                       desired_attributes: typing.List[str] = None,
+                       tries: int = 3) -> Dict[str, str]:
         self.logger.info(f"{inspect.currentframe().f_code.co_name}")
-        raise NotImplementedError
+        for _ in range(tries):
+            try:
+                self._get_driver()
+                # Инициализация пустого словаря для хранения атрибутов
+                result = {}
+
+                # Если desired_attributes не указан, установка значения 'all'
+                if not desired_attributes:
+                    desired_attributes = 'all'
+
+                # Если desired_attributes не указан, установка значения 'all'
+                root = ET.fromstring(self.driver.page_source)
+
+                # Поиск требуемого элемента по критериям атрибутов
+                found_element = None
+                for element in root.iter():
+                    if 'bounds' in element.attrib and 'class' in element.attrib:
+                        if self.get_attribute('bounds') == element.attrib['bounds'] and self.get_attribute('class') == \
+                                element.attrib['class']:
+                            found_element = element
+                            break
+
+                # Если элемент найден, получение его атрибутов
+                if found_element is not None:
+                    attributes = found_element.attrib
+                    # Сохранение атрибутов в словаре result
+                    for attribute_name, attribute_value in attributes.items():
+                        result[attribute_name] = attribute_value
+
+                # Если desired_attributes указан, фильтрация словаря result
+                if desired_attributes:
+                    new_result = {}
+                    for attribute in desired_attributes:
+                        if attribute not in result:
+                            # Возврат всех атрибутов если не найден искомый
+                            return result
+                        new_result[attribute] = result[attribute]
+                    # Возврат отфильтрованных атрибутов
+                    return new_result
+                # Возврат всех атрибутов
+                return result
+            except StaleElementReferenceException:
+                continue
 
     def tap(self, duration: Optional[int] = None, timeout: int = 30) -> Union['Element', None]:
         self.logger.info(f"{inspect.currentframe().f_code.co_name}")
@@ -123,20 +175,96 @@ class Element(ElementBase):
             except AttributeError as error:
                 self._handle_driver_error(error)
         raise GeneralElementException(
-            msg="Failed to tap the element within timeout.",
+            msg=f"Failed to tap the element within timeout\n{duration}\n{timeout}",
             stacktrace=traceback.format_stack()
         )
 
-    def tap_and_move(self):
-        # https://github.com/appium/appium-uiautomator2-driver/blob/master/docs/android-mobile-gestures.md#mobile-draggesture
+    def tap_and_move(
+            self,
+            locator: Union[Tuple, WebElement, 'Element', Dict[str, str], str] = None,
+            x: int = None,
+            y: int = None,
+            direction: int = None,
+            distance: int = None,
+    ) -> Union['Element', None]:
         self.logger.info(f"{inspect.currentframe().f_code.co_name}")
+        start_time = time.time()
+        while time.time() - start_time < self.timeout:
+            try:
+                self._get_driver()
 
-    def click(self):
-        # https://github.com/appium/appium-uiautomator2-driver/blob/master/docs/android-mobile-gestures.md#mobile-clickgesture
+                # Получение координат центра исходного элемента
+                element = self._get_element(locator=self.locator)
+                x1, y1 = self.get_center(element)
+
+                # Настройка жеста
+                actions = ActionChains(self.driver)
+                actions.w3c_actions = ActionBuilder(self.driver, mouse=PointerInput(interaction.POINTER_TOUCH, "touch"))
+                actions.w3c_actions.pointer_action.move_to_location(x1, y1)
+                actions.w3c_actions.pointer_action.pointer_down()
+
+                # === Прямое указание координат ===
+                if x is not None and y is not None:
+                    actions.w3c_actions.pointer_action.move_to_location(x, y)
+                    actions.w3c_actions.pointer_action.pointer_up()
+                    actions.perform()
+                    return cast('Element', self)
+
+                # === Перемещение к другому элементу ===
+                if locator is not None:
+                    target_element = self._get_element(locator=locator)
+                    x, y = self.get_center(target_element)
+                    actions.w3c_actions.pointer_action.move_to_location(x, y)
+                    actions.w3c_actions.pointer_action.pointer_up()
+                    actions.perform()
+                    return cast('Element', self)
+                # === Перемещение по вектору направления ===
+                if direction is not None and distance is not None:
+                    width, height = self.base.terminal.get_screen_resolution()
+                    x2, y2 = find_coordinates_by_vector(width=width, height=height,
+                                                        direction=direction, distance=distance,
+                                                        start_x=x1, start_y=y1)
+                    actions.w3c_actions.pointer_action.move_to_location(x2, y2)
+                    actions.w3c_actions.pointer_action.pointer_up()
+                    actions.perform()
+                    return cast('Element', self)
+            except NoSuchDriverException as error:
+                self._handle_driver_error(error)
+            except InvalidSessionIdException as error:
+                self._handle_driver_error(error)
+            except AttributeError as error:
+                self._handle_driver_error(error)
+        # === Недостаточно данных для действия ===
+        raise GeneralElementException(
+            msg=f"No valid parameters provided\n{locator=}\n{x=}\n{y=}\n{direction}\n{distance}\n",
+            stacktrace=traceback.format_stack()
+        )
+
+    def click(self, timeout: int = 30, duration: int = None):
         self.logger.info(f"{inspect.currentframe().f_code.co_name}")
-
-    # longclickgesture
-    # https://github.com/appium/appium-uiautomator2-driver/blob/master/docs/android-mobile-gestures.md#mobile-longclickgesture
+        start_time = time.time()
+        while time.time() - start_time < timeout:
+            try:
+                self._get_driver()
+                element = self._get_element(locator=self.locator)
+                x, y = self.get_center(element)
+                if x is None or y is None:
+                    continue
+                if duration is None:
+                    self._mobile_gesture('mobile: clickGesture', {'x': x, 'y': y})
+                else:
+                    self._mobile_gesture('mobile: longClickGesture', {'x': x, 'y': y, 'duration': duration})
+                return cast('Element', self)
+            except NoSuchDriverException as error:
+                self._handle_driver_error(error)
+            except InvalidSessionIdException as error:
+                self._handle_driver_error(error)
+            except AttributeError as error:
+                self._handle_driver_error(error)
+        raise GeneralElementException(
+            msg=f"Failed to click the element within timeout\n{timeout}",
+            stacktrace=traceback.format_stack()
+        )
 
     # double click
     # https://github.com/appium/appium-uiautomator2-driver/blob/master/docs/android-mobile-gestures.md#mobile-doubleclickgesture
@@ -532,12 +660,15 @@ class Element(ElementBase):
         self.base.reconnect()
         time.sleep(0.3)
 
-    def _mobile_gesture(self, name: str, params: dict) -> None:
-        self.driver.execute_script(f"mobile:{name}", params)
+    def _mobile_gesture(self, name: str, params: Union[dict, list]) -> None:
+        self.driver.execute_script(name, params)
 
     def _ensure_session_alive(self) -> None:
         try:
             self._get_driver()
-        except (NoSuchDriverException, InvalidSessionIdException):
+        except NoSuchDriverException:
+            self.logger.warning("Reconnecting driver due to session issue")
+            self.base.reconnect()
+        except InvalidSessionIdException:
             self.logger.warning("Reconnecting driver due to session issue")
             self.base.reconnect()
