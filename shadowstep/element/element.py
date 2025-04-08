@@ -112,19 +112,16 @@ class Element(ElementBase):
                 self._get_driver()
                 element = self._get_element(locator=self.locator)
                 x, y = self.get_center(element)
-                if (x, y) is None:
+                if x is None or y is None:
                     continue
                 self.driver.tap(positions=[(x, y)], duration=duration)
                 return cast('Element', self)
             except NoSuchDriverException as error:
-                self.logger.error(f"{inspect.currentframe().f_code.co_name} {error}")
-                self.base.reconnect()
+                self._handle_driver_error(error)
             except InvalidSessionIdException as error:
-                self.logger.error(f"{inspect.currentframe().f_code.co_name} {error}")
-                self.base.reconnect()
+                self._handle_driver_error(error)
             except AttributeError as error:
-                self.logger.error(f"{inspect.currentframe().f_code.co_name} {error}")
-                self.base.reconnect()
+                self._handle_driver_error(error)
         raise GeneralElementException(
             msg="Failed to tap the element within timeout.",
             stacktrace=traceback.format_stack()
@@ -533,3 +530,14 @@ class Element(ElementBase):
     def _handle_driver_error(self, error: Exception):
         self.logger.error(f"{inspect.currentframe().f_code.co_name} {error}")
         self.base.reconnect()
+        time.sleep(0.3)
+
+    def _mobile_gesture(self, name: str, params: dict) -> None:
+        self.driver.execute_script(f"mobile:{name}", params)
+
+    def _ensure_session_alive(self) -> None:
+        try:
+            self._get_driver()
+        except (NoSuchDriverException, InvalidSessionIdException):
+            self.logger.warning("Reconnecting driver due to session issue")
+            self.base.reconnect()

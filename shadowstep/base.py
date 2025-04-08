@@ -1,6 +1,7 @@
 import gc
 import json
 import time
+import typing
 
 import requests
 import inspect
@@ -18,6 +19,14 @@ from selenium.common.exceptions import NoSuchDriverException, WebDriverException
 from shadowstep.terminal.adb import Adb
 from shadowstep.terminal.terminal import Terminal
 from shadowstep.terminal.transport import Transport
+
+
+class AppiumDisconnectedError(Exception):
+    def __init__(
+            self, msg: Optional[str] = None, screen: Optional[str] = None,
+            stacktrace: Optional[typing.Sequence[str]] = None
+    ) -> None:
+        super().__init__(msg, screen, stacktrace)
 
 
 class WebDriverSingleton(WebDriver):
