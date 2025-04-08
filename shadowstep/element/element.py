@@ -156,10 +156,10 @@ class Element(ElementBase):
             except StaleElementReferenceException:
                 continue
 
-    def tap(self, duration: Optional[int] = None, timeout: int = 30) -> Union['Element', None]:
+    def tap(self, duration: Optional[int] = None) -> Union['Element', None]:
         self.logger.info(f"{inspect.currentframe().f_code.co_name}")
         start_time = time.time()
-        while time.time() - start_time < timeout:
+        while time.time() - start_time < self.timeout:
             try:
                 self._get_driver()
                 element = self._get_element(locator=self.locator)
@@ -175,7 +175,7 @@ class Element(ElementBase):
             except AttributeError as error:
                 self._handle_driver_error(error)
         raise GeneralElementException(
-            msg=f"Failed to tap the element within timeout\n{duration}\n{timeout}",
+            msg=f"Failed to {inspect.currentframe().f_code.co_name} within {self.timeout=}\n{duration}",
             stacktrace=traceback.format_stack()
         )
 
@@ -236,7 +236,7 @@ class Element(ElementBase):
                 self._handle_driver_error(error)
         # === Недостаточно данных для действия ===
         raise GeneralElementException(
-            msg=f"No valid parameters provided\n{locator=}\n{x=}\n{y=}\n{direction}\n{distance}\n",
+            msg=f"Failed to {inspect.currentframe().f_code.co_name} within {self.timeout=}\n{locator=}\n{x=}\n{y=}\n{direction}\n{distance}\n",
             stacktrace=traceback.format_stack()
         )
 
@@ -259,12 +259,9 @@ class Element(ElementBase):
             except AttributeError as error:
                 self._handle_driver_error(error)
         raise GeneralElementException(
-            msg=f"Failed to click the element within timeout\n{self.timeout}",
+            msg=f"Failed to {inspect.currentframe().f_code.co_name} within {self.timeout=}\n{duration}",
             stacktrace=traceback.format_stack()
         )
-
-    # double click
-    # https://github.com/appium/appium-uiautomator2-driver/blob/master/docs/android-mobile-gestures.md#mobile-doubleclickgesture
 
     def click_double(self):
         self.logger.info(f"{inspect.currentframe().f_code.co_name}")
@@ -282,11 +279,11 @@ class Element(ElementBase):
             except AttributeError as error:
                 self._handle_driver_error(error)
         raise GeneralElementException(
-            msg=f"Failed to click the element within timeout\n{self.timeout}",
+            msg=f"Failed to {inspect.currentframe().f_code.co_name} within {self.timeout=}",
             stacktrace=traceback.format_stack()
         )
 
-    def click_and_move(self):
+    def drag(self):
         self.logger.info(f"{inspect.currentframe().f_code.co_name}")
 
     # flinggesture
@@ -678,6 +675,7 @@ class Element(ElementBase):
         time.sleep(0.3)
 
     def _mobile_gesture(self, name: str, params: Union[dict, list]) -> None:
+        # https://github.com/appium/appium-uiautomator2-driver/blob/master/docs/android-mobile-gestures.md
         self.driver.execute_script(name, params)
 
     def _ensure_session_alive(self) -> None:
