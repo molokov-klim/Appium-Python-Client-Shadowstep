@@ -246,14 +246,11 @@ class Element(ElementBase):
         while time.time() - start_time < timeout:
             try:
                 self._get_driver()
-                element = self._get_element(locator=self.locator)
-                x, y = self.get_center(element)
-                if x is None or y is None:
-                    continue
+                self._get_element(locator=self.locator)
                 if duration is None:
-                    self._mobile_gesture('mobile: clickGesture', {'x': x, 'y': y})
+                    self._mobile_gesture('mobile: clickGesture', {'elementId': self.id})
                 else:
-                    self._mobile_gesture('mobile: longClickGesture', {'x': x, 'y': y, 'duration': duration})
+                    self._mobile_gesture('mobile: longClickGesture', {'elementId': self.id, 'duration': duration})
                 return cast('Element', self)
             except NoSuchDriverException as error:
                 self._handle_driver_error(error)
