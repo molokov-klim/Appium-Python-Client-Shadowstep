@@ -39,10 +39,11 @@ class GeneralElementException(WebDriverException):
 class Element(ElementBase):
     """
     A class to represent a UI element in the Shadowstep application.
+    !WARNING! USE XPATH STRATEGY ONLY !WARNING!
     """
 
     def __init__(self,
-                 locator: Union[Tuple, Dict[str, str], str, WebElement, 'Element'] = None,
+                 locator: Union[Tuple, Dict[str, str]] = None,
                  base=None,
                  timeout: int = 30,
                  poll_frequency: float = 0.5,
@@ -61,62 +62,133 @@ class Element(ElementBase):
                     poll_frequency: float = 0.5,
                     ignored_exceptions: Optional[WaitExcTypes] = None,
                     contains: bool = False) -> Union['Element', None]:
-        self.logger.info(f"{inspect.currentframe().f_code.co_name}")
-        try:
-            self._get_driver()
-            locator = self.handle_locator(locator, self.contains)
-            current_element = self._get_element(locator=self.locator,
-                                                timeout=self.timeout,
-                                                poll_frequency=self.poll_frequency,
-                                                ignored_exceptions=self.ignored_exceptions,
-                                                contains=self.contains)
-            inner_element = current_element.find_element(*locator)
-            return Element(locator=inner_element,
-                           base=self.base,
-                           timeout=timeout,
-                           poll_frequency=poll_frequency,
-                           ignored_exceptions=ignored_exceptions,
-                           contains=contains)
-        except NoSuchDriverException:
-            self.logger.error(f"{inspect.currentframe().f_code.co_name} NoSuchDriverException")
-            self.base.reconnect()
-            return None
-        except InvalidSessionIdException:
-            self.logger.error(f"{inspect.currentframe().f_code.co_name} InvalidSessionIdException")
-            self.base.reconnect()
-            return None
+        """
+        Recursively search for an element inside the current one.
 
-    def get_elements(self,
-                     locator: Union[Tuple, Dict[str, str], str] = None,
-                     timeout: int = 30,
-                     contains: bool = False) -> Union[typing.List['Element'], None]:
+        Args:
+            locator: Dict or Tuple describing target locator.
+            timeout: How long to wait for the element.
+            poll_frequency: Poll interval in seconds.
+            ignored_exceptions: Exceptions to ignore while waiting.
+            contains: Whether to use contains-based XPath instead of strict equality.
+
+        Returns:
+            Found Element or None.
+        """
+        self.logger.info(f"{inspect.currentframe().f_code.co_name}")
+
+        # XPath for parent
+        parent_locator = self.handle_locator(self.locator, self.contains)
+
+        # XPath for child (relative)
+        pre_inner_locator = self.handle_locator(locator, contains)
+        inner_path = pre_inner_locator[1].lstrip('/')  # Remove accidental `/` in front
+
+        # ⛑ Гарантированная вложенность: parent//child
+        if not inner_path.startswith("//"):
+            inner_path = f"//{inner_path}"
+
+        inner_locator = ('xpath', f"{parent_locator[1]}{inner_path}")
+
+        return Element(locator=inner_locator,
+                       base=self.base,
+                       timeout=timeout,
+                       poll_frequency=poll_frequency,
+                       ignored_exceptions=ignored_exceptions,
+                       contains=contains)
+
+    def get_elements(
+            self,
+            locator: Union[Tuple, Dict[str, str], str],
+            contains: bool = False,
+            max_count: int = 10
+    ) -> typing.Generator['Element', None, None]:
+        """
+        Lazily retrieves child elements one by one up to a maximum count.
+
+        Args:
+            locator: Locator used to find child elements.
+            contains: If True, use contains() in XPath.
+            max_count: Maximum number of elements to return.
+
+        Yields:
+            Generator of Element instances.
+        """
+        self.logger.info(f"{inspect.currentframe().f_code.co_name}")
+        resolved_locator = self.handle_locator(locator, contains)
+        base_xpath = self._get_xpath()
+
+        if not base_xpath:
+            raise GeneralElementException("Unable to resolve base xpath")
+
+        # Убираем финальные / у base_xpath и начальные у локатора
+        base_xpath = base_xpath.rstrip('/')
+        child_xpath = resolved_locator[1].lstrip('/')
+
+        for index in range(1, max_count + 1):
+            try:
+                element = Element(
+                    locator=('xpath', f"{base_xpath}//{child_xpath}[{index}]"),
+                    base=self.base,
+                    timeout=self.timeout,
+                    poll_frequency=self.poll_frequency,
+                    ignored_exceptions=self.ignored_exceptions,
+                    contains=contains
+                )
+                # Пробуем получить базовый атрибут
+                if element.get_attribute("class") is None:
+                    break
+                yield element
+            except (NoSuchElementException, WebDriverException):
+                break
+
+    def get_elements_greedy(
+            self,
+            locator: Union[Tuple, Dict[str, str], str],
+            contains: bool = False,
+            timeout: int = 30,
+    ) -> typing.List['Element']:
+        """
+        Returns a list of elements found using find_elements.
+        This is a greedy method and fetches all matching elements immediately.
+
+        Args:
+            locator: Locator to search for child elements.
+            contains: If True, performs partial match.
+            timeout: Timeout to wait for elements.
+
+        Returns:
+            List of Element instances.
+        """
         self.logger.info(f"{inspect.currentframe().f_code.co_name}")
         try:
             self._get_driver()
-            locator = self.handle_locator(locator, contains)
-            current_element = self._get_element(locator=self.locator,
-                                                timeout=self.timeout,
-                                                poll_frequency=self.poll_frequency,
-                                                ignored_exceptions=self.ignored_exceptions,
-                                                contains=self.contains)
-            inner_elements = current_element.find_elements(*locator)
-            elements = []
-            for element in inner_elements:
-                elements.append(Element(locator=element,
-                                        base=self.base,
-                                        timeout=timeout,
-                                        poll_frequency=self.poll_frequency,
-                                        ignored_exceptions=self.ignored_exceptions,
-                                        contains=contains))
-            return elements
-        except NoSuchDriverException:
-            self.logger.error(f"{inspect.currentframe().f_code.co_name} NoSuchDriverException")
-            self.base.reconnect()
-            return None
-        except InvalidSessionIdException:
-            self.logger.error(f"{inspect.currentframe().f_code.co_name} InvalidSessionIdException")
-            self.base.reconnect()
-            return None
+            resolved_locator = self.handle_locator(locator, contains)
+
+            base_element = self._get_element(
+                locator=self.locator,
+                timeout=self.timeout,
+                poll_frequency=self.poll_frequency,
+                ignored_exceptions=self.ignored_exceptions,
+                contains=self.contains
+            )
+
+            raw_elements = base_element.find_elements(*resolved_locator)
+
+            return [
+                Element(
+                    locator=('xpath', self._build_element_xpath(base_element, i + 1)),
+                    base=self.base,
+                    timeout=timeout,
+                    poll_frequency=self.poll_frequency,
+                    ignored_exceptions=self.ignored_exceptions,
+                    contains=contains
+                )
+                for i in range(len(raw_elements))
+            ]
+        except (NoSuchDriverException, InvalidSessionIdException) as error:
+            self._handle_driver_error(error)
+            return []
 
     def get_attributes(self,
                        desired_attributes: typing.List[str] = None) -> Optional[Dict[str, str]]:
@@ -508,15 +580,20 @@ class Element(ElementBase):
 
     def get_parent(self) -> Union['Element', None]:
         self.logger.info(f"{inspect.currentframe().f_code.co_name}")
-        # Формирование XPath для поиска всех родительского элемента
-        xpath = self._get_xpath() + "/.."
-
-        # Поиск всех родительского элемента по XPath
-        parent = self.driver.find_element(by='xpath', value=xpath)
-
-        sdfsdfsd
-
-        return parent
+        try:
+            xpath = self._get_xpath()
+            if xpath is None:
+                raise GeneralElementException("Unable to retrieve XPath of the element")
+            xpath = xpath + "/.."
+            return Element(locator=('xpath', xpath), base=self.base)
+        except NoSuchDriverException:
+            self.logger.error(f"{inspect.currentframe().f_code.co_name} NoSuchDriverException")
+            self.base.reconnect()
+            return None
+        except InvalidSessionIdException:
+            self.logger.error(f"{inspect.currentframe().f_code.co_name} InvalidSessionIdException")
+            self.base.reconnect()
+            return None
 
     def get_parents(self) -> Union[typing.List['Element'], None]:
         self.logger.info(f"{inspect.currentframe().f_code.co_name}")
@@ -931,14 +1008,13 @@ class Element(ElementBase):
                 continue
 
     def _get_xpath(self) -> Union[str, None]:
-        """
-        Подбирает атрибуты элемента и на их основе составляет XPath элемента.
+        locator = self.handle_locator(self.locator, self.contains)
+        if locator[0] == 'xpath':
+            return locator[1]
+        return self._get_xpath_by_driver()
 
-        Returns:
-            str: XPath элемента.
-        """
+    def _get_xpath_by_driver(self) -> Union[str, None]:
         try:
-            # Инициализация переменных
             xpath = "//"
             attrs = self.get_attributes()
             element_type = attrs.get('class')
@@ -971,3 +1047,19 @@ class Element(ElementBase):
         except WebDriverException as e:
             self.logger.error("Неизвестная ошибка при формировании XPath: {}".format(str(e)))
         return None
+
+    def _build_element_xpath(self, base_element: WebElement, index: int) -> str:
+        """
+        Constructs XPath for a child element at a specific index.
+        Used for greedy element wrapping.
+
+        Args:
+            base_element: Parent WebElement.
+            index: Index of the child element (1-based).
+
+        Returns:
+            XPath string to access the element.
+        """
+        parent_xpath = self._get_xpath()
+        return f"{parent_xpath}/*[{index}]"
+

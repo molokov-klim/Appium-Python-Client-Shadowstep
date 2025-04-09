@@ -1,6 +1,7 @@
 import os
 import subprocess
 import time
+from typing import Generator
 
 import pytest
 from appium.webdriver import WebElement
@@ -120,7 +121,7 @@ class TestElement:
                                                   })
         inner_elements = parent_element.get_elements(locator={'package': 'com.android.launcher3',
                                                               'class': 'android.widget.TextView'})
-        assert isinstance(inner_elements, list)
+        assert isinstance(inner_elements, Generator)
         for inner_element in inner_elements:
             assert isinstance(inner_element, Element)
             assert inner_element.get_attribute('package') == 'com.android.launcher3'
@@ -186,6 +187,8 @@ class TestElement:
         assert 'some_text' in search_src_text.get_attribute('text')
 
     def test_drag(self, app: Shadowstep):
+        app.terminal.press_home()
+        time.sleep(3)
         phone = app.get_element(locator={"content-desc": "Phone"}).tap_and_move(x=100, y=500)
         time.sleep(3)
         dev_settings = app.get_element(locator={"content-desc": "Dev Settings"})

@@ -33,7 +33,7 @@ class Shadowstep(ShadowstepBase):
         self.logger = logging.getLogger(f"{__name__}.{self.__class__.__name__}")
 
     def get_element(self,
-                    locator: Union[Tuple, Dict[str, str], str, WebElement, 'Element'] = None,
+                    locator: Union[Tuple[str, str], Dict[str, str]] = None,
                     timeout: int = 30,
                     poll_frequency: float = 0.5,
                     ignored_exceptions: typing.Optional[WaitExcTypes] = None,
