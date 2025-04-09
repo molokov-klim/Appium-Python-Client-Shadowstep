@@ -460,7 +460,8 @@ class Element(ElementBase):
             stacktrace=traceback.format_stack()
         )
 
-    def scroll_to_element(self, locator: Union['Element', Dict[str, str]], max_swipes: int = 10) -> Union['Element', None]:
+    def scroll_to_element(self, locator: Union['Element', Dict[str, str]], max_swipes: int = 10) -> Union[
+        'Element', None]:
         self.logger.info(f"{inspect.currentframe().f_code.co_name}")
         start_time = time.time()
         if isinstance(locator, Element):
@@ -507,6 +508,15 @@ class Element(ElementBase):
 
     def get_parent(self) -> Union['Element', None]:
         self.logger.info(f"{inspect.currentframe().f_code.co_name}")
+        # Формирование XPath для поиска всех родительского элемента
+        xpath = self._get_xpath() + "/.."
+
+        # Поиск всех родительского элемента по XPath
+        parent = self.driver.find_element(by='xpath', value=xpath)
+
+        sdfsdfsd
+
+        return parent
 
     def get_parents(self) -> Union[typing.List['Element'], None]:
         self.logger.info(f"{inspect.currentframe().f_code.co_name}")
@@ -919,3 +929,45 @@ class Element(ElementBase):
                         return str(child_class)
             except StaleElementReferenceException:
                 continue
+
+    def _get_xpath(self) -> Union[str, None]:
+        """
+        Подбирает атрибуты элемента и на их основе составляет XPath элемента.
+
+        Returns:
+            str: XPath элемента.
+        """
+        try:
+            # Инициализация переменных
+            xpath = "//"
+            attrs = self.get_attributes()
+            element_type = attrs.get('class')
+            except_attrs = ['hint',
+                            'content-desc',
+                            'selection-start',
+                            'selection-end',
+                            'extras',
+                            ]
+
+            # Формирование начальной части XPath в зависимости от наличия типа (класса) элемента
+            if element_type:
+                xpath += element_type
+            else:
+                xpath += "*"
+
+            # Перебор атрибутов элемента для формирования остальной части XPath
+            for key, value in attrs.items():
+                if key in except_attrs:
+                    continue
+
+                # Добавление атрибута в XPath с соответствующим значением или без него, если значение равно None
+                if value is None:
+                    xpath += "[@{}]".format(key)
+                else:
+                    xpath += "[@{}='{}']".format(key, value)
+            return xpath
+        except (AttributeError, KeyError) as e:
+            self.logger.error("Ошибка при формировании XPath: {}".format(str(e)))
+        except WebDriverException as e:
+            self.logger.error("Неизвестная ошибка при формировании XPath: {}".format(str(e)))
+        return None
