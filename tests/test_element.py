@@ -197,7 +197,7 @@ class TestElement:
         dev_settings.drag(end_x=end_x, end_y=end_y)
         time.sleep(5)
         try:
-            attr_text = dev_settings.get_attribute('text')
+            dev_settings.get_attribute('text')
             assert False
         except NoSuchElementException:
             assert True
@@ -212,12 +212,28 @@ class TestElement:
         assert phone.is_within_screen() is False
         assert search.is_within_screen() is False
 
+    def test_fling(self, app: Shadowstep):
+        element = app.get_element(locator={"content-desc": "Phone"})
+        target_element = app.get_element(locator={'resource-id': 'com.android.launcher3:id/search_container_all_apps'})
+        element.fling(speed=2000, direction=)
+        time.sleep(5)
+        assert 'Search apps' in target_element.get_attribute(name='text')
+        assert isinstance(element, Element)
+
     @pytest.mark.skip(reason="Not implemented yet")
     def test_scroll_down(self, app: Shadowstep):
         ...
 
     @pytest.mark.skip(reason="Not implemented yet")
     def test_scroll_up(self, app: Shadowstep):
+        ...
+
+    @pytest.mark.skip(reason="Not implemented yet")
+    def test_scroll_left(self, app: Shadowstep):
+        ...
+
+    @pytest.mark.skip(reason="Not implemented yet")
+    def test_scroll_right(self, app: Shadowstep):
         ...
 
     @pytest.mark.skip(reason="Not implemented yet")

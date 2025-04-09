@@ -314,15 +314,89 @@ class Element(ElementBase):
             stacktrace=traceback.format_stack()
         )
 
-    # flinggesture
-    # https://github.com/appium/appium-uiautomator2-driver/blob/master/docs/android-mobile-gestures.md#mobile-flinggesture
-    def scroll_down(self):
-        # https://github.com/appium/appium-uiautomator2-driver/blob/master/docs/android-mobile-gestures.md#mobile-scrollgesture
-        self.logger.info(f"{inspect.currentframe().f_code.co_name}")
+    def fling_up(self, speed: int):
+        return self._fling(speed=speed, direction='up')
 
-    def scroll_up(self):
-        # https://github.com/appium/appium-uiautomator2-driver/blob/master/docs/android-mobile-gestures.md#mobile-scrollgesture
+    def fling_down(self, speed: int):
+        return self._fling(speed=speed, direction='down')
+
+    def fling_left(self, speed: int):
+        return self._fling(speed=speed, direction='left')
+
+    def fling_right(self, speed: int):
+        return self._fling(speed=speed, direction='right')
+
+    def _fling(self, speed: int, direction: str):
+        """
+        direction: Direction of the fling. Mandatory value. Acceptable values are: up, down, left and right (case insensitive)
+        speed: The speed at which to perform this gesture in pixels per second. The value must be greater than the minimum fling velocity for the given view (50 by default). The default value is 7500 * displayDensity
+        https://github.com/appium/appium-uiautomator2-driver/blob/master/docs/android-mobile-gestures.md#mobile-flinggesture
+        """
         self.logger.info(f"{inspect.currentframe().f_code.co_name}")
+        start_time = time.time()
+        while time.time() - start_time < self.timeout:
+            try:
+                self._get_driver()
+                self._get_element(locator=self.locator)
+                self._mobile_gesture('mobile: flingGesture', {'elementId': self.id,
+                                                              'direction': direction,
+                                                              'speed': speed})
+                return cast('Element', self)
+            except NoSuchDriverException as error:
+                self._handle_driver_error(error)
+            except InvalidSessionIdException as error:
+                self._handle_driver_error(error)
+            except AttributeError as error:
+                self._handle_driver_error(error)
+        raise GeneralElementException(
+            msg=f"Failed to {inspect.currentframe().f_code.co_name} within {self.timeout=}",
+            stacktrace=traceback.format_stack()
+        )
+
+    def scroll_down(self, percent: int, speed: int):
+        self.logger.info(f"{inspect.currentframe().f_code.co_name}")
+        return self._scroll(direction='down', percent=percent, speed=speed)
+
+    def scroll_up(self, percent: int, speed: int):
+        self.logger.info(f"{inspect.currentframe().f_code.co_name}")
+        return self._scroll(direction='up', percent=percent, speed=speed)
+
+    def scroll_left(self, percent: int, speed: int):
+        self.logger.info(f"{inspect.currentframe().f_code.co_name}")
+        return self._scroll(direction='left', percent=percent, speed=speed)
+
+    def scroll_right(self, percent: int, speed: int):
+        self.logger.info(f"{inspect.currentframe().f_code.co_name}")
+        return self._scroll(direction='right', percent=percent, speed=speed)
+
+    def _scroll(self, direction: str, percent: int, speed: int):
+        """
+        direction: Scrolling direction. Mandatory value. Acceptable values are: up, down, left and right (case insensitive)
+        percent: The size of the scroll as a percentage of the scrolling area size. Valid values must be float numbers greater than zero, where 1.0 is 100%. Mandatory value.
+        speed: The speed at which to perform this gesture in pixels per second. The value must not be negative. The default value is 5000 * displayDensity
+        """
+        self.logger.info(f"{inspect.currentframe().f_code.co_name}")
+        # https://github.com/appium/appium-uiautomator2-driver/blob/master/docs/android-mobile-gestures.md#mobile-scrollgesture
+        start_time = time.time()
+        while time.time() - start_time < self.timeout:
+            try:
+                self._get_driver()
+                self._get_element(locator=self.locator)
+                self._mobile_gesture('mobile: scrollGesture', {'elementId': self.id,
+                                                               'percent': percent,
+                                                               'direction': direction,
+                                                               'speed': speed})
+                return cast('Element', self)
+            except NoSuchDriverException as error:
+                self._handle_driver_error(error)
+            except InvalidSessionIdException as error:
+                self._handle_driver_error(error)
+            except AttributeError as error:
+                self._handle_driver_error(error)
+        raise GeneralElementException(
+            msg=f"Failed to {inspect.currentframe().f_code.co_name} within {self.timeout=}",
+            stacktrace=traceback.format_stack()
+        )
 
     def scroll_to_bottom(self):
         self.logger.info(f"{inspect.currentframe().f_code.co_name}")
