@@ -195,12 +195,9 @@ class TestElement:
         assert 'com.android.quicksearchbox' in search.get_attribute('package')
         end_x, end_y = search.get_center()
         dev_settings.drag(end_x=end_x, end_y=end_y)
+        dev_settings.timeout = 5
         time.sleep(5)
-        try:
-            dev_settings.get_attribute('text')
-            assert False
-        except NoSuchElementException:
-            assert True
+        assert not dev_settings.is_within_screen()
 
     def test_is_within_screen(self, app: Shadowstep):
         phone = app.get_element(locator={"content-desc": "Phone"}, timeout=5)
@@ -214,27 +211,26 @@ class TestElement:
 
     def test_fling(self, app: Shadowstep):
         element = app.get_element(locator={"content-desc": "Phone"})
-        target_element = app.get_element(locator={'resource-id': 'com.android.launcher3:id/search_container_all_apps'})
-        element.fling(speed=2000, direction=)
+        target_element = app.get_element(locator={'content-desc': 'Do Not Disturb.'})
+        element.fling_up(speed=2000)
         time.sleep(5)
-        assert 'Search apps' in target_element.get_attribute(name='text')
+        assert 'Off' in target_element.get_attribute(name='text')
         assert isinstance(element, Element)
 
-    @pytest.mark.skip(reason="Not implemented yet")
-    def test_scroll_down(self, app: Shadowstep):
-        ...
-
-    @pytest.mark.skip(reason="Not implemented yet")
-    def test_scroll_up(self, app: Shadowstep):
-        ...
-
-    @pytest.mark.skip(reason="Not implemented yet")
-    def test_scroll_left(self, app: Shadowstep):
-        ...
-
-    @pytest.mark.skip(reason="Not implemented yet")
-    def test_scroll_right(self, app: Shadowstep):
-        ...
+    def test_scroll(self, app: Shadowstep):
+        settings_recycler = app.get_element(
+            locator={'resource-id': 'com.android.settings:id/main_content_scrollable_container'})
+        settings_network = app.get_element(locator={'text': 'Network & internet',
+                                                    'resource-id': 'android:id/title'})
+        settings_about_phone = app.get_element(locator={'text': 'About phone',
+                                                        'resource-id': 'android:id/title'})
+        app.terminal.start_activity(package='com.android.settings', activity='com.android.settings.Settings')
+        time.sleep(3)
+        assert 'Network & internet' in settings_network.get_attribute('text')
+        settings_recycler.scroll_down(percent=10, speed=2000)
+        time.sleep(3)
+        assert 'About phone' in settings_about_phone.get_attribute('text')
+        app.terminal.close_app(package='com.android.settings')
 
     @pytest.mark.skip(reason="Not implemented yet")
     def test_scroll_to_bottom(self, app: Shadowstep):

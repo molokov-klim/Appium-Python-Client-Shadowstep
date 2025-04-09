@@ -404,7 +404,7 @@ class Element(ElementBase):
     def scroll_to_top(self):
         self.logger.info(f"{inspect.currentframe().f_code.co_name}")
 
-    def scroll_and_get(self):
+    def scroll_to_element(self):
         # https://github.com/appium/appium-uiautomator2-driver?tab=readme-ov-file#mobile-scroll
         self.logger.info(f"{inspect.currentframe().f_code.co_name}")
 

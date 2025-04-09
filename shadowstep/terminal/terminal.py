@@ -27,6 +27,7 @@ class NotProvideCredentials(Exception):
 class Terminal:
     """
     Allows you to perform adb actions using the appium server. Useful for remote connections
+    Required ssh
     """
     base = None
     transport = None
