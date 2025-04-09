@@ -232,13 +232,38 @@ class TestElement:
         assert 'About phone' in settings_about_phone.get_attribute('text')
         app.terminal.close_app(package='com.android.settings')
 
-    @pytest.mark.skip(reason="Not implemented yet")
     def test_scroll_to_bottom(self, app: Shadowstep):
-        ...
+        settings_recycler = app.get_element(
+            locator={'resource-id': 'com.android.settings:id/main_content_scrollable_container'})
+        settings_network = app.get_element(locator={'text': 'Network & internet',
+                                                    'resource-id': 'android:id/title'})
+        settings_about_phone = app.get_element(locator={'text': 'About phone',
+                                                        'resource-id': 'android:id/title'})
+        app.terminal.start_activity(package='com.android.settings', activity='com.android.settings.Settings')
+        time.sleep(3)
+        assert 'Network & internet' in settings_network.get_attribute('text')
+        settings_recycler.scroll_to_bottom()
+        time.sleep(3)
+        assert 'About phone' in settings_about_phone.get_attribute('text')
+        app.terminal.close_app(package='com.android.settings')
 
-    @pytest.mark.skip(reason="Not implemented yet")
     def test_scroll_to_top(self, app: Shadowstep):
-        ...
+        settings_recycler = app.get_element(
+            locator={'resource-id': 'com.android.settings:id/main_content_scrollable_container'})
+        settings_network = app.get_element(locator={'text': 'Network & internet',
+                                                    'resource-id': 'android:id/title'})
+        settings_about_phone = app.get_element(locator={'text': 'About phone',
+                                                        'resource-id': 'android:id/title'})
+        app.terminal.start_activity(package='com.android.settings', activity='com.android.settings.Settings')
+        time.sleep(3)
+        assert 'Network & internet' in settings_network.get_attribute('text')
+        settings_recycler.scroll_to_bottom()
+        time.sleep(3)
+        assert 'About phone' in settings_about_phone.get_attribute('text')
+        settings_recycler.scroll_to_top()
+        time.sleep(3)
+        assert 'Network & internet' in settings_network.get_attribute('text')
+        app.terminal.close_app(package='com.android.settings')
 
     @pytest.mark.skip(reason="Not implemented yet")
     def test_scroll_and_get(self, app: Shadowstep):

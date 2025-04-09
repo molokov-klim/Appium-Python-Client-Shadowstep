@@ -249,7 +249,7 @@ class Element(ElementBase):
             stacktrace=traceback.format_stack()
         )
 
-    def click(self, duration: int = None):
+    def click(self, duration: int = None) -> Union['Element', None]:
         self.logger.info(f"{inspect.currentframe().f_code.co_name}")
         start_time = time.time()
         while time.time() - start_time < self.timeout:
@@ -272,7 +272,7 @@ class Element(ElementBase):
             stacktrace=traceback.format_stack()
         )
 
-    def click_double(self):
+    def click_double(self) -> Union['Element', None]:
         self.logger.info(f"{inspect.currentframe().f_code.co_name}")
         start_time = time.time()
         while time.time() - start_time < self.timeout:
@@ -292,7 +292,7 @@ class Element(ElementBase):
             stacktrace=traceback.format_stack()
         )
 
-    def drag(self, end_x: int, end_y: int, speed: int = 2500):
+    def drag(self, end_x: int, end_y: int, speed: int = 2500) -> Union['Element', None]:
         self.logger.info(f"{inspect.currentframe().f_code.co_name}")
         start_time = time.time()
         while time.time() - start_time < self.timeout:
@@ -314,19 +314,19 @@ class Element(ElementBase):
             stacktrace=traceback.format_stack()
         )
 
-    def fling_up(self, speed: int):
+    def fling_up(self, speed: int = 2500) -> Union['Element', None]:
         return self._fling(speed=speed, direction='up')
 
-    def fling_down(self, speed: int):
+    def fling_down(self, speed: int = 2500) -> Union['Element', None]:
         return self._fling(speed=speed, direction='down')
 
-    def fling_left(self, speed: int):
+    def fling_left(self, speed: int = 2500) -> Union['Element', None]:
         return self._fling(speed=speed, direction='left')
 
-    def fling_right(self, speed: int):
+    def fling_right(self, speed: int = 2500) -> Union['Element', None]:
         return self._fling(speed=speed, direction='right')
 
-    def _fling(self, speed: int, direction: str):
+    def _fling(self, speed: int, direction: str) -> Union['Element', None]:
         """
         direction: Direction of the fling. Mandatory value. Acceptable values are: up, down, left and right (case insensitive)
         speed: The speed at which to perform this gesture in pixels per second. The value must be greater than the minimum fling velocity for the given view (50 by default). The default value is 7500 * displayDensity
@@ -353,23 +353,23 @@ class Element(ElementBase):
             stacktrace=traceback.format_stack()
         )
 
-    def scroll_down(self, percent: int, speed: int):
+    def scroll_down(self, percent: int = 10, speed: int = 2000) -> Union['Element', None]:
         self.logger.info(f"{inspect.currentframe().f_code.co_name}")
         return self._scroll(direction='down', percent=percent, speed=speed)
 
-    def scroll_up(self, percent: int, speed: int):
+    def scroll_up(self, percent: int = 10, speed: int = 2000) -> Union['Element', None]:
         self.logger.info(f"{inspect.currentframe().f_code.co_name}")
         return self._scroll(direction='up', percent=percent, speed=speed)
 
-    def scroll_left(self, percent: int, speed: int):
+    def scroll_left(self, percent: int = 10, speed: int = 2000) -> Union['Element', None]:
         self.logger.info(f"{inspect.currentframe().f_code.co_name}")
         return self._scroll(direction='left', percent=percent, speed=speed)
 
-    def scroll_right(self, percent: int, speed: int):
+    def scroll_right(self, percent: int = 10, speed: int = 2000) -> Union['Element', None]:
         self.logger.info(f"{inspect.currentframe().f_code.co_name}")
         return self._scroll(direction='right', percent=percent, speed=speed)
 
-    def _scroll(self, direction: str, percent: int, speed: int):
+    def _scroll(self, direction: str, percent: int, speed: int) -> Union['Element', None]:
         """
         direction: Scrolling direction. Mandatory value. Acceptable values are: up, down, left and right (case insensitive)
         percent: The size of the scroll as a percentage of the scrolling area size. Valid values must be float numbers greater than zero, where 1.0 is 100%. Mandatory value.
@@ -398,42 +398,96 @@ class Element(ElementBase):
             stacktrace=traceback.format_stack()
         )
 
-    def scroll_to_bottom(self):
+    def scroll_to_bottom(self, locator: Union[Tuple, Dict[str, str], str, WebElement, 'Element'] = None) -> Union['Element', None]:
         self.logger.info(f"{inspect.currentframe().f_code.co_name}")
+        last_child = None
+        start_time = time.time()
 
-    def scroll_to_top(self):
+        while time.time() - start_time < self.timeout:
+            try:
+                if not locator:
+                    class_name = self._get_first_child_class()
+                    if not class_name:
+                        raise GeneralElementException("Unable to determine first child class")
+                    locator = {'class': class_name}
+                child = self._get_element(locator=locator)
+                if last_child is not None and child.get_attribute('bounds') == last_child.get_attribute('bounds'):
+                    return cast('Element', self)
+                last_child = child
+                self.scroll_down()
+            except StaleElementReferenceException:
+                continue
+            except NoSuchDriverException as error:
+                self._handle_driver_error(error)
+            except InvalidSessionIdException as error:
+                self._handle_driver_error(error)
+            except AttributeError as error:
+                self._handle_driver_error(error)
+        raise GeneralElementException(
+            msg=f"Failed to {inspect.currentframe().f_code.co_name} within {self.timeout=}",
+            stacktrace=traceback.format_stack()
+        )
+
+    def scroll_to_top(self, locator: Union[Tuple, Dict[str, str], str, WebElement, 'Element'] = None) -> Union['Element', None]:
         self.logger.info(f"{inspect.currentframe().f_code.co_name}")
+        last_child = None
+        start_time = time.time()
 
-    def scroll_to_element(self):
+        while time.time() - start_time < self.timeout:
+            try:
+                if not locator:
+                    class_name = self._get_first_child_class()
+                    if not class_name:
+                        raise GeneralElementException("Unable to determine first child class")
+                    locator = {'class': class_name}
+                child = self._get_element(locator=locator)
+                if last_child is not None and child.get_attribute('bounds') == last_child.get_attribute('bounds'):
+                    return cast('Element', self)
+                last_child = child
+                self.scroll_up()
+            except StaleElementReferenceException:
+                continue
+            except NoSuchDriverException as error:
+                self._handle_driver_error(error)
+            except InvalidSessionIdException as error:
+                self._handle_driver_error(error)
+            except AttributeError as error:
+                self._handle_driver_error(error)
+        raise GeneralElementException(
+            msg=f"Failed to {inspect.currentframe().f_code.co_name} within {self.timeout=}",
+            stacktrace=traceback.format_stack()
+        )
+
+    def scroll_to_element(self) -> Union['Element', None]:
         # https://github.com/appium/appium-uiautomator2-driver?tab=readme-ov-file#mobile-scroll
         self.logger.info(f"{inspect.currentframe().f_code.co_name}")
 
-    def get_parent(self):
+    def get_parent(self) -> Union['Element', None]:
         self.logger.info(f"{inspect.currentframe().f_code.co_name}")
 
-    def get_parents(self):
+    def get_parents(self) -> Union[typing.List['Element'], None]:
         self.logger.info(f"{inspect.currentframe().f_code.co_name}")
 
-    def get_sibling(self):
+    def get_sibling(self) -> Union['Element', None]:
         self.logger.info(f"{inspect.currentframe().f_code.co_name}")
 
-    def get_siblings(self):
+    def get_siblings(self) -> Union[typing.List['Element'], None]:
         self.logger.info(f"{inspect.currentframe().f_code.co_name}")
 
-    def get_cousin(self):
+    def get_cousin(self) -> Union['Element', None]:
         self.logger.info(f"{inspect.currentframe().f_code.co_name}")
 
-    def get_cousins(self):
+    def get_cousins(self) -> Union[typing.List['Element'], None]:
         self.logger.info(f"{inspect.currentframe().f_code.co_name}")
 
-    def is_contains(self):
+    def is_contains(self) -> bool:
         self.logger.info(f"{inspect.currentframe().f_code.co_name}")
 
-    def zoom(self):
+    def zoom(self) -> Union['Element', None]:
         # https://github.com/appium/appium-uiautomator2-driver/blob/master/docs/android-mobile-gestures.md#mobile-pinchopengesture
         self.logger.info(f"{inspect.currentframe().f_code.co_name}")
 
-    def unzoom(self):
+    def unzoom(self) -> Union['Element', None]:
         # https://github.com/appium/appium-uiautomator2-driver/blob/master/docs/android-mobile-gestures.md#mobile-pinchclosegesture
         self.logger.info(f"{inspect.currentframe().f_code.co_name}")
 
@@ -554,7 +608,7 @@ class Element(ElementBase):
         raise NotImplementedError
 
     # Override
-    def clear(self) -> 'WebElement':
+    def clear(self) -> Union['Element', None]:
         """Clears text.
 
         Override for Appium
@@ -566,7 +620,7 @@ class Element(ElementBase):
         raise NotImplementedError
 
     # Override
-    def set_text(self, keys: str = '') -> 'WebElement':
+    def set_text(self, keys: str = '') -> Union['Element', None]:
         """Sends text to the element.
         deprecated:: 2.8.1
 
@@ -587,7 +641,7 @@ class Element(ElementBase):
 
     # Override
     @property
-    def location_in_view(self) -> Dict[str, int]:
+    def location_in_view(self) -> Union['Element', None]:
         """Gets the location of an element relative to the view.
 
         Usage:
@@ -602,7 +656,7 @@ class Element(ElementBase):
         raise NotImplementedError
 
     # Override
-    def set_value(self, value: str) -> 'WebElement':
+    def set_value(self, value: str) -> Union['Element', None]:
         """Set the value on this element in the application
         deprecated:: 2.8.1
 
@@ -616,7 +670,7 @@ class Element(ElementBase):
         raise NotImplementedError
 
     # Override
-    def send_keys(self, *value: str) -> 'WebElement':
+    def send_keys(self, *value: str) -> Union['Element', None]:
         """Simulates typing into the element.
 
         Args:
@@ -631,7 +685,7 @@ class Element(ElementBase):
     ######## override from selenium/webdriver/remote/webelement.py
 
     @property
-    def tag_name(self) -> str:
+    def tag_name(self) -> Union['Element', None]:
         """This element's ``tagName`` property."""
         self.logger.info(f"{inspect.currentframe().f_code.co_name}")
         raise NotImplementedError
@@ -642,12 +696,12 @@ class Element(ElementBase):
         self.logger.info(f"{inspect.currentframe().f_code.co_name}")
         raise NotImplementedError
 
-    def submit(self) -> None:
+    def submit(self) -> Union['Element', None]:
         """Submits a form."""
         self.logger.info(f"{inspect.currentframe().f_code.co_name}")
         raise NotImplementedError
 
-    def get_property(self, name) -> str | bool | WebElement | dict:
+    def get_property(self, name) -> Union['Element', str, bool, dict, None]:
         """Gets the given property of the element.
 
         :Args:
@@ -655,7 +709,6 @@ class Element(ElementBase):
 
         :Usage:
             ::
-
                 text_length = target_element.get_property("text_length")
         """
         self.logger.info(f"{inspect.currentframe().f_code.co_name}")
@@ -792,7 +845,7 @@ class Element(ElementBase):
         self.logger.info(f"{inspect.currentframe().f_code.co_name}")
         raise NotImplementedError
 
-    def _handle_driver_error(self, error: Exception):
+    def _handle_driver_error(self, error: Exception) -> None:
         self.logger.error(f"{inspect.currentframe().f_code.co_name} {error}")
         self.base.reconnect()
         time.sleep(0.3)
@@ -810,3 +863,16 @@ class Element(ElementBase):
         except InvalidSessionIdException:
             self.logger.warning("Reconnecting driver due to session issue")
             self.base.reconnect()
+
+    def _get_first_child_class(self, tries: int = 3) -> str:
+        for _ in range(tries):
+            try:
+                parent_element = self
+                parent_class = parent_element.get_attribute('class')
+                child_elements = parent_element.get_elements(("xpath", "//*[1]"))
+                for i, child_element in enumerate(child_elements):
+                    child_class = child_element.get_attribute('class')
+                    if parent_class != child_class:
+                        return str(child_class)
+            except StaleElementReferenceException:
+                continue
