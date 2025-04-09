@@ -398,7 +398,8 @@ class Element(ElementBase):
             stacktrace=traceback.format_stack()
         )
 
-    def scroll_to_bottom(self, locator: Union[Tuple, Dict[str, str], str, WebElement, 'Element'] = None) -> Union['Element', None]:
+    def scroll_to_bottom(self, locator: Union[Tuple, Dict[str, str], str, WebElement, 'Element'] = None) -> Union[
+        'Element', None]:
         self.logger.info(f"{inspect.currentframe().f_code.co_name}")
         last_child = None
         start_time = time.time()
@@ -428,7 +429,8 @@ class Element(ElementBase):
             stacktrace=traceback.format_stack()
         )
 
-    def scroll_to_top(self, locator: Union[Tuple, Dict[str, str], str, WebElement, 'Element'] = None) -> Union['Element', None]:
+    def scroll_to_top(self, locator: Union[Tuple, Dict[str, str], str, WebElement, 'Element'] = None) -> Union[
+        'Element', None]:
         self.logger.info(f"{inspect.currentframe().f_code.co_name}")
         last_child = None
         start_time = time.time()
@@ -458,9 +460,50 @@ class Element(ElementBase):
             stacktrace=traceback.format_stack()
         )
 
-    def scroll_to_element(self) -> Union['Element', None]:
-        # https://github.com/appium/appium-uiautomator2-driver?tab=readme-ov-file#mobile-scroll
+    def scroll_to_element(self, locator: Union['Element', Dict[str, str]], max_swipes: int = 10) -> Union['Element', None]:
         self.logger.info(f"{inspect.currentframe().f_code.co_name}")
+        start_time = time.time()
+        if isinstance(locator, Element):
+            locator = locator.locator
+
+        def build_strategy_selector(locator_dict: Dict[str, str]) -> Tuple[str, str]:
+            if 'text' in locator_dict:
+                return "-android uiautomator", f'new UiSelector().text("{locator_dict["text"]}")'
+            elif 'resource-id' in locator_dict:
+                return "-android uiautomator", f'new UiSelector().resourceId("{locator_dict["resource-id"]}")'
+            elif 'content-desc' in locator_dict:
+                return "accessibility id", locator_dict["content-desc"]
+            else:
+                raise GeneralElementException(f"Unsupported locator for scroll: {locator_dict}")
+
+        if isinstance(locator, dict):
+            strategy, selector = build_strategy_selector(locator)
+        else:
+            raise GeneralElementException("Only dictionary locators are supported")
+
+        while time.time() - start_time < self.timeout:
+            try:
+                self._get_driver()
+                self.driver.execute_script("mobile: scroll", {
+                    "elementId": self.id,
+                    "strategy": strategy,
+                    "selector": selector,
+                    "maxSwipes": max_swipes
+                })
+                found = self.base.get_element(locator)
+                if found.is_within_screen():
+                    return cast('Element', found)
+            except NoSuchDriverException as error:
+                self._handle_driver_error(error)
+            except InvalidSessionIdException as error:
+                self._handle_driver_error(error)
+            except AttributeError as error:
+                self._handle_driver_error(error)
+
+        raise GeneralElementException(
+            msg=f"Failed to scroll to element with locator: {locator}",
+            stacktrace=traceback.format_stack()
+        )
 
     def get_parent(self) -> Union['Element', None]:
         self.logger.info(f"{inspect.currentframe().f_code.co_name}")
