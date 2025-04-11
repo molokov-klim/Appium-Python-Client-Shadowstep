@@ -3,7 +3,7 @@ import logging
 import time
 import traceback
 import typing
-from typing import Union, Tuple, Dict, Optional, cast
+from typing import Union, Tuple, Dict, Optional, cast, T
 
 import xml.etree.ElementTree as ET
 
@@ -43,7 +43,7 @@ class Element(ElementBase):
     """
 
     def __init__(self,
-                 locator: Union[Tuple, Dict[str, str]] = None,
+                 locator: Union[Tuple, Dict[str, str], 'Element'] = None,
                  base=None,
                  timeout: int = 30,
                  poll_frequency: float = 0.5,
@@ -76,6 +76,8 @@ class Element(ElementBase):
             Found Element or None.
         """
         self.logger.info(f"{inspect.currentframe().f_code.co_name}")
+        if isinstance(locator, Element):
+            locator = locator.locator
 
         # XPath for parent
         parent_locator = self.handle_locator(self.locator, self.contains)
@@ -99,22 +101,13 @@ class Element(ElementBase):
 
     def get_elements(
             self,
-            locator: Union[Tuple, Dict[str, str], str],
+            locator: Union[Tuple, Dict[str, str], 'Element'],
             contains: bool = False,
             max_count: int = 10
     ) -> typing.Generator['Element', None, None]:
-        """
-        Lazily retrieves child elements one by one up to a maximum count.
-
-        Args:
-            locator: Locator used to find child elements.
-            contains: If True, use contains() in XPath.
-            max_count: Maximum number of elements to return.
-
-        Yields:
-            Generator of Element instances.
-        """
         self.logger.info(f"{inspect.currentframe().f_code.co_name}")
+        if isinstance(locator, Element):
+            locator = locator.locator
         resolved_locator = self.handle_locator(locator, contains)
         base_xpath = self._get_xpath()
 
@@ -139,12 +132,14 @@ class Element(ElementBase):
                 if element.get_attribute("class") is None:
                     break
                 yield element
-            except (NoSuchElementException, WebDriverException):
+            except NoSuchElementException:
+                break
+            except WebDriverException:
                 break
 
     def get_elements_greedy(
             self,
-            locator: Union[Tuple, Dict[str, str], str],
+            locator: Union[Tuple, Dict[str, str], 'Element'],
             contains: bool = False,
             timeout: int = 30,
     ) -> typing.List['Element']:
@@ -158,35 +153,46 @@ class Element(ElementBase):
             timeout: Timeout to wait for elements.
 
         Returns:
-            List of Element instances.
+            List of Element instances matching the locator.
         """
         self.logger.info(f"{inspect.currentframe().f_code.co_name}")
         try:
             self._get_driver()
+            if isinstance(locator, Element):
+                locator = locator.locator
             resolved_locator = self.handle_locator(locator, contains)
+            base_xpath = self._get_xpath()
 
-            base_element = self._get_element(
-                locator=self.locator,
-                timeout=self.timeout,
-                poll_frequency=self.poll_frequency,
-                ignored_exceptions=self.ignored_exceptions,
-                contains=self.contains
-            )
+            if not base_xpath:
+                raise GeneralElementException("Unable to resolve base xpath")
 
-            raw_elements = base_element.find_elements(*resolved_locator)
+            base_xpath = base_xpath.rstrip('/')
+            child_xpath = resolved_locator[1].lstrip('/')
 
-            return [
-                Element(
-                    locator=('xpath', self._build_element_xpath(base_element, i + 1)),
+            # Совмещённый XPath для поиска потомков
+            full_xpath = f"{base_xpath}//{child_xpath}"
+
+            base_element = self._get_element(locator=self.locator)
+
+            found_elements = base_element.find_elements('xpath', full_xpath)
+
+            result = []
+            for i in range(len(found_elements)):
+                xpath = f"{full_xpath}[{i + 1}]"
+                result.append(Element(
+                    locator=('xpath', xpath),
                     base=self.base,
                     timeout=timeout,
                     poll_frequency=self.poll_frequency,
                     ignored_exceptions=self.ignored_exceptions,
                     contains=contains
-                )
-                for i in range(len(raw_elements))
-            ]
-        except (NoSuchDriverException, InvalidSessionIdException) as error:
+                ))
+
+            return result
+        except NoSuchDriverException as error:
+            self._handle_driver_error(error)
+            return []
+        except InvalidSessionIdException as error:
             self._handle_driver_error(error)
             return []
 
@@ -239,6 +245,515 @@ class Element(ElementBase):
                 continue
         return None
 
+    def get_parent(self) -> Union['Element', None]:
+        self.logger.info(f"{inspect.currentframe().f_code.co_name}")
+        try:
+            xpath = self._get_xpath()
+            if xpath is None:
+                raise GeneralElementException("Unable to retrieve XPath of the element")
+            xpath = xpath + "/.."
+            return Element(locator=('xpath', xpath), base=self.base)
+        except NoSuchDriverException:
+            self.logger.error(f"{inspect.currentframe().f_code.co_name} NoSuchDriverException")
+            self.base.reconnect()
+            return None
+        except InvalidSessionIdException:
+            self.logger.error(f"{inspect.currentframe().f_code.co_name} InvalidSessionIdException")
+            self.base.reconnect()
+            return None
+
+    def get_parents(self) -> typing.Generator['Element', None, None]:
+        """Yields all parent elements lazily using XPath `ancestor::*`.
+
+        Yields:
+            Generator of Element instances representing each parent in the hierarchy.
+        """
+        self.logger.info(f"{inspect.currentframe().f_code.co_name}")
+        current_xpath = self._get_xpath()
+
+        if not current_xpath:
+            raise GeneralElementException("Cannot resolve current XPath")
+
+        # Формируем базовый XPath, который захватывает всех родителей
+        base_ancestor_xpath = f"{current_xpath}/ancestor::*"
+
+        # Вместо вызова `find_elements`, просто итерируем индексы и строим XPath
+        for index in range(1, 100):  # ограничим разумным пределом
+            ancestor_xpath = f"{base_ancestor_xpath}[{index}]"
+            element = Element(
+                locator=('xpath', ancestor_xpath),
+                base=self.base,
+                timeout=self.timeout,
+                poll_frequency=self.poll_frequency,
+                ignored_exceptions=self.ignored_exceptions,
+                contains=self.contains
+            )
+            # Проверяем существование элемента по какому-нибудь безопасному признаку
+            try:
+                if element.get_attribute("class") is None:
+                    break
+                yield element
+            except NoSuchElementException:
+                break
+            except WebDriverException:
+                break
+
+    def get_sibling(self, locator: Union[Tuple, Dict[str, str], 'Element']) -> Union['Element', None]:
+        self.logger.info(f"{inspect.currentframe().f_code.co_name}")
+        if isinstance(locator, Element):
+            locator = locator.locator
+
+        base_xpath = self._get_xpath()
+        if not base_xpath:
+            raise GeneralElementException("Unable to resolve current XPath")
+
+        sibling_locator = self.handle_locator(locator, contains=self.contains)
+        sibling_path = sibling_locator[1].lstrip('/')
+
+        # Пытаемся найти первого совпадающего "соседа" справа
+        xpath = f"{base_xpath}/following-sibling::{sibling_path}[1]"
+
+        return Element(
+            locator=('xpath', xpath),
+            base=self.base,
+            timeout=self.timeout,
+            poll_frequency=self.poll_frequency,
+            ignored_exceptions=self.ignored_exceptions,
+            contains=self.contains
+        )
+
+    def get_siblings(self) -> typing.Generator['Element', None, None]:
+        """Yields all sibling elements of the current element.
+
+        Yields:
+            Generator of Element instances that are siblings of the current element.
+        """
+        self.logger.info(f"{inspect.currentframe().f_code.co_name}")
+
+        base_xpath = self._get_xpath()
+        if not base_xpath:
+            raise GeneralElementException("Unable to resolve current XPath")
+
+        # Сначала preceding-sibling (в обратном порядке)
+        for index in range(1, 50):
+            xpath = f"{base_xpath}/preceding-sibling::*[{index}]"
+            sibling = Element(
+                locator=('xpath', xpath),
+                base=self.base,
+                timeout=self.timeout,
+                poll_frequency=self.poll_frequency,
+                ignored_exceptions=self.ignored_exceptions,
+                contains=self.contains
+            )
+            try:
+                if sibling.get_attribute("class") is None:
+                    break
+                yield sibling
+            except NoSuchElementException:
+                break
+            except WebDriverException:
+                break
+
+        # Затем following-sibling (в прямом порядке)
+        for index in range(1, 50):
+            xpath = f"{base_xpath}/following-sibling::*[{index}]"
+            sibling = Element(
+                locator=('xpath', xpath),
+                base=self.base,
+                timeout=self.timeout,
+                poll_frequency=self.poll_frequency,
+                ignored_exceptions=self.ignored_exceptions,
+                contains=self.contains
+            )
+            try:
+                if sibling.get_attribute("class") is None:
+                    break
+                yield sibling
+            except NoSuchElementException:
+                break
+            except WebDriverException:
+                break
+
+    def get_center(self, element: Optional[WebElement] = None) -> Optional[Tuple[int, int]]:
+        """Get the center coordinates of the element.
+
+        Args:
+            element (Optional[WebElement]): Optional direct WebElement. If not provided, uses current locator.
+
+        Returns:
+            Optional[Tuple[int, int]]: (x, y) center point or None if element not found.
+        """
+        self.logger.info(f"{inspect.currentframe().f_code.co_name}")
+        start_time = time.time()
+        while time.time() - start_time < self.timeout:
+            try:
+                self._get_driver()
+                if element is None:
+                    element = self._get_element(
+                        locator=self.locator,
+                        timeout=self.timeout,
+                        poll_frequency=self.poll_frequency,
+                        ignored_exceptions=self.ignored_exceptions,
+                        contains=self.contains
+                    )
+                coords = self.get_coordinates(element)
+                if coords is None:
+                    continue
+                left, top, right, bottom = coords
+                x = int((left + right) / 2)
+                y = int((top + bottom) / 2)
+                return x, y
+            except NoSuchDriverException as error:
+                self._handle_driver_error(error)
+            except InvalidSessionIdException as error:
+                self._handle_driver_error(error)
+            except AttributeError as error:
+                self._handle_driver_error(error)
+            except StaleElementReferenceException as error:
+                self._handle_driver_error(error)
+
+        raise GeneralElementException(
+            msg=f"Failed to {inspect.currentframe().f_code.co_name} within {self.timeout=}",
+            stacktrace=traceback.format_stack()
+        )
+
+    def get_coordinates(self, element: Optional[WebElement] = None) -> Optional[Tuple[int, int, int, int]]:
+        """Get the bounding box coordinates of the element.
+
+        Args:
+            element (Optional[WebElement]): Element to get bounds from. If None, uses internal locator.
+
+        Returns:
+            Optional[Tuple[int, int, int, int]]: (left, top, right, bottom) or None.
+        """
+        self.logger.info(f"{inspect.currentframe().f_code.co_name}")
+        start_time = time.time()
+        while time.time() - start_time < self.timeout:
+            try:
+                self._get_driver()
+                if element is None:
+                    element = self._get_element(
+                        locator=self.locator,
+                        timeout=self.timeout,
+                        poll_frequency=self.poll_frequency,
+                        ignored_exceptions=self.ignored_exceptions,
+                        contains=self.contains
+                    )
+                bounds = element.get_attribute('bounds')
+                if not bounds:
+                    continue
+                left, top, right, bottom = map(int, bounds.strip("[]").replace("][", ",").split(","))
+                return left, top, right, bottom
+            except NoSuchDriverException as error:
+                self._handle_driver_error(error)
+            except InvalidSessionIdException as error:
+                self._handle_driver_error(error)
+            except AttributeError as error:
+                self._handle_driver_error(error)
+            except StaleElementReferenceException as error:
+                self._handle_driver_error(error)
+
+        raise GeneralElementException(
+            msg=f"Failed to {inspect.currentframe().f_code.co_name} within {self.timeout=}",
+            stacktrace=traceback.format_stack()
+        )
+
+    # Override
+    def get_attribute(self, name: str) -> Optional[Union[str, Dict]]:
+        """Gets the specified attribute of the element.
+
+        Args:
+            name (str): Name of the attribute to retrieve.
+
+        Returns:
+            Optional[Union[str, Dict]]: Value of the attribute or None.
+        """
+        self.logger.info(f"{inspect.currentframe().f_code.co_name}")
+        start_time = time.time()
+        while time.time() - start_time < self.timeout:
+            try:
+                self._get_driver()
+                current_element = self._get_element(
+                    locator=self.locator,
+                    timeout=self.timeout,
+                    poll_frequency=self.poll_frequency,
+                    ignored_exceptions=self.ignored_exceptions,
+                    contains=self.contains
+                )
+                return current_element.get_attribute(name)
+            except NoSuchDriverException as error:
+                self._handle_driver_error(error)
+            except InvalidSessionIdException as error:
+                self._handle_driver_error(error)
+            except AttributeError as error:
+                self._handle_driver_error(error)
+            except StaleElementReferenceException as error:
+                self._handle_driver_error(error)
+
+        raise GeneralElementException(
+            msg=f"Failed to {inspect.currentframe().f_code.co_name}('{name}') within {self.timeout=}",
+            stacktrace=traceback.format_stack()
+        )
+
+    def get_property(self, name: str) -> Union[str, bool, dict, None]:
+        """Gets the given property of the element.
+
+        Args:
+            name (str): Name of the property to retrieve.
+
+        Returns:
+            Union[str, bool, dict, None]: Property value.
+        """
+        self.logger.info(f"{inspect.currentframe().f_code.co_name}")
+        start_time = time.time()
+        while time.time() - start_time < self.timeout:
+            try:
+                self._get_driver()
+                current_element = self._get_element(
+                    locator=self.locator,
+                    timeout=self.timeout,
+                    poll_frequency=self.poll_frequency,
+                    ignored_exceptions=self.ignored_exceptions,
+                    contains=self.contains
+                )
+                return current_element.get_property(name)
+            except NoSuchDriverException as error:
+                self._handle_driver_error(error)
+            except InvalidSessionIdException as error:
+                self._handle_driver_error(error)
+            except AttributeError as error:
+                self._handle_driver_error(error)
+            except StaleElementReferenceException as error:
+                self._handle_driver_error(error)
+
+        raise GeneralElementException(
+            msg=f"Failed to {inspect.currentframe().f_code.co_name} within {self.timeout=}",
+            stacktrace=traceback.format_stack()
+        )
+
+    def get_dom_attribute(self, name: str) -> str:
+        """Gets the given attribute of the element. Unlike
+        :func:`~selenium.webdriver.remote.BaseWebElement.get_attribute`, this
+        method only returns attributes declared in the element's HTML markup.
+
+        :Args:
+            - name - Name of the attribute to retrieve.
+
+        :Usage:
+            ::
+
+                text_length = target_element.get_dom_attribute("class")
+        """
+        self.logger.info(f"{inspect.currentframe().f_code.co_name}")
+        start_time = time.time()
+        while time.time() - start_time < self.timeout:
+            try:
+                self._get_driver()
+                current_element = self._get_element(
+                    locator=self.locator,
+                    timeout=self.timeout,
+                    poll_frequency=self.poll_frequency,
+                    ignored_exceptions=self.ignored_exceptions,
+                    contains=self.contains
+                )
+                return current_element.get_dom_attribute(name)
+            except NoSuchDriverException as error:
+                self._handle_driver_error(error)
+            except InvalidSessionIdException as error:
+                self._handle_driver_error(error)
+            except AttributeError as error:
+                self._handle_driver_error(error)
+            except StaleElementReferenceException as error:
+                self._handle_driver_error(error)
+
+        raise GeneralElementException(
+            msg=f"Failed to {inspect.currentframe().f_code.co_name} within {self.timeout=}",
+            stacktrace=traceback.format_stack()
+        )
+
+    # Override
+    def is_displayed(self) -> bool:
+        """Whether the element is visible to a user.
+
+        Returns:
+            bool: True if the element is displayed on screen and visible to the user.
+        """
+        self.logger.info(f"{inspect.currentframe().f_code.co_name}")
+        start_time = time.time()
+        while time.time() - start_time < self.timeout:
+            try:
+                self._get_driver()
+                element = self._get_element(
+                    locator=self.locator,
+                    timeout=self.timeout,
+                    poll_frequency=self.poll_frequency,
+                    ignored_exceptions=self.ignored_exceptions,
+                    contains=self.contains
+                )
+                return element.is_displayed()
+            except NoSuchElementException:
+                return False
+            except NoSuchDriverException as error:
+                self._handle_driver_error(error)
+            except InvalidSessionIdException as error:
+                self._handle_driver_error(error)
+            except AttributeError as error:
+                self._handle_driver_error(error)
+            except StaleElementReferenceException as error:
+                self._handle_driver_error(error)
+
+        raise GeneralElementException(
+            msg=f"Failed to {inspect.currentframe().f_code.co_name} within {self.timeout=}",
+            stacktrace=traceback.format_stack()
+        )
+
+    def is_within_screen(self) -> bool:
+        self.logger.info(f"{inspect.currentframe().f_code.co_name}")
+        start_time = time.time()
+        while time.time() - start_time < self.timeout:
+            try:
+                screen_size = self.base.terminal.get_screen_resolution()  # Получаем размеры экрана
+                screen_width = screen_size[0]  # Ширина экрана
+                screen_height = screen_size[1]  # Высота экрана
+                current_element = self._get_element(locator=self.locator,
+                                                    timeout=self.timeout,
+                                                    poll_frequency=self.poll_frequency,
+                                                    ignored_exceptions=self.ignored_exceptions,
+                                                    contains=self.contains)
+                if current_element is None:
+                    return False
+                if not current_element.get_attribute('displayed') == 'true':
+                    # Если элемент не отображается на экране
+                    return False
+                element_location = current_element.location  # Получаем координаты элемента
+                element_size = current_element.size  # Получаем размеры элемента
+                if (
+                        element_location['y'] + element_size['height'] > screen_height or
+                        element_location['x'] + element_size['width'] > screen_width or
+                        element_location['y'] < 0 or
+                        element_location['x'] < 0
+                ):
+                    # Если элемент находится за пределами экрана
+                    return False
+                # Если элемент находится на экране
+                return True
+            except NoSuchElementException:
+                return False
+            except NoSuchDriverException as error:
+                self._handle_driver_error(error)
+            except InvalidSessionIdException as error:
+                self._handle_driver_error(error)
+            except AttributeError as error:
+                self._handle_driver_error(error)
+            except StaleElementReferenceException as error:
+                self._handle_driver_error(error)
+        raise GeneralElementException(
+            msg=f"Failed to {inspect.currentframe().f_code.co_name} within {self.timeout=}",
+            stacktrace=traceback.format_stack()
+        )
+
+    def is_selected(self) -> bool:
+        """Returns whether the element is selected.
+
+        Can be used to check if a checkbox or radio button is selected.
+
+        Returns:
+            bool: True if the element is selected.
+        """
+        self.logger.info(f"{inspect.currentframe().f_code.co_name}")
+        start_time = time.time()
+        while time.time() - start_time < self.timeout:
+            try:
+                self._get_driver()
+                element = self._get_element(
+                    locator=self.locator,
+                    timeout=self.timeout,
+                    poll_frequency=self.poll_frequency,
+                    ignored_exceptions=self.ignored_exceptions,
+                    contains=self.contains
+                )
+                return element.is_selected()
+            except NoSuchElementException:
+                return False
+            except NoSuchDriverException as error:
+                self._handle_driver_error(error)
+            except InvalidSessionIdException as error:
+                self._handle_driver_error(error)
+            except AttributeError as error:
+                self._handle_driver_error(error)
+            except StaleElementReferenceException as error:
+                self._handle_driver_error(error)
+
+        raise GeneralElementException(
+            msg=f"Failed to {inspect.currentframe().f_code.co_name} within {self.timeout=}",
+            stacktrace=traceback.format_stack()
+        )
+
+    def is_enabled(self) -> bool:
+        """Returns whether the element is enabled.
+
+        Returns:
+            bool: True if the element is enabled.
+        """
+        self.logger.info(f"{inspect.currentframe().f_code.co_name}")
+        start_time = time.time()
+        while time.time() - start_time < self.timeout:
+            try:
+                self._get_driver()
+                element = self._get_element(
+                    locator=self.locator,
+                    timeout=self.timeout,
+                    poll_frequency=self.poll_frequency,
+                    ignored_exceptions=self.ignored_exceptions,
+                    contains=self.contains
+                )
+                return element.is_enabled()
+            except NoSuchElementException:
+                return False
+            except NoSuchDriverException as error:
+                self._handle_driver_error(error)
+            except InvalidSessionIdException as error:
+                self._handle_driver_error(error)
+            except AttributeError as error:
+                self._handle_driver_error(error)
+            except StaleElementReferenceException as error:
+                self._handle_driver_error(error)
+
+        raise GeneralElementException(
+            msg=f"Failed to {inspect.currentframe().f_code.co_name} within {self.timeout=}",
+            stacktrace=traceback.format_stack()
+        )
+
+    def is_contains(self,
+                    locator: Union[Tuple, Dict[str, str], 'Element'] = None,
+                    contains: bool = False
+                    ) -> bool:
+        self.logger.info(f"{inspect.currentframe().f_code.co_name}")
+        start_time = time.time()
+        while time.time() - start_time < self.timeout:
+            try:
+                if isinstance(locator, Element):
+                    locator = locator.locator
+                child_element = self._get_element(locator=locator, contains=contains)
+                if child_element is not None:
+                    return True
+                # Если элемент находится на экране
+                return False
+            except NoSuchElementException:
+                return False
+            except NoSuchDriverException as error:
+                self._handle_driver_error(error)
+            except InvalidSessionIdException as error:
+                self._handle_driver_error(error)
+            except AttributeError as error:
+                self._handle_driver_error(error)
+            except StaleElementReferenceException as error:
+                self._handle_driver_error(error)
+        raise GeneralElementException(
+            msg=f"Failed to {inspect.currentframe().f_code.co_name} within {self.timeout=}",
+            stacktrace=traceback.format_stack()
+        )
+
     def tap(self, duration: Optional[int] = None) -> Union['Element', None]:
         self.logger.info(f"{inspect.currentframe().f_code.co_name}")
         start_time = time.time()
@@ -255,6 +770,8 @@ class Element(ElementBase):
             except InvalidSessionIdException as error:
                 self._handle_driver_error(error)
             except AttributeError as error:
+                self._handle_driver_error(error)
+            except StaleElementReferenceException as error:
                 self._handle_driver_error(error)
         raise GeneralElementException(
             msg=f"Failed to {inspect.currentframe().f_code.co_name} within {self.timeout=}\n{duration}",
@@ -274,7 +791,8 @@ class Element(ElementBase):
         while time.time() - start_time < self.timeout:
             try:
                 self._get_driver()
-
+                if isinstance(locator, Element):
+                    locator = locator.locator
                 # Получение координат центра исходного элемента
                 x1, y1 = self.get_center()
 
@@ -315,6 +833,8 @@ class Element(ElementBase):
                 self._handle_driver_error(error)
             except AttributeError as error:
                 self._handle_driver_error(error)
+            except StaleElementReferenceException as error:
+                self._handle_driver_error(error)
         # === Недостаточно данных для действия ===
         raise GeneralElementException(
             msg=f"Failed to {inspect.currentframe().f_code.co_name} within {self.timeout=}\n{locator=}\n{x=}\n{y=}\n{direction}\n{distance}\n",
@@ -329,15 +849,19 @@ class Element(ElementBase):
                 self._get_driver()
                 self._get_element(locator=self.locator)
                 if duration is None:
-                    self._mobile_gesture('mobile: clickGesture', {'elementId': self.id})
+                    self._mobile_gesture('mobile: clickGesture',
+                                         {'elementId': self.id})
                 else:
-                    self._mobile_gesture('mobile: longClickGesture', {'elementId': self.id, 'duration': duration})
+                    self._mobile_gesture('mobile: longClickGesture',
+                                         {'elementId': self.id, 'duration': duration})
                 return cast('Element', self)
             except NoSuchDriverException as error:
                 self._handle_driver_error(error)
             except InvalidSessionIdException as error:
                 self._handle_driver_error(error)
             except AttributeError as error:
+                self._handle_driver_error(error)
+            except StaleElementReferenceException as error:
                 self._handle_driver_error(error)
         raise GeneralElementException(
             msg=f"Failed to {inspect.currentframe().f_code.co_name} within {self.timeout=}\n{duration}",
@@ -351,13 +875,16 @@ class Element(ElementBase):
             try:
                 self._get_driver()
                 self._get_element(locator=self.locator)
-                self._mobile_gesture('mobile: doubleClickGesture', {'elementId': self.id})
+                self._mobile_gesture('mobile: doubleClickGesture',
+                                     {'elementId': self.id})
                 return cast('Element', self)
             except NoSuchDriverException as error:
                 self._handle_driver_error(error)
             except InvalidSessionIdException as error:
                 self._handle_driver_error(error)
             except AttributeError as error:
+                self._handle_driver_error(error)
+            except StaleElementReferenceException as error:
                 self._handle_driver_error(error)
         raise GeneralElementException(
             msg=f"Failed to {inspect.currentframe().f_code.co_name} within {self.timeout=}",
@@ -371,15 +898,19 @@ class Element(ElementBase):
             try:
                 self._get_driver()
                 self._get_element(locator=self.locator)
-                self._mobile_gesture('mobile: dragGesture', {'elementId': self.id,
-                                                             'endX': end_x, 'endY': end_y,
-                                                             'speed': speed})
+                self._mobile_gesture('mobile: dragGesture',
+                                     {'elementId': self.id,
+                                      'endX': end_x,
+                                      'endY': end_y,
+                                      'speed': speed})
                 return cast('Element', self)
             except NoSuchDriverException as error:
                 self._handle_driver_error(error)
             except InvalidSessionIdException as error:
                 self._handle_driver_error(error)
             except AttributeError as error:
+                self._handle_driver_error(error)
+            except StaleElementReferenceException as error:
                 self._handle_driver_error(error)
         raise GeneralElementException(
             msg=f"Failed to {inspect.currentframe().f_code.co_name} within {self.timeout=}",
@@ -410,15 +941,18 @@ class Element(ElementBase):
             try:
                 self._get_driver()
                 self._get_element(locator=self.locator)
-                self._mobile_gesture('mobile: flingGesture', {'elementId': self.id,
-                                                              'direction': direction,
-                                                              'speed': speed})
+                self._mobile_gesture('mobile: flingGesture',
+                                     {'elementId': self.id,
+                                      'direction': direction,
+                                      'speed': speed})
                 return cast('Element', self)
             except NoSuchDriverException as error:
                 self._handle_driver_error(error)
             except InvalidSessionIdException as error:
                 self._handle_driver_error(error)
             except AttributeError as error:
+                self._handle_driver_error(error)
+            except StaleElementReferenceException as error:
                 self._handle_driver_error(error)
         raise GeneralElementException(
             msg=f"Failed to {inspect.currentframe().f_code.co_name} within {self.timeout=}",
@@ -454,16 +988,19 @@ class Element(ElementBase):
             try:
                 self._get_driver()
                 self._get_element(locator=self.locator)
-                self._mobile_gesture('mobile: scrollGesture', {'elementId': self.id,
-                                                               'percent': percent,
-                                                               'direction': direction,
-                                                               'speed': speed})
+                self._mobile_gesture('mobile: scrollGesture',
+                                     {'elementId': self.id,
+                                      'percent': percent,
+                                      'direction': direction,
+                                      'speed': speed})
                 return cast('Element', self)
             except NoSuchDriverException as error:
                 self._handle_driver_error(error)
             except InvalidSessionIdException as error:
                 self._handle_driver_error(error)
             except AttributeError as error:
+                self._handle_driver_error(error)
+            except StaleElementReferenceException as error:
                 self._handle_driver_error(error)
         raise GeneralElementException(
             msg=f"Failed to {inspect.currentframe().f_code.co_name} within {self.timeout=}",
@@ -478,6 +1015,8 @@ class Element(ElementBase):
 
         while time.time() - start_time < self.timeout:
             try:
+                if isinstance(locator, Element):
+                    locator = locator.locator
                 if not locator:
                     class_name = self._get_first_child_class()
                     if not class_name:
@@ -485,6 +1024,7 @@ class Element(ElementBase):
                     locator = {'class': class_name}
                 child = self._get_element(locator=locator)
                 if last_child is not None and child.get_attribute('bounds') == last_child.get_attribute('bounds'):
+                    self.scroll_down()
                     return cast('Element', self)
                 last_child = child
                 self.scroll_down()
@@ -509,6 +1049,8 @@ class Element(ElementBase):
 
         while time.time() - start_time < self.timeout:
             try:
+                if isinstance(locator, Element):
+                    locator = locator.locator
                 if not locator:
                     class_name = self._get_first_child_class()
                     if not class_name:
@@ -516,6 +1058,7 @@ class Element(ElementBase):
                     locator = {'class': class_name}
                 child = self._get_element(locator=locator)
                 if last_child is not None and child.get_attribute('bounds') == last_child.get_attribute('bounds'):
+                    self.scroll_up()
                     return cast('Element', self)
                 last_child = child
                 self.scroll_up()
@@ -572,408 +1115,883 @@ class Element(ElementBase):
                 self._handle_driver_error(error)
             except AttributeError as error:
                 self._handle_driver_error(error)
+            except StaleElementReferenceException as error:
+                self._handle_driver_error(error)
 
         raise GeneralElementException(
             msg=f"Failed to scroll to element with locator: {locator}",
             stacktrace=traceback.format_stack()
         )
 
-    def get_parent(self) -> Union['Element', None]:
-        self.logger.info(f"{inspect.currentframe().f_code.co_name}")
-        try:
-            xpath = self._get_xpath()
-            if xpath is None:
-                raise GeneralElementException("Unable to retrieve XPath of the element")
-            xpath = xpath + "/.."
-            return Element(locator=('xpath', xpath), base=self.base)
-        except NoSuchDriverException:
-            self.logger.error(f"{inspect.currentframe().f_code.co_name} NoSuchDriverException")
-            self.base.reconnect()
-            return None
-        except InvalidSessionIdException:
-            self.logger.error(f"{inspect.currentframe().f_code.co_name} InvalidSessionIdException")
-            self.base.reconnect()
-            return None
+    def zoom(self, percent: float = 0.75, speed: int = 2500) -> Union['Element', None]:
+        """
+        Performs a pinch-open (zoom) gesture on the element.
 
-    def get_parents(self) -> Union[typing.List['Element'], None]:
-        self.logger.info(f"{inspect.currentframe().f_code.co_name}")
+        Args:
+            percent (float): Size of the pinch as a percentage of the pinch area size (0.0 to 1.0).
+            speed (int): Speed in pixels per second.
 
-    def get_sibling(self) -> Union['Element', None]:
-        self.logger.info(f"{inspect.currentframe().f_code.co_name}")
-
-    def get_siblings(self) -> Union[typing.List['Element'], None]:
-        self.logger.info(f"{inspect.currentframe().f_code.co_name}")
-
-    def get_cousin(self) -> Union['Element', None]:
-        self.logger.info(f"{inspect.currentframe().f_code.co_name}")
-
-    def get_cousins(self) -> Union[typing.List['Element'], None]:
-        self.logger.info(f"{inspect.currentframe().f_code.co_name}")
-
-    def is_contains(self) -> bool:
-        self.logger.info(f"{inspect.currentframe().f_code.co_name}")
-
-    def zoom(self) -> Union['Element', None]:
-        # https://github.com/appium/appium-uiautomator2-driver/blob/master/docs/android-mobile-gestures.md#mobile-pinchopengesture
-        self.logger.info(f"{inspect.currentframe().f_code.co_name}")
-
-    def unzoom(self) -> Union['Element', None]:
-        # https://github.com/appium/appium-uiautomator2-driver/blob/master/docs/android-mobile-gestures.md#mobile-pinchclosegesture
-        self.logger.info(f"{inspect.currentframe().f_code.co_name}")
-
-    # swipe
-    # https://github.com/appium/appium-uiautomator2-driver/blob/master/docs/android-mobile-gestures.md#mobile-swipegesture
-
-    def get_center(self, element: WebElement = None) -> Union[Tuple[int, int], None]:
-        self.logger.info(f"{inspect.currentframe().f_code.co_name}")
-        try:
-            if element is None:
-                left, top, right, bottom = self.get_coordinates(self._get_element(locator=self.locator,
-                                                                                  timeout=self.timeout,
-                                                                                  poll_frequency=self.poll_frequency,
-                                                                                  ignored_exceptions=self.ignored_exceptions,
-                                                                                  contains=self.contains))
-            else:
-                left, top, right, bottom = self.get_coordinates(element)
-            # Расчет координат центра элемента
-            x = int((left + right) / 2)
-            y = int((top + bottom) / 2)
-            return x, y
-        except NoSuchDriverException:
-            self.logger.error(f"{inspect.currentframe().f_code.co_name} NoSuchDriverException")
-            self.base.reconnect()
-            return None
-        except InvalidSessionIdException:
-            self.logger.error(f"{inspect.currentframe().f_code.co_name} InvalidSessionIdException")
-            self.base.reconnect()
-            return None
-
-    def get_coordinates(self, element: WebElement) -> Union[Tuple[int, int, int, int], None]:
-        self.logger.info(f"{inspect.currentframe().f_code.co_name}")
-        try:
-            # Получение границ элемента
-            left, top, right, bottom = map(int,
-                                           element.get_attribute('bounds').strip("[]").replace("][", ",").split(","))
-            return left, top, right, bottom
-        except NoSuchDriverException:
-            self.logger.error(f"{inspect.currentframe().f_code.co_name} NoSuchDriverException")
-            self.base.reconnect()
-            return None
-        except InvalidSessionIdException:
-            self.logger.error(f"{inspect.currentframe().f_code.co_name} InvalidSessionIdException")
-            self.base.reconnect()
-            return None
-
-    ################ override from appium/webdriver/webelement.py
-
-    def is_within_screen(self) -> bool:
+        Returns:
+            Element: Self instance on success.
+        """
         self.logger.info(f"{inspect.currentframe().f_code.co_name}")
         start_time = time.time()
+
         while time.time() - start_time < self.timeout:
             try:
-                screen_size = self.base.terminal.get_screen_resolution()  # Получаем размеры экрана
-                screen_width = screen_size[0]  # Ширина экрана
-                screen_height = screen_size[1]  # Высота экрана
-                current_element = self._get_element(locator=self.locator,
-                                                    timeout=self.timeout,
-                                                    poll_frequency=self.poll_frequency,
-                                                    ignored_exceptions=self.ignored_exceptions,
-                                                    contains=self.contains)
-                if current_element is None:
-                    return False
-                if not current_element.get_attribute('displayed') == 'true':
-                    # Если элемент не отображается на экране
-                    return False
-                element_location = current_element.location  # Получаем координаты элемента
-                element_size = current_element.size  # Получаем размеры элемента
-                if (
-                        element_location['y'] + element_size['height'] > screen_height or
-                        element_location['x'] + element_size['width'] > screen_width or
-                        element_location['y'] < 0 or
-                        element_location['x'] < 0
-                ):
-                    # Если элемент находится за пределами экрана
-                    return False
-                # Если элемент находится на экране
-                return True
-            except NoSuchElementException:
-                return False
+                self._get_driver()
+                self._get_element(locator=self.locator)
+
+                self._mobile_gesture('mobile: pinchOpenGesture', {
+                    'elementId': self.id,
+                    'percent': percent,
+                    'speed': speed
+                })
+
+                return cast('Element', self)
             except NoSuchDriverException as error:
                 self._handle_driver_error(error)
             except InvalidSessionIdException as error:
                 self._handle_driver_error(error)
             except AttributeError as error:
                 self._handle_driver_error(error)
+            except StaleElementReferenceException as error:
+                self._handle_driver_error(error)
+
         raise GeneralElementException(
             msg=f"Failed to {inspect.currentframe().f_code.co_name} within {self.timeout=}",
             stacktrace=traceback.format_stack()
         )
 
-    # Override
-    def get_attribute(self, name: str) -> Optional[Union[str, Dict]]:
-        self.logger.info(f"{inspect.currentframe().f_code.co_name}")
-        try:
-            self._get_driver()
-            current_element = self._get_element(locator=self.locator,
-                                                timeout=self.timeout,
-                                                poll_frequency=self.poll_frequency,
-                                                ignored_exceptions=self.ignored_exceptions)
-            return current_element.get_attribute(name)
-        except NoSuchDriverException as error:
-            self.logger.error(f"{inspect.currentframe().f_code.co_name} {error}")
-            self.base.reconnect()
-            return None
-        except InvalidSessionIdException as error:
-            self.logger.error(f"{inspect.currentframe().f_code.co_name} {error}")
-            self.base.reconnect()
-            return None
+    def unzoom(self, percent: float = 0.75, speed: int = 2500) -> Union['Element', None]:
+        """
+        Performs a pinch-close (unzoom) gesture on the element.
 
-    # Override
-    def is_displayed(self) -> bool:
-        """Whether the element is visible to a user.
+        Args:
+            percent (float): Size of the pinch as a percentage of the pinch area size (0.0 to 1.0).
+            speed (int): Speed in pixels per second.
 
-        Override for Appium
+        Returns:
+            Element: Self instance on success.
         """
         self.logger.info(f"{inspect.currentframe().f_code.co_name}")
-        raise NotImplementedError
+        start_time = time.time()
+
+        while time.time() - start_time < self.timeout:
+            try:
+                self._get_driver()
+                self._get_element(locator=self.locator)
+
+                self._mobile_gesture('mobile: pinchCloseGesture', {
+                    'elementId': self.id,
+                    'percent': percent,
+                    'speed': speed
+                })
+
+                return cast('Element', self)
+            except NoSuchDriverException as error:
+                self._handle_driver_error(error)
+            except InvalidSessionIdException as error:
+                self._handle_driver_error(error)
+            except AttributeError as error:
+                self._handle_driver_error(error)
+            except StaleElementReferenceException as error:
+                self._handle_driver_error(error)
+
+        raise GeneralElementException(
+            msg=f"Failed to {inspect.currentframe().f_code.co_name} within {self.timeout=}",
+            stacktrace=traceback.format_stack()
+        )
+
+    def swipe_up(self, percent: float = 0.75, speed: int = 5000) -> Union['Element', None]:
+        """Performs a swipe up gesture on the current element."""
+        return self.swipe(direction='up', percent=percent, speed=speed)
+
+    def swipe_down(self, percent: float = 0.75, speed: int = 5000) -> Union['Element', None]:
+        """Performs a swipe down gesture on the current element."""
+        return self.swipe(direction='down', percent=percent, speed=speed)
+
+    def swipe_left(self, percent: float = 0.75, speed: int = 5000) -> Union['Element', None]:
+        """Performs a swipe left gesture on the current element."""
+        return self.swipe(direction='left', percent=percent, speed=speed)
+
+    def swipe_right(self, percent: float = 0.75, speed: int = 5000) -> Union['Element', None]:
+        """Performs a swipe right gesture on the current element."""
+        return self.swipe(direction='right', percent=percent, speed=speed)
+
+    def swipe(self, direction: str, percent: float = 0.75, speed: int = 5000) -> Union['Element', None]:
+        """
+        Performs a swipe gesture on the current element.
+
+        Args:
+            direction (str): Swipe direction. Acceptable values: 'up', 'down', 'left', 'right'.
+            percent (float): The size of the swipe as a percentage of the swipe area size (0.0 - 1.0).
+            speed (int): Speed in pixels per second (default: 5000).
+
+        Returns:
+            Element: Self instance on success.
+        """
+        self.logger.info(f"{inspect.currentframe().f_code.co_name}")
+        start_time = time.time()
+
+        while time.time() - start_time < self.timeout:
+            try:
+                self._get_driver()
+
+                self._mobile_gesture("mobile: swipeGesture", {
+                    'elementId': self.id,
+                    "direction": direction.lower(),
+                    "percent": percent,
+                    "speed": speed
+                })
+
+                return cast('Element', self)
+            except NoSuchDriverException as error:
+                self._handle_driver_error(error)
+            except InvalidSessionIdException as error:
+                self._handle_driver_error(error)
+            except AttributeError as error:
+                self._handle_driver_error(error)
+            except StaleElementReferenceException as error:
+                self._handle_driver_error(error)
+
+        raise GeneralElementException(
+            msg=f"Failed to {inspect.currentframe().f_code.co_name} within {self.timeout=} {direction=} {percent=}",
+            stacktrace=traceback.format_stack()
+        )
 
     # Override
     def clear(self) -> Union['Element', None]:
-        """Clears text.
-
-        Override for Appium
+        """Clears text content of the element (e.g. input or textarea).
 
         Returns:
-            `appium.webdriver.webelement.WebElement`
+            Element: Self instance if successful.
         """
         self.logger.info(f"{inspect.currentframe().f_code.co_name}")
-        raise NotImplementedError
+        start_time = time.time()
 
-    # Override
-    def set_text(self, keys: str = '') -> Union['Element', None]:
-        """Sends text to the element.
-        deprecated:: 2.8.1
+        while time.time() - start_time < self.timeout:
+            try:
+                self._get_driver()
 
-        Previous text is removed.
-        Android only.
+                current_element = self._get_element(
+                    locator=self.locator,
+                    timeout=self.timeout,
+                    poll_frequency=self.poll_frequency,
+                    ignored_exceptions=self.ignored_exceptions,
+                    contains=self.contains
+                )
 
-        Args:
-            keys: the text to be sent to the element.
+                current_element.clear()
+                return cast('Element', self)
+            except NoSuchDriverException as error:
+                self._handle_driver_error(error)
+            except InvalidSessionIdException as error:
+                self._handle_driver_error(error)
+            except AttributeError as error:
+                self._handle_driver_error(error)
+            except StaleElementReferenceException as error:
+                self._handle_driver_error(error)
 
-        Usage:
-            element.set_text('some text')
-
-        Returns:
-            `appium.webdriver.webelement.WebElement`
-        """
-        self.logger.info(f"{inspect.currentframe().f_code.co_name}")
-        raise NotImplementedError
+        raise GeneralElementException(
+            msg=f"Failed to clear element within {self.timeout=}",
+            stacktrace=traceback.format_stack()
+        )
 
     # Override
     @property
-    def location_in_view(self) -> Union['Element', None]:
+    def location_in_view(self) -> Optional[dict]:
         """Gets the location of an element relative to the view.
 
-        Usage:
-            | location = element.location_in_view
-            | x = location['x']
-            | y = location['y']
-
         Returns:
-            dict: The location of an element relative to the view
+            dict: Dictionary with keys 'x' and 'y', or None on failure.
         """
         self.logger.info(f"{inspect.currentframe().f_code.co_name}")
-        raise NotImplementedError
+        start_time = time.time()
+
+        while time.time() - start_time < self.timeout:
+            try:
+                self._get_driver()
+
+                current_element = self._get_element(
+                    locator=self.locator,
+                    timeout=self.timeout,
+                    poll_frequency=self.poll_frequency,
+                    ignored_exceptions=self.ignored_exceptions,
+                    contains=self.contains
+                )
+
+                return current_element.location_in_view  # Appium WebElement property
+            except NoSuchDriverException as error:
+                self._handle_driver_error(error)
+            except InvalidSessionIdException as error:
+                self._handle_driver_error(error)
+            except AttributeError as error:
+                self._handle_driver_error(error)
+            except StaleElementReferenceException as error:
+                self._handle_driver_error(error)
+
+        raise GeneralElementException(
+            msg=f"Failed to get location_in_view within {self.timeout=}",
+            stacktrace=traceback.format_stack()
+        )
 
     # Override
     def set_value(self, value: str) -> Union['Element', None]:
-        """Set the value on this element in the application
-        deprecated:: 2.8.1
+        """Set the value on this element in the application.
 
         Args:
-            value: The value to be set
+            value: The value to be set.
 
         Returns:
-            `appium.webdriver.webelement.WebElement`
+            Element: Self instance on success.
         """
         self.logger.info(f"{inspect.currentframe().f_code.co_name}")
-        raise NotImplementedError
+        start_time = time.time()
+
+        while time.time() - start_time < self.timeout:
+            try:
+                self._get_driver()
+
+                element = self._get_element(
+                    locator=self.locator,
+                    timeout=self.timeout,
+                    poll_frequency=self.poll_frequency,
+                    ignored_exceptions=self.ignored_exceptions,
+                    contains=self.contains
+                )
+
+                element.set_value(value)
+                return cast('Element', self)
+
+            except NoSuchDriverException as error:
+                self._handle_driver_error(error)
+            except InvalidSessionIdException as error:
+                self._handle_driver_error(error)
+            except AttributeError as error:
+                self._handle_driver_error(error)
+            except StaleElementReferenceException as error:
+                self._handle_driver_error(error)
+
+        raise GeneralElementException(
+            msg=f"Failed to set_value({value}) within {self.timeout=}",
+            stacktrace=traceback.format_stack()
+        )
 
     # Override
     def send_keys(self, *value: str) -> Union['Element', None]:
         """Simulates typing into the element.
 
         Args:
-            value: A string for typing.
+            value: One or more strings to type.
 
         Returns:
-            `appium.webdriver.webelement.WebElement`
+            Element: Self instance on success.
         """
         self.logger.info(f"{inspect.currentframe().f_code.co_name}")
-        raise NotImplementedError
+        start_time = time.time()
 
-    ######## override from selenium/webdriver/remote/webelement.py
+        text = "".join(value)
+
+        while time.time() - start_time < self.timeout:
+            try:
+                self._get_driver()
+
+                element = self._get_element(
+                    locator=self.locator,
+                    timeout=self.timeout,
+                    poll_frequency=self.poll_frequency,
+                    ignored_exceptions=self.ignored_exceptions,
+                    contains=self.contains
+                )
+
+                element.send_keys(text)
+                return cast('Element', self)
+
+            except NoSuchDriverException as error:
+                self._handle_driver_error(error)
+            except InvalidSessionIdException as error:
+                self._handle_driver_error(error)
+            except AttributeError as error:
+                self._handle_driver_error(error)
+            except StaleElementReferenceException as error:
+                self._handle_driver_error(error)
+
+        raise GeneralElementException(
+            msg=f"Failed to send_keys({text}) within {self.timeout=}",
+            stacktrace=traceback.format_stack()
+        )
 
     @property
-    def tag_name(self) -> Union['Element', None]:
-        """This element's ``tagName`` property."""
+    def tag_name(self) -> Optional[str]:
+        """This element's ``tagName`` property.
+
+        Returns:
+            Optional[str]: The tag name of the element, or None if not retrievable.
+        """
         self.logger.info(f"{inspect.currentframe().f_code.co_name}")
-        raise NotImplementedError
+        start_time = time.time()
+
+        while time.time() - start_time < self.timeout:
+            try:
+                self._get_driver()
+
+                element = self._get_element(
+                    locator=self.locator,
+                    timeout=self.timeout,
+                    poll_frequency=self.poll_frequency,
+                    ignored_exceptions=self.ignored_exceptions,
+                    contains=self.contains
+                )
+
+                return element.tag_name
+
+            except NoSuchDriverException as error:
+                self._handle_driver_error(error)
+            except InvalidSessionIdException as error:
+                self._handle_driver_error(error)
+            except AttributeError as error:
+                self._handle_driver_error(error)
+            except StaleElementReferenceException as error:
+                self._handle_driver_error(error)
+
+        raise GeneralElementException(
+            msg=f"Failed to retrieve tag_name within {self.timeout=}",
+            stacktrace=traceback.format_stack()
+        )
 
     @property
     def text(self) -> str:
-        """The text of the element."""
+        """The text of the element.
+
+        Returns:
+            str: Text content of the element.
+        """
         self.logger.info(f"{inspect.currentframe().f_code.co_name}")
-        raise NotImplementedError
+        start_time = time.time()
+
+        while time.time() - start_time < self.timeout:
+            try:
+                self._get_driver()
+
+                element = self._get_element(
+                    locator=self.locator,
+                    timeout=self.timeout,
+                    poll_frequency=self.poll_frequency,
+                    ignored_exceptions=self.ignored_exceptions,
+                    contains=self.contains
+                )
+
+                return element.text
+
+            except NoSuchDriverException as error:
+                self._handle_driver_error(error)
+            except InvalidSessionIdException as error:
+                self._handle_driver_error(error)
+            except AttributeError as error:
+                self._handle_driver_error(error)
+            except StaleElementReferenceException as error:
+                self._handle_driver_error(error)
+
+        raise GeneralElementException(
+            msg=f"Failed to retrieve text within {self.timeout=}",
+            stacktrace=traceback.format_stack()
+        )
 
     def submit(self) -> Union['Element', None]:
-        """Submits a form."""
-        self.logger.info(f"{inspect.currentframe().f_code.co_name}")
-        raise NotImplementedError
+        """Submits a form element.
 
-    def get_property(self, name) -> Union['Element', str, bool, dict, None]:
-        """Gets the given property of the element.
-
-        :Args:
-            - name - Name of the property to retrieve.
-
-        :Usage:
-            ::
-                text_length = target_element.get_property("text_length")
+        Returns:
+            Element: Self instance on success.
         """
         self.logger.info(f"{inspect.currentframe().f_code.co_name}")
-        raise NotImplementedError
+        start_time = time.time()
 
-    def get_dom_attribute(self, name) -> str:
-        """Gets the given attribute of the element. Unlike
-        :func:`~selenium.webdriver.remote.BaseWebElement.get_attribute`, this
-        method only returns attributes declared in the element's HTML markup.
+        while time.time() - start_time < self.timeout:
+            try:
+                self._get_driver()
+                element = self._get_element(
+                    locator=self.locator,
+                    timeout=self.timeout,
+                    poll_frequency=self.poll_frequency,
+                    ignored_exceptions=self.ignored_exceptions,
+                    contains=self.contains
+                )
+                element.submit()
+                return cast('Element', self)
 
-        :Args:
-            - name - Name of the attribute to retrieve.
+            except NoSuchDriverException as error:
+                self._handle_driver_error(error)
+            except InvalidSessionIdException as error:
+                self._handle_driver_error(error)
+            except AttributeError as error:
+                self._handle_driver_error(error)
+            except StaleElementReferenceException as error:
+                self._handle_driver_error(error)
 
-        :Usage:
-            ::
-
-                text_length = target_element.get_dom_attribute("class")
-        """
-        self.logger.info(f"{inspect.currentframe().f_code.co_name}")
-        raise NotImplementedError
-
-    def is_selected(self) -> bool:
-        """Returns whether the element is selected.
-
-        Can be used to check if a checkbox or radio button is selected.
-        """
-        self.logger.info(f"{inspect.currentframe().f_code.co_name}")
-        raise NotImplementedError
-
-    def is_enabled(self) -> bool:
-        """Returns whether the element is enabled."""
-        self.logger.info(f"{inspect.currentframe().f_code.co_name}")
-        raise NotImplementedError
+        raise GeneralElementException(
+            msg=f"Failed to submit element within {self.timeout=}",
+            stacktrace=traceback.format_stack()
+        )
 
     @property
     def shadow_root(self) -> ShadowRoot:
-        """Returns a shadow root of the element if there is one or an error.
-        Only works from Chromium 96, Firefox 96, and Safari 16.4 onwards.
+        """Returns the shadow root of the current element if available.
 
-        :Returns:
-          - ShadowRoot object or
-          - NoSuchShadowRoot - if no shadow root was attached to element
+        Returns:
+            ShadowRoot: Shadow DOM root attached to the element.
+
+        Raises:
+            GeneralElementException: If shadow root is not available or an error occurs.
         """
         self.logger.info(f"{inspect.currentframe().f_code.co_name}")
-        raise NotImplementedError
+        start_time = time.time()
 
-    # RenderedWebElement Items
+        while time.time() - start_time < self.timeout:
+            try:
+                self._get_driver()
+                element = self._get_element(
+                    locator=self.locator,
+                    timeout=self.timeout,
+                    poll_frequency=self.poll_frequency,
+                    ignored_exceptions=self.ignored_exceptions,
+                    contains=self.contains
+                )
+                return element.shadow_root
+
+            except NoSuchDriverException as error:
+                self._handle_driver_error(error)
+            except InvalidSessionIdException as error:
+                self._handle_driver_error(error)
+            except AttributeError as error:
+                self._handle_driver_error(error)
+            except WebDriverException as error:
+                self._handle_driver_error(error)
+
+        raise GeneralElementException(
+            msg=f"Failed to retrieve shadow_root within {self.timeout=}",
+            stacktrace=traceback.format_stack()
+        )
+
     @property
     def location_once_scrolled_into_view(self) -> dict:
-        """THIS PROPERTY MAY CHANGE WITHOUT WARNING. Use this to discover where
-        on the screen an element is so that we can click it. This method should
-        cause the element to be scrolled into view.
+        """Gets the top-left corner location of the element after scrolling it into view.
 
-        Returns the top lefthand corner location on the screen, or zero
-        coordinates if the element is not visible.
+        Returns:
+            dict: Dictionary with keys 'x' and 'y' indicating location on screen.
+
+        Raises:
+            GeneralElementException: If element could not be scrolled into view or location determined.
         """
         self.logger.info(f"{inspect.currentframe().f_code.co_name}")
-        raise NotImplementedError
+        start_time = time.time()
+
+        while time.time() - start_time < self.timeout:
+            try:
+                self._get_driver()
+
+                current_element = self._get_element(
+                    locator=self.locator,
+                    timeout=self.timeout,
+                    poll_frequency=self.poll_frequency,
+                    ignored_exceptions=self.ignored_exceptions,
+                    contains=self.contains
+                )
+
+                return current_element.location_once_scrolled_into_view
+
+            except NoSuchDriverException as error:
+                self._handle_driver_error(error)
+            except InvalidSessionIdException as error:
+                self._handle_driver_error(error)
+            except AttributeError as error:
+                self._handle_driver_error(error)
+            except WebDriverException as error:
+                self._handle_driver_error(error)
+
+        raise GeneralElementException(
+            msg=f"Failed to get location_once_scrolled_into_view within {self.timeout=}",
+            stacktrace=traceback.format_stack()
+        )
 
     @property
     def size(self) -> dict:
-        """The size of the element."""
-        self.logger.info(f"{inspect.currentframe().f_code.co_name}")
-        raise NotImplementedError
+        """Returns the size of the element.
 
-    def value_of_css_property(self, property_name) -> str:
-        """The value of a CSS property."""
+        Returns:
+            dict: Dictionary with keys 'width' and 'height'.
+
+        Raises:
+            GeneralElementException: If size cannot be determined.
+        """
         self.logger.info(f"{inspect.currentframe().f_code.co_name}")
-        raise NotImplementedError
+        start_time = time.time()
+
+        while time.time() - start_time < self.timeout:
+            try:
+                self._get_driver()
+
+                current_element = self._get_element(
+                    locator=self.locator,
+                    timeout=self.timeout,
+                    poll_frequency=self.poll_frequency,
+                    ignored_exceptions=self.ignored_exceptions,
+                    contains=self.contains
+                )
+
+                return current_element.size
+
+            except NoSuchDriverException as error:
+                self._handle_driver_error(error)
+            except InvalidSessionIdException as error:
+                self._handle_driver_error(error)
+            except AttributeError as error:
+                self._handle_driver_error(error)
+            except StaleElementReferenceException as error:
+                self._handle_driver_error(error)
+            except WebDriverException as error:
+                self._handle_driver_error(error)
+
+        raise GeneralElementException(
+            msg=f"Failed to retrieve size within {self.timeout=}",
+            stacktrace=traceback.format_stack()
+        )
+
+    def value_of_css_property(self, property_name: str) -> str:
+        """Returns the value of a CSS property.
+
+        Args:
+            property_name (str): The name of the CSS property.
+
+        Returns:
+            str: The value of the CSS property.
+
+        Raises:
+            GeneralElementException: If value could not be retrieved within timeout.
+        """
+        self.logger.info(f"{inspect.currentframe().f_code.co_name}")
+        start_time = time.time()
+
+        while time.time() - start_time < self.timeout:
+            try:
+                self._get_driver()
+
+                current_element = self._get_element(
+                    locator=self.locator,
+                    timeout=self.timeout,
+                    poll_frequency=self.poll_frequency,
+                    ignored_exceptions=self.ignored_exceptions,
+                    contains=self.contains
+                )
+
+                return current_element.value_of_css_property(property_name)
+
+            except NoSuchDriverException as error:
+                self._handle_driver_error(error)
+            except InvalidSessionIdException as error:
+                self._handle_driver_error(error)
+            except AttributeError as error:
+                self._handle_driver_error(error)
+            except StaleElementReferenceException as error:
+                self._handle_driver_error(error)
+            except WebDriverException as error:
+                self._handle_driver_error(error)
+
+        raise GeneralElementException(
+            msg=f"Failed to retrieve CSS property '{property_name}' within {self.timeout=}",
+            stacktrace=traceback.format_stack()
+        )
 
     @property
     def location(self) -> dict:
-        """The location of the element in the renderable canvas."""
+        """The location of the element in the renderable canvas.
+
+        Returns:
+            dict: Dictionary with 'x' and 'y' coordinates of the element.
+
+        Raises:
+            GeneralElementException: If location could not be retrieved within timeout.
+        """
         self.logger.info(f"{inspect.currentframe().f_code.co_name}")
-        raise NotImplementedError
+        start_time = time.time()
+
+        while time.time() - start_time < self.timeout:
+            try:
+                self._get_driver()
+
+                current_element = self._get_element(
+                    locator=self.locator,
+                    timeout=self.timeout,
+                    poll_frequency=self.poll_frequency,
+                    ignored_exceptions=self.ignored_exceptions,
+                    contains=self.contains
+                )
+
+                return current_element.location
+
+            except NoSuchDriverException as error:
+                self._handle_driver_error(error)
+            except InvalidSessionIdException as error:
+                self._handle_driver_error(error)
+            except AttributeError as error:
+                self._handle_driver_error(error)
+            except StaleElementReferenceException as error:
+                self._handle_driver_error(error)
+            except WebDriverException as error:
+                self._handle_driver_error(error)
+
+        raise GeneralElementException(
+            msg=f"Failed to retrieve location within {self.timeout=}",
+            stacktrace=traceback.format_stack()
+        )
 
     @property
     def rect(self) -> dict:
-        """A dictionary with the size and location of the element."""
-        self.logger.info(f"{inspect.currentframe().f_code.co_name}")
-        raise NotImplementedError
+        """A dictionary with the size and location of the element.
 
-    @property
-    def aria_role(self) -> str:
-        """Returns the ARIA role of the current web element."""
-        self.logger.info(f"{inspect.currentframe().f_code.co_name}")
-        raise NotImplementedError
+        Returns:
+            dict: Dictionary with keys 'x', 'y', 'width', 'height'.
 
-    @property
-    def accessible_name(self) -> str:
-        """Returns the ARIA Level of the current webelement."""
-        self.logger.info(f"{inspect.currentframe().f_code.co_name}")
-        raise NotImplementedError
-
-    @property
-    def screenshot_as_base64(self) -> str:
-        """Gets the screenshot of the current element as a base64 encoded
-        string.
-
-        :Usage:
-            ::
-
-                img_b64 = element.screenshot_as_base64
+        Raises:
+            GeneralElementException: If rect could not be retrieved within timeout.
         """
         self.logger.info(f"{inspect.currentframe().f_code.co_name}")
-        raise NotImplementedError
+        start_time = time.time()
+
+        while time.time() - start_time < self.timeout:
+            try:
+                self._get_driver()
+
+                current_element = self._get_element(
+                    locator=self.locator,
+                    timeout=self.timeout,
+                    poll_frequency=self.poll_frequency,
+                    ignored_exceptions=self.ignored_exceptions,
+                    contains=self.contains
+                )
+
+                return current_element.rect
+
+            except NoSuchDriverException as error:
+                self._handle_driver_error(error)
+            except InvalidSessionIdException as error:
+                self._handle_driver_error(error)
+            except AttributeError as error:
+                self._handle_driver_error(error)
+            except StaleElementReferenceException as error:
+                self._handle_driver_error(error)
+            except WebDriverException as error:
+                self._handle_driver_error(error)
+
+        raise GeneralElementException(
+            msg=f"Failed to retrieve rect within {self.timeout=}",
+            stacktrace=traceback.format_stack()
+        )
 
     @property
-    def screenshot_as_png(self) -> bytes:
-        """Gets the screenshot of the current element as a binary data.
+    def aria_role(self) -> Optional[str]:
+        """Returns the ARIA role of the current web element.
 
-        :Usage:
-            ::
-
-                element_png = element.screenshot_as_png
+        Returns:
+            str: The ARIA role of the element, or None if not found.
         """
         self.logger.info(f"{inspect.currentframe().f_code.co_name}")
-        raise NotImplementedError
+        start_time = time.time()
 
-    def save_screenshot(self, filename) -> bool:
+        while time.time() - start_time < self.timeout:
+            try:
+                self._get_driver()
+
+                current_element = self._get_element(
+                    locator=self.locator,
+                    timeout=self.timeout,
+                    poll_frequency=self.poll_frequency,
+                    ignored_exceptions=self.ignored_exceptions,
+                    contains=self.contains
+                )
+
+                return current_element.aria_role
+
+            except NoSuchDriverException as error:
+                self._handle_driver_error(error)
+            except InvalidSessionIdException as error:
+                self._handle_driver_error(error)
+            except AttributeError as error:
+                self._handle_driver_error(error)
+            except StaleElementReferenceException as error:
+                self._handle_driver_error(error)
+            except WebDriverException as error:
+                self._handle_driver_error(error)
+
+        raise GeneralElementException(
+            msg=f"Failed to retrieve aria_role within {self.timeout=}",
+            stacktrace=traceback.format_stack()
+        )
+
+    @property
+    def accessible_name(self) -> Optional[str]:
+        """Returns the ARIA Level (accessible name) of the current web element.
+
+        Returns:
+            Optional[str]: Accessible name or None if not found.
+        """
+        self.logger.info(f"{inspect.currentframe().f_code.co_name}")
+        start_time = time.time()
+
+        while time.time() - start_time < self.timeout:
+            try:
+                self._get_driver()
+
+                current_element = self._get_element(
+                    locator=self.locator,
+                    timeout=self.timeout,
+                    poll_frequency=self.poll_frequency,
+                    ignored_exceptions=self.ignored_exceptions,
+                    contains=self.contains
+                )
+
+                return current_element.accessible_name
+
+            except NoSuchDriverException as error:
+                self._handle_driver_error(error)
+            except InvalidSessionIdException as error:
+                self._handle_driver_error(error)
+            except AttributeError as error:
+                self._handle_driver_error(error)
+            except StaleElementReferenceException as error:
+                self._handle_driver_error(error)
+            except WebDriverException as error:
+                self._handle_driver_error(error)
+
+        raise GeneralElementException(
+            msg=f"Failed to retrieve accessible_name within {self.timeout=}",
+            stacktrace=traceback.format_stack()
+        )
+
+    @property
+    def screenshot_as_base64(self) -> Optional[str]:
+        """Gets the screenshot of the current element as a base64 encoded string.
+
+        Returns:
+            Optional[str]: Base64-encoded screenshot string or None if failed.
+        """
+        self.logger.info(f"{inspect.currentframe().f_code.co_name}")
+        start_time = time.time()
+
+        while time.time() - start_time < self.timeout:
+            try:
+                self._get_driver()
+
+                current_element = self._get_element(
+                    locator=self.locator,
+                    timeout=self.timeout,
+                    poll_frequency=self.poll_frequency,
+                    ignored_exceptions=self.ignored_exceptions,
+                    contains=self.contains
+                )
+
+                return current_element.screenshot_as_base64
+
+            except NoSuchDriverException as error:
+                self._handle_driver_error(error)
+            except InvalidSessionIdException as error:
+                self._handle_driver_error(error)
+            except AttributeError as error:
+                self._handle_driver_error(error)
+            except StaleElementReferenceException as error:
+                self._handle_driver_error(error)
+            except WebDriverException as error:
+                self._handle_driver_error(error)
+
+        raise GeneralElementException(
+            msg=f"Failed to get screenshot_as_base64 within {self.timeout=}",
+            stacktrace=traceback.format_stack()
+        )
+
+    @property
+    def screenshot_as_png(self) -> Optional[bytes]:
+        """Gets the screenshot of the current element as binary data.
+
+        Returns:
+            Optional[bytes]: PNG-encoded screenshot bytes or None if failed.
+        """
+        self.logger.info(f"{inspect.currentframe().f_code.co_name}")
+        start_time = time.time()
+
+        while time.time() - start_time < self.timeout:
+            try:
+                self._get_driver()
+
+                current_element = self._get_element(
+                    locator=self.locator,
+                    timeout=self.timeout,
+                    poll_frequency=self.poll_frequency,
+                    ignored_exceptions=self.ignored_exceptions,
+                    contains=self.contains
+                )
+
+                return current_element.screenshot_as_png
+
+            except NoSuchDriverException as error:
+                self._handle_driver_error(error)
+            except InvalidSessionIdException as error:
+                self._handle_driver_error(error)
+            except AttributeError as error:
+                self._handle_driver_error(error)
+            except StaleElementReferenceException as error:
+                self._handle_driver_error(error)
+            except WebDriverException as error:
+                self._handle_driver_error(error)
+
+        raise GeneralElementException(
+            msg=f"Failed to get screenshot_as_png within {self.timeout=}",
+            stacktrace=traceback.format_stack()
+        )
+
+    def save_screenshot(self, filename: str) -> bool:
         """Saves a screenshot of the current element to a PNG image file.
-        Returns False if there is any IOError, else returns True. Use full
-        paths in your filename.
 
-        :Args:
-         - filename: The full path you wish to save your screenshot to. This
-           should end with a `.png` extension.
+        Args:
+            filename (str): The full path to save the screenshot. Should end with `.png`.
 
-        :Usage:
-            ::
-
-                element.screenshot('/Screenshots/foo.png')
+        Returns:
+            bool: True if successful, False otherwise.
         """
         self.logger.info(f"{inspect.currentframe().f_code.co_name}")
-        raise NotImplementedError
+        start_time = time.time()
+
+        while time.time() - start_time < self.timeout:
+            try:
+                self._get_driver()
+
+                current_element = self._get_element(
+                    locator=self.locator,
+                    timeout=self.timeout,
+                    poll_frequency=self.poll_frequency,
+                    ignored_exceptions=self.ignored_exceptions,
+                    contains=self.contains
+                )
+
+                return current_element.screenshot(filename)
+
+            except NoSuchDriverException as error:
+                self._handle_driver_error(error)
+            except InvalidSessionIdException as error:
+                self._handle_driver_error(error)
+            except AttributeError as error:
+                self._handle_driver_error(error)
+            except StaleElementReferenceException as error:
+                self._handle_driver_error(error)
+            except IOError as error:
+                self.logger.error(f"IOError while saving screenshot to {filename}: {error}")
+                return False
+            except WebDriverException as error:
+                self._handle_driver_error(error)
+
+        raise GeneralElementException(
+            msg=f"Failed to save screenshot to {filename} within {self.timeout=}",
+            stacktrace=traceback.format_stack()
+        )
 
     def _handle_driver_error(self, error: Exception) -> None:
         self.logger.error(f"{inspect.currentframe().f_code.co_name} {error}")
@@ -985,6 +2003,7 @@ class Element(ElementBase):
         self.driver.execute_script(name, params)
 
     def _ensure_session_alive(self) -> None:
+        self.logger.info(f"{inspect.currentframe().f_code.co_name}")
         try:
             self._get_driver()
         except NoSuchDriverException:
@@ -995,6 +2014,7 @@ class Element(ElementBase):
             self.base.reconnect()
 
     def _get_first_child_class(self, tries: int = 3) -> str:
+        self.logger.info(f"{inspect.currentframe().f_code.co_name}")
         for _ in range(tries):
             try:
                 parent_element = self
@@ -1008,12 +2028,14 @@ class Element(ElementBase):
                 continue
 
     def _get_xpath(self) -> Union[str, None]:
+        self.logger.info(f"{inspect.currentframe().f_code.co_name}")
         locator = self.handle_locator(self.locator, self.contains)
         if locator[0] == 'xpath':
             return locator[1]
         return self._get_xpath_by_driver()
 
     def _get_xpath_by_driver(self) -> Union[str, None]:
+        self.logger.info(f"{inspect.currentframe().f_code.co_name}")
         try:
             xpath = "//"
             attrs = self.get_attributes()
@@ -1042,7 +2064,9 @@ class Element(ElementBase):
                 else:
                     xpath += "[@{}='{}']".format(key, value)
             return xpath
-        except (AttributeError, KeyError) as e:
+        except AttributeError as e:
+            self.logger.error("Ошибка при формировании XPath: {}".format(str(e)))
+        except KeyError as e:
             self.logger.error("Ошибка при формировании XPath: {}".format(str(e)))
         except WebDriverException as e:
             self.logger.error("Неизвестная ошибка при формировании XPath: {}".format(str(e)))
@@ -1060,6 +2084,24 @@ class Element(ElementBase):
         Returns:
             XPath string to access the element.
         """
+        self.logger.info(f"{inspect.currentframe().f_code.co_name}")
         parent_xpath = self._get_xpath()
         return f"{parent_xpath}/*[{index}]"
+
+    def _wrap_driver_action(self, func: typing.Callable[[], T]) -> T:
+        start_time = time.time()
+        while time.time() - start_time < self.timeout:
+            try:
+                self._get_driver()
+                return func()
+            except NoSuchDriverException as error:
+                self._handle_driver_error(error)
+            except InvalidSessionIdException as error:
+                self._handle_driver_error(error)
+            except AttributeError as error:
+                self._handle_driver_error(error)
+            except StaleElementReferenceException as error:
+                self._handle_driver_error(error)
+
+        raise GeneralElementException(...)
 

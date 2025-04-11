@@ -2,6 +2,7 @@ import os
 import subprocess
 import time
 from typing import Generator
+from loguru import logger
 
 import pytest
 from appium.webdriver import WebElement
@@ -55,6 +56,106 @@ class TestElement:
         assert app.is_connected()
         assert isinstance(element, Element)
         assert element.locator == {'content-desc': 'Phone'}
+
+    def test_get_elements(self, app: Shadowstep):
+        parent_element = app.get_element(locator={'package': 'com.android.launcher3',
+                                                  'class': 'android.view.ViewGroup',
+                                                  'resource-id': 'com.android.launcher3:id/hotseat',
+                                                  })
+        inner_elements = parent_element.get_elements(locator={'package': 'com.android.launcher3',
+                                                              'class': 'android.widget.TextView'})
+        assert isinstance(inner_elements, Generator)
+        for inner_element in inner_elements:
+            assert isinstance(inner_element, Element)
+            assert inner_element.get_attribute('package') == 'com.android.launcher3'
+            assert inner_element.get_attribute('class') == 'android.widget.TextView'
+        app.adb.press_home()
+
+    def test_get_elements_greedy(self, app: Shadowstep):
+        parent_element = app.get_element(locator={'package': 'com.android.launcher3',
+                                                  'class': 'android.view.ViewGroup',
+                                                  'resource-id': 'com.android.launcher3:id/hotseat',
+                                                  })
+        inner_elements = parent_element.get_elements_greedy(locator={'package': 'com.android.launcher3',
+                                                                     'class': 'android.widget.TextView'})
+        assert isinstance(inner_elements, list)
+        for inner_element in inner_elements:
+            assert isinstance(inner_element, Element)
+            assert inner_element.get_attribute('package') == 'com.android.launcher3'
+            assert inner_element.get_attribute('class') == 'android.widget.TextView'
+        app.adb.press_home()
+
+    def test_get_attributes(self, app: Shadowstep):
+        element = app.get_element(locator={'package': 'com.android.launcher3',
+                                           'class': 'android.view.ViewGroup',
+                                           'resource-id': 'com.android.launcher3:id/hotseat',
+                                           })
+        attrs = element.get_attributes()
+        assert isinstance(attrs, dict)
+        assert 'bounds' in attrs.keys()
+
+    def test_get_parent(self, app: Shadowstep):
+        child = app.get_element(locator={'content-desc': 'Phone'})
+        parent = child.get_parent()
+        assert isinstance(parent, Element)
+        assert 'ViewGroup' in parent.get_attribute('class')
+        child = app.get_element(locator={'resource-id': 'com.android.launcher3:id/drag_layer'})
+        parent = child.get_parent()
+        assert 'com.android.launcher3:id/launcher' in parent.get_attribute('resource-id')
+
+    def test_get_parents(self, app: Shadowstep):
+        element = app.get_element(locator={'content-desc': 'Phone'})
+        parents = element.get_parents()
+        assert isinstance(parents, Generator)
+        count = 0
+        for parent in parents:
+            assert isinstance(parent, Element)
+            count += 1
+        assert count > 0
+        app.adb.press_home()
+
+    def test_get_sibling(self, app: Shadowstep):
+        el = app.get_element({'content-desc': 'Phone'})
+        sibling = el.get_sibling({'content-desc': 'WebView Browser Tester'})
+        assert isinstance(sibling, Element)
+        assert 'WebView Browser Tester' in sibling.get_attribute('text')
+        el = app.get_element({'content-desc': 'Phone'})
+        sibling_element = app.get_element({'content-desc': 'WebView Browser Tester'})
+        sibling = el.get_sibling(sibling_element)
+        assert isinstance(sibling, Element)
+        assert 'WebView Browser Tester' in sibling.get_attribute('text')
+
+    def test_get_siblings(self, app: Shadowstep):
+        el = app.get_element({'content-desc': 'Phone'})
+        siblings = el.get_siblings()
+        assert isinstance(siblings, Generator)
+        count = 0
+        for sibling in siblings:
+            assert isinstance(sibling, Element)
+            assert sibling.get_attribute('bounds') is not None
+            count += 1
+        assert count > 0
+        app.terminal.press_home()
+
+    @pytest.mark.skip(reason="Not implemented yet")
+    def test_get_center(self, app: Shadowstep):
+        ...
+
+    @pytest.mark.skip(reason="Not implemented yet")
+    def test_get_coordinates(self, app: Shadowstep):
+        ...
+
+    @pytest.mark.skip(reason="Not implemented yet")
+    def test_get_attribute(self, app: Shadowstep):
+        ...
+
+    @pytest.mark.skip(reason="Not implemented yet")
+    def test_get_property(self, app: Shadowstep):
+        ...
+
+    @pytest.mark.skip(reason="Not implemented yet")
+    def test_get_dom_attribute(self, app: Shadowstep):
+        ...
 
     def test_tap(self, app: Shadowstep) -> None:
         element = app.get_element(locator={'content-desc': 'Phone'})
@@ -114,29 +215,6 @@ class TestElement:
     def test_tap_invalid_element_state_exception(self, app: Shadowstep):
         pass  # don't know how to catch
 
-    def test_get_elements(self, app: Shadowstep):
-        parent_element = app.get_element(locator={'package': 'com.android.launcher3',
-                                                  'class': 'android.view.ViewGroup',
-                                                  'resource-id': 'com.android.launcher3:id/hotseat',
-                                                  })
-        inner_elements = parent_element.get_elements(locator={'package': 'com.android.launcher3',
-                                                              'class': 'android.widget.TextView'})
-        assert isinstance(inner_elements, Generator)
-        for inner_element in inner_elements:
-            assert isinstance(inner_element, Element)
-            assert inner_element.get_attribute('package') == 'com.android.launcher3'
-            assert inner_element.get_attribute('class') == 'android.widget.TextView'
-        app.adb.press_home()
-
-    def test_get_attributes(self, app: Shadowstep):
-        element = app.get_element(locator={'package': 'com.android.launcher3',
-                                           'class': 'android.view.ViewGroup',
-                                           'resource-id': 'com.android.launcher3:id/hotseat',
-                                           })
-        attrs = element.get_attributes()
-        assert isinstance(attrs, dict)
-        assert 'bounds' in attrs.keys()
-
     @pytest.mark.parametrize("params", [
         {"x": 100, "y": 500},  # Прямые координаты
         {"locator": {"package": "com.android.quicksearchbox",
@@ -187,19 +265,17 @@ class TestElement:
         assert 'some_text' in search_src_text.get_attribute('text')
 
     def test_drag(self, app: Shadowstep):
-        app.terminal.press_home()
-        time.sleep(3)
-        phone = app.get_element(locator={"content-desc": "Phone"}).tap_and_move(x=100, y=500)
-        time.sleep(3)
         dev_settings = app.get_element(locator={"content-desc": "Dev Settings"})
-        end_x, end_y = phone.get_center()
-        dev_settings.drag(end_x=end_x, end_y=end_y)
         search = app.get_element(locator={'resource-id': 'com.android.quicksearchbox:id/search_widget_text'})
         assert 'com.android.quicksearchbox' in search.get_attribute('package')
         end_x, end_y = search.get_center()
+        app.get_element(locator={"content-desc": "Phone"}).tap_and_move(x=100, y=500)
+        time.sleep(1)
+        dev_settings.drag(end_x=100, end_y=500)
+        time.sleep(1)
         dev_settings.drag(end_x=end_x, end_y=end_y)
         dev_settings.timeout = 5
-        time.sleep(5)
+        time.sleep(1)
         assert not dev_settings.is_within_screen()
 
     def test_is_within_screen(self, app: Shadowstep):
@@ -287,30 +363,6 @@ class TestElement:
         app.terminal.close_app(package='com.android.settings')
 
     @pytest.mark.skip(reason="Not implemented yet")
-    def test_get_parent(self, app: Shadowstep):
-        ...
-
-    @pytest.mark.skip(reason="Not implemented yet")
-    def test_get_parents(self, app: Shadowstep):
-        ...
-
-    @pytest.mark.skip(reason="Not implemented yet")
-    def test_get_sibling(self, app: Shadowstep):
-        ...
-
-    @pytest.mark.skip(reason="Not implemented yet")
-    def test_get_siblings(self, app: Shadowstep):
-        ...
-
-    @pytest.mark.skip(reason="Not implemented yet")
-    def test_get_cousin(self, app: Shadowstep):
-        ...
-
-    @pytest.mark.skip(reason="Not implemented yet")
-    def test_get_cousins(self, app: Shadowstep):
-        ...
-
-    @pytest.mark.skip(reason="Not implemented yet")
     def test_is_contains(self, app: Shadowstep):
         ...
 
@@ -320,18 +372,6 @@ class TestElement:
 
     @pytest.mark.skip(reason="Not implemented yet")
     def test_unzoom(self, app: Shadowstep):
-        ...
-
-    @pytest.mark.skip(reason="Not implemented yet")
-    def test_get_center(self, app: Shadowstep):
-        ...
-
-    @pytest.mark.skip(reason="Not implemented yet")
-    def test_get_coordinates(self, app: Shadowstep):
-        ...
-
-    @pytest.mark.skip(reason="Not implemented yet")
-    def test_get_attribute(self, app: Shadowstep):
         ...
 
     @pytest.mark.skip(reason="Not implemented yet")
@@ -368,14 +408,6 @@ class TestElement:
 
     @pytest.mark.skip(reason="Not implemented yet")
     def test_submit(self, app: Shadowstep):
-        ...
-
-    @pytest.mark.skip(reason="Not implemented yet")
-    def test_get_property(self, app: Shadowstep):
-        ...
-
-    @pytest.mark.skip(reason="Not implemented yet")
-    def test_get_dom_attribute(self, app: Shadowstep):
         ...
 
     @pytest.mark.skip(reason="Not implemented yet")

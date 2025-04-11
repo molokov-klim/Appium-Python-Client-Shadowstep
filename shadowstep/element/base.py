@@ -31,7 +31,7 @@ class ElementBase:
                  contains: bool = False):
         self.logger = logger
         self.driver: WebDriver = None
-        self.locator: Union[Tuple, Dict[str, str], str, WebElement] = locator
+        self.locator: Union[Tuple, Dict[str, str], 'Element'] = locator
         self.base = base  # Shadowstep instance
         self.timeout: int = timeout
         self.poll_frequency: float = poll_frequency
@@ -74,27 +74,20 @@ class ElementBase:
             self.id = element.id
             return element
         except NoSuchElementException as error:
-            ic()
             self.logger.error(f"{inspect.currentframe().f_code.co_name} {locator=} {error}")
             raise
         except TimeoutException as error:
-            ic()
-            ic(error)
-            ic(error.stacktrace)
             self.logger.error(f"{inspect.currentframe().f_code.co_name} {locator=} {error}")
             for stack in error.stacktrace:
                 if 'NoSuchElementError' in stack:
-                    ic(True)
                     raise NoSuchElementException(msg=error.msg,
                                                  screen=error.screen,
                                                  stacktrace=error.stacktrace)
             raise
         except InvalidSessionIdException as error:
-            ic()
             self.logger.error(f"{inspect.currentframe().f_code.co_name} {locator=} {error}")
             return None
         except WebDriverException as error:
-            ic()
             self.logger.error(f"{inspect.currentframe().f_code.co_name} {locator} {error}")
             return None
 
@@ -152,3 +145,5 @@ class ElementBase:
         """
         self.logger.info(f"{inspect.currentframe().f_code.co_name}")
         self.driver = WebDriverSingleton.get_driver()
+
+
