@@ -3,7 +3,7 @@ import logging
 import time
 import traceback
 import typing
-from typing import Union, Tuple, Dict, Optional, cast, T
+from typing import Union, Tuple, Dict, Optional, cast
 
 import xml.etree.ElementTree as ET
 
@@ -2087,21 +2087,3 @@ class Element(ElementBase):
         self.logger.info(f"{inspect.currentframe().f_code.co_name}")
         parent_xpath = self._get_xpath()
         return f"{parent_xpath}/*[{index}]"
-
-    def _wrap_driver_action(self, func: typing.Callable[[], T]) -> T:
-        start_time = time.time()
-        while time.time() - start_time < self.timeout:
-            try:
-                self._get_driver()
-                return func()
-            except NoSuchDriverException as error:
-                self._handle_driver_error(error)
-            except InvalidSessionIdException as error:
-                self._handle_driver_error(error)
-            except AttributeError as error:
-                self._handle_driver_error(error)
-            except StaleElementReferenceException as error:
-                self._handle_driver_error(error)
-
-        raise GeneralElementException(...)
-

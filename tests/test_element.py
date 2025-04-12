@@ -9,7 +9,7 @@ from appium.webdriver import WebElement
 from icecream import ic
 from selenium.common import TimeoutException, NoSuchElementException, StaleElementReferenceException
 
-from shadowstep.element.element import Element
+from shadowstep.element.element import Element, GeneralElementException
 from shadowstep.shadowstep import Shadowstep
 
 
@@ -136,26 +136,6 @@ class TestElement:
             count += 1
         assert count > 0
         app.terminal.press_home()
-
-    @pytest.mark.skip(reason="Not implemented yet")
-    def test_get_center(self, app: Shadowstep):
-        ...
-
-    @pytest.mark.skip(reason="Not implemented yet")
-    def test_get_coordinates(self, app: Shadowstep):
-        ...
-
-    @pytest.mark.skip(reason="Not implemented yet")
-    def test_get_attribute(self, app: Shadowstep):
-        ...
-
-    @pytest.mark.skip(reason="Not implemented yet")
-    def test_get_property(self, app: Shadowstep):
-        ...
-
-    @pytest.mark.skip(reason="Not implemented yet")
-    def test_get_dom_attribute(self, app: Shadowstep):
-        ...
 
     def test_tap(self, app: Shadowstep) -> None:
         element = app.get_element(locator={'content-desc': 'Phone'})
@@ -362,111 +342,159 @@ class TestElement:
         assert 'Network & internet' in settings_network.get_attribute('text')
         app.terminal.close_app(package='com.android.settings')
 
-    @pytest.mark.skip(reason="Not implemented yet")
-    def test_is_contains(self, app: Shadowstep):
-        ...
+    def test_get_center(self, app: Shadowstep):
+        el = app.get_element({'content-desc': 'Phone'})
+        center = el.get_center()
+        assert isinstance(center, tuple) and len(center) == 2
+        assert center == (136, 1671)
 
-    @pytest.mark.skip(reason="Not implemented yet")
-    def test_zoom(self, app: Shadowstep):
-        ...
+    def test_get_coordinates(self, app: Shadowstep):
+        el = app.get_element({'content-desc': 'Phone'})
+        coords = el.get_coordinates()
+        assert isinstance(coords, tuple) and len(coords) == 4
+        assert coords == (35, 1553, 237, 1789)
 
-    @pytest.mark.skip(reason="Not implemented yet")
-    def test_unzoom(self, app: Shadowstep):
-        ...
+    def test_get_attribute(self, app: Shadowstep):
+        el = app.get_element({'content-desc': 'Phone'})
+        assert el.get_attribute('content-desc') == 'Phone'
 
-    @pytest.mark.skip(reason="Not implemented yet")
+    @pytest.mark.xfail  # not implemented in appium uiautomator
+    def test_get_property(self, app: Shadowstep):
+        el = app.get_element({'content-desc': 'Phone'})
+        prop = el.get_property('enabled')
+        assert isinstance(prop, (str, bool, dict, type(None)))
+
+    def test_get_dom_attribute(self, app: Shadowstep):
+        el = app.get_element({'content-desc': 'Phone'})
+        assert el.get_dom_attribute('class') == 'android.widget.TextView'
+
     def test_is_displayed(self, app: Shadowstep):
-        ...
+        el = app.get_element({'content-desc': 'Phone'})
+        assert isinstance(el.is_displayed(), bool)
+        assert el.is_displayed()
 
-    @pytest.mark.skip(reason="Not implemented yet")
-    def test_clear(self, app: Shadowstep):
-        ...
-
-    @pytest.mark.skip(reason="Not implemented yet")
-    def test_set_text(self, app: Shadowstep):
-        ...
-
-    @pytest.mark.skip(reason="Not implemented yet")
-    def test_location_in_view(self, app: Shadowstep):
-        ...
-
-    @pytest.mark.skip(reason="Not implemented yet")
-    def test_set_value(self, app: Shadowstep):
-        ...
-
-    @pytest.mark.skip(reason="Not implemented yet")
-    def test_send_keys(self, app: Shadowstep):
-        ...
-
-    @pytest.mark.skip(reason="Not implemented yet")
-    def test_tag_name(self, app: Shadowstep):
-        ...
-
-    @pytest.mark.skip(reason="Not implemented yet")
-    def test_text(self, app: Shadowstep):
-        ...
-
-    @pytest.mark.skip(reason="Not implemented yet")
-    def test_submit(self, app: Shadowstep):
-        ...
-
-    @pytest.mark.skip(reason="Not implemented yet")
     def test_is_selected(self, app: Shadowstep):
-        ...
+        el = app.get_element({'content-desc': 'Phone'})
+        assert isinstance(el.is_selected(), bool)
+        assert not el.is_selected()
 
-    @pytest.mark.skip(reason="Not implemented yet")
     def test_is_enabled(self, app: Shadowstep):
-        ...
+        el = app.get_element({'content-desc': 'Phone'})
+        assert isinstance(el.is_enabled(), bool)
+        assert el.is_enabled()
 
-    @pytest.mark.skip(reason="Not implemented yet")
+    def test_is_contains(self, app: Shadowstep):
+        el = app.get_element({'resource-id': 'com.android.launcher3:id/hotseat'})
+        assert el.is_contains({'content-desc': 'Phone'}) is True
+
+    def test_tag_name(self, app: Shadowstep):
+        el = app.get_element({'content-desc': 'Phone'})
+        tag = el.tag_name
+        assert isinstance(el.tag_name, str)
+        assert el.tag_name == 'Phone'
+
+    def test_text(self, app: Shadowstep):
+        el = app.get_element({'content-desc': 'Phone'})
+        assert isinstance(el.text, str)
+        assert el.text == 'Phone'
+
+    def test_clear(self, app: Shadowstep):
+        el = app.get_element({'resource-id': 'com.android.quicksearchbox:id/search_widget_text'})
+        el.tap()
+        app.terminal.past_text('some_text')
+        time.sleep(3)
+        el = app.get_element({'resource-id': 'com.android.quicksearchbox:id/search_src_text'})
+        assert el.text == 'some_text'
+        el.clear()
+        assert el.text == ''
+
+    @pytest.mark.xfail  # 'WebElement' object has no attribute 'set_value'
+    def test_set_value(self, app: Shadowstep):
+        el = app.get_element({'resource-id': 'com.android.quicksearchbox:id/search_widget_text'})
+        el.tap()
+        time.sleep(3)
+        el = app.get_element({'resource-id': 'com.android.quicksearchbox:id/search_src_text'})
+        el.set_value("test123")
+        assert "test123" in el.text
+        el.clear()
+
+    sdfsdafsdfsd fsadfasd
+
+    def test_send_keys(self, app: Shadowstep):
+        el = app.get_element({'resource-id': 'com.android.quicksearchbox:id/search_src_text'})
+        el.send_keys("abc")
+        assert "abc" in el.text
+
+    def test_submit(self, app: Shadowstep):
+        el = app.get_element({'resource-id': 'com.android.quicksearchbox:id/search_src_text'})
+        el.submit()  # Не всегда валидно, но для теста вызова достаточно
+
     def test_shadow_root(self, app: Shadowstep):
-        ...
+        el = app.get_element({'content-desc': 'Phone'})
+        try:
+            sr = el.shadow_root
+            assert sr is not None
+        except Exception as e:
+            assert isinstance(e, (NoSuchElementException, AttributeError))
 
-    @pytest.mark.skip(reason="Not implemented yet")
     def test_location_once_scrolled_into_view(self, app: Shadowstep):
-        ...
+        el = app.get_element({'content-desc': 'Phone'})
+        loc = el.location_once_scrolled_into_view
+        assert 'x' in loc and 'y' in loc
 
-    @pytest.mark.skip(reason="Not implemented yet")
-    def test_size(self, app: Shadowstep):
-        ...
+    def test_size_location_rect(self, app: Shadowstep):
+        el = app.get_element({'content-desc': 'Phone'})
+        assert 'width' in el.size and 'height' in el.size
+        assert 'x' in el.location and 'y' in el.location
+        assert all(k in el.rect for k in ('x', 'y', 'width', 'height'))
 
-    @pytest.mark.skip(reason="Not implemented yet")
     def test_value_of_css_property(self, app: Shadowstep):
-        ...
+        el = app.get_element({'content-desc': 'Phone'})
+        value = el.value_of_css_property("display")
+        assert isinstance(value, str)
 
-    @pytest.mark.skip(reason="Not implemented yet")
-    def test_location(self, app: Shadowstep):
-        ...
-
-    @pytest.mark.skip(reason="Not implemented yet")
-    def test_rect(self, app: Shadowstep):
-        ...
-
-    @pytest.mark.skip(reason="Not implemented yet")
-    def test_aria_role(self, app: Shadowstep):
-        ...
-
-    @pytest.mark.skip(reason="Not implemented yet")
-    def test_accessible_name(self, app: Shadowstep):
-        ...
-
-    @pytest.mark.skip(reason="Not implemented yet")
     def test_screenshot_as_base64(self, app: Shadowstep):
-        ...
+        el = app.get_element({'content-desc': 'Phone'})
+        ss = el.screenshot_as_base64
+        assert isinstance(ss, str)
 
-    @pytest.mark.skip(reason="Not implemented yet")
     def test_screenshot_as_png(self, app: Shadowstep):
-        ...
+        el = app.get_element({'content-desc': 'Phone'})
+        ss = el.screenshot_as_png
+        assert isinstance(ss, bytes)
 
-    @pytest.mark.skip(reason="Not implemented yet")
-    def test_screenshot(self, app: Shadowstep):
-        ...
+    def test_save_screenshot(self, tmp_path, app: Shadowstep):
+        el = app.get_element({'content-desc': 'Phone'})
+        filepath = tmp_path / "test_element.png"
+        assert el.save_screenshot(str(filepath)) is True
 
-# """
-# NoSuchDriverException
-# InvalidSessionIdException
-#
-# NoSuchElementException
-# StaleElementReferenceException
-# InvalidElementStateException
-# """
+
+class TestElementNegativeCases:
+
+    def test_shadow_root_error(self, app: Shadowstep):
+        el = app.get_element({'content-desc': 'non_existing'})
+        with pytest.raises(GeneralElementException):
+            _ = el.shadow_root
+
+    def test_get_attribute_timeout(self, app: Shadowstep):
+        el = app.get_element({'content-desc': 'non_existing'})
+        el.timeout = 1
+        with pytest.raises(GeneralElementException):
+            el.get_attribute("text")
+
+    def test_get_coordinates_error(self, app: Shadowstep):
+        el = app.get_element({'content-desc': 'non_existing'})
+        el.timeout = 1
+        with pytest.raises(GeneralElementException):
+            el.get_coordinates()
+
+    def test_get_center_error(self, app: Shadowstep):
+        el = app.get_element({'content-desc': 'non_existing'})
+        el.timeout = 1
+        with pytest.raises(GeneralElementException):
+            el.get_center()
+
+    def test_scroll_to_element_not_found(self, app: Shadowstep):
+        container = app.get_element({'resource-id': 'com.android.settings:id/main_content_scrollable_container'})
+        with pytest.raises(GeneralElementException):
+            container.scroll_to_element(locator={'text': 'Element That Does Not Exist'})
