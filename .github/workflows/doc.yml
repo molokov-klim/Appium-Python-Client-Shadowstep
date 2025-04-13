@@ -1,4 +1,4 @@
-name: Сборка и развертывание Jekyll сайта
+name: Build and deploy Jekyll
 
 on:
   push:
@@ -12,28 +12,32 @@ permissions:
 
 concurrency:
   group: "pages"
-  cancel-in-progress: false
+  cancel-in-progress: true
 
 jobs:
   build:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Получение кода
+    - name: Get code
       uses: actions/checkout@v2
 
-    - name: Установка Ruby и Jekyll
+    - name: Install Ruby и Jekyll
       uses: ruby/setup-ruby@v1
       with:
         ruby-version: '2.7'
         bundler-cache: true
 
-    - name: Сборка Jekyll сайта
+    - name: Install requirements
       run: |
-        bundle install
+        gem install bundler
+        bundle install --path vendor/bundle
+
+    - name: Build Jekyll
+      run: |
         bundle exec jekyll build
 
-    - name: Развертывание на GitHub Pages
+    - name: Deploy to GitHub Pages
       if: github.ref == 'refs/heads/main'
       uses: peaceiris/actions-gh-pages@v3
       with:
