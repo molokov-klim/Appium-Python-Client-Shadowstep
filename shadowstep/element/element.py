@@ -496,7 +496,8 @@ class Element(ElementBase):
         )
 
     def get_property(self, name: str) -> Union[str, bool, dict, None]:
-        """Gets the given property of the element.
+        """NOT IMPLEMENTED!
+        Gets the given property of the element.
 
         Args:
             name (str): Name of the property to retrieve.
@@ -505,6 +506,7 @@ class Element(ElementBase):
             Union[str, bool, dict, None]: Property value.
         """
         self.logger.info(f"{inspect.currentframe().f_code.co_name}")
+        self.logger.warning(f"Method {inspect.currentframe().f_code.co_name} is not implemented in UiAutomator2")
         start_time = time.time()
         while time.time() - start_time < self.timeout:
             try:
@@ -1338,7 +1340,8 @@ class Element(ElementBase):
 
     # Override
     def set_value(self, value: str) -> Union['Element', None]:
-        """Set the value on this element in the application.
+        """NOT IMPLEMENTED!
+        Set the value on this element in the application.
 
         Args:
             value: The value to be set.
@@ -1347,6 +1350,8 @@ class Element(ElementBase):
             Element: Self instance on success.
         """
         self.logger.info(f"{inspect.currentframe().f_code.co_name}")
+        self.logger.warning(f"Method {inspect.currentframe().f_code.co_name} is not implemented in UiAutomator2")
+
         start_time = time.time()
 
         while time.time() - start_time < self.timeout:
@@ -1499,12 +1504,14 @@ class Element(ElementBase):
         )
 
     def submit(self) -> Union['Element', None]:
-        """Submits a form element.
+        """NOT IMPLEMENTED!
+        Submits a form element.
 
         Returns:
             Element: Self instance on success.
         """
         self.logger.info(f"{inspect.currentframe().f_code.co_name}")
+        self.logger.warning(f"Method {inspect.currentframe().f_code.co_name} is not implemented in UiAutomator2")
         start_time = time.time()
 
         while time.time() - start_time < self.timeout:
@@ -1536,7 +1543,8 @@ class Element(ElementBase):
 
     @property
     def shadow_root(self) -> ShadowRoot:
-        """Returns the shadow root of the current element if available.
+        """NOT IMPLEMENTED!
+        Returns the shadow root of the current element if available.
 
         Returns:
             ShadowRoot: Shadow DOM root attached to the element.
@@ -1545,6 +1553,8 @@ class Element(ElementBase):
             GeneralElementException: If shadow root is not available or an error occurs.
         """
         self.logger.info(f"{inspect.currentframe().f_code.co_name}")
+        self.logger.warning(f"Method {inspect.currentframe().f_code.co_name} is not implemented in UiAutomator2")
+
         start_time = time.time()
 
         while time.time() - start_time < self.timeout:
@@ -1575,7 +1585,8 @@ class Element(ElementBase):
 
     @property
     def location_once_scrolled_into_view(self) -> dict:
-        """Gets the top-left corner location of the element after scrolling it into view.
+        """NOT IMPLEMENTED
+        Gets the top-left corner location of the element after scrolling it into view.
 
         Returns:
             dict: Dictionary with keys 'x' and 'y' indicating location on screen.
@@ -1584,6 +1595,8 @@ class Element(ElementBase):
             GeneralElementException: If element could not be scrolled into view or location determined.
         """
         self.logger.info(f"{inspect.currentframe().f_code.co_name}")
+        self.logger.warning(f"Method {inspect.currentframe().f_code.co_name} is not implemented in UiAutomator2")
+
         start_time = time.time()
 
         while time.time() - start_time < self.timeout:
@@ -1658,7 +1671,8 @@ class Element(ElementBase):
         )
 
     def value_of_css_property(self, property_name: str) -> str:
-        """Returns the value of a CSS property.
+        """NOT IMPLEMENTED!
+        Returns the value of a CSS property.
 
         Args:
             property_name (str): The name of the CSS property.
@@ -1670,6 +1684,8 @@ class Element(ElementBase):
             GeneralElementException: If value could not be retrieved within timeout.
         """
         self.logger.info(f"{inspect.currentframe().f_code.co_name}")
+        self.logger.warning(f"Method {inspect.currentframe().f_code.co_name} is not implemented in UiAutomator2")
+
         start_time = time.time()
 
         while time.time() - start_time < self.timeout:
@@ -1704,7 +1720,8 @@ class Element(ElementBase):
 
     @property
     def location(self) -> dict:
-        """The location of the element in the renderable canvas.
+        """NOT IMPLEMENTED
+        The location of the element in the renderable canvas.
 
         Returns:
             dict: Dictionary with 'x' and 'y' coordinates of the element.
@@ -1713,6 +1730,8 @@ class Element(ElementBase):
             GeneralElementException: If location could not be retrieved within timeout.
         """
         self.logger.info(f"{inspect.currentframe().f_code.co_name}")
+        self.logger.warning(f"Method {inspect.currentframe().f_code.co_name} is not implemented in UiAutomator2")
+
         start_time = time.time()
 
         while time.time() - start_time < self.timeout:
