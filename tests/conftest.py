@@ -9,7 +9,7 @@ import pytest
 from shadowstep.shadowstep import Shadowstep
 
 # Please use virtual device Google Pixel 10.0
-UDID = '192.168.208.101:5555'
+UDID = '192.168.56.101:5555'
 
 logger.remove()
 format_string = (

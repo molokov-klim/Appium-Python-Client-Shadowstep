@@ -153,14 +153,9 @@ class TestElement:
                                           'resource-id': 'com.android.launcher3:id/bubble_text'})
         bubble.tap()
         time.sleep(3)
-        phone_info_title = app.get_element(locator={'package': 'com.android.settings',
-                                                    'class': 'android.widget.TextView',
-                                                    'text': 'App info'})
-        phone_info_storage = app.get_element(locator={'package': 'com.android.settings',
-                                                      'class': 'android.widget.TextView',
-                                                      'text': 'Storage & cache',
-                                                      'resource-id': 'android:id/title'})
-        assert phone_info_title.get_attribute('text') == 'App info'
+        phone_info_title = app.get_element(locator={'content-desc': 'App info'})
+        phone_info_storage = app.get_element(locator={'text': 'Storage & cache'})
+        assert phone_info_title.get_attribute('content-desc') == 'App info'
         assert phone_info_storage.get_attribute('text') == 'Storage & cache'
 
     def test_tap_no_such_driver_exception(self, app: Shadowstep):
@@ -226,14 +221,10 @@ class TestElement:
                                           'resource-id': 'com.android.launcher3:id/bubble_text'})
         bubble.click()
         time.sleep(3)
-        phone_info_title = app.get_element(locator={'package': 'com.android.settings',
-                                                    'class': 'android.widget.TextView',
-                                                    'text': 'App info'})
-        phone_info_storage = app.get_element(locator={'package': 'com.android.settings',
-                                                      'class': 'android.widget.TextView',
-                                                      'text': 'Storage & cache',
+        phone_info_title = app.get_element(locator={'content-desc': 'App info'})
+        phone_info_storage = app.get_element(locator={'text': 'Storage & cache',
                                                       'resource-id': 'android:id/title'})
-        assert phone_info_title.get_attribute('text') == 'App info'
+        assert phone_info_title.get_attribute('content-desc') == 'App info'
         assert phone_info_storage.get_attribute('text') == 'Storage & cache'
 
     def test_click_double(self, app: Shadowstep):
@@ -247,7 +238,7 @@ class TestElement:
     def test_drag(self, app: Shadowstep):
         app.terminal.press_home()
         time.sleep(10)
-        dev_settings = app.get_element(locator={"content-desc": "Dev Settings"})
+        dev_settings = app.get_element(locator={"content-desc": "Appium Settings"})
         search = app.get_element(locator={'resource-id': 'com.android.quicksearchbox:id/search_widget_text'})
         assert 'com.android.quicksearchbox' in search.get_attribute('package')
         end_x, end_y = search.get_center()
@@ -348,13 +339,13 @@ class TestElement:
         el = app.get_element({'content-desc': 'Phone'})
         center = el.get_center()
         assert isinstance(center, tuple) and len(center) == 2
-        assert center == (136, 1671)
+        assert center == (126, 2184)
 
     def test_get_coordinates(self, app: Shadowstep):
         el = app.get_element({'content-desc': 'Phone'})
         coords = el.get_coordinates()
         assert isinstance(coords, tuple) and len(coords) == 4
-        assert coords == (35, 1553, 237, 1789)
+        assert coords == (23, 2100, 230, 2269)
 
     def test_get_attribute(self, app: Shadowstep):
         el = app.get_element({'content-desc': 'Phone'})
