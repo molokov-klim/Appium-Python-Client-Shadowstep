@@ -90,6 +90,7 @@ class ShadowstepBase:
         self.strict_ssl: bool = None
         self.ssh_password: str = None
         self.ssh_user: str = None
+        self.ssh_port = 22
         self.command_executor: str = None
 
         self.adb: Adb = None
@@ -397,7 +398,7 @@ class ShadowstepBase:
                                          strict_ssl=self.strict_ssl)
         if ssh_user and ssh_password:
             self.transport = Transport(server=self.server_ip,
-                                       port=self.server_port,
+                                       port=self.ssh_port,
                                        user=self.ssh_user,
                                        password=self.ssh_password)
         self.terminal = Terminal(base=self)
