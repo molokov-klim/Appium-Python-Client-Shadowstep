@@ -10,13 +10,15 @@ import xml.etree.ElementTree as ET
 from appium.webdriver import WebElement
 from icecream import ic
 from selenium.common import NoSuchDriverException, InvalidSessionIdException, WebDriverException, \
-    StaleElementReferenceException, NoSuchElementException
+    StaleElementReferenceException, NoSuchElementException, TimeoutException
 from selenium.types import WaitExcTypes
 from selenium.webdriver import ActionChains
 from selenium.webdriver.common.actions import interaction
 from selenium.webdriver.common.actions.action_builder import ActionBuilder
 from selenium.webdriver.common.actions.pointer_input import PointerInput
 from selenium.webdriver.remote.shadowroot import ShadowRoot
+from selenium.webdriver.support.wait import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
 
 from shadowstep.element.base import ElementBase
 from shadowstep.utils.utils import find_coordinates_by_vector
@@ -572,6 +574,77 @@ class Element(ElementBase):
             msg=f"Failed to {inspect.currentframe().f_code.co_name} within {self.timeout=}",
             stacktrace=traceback.format_stack()
         )
+
+    def wait(self, timeout: int = 10, poll_frequency: float = 0.5) -> bool:
+        """Waits for the element to appear (present in DOM).
+
+        Args:
+            timeout (int): Timeout in seconds.
+            poll_frequency (float): Frequency of polling.
+
+        Returns:
+            bool: True if the element is found, False otherwise.
+        """
+        self.logger.info(f"{inspect.currentframe().f_code.co_name}")
+        try:
+            resolved_locator = self.handle_locator(self.locator, self.contains)
+            if not resolved_locator:
+                self.logger.error("Resolved locator is None or invalid")
+                return False
+            WebDriverWait(self.base.driver, timeout, poll_frequency).until(
+                EC.presence_of_element_located(resolved_locator)
+            )
+            return True
+        except TimeoutException:
+            return False
+
+    def wait_visible(self, timeout: int = 10, poll_frequency: float = 0.5) -> bool:
+        """Waits until the element is visible.
+
+        Args:
+            timeout (int): Timeout in seconds.
+            poll_frequency (float): Frequency of polling.
+
+        Returns:
+            bool: True if the element becomes visible, False otherwise.
+        """
+        self.logger.info(f"{inspect.currentframe().f_code.co_name}")
+        try:
+            resolved_locator = self.handle_locator(self.locator, self.contains)
+            if not resolved_locator:
+                self.logger.error("Resolved locator is None or invalid")
+                return False
+
+            WebDriverWait(self.base.driver, timeout, poll_frequency).until(
+                EC.visibility_of_element_located(resolved_locator)
+            )
+            return True
+        except TimeoutException:
+            return False
+
+    def wait_clickable(self, timeout: int = 10, poll_frequency: float = 0.5) -> bool:
+        """Waits until the element is clickable.
+
+        Args:
+            timeout (int): Timeout in seconds.
+            poll_frequency (float): Frequency of polling.
+
+        Returns:
+            bool: True if the element becomes clickable, False otherwise.
+        """
+        self.logger.info(f"{inspect.currentframe().f_code.co_name}")
+        try:
+            resolved_locator = self.handle_locator(self.locator, self.contains)
+            if not resolved_locator:
+                self.logger.error("Resolved locator is None or invalid")
+                return False
+
+            WebDriverWait(self.base.driver, timeout, poll_frequency).until(
+                EC.element_to_be_clickable(resolved_locator)
+            )
+            return True
+        except TimeoutException:
+            return False
 
     # Override
     def is_displayed(self) -> bool:

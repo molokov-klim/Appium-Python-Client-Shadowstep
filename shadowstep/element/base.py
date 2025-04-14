@@ -92,8 +92,8 @@ class ElementBase:
             return None
 
     def handle_locator(self,
-                       locator: Union[Tuple, Dict[str, str], str, WebElement],
-                       contains: bool = False) -> Union[Tuple, None]:
+                       locator: Union[Tuple[str, str], Dict[str, str], str, WebElement],
+                       contains: bool = False) -> Optional[Tuple[str, str]]:
         self.logger.info(f"{inspect.currentframe().f_code.co_name}")
         if isinstance(locator, tuple):
             return locator
@@ -101,7 +101,7 @@ class ElementBase:
             locator = self.handle_dict_locator(locator, contains)
         return locator
 
-    def handle_dict_locator(self, locator, contains: bool = False) -> Union[Tuple, None]:
+    def handle_dict_locator(self, locator, contains: bool = False) -> Optional[Tuple[str, str]]:
         """
         Convert a dictionary locator to an XPath locator.
 
