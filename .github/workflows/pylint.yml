@@ -1,6 +1,11 @@
 name: Pylint
 
-on: [pull_request]
+on:
+  push:
+    branches:
+      - main
+      - develop
+  workflow_dispatch:
 
 jobs:
   pylint:

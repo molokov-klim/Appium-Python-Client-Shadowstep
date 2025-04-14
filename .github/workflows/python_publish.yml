@@ -1,6 +1,10 @@
-name: Publish Shadowstep
+name: Publish Python Package
 
 on:
+  push:
+    branches:
+      - main
+      - develop
   workflow_dispatch:
 
 permissions:
