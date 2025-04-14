@@ -31,10 +31,10 @@ dependencies = [
 keywords = ["appium", "testing", "uiautomator2", "android", "automation", "framework"]
 
 classifiers = [
-    "License :: OSI Approved :: MIT License",
     "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10"
 ]
+
 
 [project.optional-dependencies]
 dev = ["icecream"]
