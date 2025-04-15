@@ -727,6 +727,22 @@ class Element(ElementBase):
             stacktrace=traceback.format_stack()
         )
 
+    def is_not_within_screen(self) -> bool:
+        """Checks whether the element is not within the visible screen bounds.
+
+        Returns:
+            bool: True if element is not displayed or outside screen bounds.
+        """
+        self.logger.info(f"{inspect.currentframe().f_code.co_name}")
+        try:
+            return not self.is_within_screen()
+        except GeneralElementException as error:
+            self.logger.warning(f"is_not_within_screen fallback due to: {error}")
+            return True
+        except Exception as error:
+            self.logger.warning(f"is_not_within_screen unexpected error: {error}")
+            return True
+
     def is_selected(self) -> bool:
         """Returns whether the element is selected.
 
