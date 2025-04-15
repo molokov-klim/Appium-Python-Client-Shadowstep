@@ -435,7 +435,8 @@ class ShadowstepBase:
         self.logger.info(f"{inspect.currentframe().f_code.co_name}")
         self.disconnect()
         WebDriverSingleton.clear_instance()
-        self.connect(server_ip=self.server_ip,
+        self.connect(command_executor=self.command_executor,
+                     server_ip=self.server_ip,
                      server_port=self.server_port,
                      capabilities=self.capabilities,
                      options=self.options,
