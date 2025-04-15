@@ -253,3 +253,36 @@ class Shadowstep(ShadowstepBase):
             self.logger.exception(f"Tap failed: {e}")
             raise GeneralShadowstepException(str(e)) from e
 
+    def start_recording_screen(self) -> None:
+        """Start screen recording using Appium driver."""
+        self.logger.info(f"{inspect.currentframe().f_code.co_name}")
+        try:
+            self.driver.start_recording_screen()
+        except Exception as e:
+            self.logger.exception("Failed to start screen recording")
+            raise GeneralShadowstepException("start_recording_screen failed") from e
+
+
+    def stop_recording_screen(self) -> bytes:
+        """Stop screen recording and return video as bytes.
+
+        Returns:
+            bytes: Video recording in base64-decoded format.
+        """
+        self.logger.info(f"{inspect.currentframe().f_code.co_name}")
+        try:
+            encoded = self.driver.stop_recording_screen()
+            return base64.b64decode(encoded)
+        except Exception as e:
+            self.logger.exception("Failed to stop screen recording")
+            raise GeneralShadowstepException("stop_recording_screen failed") from e
+
+
+    def get_screenshot(self):
+        self.logger.info(f"{inspect.currentframe().f_code.co_name}")
+        try:
+            return self.get_screenshot_as_base64_decoded()
+        except Exception as e:
+            self.logger.exception("Failed to get screenshot")
+            raise GeneralShadowstepException("get_screenshot failed") from e
+
