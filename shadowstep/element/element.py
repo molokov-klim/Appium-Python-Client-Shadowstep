@@ -21,6 +21,7 @@ from selenium.webdriver.support.wait import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 
 from shadowstep.element.base import ElementBase
+from shadowstep.utils import conditions
 from shadowstep.utils.utils import find_coordinates_by_vector
 
 # Configure the root logger (basic configuration)
@@ -575,76 +576,7 @@ class Element(ElementBase):
             stacktrace=traceback.format_stack()
         )
 
-    def wait(self, timeout: int = 10, poll_frequency: float = 0.5) -> bool:
-        """Waits for the element to appear (present in DOM).
 
-        Args:
-            timeout (int): Timeout in seconds.
-            poll_frequency (float): Frequency of polling.
-
-        Returns:
-            bool: True if the element is found, False otherwise.
-        """
-        self.logger.info(f"{inspect.currentframe().f_code.co_name}")
-        try:
-            resolved_locator = self.handle_locator(self.locator, self.contains)
-            if not resolved_locator:
-                self.logger.error("Resolved locator is None or invalid")
-                return False
-            WebDriverWait(self.base.driver, timeout, poll_frequency).until(
-                EC.presence_of_element_located(resolved_locator)
-            )
-            return True
-        except TimeoutException:
-            return False
-
-    def wait_visible(self, timeout: int = 10, poll_frequency: float = 0.5) -> bool:
-        """Waits until the element is visible.
-
-        Args:
-            timeout (int): Timeout in seconds.
-            poll_frequency (float): Frequency of polling.
-
-        Returns:
-            bool: True if the element becomes visible, False otherwise.
-        """
-        self.logger.info(f"{inspect.currentframe().f_code.co_name}")
-        try:
-            resolved_locator = self.handle_locator(self.locator, self.contains)
-            if not resolved_locator:
-                self.logger.error("Resolved locator is None or invalid")
-                return False
-
-            WebDriverWait(self.base.driver, timeout, poll_frequency).until(
-                EC.visibility_of_element_located(resolved_locator)
-            )
-            return True
-        except TimeoutException:
-            return False
-
-    def wait_clickable(self, timeout: int = 10, poll_frequency: float = 0.5) -> bool:
-        """Waits until the element is clickable.
-
-        Args:
-            timeout (int): Timeout in seconds.
-            poll_frequency (float): Frequency of polling.
-
-        Returns:
-            bool: True if the element becomes clickable, False otherwise.
-        """
-        self.logger.info(f"{inspect.currentframe().f_code.co_name}")
-        try:
-            resolved_locator = self.handle_locator(self.locator, self.contains)
-            if not resolved_locator:
-                self.logger.error("Resolved locator is None or invalid")
-                return False
-
-            WebDriverWait(self.base.driver, timeout, poll_frequency).until(
-                EC.element_to_be_clickable(resolved_locator)
-            )
-            return True
-        except TimeoutException:
-            return False
 
     # Override
     def is_displayed(self) -> bool:
@@ -2195,3 +2127,146 @@ class Element(ElementBase):
         self.logger.info(f"{inspect.currentframe().f_code.co_name}")
         parent_xpath = self._get_xpath()
         return f"{parent_xpath}/*[{index}]"
+
+
+    def wait(self, timeout: int = 10, poll_frequency: float = 0.5) -> bool:
+        """Waits for the element to appear (present in DOM).
+
+        Args:
+            timeout (int): Timeout in seconds.
+            poll_frequency (float): Frequency of polling.
+
+        Returns:
+            bool: True if the element is found, False otherwise.
+        """
+        self.logger.info(f"{inspect.currentframe().f_code.co_name}")
+        try:
+            resolved_locator = self.handle_locator(self.locator, self.contains)
+            if not resolved_locator:
+                self.logger.error("Resolved locator is None or invalid")
+                return False
+            WebDriverWait(self.base.driver, timeout, poll_frequency).until(
+                conditions.present(resolved_locator)
+            )
+            return True
+        except TimeoutException:
+            return False
+
+    def wait_visible(self, timeout: int = 10, poll_frequency: float = 0.5) -> bool:
+        """Waits until the element is visible.
+
+        Args:
+            timeout (int): Timeout in seconds.
+            poll_frequency (float): Frequency of polling.
+
+        Returns:
+            bool: True if the element becomes visible, False otherwise.
+        """
+        self.logger.info(f"{inspect.currentframe().f_code.co_name}")
+        try:
+            resolved_locator = self.handle_locator(self.locator, self.contains)
+            if not resolved_locator:
+                self.logger.error("Resolved locator is None or invalid")
+                return False
+
+            WebDriverWait(self.base.driver, timeout, poll_frequency).until(
+                conditions.visible(resolved_locator)
+            )
+            return True
+        except TimeoutException:
+            return False
+
+    def wait_clickable(self, timeout: int = 10, poll_frequency: float = 0.5) -> bool:
+        """Waits until the element is clickable.
+
+        Args:
+            timeout (int): Timeout in seconds.
+            poll_frequency (float): Frequency of polling.
+
+        Returns:
+            bool: True if the element becomes clickable, False otherwise.
+        """
+        self.logger.info(f"{inspect.currentframe().f_code.co_name}")
+        try:
+            resolved_locator = self.handle_locator(self.locator, self.contains)
+            if not resolved_locator:
+                self.logger.error("Resolved locator is None or invalid")
+                return False
+
+            WebDriverWait(self.base.driver, timeout, poll_frequency).until(
+                conditions.clickable(resolved_locator)
+            )
+            return True
+        except TimeoutException:
+            return False
+
+    def wait_for_not(self, timeout: int = 10, poll_frequency: float = 0.5) -> bool:
+        """Waits until the element is no longer present in the DOM.
+
+        Args:
+            timeout (int): Timeout in seconds.
+            poll_frequency (float): Frequency of polling.
+
+        Returns:
+            bool: True if the element disappears, False otherwise.
+        """
+        self.logger.info(f"{inspect.currentframe().f_code.co_name}")
+        try:
+            resolved_locator = self.handle_locator(self.locator, self.contains)
+            if not resolved_locator:
+                self.logger.error("Resolved locator is None or invalid")
+                return True
+            WebDriverWait(self.base.driver, timeout, poll_frequency).until(
+                conditions.not_present(resolved_locator)
+            )
+            return True
+        except TimeoutException:
+            return False
+
+    def wait_for_not_visible(self, timeout: int = 10, poll_frequency: float = 0.5) -> bool:
+        """Waits until the element becomes invisible.
+
+        Args:
+            timeout (int): Timeout in seconds.
+            poll_frequency (float): Polling frequency.
+
+        Returns:
+            bool: True if the element becomes invisible, False otherwise.
+        """
+        self.logger.info(f"{inspect.currentframe().f_code.co_name}")
+        try:
+            resolved_locator = self.handle_locator(self.locator, self.contains)
+            if not resolved_locator:
+                self.logger.error("Resolved locator is None or invalid")
+                return True
+            WebDriverWait(self.base.driver, timeout, poll_frequency).until(
+                conditions.not_visible(resolved_locator)
+            )
+            return True
+        except TimeoutException:
+            return False
+
+    def wait_for_not_clickable(self, timeout: int = 10, poll_frequency: float = 0.5) -> bool:
+        """Waits until the element becomes not clickable.
+
+        Args:
+            timeout (int): Timeout in seconds.
+            poll_frequency (float): Polling frequency.
+
+        Returns:
+            bool: True if the element becomes not clickable, False otherwise.
+        """
+        self.logger.info(f"{inspect.currentframe().f_code.co_name}")
+        try:
+            resolved_locator = self.handle_locator(self.locator, self.contains)
+            if not resolved_locator:
+                self.logger.error("Resolved locator is None or invalid")
+                return True
+            WebDriverWait(self.base.driver, timeout, poll_frequency).until(
+                conditions.not_clickable(resolved_locator)
+            )
+            return True
+        except TimeoutException:
+            return False
+
+
