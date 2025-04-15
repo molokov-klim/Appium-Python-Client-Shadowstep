@@ -1,3 +1,4 @@
+import base64
 import inspect
 import logging
 import traceback
@@ -152,7 +153,9 @@ class Shadowstep(ShadowstepBase):
 
     def get_screenshot_as_base64_decoded(self):
         self.logger.info(f"{inspect.currentframe().f_code.co_name}")
-        raise NotImplementedError(f"Method {inspect.currentframe().f_code.co_name} is not yet implemented.")
+        screenshot = self.driver.get_screenshot_as_base64().encode('utf-8')
+        screenshot = base64.b64decode(screenshot)
+        return screenshot
 
     def save_source(self, *args, **kwargs):
         self.logger.info(f"{inspect.currentframe().f_code.co_name}")
@@ -162,9 +165,6 @@ class Shadowstep(ShadowstepBase):
         self.logger.info(f"{inspect.currentframe().f_code.co_name}")
         raise NotImplementedError(f"Method {inspect.currentframe().f_code.co_name} is not yet implemented.")
 
-    def _get_screenshot_as_base64_decoded(self):
-        self.logger.info(f"{inspect.currentframe().f_code.co_name}")
-        raise NotImplementedError(f"Method {inspect.currentframe().f_code.co_name} is not yet implemented.")
 
     def tap(
             self,
