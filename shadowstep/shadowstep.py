@@ -165,7 +165,6 @@ class Shadowstep(ShadowstepBase):
         self.logger.info(f"{inspect.currentframe().f_code.co_name}")
         raise NotImplementedError(f"Method {inspect.currentframe().f_code.co_name} is not yet implemented.")
 
-
     def tap(
             self,
             locator: Union[Tuple[str, str], Dict[str, str], Element, WebElement] = None,
@@ -262,7 +261,6 @@ class Shadowstep(ShadowstepBase):
             self.logger.exception("Failed to start screen recording")
             raise GeneralShadowstepException("start_recording_screen failed") from e
 
-
     def stop_recording_screen(self) -> bytes:
         """Stop screen recording and return video as bytes.
 
@@ -277,7 +275,6 @@ class Shadowstep(ShadowstepBase):
             self.logger.exception("Failed to stop screen recording")
             raise GeneralShadowstepException("stop_recording_screen failed") from e
 
-
     def get_screenshot(self):
         self.logger.info(f"{inspect.currentframe().f_code.co_name}")
         try:
@@ -285,4 +282,3 @@ class Shadowstep(ShadowstepBase):
         except Exception as e:
             self.logger.exception("Failed to get screenshot")
             raise GeneralShadowstepException("get_screenshot failed") from e
-
