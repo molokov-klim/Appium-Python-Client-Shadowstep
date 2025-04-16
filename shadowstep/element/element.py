@@ -1098,25 +1098,16 @@ class Element(ElementBase):
             stacktrace=traceback.format_stack()
         )
 
-    def scroll_to_element(self, locator: Union['Element', Dict[str, str]], max_swipes: int = 10) -> Union[
+    def scroll_to_element(self, locator: Union['Element', Dict[str, str], Tuple[str, str]], max_swipes: int = 10) -> Union[
         'Element', None]:
         self.logger.info(f"{inspect.currentframe().f_code.co_name}")
         start_time = time.time()
         if isinstance(locator, Element):
             locator = locator.locator
-
-        def build_strategy_selector(locator_dict: Dict[str, str]) -> Tuple[str, str]:
-            if 'text' in locator_dict:
-                return "-android uiautomator", f'new UiSelector().text("{locator_dict["text"]}")'
-            elif 'resource-id' in locator_dict:
-                return "-android uiautomator", f'new UiSelector().resourceId("{locator_dict["resource-id"]}")'
-            elif 'content-desc' in locator_dict:
-                return "accessibility id", locator_dict["content-desc"]
-            else:
-                raise GeneralElementException(f"Unsupported locator for scroll: {locator_dict}")
-
         if isinstance(locator, dict):
-            strategy, selector = build_strategy_selector(locator)
+            strategy, selector = self.builder.build(locator)
+        elif isinstance(locator, tuple):
+            strategy, selector = self.builder.build(locator)
         else:
             raise GeneralElementException("Only dictionary locators are supported")
 
