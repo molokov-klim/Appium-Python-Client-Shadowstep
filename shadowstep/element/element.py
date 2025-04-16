@@ -1098,7 +1098,7 @@ class Element(ElementBase):
             stacktrace=traceback.format_stack()
         )
 
-    def scroll_to_element(self, locator: Union['Element', Dict[str, str], Tuple[str, str]], max_swipes: int = 10) -> Union[
+    def scroll_to_element(self, locator: Union['Element', Dict[str, str], Tuple[str, str]], max_swipes: int = 30) -> Union[
         'Element', None]:
         self.logger.info(f"{inspect.currentframe().f_code.co_name}")
         start_time = time.time()
@@ -1130,6 +1130,12 @@ class Element(ElementBase):
             except AttributeError as error:
                 self._handle_driver_error(error)
             except StaleElementReferenceException as error:
+                self._handle_driver_error(error)
+            except Exception as error:
+                # Some instability detected, information gathering required
+                self.logger.error(error)
+                self.logger.error(type(error))
+                self.logger.error(traceback.format_stack())
                 self._handle_driver_error(error)
 
         raise GeneralElementException(
