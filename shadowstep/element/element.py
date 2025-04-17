@@ -377,6 +377,57 @@ class Element(ElementBase):
             except WebDriverException:
                 break
 
+    def get_cousin(
+            self,
+            ancestor_locator: Union[Tuple, Dict[str, str], 'Element'],
+            cousin_locator: Union[Tuple, Dict[str, str], 'Element']
+    ) -> Union['Element', None]:
+        """Finds a cousin element (same depth relative to a shared ancestor).
+
+        Args:
+            ancestor_locator (Union[Tuple, Dict[str, str], 'Element']): The common ancestor to search from.
+            cousin_locator (Union[Tuple, Dict[str, str], 'Element']): The target cousin element locator.
+
+        Returns:
+            Union['Element', None]: The cousin element found at the same depth.
+        """
+        self.logger.info(f"{inspect.currentframe().f_code.co_name}")
+        try:
+            if isinstance(ancestor_locator, Element):
+                ancestor_locator = ancestor_locator.locator
+            if isinstance(cousin_locator, Element):
+                cousin_locator = cousin_locator.locator
+
+            # XPath текущего элемента
+            current_xpath = self._get_xpath()
+            if not current_xpath:
+                raise GeneralElementException("Unable to resolve current XPath")
+
+            # Количество узлов от текущего до корня
+            depth = current_xpath.count('/')
+
+            # XPath предка
+            ancestor_xpath = self.handle_locator(ancestor_locator, contains=self.contains)[1]
+            ancestor_xpath = ancestor_xpath.rstrip('/')
+
+            # XPath кузена: тот же уровень вложенности
+            cousin_relative = self.handle_locator(cousin_locator, contains=self.contains)[1].lstrip('/')
+            cousin_xpath = f"{ancestor_xpath}//{cousin_relative}[{depth}]"
+
+            return Element(
+                locator=('xpath', cousin_xpath),
+                base=self.base,
+                timeout=self.timeout,
+                poll_frequency=self.poll_frequency,
+                ignored_exceptions=self.ignored_exceptions,
+                contains=self.contains
+            )
+        except NoSuchDriverException as error:
+            self._handle_driver_error(error)
+        except InvalidSessionIdException as error:
+            self._handle_driver_error(error)
+        return None
+
     def get_center(self, element: Optional[WebElement] = None) -> Optional[Tuple[int, int]]:
         """Get the center coordinates of the element.
 
