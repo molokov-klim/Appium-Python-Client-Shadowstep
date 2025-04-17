@@ -614,7 +614,7 @@ class Element(ElementBase):
             stacktrace=traceback.format_stack()
         )
 
-    def is_within_screen(self) -> bool:
+    def is_visible(self) -> bool:
         self.logger.info(f"{inspect.currentframe().f_code.co_name}")
         start_time = time.time()
         while time.time() - start_time < self.timeout:
@@ -667,7 +667,7 @@ class Element(ElementBase):
         """
         self.logger.info(f"{inspect.currentframe().f_code.co_name}")
         try:
-            return not self.is_within_screen()
+            return not self.is_visible()
         except GeneralElementException as error:
             self.logger.warning(f"is_not_within_screen fallback due to: {error}")
             return True
@@ -1121,7 +1121,7 @@ class Element(ElementBase):
                     "maxSwipes": max_swipes
                 })
                 found = self.base.get_element(locator)
-                if found.is_within_screen():
+                if found.is_visible():
                     return cast('Element', found)
             except NoSuchDriverException as error:
                 self._handle_driver_error(error)

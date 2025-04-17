@@ -25,7 +25,7 @@ def print_structure(root_dir, prefix='', output_lines=None):
 
 
 if __name__ == '__main__':
-    structure = print_structure('.')
+    structure = print_structure('../..')
     with open(OUTPUT_FILE, 'w', encoding='utf-8') as f:
         f.write('\n'.join(structure))
     print(f'✅ Структура сохранена в файл: {OUTPUT_FILE}')

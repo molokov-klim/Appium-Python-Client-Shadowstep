@@ -33,6 +33,4 @@ It introduces powerful abstractions for Android testing: dynamic element wrapper
 ### 1. 📦 Installation
 
 ```bash
-pip install shadowstep
-# OR (if local)
-pip install -e .
+pip install appium-python-client-shadowstep

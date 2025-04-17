@@ -249,17 +249,17 @@ class TestElement:
         dev_settings.drag(end_x=end_x, end_y=end_y)
         dev_settings.timeout = 5
         time.sleep(1)
-        assert not dev_settings.is_within_screen()
+        assert not dev_settings.is_visible()
 
     def test_is_within_screen(self, app: Shadowstep):
         phone = app.get_element(locator={"content-desc": "Phone"}, timeout=5)
         search = app.get_element(locator={'resource-id': 'com.android.quicksearchbox:id/search_widget_text'}, timeout=5)
-        assert search.is_within_screen() is True
-        assert phone.is_within_screen() is True
+        assert search.is_visible() is True
+        assert phone.is_visible() is True
         phone.tap()
         time.sleep(3)
-        assert phone.is_within_screen() is False
-        assert search.is_within_screen() is False
+        assert phone.is_visible() is False
+        assert search.is_visible() is False
 
     def test_fling(self, app: Shadowstep):
         element = app.get_element(locator={"content-desc": "Phone"})
