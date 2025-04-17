@@ -2,6 +2,7 @@
 requires = ["setuptools", "wheel"]
 build-backend = "setuptools.build_meta"
 
+
 [project]
 name = "appium-python-client-shadowstep"
 version = "0.7.3"
