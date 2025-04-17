@@ -5,6 +5,7 @@ on:
     branches:
       - main
       - develop
+      - Terminal
   workflow_dispatch:
 
 permissions:
