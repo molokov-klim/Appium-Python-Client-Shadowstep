@@ -22,6 +22,7 @@ from selenium.webdriver.support import expected_conditions as EC
 
 from shadowstep.element.base import ElementBase
 from shadowstep.utils import conditions
+from shadowstep.utils.operations import dict_matches_subset
 from shadowstep.utils.utils import find_coordinates_by_vector
 
 # Configure the root logger (basic configuration)
@@ -199,52 +200,40 @@ class Element(ElementBase):
             self._handle_driver_error(error)
             return []
 
-    def get_attributes(self,
-                       desired_attributes: typing.List[str] = None) -> Optional[Dict[str, str]]:
+    def get_attributes(self) -> Optional[Dict[str, str]]:
+        """Fetch all XML attributes of the element by matching locator against page source.
+
+        Returns:
+            Optional[Dict[str, str]]: Dictionary of all attributes, or None if not found.
+        """
         self.logger.info(f"{inspect.currentframe().f_code.co_name}")
         start_time = time.time()
+
+        # Normalize locator into dict if necessary
+        if isinstance(self.locator, tuple) and self.locator[0] == "xpath":
+            locator = self.builder.xpath_to_dict(self.locator[1])
+        elif isinstance(self.locator, dict):
+            locator = self.locator
+        else:
+            self.logger.error(f"Unsupported locator format: {self.locator}")
+            return None
+
+        locator_criteria = {k: str(v) for k, v in locator.items()}
+
         while time.time() - start_time < self.timeout:
             try:
                 self._get_driver()
-                # Инициализация пустого словаря для хранения атрибутов
-                result = {}
-
-                # Если desired_attributes не указан, установка значения 'all'
-                if not desired_attributes:
-                    desired_attributes = 'all'
-
-                # Если desired_attributes не указан, установка значения 'all'
                 root = ET.fromstring(self.driver.page_source)
 
-                # Поиск требуемого элемента по критериям атрибутов
-                found_element = None
                 for element in root.iter():
-                    if 'bounds' in element.attrib and 'class' in element.attrib:
-                        if self.get_attribute('bounds') == element.attrib['bounds'] and self.get_attribute('class') == \
-                                element.attrib['class']:
-                            found_element = element
-                            break
+                    attrib = {k: str(v) for k, v in element.attrib.items()}
+                    if dict_matches_subset(attrib, locator_criteria):
+                        return attrib
 
-                # Если элемент найден, получение его атрибутов
-                if found_element is not None:
-                    attributes = found_element.attrib
-                    # Сохранение атрибутов в словаре result
-                    for attribute_name, attribute_value in attributes.items():
-                        result[attribute_name] = attribute_value
-
-                # Если desired_attributes указан, фильтрация словаря result
-                if desired_attributes:
-                    new_result = {}
-                    for attribute in desired_attributes:
-                        if attribute not in result:
-                            # Возврат всех атрибутов если не найден искомый
-                            return result
-                        new_result[attribute] = result[attribute]
-                    # Возврат отфильтрованных атрибутов
-                    return new_result
-                # Возврат всех атрибутов
-                return result
             except StaleElementReferenceException:
+                continue
+            except Exception as e:
+                self.logger.error(f"get_attributes failed: {e}")
                 continue
         return None
 
@@ -626,8 +615,6 @@ class Element(ElementBase):
             msg=f"Failed to {inspect.currentframe().f_code.co_name} within {self.timeout=}",
             stacktrace=traceback.format_stack()
         )
-
-
 
     # Override
     def is_displayed(self) -> bool:
@@ -1149,7 +1136,8 @@ class Element(ElementBase):
             stacktrace=traceback.format_stack()
         )
 
-    def scroll_to_element(self, locator: Union['Element', Dict[str, str], Tuple[str, str]], max_swipes: int = 30) -> Union[
+    def scroll_to_element(self, locator: Union['Element', Dict[str, str], Tuple[str, str]], max_swipes: int = 30) -> \
+    Union[
         'Element', None]:
         self.logger.info(f"{inspect.currentframe().f_code.co_name}")
         start_time = time.time()
@@ -2176,7 +2164,6 @@ class Element(ElementBase):
         parent_xpath = self._get_xpath()
         return f"{parent_xpath}/*[{index}]"
 
-
     def wait(self, timeout: int = 10, poll_frequency: float = 0.5) -> bool:
         """Waits for the element to appear (present in DOM).
 
@@ -2316,5 +2303,3 @@ class Element(ElementBase):
             return True
         except TimeoutException:
             return False
-
-

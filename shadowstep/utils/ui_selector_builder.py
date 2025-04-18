@@ -98,7 +98,7 @@ class UiSelectorBuilder:
             try:
                 parent_part, child_part = xpath.split("/following-sibling::", 1)
                 parent_selector = self._xpath_to_uiselector(parent_part)
-                child_selector = self._xpath_to_uiselector(child_part, is_nested=True)
+                child_selector = self._xpath_to_uiselector(child_part)
                 return f"{parent_selector}.fromParent({child_selector})"
             except Exception as e:
                 logger.warning(f"Failed to parse XPath: {xpath}, error: {e}")
@@ -106,12 +106,11 @@ class UiSelectorBuilder:
         else:
             return self._xpath_to_uiselector(xpath)
 
-    def _xpath_to_uiselector(self, xpath: str, is_nested: bool = False) -> str:
+    def _xpath_to_uiselector(self, xpath: str) -> str:
         """Helper to convert simple one-level XPath to UiSelector.
 
         Args:
             xpath (str): XPath string like //*[@text='...'][2] or [contains(@text, '...')]
-            is_nested (bool): Whether it's inside fromParent()
 
         Returns:
             str: UiSelector expression
@@ -145,3 +144,36 @@ class UiSelectorBuilder:
             parts.append(f".instance({idx})")
 
         return "".join(parts)
+
+    def xpath_to_dict(self, xpath: str) -> Dict[str, str]:
+        """Parses simple XPath expression to a Shadowstep-style locator dictionary.
+
+        Supports:
+            - //*[@attr='value']
+            - [contains(@attr, 'value')]
+            - trailing index [N] → instance=N-1
+
+        Args:
+            xpath (str): XPath expression.
+
+        Returns:
+            Dict[str, str]: Parsed locator dictionary.
+        """
+        result = {}
+
+        # Exact matches like [@text='value']
+        attr_eq_matches = re.findall(r"\[@([\w:-]+)='([^']+)'\]", xpath)
+        for attr, value in attr_eq_matches:
+            result[attr] = value
+
+        # Contains matches like [contains(@text, 'value')]
+        attr_contains_matches = re.findall(r"\[contains\(@([\w:-]+),\s*'([^']+)'\)\]", xpath)
+        for attr, value in attr_contains_matches:
+            result[f"{attr}Contains"] = value
+
+        # Index match like [2] at the end → instance=1 (zero-based)
+        index_match = re.search(r"\[(\d+)\]$", xpath)
+        if index_match:
+            result["instance"] = str(int(index_match.group(1)) - 1)
+
+        return result

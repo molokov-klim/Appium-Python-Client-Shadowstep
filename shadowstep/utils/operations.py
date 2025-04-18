@@ -212,3 +212,22 @@ def calculate_rectangle_center(coordinates: Tuple[int, int, int, int]) -> Union[
     x = int((left + right) / 2)
     y = int((top + bottom) / 2)
     return x, y
+
+
+def dict_matches_subset(big: dict, small: dict) -> bool:
+    """
+    Check if all key-value pairs from `small` are present in `big`.
+
+    Args:
+        big: Full dictionary that may contain extra keys.
+        small: Subset dictionary with expected key-value pairs.
+
+    Returns:
+        True if all key-value pairs from `small` match those in `big`.
+    """
+    success = True
+    for k, v in small.items():
+        actual = big.get(k, '__KEY_NOT_FOUND__')
+        if actual != v:
+            success = False
+    return success
