@@ -97,16 +97,16 @@ class UiSelectorBuilder:
         if "/following-sibling::" in xpath:
             try:
                 parent_part, child_part = xpath.split("/following-sibling::", 1)
-                parent_selector = self._xpath_to_uiselector(parent_part)
-                child_selector = self._xpath_to_uiselector(child_part)
+                parent_selector = self.xpath_to_uiselector(parent_part)
+                child_selector = self.xpath_to_uiselector(child_part)
                 return f"{parent_selector}.fromParent({child_selector})"
             except Exception as e:
                 logger.warning(f"Failed to parse XPath: {xpath}, error: {e}")
                 return None
         else:
-            return self._xpath_to_uiselector(xpath)
+            return self.xpath_to_uiselector(xpath)
 
-    def _xpath_to_uiselector(self, xpath: str) -> str:
+    def xpath_to_uiselector(self, xpath: str) -> str:
         """Helper to convert simple one-level XPath to UiSelector.
 
         Args:
@@ -177,3 +177,51 @@ class UiSelectorBuilder:
             result["instance"] = str(int(index_match.group(1)) - 1)
 
         return result
+
+    def dict_to_xpath(self, selector: Dict[str, Union[str, int, bool]]) -> str:
+        """Converts a Shadowstep-style dictionary to an XPath expression.
+
+        Args:
+            selector (Dict[str, Union[str, int, bool]]): Dictionary locator.
+
+        Returns:
+            str: XPath string.
+        """
+        conditions = []
+        for key, value in selector.items():
+            if isinstance(value, bool):
+                value = 'true' if value else 'false'
+            elif isinstance(value, int):
+                value = str(value)
+            else:
+                value = f"'{value}'"
+            conditions.append(f"@{key}={value}")
+        return f".//*[{ ' and '.join(conditions) }]"
+
+
+    def to_xpath(self, selector: Union[Dict[str, Union[str, int, bool]], Tuple[str, str], str]) -> Optional[str]:
+        """Converts dict, tuple or UiSelector Java string into XPath expression.
+
+        Args:
+            selector (Union[Dict, Tuple, str]): Locator in dict, xpath-tuple, or Java string form.
+
+        Returns:
+            Optional[str]: XPath expression or None.
+        """
+        if isinstance(selector, dict):
+            return self.dict_to_xpath(selector)
+        elif isinstance(selector, tuple) and selector[0] == "xpath":
+            return selector[1]
+        elif isinstance(selector, str) and selector.strip().startswith("new UiSelector()"):
+            try:
+                locator = self.xpath_to_dict(selector)
+                return self.dict_to_xpath(locator)
+            except Exception as e:
+                logger.error(f"Failed to convert UiSelector to XPath: {e}")
+                return None
+        else:
+            logger.error(f"Unsupported selector format for to_xpath: {type(selector)}")
+            return None
+
+
+

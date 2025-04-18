@@ -200,7 +200,6 @@ class Element(ElementBase):
             self._handle_driver_error(error)
             return []
 
-
     def get_attributes(self) -> Optional[Dict[str, str]]:
         """Fetch all XML attributes of the element by matching locator against page source.
 
@@ -210,39 +209,55 @@ class Element(ElementBase):
         self.logger.info(f"{inspect.currentframe().f_code.co_name}")
         start_time = time.time()
 
-        # Normalize locator to XPath expression
-        if isinstance(self.locator, tuple) and self.locator[0] == "xpath":
-            xpath_expr = self.locator[1]
-        elif isinstance(self.locator, dict):
-            try:
-                _, xpath_expr = self.builder.build(self.locator)
-            except Exception as e:
-                self.logger.error(f"Failed to convert dict locator to xpath: {e}")
+        # Convert locator to XPath expression (supports dict, tuple, UiSelector string)
+        try:
+            xpath_expr = self.builder.to_xpath(self.locator)
+            if not xpath_expr:
+                self.logger.error(f"Failed to resolve XPath from locator: {self.locator}")
                 return None
-        else:
-            self.logger.error(f"Unsupported locator format: {self.locator}")
+            self.logger.debug(f"Resolved XPath: {xpath_expr}")
+        except Exception as e:
+            self.logger.error(f"Exception in to_xpath: {e}")
             return None
+
 
         while time.time() - start_time < self.timeout:
             try:
                 self._get_driver()
+                page_source = self.driver.page_source
                 parser = ET.XMLParser(recover=True)
-                root = ET.fromstring(self.driver.page_source.encode("utf-8"), parser=parser)
+                root = ET.fromstring(page_source.encode("utf-8"), parser=parser)
 
                 matches = root.xpath(xpath_expr)
                 if matches:
                     element = matches[0]
                     attrib = {k: str(v) for k, v in element.attrib.items()}
+                    self.logger.debug(f"Matched attributes: {attrib}")
                     return attrib
+                else:
+                    self.logger.warning("No matches found for given XPath.")
             except NoSuchDriverException as error:
                 self._handle_driver_error(error)
             except InvalidSessionIdException as error:
                 self._handle_driver_error(error)
             except StaleElementReferenceException:
                 continue
+            except ET.XPathEvalError as e:
+                self.logger.error(f"XPathEvalError: {e}")
+                self.logger.error(f"XPath: {xpath_expr}")
+                return None
+            except ET.XMLSyntaxError as e:
+                self.logger.error(f"XMLSyntaxError: {e}")
+                self.logger.debug(f"Raw page_source (first 500 chars):\n{page_source[:500]}")
+                return None
+            except UnicodeEncodeError as e:
+                self.logger.error(f"UnicodeEncodeError in page_source: {e}")
+                return None
             except Exception as e:
-                self.logger.error(f"get_attributes failed: {e}")
+                self.logger.error(f"Unexpected error in get_attributes: {e}")
+                self.logger.debug(f"page_source[:500]: {page_source[:500]}")
                 continue
+        self.logger.warning(f"Timeout exceeded ({self.timeout}s) without matching element.")
         return None
 
     def get_parent(self) -> Union['Element', None]:
