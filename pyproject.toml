@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "appium-python-client-shadowstep"
-version = "0.9.5"
+version = "0.9.6"
 description = "UI Testing Framework powered by Appium Python Client"
 authors = [{ name = "Klim Molokov", email = "klim.molokov@yandex.ru" }]
 license = "MIT"
@@ -26,7 +26,8 @@ dependencies = [
     "numpy==1.25.1",
     "selenium~=4.12",
     "paramiko==3.4.0",
-    "scp==0.14.5"
+    "scp==0.14.5",
+    "lxml==5.3.2"
 ]
 
 keywords = ["appium", "testing", "uiautomator2", "android", "automation", "framework"]

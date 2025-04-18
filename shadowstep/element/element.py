@@ -5,7 +5,7 @@ import traceback
 import typing
 from typing import Union, Tuple, Dict, Optional, cast
 
-import xml.etree.ElementTree as ET
+from lxml import etree as ET
 
 from appium.webdriver import WebElement
 from icecream import ic
@@ -200,6 +200,7 @@ class Element(ElementBase):
             self._handle_driver_error(error)
             return []
 
+
     def get_attributes(self) -> Optional[Dict[str, str]]:
         """Fetch all XML attributes of the element by matching locator against page source.
 
@@ -209,27 +210,34 @@ class Element(ElementBase):
         self.logger.info(f"{inspect.currentframe().f_code.co_name}")
         start_time = time.time()
 
-        # Normalize locator into dict if necessary
+        # Normalize locator to XPath expression
         if isinstance(self.locator, tuple) and self.locator[0] == "xpath":
-            locator = self.builder.xpath_to_dict(self.locator[1])
+            xpath_expr = self.locator[1]
         elif isinstance(self.locator, dict):
-            locator = self.locator
+            try:
+                _, xpath_expr = self.builder.build(self.locator)
+            except Exception as e:
+                self.logger.error(f"Failed to convert dict locator to xpath: {e}")
+                return None
         else:
             self.logger.error(f"Unsupported locator format: {self.locator}")
             return None
 
-        locator_criteria = {k: str(v) for k, v in locator.items()}
-
         while time.time() - start_time < self.timeout:
             try:
                 self._get_driver()
-                root = ET.fromstring(self.driver.page_source)
+                parser = ET.XMLParser(recover=True)
+                root = ET.fromstring(self.driver.page_source.encode("utf-8"), parser=parser)
 
-                for element in root.iter():
+                matches = root.xpath(xpath_expr)
+                if matches:
+                    element = matches[0]
                     attrib = {k: str(v) for k, v in element.attrib.items()}
-                    if dict_matches_subset(attrib, locator_criteria):
-                        return attrib
-
+                    return attrib
+            except NoSuchDriverException as error:
+                self._handle_driver_error(error)
+            except InvalidSessionIdException as error:
+                self._handle_driver_error(error)
             except StaleElementReferenceException:
                 continue
             except Exception as e:
@@ -2115,30 +2123,33 @@ class Element(ElementBase):
         try:
             xpath = "//"
             attrs = self.get_attributes()
-            element_type = attrs.get('class')
-            except_attrs = ['hint',
-                            'content-desc',
-                            'selection-start',
-                            'selection-end',
-                            'extras',
-                            ]
+            if not attrs:
+                raise GeneralElementException("Failed to retrieve attributes for XPath construction.")
 
-            # Формирование начальной части XPath в зависимости от наличия типа (класса) элемента
+            element_type = attrs.get('class')
+            except_attrs = ['hint', 'selection-start', 'selection-end', 'extras']
+
+            # Start XPath with element class or wildcard
             if element_type:
                 xpath += element_type
             else:
                 xpath += "*"
-
-            # Перебор атрибутов элемента для формирования остальной части XPath
             for key, value in attrs.items():
                 if key in except_attrs:
                     continue
-
-                # Добавление атрибута в XPath с соответствующим значением или без него, если значение равно None
                 if value is None:
-                    xpath += "[@{}]".format(key)
+                    xpath += f"[@{key}]"
+                elif "'" in value and '"' not in value:
+                    xpath += f'[@{key}="{value}"]'
+                elif '"' in value and "'" not in value:
+                    xpath += f"[@{key}='{value}']"
+                elif "'" in value and '"' in value:
+                    parts = value.split('"')
+                    escaped = 'concat(' + ', '.join(
+                        f'"{part}"' if i % 2 == 0 else "'\"'" for i, part in enumerate(parts)) + ')'
+                    xpath += f"[@{key}={escaped}]"
                 else:
-                    xpath += "[@{}='{}']".format(key, value)
+                    xpath += f"[@{key}='{value}']"
             return xpath
         except AttributeError as e:
             self.logger.error("Ошибка при формировании XPath: {}".format(str(e)))
