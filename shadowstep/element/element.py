@@ -1167,9 +1167,9 @@ class Element(ElementBase):
         if isinstance(locator, Element):
             locator = locator.locator
         if isinstance(locator, dict):
-            strategy, selector = self.locator_converter.to_uiselector(locator)
+            selector = self.locator_converter.to_uiselector(locator)
         elif isinstance(locator, tuple):
-            strategy, selector = self.locator_converter.to_uiselector(locator)
+            selector = self.locator_converter.to_uiselector(locator)
         else:
             raise GeneralElementException("Only dictionary locators are supported")
 
@@ -1178,7 +1178,7 @@ class Element(ElementBase):
                 self._get_driver()
                 self.driver.execute_script("mobile: scroll", {
                     "elementId": self.id,
-                    "strategy": strategy,
+                    "strategy": "-android uiautomator",
                     "selector": selector,
                     "maxSwipes": max_swipes
                 })
