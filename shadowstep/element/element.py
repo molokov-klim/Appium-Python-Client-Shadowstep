@@ -211,7 +211,7 @@ class Element(ElementBase):
 
         # Convert locator to XPath expression (supports dict, tuple, UiSelector string)
         try:
-            xpath_expr = self.locator_converter.to_xpath(self.locator)
+            xpath_expr = self.locator_converter.to_xpath(self.locator)[1]
             if not xpath_expr:
                 self.logger.error(f"Failed to resolve XPath from locator: {self.locator}")
                 return None
