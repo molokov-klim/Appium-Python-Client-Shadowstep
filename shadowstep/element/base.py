@@ -15,7 +15,7 @@ from appium.webdriver.webdriver import WebDriver
 from appium.webdriver import WebElement
 
 from shadowstep.base import WebDriverSingleton
-from shadowstep.utils.ui_selector_builder import UiSelectorBuilder
+from shadowstep.utils.locator_converter import LocatorConverter
 
 
 class ElementBase:
@@ -39,7 +39,7 @@ class ElementBase:
         self.ignored_exceptions: typing.Optional[WaitExcTypes] = ignored_exceptions
         self.contains: bool = contains
         self.id = None
-        self.builder = UiSelectorBuilder()
+        self.locator_converter = LocatorConverter()
 
     def _get_element(self,
                      locator: Union[Tuple, Dict[str, str], WebElement],

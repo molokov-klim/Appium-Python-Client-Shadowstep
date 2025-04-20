@@ -211,7 +211,7 @@ class Element(ElementBase):
 
         # Convert locator to XPath expression (supports dict, tuple, UiSelector string)
         try:
-            xpath_expr = self.builder.to_xpath(self.locator)
+            xpath_expr = self.locator_converter.to_xpath(self.locator)
             if not xpath_expr:
                 self.logger.error(f"Failed to resolve XPath from locator: {self.locator}")
                 return None
@@ -1167,9 +1167,9 @@ class Element(ElementBase):
         if isinstance(locator, Element):
             locator = locator.locator
         if isinstance(locator, dict):
-            strategy, selector = self.builder.build(locator)
+            strategy, selector = self.locator_converter.build_ui_selector(locator)
         elif isinstance(locator, tuple):
-            strategy, selector = self.builder.build(locator)
+            strategy, selector = self.locator_converter.build_ui_selector(locator)
         else:
             raise GeneralElementException("Only dictionary locators are supported")
 
