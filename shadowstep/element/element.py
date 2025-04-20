@@ -1167,9 +1167,9 @@ class Element(ElementBase):
         if isinstance(locator, Element):
             locator = locator.locator
         if isinstance(locator, dict):
-            strategy, selector = self.locator_converter.build_ui_selector(locator)
+            strategy, selector = self.locator_converter.to_uiselector(locator)
         elif isinstance(locator, tuple):
-            strategy, selector = self.locator_converter.build_ui_selector(locator)
+            strategy, selector = self.locator_converter.to_uiselector(locator)
         else:
             raise GeneralElementException("Only dictionary locators are supported")
 
