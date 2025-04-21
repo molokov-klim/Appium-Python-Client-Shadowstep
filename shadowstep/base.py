@@ -101,8 +101,8 @@ class ShadowstepBase:
         self.command_executor: str = None
         self.transport: Transport = None
         self.terminal: Terminal = None
-        self._ignored_auto_discover_dirs = {"__pycache__", ".venv", "venv", ".git", "build", "dist", ".idea", ".pytest_cache", "results"}
-        self._ignored_base_path_parts = {"site-packages", "dist-packages", "python", "Python", "Python39"}
+        self._ignored_auto_discover_dirs = {"__pycache__", ".venv", "venv", "site-packages", "dist-packages", ".git", "build", "dist", ".idea", ".pytest_cache", "results"}
+        self._ignored_base_path_parts = {"site-packages", "dist-packages", ".venv", "venv", "python", "Python", "Python39"}
         self._auto_discover_pages()
 
     def _auto_discover_pages(self):
