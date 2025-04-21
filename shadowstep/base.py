@@ -105,48 +105,38 @@ class ShadowstepBase:
 
     def _auto_discover_pages(self):
         """Automatically import and register all PageBase subclasses from all 'pages' directories in sys.path."""
-        self.logger.debug("🧭 Начало автопоиска страниц...")
+        IGNORED_DIRS = {"__pycache__", ".venv", "venv", ".git", "build", "dist", ".idea", ".pytest_cache"}
 
         for base_path in map(Path, sys.path):
-            self.logger.debug(f"🔍 Проверка пути: {base_path}")
-
-            if not base_path.exists():
-                self.logger.debug(f"⛔ Путь не существует: {base_path}")
-                continue
-
-            if not base_path.is_dir():
-                self.logger.debug(f"⛔ Путь не директория: {base_path}")
+            if not base_path.exists() or not base_path.is_dir():
                 continue
 
             for dirpath, _, filenames in os.walk(base_path):
-                dir_path_obj = Path(dirpath)
+                dir_name = Path(dirpath).name
                 self.logger.debug(f"📂 Обход директории: {dirpath}")
 
-                if dir_path_obj.name != "pages":
+                if dir_name in IGNORED_DIRS:
+                    self.logger.debug(f"⏭ Пропуск (игнорируемая директория): {dirpath}")
+                    continue
+
+                if dir_name != "pages":
                     self.logger.debug(f"⏭ Пропуск (не 'pages'): {dirpath}")
                     continue
 
                 for file in filenames:
-                    self.logger.debug(f"📝 Найден файл: {file}")
-
                     if file.startswith("page_") and file.endswith(".py"):
                         try:
-                            file_path = dir_path_obj / file
+                            file_path = Path(dirpath) / file
                             rel_path = file_path.with_suffix("").relative_to(base_path)
                             module_name = ".".join(rel_path.parts)
 
-                            self.logger.debug(f"📦 Импорт модуля: {module_name} из {file_path}")
+                            self.logger.debug(f"📦 Импорт модуля: {module_name}")
                             module = importlib.import_module(module_name)
-
-                            self.logger.debug(f"✅ Импорт успешен: {module_name}")
                             self._register_pages_from_module(module)
 
                         except Exception as e:
-                            self.logger.warning(f"❌ Ошибка импорта {file} из {dir_path_obj}: {e}")
-                    else:
-                        self.logger.debug(f"⏭ Пропуск файла (не page_*.py): {file}")
+                            self.logger.warning(f"⚠️ Ошибка импорта {file}: {e}")
 
-        self.logger.debug("✅ Завершён автопоиск страниц.")
 
     def _register_pages_from_module(self, module: ModuleType):
         self.logger.debug(f"📥 Регистрация страниц из модуля: {module.__name__}")
