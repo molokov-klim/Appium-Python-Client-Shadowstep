@@ -3,14 +3,7 @@
 > Powerful and resilient Appium-based framework for Android UI automation.
 
 [![PyPI](https://img.shields.io/pypi/v/appium-python-client-shadowstep?color=brightgreen)](https://pypi.org/project/appium-python-client-shadowstep/)
-[![License](https://img.shields.io/github/license/molokov-klim/Appium-Python-Client-Shadowstep?color=blue)](https://github.com/molokov-klim/Appium-Python-Client-Shadowstep/blob/main/LICENSE)
-
-
-[//]: # ([![PyPI]&#40;https://img.shields.io/pypi/v/shadowstep?color=brightgreen&#41;]&#40;https://pypi.org/project/appium-python-client-shadowstep/&#41;)
-
-[//]: # ([![License]&#40;https://github.com/molokov-klim/Appium-Python-Client-Shadowstep/blob/main/LICENSE&#41;]&#40;LICENSE&#41;)
-
-
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://github.com/molokov-klim/Appium-Python-Client-Shadowstep/blob/main/LICENSE)
 
 ---
 
