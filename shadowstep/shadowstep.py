@@ -39,6 +39,7 @@ class GeneralShadowstepException(WebDriverException):
 class Shadowstep(ShadowstepBase):
     pages: typing.Dict[str, typing.Type[PageBase]] = {}
     _instance: typing.Optional["Shadowstep"] = None
+    _pages_discovered: bool = False
 
     def __new__(cls, *args, **kwargs):
         if cls._instance is None:
@@ -53,15 +54,21 @@ class Shadowstep(ShadowstepBase):
         return cls._instance
 
     def __init__(self):
+        if getattr(self, "_initialized", False):
+            return
         super().__init__()
         self.navigator = PageNavigator(self)
         self.logger = logging.getLogger(f"{__name__}.{self.__class__.__name__}")
         self._auto_discover_pages()
+        self._initialized = True
 
 
     def _auto_discover_pages(self):
         """Automatically import and register all PageBase subclasses from all 'pages' directories in sys.path."""
         self.logger.debug(f"📂 {inspect.currentframe().f_code.co_name}: {list(set(sys.path))}")
+        if self._pages_discovered:
+            return
+        self._pages_discovered = True
         for base_path in map(Path, list(set(sys.path))):
             base_str = str(base_path).lower()
             if any(part in base_str for part in self._ignored_base_path_parts):
