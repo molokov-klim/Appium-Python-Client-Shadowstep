@@ -2,6 +2,7 @@ import gc
 import importlib
 import json
 import os
+import sys
 import time
 import typing
 from pathlib import Path
@@ -102,18 +103,24 @@ class ShadowstepBase:
         self.terminal: Terminal = None
         self._auto_discover_pages()
 
-
     def _auto_discover_pages(self):
-        """Automatically import and register all PageBase subclasses from 'pages/'."""
-        base_path = Path(__file__).parent / "pages"
-        for root, _, files in os.walk(base_path):
-            for file in files:
-                if file.startswith("page_") and file.endswith(".py"):
-                    rel_path = Path(root) / file
-                    module_path = rel_path.with_suffix("").relative_to(Path(__file__).parent)
-                    module_name = ".".join(["shadowstep"] + list(module_path.parts))
-                    module = importlib.import_module(module_name)
-                    self._register_pages_from_module(module)
+        """Automatically import and register all PageBase subclasses from all 'pages' directories in sys.path."""
+        for base_path in map(Path, sys.path):
+            if not base_path.exists() or not base_path.is_dir():
+                continue
+            for dirpath, _, filenames in os.walk(base_path):
+                if Path(dirpath).name != "pages":
+                    continue
+                for file in filenames:
+                    if file.startswith("page_") and file.endswith(".py"):
+                        try:
+                            file_path = Path(dirpath) / file
+                            rel_path = file_path.with_suffix("").relative_to(base_path)
+                            module_name = ".".join(rel_path.parts)
+                            module = importlib.import_module(module_name)
+                            self._register_pages_from_module(module)
+                        except Exception as e:
+                            self.logger.warning(f"Failed to import {file}: {e}")
 
     def _register_pages_from_module(self, module: ModuleType):
         for name, obj in inspect.getmembers(module):
