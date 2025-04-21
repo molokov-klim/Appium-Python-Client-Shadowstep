@@ -5,13 +5,9 @@
 [![PyPI](https://img.shields.io/pypi/v/appium-python-client-shadowstep?color=brightgreen)](https://pypi.org/project/appium-python-client-shadowstep/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://github.com/molokov-klim/Appium-Python-Client-Shadowstep/blob/main/LICENSE)
 
-
 ![Shadowstep – inspired](https://hearthstone.wiki.gg/images/b/b0/EX1_144.png?6a192d=&format=original)
 
-
-![Shadowstep – inspired](https://hearthstone.wiki.gg/images/b/b0/EX1_144.png?6a192d=&format=original)
-
-> [**Shadowstep** on Twitch](https://www.twitch.tv/packetoff) – step into the shadows and build your framework like a rogue
+> [**Shadowstep**](https://www.twitch.tv/packetoff), is a step into the shadows and build your way like a rogue
 ---
 
 ## 🔍 Overview
