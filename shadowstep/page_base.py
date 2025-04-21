@@ -1,31 +1,21 @@
 # shadowstep/page_base.py
 from abc import ABC, abstractmethod
-from typing import Any, Dict, Tuple, Type
-from loguru import logger
-
-from shadowstep.shadowstep import Shadowstep
+from typing import Any, Dict
 
 
 class PageBase(ABC):
     _instances = {}
-    _init_args = {}
-    _init_kwargs = {}
 
     def __new__(cls):
         if cls not in cls._instances:
             instance = super().__new__(cls)
             cls._instances[cls] = instance
 
-            # Получаем Shadowstep и цепляем его как .app
-            shadowstep = Shadowstep.get_instance()
-            instance.app = shadowstep
+            # 💡 Lazy import здесь
+            from shadowstep.shadowstep import Shadowstep
+            instance.app = Shadowstep.get_instance()
 
         return cls._instances[cls]
-
-    def __init__(self) -> None:
-        # !!! Важно: app и другие зависимости должны быть здесь
-        self.app = Shadowstep.get_instance()
-        logger.info(f"{self.app=}")
 
     @classmethod
     def get_instance(cls) -> "PageBase":
@@ -36,8 +26,6 @@ class PageBase(ABC):
     def clear_instance(cls) -> None:
         """Clear the stored instance and its arguments for this page."""
         cls._instances.pop(cls, None)
-        cls._init_args.pop(cls, None)
-        cls._init_kwargs.pop(cls, None)
 
     @property
     @abstractmethod
