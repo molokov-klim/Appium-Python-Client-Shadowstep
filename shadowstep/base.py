@@ -134,6 +134,12 @@ class ShadowstepBase:
                 page_instance = obj(app=self)
                 self.navigator.add_page(page_instance, list(page_instance.edges.keys()))
 
+    def list_registered_pages(self) -> None:
+        """Log all registered page classes."""
+        self.logger.info("=== Registered Pages ===")
+        for name, cls in self.pages.items():
+            self.logger.info(f"{name}: {cls.__module__}.{cls.__name__}")
+
     def get_page(self, name: str) -> PageBase:
         cls = self.pages.get(name)
         if not cls:
