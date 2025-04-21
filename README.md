@@ -46,4 +46,21 @@ navigator
 
 Классы внутри — строго Page<Имя>, наследуются от PageBase.
 
+ВАЖНО!
+Используйте композицию Shadowstep, а не наследование от него
+⚙️ Минимально необходимая реализация:
+Если тебе не нужно перегружать никакие методы — можешь оставить вообще только это:
+
+python
+Копировать
+Редактировать
+class AtolMobilePlatform:
+    def __init__(self):
+        self.app = Shadowstep.get_instance()
+
+    def __getattr__(self, item):
+        return getattr(self.app, item)
+
+
+
 
