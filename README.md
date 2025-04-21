@@ -7,7 +7,7 @@
 
 ![Shadowstep – inspired](https://hearthstone.wiki.gg/images/b/b0/EX1_144.png?6a192d=&format=original)
 
-> [**Shadowstep**](https://www.twitch.tv/packetoff), is a step into the shadows and build your way like a rogue
+> [**Shadowstep**](https://www.twitch.tv/packetoff), step into the shadows and build your way
 ---
 
 ## 🔍 Overview
