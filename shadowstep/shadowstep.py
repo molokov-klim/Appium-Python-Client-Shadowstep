@@ -99,7 +99,7 @@ class Shadowstep(ShadowstepBase):
                 if not name.startswith("Page"):
                     continue
                 self.pages[name] = obj
-                page_instance = obj(app=self)
+                page_instance = obj()
                 edges = list(page_instance.edges.keys())
                 self.logger.info(f"🔗 register page: {page_instance} with edges {edges}")
                 self.navigator.add_page(page_instance, edges)
@@ -116,12 +116,12 @@ class Shadowstep(ShadowstepBase):
         cls = self.pages.get(name)
         if not cls:
             raise ValueError(f"Page '{name}' not found in registered pages.")
-        return cls(app=self)
+        return cls()
 
     def resolve_page(self, name: str) -> PageBase:
         cls = self.pages.get(name)
         if cls:
-            return cls(app=self)
+            return cls()
         raise ValueError(f"Page '{name}' not found.")
 
 

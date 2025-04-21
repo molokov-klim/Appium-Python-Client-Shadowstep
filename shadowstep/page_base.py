@@ -6,12 +6,12 @@ from typing import Any, Dict
 class PageBase(ABC):
     _instances = {}
 
-    def __new__(cls):
+    def __new__(cls, *args, **kwargs):
         if cls not in cls._instances:
             instance = super().__new__(cls)
             cls._instances[cls] = instance
 
-            # 💡 Lazy import здесь
+            # 💡 Lazy import
             from shadowstep.shadowstep import Shadowstep
             instance.app = Shadowstep.get_instance()
 
