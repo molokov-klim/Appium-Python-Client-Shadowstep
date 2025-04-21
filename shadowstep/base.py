@@ -105,34 +105,76 @@ class ShadowstepBase:
 
     def _auto_discover_pages(self):
         """Automatically import and register all PageBase subclasses from all 'pages' directories in sys.path."""
+        self.logger.debug("🧭 Начало автопоиска страниц...")
+
         for base_path in map(Path, sys.path):
-            if not base_path.exists() or not base_path.is_dir():
+            self.logger.debug(f"🔍 Проверка пути: {base_path}")
+
+            if not base_path.exists():
+                self.logger.debug(f"⛔ Путь не существует: {base_path}")
                 continue
+
+            if not base_path.is_dir():
+                self.logger.debug(f"⛔ Путь не директория: {base_path}")
+                continue
+
             for dirpath, _, filenames in os.walk(base_path):
-                if Path(dirpath).name != "pages":
+                dir_path_obj = Path(dirpath)
+                self.logger.debug(f"📂 Обход директории: {dirpath}")
+
+                if dir_path_obj.name != "pages":
+                    self.logger.debug(f"⏭ Пропуск (не 'pages'): {dirpath}")
                     continue
+
                 for file in filenames:
+                    self.logger.debug(f"📝 Найден файл: {file}")
+
                     if file.startswith("page_") and file.endswith(".py"):
                         try:
-                            file_path = Path(dirpath) / file
+                            file_path = dir_path_obj / file
                             rel_path = file_path.with_suffix("").relative_to(base_path)
                             module_name = ".".join(rel_path.parts)
+
+                            self.logger.debug(f"📦 Импорт модуля: {module_name} из {file_path}")
                             module = importlib.import_module(module_name)
+
+                            self.logger.debug(f"✅ Импорт успешен: {module_name}")
                             self._register_pages_from_module(module)
+
                         except Exception as e:
-                            self.logger.warning(f"Failed to import {file}: {e}")
+                            self.logger.warning(f"❌ Ошибка импорта {file} из {dir_path_obj}: {e}")
+                    else:
+                        self.logger.debug(f"⏭ Пропуск файла (не page_*.py): {file}")
+
+        self.logger.debug("✅ Завершён автопоиск страниц.")
 
     def _register_pages_from_module(self, module: ModuleType):
-        for name, obj in inspect.getmembers(module):
-            if (
-                    inspect.isclass(obj)
-                    and issubclass(obj, PageBase)
-                    and obj is not PageBase
-                    and name.startswith("Page")
-            ):
+        self.logger.debug(f"📥 Регистрация страниц из модуля: {module.__name__}")
+        try:
+            members = inspect.getmembers(module)
+            self.logger.debug(f"🔍 Найдено членов в модуле: {len(members)}")
+            for name, obj in members:
+                self.logger.debug(f"➡️ Проверка: {name} ({type(obj)})")
+                if not inspect.isclass(obj):
+                    self.logger.debug(f"⏭ Пропуск — не класс: {name}")
+                    continue
+                if not issubclass(obj, PageBase):
+                    self.logger.debug(f"⏭ Пропуск — не наследует PageBase: {name}")
+                    continue
+                if obj is PageBase:
+                    self.logger.debug(f"⏭ Пропуск — базовый абстрактный PageBase: {name}")
+                    continue
+                if not name.startswith("Page"):
+                    self.logger.debug(f"⏭ Пропуск — имя не начинается с 'Page': {name}")
+                    continue
+                self.logger.debug(f"✅ Подходит: {name} — регистрация")
                 self.pages[name] = obj
                 page_instance = obj(app=self)
-                self.navigator.add_page(page_instance, list(page_instance.edges.keys()))
+                edges = list(page_instance.edges.keys())
+                self.logger.debug(f"🔗 Навигационные связи: {edges}")
+                self.navigator.add_page(page_instance, edges)
+        except Exception as e:
+            self.logger.error(f"❌ Ошибка при регистрации страниц из модуля {module.__name__}: {e}")
 
     def list_registered_pages(self) -> None:
         """Log all registered page classes."""
