@@ -79,7 +79,7 @@ Each page must define:
 
 ```python
 @property
-def edges(self) -> Dict[str, Callable[[], PageBase]]:
+def edges(self) -> Dict[str, Callable[[], PageBase]]:   # bullshit, typing here no needed
     return {
         "PageWifi7": self.to_wifi
     }
