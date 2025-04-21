@@ -108,11 +108,20 @@ class ShadowstepBase:
         IGNORED_DIRS = {"__pycache__", ".venv", "venv", ".git", "build", "dist", ".idea", ".pytest_cache"}
 
         for base_path in map(Path, sys.path):
+
+            self.logger.debug(f"📂 base_path: {base_path=}")
+            self.logger.debug(f"📂 sys.path: {sys.path=}")
+
+
             if not base_path.exists() or not base_path.is_dir():
                 continue
 
-            for dirpath, _, filenames in os.walk(base_path):
+            for dirpath, dirs, filenames in os.walk(base_path):
                 dir_name = Path(dirpath).name
+
+                # 🛑 Исключаем вложенные директории из дальнейшего обхода
+                dirs[:] = [d for d in dirs if d not in IGNORED_DIRS]
+
                 self.logger.debug(f"📂 Обход директории: {dirpath}")
 
                 if dir_name in IGNORED_DIRS:
@@ -136,7 +145,6 @@ class ShadowstepBase:
 
                         except Exception as e:
                             self.logger.warning(f"⚠️ Ошибка импорта {file}: {e}")
-
 
     def _register_pages_from_module(self, module: ModuleType):
         self.logger.debug(f"📥 Регистрация страниц из модуля: {module.__name__}")
