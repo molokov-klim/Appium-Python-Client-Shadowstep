@@ -8,9 +8,10 @@
 
 ![Shadowstep – inspired](https://hearthstone.wiki.gg/images/b/b0/EX1_144.png?6a192d=&format=original)
 
-> "Shadowstep" – inspiration from Hearthstone, step into the shadows 
-> 
-https://www.twitch.tv/packetoff
+
+![Shadowstep – inspired](https://hearthstone.wiki.gg/images/b/b0/EX1_144.png?6a192d=&format=original)
+
+> [**Shadowstep** on Twitch](https://www.twitch.tv/packetoff) – step into the shadows and build your framework like a rogue
 ---
 
 ## 🔍 Overview
