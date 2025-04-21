@@ -1,4 +1,7 @@
-import time
+# coding: utf-8
+"""
+Этот модуль содержит полезные декораторы для работы с Appium.
+"""
 import base64
 import sys
 import io
@@ -14,23 +17,7 @@ import pytest
 from PIL import Image
 
 
-def time_it(func):
-    """
-    Замеряет время выполнения метода.
-    Печатает результат замера.
-    """
-
-    def wrapper(*args, **kwargs):
-        start_time = time.time()
-        result = func(*args, **kwargs)
-        end_time = time.time()
-        execution_time = end_time - start_time
-        print(f"Execution time of {func.__name__}: {execution_time:.2f} seconds")
-        return result
-
-    # Возвращаем обертку функции
-    return wrapper
-
+# TODO make unit test for module
 
 def retry(func):
     """
@@ -639,3 +626,10 @@ def _get_screenshot_bytes(self) -> bytes:
 
         # Возвращаем байты изображения
         return byte_io.getvalue()
+
+
+
+
+
+
+
