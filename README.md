@@ -9,7 +9,7 @@
 
 > [**Shadowstep**](https://www.twitch.tv/packetoff), step into the shadows and build your way
 ---
-
+ 
 ## 🔍 Overview
 **Shadowstep** is an open-source framework, battle-tested and evolving.
 It introduces powerful abstractions for Android testing: dynamic element wrappers, retry logic, visual change detection, and custom ADB terminal integration.
