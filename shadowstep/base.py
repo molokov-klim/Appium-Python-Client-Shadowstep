@@ -107,9 +107,9 @@ class ShadowstepBase:
 
     def _auto_discover_pages(self):
         """Automatically import and register all PageBase subclasses from all 'pages' directories in sys.path."""
-        self.logger.debug(f"📂 sys.path: {sys.path}")
+        self.logger.debug(f"📂 sys.path: {list(set(sys.path))}")
 
-        for base_path in map(Path, sys.path):
+        for base_path in map(Path, list(set(sys.path))):
             base_str = str(base_path).lower()
             # ❌ фильтруем вредные base_path
             if any(part in base_str for part in self._ignored_base_path_parts):
