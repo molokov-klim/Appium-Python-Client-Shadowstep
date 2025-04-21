@@ -2,10 +2,10 @@
 
 > Powerful and resilient Appium-based framework for Android UI automation.
 
-[![PyPI](https://img.shields.io/pypi/v/shadowstep?color=brightgreen)](https://pypi.org/project/shadowstep/)
-[![Lint](https://github.com/your-org/shadowstep/actions/workflows/pylint.yml/badge.svg)](https://github.com/your-org/shadowstep/actions/workflows/pylint.yml)
+[![PyPI](https://img.shields.io/pypi/v/shadowstep?color=brightgreen)](https://pypi.org/project/appium-python-client-shadowstep/)
+[![Lint](https://github.com/your-org/shadowstep/actions/workflows/pylint.yml/badge.svg)](https://github.com/molokov-klim/Appium-Python-Client-Shadowstep/blob/main/.github/workflows/pylint.yml)
 [![Test](https://github.com/your-org/shadowstep/actions/workflows/tests.yml/badge.svg)](https://github.com/your-org/shadowstep/actions/workflows/tests.yml)
-[![License](https://img.shields.io/github/license/your-org/shadowstep)](LICENSE)
+[![License](https://github.com/molokov-klim/Appium-Python-Client-Shadowstep/blob/main/LICENSE)](LICENSE)
 
 ---
 
