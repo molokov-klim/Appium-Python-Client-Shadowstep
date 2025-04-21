@@ -108,46 +108,33 @@ class ShadowstepBase:
     def _auto_discover_pages(self):
         """Automatically import and register all PageBase subclasses from all 'pages' directories in sys.path."""
         self.logger.debug(f"📂 sys.path: {list(set(sys.path))}")
-
         for base_path in map(Path, list(set(sys.path))):
             base_str = str(base_path).lower()
             # ❌ фильтруем вредные base_path
             if any(part in base_str for part in self._ignored_base_path_parts):
                 self.logger.debug(f"⛔ Пропуск base_path (из IGNORED_BASE_PATH_PARTS): {base_path}")
                 continue
-
             if not base_path.exists() or not base_path.is_dir():
                 continue
-
             self.logger.debug(f"📂 base_path: base_path={base_path}")
-
             for dirpath, dirs, filenames in os.walk(base_path):
                 dir_name = Path(dirpath).name
-
                 # ❌ исключаем вложенные директории
                 dirs[:] = [d for d in dirs if d not in self._ignored_auto_discover_dirs]
-
                 self.logger.debug(f"📂 Обход директории: {dirpath}")
-
                 if dir_name in self._ignored_auto_discover_dirs:
                     self.logger.debug(f"⏭ Пропуск (игнорируемая директория): {dirpath}")
                     continue
-
-                if dir_name != "pages":
-                    self.logger.debug(f"⏭ Пропуск (не 'pages'): {dirpath}")
-                    continue
-
                 for file in filenames:
-                    if file.startswith("page_") and file.endswith(".py"):
+                    if file.startswith("page") and file.endswith(".py"):
                         try:
                             file_path = Path(dirpath) / file
-                            rel_path = file_path.with_suffix("").relative_to(base_path)
+                            rel_path = file_path.relative_to(base_path).with_suffix('')
                             module_name = ".".join(rel_path.parts)
 
                             self.logger.debug(f"📦 Импорт модуля: {module_name}")
                             module = importlib.import_module(module_name)
                             self._register_pages_from_module(module)
-
                         except Exception as e:
                             self.logger.warning(f"⚠️ Ошибка импорта {file}: {e}")
 
