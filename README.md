@@ -34,3 +34,16 @@ It introduces powerful abstractions for Android testing: dynamic element wrapper
 
 ```bash
 pip install appium-python-client-shadowstep
+
+
+navigator
+✅ Инструкция для пользователя Shadowstep
+🔧 Требования к структуре проекта:
+
+Все страницы (PageObjects) хранятся в .../pages/.
+
+Файлы называются по шаблону page_<имя>.py.
+
+Классы внутри — строго Page<Имя>, наследуются от PageBase.
+
+

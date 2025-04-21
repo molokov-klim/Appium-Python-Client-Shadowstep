@@ -1,7 +1,11 @@
 import gc
+import importlib
 import json
+import os
 import time
 import typing
+from pathlib import Path
+from types import ModuleType
 
 import requests
 import inspect
@@ -16,6 +20,8 @@ from appium.webdriver.webdriver import WebDriver
 from icecream import ic
 from selenium.common.exceptions import NoSuchDriverException, WebDriverException, InvalidSessionIdException
 
+from shadowstep.navigator.navigator import PageNavigator
+from shadowstep.page_base import PageBase
 from shadowstep.terminal.adb import Adb
 from shadowstep.terminal.terminal import Terminal
 from shadowstep.terminal.transport import Transport
@@ -73,11 +79,11 @@ class WebDriverSingleton(WebDriver):
 
 
 class ShadowstepBase:
-    """
-    A base class for interacting with an Appium server and managing the WebDriver instance.
-    """
+    pages: typing.Dict[str, typing.Type[PageBase]] = {}
 
     def __init__(self):
+        self.adb = Adb()
+        self.navigator = PageNavigator(self)
         self.logger = logger
         self.driver: WebDriver = None
         self.server_ip: str = None
@@ -92,10 +98,46 @@ class ShadowstepBase:
         self.ssh_user: str = None
         self.ssh_port = 22
         self.command_executor: str = None
-
-        self.adb: Adb = None
         self.transport: Transport = None
         self.terminal: Terminal = None
+        self._auto_discover_pages()
+
+
+    def _auto_discover_pages(self):
+        """Automatically import and register all PageBase subclasses from 'pages/'."""
+        base_path = Path(__file__).parent / "pages"
+        for root, _, files in os.walk(base_path):
+            for file in files:
+                if file.startswith("page_") and file.endswith(".py"):
+                    rel_path = Path(root) / file
+                    module_path = rel_path.with_suffix("").relative_to(Path(__file__).parent)
+                    module_name = ".".join(["shadowstep"] + list(module_path.parts))
+                    module = importlib.import_module(module_name)
+                    self._register_pages_from_module(module)
+
+    def _register_pages_from_module(self, module: ModuleType):
+        for name, obj in inspect.getmembers(module):
+            if (
+                    inspect.isclass(obj)
+                    and issubclass(obj, PageBase)
+                    and obj is not PageBase
+                    and name.startswith("Page")
+            ):
+                self.pages[name] = obj
+                page_instance = obj(app=self)
+                self.navigator.add_page(page_instance, list(page_instance.edges.keys()))
+
+    def get_page(self, name: str) -> PageBase:
+        cls = self.pages.get(name)
+        if not cls:
+            raise ValueError(f"Page '{name}' not found in registered pages.")
+        return cls(app=self)
+
+    def resolve_page(self, name: str) -> PageBase:
+        cls = self.pages.get(name)
+        if cls:
+            return cls(app=self)
+        raise ValueError(f"Page '{name}' not found.")
 
     def connect(self,
                 server_ip: str = '127.0.0.1',
@@ -402,7 +444,7 @@ class ShadowstepBase:
                                        user=self.ssh_user,
                                        password=self.ssh_password)
         self.terminal = Terminal(base=self)
-        self.adb = Adb()
+
 
     def disconnect(self) -> None:
         """
