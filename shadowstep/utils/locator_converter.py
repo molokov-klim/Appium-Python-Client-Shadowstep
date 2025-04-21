@@ -5,6 +5,9 @@ from typing import Tuple, Dict, Union, Any, Optional
 from loguru import logger
 
 """
+Sorry, I'm too dumb to solve this module's problem correctly. So I did it primitively.
+If someone who wants to solve this problem is reading this - I'm looking forward to your PR.
+
 ✅ locator exmaples:
 
 1. dict (Shadowstep-style)
