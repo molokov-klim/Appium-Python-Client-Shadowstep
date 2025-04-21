@@ -8,8 +8,8 @@
 
 ![Shadowstep – inspired](https://hearthstone.wiki.gg/images/b/b0/EX1_144.png?6a192d=&format=original)
 
-> _"Shadowstep" – inspiration from Hearthstone, step into the shadows
-
+> "Shadowstep" – inspiration from Hearthstone, step into the shadows
+(c) https://www.twitch.tv/packetoff
 ---
 
 ## 🔍 Overview
