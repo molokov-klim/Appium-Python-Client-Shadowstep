@@ -101,30 +101,35 @@ class ShadowstepBase:
         self.command_executor: str = None
         self.transport: Transport = None
         self.terminal: Terminal = None
+        self._ignored_auto_discover_dirs = {"__pycache__", ".venv", "venv", ".git", "build", "dist", ".idea", ".pytest_cache", "results"}
+        self._ignored_base_path_parts = {"site-packages", "dist-packages", "python", "Python", "Python39"}
         self._auto_discover_pages()
 
     def _auto_discover_pages(self):
         """Automatically import and register all PageBase subclasses from all 'pages' directories in sys.path."""
-        IGNORED_DIRS = {"__pycache__", ".venv", "venv", ".git", "build", "dist", ".idea", ".pytest_cache"}
+        self.logger.debug(f"📂 sys.path: {sys.path}")
 
         for base_path in map(Path, sys.path):
-
-            self.logger.debug(f"📂 base_path: {base_path=}")
-            self.logger.debug(f"📂 sys.path: {sys.path=}")
-
+            base_str = str(base_path).lower()
+            # ❌ фильтруем вредные base_path
+            if any(part in base_str for part in self._ignored_base_path_parts):
+                self.logger.debug(f"⛔ Пропуск base_path (из IGNORED_BASE_PATH_PARTS): {base_path}")
+                continue
 
             if not base_path.exists() or not base_path.is_dir():
                 continue
 
+            self.logger.debug(f"📂 base_path: base_path={base_path}")
+
             for dirpath, dirs, filenames in os.walk(base_path):
                 dir_name = Path(dirpath).name
 
-                # 🛑 Исключаем вложенные директории из дальнейшего обхода
-                dirs[:] = [d for d in dirs if d not in IGNORED_DIRS]
+                # ❌ исключаем вложенные директории
+                dirs[:] = [d for d in dirs if d not in self._ignored_auto_discover_dirs]
 
                 self.logger.debug(f"📂 Обход директории: {dirpath}")
 
-                if dir_name in IGNORED_DIRS:
+                if dir_name in self._ignored_auto_discover_dirs:
                     self.logger.debug(f"⏭ Пропуск (игнорируемая директория): {dirpath}")
                     continue
 
@@ -145,6 +150,7 @@ class ShadowstepBase:
 
                         except Exception as e:
                             self.logger.warning(f"⚠️ Ошибка импорта {file}: {e}")
+
 
     def _register_pages_from_module(self, module: ModuleType):
         self.logger.debug(f"📥 Регистрация страниц из модуля: {module.__name__}")
