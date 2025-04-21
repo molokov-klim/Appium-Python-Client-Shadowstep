@@ -5,11 +5,15 @@
 [![PyPI](https://img.shields.io/pypi/v/appium-python-client-shadowstep?color=brightgreen)](https://pypi.org/project/appium-python-client-shadowstep/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://github.com/molokov-klim/Appium-Python-Client-Shadowstep/blob/main/LICENSE)
 
+
+![Shadowstep – inspired](https://hearthstone.wiki.gg/images/b/b0/EX1_144.png?6a192d=&format=original)
+
+> _"Shadowstep" – inspiration from Hearthstone, step into the shadows
+
 ---
 
 ## 🔍 Overview
-
-**Shadowstep** is a flexible UI automation framework built on top of **Appium** and designed to improve test reliability and developer experience.  
+**Shadowstep** is an open-source framework, battle-tested and evolving.
 It introduces powerful abstractions for Android testing: dynamic element wrappers, retry logic, visual change detection, and custom ADB terminal integration.
 
 ---
