@@ -34,7 +34,7 @@ def test_dict_to_xpath(test_data):
     expected_result = test_data.get("expected_result")
     logger.info(f"{data=}")
     logger.info(f"{expected_result=}")
-    actual_result = converter.dict_to_xpath(data)
+    actual_result = converter._dict_to_xpath(data)
     logger.info(f"{actual_result=}")
     assert actual_result == expected_result
 
@@ -56,7 +56,7 @@ def test_xpath_to_dict(test_data):
     logger.info(f"{inspect.currentframe().f_code.co_name}")
     data = test_data["data"]
     expected_result = test_data["expected_result"]
-    actual_result = converter.xpath_to_dict(data)
+    actual_result = converter._xpath_to_dict(data)
     logger.info(f"{data=}")
     logger.info(f"{expected_result=}")
     logger.info(f"{actual_result=}")
@@ -77,7 +77,7 @@ def test_uiselector_to_dict(test_data):
     logger.info(f"{inspect.currentframe().f_code.co_name}")
     data = test_data["data"]
     expected_result = test_data["expected_result"]
-    actual_result = converter.uiselector_to_dict(data)
+    actual_result = converter._uiselector_to_dict(data)
     logger.info(f"{data=}")
     logger.info(f"{expected_result=}")
     logger.info(f"{actual_result=}")
@@ -116,7 +116,7 @@ def test_dict_to_uiselector(test_data):
     logger.info(f"{inspect.currentframe().f_code.co_name}")
     data = test_data["data"]
     expected_result = test_data["expected_result"]
-    actual_result = converter.dict_to_uiselector(data)
+    actual_result = converter._dict_to_uiselector(data)
     logger.info(f"{data=}")
     logger.info(f"{expected_result=}")
     logger.info(f"{actual_result=}")
@@ -407,7 +407,7 @@ def test_complex_locator_cases(test_data):
     logger.info(f"dict → xpath: {xpath_result}")
     assert xpath_result == expected_xpath
 
-    uiselector_result = converter.dict_to_uiselector(data)
+    uiselector_result = converter._dict_to_uiselector(data)
     logger.info(f"dict → UiSelector: {uiselector_result}")
     assert uiselector_result == expected_uiselector
 

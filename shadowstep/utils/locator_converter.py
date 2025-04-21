@@ -133,6 +133,7 @@ ui_selector_methods = {
 
 """
 
+
 class LocatorConverter:
     logger = logger
 
@@ -152,7 +153,8 @@ class LocatorConverter:
         "enabled": "enabled",
         "focusable": "focusable",
         "focused": "focused",
-        "fromParent": "following-sibling",      # https://developer.android.com/reference/androidx/test/uiautomator/UiSelector#fromParent(androidx.test.uiautomator.UiSelector)
+        "fromParent": "following-sibling",
+        # https://developer.android.com/reference/androidx/test/uiautomator/UiSelector#fromParent(androidx.test.uiautomator.UiSelector)
         "index": "index",  # не используется в xpath
         "instance": "instance",  # в xpath как [n+1]
         "long-clickable": "long-clickable",
@@ -206,15 +208,45 @@ class LocatorConverter:
         v: k for k, v in UISELECTOR_TO_DICT.items()
     }
 
-    def dict_to_xpath(self, selector: Dict[str, Any], root: str = ".//*") -> Tuple[str, str]:
+    def to_dict(self, selector: Union[Dict[str, Any], Tuple[str, str], str]) -> Dict[str, Any]:
+        if isinstance(selector, dict):
+            return selector
+        elif isinstance(selector, tuple):
+            return self._xpath_to_dict(selector)
+        elif isinstance(selector, str):
+            return self._uiselector_to_dict(selector)
+        else:
+            raise ValueError(f"Unsupported selector format: {type(selector)}")
+
+    def to_xpath(self, selector: Union[Dict[str, Any], Tuple[str, str], str]) -> Tuple[str, str]:
+        if isinstance(selector, dict):
+            return self._dict_to_xpath(selector)
+        elif isinstance(selector, tuple) and selector[0] == "xpath":
+            return selector
+        elif isinstance(selector, str) and selector.strip().startswith("new UiSelector()"):
+            return self._dict_to_xpath(self._uiselector_to_dict(selector))
+        else:
+            raise ValueError(f"Unsupported selector format: {type(selector)}")
+
+    def to_uiselector(self, selector: Union[Dict[str, Any], Tuple[str, str], str]) -> str:
+        if isinstance(selector, dict):
+            return self._dict_to_uiselector(selector)
+        elif isinstance(selector, tuple):
+            return self._dict_to_uiselector(self._xpath_to_dict(selector))
+        elif isinstance(selector, str):
+            return selector
+        else:
+            raise ValueError(f"Unsupported selector format: {type(selector)}")
+
+    def _dict_to_xpath(self, selector: Dict[str, Any], root: str = ".//*") -> Tuple[str, str]:
         return self._handle_dict_locator(selector, root=root)
 
     def _handle_dict_locator(
-        self,
-        locator: Dict[str, Any],
-        root: str = ".//*",
-        contains: bool = False,
-        parent_xpath: Optional[str] = None
+            self,
+            locator: Dict[str, Any],
+            root: str = ".//*",
+            contains: bool = False,
+            parent_xpath: Optional[str] = None
     ) -> Tuple[str, str]:
         conditions = []
         tag = "*"
@@ -267,28 +299,27 @@ class LocatorConverter:
 
         return "xpath", full_xpath
 
-
-    def xpath_to_dict(self, xpath: Tuple[str, str]) -> Dict[str, Union[str, int, bool]]:
+    def _xpath_to_dict(self, xpath: Tuple[str, str]) -> Dict[str, Union[str, int, bool]]:
         return self._parse_xpath_recursive(xpath)
 
-    def dict_to_uiselector(self, selector: Dict[str, Union[str, int, bool]]) -> str:
+    def _dict_to_uiselector(self, selector: Dict[str, Union[str, int, bool]]) -> str:
         if "parentSelector" in selector:
             parent = selector["parentSelector"]
             child = selector.copy()
             del child["parentSelector"]
             return (
-                    self.dict_to_uiselector(parent)
-                    + f".childSelector({self.dict_to_uiselector(child)})"
+                    self._dict_to_uiselector(parent)
+                    + f".childSelector({self._dict_to_uiselector(child)})"
             )
 
         parts = ["new UiSelector()"]
         for key, value in selector.items():
             if key == "childSelector" and isinstance(value, dict):
-                nested = self.dict_to_uiselector(value)
+                nested = self._dict_to_uiselector(value)
                 parts.append(f".childSelector({nested})")
                 continue
             if key == "fromParent" and isinstance(value, dict):
-                nested = self.dict_to_uiselector(value)
+                nested = self._dict_to_uiselector(value)
                 parts.append(f".fromParent({nested})")
                 continue
             method = self.DICT_TO_UISELECTOR.get(key)
@@ -302,8 +333,7 @@ class LocatorConverter:
                 parts.append(f'.{method}("{value}")')
         return "".join(parts)
 
-
-    def uiselector_to_dict(self, uiselector: str) -> Dict[str, Union[str, int, bool, dict]]:
+    def _uiselector_to_dict(self, uiselector: str) -> Dict[str, Union[str, int, bool, dict]]:
         def parse_chain(chain: str) -> Dict[str, Union[str, int, bool]]:
             parsed = {}
             for method, raw_value in re.findall(r'\.(\w+)\(([^()]+)\)', chain):
@@ -328,36 +358,6 @@ class LocatorConverter:
             }
 
         return parse_nested(uiselector)
-
-    def to_dict(self, selector: Union[Dict[str, Any], Tuple[str, str], str]) -> Dict[str, Any]:
-        if isinstance(selector, dict):
-            return selector
-        elif isinstance(selector, tuple):
-            return self.xpath_to_dict(selector)
-        elif isinstance(selector, str):
-            return self.uiselector_to_dict(selector)
-        else:
-            raise ValueError(f"Unsupported selector format: {type(selector)}")
-
-    def to_xpath(self, selector: Union[Dict[str, Any], Tuple[str, str], str]) -> Tuple[str, str]:
-        if isinstance(selector, dict):
-            return self.dict_to_xpath(selector)
-        elif isinstance(selector, tuple) and selector[0] == "xpath":
-            return selector
-        elif isinstance(selector, str) and selector.strip().startswith("new UiSelector()"):
-            return self.dict_to_xpath(self.uiselector_to_dict(selector))
-        else:
-            raise ValueError(f"Unsupported selector format: {type(selector)}")
-
-    def to_uiselector(self, selector: Union[Dict[str, Any], Tuple[str, str], str]) -> str:
-        if isinstance(selector, dict):
-            return self.dict_to_uiselector(selector)
-        elif isinstance(selector, tuple):
-            return self.dict_to_uiselector(self.xpath_to_dict(selector))
-        elif isinstance(selector, str):
-            return selector
-        else:
-            raise ValueError(f"Unsupported selector format: {type(selector)}")
 
     def _parse_xpath_recursive(self, xpath: Tuple[str, str]) -> Dict[str, Any]:
         if isinstance(xpath, tuple):
@@ -404,4 +404,3 @@ class LocatorConverter:
             cursor = child
 
         return current
-

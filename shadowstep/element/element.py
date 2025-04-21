@@ -440,6 +440,9 @@ class Element(ElementBase):
             self._handle_driver_error(error)
         return None
 
+    def from_parent(self):
+        ...
+
     def get_center(self, element: Optional[WebElement] = None) -> Optional[Tuple[int, int]]:
         """Get the center coordinates of the element.
 
