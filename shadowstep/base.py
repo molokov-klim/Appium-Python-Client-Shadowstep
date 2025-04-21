@@ -82,6 +82,7 @@ class WebDriverSingleton(WebDriver):
 class ShadowstepBase:
     pages: typing.Dict[str, typing.Type[PageBase]] = {}
 
+
     def __init__(self):
         self.adb = Adb()
         self.navigator = PageNavigator(self)

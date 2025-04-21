@@ -35,7 +35,19 @@ class GeneralShadowstepException(WebDriverException):
 
 
 class Shadowstep(ShadowstepBase):
+    _instance: typing.Optional["Shadowstep"] = None
 
+    def __new__(cls, *args, **kwargs):
+        if cls._instance is None:
+            cls._instance = super().__new__(cls)
+            # возможная инициализация по kwargs
+        return cls._instance
+
+    @classmethod
+    def get_instance(cls) -> "Shadowstep":
+        if cls._instance is None:
+            cls._instance = cls()
+        return cls._instance
 
     def __init__(self):
         super().__init__()
