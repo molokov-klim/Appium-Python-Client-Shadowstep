@@ -3,6 +3,7 @@ import importlib
 import inspect
 import logging
 import os
+import sys
 import traceback
 import typing
 from pathlib import Path
@@ -17,6 +18,7 @@ from selenium.types import WaitExcTypes
 
 from shadowstep.base import ShadowstepBase
 from shadowstep.element.element import Element
+from shadowstep.navigator.navigator import PageNavigator
 from shadowstep.page_base import PageBase
 
 # Configure the root logger (basic configuration)
@@ -35,6 +37,7 @@ class GeneralShadowstepException(WebDriverException):
 
 
 class Shadowstep(ShadowstepBase):
+    pages: typing.Dict[str, typing.Type[PageBase]] = {}
     _instance: typing.Optional["Shadowstep"] = None
 
     def __new__(cls, *args, **kwargs):
@@ -51,7 +54,75 @@ class Shadowstep(ShadowstepBase):
 
     def __init__(self):
         super().__init__()
+        self.navigator = PageNavigator(self)
         self.logger = logging.getLogger(f"{__name__}.{self.__class__.__name__}")
+        self._auto_discover_pages()
+
+
+    def _auto_discover_pages(self):
+        """Automatically import and register all PageBase subclasses from all 'pages' directories in sys.path."""
+        self.logger.debug(f"📂 {inspect.currentframe().f_code.co_name}: {list(set(sys.path))}")
+        for base_path in map(Path, list(set(sys.path))):
+            base_str = str(base_path).lower()
+            if any(part in base_str for part in self._ignored_base_path_parts):
+                continue
+            if not base_path.exists() or not base_path.is_dir():
+                continue
+            for dirpath, dirs, filenames in os.walk(base_path):
+                dir_name = Path(dirpath).name
+                # ❌ исключаем вложенные директории
+                dirs[:] = [d for d in dirs if d not in self._ignored_auto_discover_dirs]
+                if dir_name in self._ignored_auto_discover_dirs:
+                    continue
+                for file in filenames:
+                    if file.startswith("page") and file.endswith(".py"):
+                        try:
+                            file_path = Path(dirpath) / file
+                            rel_path = file_path.relative_to(base_path).with_suffix('')
+                            module_name = ".".join(rel_path.parts)
+                            module = importlib.import_module(module_name)
+                            self._register_pages_from_module(module)
+                        except Exception as e:
+                            self.logger.warning(f"⚠️ Import error {file}: {e}")
+
+
+    def _register_pages_from_module(self, module: ModuleType):
+        try:
+            members = inspect.getmembers(module)
+            for name, obj in members:
+                if not inspect.isclass(obj):
+                    continue
+                if not issubclass(obj, PageBase):
+                    continue
+                if obj is PageBase:
+                    continue
+                if not name.startswith("Page"):
+                    continue
+                self.pages[name] = obj
+                page_instance = obj(app=self)
+                edges = list(page_instance.edges.keys())
+                self.logger.info(f"🔗 register page: {page_instance} with edges {edges}")
+                self.navigator.add_page(page_instance, edges)
+        except Exception as e:
+            self.logger.error(f"❌ Error page register from module {module.__name__}: {e}")
+
+    def list_registered_pages(self) -> None:
+        """Log all registered page classes."""
+        self.logger.info("=== Registered Pages ===")
+        for name, cls in self.pages.items():
+            self.logger.info(f"{name}: {cls.__module__}.{cls.__name__}")
+
+    def get_page(self, name: str) -> PageBase:
+        cls = self.pages.get(name)
+        if not cls:
+            raise ValueError(f"Page '{name}' not found in registered pages.")
+        return cls(app=self)
+
+    def resolve_page(self, name: str) -> PageBase:
+        cls = self.pages.get(name)
+        if cls:
+            return cls(app=self)
+        raise ValueError(f"Page '{name}' not found.")
 
 
     def get_element(self,
