@@ -17,7 +17,7 @@ import pytest
 from PIL import Image
 
 
-# TODO make unit test for module
+# TODO.txt make unit test for module
 
 def retry(func):
     """
