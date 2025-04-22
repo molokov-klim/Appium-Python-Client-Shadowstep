@@ -70,6 +70,19 @@ class PageNavigator:
     def save_graph(self, path: str = "page_graph.png"):
         self.graph_manager.save_graph_image(path)
 
+    def test_graph(self):
+        for from_page in self.graph_manager.nx_graph.nodes:
+            for to_page in self.graph_manager.get_edges(from_page):
+                from_inst = self.shadowstep.resolve_page(from_page.__class__.__name__)
+                to_inst = self.shadowstep.resolve_page(to_page)
+                if from_inst and to_inst:
+                    try:
+                        self.navigate(from_page=from_inst, to_page=to_inst)
+                        assert to_inst.is_current_page()
+                        logger.info(f"✅ Переход {from_page.__class__.__name__} → {to_page} прошёл успешно.")
+                    except Exception as e:
+                        logger.warning(f"❌ Ошибка при переходе {from_page.__class__.__name__} → {to_page}: {e}")
+
 
 class PageGraph:
     def __init__(self):
