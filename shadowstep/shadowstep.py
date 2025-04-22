@@ -19,7 +19,7 @@ from selenium.types import WaitExcTypes
 from shadowstep.base import ShadowstepBase
 from shadowstep.element.element import Element
 from shadowstep.navigator.navigator import PageNavigator
-from shadowstep.page_base import PageBase
+from shadowstep.page_base import PageBaseShadowstep
 
 # Configure the root logger (basic configuration)
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
@@ -37,7 +37,7 @@ class GeneralShadowstepException(WebDriverException):
 
 
 class Shadowstep(ShadowstepBase):
-    pages: typing.Dict[str, typing.Type[PageBase]] = {}
+    pages: typing.Dict[str, typing.Type[PageBaseShadowstep]] = {}
     _instance: typing.Optional["Shadowstep"] = None
     _pages_discovered: bool = False
 
@@ -99,9 +99,9 @@ class Shadowstep(ShadowstepBase):
             for name, obj in members:
                 if not inspect.isclass(obj):
                     continue
-                if not issubclass(obj, PageBase):
+                if not issubclass(obj, PageBaseShadowstep):
                     continue
-                if obj is PageBase:
+                if obj is PageBaseShadowstep:
                     continue
                 if not name.startswith("Page"):
                     continue
@@ -119,13 +119,13 @@ class Shadowstep(ShadowstepBase):
         for name, cls in self.pages.items():
             self.logger.info(f"{name}: {cls.__module__}.{cls.__name__}")
 
-    def get_page(self, name: str) -> PageBase:
+    def get_page(self, name: str) -> PageBaseShadowstep:
         cls = self.pages.get(name)
         if not cls:
             raise ValueError(f"Page '{name}' not found in registered pages.")
         return cls()
 
-    def resolve_page(self, name: str) -> PageBase:
+    def resolve_page(self, name: str) -> PageBaseShadowstep:
         cls = self.pages.get(name)
         if cls:
             return cls()

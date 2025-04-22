@@ -72,8 +72,10 @@ class ExamplePlatform:
 - Must inherit from `PageBase`:
 
 ```python
-from shadowstep.page_base import PageBase
-class PageMain7(PageBase): ...
+from shadowstep.page_base import PageBaseShadowstep
+
+
+class PageMain7(PageBaseShadowstep): ...
 ```
 
 ### 🧠 4. Required: `edges` Property
@@ -120,22 +122,23 @@ The `Shadowstep._auto_discover_pages()` method:
 ## 📄 Example Page Class
 
 ```python
-from shadowstep.page_base import PageBase
+from shadowstep.page_base import PageBaseShadowstep
 from shadowstep.element.element import Element
 from typing import Dict, Callable
 
-class PageExample(PageBase):
-    @property
-    def edges(self) -> Dict[str, Callable[[], PageBase]]:
-        return {"PageNext": self.to_next}
 
-    def to_next(self) -> PageBase:
-        self.next_button.tap()
-        return self.app.get_page("PageNext")
+class PageExample(PageBaseShadowstep):
+  @property
+  def edges(self) -> Dict[str, Callable[[], PageBaseShadowstep]]:
+    return {"PageNext": self.to_next}
 
-    @property
-    def next_button(self) -> Element:
-        return self.app.get_element(locator={"text": "Next"})
+  def to_next(self) -> PageBaseShadowstep:
+    self.next_button.tap()
+    return self.app.get_page("PageNext")
+
+  @property
+  def next_button(self) -> Element:
+    return self.app.get_element(locator={"text": "Next"})
 ```
 
 ---

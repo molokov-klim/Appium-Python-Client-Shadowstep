@@ -9,15 +9,15 @@ if TYPE_CHECKING:
 
 T = TypeVar("T", bound="PageBase")
 
-class PageBase(ABC):
+class PageBaseShadowstep(ABC):
     """Abstract base class for all pages in the Shadowstep framework.
 
     Implements singleton behavior and lazy initialization of the app context.
     """
 
-    _instances: Dict[type, "PageBase"] = {}
+    _instances: Dict[type, "PageBaseShadowstep"] = {}
 
-    def __new__(cls, *args: Any, **kwargs: Any) -> "PageBase":
+    def __new__(cls, *args: Any, **kwargs: Any) -> "PageBaseShadowstep":
         if cls not in cls._instances:
             instance = super().__new__(cls)
 
@@ -31,7 +31,7 @@ class PageBase(ABC):
     def get_instance(cls: Type[T]) -> T:
         """Get or create the singleton instance of the page.
         Returns:
-            PageBase: The singleton instance of the page class.
+            PageBaseShadowstep: The singleton instance of the page class.
         """
         return cls()
 
@@ -42,7 +42,7 @@ class PageBase(ABC):
 
     @property
     @abstractmethod
-    def edges(self) -> Dict[str, Callable[[], "PageBase"]]:
+    def edges(self) -> Dict[str, Callable[[], "PageBaseShadowstep"]]:
         """Each page must declare its navigation edges.
 
         Returns:
