@@ -108,7 +108,7 @@ class Shadowstep(ShadowstepBase):
                 self.pages[name] = obj
                 page_instance = obj()
                 edges = list(page_instance.edges.keys())
-                self.logger.info(f"🔗 register page: {page_instance} with edges {edges}")
+                self.logger.info(f"✅ register page: {page_instance} with edges {edges}")
                 self.navigator.add_page(page_instance, edges)
         except Exception as e:
             self.logger.error(f"❌ Error page register from module {module.__name__}: {e}")
