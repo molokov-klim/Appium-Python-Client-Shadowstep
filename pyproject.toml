@@ -2,7 +2,6 @@
 requires = ["setuptools", "wheel"]
 build-backend = "setuptools.build_meta"
 
-
 [project]
 name = "appium-python-client-shadowstep"
 version = "0.14.28"
@@ -11,6 +10,25 @@ authors = [{ name = "Klim Molokov", email = "klim.molokov@yandex.ru" }]
 license = "MIT"
 readme = "README.md"
 requires-python = ">=3.8"
+
+# ======================
+# 🔖 Versioning Guidelines
+# ======================
+# Version is defined in the [project] -> version field.
+# Follows Semantic Versioning (SemVer): MAJOR.MINOR.PATCH
+#
+# Examples:
+#   - 0.14.28  → current working version with new features
+#   - 1.0.0    → stable public release
+#
+# Bump rules:
+# - PATCH for bug fixes (0.14.28 → 0.14.29)
+# - MINOR for backward-compatible features (0.14.28 → 0.15.0)
+# - MAJOR for breaking changes (0.14.28 → 1.0.0)
+#
+# Commits:
+# - If the version is bumped, commit with message: "0.15.29 your comment"
+# - If the version remains unchanged, commit with: "0.14.28 your comment"
 
 dependencies = [
     "Appium-Python-Client==4.2.0",
@@ -38,7 +56,6 @@ classifiers = [
     "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10"
 ]
-
 
 [project.optional-dependencies]
 dev = ["icecream"]
