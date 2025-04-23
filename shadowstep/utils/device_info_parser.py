@@ -225,7 +225,7 @@ class DeviceInfoAnalyzer:
             self.logger.exception(error)
             raise
 
-    def generate_and_attach_all_graphs(self, mb: MetaBlock, output_dir: str) -> None:
+    def generate_and_attach_all_graphs(self, mb: Optional[MetaBlock], output_dir: str) -> None:
         """
         Генерирует графики battery/cpu/mem по всем накопленным логам
         и прикрепляет их к текущему шагу Zephyr.
@@ -238,11 +238,12 @@ class DeviceInfoAnalyzer:
 
         unique_dirs = self._get_unique_directories(self.device_info_filepath)
 
-        for input_dir in unique_dirs:
-            self.logger.info(f"Генерация графиков для директории: {input_dir}")
-            self._attach_device_graphs(mb=mb, input_dir=input_dir, output_dir=output_dir)
+        if mb is not None:
+            for input_dir in unique_dirs:
+                self.logger.info(f"Генерация графиков для директории: {input_dir}")
+                self._attach_device_graphs(mb=mb, input_dir=input_dir, output_dir=output_dir)
 
-    def _add_attachment_zephyr(self, mb: MetaBlock, directory: str, filename: str) -> bool:
+    def _add_attachment_zephyr(self, mb: Optional[MetaBlock], directory: str, filename: str) -> bool:
         """
         Прикрепляет лог-файл к Zephyr и сохраняет путь в накопитель.
 
@@ -258,8 +259,9 @@ class DeviceInfoAnalyzer:
 
         try:
             filepath = os.path.join(directory, filename)
-            # Прикрепляем файл
-            self.zephyr.attach_to_step(mb=mb, filepath=filepath, filename=filename)
+            if mb is not None:
+                # Прикрепляем файл
+                self.zephyr.attach_to_step(mb=mb, filepath=filepath, filename=filename)
             # Добавляем в накопитель
             self.device_info_filepath.add(filepath)
             return True
@@ -519,7 +521,7 @@ class DeviceInfoAnalyzer:
 
         return result
 
-    def _attach_device_graphs(self, mb: MetaBlock, input_dir: str, output_dir: str) -> None:
+    def _attach_device_graphs(self, mb: Optional[MetaBlock], input_dir: str, output_dir: str) -> None:
         """
         Генерирует графики (battery, cpu, mem) из логов и прикрепляет их к шагу Zephyr.
 
@@ -546,7 +548,8 @@ class DeviceInfoAnalyzer:
                             document=file,
                             caption=f'{label} график сгенерирован: {path}'
                         )
-                    self.zephyr.attach_to_step(mb=mb, filepath=path, filename=os.path.basename(path))
+                    if mb is not None:
+                        self.zephyr.attach_to_step(mb=mb, filepath=path, filename=os.path.basename(path))
             except Exception as e:
                 self.logger.warning(f"⚠️ Ошибка при генерации/прикреплении графика {label}: {e}")
 
@@ -688,7 +691,7 @@ class DeviceInfoAnalyzer:
         filepath = self._write_device_info_file(directory, filename, device_info, package_descriptions)
         self.logger.info(f"Device info written to: {filepath}")
 
-        if mb:
+        if mb is not None:
             self.zephyr.attach_to_step(mb=mb, filepath=filepath, filename=filename)
 
     def _get_device_properties(self) -> Dict[str, str]:
