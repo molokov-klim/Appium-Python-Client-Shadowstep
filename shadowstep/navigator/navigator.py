@@ -90,10 +90,10 @@ class PageNavigator:
         for i in range(len(path) - 1):
             current_page = path[i]
             next_page = path[i + 1]
-            next_class_name = next_page.__class__.__repr__
+            next_class_name = next_page.__repr__
             transition_method = current_page.edges[next_class_name]
             self.logger.info(
-                f"Navigating from {current_page.__class__.__repr__} to {next_class_name} "
+                f"Navigating from {current_page.__repr__} to {next_class_name} "
                 f"via method {transition_method.__repr__}"
             )
             transition_method()
@@ -104,15 +104,15 @@ class PageNavigator:
     def test_graph(self):
         for from_page in self.graph_manager.nx_graph.nodes:
             for to_page in self.graph_manager.get_edges(from_page):
-                from_inst = self.shadowstep.resolve_page(from_page.__class__.__repr__)
+                from_inst = self.shadowstep.resolve_page(from_page.__repr__)
                 to_inst = self.shadowstep.resolve_page(to_page)
                 if from_inst and to_inst:
                     try:
                         self.navigate(from_page=from_inst, to_page=to_inst)
                         assert to_inst.is_current_page()
-                        logger.info(f"✅ Переход {from_page.__class__.__repr__} → {to_page} прошёл успешно.")
+                        logger.info(f"✅ Переход {from_page.__repr__} → {to_page} прошёл успешно.")
                     except Exception as e:
-                        logger.warning(f"❌ Ошибка при переходе {from_page.__class__.__repr__} → {to_page}: {e}")
+                        logger.warning(f"❌ Ошибка при переходе {from_page.__repr__} → {to_page}: {e}")
 
 
 class PageGraph:
