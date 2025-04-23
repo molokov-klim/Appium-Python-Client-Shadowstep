@@ -78,9 +78,7 @@ class WebDriverSingleton(WebDriver):
 
 class ShadowstepBase:
 
-
     def __init__(self):
-        self.adb = Adb()
         self.logger = logger
         self.driver: WebDriver = None
         self.server_ip: str = None
@@ -97,6 +95,7 @@ class ShadowstepBase:
         self.command_executor: str = None
         self.transport: Transport = None
         self.terminal: Terminal = None
+        self.adb: Adb = None
         self._ignored_auto_discover_dirs = {"__pycache__", ".venv", "venv", "site-packages", "dist-packages", ".git", "build", "dist", ".idea", ".pytest_cache", "results"}
         self._ignored_base_path_parts = {"site-packages", "dist-packages", ".venv", "venv", "python", "Python", "Python39"}
 
@@ -406,6 +405,7 @@ class ShadowstepBase:
                                        user=self.ssh_user,
                                        password=self.ssh_password)
         self.terminal = Terminal(base=self)
+        self.adb = Adb(base=self)
 
 
     def disconnect(self) -> None:
