@@ -1,6 +1,10 @@
-import inspect
+"""
+LegacyAdb
 
-from appium.webdriver.webdriver import WebDriver
+This module is deprecated and kept for backward compatibility with external systems.
+Please use `DeviceInterface` and the new `Adb` or `Terminal` implementations instead.
+"""
+import inspect
 from loguru import logger
 import os
 import re
@@ -18,14 +22,6 @@ class Adb:
     A class to interact with Android Debug Bridge (ADB) for device management.
     Use only if Appium server is running locally where the test is being performed
     """
-
-    base = None
-    driver = None
-
-    def __init__(self, base: "Shadowstep"):
-        self.base: "Shadowstep" = base
-        self.driver: WebDriver = base.driver
-
         
     @staticmethod
     def get_devices() -> Union[List[str], None]:

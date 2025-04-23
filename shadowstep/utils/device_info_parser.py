@@ -13,7 +13,7 @@ from datetime import datetime
 from matplotlib import cm
 from pytest_adaptavist import MetaBlock
 
-from core.utils.zephyr_uploader import ZephyrUploader
+from shadowstep.utils.zephyr_uploader import ZephyrUploader
 
 
 class DeviceInfoAnalyzer:
