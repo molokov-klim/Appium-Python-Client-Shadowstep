@@ -12,8 +12,6 @@ from typing import Any, Union, Tuple
 from appium.webdriver.webdriver import WebDriver
 from selenium.common import NoSuchDriverException, InvalidSessionIdException
 
-from shadowstep.terminal import Transport
-
 # Configure the root logger (basic configuration)
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
@@ -32,12 +30,12 @@ class Terminal:
     Required ssh
     """
     base: "Shadowstep" = None
-    transport: Transport = None
+    transport: "Transport" = None
     driver: WebDriver = None
 
     def __init__(self, base: "Shadowstep"):
         self.base: "Shadowstep" = base
-        self.transport: Transport = base.transport
+        self.transport: "Transport" = base.transport
         self.driver: WebDriver = base.driver
 
     def __del__(self):
