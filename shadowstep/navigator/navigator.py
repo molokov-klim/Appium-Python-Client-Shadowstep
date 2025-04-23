@@ -40,7 +40,7 @@ class PageNavigator:
             self.logger.error(f"❌ No navigation path found from {from_page} to {to_page}")
             return False
 
-        self.logger.info(f"🚀 Navigating: {from_page} ➡ {to_page} via path: {[page.__name__ for page in path]}")
+        self.logger.info(f"🚀 Navigating: {from_page} ➡ {to_page} via path: {[page.__repr__ for page in path]}")
 
         try:
             self.perform_navigation(path, timeout)
@@ -90,11 +90,11 @@ class PageNavigator:
         for i in range(len(path) - 1):
             current_page = path[i]
             next_page = path[i + 1]
-            next_class_name = next_page.__class__.__name__
+            next_class_name = next_page.__class__.__repr__
             transition_method = current_page.edges[next_class_name]
             self.logger.info(
-                f"Navigating from {current_page.__class__.__name__} to {next_class_name} "
-                f"via method {transition_method.__name__}"
+                f"Navigating from {current_page.__class__.__repr__} to {next_class_name} "
+                f"via method {transition_method.__repr__}"
             )
             transition_method()
 
@@ -104,15 +104,15 @@ class PageNavigator:
     def test_graph(self):
         for from_page in self.graph_manager.nx_graph.nodes:
             for to_page in self.graph_manager.get_edges(from_page):
-                from_inst = self.shadowstep.resolve_page(from_page.__class__.__name__)
+                from_inst = self.shadowstep.resolve_page(from_page.__class__.__repr__)
                 to_inst = self.shadowstep.resolve_page(to_page)
                 if from_inst and to_inst:
                     try:
                         self.navigate(from_page=from_inst, to_page=to_inst)
                         assert to_inst.is_current_page()
-                        logger.info(f"✅ Переход {from_page.__class__.__name__} → {to_page} прошёл успешно.")
+                        logger.info(f"✅ Переход {from_page.__class__.__repr__} → {to_page} прошёл успешно.")
                     except Exception as e:
-                        logger.warning(f"❌ Ошибка при переходе {from_page.__class__.__name__} → {to_page}: {e}")
+                        logger.warning(f"❌ Ошибка при переходе {from_page.__class__.__repr__} → {to_page}: {e}")
 
 
 class PageGraph:
