@@ -12,7 +12,6 @@ from typing import Any, Union, Tuple
 from appium.webdriver.webdriver import WebDriver
 from selenium.common import NoSuchDriverException, InvalidSessionIdException
 
-from shadowstep.shadowstep import Shadowstep
 from shadowstep.terminal import Transport
 
 # Configure the root logger (basic configuration)
