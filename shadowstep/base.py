@@ -143,7 +143,7 @@ class ShadowstepBase:
         Returns:
             None
         """
-        self.logger.info(f"{inspect.currentframe().f_code.co_name}")
+        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
         # if provided caps instead options, redeclare caps to options
         # see https://github.com/appium/appium-uiautomator2-driver
         if capabilities is not None and options is None:
@@ -415,7 +415,7 @@ class ShadowstepBase:
         Returns:
             None
         """
-        self.logger.info(f"{inspect.currentframe().f_code.co_name}")
+        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
         try:
             if self.driver:
                 response = requests.delete(f"{self.command_executor}/session/{self.driver.session_id}")
@@ -436,7 +436,7 @@ class ShadowstepBase:
         Returns:
             None
         """
-        self.logger.info(f"{inspect.currentframe().f_code.co_name}")
+        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
         self.disconnect()
         WebDriverSingleton.clear_instance()
         self.connect(command_executor=self.command_executor,
@@ -452,7 +452,7 @@ class ShadowstepBase:
         time.sleep(3)
 
     def is_connected(self) -> bool:
-        self.logger.info(f"{inspect.currentframe().f_code.co_name}")
+        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
         try:
             response = requests.get(f"{self.command_executor}/sessions")
             response_json = response.json().get("value", {})

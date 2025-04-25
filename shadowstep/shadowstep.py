@@ -138,7 +138,7 @@ class Shadowstep(ShadowstepBase):
                     poll_frequency: float = 0.5,
                     ignored_exceptions: typing.Optional[WaitExcTypes] = None,
                     contains: bool = False) -> Element:
-        self.logger.info(f"{inspect.currentframe().f_code.co_name}")
+        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
         element = Element(locator=locator,
                           timeout=timeout,
                           poll_frequency=poll_frequency,
@@ -148,118 +148,118 @@ class Shadowstep(ShadowstepBase):
         return element
 
     def get_elements(self):
-        self.logger.info(f"{inspect.currentframe().f_code.co_name}")
+        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
         raise NotImplementedError(f"Method {inspect.currentframe().f_code.co_name} is not yet implemented.")
 
     def get_image(self):
-        self.logger.info(f"{inspect.currentframe().f_code.co_name}")
+        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
         raise NotImplementedError(f"Method {inspect.currentframe().f_code.co_name} is not yet implemented.")
 
     def get_images(self):
-        self.logger.info(f"{inspect.currentframe().f_code.co_name}")
+        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
         raise NotImplementedError(f"Method {inspect.currentframe().f_code.co_name} is not yet implemented.")
 
     def get_text(self):
-        self.logger.info(f"{inspect.currentframe().f_code.co_name}")
+        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
         raise NotImplementedError
 
     def scheduled_actions(self):
-        self.logger.info(f"{inspect.currentframe().f_code.co_name}")
+        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
         raise NotImplementedError(f"Method {inspect.currentframe().f_code.co_name} is not yet implemented.")
         # https://github.com/appium/appium-uiautomator2-driver/blob/master/docs/scheduled-actions.md
 
     def find_and_get_element(self, *args, **kwargs):
-        self.logger.info(f"{inspect.currentframe().f_code.co_name}")
+        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
         raise NotImplementedError(f"Method {inspect.currentframe().f_code.co_name} is not yet implemented.")
 
     def get_image_coordinates(self, *args, **kwargs):
-        self.logger.info(f"{inspect.currentframe().f_code.co_name}")
+        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
         raise NotImplementedError(f"Method {inspect.currentframe().f_code.co_name} is not yet implemented.")
 
     def get_inner_image_coordinates(self, *args, **kwargs):
-        self.logger.info(f"{inspect.currentframe().f_code.co_name}")
+        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
         raise NotImplementedError(f"Method {inspect.currentframe().f_code.co_name} is not yet implemented.")
 
     def get_many_coordinates_of_image(self, *args, **kwargs):
-        self.logger.info(f"{inspect.currentframe().f_code.co_name}")
+        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
         raise NotImplementedError(f"Method {inspect.currentframe().f_code.co_name} is not yet implemented.")
 
     def get_text_coordinates(self, *args, **kwargs):
-        self.logger.info(f"{inspect.currentframe().f_code.co_name}")
+        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
         raise NotImplementedError(f"Method {inspect.currentframe().f_code.co_name} is not yet implemented.")
 
     def is_text_on_screen(self, *args, **kwargs):
-        self.logger.info(f"{inspect.currentframe().f_code.co_name}")
+        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
         raise NotImplementedError(f"Method {inspect.currentframe().f_code.co_name} is not yet implemented.")
 
     def is_image_on_the_screen(self, *args, **kwargs):
-        self.logger.info(f"{inspect.currentframe().f_code.co_name}")
+        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
         raise NotImplementedError(f"Method {inspect.currentframe().f_code.co_name} is not yet implemented.")
 
     def to_ndarray(self, *args, **kwargs):
-        self.logger.info(f"{inspect.currentframe().f_code.co_name}")
+        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
         raise NotImplementedError(f"Method {inspect.currentframe().f_code.co_name} is not yet implemented.")
 
     def swipe(self, *args, **kwargs):
-        self.logger.info(f"{inspect.currentframe().f_code.co_name}")
+        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
         raise NotImplementedError(f"Method {inspect.currentframe().f_code.co_name} is not yet implemented.")
 
     def swipe_right_to_left(self):
-        self.logger.info(f"{inspect.currentframe().f_code.co_name}")
+        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
         raise NotImplementedError(f"Method {inspect.currentframe().f_code.co_name} is not yet implemented.")
 
     def swipe_left_to_right(self):
-        self.logger.info(f"{inspect.currentframe().f_code.co_name}")
+        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
         raise NotImplementedError(f"Method {inspect.currentframe().f_code.co_name} is not yet implemented.")
 
     def swipe_top_to_bottom(self):
-        self.logger.info(f"{inspect.currentframe().f_code.co_name}")
+        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
         raise NotImplementedError(f"Method {inspect.currentframe().f_code.co_name} is not yet implemented.")
 
     def swipe_bottom_to_top(self):
-        self.logger.info(f"{inspect.currentframe().f_code.co_name}")
+        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
         raise NotImplementedError(f"Method {inspect.currentframe().f_code.co_name} is not yet implemented.")
 
     def wait_for(self, *args, **kwargs):
-        self.logger.info(f"{inspect.currentframe().f_code.co_name}")
+        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
         raise NotImplementedError(f"Method {inspect.currentframe().f_code.co_name} is not yet implemented.")
 
     def wait_for_not(self, *args, **kwargs):
-        self.logger.info(f"{inspect.currentframe().f_code.co_name}")
+        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
         raise NotImplementedError(f"Method {inspect.currentframe().f_code.co_name} is not yet implemented.")
 
     def is_wait_for(self, *args, **kwargs):
-        self.logger.info(f"{inspect.currentframe().f_code.co_name}")
+        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
         raise NotImplementedError(f"Method {inspect.currentframe().f_code.co_name} is not yet implemented.")
 
     def is_wait_for_not(self, *args, **kwargs):
-        self.logger.info(f"{inspect.currentframe().f_code.co_name}")
+        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
         raise NotImplementedError(f"Method {inspect.currentframe().f_code.co_name} is not yet implemented.")
 
     def wait_return_true(self, *args, **kwargs):
-        self.logger.info(f"{inspect.currentframe().f_code.co_name}")
+        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
         raise NotImplementedError(f"Method {inspect.currentframe().f_code.co_name} is not yet implemented.")
 
     def draw_by_coordinates(self, *args, **kwargs):
-        self.logger.info(f"{inspect.currentframe().f_code.co_name}")
+        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
         raise NotImplementedError(f"Method {inspect.currentframe().f_code.co_name} is not yet implemented.")
 
     def save_screenshot(self, *args, **kwargs):
-        self.logger.info(f"{inspect.currentframe().f_code.co_name}")
+        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
         raise NotImplementedError(f"Method {inspect.currentframe().f_code.co_name} is not yet implemented.")
 
     def get_screenshot_as_base64_decoded(self):
-        self.logger.info(f"{inspect.currentframe().f_code.co_name}")
+        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
         screenshot = self.driver.get_screenshot_as_base64().encode('utf-8')
         screenshot = base64.b64decode(screenshot)
         return screenshot
 
     def save_source(self, *args, **kwargs):
-        self.logger.info(f"{inspect.currentframe().f_code.co_name}")
+        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
         raise NotImplementedError(f"Method {inspect.currentframe().f_code.co_name} is not yet implemented.")
 
     def find_and_tap_in_drop_down_menu(self, *args, **kwargs):
-        self.logger.info(f"{inspect.currentframe().f_code.co_name}")
+        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
         raise NotImplementedError(f"Method {inspect.currentframe().f_code.co_name} is not yet implemented.")
 
     def tap(
@@ -351,7 +351,7 @@ class Shadowstep(ShadowstepBase):
 
     def start_recording_screen(self) -> None:
         """Start screen recording using Appium driver."""
-        self.logger.info(f"{inspect.currentframe().f_code.co_name}")
+        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
         try:
             self.driver.start_recording_screen()
         except Exception as e:
@@ -364,7 +364,7 @@ class Shadowstep(ShadowstepBase):
         Returns:
             bytes: Video recording in base64-decoded format.
         """
-        self.logger.info(f"{inspect.currentframe().f_code.co_name}")
+        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
         try:
             encoded = self.driver.stop_recording_screen()
             return base64.b64decode(encoded)
@@ -373,7 +373,7 @@ class Shadowstep(ShadowstepBase):
             raise GeneralShadowstepException("stop_recording_screen failed") from e
 
     def get_screenshot(self):
-        self.logger.info(f"{inspect.currentframe().f_code.co_name}")
+        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
         try:
             return self.get_screenshot_as_base64_decoded()
         except Exception as e:

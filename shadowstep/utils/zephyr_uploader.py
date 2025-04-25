@@ -25,7 +25,7 @@ class ZephyrUploader:
             filepath (str): Путь к файлу.
             filename (Optional[str]): Имя файла. Если не указано — берётся из пути.
         """
-        self.logger.info(f"{inspect.currentframe().f_code.co_name}")
+        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
         self._attach(
             mb=mb,
             filepath=filepath,
@@ -43,7 +43,7 @@ class ZephyrUploader:
             filepath (str): Путь к файлу.
             filename (Optional[str]): Имя файла. Если не указано — берётся из пути.
         """
-        self.logger.info(f"{inspect.currentframe().f_code.co_name}")
+        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
         self._attach(
             mb=mb,
             filepath=filepath,
@@ -60,7 +60,7 @@ class ZephyrUploader:
             filepath (str): Путь к файлу.
             filename (Optional[str]): Имя файла. Если не указано — берётся из пути.
         """
-        self.logger.info(f"{inspect.currentframe().f_code.co_name}")
+        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
         self._attach(
             mb=mb,
             filepath=filepath,
@@ -77,7 +77,7 @@ class ZephyrUploader:
             prefix (str): Префикс комментария (например, метка или описание).
             text (str): Текст, который нужно добавить.
         """
-        self.logger.info(f"{inspect.currentframe().f_code.co_name}")
+        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
         timestamp = datetime.now().strftime("%Y-%m-%d %H:%M")
         status = mb.data.get("status", "Pass")  # fallback — на всякий случай
         block = f"{'-' * 40} {timestamp} {'-' * 40}\n{prefix}\n\n{status}{text}\n"
@@ -116,7 +116,7 @@ class ZephyrUploader:
             filename (Optional[str]): Имя файла. Если не указано — берётся из пути.
             label (Optional[str]): Текстовая метка изображения (alt-текст).
         """
-        self.logger.info(f"{inspect.currentframe().f_code.co_name}")
+        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
         raise NotImplementedError
         # не работает, надо копать апи жиры
         # filename = filename or os.path.basename(filepath)

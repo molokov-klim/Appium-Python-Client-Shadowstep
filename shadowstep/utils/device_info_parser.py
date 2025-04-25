@@ -122,7 +122,7 @@ class DeviceInfoAnalyzer:
         Returns:
             Optional[str]: Путь к изображению или None.
         """
-        self.logger.info(f"{inspect.currentframe().f_code.co_name}")
+        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
 
         try:
 
@@ -159,7 +159,7 @@ class DeviceInfoAnalyzer:
         Returns:
             Optional[str]: Путь к графику или None.
         """
-        self.logger.info(f"{inspect.currentframe().f_code.co_name}")
+        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
 
         try:
 
@@ -197,7 +197,7 @@ class DeviceInfoAnalyzer:
         Returns:
             Optional[str]: Путь к графику или None.
         """
-        self.logger.info(f"{inspect.currentframe().f_code.co_name}")
+        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
         ic.disable()
 
         try:
@@ -234,7 +234,7 @@ class DeviceInfoAnalyzer:
             mb (MetaBlock): Zephyr метаобъект.
             output_dir (str): Куда сохранять графики.
         """
-        self.logger.info(f"{inspect.currentframe().f_code.co_name}")
+        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
 
         unique_dirs = self._get_unique_directories(self.device_info_filepath)
 
@@ -255,7 +255,7 @@ class DeviceInfoAnalyzer:
         Returns:
             bool: True — успех, False — ошибка.
         """
-        self.logger.info(f"{inspect.currentframe().f_code.co_name}")
+        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
 
         try:
             filepath = os.path.join(directory, filename)
@@ -469,7 +469,7 @@ class DeviceInfoAnalyzer:
         Returns:
             float: Найденное значение, приведённое к float. Если ничего не найдено — возвращает 0.0.
         """
-        self.logger.info(f"{inspect.currentframe().f_code.co_name}")
+        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
         ic.disable()
 
         for pattern in patterns:
@@ -496,7 +496,7 @@ class DeviceInfoAnalyzer:
         Returns:
             List[Tuple[str, str, str]]: (ключ, подпись, цвет).
         """
-        self.logger.info(f"{inspect.currentframe().f_code.co_name}")
+        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
         cmap = cm.get_cmap("tab10")
         colors = cmap.colors
         return [(k, l, colors[i % len(colors)]) for i, (k, l) in enumerate(zip(keys, labels))]
@@ -512,7 +512,7 @@ class DeviceInfoAnalyzer:
         Returns:
             Dict[str, int]: Результат для каждого ключа (0, если не найдено).
         """
-        self.logger.info(f"{inspect.currentframe().f_code.co_name}")
+        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
         result: Dict[str, int] = {}
 
         for key, patterns in pattern_map.items():
@@ -530,7 +530,7 @@ class DeviceInfoAnalyzer:
             input_dir (str): Папка, где лежат логи.
             output_dir (str): Папка для сохранения графиков.
         """
-        self.logger.info(f"{inspect.currentframe().f_code.co_name}")
+        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
 
         generators = [
             ("Battery", self.battery_info),
@@ -563,7 +563,7 @@ class DeviceInfoAnalyzer:
         Returns:
             Set[str]: Множество абсолютных путей к директориям без дубликатов.
         """
-        self.logger.info(f"{inspect.currentframe().f_code.co_name}")
+        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
         unique_dirs: Set[str] = set()
 
         for path_str in filepaths:
@@ -585,7 +585,7 @@ class DeviceInfoAnalyzer:
         Returns:
             str: Строка формата 'YYYY-MM-DD_HH-MM-SS', представляющая текущую дату и время.
         """
-        self.logger.info(f"{inspect.currentframe().f_code.co_name}")
+        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
 
         # Используется для создания уникальных и читаемых имён файлов
         return datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
@@ -601,7 +601,7 @@ class DeviceInfoAnalyzer:
         Returns:
             str: Полное имя файла с расширением .txt.
         """
-        self.logger.info(f"{inspect.currentframe().f_code.co_name}")
+        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
         return f"{prefix}_{timestamp}.txt"
 
     def _write_file(self, directory: str, filename: str, content: str) -> str:
@@ -616,7 +616,7 @@ class DeviceInfoAnalyzer:
         Returns:
             str: Абсолютный путь к созданному файлу.
         """
-        self.logger.info(f"{inspect.currentframe().f_code.co_name}")
+        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
 
         filepath = os.path.join(directory, filename)
 
@@ -645,7 +645,7 @@ class DeviceInfoAnalyzer:
             directory (str): Папка, в которую сохранить результат.
             mb (Optional[MetaBlock]): Метаблок Zephyr для добавления вложения, если есть.
         """
-        self.logger.info(f"{inspect.currentframe().f_code.co_name}")
+        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
 
         # Генерируем имя файла по временной метке
         timestamp = self._generate_timestamp()
@@ -672,7 +672,7 @@ class DeviceInfoAnalyzer:
             directory (str): Путь к директории для сохранения.
             mb (Optional[MetaBlock]): Объект Zephyr (если прикрепление требуется).
         """
-        self.logger.info(f"{inspect.currentframe().f_code.co_name}")
+        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
 
         timestamp = self._generate_timestamp()
         filename = f"device_info_{timestamp}.txt"
@@ -701,7 +701,7 @@ class DeviceInfoAnalyzer:
         Returns:
             Dict[str, str]: Словарь с основными свойствами устройства.
         """
-        self.logger.info(f"{inspect.currentframe().f_code.co_name}")
+        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
         properties = [
             "ro.boot.hardware",
             "ro.product.model",
@@ -721,7 +721,7 @@ class DeviceInfoAnalyzer:
         Returns:
             List[str]: Список строк из вывода `adb shell ps`.
         """
-        self.logger.info(f"{inspect.currentframe().f_code.co_name}")
+        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
         return self.app.terminal.adb_shell("ps").splitlines()
 
     def _get_package_versions(self, packages: List[str]) -> Dict[str, str]:
@@ -734,7 +734,7 @@ class DeviceInfoAnalyzer:
         Returns:
             Dict[str, str]: {название пакета: версия или 'unknown'}
         """
-        self.logger.info(f"{inspect.currentframe().f_code.co_name}")
+        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
 
         output = self.app.terminal.adb_shell("dumpsys", "package")
         result: Dict[str, str] = {pkg: "unknown" for pkg in packages}
@@ -764,7 +764,7 @@ class DeviceInfoAnalyzer:
         Returns:
             str: Форматированный блок описания.
         """
-        self.logger.info(f"{inspect.currentframe().f_code.co_name}")
+        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
         version = versions.get(package, "unknown")
         matched = [p for p in processes if package in p]
         proc_info = "\n".join(matched) if matched else "Not running"
@@ -790,7 +790,7 @@ class DeviceInfoAnalyzer:
         Returns:
             str: Полный путь к созданному файлу.
         """
-        self.logger.info(f"{inspect.currentframe().f_code.co_name}")
+        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
         filepath = os.path.join(directory, filename)
 
         with open(filepath, "w", encoding="utf-8") as file:
@@ -817,7 +817,7 @@ class DeviceInfoAnalyzer:
         Returns:
             List[str]: Отфильтрованные имена пакетов без префикса 'package:'.
         """
-        self.logger.info(f"{inspect.currentframe().f_code.co_name}")
+        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
 
         raw = self.app.terminal.adb_shell("pm", "list packages")
         packages = raw.replace("package:", "").splitlines()
@@ -842,7 +842,7 @@ class DeviceInfoAnalyzer:
         Returns:
             str: Абсолютный путь к поддиректории device_info.
         """
-        self.logger.info(f"{inspect.currentframe().f_code.co_name}")
+        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
         directory = os.path.join(path, "device_info")
         os.makedirs(directory, exist_ok=True)
         abs_path = os.path.abspath(directory)

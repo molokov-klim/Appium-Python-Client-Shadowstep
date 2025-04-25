@@ -64,7 +64,7 @@ class ElementBase:
             Union[WebElement, None]
                 The located web element, or None if not found.
         """
-        self.logger.info(f"{inspect.currentframe().f_code.co_name}")
+        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
         self._get_driver()
         if isinstance(locator, WebElement):
             return locator
@@ -96,7 +96,7 @@ class ElementBase:
     def handle_locator(self,
                        locator: Union[Tuple[str, str], Dict[str, str], str, WebElement],
                        contains: bool = False) -> Optional[Tuple[str, str]]:
-        self.logger.info(f"{inspect.currentframe().f_code.co_name}")
+        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
         if isinstance(locator, tuple):
             return locator
         elif isinstance(locator, dict):
@@ -117,7 +117,7 @@ class ElementBase:
             Union[Tuple, None]
                 The XPath locator as a tuple, or None if there was an error.
         """
-        self.logger.info(f"{inspect.currentframe().f_code.co_name}")
+        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
         if 'class' not in locator:
             xpath = "//*"
         else:
@@ -145,7 +145,5 @@ class ElementBase:
             WebDriverSingleton
                 The WebDriver instance.
         """
-        self.logger.info(f"{inspect.currentframe().f_code.co_name}")
+        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
         self.driver = WebDriverSingleton.get_driver()
-
-

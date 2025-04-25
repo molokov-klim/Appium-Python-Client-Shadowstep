@@ -79,7 +79,7 @@ class Element(ElementBase):
         Returns:
             Found Element or None.
         """
-        self.logger.info(f"{inspect.currentframe().f_code.co_name}")
+        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
         if isinstance(locator, Element):
             locator = locator.locator
 
@@ -109,7 +109,7 @@ class Element(ElementBase):
             contains: bool = False,
             max_count: int = 10
     ) -> typing.Generator['Element', None, None]:
-        self.logger.info(f"{inspect.currentframe().f_code.co_name}")
+        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
         if isinstance(locator, Element):
             locator = locator.locator
         resolved_locator = self.handle_locator(locator, contains)
@@ -159,7 +159,7 @@ class Element(ElementBase):
         Returns:
             List of Element instances matching the locator.
         """
-        self.logger.info(f"{inspect.currentframe().f_code.co_name}")
+        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
         try:
             self._get_driver()
             if isinstance(locator, Element):
@@ -206,7 +206,7 @@ class Element(ElementBase):
         Returns:
             Optional[Dict[str, str]]: Dictionary of all attributes, or None if not found.
         """
-        self.logger.info(f"{inspect.currentframe().f_code.co_name}")
+        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
         start_time = time.time()
 
         # Convert locator to XPath expression (supports dict, tuple, UiSelector string)
@@ -261,7 +261,7 @@ class Element(ElementBase):
         return None
 
     def get_parent(self) -> Union['Element', None]:
-        self.logger.info(f"{inspect.currentframe().f_code.co_name}")
+        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
         try:
             xpath = self._get_xpath()
             if xpath is None:
@@ -283,7 +283,7 @@ class Element(ElementBase):
         Yields:
             Generator of Element instances representing each parent in the hierarchy.
         """
-        self.logger.info(f"{inspect.currentframe().f_code.co_name}")
+        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
         current_xpath = self._get_xpath()
 
         if not current_xpath:
@@ -314,7 +314,7 @@ class Element(ElementBase):
                 break
 
     def get_sibling(self, locator: Union[Tuple, Dict[str, str], 'Element']) -> Union['Element', None]:
-        self.logger.info(f"{inspect.currentframe().f_code.co_name}")
+        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
         if isinstance(locator, Element):
             locator = locator.locator
 
@@ -343,7 +343,7 @@ class Element(ElementBase):
         Yields:
             Generator of Element instances that are siblings of the current element.
         """
-        self.logger.info(f"{inspect.currentframe().f_code.co_name}")
+        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
 
         base_xpath = self._get_xpath()
         if not base_xpath:
@@ -403,7 +403,7 @@ class Element(ElementBase):
         Returns:
             Union['Element', None]: The cousin element found at the same depth.
         """
-        self.logger.info(f"{inspect.currentframe().f_code.co_name}")
+        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
         try:
             if isinstance(ancestor_locator, Element):
                 ancestor_locator = ancestor_locator.locator
@@ -456,7 +456,7 @@ class Element(ElementBase):
         Returns:
             Optional[Tuple[int, int]]: (x, y) center point or None if element not found.
         """
-        self.logger.info(f"{inspect.currentframe().f_code.co_name}")
+        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
         start_time = time.time()
         while time.time() - start_time < self.timeout:
             try:
@@ -499,7 +499,7 @@ class Element(ElementBase):
         Returns:
             Optional[Tuple[int, int, int, int]]: (left, top, right, bottom) or None.
         """
-        self.logger.info(f"{inspect.currentframe().f_code.co_name}")
+        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
         start_time = time.time()
         while time.time() - start_time < self.timeout:
             try:
@@ -541,7 +541,7 @@ class Element(ElementBase):
         Returns:
             Optional[Union[str, Dict]]: Value of the attribute or None.
         """
-        self.logger.info(f"{inspect.currentframe().f_code.co_name}")
+        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
         start_time = time.time()
         while time.time() - start_time < self.timeout:
             try:
@@ -578,7 +578,7 @@ class Element(ElementBase):
         Returns:
             Union[str, bool, dict, None]: Property value.
         """
-        self.logger.info(f"{inspect.currentframe().f_code.co_name}")
+        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
         self.logger.warning(f"Method {inspect.currentframe().f_code.co_name} is not implemented in UiAutomator2")
         start_time = time.time()
         while time.time() - start_time < self.timeout:
@@ -619,7 +619,7 @@ class Element(ElementBase):
 
                 text_length = target_element.get_dom_attribute("class")
         """
-        self.logger.info(f"{inspect.currentframe().f_code.co_name}")
+        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
         start_time = time.time()
         while time.time() - start_time < self.timeout:
             try:
@@ -653,7 +653,7 @@ class Element(ElementBase):
         Returns:
             bool: True if the element is displayed on screen and visible to the user.
         """
-        self.logger.info(f"{inspect.currentframe().f_code.co_name}")
+        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
         start_time = time.time()
         while time.time() - start_time < self.timeout:
             try:
@@ -683,7 +683,7 @@ class Element(ElementBase):
         )
 
     def is_visible(self) -> bool:
-        self.logger.info(f"{inspect.currentframe().f_code.co_name}")
+        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
         start_time = time.time()
         while time.time() - start_time < self.timeout:
             try:
@@ -733,7 +733,7 @@ class Element(ElementBase):
         Returns:
             bool: True if element is not displayed or outside screen bounds.
         """
-        self.logger.info(f"{inspect.currentframe().f_code.co_name}")
+        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
         try:
             return not self.is_visible()
         except GeneralElementException as error:
@@ -751,7 +751,7 @@ class Element(ElementBase):
         Returns:
             bool: True if the element is selected.
         """
-        self.logger.info(f"{inspect.currentframe().f_code.co_name}")
+        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
         start_time = time.time()
         while time.time() - start_time < self.timeout:
             try:
@@ -786,7 +786,7 @@ class Element(ElementBase):
         Returns:
             bool: True if the element is enabled.
         """
-        self.logger.info(f"{inspect.currentframe().f_code.co_name}")
+        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
         start_time = time.time()
         while time.time() - start_time < self.timeout:
             try:
@@ -819,7 +819,7 @@ class Element(ElementBase):
                     locator: Union[Tuple, Dict[str, str], 'Element'] = None,
                     contains: bool = False
                     ) -> bool:
-        self.logger.info(f"{inspect.currentframe().f_code.co_name}")
+        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
         start_time = time.time()
         while time.time() - start_time < self.timeout:
             try:
@@ -846,7 +846,7 @@ class Element(ElementBase):
         )
 
     def tap(self, duration: Optional[int] = None) -> Union['Element', None]:
-        self.logger.info(f"{inspect.currentframe().f_code.co_name}")
+        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
         start_time = time.time()
         while time.time() - start_time < self.timeout:
             try:
@@ -877,7 +877,7 @@ class Element(ElementBase):
             direction: int = None,
             distance: int = None,
     ) -> Union['Element', None]:
-        self.logger.info(f"{inspect.currentframe().f_code.co_name}")
+        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
         start_time = time.time()
         while time.time() - start_time < self.timeout:
             try:
@@ -933,7 +933,7 @@ class Element(ElementBase):
         )
 
     def click(self, duration: int = None) -> Union['Element', None]:
-        self.logger.info(f"{inspect.currentframe().f_code.co_name}")
+        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
         start_time = time.time()
         while time.time() - start_time < self.timeout:
             try:
@@ -960,7 +960,7 @@ class Element(ElementBase):
         )
 
     def click_double(self) -> Union['Element', None]:
-        self.logger.info(f"{inspect.currentframe().f_code.co_name}")
+        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
         start_time = time.time()
         while time.time() - start_time < self.timeout:
             try:
@@ -983,7 +983,7 @@ class Element(ElementBase):
         )
 
     def drag(self, end_x: int, end_y: int, speed: int = 2500) -> Union['Element', None]:
-        self.logger.info(f"{inspect.currentframe().f_code.co_name}")
+        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
         start_time = time.time()
         while time.time() - start_time < self.timeout:
             try:
@@ -1026,7 +1026,7 @@ class Element(ElementBase):
         speed: The speed at which to perform this gesture in pixels per second. The value must be greater than the minimum fling velocity for the given view (50 by default). The default value is 7500 * displayDensity
         https://github.com/appium/appium-uiautomator2-driver/blob/master/docs/android-mobile-gestures.md#mobile-flinggesture
         """
-        self.logger.info(f"{inspect.currentframe().f_code.co_name}")
+        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
         start_time = time.time()
         while time.time() - start_time < self.timeout:
             try:
@@ -1051,19 +1051,19 @@ class Element(ElementBase):
         )
 
     def scroll_down(self, percent: int = 10, speed: int = 2000) -> Union['Element', None]:
-        self.logger.info(f"{inspect.currentframe().f_code.co_name}")
+        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
         return self._scroll(direction='down', percent=percent, speed=speed)
 
     def scroll_up(self, percent: int = 10, speed: int = 2000) -> Union['Element', None]:
-        self.logger.info(f"{inspect.currentframe().f_code.co_name}")
+        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
         return self._scroll(direction='up', percent=percent, speed=speed)
 
     def scroll_left(self, percent: int = 10, speed: int = 2000) -> Union['Element', None]:
-        self.logger.info(f"{inspect.currentframe().f_code.co_name}")
+        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
         return self._scroll(direction='left', percent=percent, speed=speed)
 
     def scroll_right(self, percent: int = 10, speed: int = 2000) -> Union['Element', None]:
-        self.logger.info(f"{inspect.currentframe().f_code.co_name}")
+        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
         return self._scroll(direction='right', percent=percent, speed=speed)
 
     def _scroll(self, direction: str, percent: int, speed: int) -> Union['Element', None]:
@@ -1072,7 +1072,7 @@ class Element(ElementBase):
         percent: The size of the scroll as a percentage of the scrolling area size. Valid values must be float numbers greater than zero, where 1.0 is 100%. Mandatory value.
         speed: The speed at which to perform this gesture in pixels per second. The value must not be negative. The default value is 5000 * displayDensity
         """
-        self.logger.info(f"{inspect.currentframe().f_code.co_name}")
+        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
         # https://github.com/appium/appium-uiautomator2-driver/blob/master/docs/android-mobile-gestures.md#mobile-scrollgesture
         start_time = time.time()
         while time.time() - start_time < self.timeout:
@@ -1100,7 +1100,7 @@ class Element(ElementBase):
 
     def scroll_to_bottom(self, locator: Union[Tuple, Dict[str, str], str, WebElement, 'Element'] = None) -> Union[
         'Element', None]:
-        self.logger.info(f"{inspect.currentframe().f_code.co_name}")
+        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
         last_child = None
         start_time = time.time()
 
@@ -1134,7 +1134,7 @@ class Element(ElementBase):
 
     def scroll_to_top(self, locator: Union[Tuple, Dict[str, str], str, WebElement, 'Element'] = None) -> Union[
         'Element', None]:
-        self.logger.info(f"{inspect.currentframe().f_code.co_name}")
+        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
         last_child = None
         start_time = time.time()
 
@@ -1169,7 +1169,7 @@ class Element(ElementBase):
     def scroll_to_element(self, locator: Union['Element', Dict[str, str], Tuple[str, str]], max_swipes: int = 30) -> \
     Union[
         'Element', None]:
-        self.logger.info(f"{inspect.currentframe().f_code.co_name}")
+        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
         start_time = time.time()
         if isinstance(locator, Element):
             locator = locator.locator
@@ -1223,7 +1223,7 @@ class Element(ElementBase):
         Returns:
             Element: Self instance on success.
         """
-        self.logger.info(f"{inspect.currentframe().f_code.co_name}")
+        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
         start_time = time.time()
 
         while time.time() - start_time < self.timeout:
@@ -1263,7 +1263,7 @@ class Element(ElementBase):
         Returns:
             Element: Self instance on success.
         """
-        self.logger.info(f"{inspect.currentframe().f_code.co_name}")
+        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
         start_time = time.time()
 
         while time.time() - start_time < self.timeout:
@@ -1320,7 +1320,7 @@ class Element(ElementBase):
         Returns:
             Element: Self instance on success.
         """
-        self.logger.info(f"{inspect.currentframe().f_code.co_name}")
+        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
         start_time = time.time()
 
         while time.time() - start_time < self.timeout:
@@ -1356,7 +1356,7 @@ class Element(ElementBase):
         Returns:
             Element: Self instance if successful.
         """
-        self.logger.info(f"{inspect.currentframe().f_code.co_name}")
+        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
         start_time = time.time()
 
         while time.time() - start_time < self.timeout:
@@ -1395,7 +1395,7 @@ class Element(ElementBase):
         Returns:
             dict: Dictionary with keys 'x' and 'y', or None on failure.
         """
-        self.logger.info(f"{inspect.currentframe().f_code.co_name}")
+        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
         start_time = time.time()
 
         while time.time() - start_time < self.timeout:
@@ -1436,7 +1436,7 @@ class Element(ElementBase):
         Returns:
             Element: Self instance on success.
         """
-        self.logger.info(f"{inspect.currentframe().f_code.co_name}")
+        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
         self.logger.warning(f"Method {inspect.currentframe().f_code.co_name} is not implemented in UiAutomator2")
 
         start_time = time.time()
@@ -1480,7 +1480,7 @@ class Element(ElementBase):
         Returns:
             Element: Self instance on success.
         """
-        self.logger.info(f"{inspect.currentframe().f_code.co_name}")
+        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
         start_time = time.time()
 
         text = "".join(value)
@@ -1521,7 +1521,7 @@ class Element(ElementBase):
         Returns:
             Optional[str]: The tag name of the element, or None if not retrievable.
         """
-        self.logger.info(f"{inspect.currentframe().f_code.co_name}")
+        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
         start_time = time.time()
 
         while time.time() - start_time < self.timeout:
@@ -1559,7 +1559,7 @@ class Element(ElementBase):
         Returns:
             str: Text content of the element.
         """
-        self.logger.info(f"{inspect.currentframe().f_code.co_name}")
+        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
         start_time = time.time()
 
         while time.time() - start_time < self.timeout:
@@ -1597,7 +1597,7 @@ class Element(ElementBase):
         Returns:
             Element: Self instance on success.
         """
-        self.logger.info(f"{inspect.currentframe().f_code.co_name}")
+        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
         self.logger.warning(f"Method {inspect.currentframe().f_code.co_name} is not implemented in UiAutomator2")
         start_time = time.time()
 
@@ -1639,7 +1639,7 @@ class Element(ElementBase):
         Raises:
             GeneralElementException: If shadow root is not available or an error occurs.
         """
-        self.logger.info(f"{inspect.currentframe().f_code.co_name}")
+        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
         self.logger.warning(f"Method {inspect.currentframe().f_code.co_name} is not implemented in UiAutomator2")
 
         start_time = time.time()
@@ -1681,7 +1681,7 @@ class Element(ElementBase):
         Raises:
             GeneralElementException: If element could not be scrolled into view or location determined.
         """
-        self.logger.info(f"{inspect.currentframe().f_code.co_name}")
+        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
         self.logger.warning(f"Method {inspect.currentframe().f_code.co_name} is not implemented in UiAutomator2")
 
         start_time = time.time()
@@ -1724,7 +1724,7 @@ class Element(ElementBase):
         Raises:
             GeneralElementException: If size cannot be determined.
         """
-        self.logger.info(f"{inspect.currentframe().f_code.co_name}")
+        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
         start_time = time.time()
 
         while time.time() - start_time < self.timeout:
@@ -1770,7 +1770,7 @@ class Element(ElementBase):
         Raises:
             GeneralElementException: If value could not be retrieved within timeout.
         """
-        self.logger.info(f"{inspect.currentframe().f_code.co_name}")
+        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
         self.logger.warning(f"Method {inspect.currentframe().f_code.co_name} is not implemented in UiAutomator2")
 
         start_time = time.time()
@@ -1816,7 +1816,7 @@ class Element(ElementBase):
         Raises:
             GeneralElementException: If location could not be retrieved within timeout.
         """
-        self.logger.info(f"{inspect.currentframe().f_code.co_name}")
+        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
         self.logger.warning(f"Method {inspect.currentframe().f_code.co_name} is not implemented in UiAutomator2")
 
         start_time = time.time()
@@ -1861,7 +1861,7 @@ class Element(ElementBase):
         Raises:
             GeneralElementException: If rect could not be retrieved within timeout.
         """
-        self.logger.info(f"{inspect.currentframe().f_code.co_name}")
+        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
         start_time = time.time()
 
         while time.time() - start_time < self.timeout:
@@ -1901,7 +1901,7 @@ class Element(ElementBase):
         Returns:
             str: The ARIA role of the element, or None if not found.
         """
-        self.logger.info(f"{inspect.currentframe().f_code.co_name}")
+        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
         start_time = time.time()
 
         while time.time() - start_time < self.timeout:
@@ -1941,7 +1941,7 @@ class Element(ElementBase):
         Returns:
             Optional[str]: Accessible name or None if not found.
         """
-        self.logger.info(f"{inspect.currentframe().f_code.co_name}")
+        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
         start_time = time.time()
 
         while time.time() - start_time < self.timeout:
@@ -1981,7 +1981,7 @@ class Element(ElementBase):
         Returns:
             Optional[str]: Base64-encoded screenshot string or None if failed.
         """
-        self.logger.info(f"{inspect.currentframe().f_code.co_name}")
+        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
         start_time = time.time()
 
         while time.time() - start_time < self.timeout:
@@ -2021,7 +2021,7 @@ class Element(ElementBase):
         Returns:
             Optional[bytes]: PNG-encoded screenshot bytes or None if failed.
         """
-        self.logger.info(f"{inspect.currentframe().f_code.co_name}")
+        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
         start_time = time.time()
 
         while time.time() - start_time < self.timeout:
@@ -2063,7 +2063,7 @@ class Element(ElementBase):
         Returns:
             bool: True if successful, False otherwise.
         """
-        self.logger.info(f"{inspect.currentframe().f_code.co_name}")
+        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
         start_time = time.time()
 
         while time.time() - start_time < self.timeout:
@@ -2109,7 +2109,7 @@ class Element(ElementBase):
         self.driver.execute_script(name, params)
 
     def _ensure_session_alive(self) -> None:
-        self.logger.info(f"{inspect.currentframe().f_code.co_name}")
+        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
         try:
             self._get_driver()
         except NoSuchDriverException:
@@ -2120,7 +2120,7 @@ class Element(ElementBase):
             self.base.reconnect()
 
     def _get_first_child_class(self, tries: int = 3) -> str:
-        self.logger.info(f"{inspect.currentframe().f_code.co_name}")
+        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
         for _ in range(tries):
             try:
                 parent_element = self
@@ -2134,14 +2134,14 @@ class Element(ElementBase):
                 continue
 
     def _get_xpath(self) -> Union[str, None]:
-        self.logger.info(f"{inspect.currentframe().f_code.co_name}")
+        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
         locator = self.handle_locator(self.locator, self.contains)
         if locator[0] == 'xpath':
             return locator[1]
         return self._get_xpath_by_driver()
 
     def _get_xpath_by_driver(self) -> Union[str, None]:
-        self.logger.info(f"{inspect.currentframe().f_code.co_name}")
+        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
         try:
             xpath = "//"
             attrs = self.get_attributes()
@@ -2193,7 +2193,7 @@ class Element(ElementBase):
         Returns:
             XPath string to access the element.
         """
-        self.logger.info(f"{inspect.currentframe().f_code.co_name}")
+        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
         parent_xpath = self._get_xpath()
         return f"{parent_xpath}/*[{index}]"
 
@@ -2207,7 +2207,7 @@ class Element(ElementBase):
         Returns:
             bool: True if the element is found, False otherwise.
         """
-        self.logger.info(f"{inspect.currentframe().f_code.co_name}")
+        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
         try:
             resolved_locator = self.handle_locator(self.locator, self.contains)
             if not resolved_locator:
@@ -2230,7 +2230,7 @@ class Element(ElementBase):
         Returns:
             bool: True if the element becomes visible, False otherwise.
         """
-        self.logger.info(f"{inspect.currentframe().f_code.co_name}")
+        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
         try:
             resolved_locator = self.handle_locator(self.locator, self.contains)
             if not resolved_locator:
@@ -2254,7 +2254,7 @@ class Element(ElementBase):
         Returns:
             bool: True if the element becomes clickable, False otherwise.
         """
-        self.logger.info(f"{inspect.currentframe().f_code.co_name}")
+        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
         try:
             resolved_locator = self.handle_locator(self.locator, self.contains)
             if not resolved_locator:
@@ -2278,7 +2278,7 @@ class Element(ElementBase):
         Returns:
             bool: True if the element disappears, False otherwise.
         """
-        self.logger.info(f"{inspect.currentframe().f_code.co_name}")
+        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
         try:
             resolved_locator = self.handle_locator(self.locator, self.contains)
             if not resolved_locator:
@@ -2301,7 +2301,7 @@ class Element(ElementBase):
         Returns:
             bool: True if the element becomes invisible, False otherwise.
         """
-        self.logger.info(f"{inspect.currentframe().f_code.co_name}")
+        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
         try:
             resolved_locator = self.handle_locator(self.locator, self.contains)
             if not resolved_locator:
@@ -2324,7 +2324,7 @@ class Element(ElementBase):
         Returns:
             bool: True if the element becomes not clickable, False otherwise.
         """
-        self.logger.info(f"{inspect.currentframe().f_code.co_name}")
+        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
         try:
             resolved_locator = self.handle_locator(self.locator, self.contains)
             if not resolved_locator:
