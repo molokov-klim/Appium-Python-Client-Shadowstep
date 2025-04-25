@@ -12,7 +12,7 @@ T = TypeVar("T", bound="PageBase")
 class PageBaseShadowstep(ABC):
     """Abstract base class for all pages in the Shadowstep framework.
 
-    Implements singleton behavior and lazy initialization of the app context.
+    Implements singleton behavior and lazy initialization of the shadowstep context.
     """
 
     _instances: Dict[type, "PageBaseShadowstep"] = {}
@@ -23,7 +23,7 @@ class PageBaseShadowstep(ABC):
 
             # 💡 Lazy import to avoid circular dependencies
             from shadowstep.shadowstep import Shadowstep
-            instance.app: "Shadowstep" = Shadowstep.get_instance()
+            instance.shadowstep: "Shadowstep" = Shadowstep.get_instance()
             cls._instances[cls] = instance
         return cls._instances[cls]
 
