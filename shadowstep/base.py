@@ -47,7 +47,7 @@ class WebDriverSingleton(WebDriver):
 
     @classmethod
     def _get_session_id(cls, kwargs):
-        logger.info(f"{inspect.currentframe().f_code.co_name}")
+        logger.debug(f"{inspect.currentframe().f_code.co_name}")
         res = requests.get(kwargs['command_executor'] + '/sessions')
         res_json = json.loads(res.text)
         sessions = res_json.get("value", [])
@@ -58,7 +58,7 @@ class WebDriverSingleton(WebDriver):
     @classmethod
     def clear_instance(cls):
         """Удаляет текущий экземпляр и очищает ресурсы WebDriverSingleton."""
-        logger.info(f"{inspect.currentframe().f_code.co_name}")
+        logger.debug(f"{inspect.currentframe().f_code.co_name}")
         cls._driver = None
         cls._instance = None  # Убирает ссылку на экземпляр для высвобождения памяти
         gc.collect()
@@ -72,7 +72,7 @@ class WebDriverSingleton(WebDriver):
             WebDriver
                 The current WebDriver instance.
         """
-        logger.info(f"{inspect.currentframe().f_code.co_name}")
+        logger.debug(f"{inspect.currentframe().f_code.co_name}")
         return cls._driver
 
 
