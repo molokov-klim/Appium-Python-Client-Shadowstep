@@ -11,6 +11,7 @@ from typing import Any, Union, Tuple
 
 from appium.webdriver.webdriver import WebDriver
 from selenium.common import NoSuchDriverException, InvalidSessionIdException
+from selenium.common.exceptions import WebDriverException
 
 # Configure the root logger (basic configuration)
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
@@ -746,21 +747,72 @@ class Terminal:
             logger.error(traceback_info)
             return None
 
-    def reboot(self) -> bool:
+    def reboot(self, timeout: int = 90, poll_interval: float = 2.0) -> bool:
         """
-        Reboots the device.
+        Reboots the device safely, handling session disconnection.
 
-        :return: True if the device reboot command was successfully executed, False otherwise.
+        Args:
+            timeout (int): Maximum wait time for reboot.
+            poll_interval (float): Poll interval during boot waiting.
+
+        Returns:
+            bool: True if reboot process was initiated and device booted successfully, False otherwise.
         """
         try:
             self.adb_shell(command='reboot')
+        except InvalidSessionIdException:
+            logger.warning("Session already dead after reboot command (expected).")
+        except NoSuchDriverException:
+            logger.warning("Session already dead after reboot command (expected).")
+        except WebDriverException as e:
+            if 'Cannot execute the' in str(e):
+                logger.warning("Device disconnected immediately after reboot command (expected).")
+            else:
+                logger.error("Unexpected WebDriverException during reboot.")
+                logger.error(e)
+                return False
         except KeyError as e:
-            logger.error("appium_extended_terminal.reboot")
+            logger.error("Unexpected error during reboot.")
             logger.error(e)
-            traceback_info = "".join(traceback.format_tb(sys.exc_info()[2]))
-            logger.error(traceback_info)
             return False
+
+        self.wait_for_boot(timeout=timeout, poll_interval=poll_interval)
         return True
+
+    def wait_for_boot(self, timeout: int = 90, poll_interval: float = 10.0) -> None:
+        """
+        Waits until the device finishes booting by checking 'sys.boot_completed' property.
+
+        Args:
+            timeout (int): Maximum time to wait in seconds.
+            poll_interval (float): Time between polls in seconds.
+
+        Raises:
+            TimeoutError: If the device does not become ready in the given timeout.
+        """
+        start_time = time.time()
+        logger.info(f"⏳ Waiting for device boot to complete...")
+
+        while time.time() - start_time < timeout:
+            try:
+                props = self.get_prop()
+                boot_completed = props.get('sys.boot_completed', '0')
+                logger.debug(f"wait_for_boot_completed > {boot_completed=}")
+
+                if boot_completed == '1':
+                    logger.info("✅ Device boot completed.")
+                    return
+            except InvalidSessionIdException:
+                logger.warning("Driver is dead, trying to reconnect...")
+                self.base.reconnect()
+            except NoSuchDriverException:
+                logger.warning("Driver is dead, trying to reconnect...")
+                self.base.reconnect()
+            except Exception as e:
+                logger.error(f"Unexpected error during boot check: {e}")
+
+            time.sleep(poll_interval)
+        raise TimeoutError("❌ Device did not complete boot within timeout.")
 
     def get_screen_resolution(self) -> Union[Tuple[int, int], None]:
         """
