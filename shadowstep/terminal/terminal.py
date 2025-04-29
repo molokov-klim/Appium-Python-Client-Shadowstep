@@ -748,19 +748,14 @@ class Terminal:
 
     def reboot(self) -> bool:
         """
-        Reboots the device.
-
-        :return: True if the device reboot command was successfully executed, False otherwise.
+        Reboots the device safely. If adb connection drops, ignores the error.
         """
         try:
             self.adb_shell(command='reboot')
-        except KeyError as e:
-            logger.error("appium_extended_terminal.reboot")
-            logger.error(e)
-            traceback_info = "".join(traceback.format_tb(sys.exc_info()[2]))
-            logger.error(traceback_info)
-            return False
-        return True
+            return True
+        except Exception as e:
+            logger.warning(f"Reboot likely initiated. Caught exception: {e}")
+            return True
 
     def get_screen_resolution(self) -> Union[Tuple[int, int], None]:
         """
