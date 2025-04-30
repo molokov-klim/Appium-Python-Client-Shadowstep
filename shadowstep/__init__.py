@@ -1,26 +1,45 @@
 import logging
 import sys
 
-# Создание корневого логгера
-logger = logging.getLogger("shadowstep")
-logger.setLevel(logging.DEBUG)
+class LoguruStyleFormatter(logging.Formatter):
+    COLORS = {
+        'DEBUG': '\033[38;5;81m',      # Светло-голубой (как loguru DEBUG)
+        'INFO': '\033[38;5;34m',       # Зелёный (как loguru INFO)
+        'WARNING': '\033[38;5;220m',   # Жёлтый
+        'ERROR': '\033[38;5;196m',     # Красный
+        'CRITICAL': '\033[1;41m',      # Белый на красном фоне
+    }
+    RESET = '\033[0m'
 
-# Проверка наличия обработчиков, чтобы избежать дублирования
-if not logger.handlers:
-    # Обработчик для вывода в stdout
+    def format(self, record: logging.LogRecord) -> str:
+        # Цвет для уровня логирования
+        level_color = self.COLORS.get(record.levelname, '')
+        levelname = f"{level_color}{record.levelname:<8}{self.RESET}"
+
+        # Серый таймстемп
+        time = f"\033[38;5;240m{self.formatTime(record, self.datefmt)}{self.RESET}"
+
+        # Цвет для имени логгера — фиолетовый
+        name = f"\033[38;5;135m{record.name}{self.RESET}"
+
+        # Сообщение
+        message = record.getMessage()
+
+        return f"{time} | {levelname} | {name} | {message}"
+
+def configure_logging():
+    logger = logging.getLogger("shadowstep")
+    logger.setLevel(logging.DEBUG)
+
     handler = logging.StreamHandler(sys.stdout)
     handler.setLevel(logging.DEBUG)
+    handler.setFormatter(LoguruStyleFormatter(datefmt="%Y-%m-%d %H:%M:%S"))
 
-    # Форматтер для логов
-    formatter = logging.Formatter(
-        fmt="%(asctime)s | %(name)s | %(levelname)s | %(message)s",
-        datefmt="%Y-%m-%d %H:%M:%S"
-    )
-    handler.setFormatter(formatter)
+    if not logger.handlers:
+        logger.addHandler(handler)
 
-    # Добавление обработчика к логгеру
-    logger.addHandler(handler)
+    # Применяем и к root
+    logging.getLogger().handlers = logger.handlers
+    logging.getLogger().setLevel(logger.level)
 
-# Установка логгера как корневого для всех модулей
-logging.getLogger().handlers = logger.handlers
-logging.getLogger().setLevel(logger.level)
+configure_logging()
