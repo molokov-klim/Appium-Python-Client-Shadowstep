@@ -5,7 +5,7 @@ on:
     branches:
       - main
       - develop
-      - Terminal
+      - need_rm_loguru
   workflow_dispatch:
 
 permissions:
