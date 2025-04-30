@@ -1,6 +1,6 @@
 import inspect
 import logging
-from loguru import logger
+logger = logging.getLogger(__name__)
 import typing
 from typing import Union, Optional, Tuple, Dict
 

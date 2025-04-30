@@ -3,7 +3,8 @@ import os
 import inspect
 from datetime import datetime
 from typing import Optional
-from loguru import logger
+import logging
+logger = logging.getLogger(__name__)
 from pytest_adaptavist import MetaBlock
 
 

@@ -5,7 +5,8 @@ import networkx as nx
 import matplotlib.pyplot as plt
 from collections import deque
 from typing import Any, Optional, List, Union
-from loguru import logger
+import logging
+logger = logging.getLogger(__name__)
 from networkx.exception import NetworkXException
 
 from selenium.common import WebDriverException

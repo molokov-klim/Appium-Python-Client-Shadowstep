@@ -1,7 +1,8 @@
 import inspect
 
 from appium.webdriver.webdriver import WebDriver
-from loguru import logger
+import logging
+logger = logging.getLogger(__name__)
 import os
 import re
 import subprocess

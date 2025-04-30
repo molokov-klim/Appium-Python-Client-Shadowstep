@@ -1,6 +1,7 @@
 import time
 
-from loguru import logger
+import logging
+logger = logging.getLogger(__name__)
 from selenium.common.exceptions import InvalidSessionIdException, NoSuchDriverException, WebDriverException
 
 from shadowstep.shadowstep import Shadowstep

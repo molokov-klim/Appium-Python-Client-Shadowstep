@@ -1,7 +1,8 @@
 from pathlib import Path
 from typing import List, Dict, Any, Callable, Optional, Set, Tuple, Final
 
-from loguru import logger
+import logging
+logger = logging.getLogger(__name__)
 import inspect
 import os
 import re

@@ -2,7 +2,8 @@ import inspect
 import re
 from typing import Tuple, Dict, Union, Any, Optional
 
-from loguru import logger
+import logging
+logger = logging.getLogger(__name__)
 
 """
 Sorry, I'm too dumb to solve this module's problem correctly. So I did it primitively.

@@ -1,7 +1,8 @@
 import inspect
 
 import pytest
-from loguru import logger
+import logging
+logger = logging.getLogger(__name__)
 
 from shadowstep.utils.locator_converter import LocatorConverter
 

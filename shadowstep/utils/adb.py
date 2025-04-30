@@ -5,7 +5,8 @@ This module is deprecated and kept for backward compatibility with external syst
 Please use `DeviceInterface` and the new `Adb` or `Terminal` implementations instead.
 """
 import inspect
-from loguru import logger
+import logging
+logger = logging.getLogger(__name__)
 import os
 import re
 import subprocess

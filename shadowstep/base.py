@@ -10,7 +10,8 @@ from types import ModuleType
 
 import requests
 import inspect
-from loguru import logger
+import logging
+logger = logging.getLogger(__name__)
 from typing import Union, List, Optional, Set
 
 from appium.options.android import UiAutomator2Options

@@ -1,7 +1,8 @@
 import logging
 import sys
 
-from loguru import logger
+import logging
+logger = logging.getLogger(__name__)
 import pytest
 
 from shadowstep.shadowstep import Shadowstep
