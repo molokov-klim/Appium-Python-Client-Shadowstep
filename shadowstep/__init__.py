@@ -3,13 +3,13 @@ import sys
 
 # Создание корневого логгера
 logger = logging.getLogger("shadowstep")
-logger.setLevel(logging.INFO)
+logger.setLevel(logging.DEBUG)
 
 # Проверка наличия обработчиков, чтобы избежать дублирования
 if not logger.handlers:
     # Обработчик для вывода в stdout
     handler = logging.StreamHandler(sys.stdout)
-    handler.setLevel(logging.INFO)
+    handler.setLevel(logging.DEBUG)
 
     # Форматтер для логов
     formatter = logging.Formatter(
