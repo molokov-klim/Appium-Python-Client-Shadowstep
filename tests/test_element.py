@@ -1,13 +1,8 @@
-import os
 import subprocess
 import time
 from typing import Generator
-from loguru import logger
-
 import pytest
-from appium.webdriver import WebElement
-from icecream import ic
-from selenium.common import TimeoutException, NoSuchElementException, StaleElementReferenceException
+from selenium.common import NoSuchElementException
 
 from shadowstep.element.element import Element, GeneralElementException
 from shadowstep.shadowstep import Shadowstep

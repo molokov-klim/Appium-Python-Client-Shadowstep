@@ -1,7 +1,6 @@
 import inspect
 
 import pytest
-from icecream import ic
 from loguru import logger
 
 from shadowstep.utils.locator_converter import LocatorConverter

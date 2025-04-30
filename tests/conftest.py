@@ -1,9 +1,7 @@
 import logging
 import sys
 
-from icecream import ic
 from loguru import logger
-import subprocess
 import pytest
 
 from shadowstep.shadowstep import Shadowstep

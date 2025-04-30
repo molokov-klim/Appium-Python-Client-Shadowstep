@@ -1,7 +1,6 @@
 from pathlib import Path
-from typing import List, Dict, Any, Callable, Optional, Set, Tuple, Union, Final
+from typing import List, Dict, Any, Callable, Optional, Set, Tuple, Final
 
-from icecream import ic
 from loguru import logger
 import inspect
 import os
@@ -198,7 +197,6 @@ class DeviceInfoAnalyzer:
             Optional[str]: Путь к графику или None.
         """
         self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
-        ic.disable()
 
         try:
 
@@ -470,7 +468,6 @@ class DeviceInfoAnalyzer:
             float: Найденное значение, приведённое к float. Если ничего не найдено — возвращает 0.0.
         """
         self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
-        ic.disable()
 
         for pattern in patterns:
             try:

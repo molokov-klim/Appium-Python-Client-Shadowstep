@@ -1,6 +1,5 @@
 import time
 
-from icecream import ic
 from loguru import logger
 from selenium.common.exceptions import InvalidSessionIdException, NoSuchDriverException, WebDriverException
 

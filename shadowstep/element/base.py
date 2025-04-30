@@ -2,13 +2,12 @@ import inspect
 import logging
 from loguru import logger
 import typing
-from typing import Union, List, Optional, Tuple, Dict
+from typing import Union, Optional, Tuple, Dict
 
-from icecream import ic
 from selenium.types import WaitExcTypes
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.common.exceptions import WebDriverException, TimeoutException, NoSuchElementException, \
-    NoSuchDriverException, InvalidSessionIdException
+    InvalidSessionIdException
 from selenium.webdriver.support.wait import WebDriverWait
 
 from appium.webdriver.webdriver import WebDriver

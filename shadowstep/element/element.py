@@ -8,7 +8,6 @@ from typing import Union, Tuple, Dict, Optional, cast
 from lxml import etree as ET
 
 from appium.webdriver import WebElement
-from icecream import ic
 from selenium.common import NoSuchDriverException, InvalidSessionIdException, WebDriverException, \
     StaleElementReferenceException, NoSuchElementException, TimeoutException
 from selenium.types import WaitExcTypes
@@ -18,11 +17,9 @@ from selenium.webdriver.common.actions.action_builder import ActionBuilder
 from selenium.webdriver.common.actions.pointer_input import PointerInput
 from selenium.webdriver.remote.shadowroot import ShadowRoot
 from selenium.webdriver.support.wait import WebDriverWait
-from selenium.webdriver.support import expected_conditions as EC
 
 from shadowstep.element.base import ElementBase
 from shadowstep.utils import conditions
-from shadowstep.utils.operations import dict_matches_subset
 from shadowstep.utils.utils import find_coordinates_by_vector
 
 # Configure the root logger (basic configuration)
