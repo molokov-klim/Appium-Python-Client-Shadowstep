@@ -20,6 +20,7 @@ from selenium.webdriver.remote.shadowroot import ShadowRoot
 from selenium.webdriver.support.wait import WebDriverWait
 
 from shadowstep.element.base import ElementBase
+from shadowstep.elements.elements import Elements
 from shadowstep.utils import conditions
 from shadowstep.utils.utils import find_coordinates_by_vector
 
@@ -105,39 +106,46 @@ class Element(ElementBase):
             self,
             locator: Union[Tuple, Dict[str, str], 'Element'],
             contains: bool = False,
-            max_count: int = 10
-    ) -> typing.Generator['Element', None, None]:
+            max_count: int = 100
+    ) -> Elements:
         self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
+
         if isinstance(locator, Element):
             locator = locator.locator
-        resolved_locator = self.handle_locator(locator, contains)
-        base_xpath = self._get_xpath()
 
+        base_xpath = self._get_xpath()
         if not base_xpath:
             raise GeneralElementException("Unable to resolve base xpath")
 
-        # Убираем финальные / у base_xpath и начальные у локатора
-        base_xpath = base_xpath.rstrip('/')
-        child_xpath = resolved_locator[1].lstrip('/')
+        resolved_xpath = self.locator_converter.to_xpath(locator)[1]
 
-        for index in range(1, max_count + 1):
-            try:
-                element = Element(
-                    locator=('xpath', f"{base_xpath}//{child_xpath}[{index}]"),
-                    base=self.base,
-                    timeout=self.timeout,
-                    poll_frequency=self.poll_frequency,
-                    ignored_exceptions=self.ignored_exceptions,
-                    contains=contains
-                )
-                # Пробуем получить базовый атрибут
-                if element.get_attribute("class") is None:
-                    break
-                yield element
-            except NoSuchElementException:
-                break
-            except WebDriverException:
-                break
+        def generator() -> typing.Iterator['Element']:
+            missed = 0
+            for index in range(1, max_count + 1):
+                indexed_xpath = f"({resolved_xpath})[{index}]"
+                try:
+                    element = Element(
+                        locator=("xpath", indexed_xpath),
+                        base=self.base,
+                        timeout=3,
+                        poll_frequency=self.poll_frequency,
+                        ignored_exceptions=self.ignored_exceptions,
+                        contains=contains
+                    )
+                except (NoSuchElementException, WebDriverException):
+                    missed += 1
+                    if missed >= 2:
+                        break
+                    continue
+                try:
+                    _ = element.get_attribute("class")
+                    yield element
+                    missed = 0
+                except Exception:
+                    missed += 1
+                    if missed >= 2:
+                        break
+        return Elements(generator)
 
     def get_elements_greedy(
             self,

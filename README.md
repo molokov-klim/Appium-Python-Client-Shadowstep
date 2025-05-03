@@ -1,36 +1,35 @@
-# 📱 Shadowstep (in development)
+# Shadowstep (in development)
 
-> Powerful and resilient Appium-based framework for Android UI automation.
+**Shadowstep** is a modular UI automation framework for Android applications, built on top of Appium.
 
-[![PyPI](https://img.shields.io/pypi/v/appium-python-client-shadowstep?color=brightgreen)](https://pypi.org/project/appium-python-client-shadowstep/)
-[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://github.com/molokov-klim/Appium-Python-Client-Shadowstep/blob/main/LICENSE)
+It provides:
 
-![Shadowstep – inspired](https://hearthstone.wiki.gg/images/b/b0/EX1_144.png?6a192d=&format=original)
-
-> [**Shadowstep**](https://www.twitch.tv/packetoff), step into the shadows and build your way
----
-
-## 🔍 Overview
-**Shadowstep** is an open-source framework, battle-tested and evolving.
-It introduces powerful abstractions for Android testing: dynamic element wrappers, retry logic, visual change detection, and custom ADB terminal integration.
+* Lazy element lookup and interaction
+* Structured Page Object architecture
+* Screen navigation engine
+* ADB and Appium terminal integration
+* Reconnect logic on session failure
+* Full typing and docstrings (Google style)
+* DSL-style assertions (`should.have`, `should.be`)
 
 ---
 
-## ✨ Features
+## Contents
 
-- 📲 **Robust UI Automation** – with custom `Element` class and retryable tap/click logic
-- 🔁 **Automatic Session Recovery** – handles `NoSuchDriver`, `InvalidSessionId`, and reconnects
-- 🎯 **Dict-to-XPath Locator DSL** – write intuitive locators like `{"class": "TextView", "text": "OK"}`
-- 🎥 **Video + Screenshot Reporting** – Allure integration with visual context for failed steps
-- 📷 **Visual DOM/Window Waits** – wait for or detect screen changes by screenshot diffs
-- 👤 **Direct ADB Access** – push/pull/install/uninstall/interact with device via custom ADB wrapper
-- 🧱 **Testable Components** – override every interaction and build new ones with ease
+* [Installation](#installation)
+* [Quick Start](#quick-start)
+* [Test Setup (Pytest)](#test-setup-pytest)
+* [Element API](#element-api)
+* [Collections API (`Elements`)](#collections-api-elements)
+* [Page Objects and Navigation](#page-objects-and-navigation)
+* [ADB and Terminal](#adb-and-terminal)
+* [Architecture Notes](#architecture-notes)
+* [Limitations](#limitations)
+* [License](#license)
 
 ---
 
-## 🚀 Quickstart
-
-### 1. 📦 Installation
+## Installation
 
 ```bash
 pip install appium-python-client-shadowstep
@@ -38,144 +37,183 @@ pip install appium-python-client-shadowstep
 
 ---
 
-### 2. ⚙️ Integration via Composition
-
-> ⚠️ Do **not** inherit from `Shadowstep` directly. Use composition to preserve singleton behavior.
+## Quick Start
 
 ```python
 from shadowstep.shadowstep import Shadowstep
 
-class ExamplePlatform:
-    def __init__(self):
-        self.app = Shadowstep.get_instance()
-
-    def __getattr__(self, item):
-        return getattr(self.app, item)
+app = Shadowstep.get_instance()
+app.connect(
+    server_ip='127.0.0.1',
+    server_port=4723,
+    capabilities={
+        "platformName": "android",
+        "appium:automationName": "uiautomator2",
+        "appium:UDID": "192.168.56.101:5555",
+        "appium:noReset": True,
+        "appium:autoGrantPermissions": True,
+    },
+)
 ```
 
 ---
 
-## 📚 PageObject Navigator
-
-### ✅ Requirements for Shadowstep Pages (Auto-discovery)
-
-### 📦 1. File Location
-- Must reside in a directory named `pages`
-- Filename must start with `page` and end with `.py`
-
-> Example: `applications/android_settings/android_settings_7/pages/page_main/page_main.py`
-
-### 🧩 2. Class Name
-- Must start with `Page`, e.g. `PageMain7`
-
-### 🧬 3. Inheritance
-- Must inherit from `PageBase`:
+## Test Setup (Pytest)
 
 ```python
-from shadowstep.page_base import PageBaseShadowstep
+import pytest
+from shadowstep.shadowstep import Shadowstep
 
+UDID = "192.168.56.101:5555"
 
-class PageMain7(PageBaseShadowstep): ...
-```
-
-### 🧠 4. Required: `edges` Property
-Each page must define:
-
-```python
-@property
-def edges(self) -> Dict[str, Callable[[], PageBase]]:   # bullshit, typing here no needed
-    return {
-        "PageWifi7": self.to_wifi
+@pytest.fixture(scope='session', autouse=True)
+def app(request) -> Shadowstep:
+    application = Shadowstep()
+    capabilities = {
+        "platformName": "android",
+        "appium:automationName": "uiautomator2",
+        "appium:UDID": UDID,
+        "appium:noReset": True,
+        "appium:autoGrantPermissions": True,
+        "appium:newCommandTimeout": 900,
     }
+    application.connect(server_ip='127.0.0.1', server_port=4723, capabilities=capabilities)
+    application.adb.press_home()
+
+    def finalizer():
+        try:
+            application.adb.press_home()
+        finally:
+            application.disconnect()
+
+    request.addfinalizer(finalizer)
+    yield application
 ```
-
-Used by the navigation system to build the screen transition graph.
-
-### 🔄 5. Navigation Methods
-- Methods listed in `edges` must:
-  - trigger interaction (e.g. `tap()`)
-  - return the corresponding Page instance via `self.app.get_page(...)`
-
-```python
-def to_wifi(self) -> PageBase:
-    self.wifi.tap()
-    return self.app.get_page("PageWifi7")
-```
-
-### 🌐 6. Auto-discovery Mechanism
-
-The `Shadowstep._auto_discover_pages()` method:
-
-- Iterates over all paths in `sys.path`
-- Looks for directories named `pages`
-- Skips ignored folders (e.g. `__pycache__`, `venv`, etc.)
-- Imports every module with a filename starting with `page`
-- Registers each class that:
-  - starts with `Page`
-  - is a subclass of `PageBase`
-  - is **not** the base class itself
-- Stores them in `self.pages`
-- Adds them to the `PageNavigator`
 
 ---
 
-## 📄 Example Page Class
+## Element API
+
+```python
+el = app.get_element({"resource-id": "android:id/title"})
+el.tap()
+el.text
+el.get_attribute("enabled")
+```
+
+**Key features:**
+
+* Lazy evaluation (`find_element` only called on interaction)
+* Support for `dict` and XPath locators
+* Built-in retry and session reconnect
+* Rich API: `tap`, `click`, `scroll_to`, `get_sibling`, `get_parent`, `drag_to`, `send_keys`, `wait_visible`, etc.
+
+---
+
+## Collections API (`Elements`)
+
+Returned by `get_elements()` (generator-based):
+
+```python
+elements = app.get_element(container).get_elements({"class": "android.widget.TextView"})
+
+first = elements.first()
+all_items = elements.to_list()
+
+filtered = elements.filter(lambda e: "Wi-Fi" in (e.text or ""))
+filtered.should.have.count(minimum=1)
+```
+
+**DSL assertions:**
+
+```python
+items.should.have.count(minimum=3)
+items.should.have.text("Battery")
+items.should.be.all_visible()
+```
+
+---
+
+## Page Objects and Navigation
+
+### Defining a Page
 
 ```python
 from shadowstep.page_base import PageBaseShadowstep
-from shadowstep.element.element import Element
-from typing import Dict, Callable
 
+class PageMain(PageBaseShadowstep):
+    @property
+    def wifi(self):
+        return self.app.get_element({"text": "Wi-Fi"})
 
-class PageExample(PageBaseShadowstep):
-  @property
-  def edges(self) -> Dict[str, Callable[[], PageBaseShadowstep]]:
-    return {"PageNext": self.to_next}
+    def to_wifi(self):
+        self.wifi.tap()
+        return self.app.get_page("PageWifi")
 
-  def to_next(self) -> PageBaseShadowstep:
-    self.next_button.tap()
-    return self.app.get_page("PageNext")
-
-  @property
-  def next_button(self) -> Element:
-    return self.app.get_element(locator={"text": "Next"})
+    @property
+    def edges(self):
+        return {"PageWifi": self.to_wifi}
 ```
 
----
+### Auto-discovery Requirements
 
-## 🔮 Example Test
+* File: `pages/page_*.py`
+* Class: starts with `Page`, inherits from `PageBase`
+* Must define `edges` property
+
+### Navigation Example
 
 ```python
-def test_wifi_navigation(example_platform: ExamplePlatform):
-    page = example_platform.get_page("PageMain7")
-    assert page.is_current_page()
-
-    wifi_page = page.to_wifi()
-    assert wifi_page.is_current_page()
+page = app.get_page("PageMain")
+wifi_page = page.to_wifi()
+assert wifi_page.is_current_page()
 ```
 
 ---
 
-## 🔧 Under the Hood
-- Supports retry logic with session recovery
-- Lazy element evaluation until interaction
-- ADB integration via custom wrapper
-- Navigator auto-registers page transitions as a graph
+## ADB and Terminal
+
+### ADB Usage
+
+```python
+app.adb.press_home()
+app.adb.install_apk("path/to/app.apk")
+app.adb.input_text("hello")
+```
+
+* Direct ADB via `subprocess`
+* Supports input, app install/uninstall, screen record, file transfer, etc.
+
+### Terminal Usage
+
+```python
+app.terminal.shell("ls /sdcard")
+app.terminal.start_activity(package="com.example", activity=".MainActivity")
+```
+
+* Uses `mobile: shell` or SSH backend
+* Backend selected based on SSH credentials
 
 ---
 
-## 🚫 Limitations
-- Currently Android-only
-- Web support not implemented
-- Visual detection (image matching) WIP
+## Architecture Notes
+
+* All interactions are lazy (nothing fetched before usage)
+* Reconnects on session loss (`InvalidSessionIdException`, etc.)
+* Supports pytest and CI/CD workflows
+* Designed for extensibility and modularity
 
 ---
 
-## ✍️ Contributing
-We welcome pull requests! Please open an issue before submitting large changes.
+## Limitations
+
+* Android only (no iOS or web support)
+* Appium server must be running
+* Visual testing and OCR not yet implemented
 
 ---
 
-## ⚖️ License
+## License
+
+MIT License
 [MIT License](LICENSE)
-
