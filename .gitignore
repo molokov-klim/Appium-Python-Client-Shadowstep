@@ -166,3 +166,4 @@ cython_debug/
 /tests/test_new.py
 /requirements.txt
 /project_structure.txt
+/.cursor/

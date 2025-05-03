@@ -1,3 +1,4 @@
+# shadowstep/base.py
 import gc
 import importlib
 import json
@@ -424,10 +425,10 @@ class ShadowstepBase:
                 self.driver.quit()
                 self.driver = None
         except InvalidSessionIdException as error:
-            self.logger.debug(f"{inspect.currentframe().f_code.co_name} {error}")
+            self.logger.debug(f"{inspect.currentframe().f_code.co_name} InvalidSessionIdException")
             pass
         except NoSuchDriverException as error:
-            self.logger.debug(f"{inspect.currentframe().f_code.co_name} {error}")
+            self.logger.debug(f"{inspect.currentframe().f_code.co_name} NoSuchDriverException")
             pass
 
     def reconnect(self):

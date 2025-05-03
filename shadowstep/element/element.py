@@ -1,3 +1,4 @@
+# shadowstep/element/element.py
 import inspect
 import logging
 import time
@@ -2333,3 +2334,10 @@ class Element(ElementBase):
             return True
         except TimeoutException:
             return False
+
+    @property
+    def should(self) -> 'Should':
+        """Provides DSL-like assertions: element.should.have.text(...), etc."""
+        from shadowstep.element.should import Should  # импорт внутри метода для избежания циклической зависимости
+        return Should(self)
+

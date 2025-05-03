@@ -477,6 +477,9 @@ class TestElement:
             el.get_attribute("text")
 
     def test_scroll_to_element_not_found(self, app):
+        app.terminal.start_activity(package="com.android.settings", activity=".Settings")
         container = app.get_element({'resource-id': 'com.android.settings:id/main_content_scrollable_container'})
-        with pytest.raises(NoSuchElementException):
+        with pytest.raises(GeneralElementException):
             container.scroll_to_element(locator={'text': 'Element That Does Not Exist'})
+
+
