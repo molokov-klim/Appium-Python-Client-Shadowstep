@@ -1,7 +1,5 @@
-# coding: utf-8
-"""
-Этот модуль содержит полезные декораторы для работы с Appium.
-"""
+# shadowstep/utils/decorators.py
+
 import base64
 import sys
 import io
@@ -16,8 +14,6 @@ import numpy as np
 import pytest
 from PIL import Image
 
-
-# TODO.txt make unit test for module
 
 def retry(func):
     """

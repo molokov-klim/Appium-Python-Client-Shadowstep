@@ -1,4 +1,5 @@
 # shadowstep/element/base.py
+
 import inspect
 import logging
 logger = logging.getLogger(__name__)

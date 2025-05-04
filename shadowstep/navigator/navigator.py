@@ -1,4 +1,5 @@
-# coding: utf-8
+# shadowstep/navigator/navigator.py
+
 import traceback
 
 import networkx as nx

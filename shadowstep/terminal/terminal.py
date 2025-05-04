@@ -1,3 +1,5 @@
+# shadowstep/terminal/terminal.py
+
 import logging
 import os
 import re

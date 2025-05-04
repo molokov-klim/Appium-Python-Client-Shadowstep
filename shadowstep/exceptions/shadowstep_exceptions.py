@@ -1,3 +1,5 @@
+# shadowstep/exceptions/shadowstep_exceptions.py
+
 import traceback
 import typing
 from typing import Optional, Union, Tuple, List, Dict

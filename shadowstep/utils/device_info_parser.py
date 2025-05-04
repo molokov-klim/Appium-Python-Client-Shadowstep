@@ -1,3 +1,5 @@
+# shadowstep/utils/device_info_parser.py
+
 from pathlib import Path
 from typing import List, Dict, Any, Callable, Optional, Set, Tuple, Final
 

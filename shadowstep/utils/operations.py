@@ -1,3 +1,5 @@
+# shadowstep/utils/operations.py
+
 import re
 import os
 import logging
