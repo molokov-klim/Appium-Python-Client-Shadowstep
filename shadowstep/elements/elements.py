@@ -28,6 +28,9 @@ class Elements:
         """Filter elements with predicate."""
         return Elements(lambda: (el for el in self._factory() if predicate(el)))
 
+    def next(self):
+        raise NotImplementedError
+
     @property
     def should(self) -> 'ShouldElements':
         from shadowstep.elements.should import ShouldElements

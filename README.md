@@ -4,12 +4,10 @@
 
 It provides:
 
-* Lazy element lookup and interaction
-* Structured Page Object architecture
-* Screen navigation engine
-* ADB and Appium terminal integration
+* Lazy element lookup and interaction (without driver interaction)
+* PageObject navigation engine
 * Reconnect logic on session failure
-* Full typing and docstrings (Google style)
+* ADB and Appium terminal integration
 * DSL-style assertions (`should.have`, `should.be`)
 
 ---
@@ -42,18 +40,16 @@ pip install appium-python-client-shadowstep
 ```python
 from shadowstep.shadowstep import Shadowstep
 
-app = Shadowstep.get_instance()
-app.connect(
-    server_ip='127.0.0.1',
-    server_port=4723,
-    capabilities={
-        "platformName": "android",
-        "appium:automationName": "uiautomator2",
-        "appium:UDID": "192.168.56.101:5555",
-        "appium:noReset": True,
-        "appium:autoGrantPermissions": True,
-    },
-)
+application = Shadowstep()
+capabilities = {
+    "platformName": "android",
+    "appium:automationName": "uiautomator2",
+    "appium:UDID": 123456789,
+    "appium:noReset": True,
+    "appium:autoGrantPermissions": True,
+    "appium:newCommandTimeout": 900,
+}
+application.connect(server_ip='127.0.0.1', server_port=4723, capabilities=capabilities)
 ```
 
 ---
@@ -64,30 +60,18 @@ app.connect(
 import pytest
 from shadowstep.shadowstep import Shadowstep
 
-UDID = "192.168.56.101:5555"
 
-@pytest.fixture(scope='session', autouse=True)
-def app(request) -> Shadowstep:
-    application = Shadowstep()
-    capabilities = {
-        "platformName": "android",
-        "appium:automationName": "uiautomator2",
-        "appium:UDID": UDID,
-        "appium:noReset": True,
-        "appium:autoGrantPermissions": True,
-        "appium:newCommandTimeout": 900,
-    }
-    application.connect(server_ip='127.0.0.1', server_port=4723, capabilities=capabilities)
-    application.adb.press_home()
-
-    def finalizer():
-        try:
-            application.adb.press_home()
-        finally:
-            application.disconnect()
-
-    request.addfinalizer(finalizer)
-    yield application
+@pytest.fixture()
+def app():
+    shadowstep = Shadowstep()
+    shadowstep.connect(capabilities=Config.APPIUM_CAPABILITIES,
+                       command_executor=Config.APPIUM_COMMAND_EXECUTOR,
+                       server_ip=Config.APPIUM_IP,
+                       server_port=Config.APPIUM_PORT,
+                       ssh_user=Config.SSH_USERNAME,
+                       ssh_password=Config.SSH_PASSWORD, )
+    yield shadowstep
+    shadowstep.disconnect()
 ```
 
 ---
@@ -101,6 +85,18 @@ el.text
 el.get_attribute("enabled")
 ```
 
+Lazy DOM tree navigation (declarative)
+```python
+el = app.get_element({'class': 'android.widget.ImageView'}).\
+    get_parent().get_sibling({'resource-id': 'android:id/summary'}).\
+    get_cousin(
+            ancestor_locator={'text': 'title', 'resource-id': 'android:id/title'},
+            cousin_locator={'resource-id': 'android:id/summary'}
+        ).get_element(
+            {"resource-id": "android:id/switch_widget"})
+
+```
+
 **Key features:**
 
 * Lazy evaluation (`find_element` only called on interaction)
@@ -110,12 +106,12 @@ el.get_attribute("enabled")
 
 ---
 
-## Collections API (`Elements`)
+## ## Element Collections (`Elements`)
 
 Returned by `get_elements()` (generator-based):
 
 ```python
-elements = app.get_element(container).get_elements({"class": "android.widget.TextView"})
+elements = app.get_element({'class': 'android.widget.ImageView'}).get_elements({"class": "android.widget.TextView"})
 
 first = elements.first()
 all_items = elements.to_list()
@@ -123,6 +119,15 @@ all_items = elements.to_list()
 filtered = elements.filter(lambda e: "Wi-Fi" in (e.text or ""))
 filtered.should.have.count(minimum=1)
 ```
+
+```python
+els = app.get_elements({'class': 'android.widget.TextView'})    # lazy
+
+els.first.get_attributes()     # driver interaction with first element only
+...     # some logic
+els.next.get_attributes()    # driver interation with second element only
+```
+
 
 **DSL assertions:**
 
@@ -139,20 +144,160 @@ items.should.be.all_visible()
 ### Defining a Page
 
 ```python
+import logging
+from shadowstep.element.element import Element
 from shadowstep.page_base import PageBaseShadowstep
 
-class PageMain(PageBaseShadowstep):
-    @property
-    def wifi(self):
-        return self.app.get_element({"text": "Wi-Fi"})
 
-    def to_wifi(self):
-        self.wifi.tap()
-        return self.app.get_page("PageWifi")
+class PageAbout(PageBaseShadowstep):
+    def __init__(self):
+        super().__init__()
+        self.logger = logging.getLogger(__name__)
+
+    def __repr__(self):
+        return f"{self.name} ({self.__class__.__name__})"
 
     @property
     def edges(self):
-        return {"PageWifi": self.to_wifi}
+        return {"PageMain": self.to_main}
+
+    def to_main(self):
+        self.shadowstep.terminal.press_back()
+        return self.shadowstep.get_page("PageMain")
+
+    @property
+    def name(self) -> str:
+        return "About"
+
+    @property
+    def title(self) -> Element:
+        return self.shadowstep.get_element(locator={'text': 'About', 'class': 'android.widget.TextView'})
+
+    def is_current_page(self) -> bool:
+        try:
+            return self.title.is_visible()
+        except Exception as e:
+            self.logger.error(e)
+            return False
+```
+
+```python
+import logging
+import inspect
+import os
+import traceback
+from typing import Dict, Any, Callable
+from shadowstep.element.element import Element
+from shadowstep.page_base import PageBaseShadowstep
+
+logger = logging.getLogger(__name__)
+
+class PageEtalon(PageBaseShadowstep):
+    def __init__(self):
+        super().__init__()
+        self.current_path = os.path.dirname(os.path.abspath(inspect.getframeinfo(inspect.currentframe()).filename))
+
+    def __repr__(self):
+        return f"{self.name} ({self.__class__.__name__})"
+
+    @property
+    def edges(self) -> dict[str, Callable[[], None]]:
+        return {}
+
+    @property
+    def name(self) -> str:
+        return "PageEtalon"
+
+    # --- Title bar ---
+
+    @property
+    def title_locator(self) -> Dict[str, Any]:
+        return {
+            "package": "com.android.launcher3",
+            "class": "android.widget.FrameLayout",
+            "text": "",
+            "resource-id": "android:id/content",
+        }
+
+    @property
+    def title(self) -> Element:
+        logger.info(f"{inspect.currentframe().f_code.co_name}")
+        return self.shadowstep.get_element(locator=self.title_locator)
+
+    # --- Main scrollable container ---
+
+    @property
+    def recycler_locator(self):
+        # self.logger.info(f"{inspect.currentframe().f_code.co_name}")
+        return {"scrollable": "true"}
+
+    @property
+    def recycler(self):
+        # self.logger.info(f"{inspect.currentframe().f_code.co_name}")
+        return self.shadowstep.get_element(locator=self.recycler_locator)
+
+    def _recycler_get(self, locator):
+        # self.logger.info(f"{inspect.currentframe().f_code.co_name}")
+        return self.recycler.scroll_to_element(locator=locator)
+
+    # --- Search button (if present) ---
+
+    @property
+    def search_button_locator(self) -> Dict[str, Any]:
+        return {'text': 'Search'}
+
+    @property
+    def search_button(self) -> Element:
+        logger.info(f"{inspect.currentframe().f_code.co_name}")
+        return self.shadowstep.get_element(locator=self.search_button_locator)
+
+    # --- Back button button (if present) ---
+
+    @property
+    def back_button_locator(self) -> Dict[str, Any]:
+        return {'text': 'back'}
+
+    @property
+    def back_button(self) -> Element:
+        logger.info(f"{inspect.currentframe().f_code.co_name}")
+        return self.shadowstep.get_element(locator=self.back_button_locator)
+
+    # --- Elements in scrollable container ---
+
+    @property
+    def element_text_view_locator(self) -> dict:
+        return {"text": "Element in scrollable container"}
+
+    @property
+    def element_text_view(self) -> Element:
+        logger.info(f"{inspect.currentframe().f_code.co_name}")
+        return self.recycler.scroll_to_element(self.element_text_view_locator)
+
+    @property
+    def summary_element_text_view(self) -> str:
+        logger.info(f"{inspect.currentframe().f_code.co_name}")
+        return self._get_summary_text(self.element_text_view)
+
+    # --- PRIVATE METHODS ---
+
+    def _get_summary_text(self, element: Element) -> str:
+        try:
+            summary = element.get_sibling({"resource-id": "android:id/summary"})
+            return self.recycler.scroll_to_element(summary.locator).get_attribute("text")
+        except Exception as error:
+            logger.error(f"Error:\n{error}\n{traceback.format_exc()}")
+            return ""
+
+    # --- is_current_page (always in bottom) ---
+
+    def is_current_page(self) -> bool:
+        try:
+            if self.title.is_visible():
+                return True
+            return False
+        except Exception as error:
+            logger.info(f"{inspect.currentframe().f_code.co_name}: {error}")
+            return False
 ```
 
 ### Auto-discovery Requirements
@@ -164,9 +309,8 @@ class PageMain(PageBaseShadowstep):
 ### Navigation Example
 
 ```python
-page = app.get_page("PageMain")
-wifi_page = page.to_wifi()
-assert wifi_page.is_current_page()
+self.shadowstep.navigator.navigate(source_page=self.page_main, target_page=self.page_display)
+assert self.page_display.is_current_page()
 ```
 
 ---
@@ -187,11 +331,12 @@ app.adb.input_text("hello")
 ### Terminal Usage
 
 ```python
-app.terminal.shell("ls /sdcard")
 app.terminal.start_activity(package="com.example", activity=".MainActivity")
+app.terminal.tap(x=1345, y=756)
+app.terminal.past_text(text='hello')
 ```
 
-* Uses `mobile: shell` or SSH backend
+* Uses driver.execute_script(`mobile: shell`) or SSH backend (will separate in future)
 * Backend selected based on SSH credentials
 
 ---
@@ -208,12 +353,8 @@ app.terminal.start_activity(package="com.example", activity=".MainActivity")
 ## Limitations
 
 * Android only (no iOS or web support)
-* Appium server must be running
-* Visual testing and OCR not yet implemented
 
 ---
 
 ## License
-
-MIT License
 [MIT License](LICENSE)
