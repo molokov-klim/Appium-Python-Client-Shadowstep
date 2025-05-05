@@ -43,12 +43,13 @@ class GeneralElementException(WebDriverException):
 class Element(ElementBase):
     """
     A class to represent a UI element in the Shadowstep application.
-    !WARNING! USE XPATH STRATEGY ONLY !WARNING!
+    !WARNING! TUPLE LOCATOR USE XPATH STRATEGY ONLY !WARNING!
+    Please use dict locator
     """
 
     def __init__(self,
                  locator: Union[Tuple, Dict[str, str], 'Element'] = None,
-                 base=None,
+                 base: 'Shadowstep' = None,
                  timeout: int = 30,
                  poll_frequency: float = 0.5,
                  ignored_exceptions: typing.Optional[WaitExcTypes] = None,
@@ -148,64 +149,6 @@ class Element(ElementBase):
                         break
         return Elements(generator)
 
-    def get_elements_greedy(
-            self,
-            locator: Union[Tuple, Dict[str, str], 'Element'],
-            contains: bool = False,
-            timeout: int = 30,
-    ) -> typing.List['Element']:
-        """
-        Returns a list of elements found using find_elements.
-        This is a greedy method and fetches all matching elements immediately.
-
-        Args:
-            locator: Locator to search for child elements.
-            contains: If True, performs partial match.
-            timeout: Timeout to wait for elements.
-
-        Returns:
-            List of Element instances matching the locator.
-        """
-        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
-        try:
-            self._get_driver()
-            if isinstance(locator, Element):
-                locator = locator.locator
-            resolved_locator = self.handle_locator(locator, contains)
-            base_xpath = self._get_xpath()
-
-            if not base_xpath:
-                raise GeneralElementException("Unable to resolve base xpath")
-
-            base_xpath = base_xpath.rstrip('/')
-            child_xpath = resolved_locator[1].lstrip('/')
-
-            # Совмещённый XPath для поиска потомков
-            full_xpath = f"{base_xpath}//{child_xpath}"
-
-            base_element = self._get_element(locator=self.locator)
-
-            found_elements = base_element.find_elements('xpath', full_xpath)
-
-            result = []
-            for i in range(len(found_elements)):
-                xpath = f"{full_xpath}[{i + 1}]"
-                result.append(Element(
-                    locator=('xpath', xpath),
-                    base=self.base,
-                    timeout=timeout,
-                    poll_frequency=self.poll_frequency,
-                    ignored_exceptions=self.ignored_exceptions,
-                    contains=contains
-                ))
-
-            return result
-        except NoSuchDriverException as error:
-            self._handle_driver_error(error)
-            return []
-        except InvalidSessionIdException as error:
-            self._handle_driver_error(error)
-            return []
 
     def get_attributes(self) -> Optional[Dict[str, str]]:
         """Fetch all XML attributes of the element by matching locator against page source.
@@ -733,22 +676,6 @@ class Element(ElementBase):
             msg=f"Failed to {inspect.currentframe().f_code.co_name} within {self.timeout=}",
             stacktrace=traceback.format_stack()
         )
-
-    def is_not_within_screen(self) -> bool:
-        """Checks whether the element is not within the visible screen bounds.
-
-        Returns:
-            bool: True if element is not displayed or outside screen bounds.
-        """
-        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
-        try:
-            return not self.is_visible()
-        except GeneralElementException as error:
-            self.logger.warning(f"is_not_within_screen fallback due to: {error}")
-            return True
-        except Exception as error:
-            self.logger.warning(f"is_not_within_screen unexpected error: {error}")
-            return True
 
     def is_selected(self) -> bool:
         """Returns whether the element is selected.
