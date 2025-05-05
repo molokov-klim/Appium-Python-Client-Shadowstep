@@ -5,22 +5,32 @@ import inspect
 import logging
 import os
 import sys
+import time
 import traceback
 import typing
+from io import BytesIO
 from pathlib import Path
 from types import ModuleType
 from typing import Union, Tuple, Dict
 
+import PIL
 import numpy as np
 from PIL import Image
 from appium.webdriver import WebElement
-from selenium.common import WebDriverException
+from selenium.common import WebDriverException, NoSuchDriverException, InvalidSessionIdException, \
+    StaleElementReferenceException
 from selenium.types import WaitExcTypes
 
-from shadowstep.base import ShadowstepBase
+from shadowstep.base import ShadowstepBase, WebDriverSingleton
 from shadowstep.element.element import Element
+from shadowstep.elements.elements import Elements
+from shadowstep.image.image import ShadowstepImage
+from shadowstep.images.images import ShadowstepImages
+from shadowstep.logging.shadowstep_logcat import ShadowstepLogcat
 from shadowstep.navigator.navigator import PageNavigator
 from shadowstep.page_base import PageBaseShadowstep
+from shadowstep.scheduled_actions.action_history import ActionHistory
+from shadowstep.scheduled_actions.action_step import ActionStep
 
 # Configure the root logger (basic configuration)
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
@@ -58,11 +68,12 @@ class Shadowstep(ShadowstepBase):
         if getattr(self, "_initialized", False):
             return
         super().__init__()
+
+        self._logcat = ShadowstepLogcat(driver_getter=WebDriverSingleton.get_driver)
         self.navigator = PageNavigator(self)
         self.logger = logging.getLogger(f"{__name__}.{self.__class__.__name__}")
         self._auto_discover_pages()
         self._initialized = True
-
 
     def _auto_discover_pages(self):
         """Automatically import and register all PageBase subclasses from all 'pages' directories in sys.path."""
@@ -92,7 +103,6 @@ class Shadowstep(ShadowstepBase):
                             self._register_pages_from_module(module)
                         except Exception as e:
                             self.logger.warning(f"⚠️ Import error {file}: {e}")
-
 
     def _register_pages_from_module(self, module: ModuleType):
         try:
@@ -132,7 +142,6 @@ class Shadowstep(ShadowstepBase):
             return cls()
         raise ValueError(f"Page '{name}' not found.")
 
-
     def get_element(self,
                     locator: Union[Tuple[str, str], Dict[str, str]] = None,
                     timeout: int = 30,
@@ -148,30 +157,169 @@ class Shadowstep(ShadowstepBase):
                           base=self)
         return element
 
-    def get_elements(self):
-        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
-        raise NotImplementedError(f"Method {inspect.currentframe().f_code.co_name} is not yet implemented.")
+    def get_elements(
+            self,
+            locator: Union[Tuple[str, str], Dict[str, str]],
+            timeout: int = 30,
+            poll_frequency: float = 0.5,
+            ignored_exceptions: typing.Optional[WaitExcTypes] = None,
+            contains: bool = False
+    ) -> Elements:
+        """
+        Find multiple elements matching the given locator across the whole page.
 
-    def get_image(self):
-        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
-        raise NotImplementedError(f"Method {inspect.currentframe().f_code.co_name} is not yet implemented.")
+        Args:
+            locator: Locator tuple or dict to search elements.
+            timeout: How long to wait for elements.
+            poll_frequency: Polling frequency.
+            ignored_exceptions: Exceptions to ignore.
+            contains: Whether to use contains-style XPath matching.
 
-    def get_images(self):
+        Returns:
+            Elements: Lazy iterable of Element instances.
+        """
         self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
-        raise NotImplementedError(f"Method {inspect.currentframe().f_code.co_name} is not yet implemented.")
+        root = Element(
+            locator=("xpath", "//*"),
+            base=self,
+            timeout=timeout,
+            poll_frequency=poll_frequency,
+            ignored_exceptions=ignored_exceptions,
+            contains=False
+        )
+        return root.get_elements(locator=locator, contains=contains)
 
-    def get_text(self):
+    def get_image(
+            self,
+            image: Union[bytes, np.ndarray, PIL.Image.Image, str],
+            threshold: float = 0.9,
+            timeout: float = 5.0
+    ) -> ShadowstepImage:
+        """
+        Return a lazy ShadowstepImage wrapper for the given template.
+
+        Args:
+            image: template (bytes, ndarray, PIL.Image or path)
+            threshold: matching threshold [0–1]
+            timeout: max seconds to search
+
+        Returns:
+            ShadowstepImage: ленивый объект для image-actions.
+        """
         self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
+        return ShadowstepImage(
+            image=image,
+            base=self,
+            threshold=threshold,
+            timeout=timeout
+        )
+
+    def get_images(
+            self,
+            image: Union[bytes, np.ndarray, PIL.Image.Image, str],
+            threshold: float = 0.9,
+            timeout: float = 5.0
+    ) -> ShadowstepImages:
+        return ShadowstepImages(image=image,
+                                base=self,
+                                threshold=threshold,
+                                timeout=timeout)
+
+    def schedule_action(
+            self,
+            name: str,
+            steps: typing.List[ActionStep],
+            interval_ms: int = 1000,
+            times: int = 1,
+            max_pass: typing.Optional[int] = None,
+            max_fail: typing.Optional[int] = None,
+            max_history_items: int = 20
+    ) -> 'Shadowstep':
+        """
+        Schedule a server-side action sequence.
+
+        Args:
+            name: unique action name.
+            steps: список шагов (GestureStep, SourceStep, ScreenshotStep и т.п.).
+            interval_ms: пауза между запусками в мс.
+            times: сколько раз попытаться выполнить.
+            max_pass: прекратить после N успешных запусков.
+            max_fail: прекратить после N неудач.
+            max_history_items: сколько записей хранить в истории.
+        Returns:
+            self — для удобного чейнинга.
+        """
+        # shadowstep/scheduled_actions
         raise NotImplementedError
 
-    def scheduled_actions(self):
-        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
-        raise NotImplementedError(f"Method {inspect.currentframe().f_code.co_name} is not yet implemented.")
-        # https://github.com/appium/appium-uiautomator2-driver/blob/master/docs/scheduled-actions.md
+    def get_action_history(self, name: str) -> ActionHistory:
+        """
+        Fetch the execution history for the named action.
 
-    def find_and_get_element(self, *args, **kwargs):
+        Args:
+            name: то же имя, что и при schedule_action.
+        Returns:
+            ActionHistory — удобная обёртка над JSON-ответом.
+        """
+        # shadowstep/scheduled_actions
+        raise NotImplementedError
+
+    def unschedule_action(self, name: str) -> ActionHistory:
+        """
+        Unschedule the action and return its final history.
+
+        Args:
+            name: то же имя, что и при schedule_action.
+        Returns:
+            ActionHistory — история всех выполнений до момента отмены.
+        """
+        # shadowstep/scheduled_actions
+        raise NotImplementedError
+
+    def start_logcat(self, filename: str) -> None:
+        """
+        Синхронный API: запускает логгирование logcat в файл в фоновом потоке.
+        Не блокирует основной поток.
+        """
+        self._logcat.start(filename)
+
+    def stop_logcat(self) -> None:
+        """
+        Останавливает приём logcat и закрывает файл.
+        """
+        self._logcat.stop()
+
+    def find_and_get_element(
+            self,
+            locator: Union[Tuple[str, str], Dict[str, str]],
+            timeout: int = 30,
+            poll_frequency: float = 0.5,
+            ignored_exceptions: typing.Optional[WaitExcTypes] = None,
+            contains: bool = False,
+            max_swipes: int = 30
+    ) -> typing.Optional[Element]:
         self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
-        raise NotImplementedError(f"Method {inspect.currentframe().f_code.co_name} is not yet implemented.")
+
+        try:
+            scrollables = self.get_elements(
+                locator={'scrollable': 'true'},
+                timeout=timeout,
+                poll_frequency=poll_frequency,
+                ignored_exceptions=ignored_exceptions,
+                contains=contains
+            )
+            for scrollable in scrollables:
+                try:
+                    scrollable: Element
+                    result = scrollable.scroll_to_element(locator=locator, max_swipes=max_swipes)
+                    if result is not None and result.is_visible():
+                        return result
+                except Exception as e:
+                    self.logger.debug(f"Scroll attempt failed on scrollable element: {e}")
+                    continue
+        except Exception as e:
+            self.logger.error(f"Failed to find scrollable elements: {e}")
+        return None
 
     def get_image_coordinates(self, *args, **kwargs):
         self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
@@ -265,90 +413,29 @@ class Shadowstep(ShadowstepBase):
 
     def tap(
             self,
-            locator: Union[Tuple[str, str], Dict[str, str], Element, WebElement] = None,
             x: int = None,
             y: int = None,
-            image: Union[bytes, np.ndarray, Image.Image, str] = None,
             duration: typing.Optional[int] = None,
             timeout: float = 5.0,
-            threshold: float = 0.9
     ) -> 'Shadowstep':
-        """Perform tap action via locator, coordinates, image or element.
-
-        Args:
-            locator (Union[Tuple[str, str], Dict[str, str], Element, WebElement], optional): Element locator or object.
-            x (int, optional): X coordinate to tap.
-            y (int, optional): Y coordinate to tap.
-            image (Union[bytes, np.ndarray, Image.Image, str], optional): Image to find and tap.
-            duration (int, optional): Tap duration in milliseconds.
-            timeout (float): Timeout for waiting elements or image match.
-            threshold (float): Matching threshold for image recognition.
-
-        Returns:
-            Shadowstep: self instance for chaining.
-
-        Raises:
-            GeneralShadowstepException: if none of the strategies succeed.
-        """
-        self.logger.info(
-            f"{inspect.currentframe().f_code.co_name} with args locator={locator}, x={x}, y={y}, image={bool(image)}")
-
-        try:
-            if locator:
-                # If locator is already an Element or WebElement
-                if isinstance(locator, Element):
-                    locator.tap(duration=duration)
-                elif isinstance(locator, WebElement):
-                    # Wrap into our lazy Element and tap
-                    elem = Element(locator=(), base=self)
-                    elem._element = locator
-                    elem.tap(duration=duration)
-                else:
-                    # Create lazy element from locator
-                    self.get_element(locator=locator, timeout=int(timeout)).tap(duration=duration)
-                return self
-
-            elif x is not None and y is not None:
-                # Use driver touch_action for coordinate tap
-                self.logger.debug(f"Tapping at coordinates: ({x}, {y})")
+        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
+        start_time = time.time()
+        while time.time() - start_time < timeout:
+            try:
                 self.driver.tap([(x, y)], duration or 100)
                 return self
-
-            elif image:
-                raise NotImplementedError(f"image {inspect.currentframe().f_code.co_name} is not yet implemented.")
-                # # Handle different image input types
-                # if isinstance(image, str):
-                #     img_data = Image.open(image).convert("RGB")
-                # elif isinstance(image, bytes):
-                #     from io import BytesIO
-                #     img_data = Image.open(BytesIO(image)).convert("RGB")
-                # elif isinstance(image, np.ndarray):
-                #     img_data = Image.fromarray(image)
-                # elif isinstance(image, Image.Image):
-                #     img_data = image.convert("RGB")
-                # else:
-                #     raise ValueError("Unsupported image format for tap.")
-                #
-                # from shadowstep.vision.image_matcher import find_image_on_screen  # предположим, что такой модуль есть
-                #
-                # coords = find_image_on_screen(
-                #     driver=self.driver,
-                #     template=img_data,
-                #     threshold=threshold,
-                #     timeout=timeout
-                # )
-                #
-                # if coords:
-                #     self.driver.tap([coords], duration or 100)
-                #     return self
-                #
-                # raise GeneralShadowstepException("Image not found on screen.")
-
-            else:
-                raise GeneralShadowstepException("Tap requires locator, coordinates or image.")
-        except Exception as e:
-            self.logger.exception(f"Tap failed: {e}")
-            raise GeneralShadowstepException(str(e)) from e
+            except NoSuchDriverException as error:
+                self._handle_driver_error(error)
+            except InvalidSessionIdException as error:
+                self._handle_driver_error(error)
+            except AttributeError as error:
+                self._handle_driver_error(error)
+            except StaleElementReferenceException as error:
+                self._handle_driver_error(error)
+        raise GeneralShadowstepException(
+            msg=f"Failed to {inspect.currentframe().f_code.co_name} within {timeout=}\n{duration=}",
+            stacktrace=traceback.format_stack()
+        )
 
     def start_recording_screen(self) -> None:
         """Start screen recording using Appium driver."""
@@ -380,6 +467,11 @@ class Shadowstep(ShadowstepBase):
         except Exception as e:
             self.logger.exception("Failed to get screenshot")
             raise GeneralShadowstepException("get_screenshot failed") from e
+
+    def _handle_driver_error(self, error: Exception) -> None:
+        self.logger.error(f"{inspect.currentframe().f_code.co_name} {error}")
+        self.reconnect()
+        time.sleep(0.3)
 
 
 """
@@ -427,5 +519,3 @@ currentDisplayId | int | The id of the display that should be used when finding 
 
 
 """
-
-
