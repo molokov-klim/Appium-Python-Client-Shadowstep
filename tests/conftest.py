@@ -74,15 +74,19 @@ def udid() -> str:
     """
     yield UDID
 
-
 @pytest.fixture(scope="function", autouse=True)
-def press_home(app: Shadowstep) -> None:
-    """Ensures device returns to the HOME screen before each test function.
+def press_home(app: Shadowstep):
+    yield
+    app.terminal.press_home()
 
-    Args:
-        app (Shadowstep): The Shadowstep test application instance.
-    """
-    try:
-        app.adb.press_home()
-    except Exception as e:
-        logger.warning(f"Failed to press HOME before test: {e}")
+@pytest.fixture(scope="function")
+def android_settings(app: Shadowstep):
+    app.terminal.start_activity(package='com.android.settings', activity='com.android.settings.Settings')
+    yield
+    app.terminal.close_app('com.android.settings')
+
+@pytest.fixture()
+def android_settings_recycler(app: Shadowstep, android_settings):
+    yield app.get_element(
+            locator={'resource-id': 'com.android.settings:id/main_content_scrollable_container',
+                     })
