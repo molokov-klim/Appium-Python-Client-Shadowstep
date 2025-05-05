@@ -348,7 +348,6 @@ class TestElement:
 
     def test_tag_name(self, app: Shadowstep):
         el = app.get_element({'content-desc': 'Phone'})
-        tag = el.tag_name
         assert isinstance(el.tag_name, str)
         assert el.tag_name == 'Phone'
 
