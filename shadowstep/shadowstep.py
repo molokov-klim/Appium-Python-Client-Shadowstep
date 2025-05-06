@@ -280,7 +280,6 @@ class Shadowstep(ShadowstepBase):
             max_swipes: int = 30
     ) -> typing.Optional[Element]:
         self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
-
         try:
             scrollables = self.get_elements(
                 locator={'scrollable': 'true'},
@@ -295,32 +294,63 @@ class Shadowstep(ShadowstepBase):
                     result = scrollable.scroll_to_element(locator=locator, max_swipes=max_swipes)
                     if result is not None and result.is_visible():
                         return result
-                except Exception as e:  # TODO use specified exception
+                except Exception as e:  # FIXME use specified exception
                     self.logger.debug(f"Scroll attempt failed on scrollable element: {e}")
                     continue
-        except Exception as e:  # TODO use specified exception
+        except Exception as e:  # FIXME use specified exception
             self.logger.error(f"Failed to find scrollable elements: {e}")
         return None
 
-    def is_text_visible(self, text: str):
-        """
-        Ищем элемент с text=text
-        элемент должен быть is_visible
+    def is_text_visible(self, text: str) -> bool:
+        """Check if an element with the given text is visible.
+
+        Args:
+            text (str): The exact or partial text to search for.
+
+        Returns:
+            bool: True if element is found and visible, False otherwise.
         """
         self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
-        raise NotImplementedError(f"Method {inspect.currentframe().f_code.co_name} is not yet implemented.")
+        try:
+            element = Element(locator={'text': text}, base=self, contains=True)
+            return element.is_visible()
+        except Exception as e:
+            self.logger.warning(f"Failed to check visibility for text='{text}': {e}")
+            return False
 
-    @fail_safe(retries=3, delay=0.5,
-               raise_exception=ShadowstepException,
-               exceptions=(NoSuchDriverException,
-                           InvalidSessionIdException,
-                           StaleElementReferenceException))
-    def scroll(self):
+    @fail_safe(
+        retries=3,
+        delay=0.5,
+        raise_exception=ShadowstepException,
+        exceptions=(NoSuchDriverException, InvalidSessionIdException)
+    )
+    def scroll(
+            self,
+            left: int,
+            top: int,
+            width: int,
+            height: int,
+            direction: str,
+            percent: float,
+            speed: int
+    ) -> 'Shadowstep':
         """
         https://github.com/appium/appium-uiautomator2-driver/blob/61abedddcde2d606394acfa0f0c2bac395a0e14c/docs/android-mobile-gestures.md#mobile-scrollgesture
-        mobile: scrollGesture
-        This gesture performs scroll gesture on the given element/area. Available since Appium v1.19
+        Perform a scroll gesture in the specified area.
 
+        Args:
+            left (int): Left coordinate of the scroll area.
+            top (int): Top coordinate of the scroll area.
+            width (int): Width of the scroll area.
+            height (int): Height of the scroll area.
+            direction (str): Scroll direction: 'up', 'down', 'left', 'right'.
+            percent (float): Scroll size as percentage (0.0 < percent <= 1.0).
+            speed (int): Speed in pixels per second.
+
+        Returns:
+            Shadowstep: Self for method chaining.
+
+        origin:
         Supported arguments
         elementId: The id of the element to be scrolled. If the element id is missing then scroll bounding area must be provided. If both the element id and the scroll bounding area are provided then this area is effectively ignored.
         left: The left coordinate of the scroll bounding area
@@ -330,117 +360,170 @@ class Shadowstep(ShadowstepBase):
         direction: Scrolling direction. Mandatory value. Acceptable values are: up, down, left and right (case insensitive)
         percent: The size of the scroll as a percentage of the scrolling area size. Valid values must be float numbers greater than zero, where 1.0 is 100%. Mandatory value.
         speed: The speed at which to perform this gesture in pixels per second. The value must not be negative. The default value is 5000 * displayDensity
-        Returned value
-        The returned value is a boolean one and equals to true if the object can still scroll in the given direction
-
-        Usage examples
-        // Java
-        boolean canScrollMore = (Boolean) ((JavascriptExecutor) driver).executeScript("mobile: scrollGesture", ImmutableMap.of(
-            "left", 100, "top", 100, "width", 200, "height", 200,
-            "direction", "down",
-            "percent", 1.0
-        ));
-        # Python
-        can_scroll_more = driver.execute_script('mobile: scrollGesture', {
-            'left': 100, 'top': 100, 'width': 200, 'height': 200,
-            'direction': 'down',
-            'percent': 3.0
-        })
         """
-        raise NotImplementedError
+        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
+        self.driver = WebDriverSingleton.get_driver()
 
-    @fail_safe(retries=3, delay=0.5,
-               raise_exception=ShadowstepException,
-               exceptions=(NoSuchDriverException,
-                           InvalidSessionIdException,
-                           StaleElementReferenceException))
-    def long_click(self):
+        # Defensive validation (optional, to fail early on bad input)
+        if direction.lower() not in {'up', 'down', 'left', 'right'}:
+            raise ValueError(f"Invalid direction '{direction}', must be one of: up, down, left, right")
+
+        if not (0.0 < percent <= 1.0):
+            raise ValueError(f"Percent must be between 0 and 1, got {percent}")
+
+        if speed < 0:
+            raise ValueError(f"Speed must be non-negative, got {speed}")
+
+        self._mobile_gesture(
+            'mobile: scrollGesture',
+            {
+                'left': left,
+                'top': top,
+                'width': width,
+                'height': height,
+                'direction': direction.lower(),
+                'percent': percent,
+                'speed': speed
+            }
+        )
+        return self
+
+    @fail_safe(
+        retries=3,
+        delay=0.5,
+        raise_exception=ShadowstepException,
+        exceptions=(NoSuchDriverException, InvalidSessionIdException)
+    )
+    def long_click(self, x: int, y: int, duration: int) -> 'Shadowstep':
         """
         https://github.com/appium/appium-uiautomator2-driver/blob/61abedddcde2d606394acfa0f0c2bac395a0e14c/docs/android-mobile-gestures.md#mobile-longclickgesture
-        mobile: longClickGesture
-        This gesture performs long click action on the given element/coordinates. Available since Appium v1.19
+        Perform a long click gesture at the given coordinates.
 
+        Args:
+            x (int): X-coordinate of the click.
+            y (int): Y-coordinate of the click.
+            duration (int): Duration in milliseconds (default: 500). Must be ≥ 0.
+
+        Returns:
+            Shadowstep: Self for method chaining.
+
+        origin:
         Supported arguments
         elementId: The id of the element to be clicked. If the element is missing then both click offset coordinates must be provided. If both the element id and offset are provided then the coordinates are parsed as relative offsets from the top left corner of the element.
         x: The x-offset coordinate
         y: The y-offset coordinate
         duration: Click duration in milliseconds. 500 by default. The value must not be negative
         locator: The map containing strategy and selector items to make it possible to click dynamic elements.
-        Usage examples
-        // Java
-        ((JavascriptExecutor) driver).executeScript("mobile: longClickGesture", ImmutableMap.of(
-            "elementId", ((RemoteWebElement) element).getId()
-        ));
-        # Python
-        driver.execute_script('mobile: longClickGesture', {'x': 100, 'y': 100, 'duration': 1000})
         """
-        raise NotImplementedError
+        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
 
-    @fail_safe(retries=3, delay=0.5,
-               raise_exception=ShadowstepException,
-               exceptions=(NoSuchDriverException,
-                           InvalidSessionIdException,
-                           StaleElementReferenceException))
-    def double_click(self):
+        if duration < 0:
+            raise ValueError(f"Duration must be non-negative, got {duration}")
+
+        self.driver = WebDriverSingleton.get_driver()
+        self._mobile_gesture(
+            'mobile: longClickGesture',
+            {'x': x, 'y': y, 'duration': duration}
+        )
+        return self
+
+    @fail_safe(
+        retries=3,
+        delay=0.5,
+        raise_exception=ShadowstepException,
+        exceptions=(NoSuchDriverException, InvalidSessionIdException, StaleElementReferenceException)
+    )
+    def double_click(self, x: int, y: int) -> 'Shadowstep':
         """
         https://github.com/appium/appium-uiautomator2-driver/blob/61abedddcde2d606394acfa0f0c2bac395a0e14c/docs/android-mobile-gestures.md#mobile-doubleclickgesture
-        mobile: doubleClickGesture
-        This gesture performs double click action on the given element/coordinates. Available since Appium v1.21
+        Perform a double click gesture at the given coordinates.
 
+        Args:
+            x (int): X-coordinate of the click.
+            y (int): Y-coordinate of the click.
+
+        Returns:
+            Shadowstep: Self for method chaining.
+
+        origin:
         Supported arguments
         elementId: The id of the element to be clicked. If the element is missing then both click offset coordinates must be provided. If both the element id and offset are provided then the coordinates are parsed as relative offsets from the top left corner of the element.
         x: The x-offset coordinate
         y: The y-offset coordinate
         locator: The map containing strategy and selector items to make it possible to click dynamic elements.
-        Usage examples
-        // Java
-        ((JavascriptExecutor) driver).executeScript("mobile: doubleClickGesture", ImmutableMap.of(
-            "elementId", ((RemoteWebElement) element).getId()
-        ));
-        # Python
-        driver.execute_script('mobile: doubleClickGesture', {'x': 100, 'y': 100})
         """
-        raise NotImplementedError
+        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
 
-    @fail_safe(retries=3, delay=0.5,
-               raise_exception=ShadowstepException,
-               exceptions=(NoSuchDriverException,
-                           InvalidSessionIdException,
-                           StaleElementReferenceException))
-    def click(self):
+        self.driver = WebDriverSingleton.get_driver()
+        self._mobile_gesture(
+            'mobile: doubleClickGesture',
+            {'x': x, 'y': y}
+        )
+        return self
+
+    @fail_safe(
+        retries=3,
+        delay=0.5,
+        raise_exception=ShadowstepException,
+        exceptions=(NoSuchDriverException, InvalidSessionIdException, StaleElementReferenceException)
+    )
+    def click(self, x: int, y: int) -> 'Shadowstep':
         """
         https://github.com/appium/appium-uiautomator2-driver/blob/61abedddcde2d606394acfa0f0c2bac395a0e14c/docs/android-mobile-gestures.md#mobile-clickgesture
-        mobile: clickGesture
-        This gesture performs click action on the given element/coordinates. Available since Appium UiAutomator2 driver 1.71.0. Usage of this gesture is recommended as a possible workaround for cases where the "native" tap call fails, even though tap coordinates seem correct. This issue is related to the fact these calls use the legacy UIAutomator-based calls while this extension is based on the same foundation as W3C does.
+        Perform a click gesture at the given coordinates.
 
+        Args:
+            x (int): X-coordinate of the click.
+            y (int): Y-coordinate of the click.
+
+        Returns:
+            Shadowstep: Self for method chaining.
+
+        origin:
         Supported arguments
         elementId: The id of the element to be clicked. If the element is missing then both click offset coordinates must be provided. If both the element id and offset are provided then the coordinates are parsed as relative offsets from the top left corner of the element.
         x: The x-offset coordinate
         y: The y-offset coordinate
         locator: The map containing strategy and selector items to make it possible to click dynamic elements.
-        Usage examples
-        // Java
-        driver.executeScript("mobile: clickGesture", ImmutableMap.of(
-            "elementId", ((RemoteWebElement) element).getId()
-        ));
-        # Python
-        driver.execute_script('mobile: clickGesture', {'x': 100, 'y': 100})
-        // Javascript - @wdio
-        await driver.executeScript('mobile: clickGesture', [{x: 100, y: 100}]);
         """
-        raise NotImplementedError
+        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
 
-    @fail_safe(retries=3, delay=0.5,
-               raise_exception=ShadowstepException,
-               exceptions=(NoSuchDriverException,
-                           InvalidSessionIdException,
-                           StaleElementReferenceException))
-    def drag(self):
+        self.driver = WebDriverSingleton.get_driver()
+        self._mobile_gesture(
+            'mobile: clickGesture',
+            {'x': x, 'y': y}
+        )
+        return self
+
+    @fail_safe(
+        retries=3,
+        delay=0.5,
+        raise_exception=ShadowstepException,
+        exceptions=(NoSuchDriverException, InvalidSessionIdException, StaleElementReferenceException)
+    )
+    def drag(
+            self,
+            start_x: int,
+            start_y: int,
+            end_x: int,
+            end_y: int,
+            speed: int
+    ) -> 'Shadowstep':
         """
         https://github.com/appium/appium-uiautomator2-driver/blob/61abedddcde2d606394acfa0f0c2bac395a0e14c/docs/android-mobile-gestures.md#mobile-draggesture
-        mobile: dragGesture
-        This gesture performs drag action from the given element/coordinates to the given point. Available since Appium v1.19
+        Perform a drag gesture from one point to another.
 
+        Args:
+            start_x (int): Starting X coordinate.
+            start_y (int): Starting Y coordinate.
+            end_x (int): Target X coordinate.
+            end_y (int): Target Y coordinate.
+            speed (int): Speed of the gesture in pixels per second.
+
+        Returns:
+            Shadowstep: Self for method chaining.
+
+        origin:
         Supported arguments
         elementId: The id of the element to be dragged. If the element id is missing then both start coordinates must be provided. If both the element id and the start coordinates are provided then these coordinates are considered as offsets from the top left element corner.
         startX: The x-start coordinate
@@ -448,26 +531,56 @@ class Shadowstep(ShadowstepBase):
         endX: The x-end coordinate. Mandatory argument
         endY: The y-end coordinate. Mandatory argument
         speed: The speed at which to perform this gesture in pixels per second. The value must not be negative. The default value is 2500 * displayDensity
-        Usage examples
-        // Java
-        ((JavascriptExecutor) driver).executeScript("mobile: dragGesture", ImmutableMap.of(
-            "elementId", ((RemoteWebElement) element).getId(),
-            "endX", 100,
-            "endY", 100
-        ));
         """
+        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
 
-    @fail_safe(retries=3, delay=0.5,
-               raise_exception=ShadowstepException,
-               exceptions=(NoSuchDriverException,
-                           InvalidSessionIdException,
-                           StaleElementReferenceException))
-    def fling(self):
+        if speed < 0:
+            raise ValueError(f"Speed must be non-negative, got {speed}")
+
+        self.driver = WebDriverSingleton.get_driver()
+        self._mobile_gesture(
+            'mobile: dragGesture',
+            {
+                'startX': start_x,
+                'startY': start_y,
+                'endX': end_x,
+                'endY': end_y,
+                'speed': speed
+            }
+        )
+        return self
+
+    @fail_safe(
+        retries=3,
+        delay=0.5,
+        raise_exception=ShadowstepException,
+        exceptions=(NoSuchDriverException, InvalidSessionIdException, StaleElementReferenceException)
+    )
+    def fling(
+            self,
+            left: int,
+            top: int,
+            width: int,
+            height: int,
+            direction: str,
+            speed: int
+    ) -> 'Shadowstep':
         """
         https://github.com/appium/appium-uiautomator2-driver/blob/61abedddcde2d606394acfa0f0c2bac395a0e14c/docs/android-mobile-gestures.md#mobile-flinggesture
-        mobile: flingGesture
-        This gesture performs fling gesture on the given element/area. Available since Appium v1.19
+        Perform a fling gesture in the specified area.
 
+        Args:
+            left (int): Left coordinate of the fling area.
+            top (int): Top coordinate.
+            width (int): Width of the area.
+            height (int): Height of the area.
+            direction (str): One of: 'up', 'down', 'left', 'right'.
+            speed (int): Speed in pixels per second (> 50).
+
+        Returns:
+            Shadowstep: Self for method chaining.
+
+        origin:
         Supported arguments
         elementId: The id of the element to be flinged. If the element id is missing then fling bounding area must be provided. If both the element id and the fling bounding area are provided then this area is effectively ignored.
         left: The left coordinate of the fling bounding area
@@ -476,34 +589,59 @@ class Shadowstep(ShadowstepBase):
         height: The height of the fling bounding area
         direction: Direction of the fling. Mandatory value. Acceptable values are: up, down, left and right (case insensitive)
         speed: The speed at which to perform this gesture in pixels per second. The value must be greater than the minimum fling velocity for the given view (50 by default). The default value is 7500 * displayDensity
-        Returned value
-        The returned value is a boolean one and equals to true if the object can still scroll in the given direction
-
-        Usage examples
-        // Java
-        boolean canScrollMore = (Boolean) ((JavascriptExecutor) driver).executeScript("mobile: flingGesture", ImmutableMap.of(
-            "elementId", ((RemoteWebElement) element).getId(),
-            "direction", "down",
-            "speed", 500
-        ));
-        // Javascript - @wdio
-        await driver.executeScript('mobile: flingGesture', [{
-            elementId: element.elementId,
-            direction: 'right',
-            speed: 500,
-        }]);
         """
+        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
 
-    @fail_safe(retries=3, delay=0.5,
-               raise_exception=ShadowstepException,
-               exceptions=(NoSuchDriverException,
-                           InvalidSessionIdException,
-                           StaleElementReferenceException))
-    def pinch_open(self):
+        if direction.lower() not in {"up", "down", "left", "right"}:
+            raise ValueError("Invalid direction: {direction}")
+        if speed <= 0:
+            raise ValueError(f"Speed must be > 0, got {speed}")
+
+        self.driver = WebDriverSingleton.get_driver()
+        self._mobile_gesture(
+            'mobile: flingGesture',
+            {
+                'left': left,
+                'top': top,
+                'width': width,
+                'height': height,
+                'direction': direction.lower(),
+                'speed': speed
+            }
+        )
+        return self
+
+    @fail_safe(
+        retries=3,
+        delay=0.5,
+        raise_exception=ShadowstepException,
+        exceptions=(NoSuchDriverException, InvalidSessionIdException, StaleElementReferenceException)
+    )
+    def pinch_open(
+            self,
+            left: int,
+            top: int,
+            width: int,
+            height: int,
+            percent: float,
+            speed: int
+    ) -> 'Shadowstep':
         """
         https://github.com/appium/appium-uiautomator2-driver/blob/61abedddcde2d606394acfa0f0c2bac395a0e14c/docs/android-mobile-gestures.md#mobile-pinchopengesture
-        This gesture performs pinch-open gesture on the given element/area. Available since Appium v1.19
+        Perform a pinch-open gesture in the given bounding area.
 
+        Args:
+            left (int): Left coordinate of the bounding box.
+            top (int): Top coordinate.
+            width (int): Width of the bounding box.
+            height (int): Height of the bounding box.
+            percent (float): Scale of the pinch (0.0 < percent ≤ 1.0).
+            speed (int): Speed in pixels per second.
+
+        Returns:
+            Shadowstep: Self for method chaining.
+
+        origin:
         Supported arguments
         elementId: The id of the element to be pinched. If the element id is missing then pinch bounding area must be provided. If both the element id and the pinch bounding area are provided then the area is effectively ignored.
         left: The left coordinate of the pinch bounding area
@@ -512,26 +650,58 @@ class Shadowstep(ShadowstepBase):
         height: The height of the pinch bounding area
         percent: The size of the pinch as a percentage of the pinch area size. Valid values must be float numbers in range 0..1, where 1.0 is 100%. Mandatory value.
         speed: The speed at which to perform this gesture in pixels per second. The value must not be negative. The default value is 2500 * displayDensity
-        Usage examples
-        // Java
-        ((JavascriptExecutor) driver).executeScript("mobile: pinchOpenGesture", ImmutableMap.of(
-            "elementId", ((RemoteWebElement) element).getId(),
-            "percent", 0.75
-        ));
         """
-        raise NotImplementedError
+        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
+
+        if not (0.0 < percent <= 1.0):
+            raise ValueError(f"Percent must be between 0 and 1, got {percent}")
+        if speed < 0:
+            raise ValueError(f"Speed must be non-negative, got {speed}")
+
+        self.driver = WebDriverSingleton.get_driver()
+        self._mobile_gesture(
+            'mobile: pinchOpenGesture',
+            {
+                'left': left,
+                'top': top,
+                'width': width,
+                'height': height,
+                'percent': percent,
+                'speed': speed
+            }
+        )
+        return self
 
     @fail_safe(retries=3, delay=0.5,
                raise_exception=ShadowstepException,
                exceptions=(NoSuchDriverException,
                            InvalidSessionIdException,
                            StaleElementReferenceException))
-    def pinch_close(self):
+    def pinch_close(
+            self,
+            left: int,
+            top: int,
+            width: int,
+            height: int,
+            percent: float,
+            speed: int
+    ) -> 'Shadowstep':
         """
         https://github.com/appium/appium-uiautomator2-driver/blob/61abedddcde2d606394acfa0f0c2bac395a0e14c/docs/android-mobile-gestures.md#mobile-pinchclosegesture
-        mobile: pinchCloseGesture
-        This gesture performs pinch-close gesture on the given element/area. Available since Appium v1.19
+        Perform a pinch-close gesture in the given bounding area.
 
+        Args:
+            left (int): Left coordinate of the bounding box.
+            top (int): Top coordinate of the bounding box.
+            width (int): Width of the bounding box.
+            height (int): Height of the bounding box.
+            percent (float): Pinch size as a percentage of area (0.0 < percent ≤ 1.0).
+            speed (int): Speed of the gesture in pixels per second (≥ 0).
+
+        Returns:
+            Shadowstep: Self for method chaining.
+
+        origin:
         Supported arguments
         elementId: The id of the element to be pinched. If the element id is missing then pinch bounding area must be provided. If both the element id and the pinch bounding area are provided then the area is effectively ignored.
         left: The left coordinate of the pinch bounding area
@@ -540,30 +710,61 @@ class Shadowstep(ShadowstepBase):
         height: The height of the pinch bounding area
         percent: The size of the pinch as a percentage of the pinch area size. Valid values must be float numbers in range 0..1, where 1.0 is 100%. Mandatory value.
         speed: The speed at which to perform this gesture in pixels per second. The value must not be negative. The default value is 2500 * displayDensity
-        Usage examples
-        // Java
-        ((JavascriptExecutor) driver).executeScript("mobile: pinchCloseGesture", ImmutableMap.of(
-            "elementId", ((RemoteWebElement) element).getId(),
-            "percent", 0.75
-        ));
-        # Python
-        can_scroll_more = driver.execute_script('mobile: pinchCloseGesture', {
-            'elementId': element.id,
-            'percent': 0.75
-        })
         """
+        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
 
-    @fail_safe(retries=3, delay=0.5,
-               raise_exception=ShadowstepException,
-               exceptions=(NoSuchDriverException,
-                           InvalidSessionIdException,
-                           StaleElementReferenceException))
-    def swipe(self, *args, **kwargs):
+        if not (0.0 < percent <= 1.0):
+            raise ValueError(f"Percent must be between 0 and 1, got {percent}")
+        if speed < 0:
+            raise ValueError(f"Speed must be non-negative, got {speed}")
+
+        self.driver = WebDriverSingleton.get_driver()
+        self._mobile_gesture(
+            'mobile: pinchCloseGesture',
+            {
+                'left': left,
+                'top': top,
+                'width': width,
+                'height': height,
+                'percent': percent,
+                'speed': speed
+            }
+        )
+        return self
+
+    @fail_safe(
+        retries=3,
+        delay=0.5,
+        raise_exception=ShadowstepException,
+        exceptions=(NoSuchDriverException, InvalidSessionIdException, StaleElementReferenceException)
+    )
+    def swipe(
+            self,
+            left: int,
+            top: int,
+            width: int,
+            height: int,
+            direction: str,
+            percent: float,
+            speed: int
+    ) -> 'Shadowstep':
         """
         https://github.com/appium/appium-uiautomator2-driver/blob/61abedddcde2d606394acfa0f0c2bac395a0e14c/docs/android-mobile-gestures.md#mobile-swipegesture
-        mobile: swipeGesture
-        This gesture performs swipe gesture on the given element/area. Available since Appium v1.19
+        Perform a swipe gesture within the specified bounding box.
 
+        Args:
+            left (int): Left coordinate of the swipe area.
+            top (int): Top coordinate of the swipe area.
+            width (int): Width of the swipe area.
+            height (int): Height of the swipe area.
+            direction (str): Swipe direction: 'up', 'down', 'left', or 'right'.
+            percent (float): Swipe distance as percentage of area size (0.0 < percent ≤ 1.0).
+            speed (int): Swipe speed in pixels per second (≥ 0).
+
+        Returns:
+            Shadowstep: Self for method chaining.
+
+        origin:
         Supported arguments
         elementId: The id of the element to be swiped. If the element id is missing then swipe bounding area must be provided. If both the element id and the swipe bounding area are provided then the area is effectively ignored.
         left: The left coordinate of the swipe bounding area
@@ -573,58 +774,146 @@ class Shadowstep(ShadowstepBase):
         direction: Swipe direction. Mandatory value. Acceptable values are: up, down, left and right (case insensitive)
         percent: The size of the swipe as a percentage of the swipe area size. Valid values must be float numbers in range 0..1, where 1.0 is 100%. Mandatory value.
         speed: The speed at which to perform this gesture in pixels per second. The value must not be negative. The default value is 5000 * displayDensity
-        Usage examples
-        // Java
-        ((JavascriptExecutor) driver).executeScript("mobile: swipeGesture", ImmutableMap.of(
-            "left", 100, "top", 100, "width", 200, "height", 200,
-            "direction", "left",
-            "percent", 0.75
-        ));
-        # Python
-        driver.execute_script('mobile: swipeGesture', {
-            'left': 100,
-            'top': 100,
-            'width': 200,
-            'height': 200,
-            'direction': direction, 'percent': 0.75
-        })
         """
-
-    @fail_safe(retries=3, delay=0.5,
-               raise_exception=ShadowstepException,
-               exceptions=(NoSuchDriverException,
-                           InvalidSessionIdException,
-                           StaleElementReferenceException))
-    def swipe_right_to_left(self):
         self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
-        raise NotImplementedError(f"Method {inspect.currentframe().f_code.co_name} is not yet implemented.")
 
-    @fail_safe(retries=3, delay=0.5,
-               raise_exception=ShadowstepException,
-               exceptions=(NoSuchDriverException,
-                           InvalidSessionIdException,
-                           StaleElementReferenceException))
-    def swipe_left_to_right(self):
-        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
-        raise NotImplementedError(f"Method {inspect.currentframe().f_code.co_name} is not yet implemented.")
+        if direction.lower() not in {"up", "down", "left", "right"}:
+            raise ValueError(f"Invalid direction '{direction}' — must be one of: up, down, left, right")
+        if not (0.0 < percent <= 1.0):
+            raise ValueError(f"Percent must be between 0 and 1, got {percent}")
+        if speed < 0:
+            raise ValueError(f"Speed must be non-negative, got {speed}")
 
-    @fail_safe(retries=3, delay=0.5,
-               raise_exception=ShadowstepException,
-               exceptions=(NoSuchDriverException,
-                           InvalidSessionIdException,
-                           StaleElementReferenceException))
-    def swipe_top_to_bottom(self):
-        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
-        raise NotImplementedError(f"Method {inspect.currentframe().f_code.co_name} is not yet implemented.")
+        self.driver = WebDriverSingleton.get_driver()
+        self._mobile_gesture(
+            'mobile: swipeGesture',
+            {
+                'left': left,
+                'top': top,
+                'width': width,
+                'height': height,
+                'direction': direction.lower(),
+                'percent': percent,
+                'speed': speed
+            }
+        )
+        return self
 
-    @fail_safe(retries=3, delay=0.5,
-               raise_exception=ShadowstepException,
-               exceptions=(NoSuchDriverException,
-                           InvalidSessionIdException,
-                           StaleElementReferenceException))
-    def swipe_bottom_to_top(self):
+    @fail_safe(
+        retries=3,
+        delay=0.5,
+        raise_exception=ShadowstepException,
+        exceptions=(NoSuchDriverException, InvalidSessionIdException)
+    )
+    def swipe_right_to_left(self) -> 'Shadowstep':
+        """Perform a full-width horizontal swipe from right to left.
+
+        Returns:
+            Shadowstep: Self for method chaining.
+        """
         self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
-        raise NotImplementedError(f"Method {inspect.currentframe().f_code.co_name} is not yet implemented.")
+
+        self.driver = WebDriverSingleton.get_driver()
+        size = self.driver.get_window_size()
+        width = size["width"]
+        height = size["height"]
+
+        return self.swipe(
+            left=0,
+            top=height // 2,
+            width=width,
+            height=height // 3,
+            direction="left",
+            percent=1.0,
+            speed=1000
+        )
+
+    @fail_safe(
+        retries=3,
+        delay=0.5,
+        raise_exception=ShadowstepException,
+        exceptions=(NoSuchDriverException, InvalidSessionIdException, StaleElementReferenceException)
+    )
+    def swipe_left_to_right(self) -> 'Shadowstep':
+        """Perform a full-width horizontal swipe from left to right.
+
+        Returns:
+            Shadowstep: Self for method chaining.
+        """
+        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
+
+        self.driver = WebDriverSingleton.get_driver()
+        size = self.driver.get_window_size()
+        width = size["width"]
+        height = size["height"]
+
+        return self.swipe(
+            left=0,
+            top=height // 2,
+            width=width,
+            height=height // 3,
+            direction="right",
+            percent=1.0,
+            speed=1000
+        )
+
+    @fail_safe(
+        retries=3,
+        delay=0.5,
+        raise_exception=ShadowstepException,
+        exceptions=(NoSuchDriverException, InvalidSessionIdException, StaleElementReferenceException)
+    )
+    def swipe_top_to_bottom(self) -> 'Shadowstep':
+        """Perform a full-height vertical swipe from top to bottom.
+
+        Returns:
+            Shadowstep: Self for method chaining.
+        """
+        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
+
+        self.driver = WebDriverSingleton.get_driver()
+        size = self.driver.get_window_size()
+        width = size["width"]
+        height = size["height"]
+
+        return self.swipe(
+            left=width // 2,
+            top=0,
+            width=width // 3,
+            height=height,
+            direction="down",
+            percent=1.0,
+            speed=1000
+        )
+
+    @fail_safe(
+        retries=3,
+        delay=0.5,
+        raise_exception=ShadowstepException,
+        exceptions=(NoSuchDriverException, InvalidSessionIdException, StaleElementReferenceException)
+    )
+    def swipe_bottom_to_top(self) -> 'Shadowstep':
+        """Perform a full-height vertical swipe from bottom to top.
+
+        Returns:
+            Shadowstep: Self for method chaining.
+        """
+        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
+
+        self.driver = WebDriverSingleton.get_driver()
+        size = self.driver.get_window_size()
+        width = size["width"]
+        height = size["height"]
+
+        return self.swipe(
+            left=width // 2,
+            top=0,
+            width=width // 3,
+            height=height,
+            direction="up",
+            percent=1.0,
+            speed=1000
+        )
 
     @fail_safe(retries=3, delay=0.5,
                raise_exception=ShadowstepException,
@@ -738,3 +1027,7 @@ class Shadowstep(ShadowstepBase):
         snapshotMaxDepth | int | The number of maximum depth for the source tree snapshot. The default value is `70`. This number should be in range [1, 500]. A part of the elements source tree might be lost if the value is too low. Also, StackOverflowError might be caused if the value is too high (Issues [12545](https://github.com/appium/appium/issues/12545), [12892](https://github.com/appium/appium/issues/12892)). The available driver version is `2.27.0` or higher.
         currentDisplayId | int | The id of the display that should be used when finding elements, taking screenshots, etc. It can be found in the output of `adb shell dumpsys display` (search for `mDisplayId`). The default value is [Display.DEFAULT_DISPLAY](https://developer.android.com/reference/android/view/Display#DEFAULT_DISPLAY). **Please note that it is different from the physical display id, reported by `adb shell dumpsys SurfaceFlinger --display-id`**. **Additionally, please note that `-android uiautomator` (e.g., `UiSelector`) doesn't work predictably with multiple displays, as this is an Android limitation.** **Multi-display support is only available since Android R (30 API level).**
         """
+
+    def _mobile_gesture(self, name: str, params: Union[dict, list]) -> None:
+        # https://github.com/appium/appium-uiautomator2-driver/blob/master/docs/android-mobile-gestures.md
+        self.driver.execute_script(name, params)
