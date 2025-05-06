@@ -46,7 +46,7 @@ class TestShadowstep:
         el = app.find_and_get_element({'text': 'System'})
         assert el.get_attribute('text') == 'System'
 
-
+class TestShadowstepLogcat:
 
     def test_start_logcat_is_non_blocking(self, app):
         # подготавливаем файл

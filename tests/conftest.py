@@ -1,7 +1,10 @@
 import logging
 import sys
+import time
 
 import pytest
+from wheel.metadata import yield_lines
+
 from shadowstep.shadowstep import Shadowstep
 
 # Please use virtual device Google Pixel 10.0
@@ -14,7 +17,7 @@ logging.basicConfig(
     format='%(asctime)s | %(levelname)-8s | %(name)s:%(funcName)s:%(lineno)d - %(message)s'
 )
 logger = logging.getLogger("shadowstep")
-logger.setLevel(logging.INFO)
+logger.setLevel(logging.DEBUG)
 
 # Silence noisy third-party libraries
 logging.getLogger("selenium").setLevel(logging.CRITICAL)
@@ -82,6 +85,7 @@ def press_home(app: Shadowstep):
 @pytest.fixture(scope="function")
 def android_settings(app: Shadowstep):
     app.terminal.start_activity(package='com.android.settings', activity='com.android.settings.Settings')
+    app.get_element({'text': 'Settings', 'resource-id': 'com.android.settings:id/homepage_title'}).wait(timeout=30)
     yield
     app.terminal.close_app('com.android.settings')
 
@@ -90,3 +94,12 @@ def android_settings_recycler(app: Shadowstep, android_settings):
     yield app.get_element(
             locator={'resource-id': 'com.android.settings:id/main_content_scrollable_container',
                      })
+
+@pytest.fixture()
+def connected_devices_image_path():
+    yield "tests/test_data/connected_devices.png"
+
+@pytest.fixture()
+def system_image_path():
+    yield "tests/test_data/system.png"
+
