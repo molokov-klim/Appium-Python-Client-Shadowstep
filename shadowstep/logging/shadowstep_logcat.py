@@ -11,10 +11,6 @@ logger = logging.getLogger(__name__)
 
 
 class ShadowstepLogcat:
-    """
-    Фоновый приёмник Android logcat через Appium 'mobile: startLogsBroadcast'.
-    Работает в своём потоке, не блокирует основной код.
-    """
 
     def __init__(
         self,
@@ -33,10 +29,6 @@ class ShadowstepLogcat:
         self.stop()
 
     def start(self, filename: str) -> None:
-        """
-        Запуск фонового приёма logcat в файл (append).
-        Немедленно возвращает управление — поток откроет файл и начнёт писать.
-        """
         if self._thread and self._thread.is_alive():
             logger.info("Logcat already running")
             return
@@ -52,42 +44,32 @@ class ShadowstepLogcat:
         logger.info(f"Started logcat to '{filename}'")
 
     def stop(self) -> None:
-        """
-        Остановка приёма и отсылка команды Appium для остановки broadcast.
-        Пытаемся сразу закрыть WS, чтобы _run ушёл из recv().
-        """
-        if not self._thread:
-            return
-
+        # 1) даём флаг потоку, чтобы он корректно вышел из цикла
         self._stop_evt.set()
 
-        # 1) закрыть WebSocket, если он открыт, чтобы прервать recv()
+        # 2) закрываем WebSocket, чтобы прервать blocking recv()
         if self._ws:
             try:
                 self._ws.close()
             except Exception:
                 pass
 
-        # 2) отослать команду stopLogsBroadcast
+        # 3) отправляем команду остановить broadcast
         try:
             driver = self._driver_getter()
             driver.execute_script("mobile: stopLogsBroadcast")
         except WebDriverException as e:
             logger.warning(f"Failed to stop broadcast: {e!r}")
 
-        logger.info("Logcat stop requested (thread will shut down shortly)")
+        # 4) ждём, пока фоновый поток действительно завершится и файл закроется
+        if self._thread:
+            self._thread.join()
+            self._thread = None
+            self._filename = None
+
+        logger.info("Logcat thread terminated, file closed")
 
     def _run(self):
-        """
-        Главный цикл:
-         - открываем файл
-         - в цикле (пока не stop_evt):
-             1) запускаем broadcast
-             2) пробуем подключиться к двум WS-эндпоинтам
-             3) читаем ws.recv() и пишем в файл
-             4) при закрытии WS — переподключаемся через poll_interval
-         - по выходу из внешнего цикла закрываем файл
-        """
         if not self._filename:
             logger.error("No filename specified for logcat")
             return
