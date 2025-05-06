@@ -171,6 +171,7 @@ class TestElement:
         assert 'Search apps' in target_element.get_attribute(name='text')
         assert isinstance(element, Element)
 
+    # FIXME почему-то один проходит а в связке - нет
     def test_click(self, app: Shadowstep):
         element = app.get_element(locator={'content-desc': 'Phone'})
         element.click()
@@ -356,6 +357,7 @@ class TestElement:
         assert isinstance(el.text, str)
         assert el.text == 'Phone'
 
+    # FIXME почему-то один проходит а в связке - нет
     def test_clear(self, app: Shadowstep):
         el = app.get_element({'resource-id': 'com.android.quicksearchbox:id/search_widget_text'})
         el.tap()
