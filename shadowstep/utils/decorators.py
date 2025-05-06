@@ -14,10 +14,8 @@ import allure
 import numpy as np
 import pytest
 from PIL import Image
-from selenium.common import WebDriverException, NoSuchDriverException, InvalidSessionIdException, \
+from selenium.common import NoSuchDriverException, InvalidSessionIdException, \
     StaleElementReferenceException
-
-from shadowstep.exceptions.shadowstep_exceptions import ShadowstepException
 
 T = TypeVar("T", bound=Callable[..., Any])
 
@@ -27,24 +25,14 @@ DEFAULT_EXCEPTIONS: Tuple[Type[Exception], ...] = (
     StaleElementReferenceException,
 )
 
-import time
-import functools
-import traceback
-from typing import Callable, Any, Optional, Tuple, Type
-
-DEFAULT_EXCEPTIONS: Tuple[Type[Exception], ...] = (
-    NoSuchDriverException,
-    InvalidSessionIdException,
-    StaleElementReferenceException,
-)
 
 def fail_safe(
-    retries: int = 3,
-    delay: float = 0.5,
-    raise_exception: Optional[Type[Exception]] = None,
-    fallback: Any = None,
-    exceptions: Tuple[Type[Exception], ...] = DEFAULT_EXCEPTIONS,
-    log_args: bool = False,
+        retries: int = 3,
+        delay: float = 0.5,
+        raise_exception: Optional[Type[Exception]] = None,
+        fallback: Any = None,
+        exceptions: Tuple[Type[Exception], ...] = DEFAULT_EXCEPTIONS,
+        log_args: bool = False,
 ) -> Callable:
     """
     Decorator that retries a method call on specified exceptions.
@@ -77,6 +65,7 @@ def fail_safe(
        - If raise_exception is set, raises it.
        - Otherwise, returns fallback (None by default).
     """
+
     def decorator(func: Callable) -> Callable:
         @functools.wraps(func)
         def wrapper(self, *args, **kwargs):
@@ -142,8 +131,6 @@ def fail_safe(
         return wrapper
 
     return decorator
-
-
 
 
 def retry(func):
@@ -753,10 +740,3 @@ def _get_screenshot_bytes(self) -> bytes:
 
         # Возвращаем байты изображения
         return byte_io.getvalue()
-
-
-
-
-
-
-
