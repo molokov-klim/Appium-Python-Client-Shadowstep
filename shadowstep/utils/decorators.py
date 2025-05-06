@@ -8,11 +8,142 @@ import functools
 import traceback
 from functools import wraps
 from datetime import datetime
+from typing import TypeVar, Callable, Any, Tuple, Type, Optional
 
 import allure
 import numpy as np
 import pytest
 from PIL import Image
+from selenium.common import WebDriverException, NoSuchDriverException, InvalidSessionIdException, \
+    StaleElementReferenceException
+
+from shadowstep.exceptions.shadowstep_exceptions import ShadowstepException
+
+T = TypeVar("T", bound=Callable[..., Any])
+
+DEFAULT_EXCEPTIONS: Tuple[Type[Exception], ...] = (
+    NoSuchDriverException,
+    InvalidSessionIdException,
+    StaleElementReferenceException,
+)
+
+import time
+import functools
+import traceback
+from typing import Callable, Any, Optional, Tuple, Type
+
+DEFAULT_EXCEPTIONS: Tuple[Type[Exception], ...] = (
+    NoSuchDriverException,
+    InvalidSessionIdException,
+    StaleElementReferenceException,
+)
+
+def fail_safe(
+    retries: int = 3,
+    delay: float = 0.5,
+    raise_exception: Optional[Type[Exception]] = None,
+    fallback: Any = None,
+    exceptions: Tuple[Type[Exception], ...] = DEFAULT_EXCEPTIONS,
+    log_args: bool = False,
+) -> Callable:
+    """
+    Decorator that retries a method call on specified exceptions.
+
+    Parameters:
+    -----------
+    retries
+        Number of retry attempts after the first call.
+    delay
+        Time in seconds to wait between retries.
+    raise_exception
+        Exception class to raise after all attempts are exhausted.
+        If provided, fallback is ignored.
+    fallback
+        Value to return if all attempts fail and raise_exception is not set.
+    exceptions
+        Tuple of exception types that trigger a retry.
+    log_args
+        If True, logs the method arguments (class and id for self,
+        repr() truncated to 200 chars for others) at debug level.
+
+    Behavior:
+    ---------
+    1. Attempts the call (first attempt + retries).
+       - If the call succeeds, returns the result.
+       - If a specified exception occurs, logs it, attempts reconnect
+         via self.base.reconnect(), waits delay, and retries.
+       - If any other exception occurs, logs it as an error and breaks.
+    2. After exhausting attempts:
+       - If raise_exception is set, raises it.
+       - Otherwise, returns fallback (None by default).
+    """
+    def decorator(func: Callable) -> Callable:
+        @functools.wraps(func)
+        def wrapper(self, *args, **kwargs):
+            last_exc: Optional[Exception] = None
+
+            for attempt in range(1, retries + 2):
+                try:
+                    return func(self, *args, **kwargs)
+                except exceptions as e:
+                    last_exc = e
+                    method = func.__name__
+
+                    # Log the main exception at WARNING level
+                    self.logger.warning(
+                        f"[fail_safe] {method} failed on attempt {attempt}: "
+                        f"{type(e).__name__} – {e}"
+                    )
+
+                    # Optionally log arguments at DEBUG level
+                    if log_args:
+                        def format_arg(arg):
+                            if arg is self:
+                                # Log class name and object id for self
+                                return f"<{self.__class__.__name__} id={id(self)}>"
+                            # Truncate repr() of other args to 200 chars
+                            r = repr(arg)
+                            return (r[:197] + '...') if len(r) > 200 else r
+
+                        formatted_args = [format_arg(self)] + [format_arg(a) for a in args]
+                        formatted_args += [f"{k}={format_arg(v)}" for k, v in kwargs.items()]
+                        self.logger.debug(f"[fail_safe] args: {formatted_args}")
+
+                    # Log a short stack trace at DEBUG level
+                    stack = "".join(traceback.format_stack(limit=5))
+                    self.logger.debug(f"[fail_safe] stack:\n{stack}")
+
+                    # Attempt to reconnect; if it fails, let the error propagate
+                    if hasattr(self, "base") and hasattr(self.base, "reconnect"):
+                        self.logger.debug("[fail_safe] Calling self.base.reconnect()")
+                        self.base.reconnect()
+
+                    # Wait before the next retry if any remain
+                    if attempt <= retries:
+                        time.sleep(delay)
+
+                except Exception as e:
+                    # Any unexpected exception stops further retries
+                    self.logger.error(
+                        f"[fail_safe] Unexpected error in {func.__name__}: "
+                        f"{type(e).__name__} – {e}"
+                    )
+                    self.logger.debug("Stack:\n" + "".join(traceback.format_stack(limit=5)))
+                    break
+
+            # All attempts exhausted or an unexpected exception occurred
+            self.logger.error(f"[fail_safe] {func.__name__} failed after {retries + 1} attempts")
+
+            if raise_exception:
+                # Raise the provided exception
+                raise raise_exception(f"{func.__name__} failed after {retries + 1} attempts")
+            return fallback
+
+        return wrapper
+
+    return decorator
+
+
 
 
 def retry(func):
