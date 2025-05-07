@@ -52,7 +52,8 @@ dependencies = [
     "matplotlib==3.7.5",
     "pytest_adaptavist==5.8.0",
     "websocket-client==1.8.0",
-    "unidecode==1.4.0"
+    "unidecode==1.4.0",
+    "jinja2==3.1.6"
 ]
 
 keywords = ["appium", "testing", "uiautomator2", "android", "automation", "framework"]

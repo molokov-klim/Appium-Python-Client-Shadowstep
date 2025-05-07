@@ -1,6 +1,6 @@
 import inspect
 import logging
-from typing import Dict, List, Set, Optional
+from typing import Dict, List, Set, Optional, Tuple
 from collections import Counter
 from lxml import etree as ET
 
@@ -86,6 +86,38 @@ class PageObjectExtractor:
 
         return unique
 
+    def find_summary_siblings(self, xml: str) -> List[Tuple[Dict[str, str], Dict[str, str]]]:
+        """
+        Найти пары (заголовок, summary), где:
+        - summary имеет resource-id, заканчивающийся на '/summary'
+        - заголовок — соседний элемент по родителю с text или resource-id, заканчивающимся на '/title'
+        """
+        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
+        try:
+            tree = ET.fromstring(xml.encode('utf-8'))
+            result = []
+            for parent in tree.iter():
+                children = list(parent)
+                for i, el in enumerate(children):
+                    rid = el.attrib.get('resource-id', '')
+                    if not rid.endswith('/summary'):
+                        continue
+                    # ищем title-соседа слева или справа
+                    sibling = None
+                    for j in (i - 1, i + 1):
+                        if 0 <= j < len(children):
+                            sib = children[j].attrib
+                            sib_rid = sib.get('resource-id', '')
+                            if sib_rid.endswith('/title') or sib.get('text'):
+                                sibling = sib
+                                break
+                    if sibling:
+                        result.append((dict(sibling), dict(el.attrib)))
+            return result
+        except ET.XMLSyntaxError:
+            self.logger.exception("XML parse error in find_summary_siblings()")
+            return []
+
     def extract_by_text(self, xml: str) -> List[Dict[str, str]]:
         """Extract elements that have non-empty 'text' attribute."""
         self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
@@ -107,6 +139,8 @@ class PageObjectExtractor:
         """Extract only elements whose class в white-list."""
         self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
         return self._extract_by_class_list(xml, self.WHITE_LIST_CLASSES)
+
+
 
     def filter_resource_id(self, elements: List[Dict[str, str]]) -> List[Dict[str, str]]:
         """
@@ -206,3 +240,5 @@ class PageObjectExtractor:
             ]
         except ET.XMLSyntaxError:
             return []
+
+

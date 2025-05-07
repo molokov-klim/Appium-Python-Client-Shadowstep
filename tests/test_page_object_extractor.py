@@ -31,7 +31,7 @@ class TestPageObjectextractor:
         logger.info(source)
 
     def test_pog(self, app: Shadowstep, android_settings):
-        generator = PageObjectGenerator()
+        generator = PageObjectGenerator(extractor=POE)
         source = app.driver.page_source
         generator.generate(source, output_dir="pages", attributes=['class',
                                                                    'text',
@@ -40,4 +40,3 @@ class TestPageObjectextractor:
                                                                    'scrollable'])
         logger.info("\n\n\n=====================================================================")
         logger.info(source)
-

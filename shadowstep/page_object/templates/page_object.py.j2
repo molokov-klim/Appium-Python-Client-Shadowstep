@@ -1,0 +1,42 @@
+import logging
+from shadowstep.element.element import Element
+from shadowstep.page_base import PageBaseShadowstep
+
+class {{ class_name }}(PageBaseShadowstep):
+    def __init__(self):
+        super().__init__()
+        self.logger = logging.getLogger(__name__)
+
+    def __repr__(self):
+        return f"{self.name} ({self.__class__.__name__})"
+
+    @property
+    def edges(self) -> dict:
+        return {}
+
+    @property
+    def name(self) -> str:
+        return "{{ raw_title }}"
+
+    @property
+    def title(self) -> Element:
+        return self.shadowstep.get_element({{ title_locator | pretty_dict }})
+
+{% for prop in properties %}
+{% if prop.sibling %}
+    @property
+    def {{ prop.name }}(self) -> Element:
+        return self.{{ prop.base_name }}.get_sibling({{ prop.summary_id | pretty_dict }})
+{% else %}
+    @property
+    def {{ prop.name }}(self) -> Element:
+        return self.shadowstep.get_element({{ prop.locator | pretty_dict }})
+{% endif %}
+
+{% endfor %}
+    def is_current_page(self) -> bool:
+        try:
+            return self.title.is_visible()
+        except Exception as e:
+            self.logger.error(e)
+            return False
