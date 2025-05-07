@@ -12,6 +12,7 @@ from typing import Union, Tuple, Dict
 
 from PIL import Image
 import numpy as np
+from appium.webdriver.webdriver import WebDriver
 from selenium.common import NoSuchDriverException, InvalidSessionIdException, WebDriverException, \
     StaleElementReferenceException
 
@@ -362,7 +363,7 @@ class Shadowstep(ShadowstepBase):
         speed: The speed at which to perform this gesture in pixels per second. The value must not be negative. The default value is 5000 * displayDensity
         """
         self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
-        self.driver = WebDriverSingleton.get_driver()
+        self.driver: WebDriver = WebDriverSingleton.get_driver()
 
         # Defensive validation (optional, to fail early on bad input)
         if direction.lower() not in {'up', 'down', 'left', 'right'}:

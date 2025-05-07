@@ -1,0 +1,243 @@
+import logging
+from typing import List
+import os
+import re
+from unidecode import unidecode
+
+from shadowstep.page_object.page_object_extractor import PageObjectExtractor
+from shadowstep.element.element import Element
+from shadowstep.page_base import PageBaseShadowstep
+
+
+class PageObjectGenerator:
+    def __init__(self):
+        self.poe = PageObjectExtractor()
+        self.logger = logging.getLogger(__name__)
+
+    def transliterate(self, text: str) -> str:
+        # убираем кириллицу → латиницу, акценты и т.п.
+        return unidecode(text)
+
+    def camel_case(self, text: str) -> str:
+        """Example Page → ExamplePage"""
+        tr = self.transliterate(text)
+        parts = re.split(r'[\s\-_]+', tr)
+        return ''.join(p.capitalize() for p in parts if p)
+
+    def snake_case(self, text: str) -> str:
+        """PageExample → page_example"""
+        s1 = re.sub('(.)([A-Z][a-z]+)', r'\1_\2', text)
+        s2 = re.sub('([a-z0-9])([A-Z])', r'\1_\2', s1)
+        return s2.lower()
+
+    def make_attr_name(self, base: str, prefix: str) -> str:
+        """
+        base: текст / content-desc / resource-id
+        prefix: последняя часть класса (например, Button, TextView)
+        """
+        tr = self.transliterate(base)
+        parts = re.split(r'[\s\-\./]+', tr)
+        # усечём каждое слово до 10 символов
+        words = [p[:10] for p in parts if p]
+        name = '_'.join(words).lower()
+        # удаляем все не-буквы/цифры/_
+        name = re.sub(r'[^\w]', '', name)
+        if not name:
+            name = prefix.lower()
+        return f"{prefix.lower()}_{name}"
+
+    def generate(self, source_xml: str, output_dir: str, max_name_words: int = 5):
+        """
+        Generate a PageObject class from the given XML source and write it to a file.
+        - max_name_words: maximum number of words to use in each locator name (default 5).
+        - summary siblings are handled specially: for any element with resource-id ending in '/summary',
+          find its sibling (e.g. the title), and generate a `<title>_summary_<class>` property.
+        """
+        import os
+        import re
+        from unidecode import unidecode
+        import lxml.etree as ET
+
+        # parse XML to allow sibling lookup
+        tree = ET.fromstring(source_xml.encode('utf-8'))
+
+        # extract all simple elements
+        elems = self.poe.extract_simple_elements(source_xml)
+
+        # pick the title element (first with text, then content-desc, else first)
+        title_el = next((el for el in elems if el.get('text')), None)
+        if not title_el:
+            title_el = next((el for el in elems if el.get('content-desc')), None)
+        if not title_el and elems:
+            title_el = elems[0]
+
+        # derive raw title string
+        raw_title = (
+                title_el.get('text')
+                or title_el.get('content-desc')
+                or title_el.get('resource-id', '').split('/', 1)[-1]
+        )
+
+        # helper: CamelCase from words
+        def to_camel(s: str) -> str:
+            parts = re.split(r'[^\w]+', unidecode(s))
+            return ''.join(p.capitalize() for p in parts if p)
+
+        # class name and file name
+        class_name = f"Page{to_camel(raw_title)}"
+        snake = re.sub(r'(?<!^)(?=[A-Z])', '_', class_name).lower()
+        file_name = f"{snake}.py"
+
+        lines = [
+            "import logging",
+            "",
+            "from shadowstep.element.element import Element",
+            "from shadowstep.page_base import PageBaseShadowstep",
+            "",
+            f"class {class_name}(PageBaseShadowstep):",
+            "    def __init__(self):",
+            "        super().__init__()",
+            "        self.logger = logging.getLogger(__name__)",
+            "",
+            "    def __repr__(self):",
+            f"        return f\"{{self.name}} ({class_name})\"",
+            "",
+            "    @property",
+            "    def edges(self) -> dict:",
+            "        return {}",
+            "",
+            "    @property",
+            "    def name(self) -> str:",
+            f"        return \"{raw_title}\"",
+            ""
+        ]
+
+        # title property
+        title_loc = {'text': title_el.get('text')}
+        if title_el.get('class'):
+            title_loc['class'] = title_el['class']
+        lines += [
+            "    @property",
+            "    def title(self) -> Element:",
+            f"        return self.shadowstep.get_element({repr(title_loc)})",
+            ""
+        ]
+
+        used_names = {"title"}
+        processed_summary_ids = set()
+
+        # helper: slugify into words
+        def slug_words(s: str):
+            slug = unidecode(s)
+            parts = re.split(r'[^\w]+', slug)
+            return [p.lower() for p in parts if p]
+
+        for el in elems:
+            # special: summary siblings
+            rid = el.get('resource-id', '')
+            if rid.endswith('/summary'):
+                # find summary node
+                nodes = tree.xpath(f"//*[@resource-id='{rid}']")
+                if not nodes:
+                    continue
+                sum_node = nodes[0]
+                parent = sum_node.getparent()
+                # find title sibling (prefer one ending '/title' or having text)
+                title_node = next(
+                    (sib for sib in parent
+                     if sib is not sum_node and
+                     (sib.attrib.get('resource-id', '').endswith('/title') or sib.attrib.get('text'))),
+                    None
+                )
+                if not title_node:
+                    continue
+
+                # build locator for title_node
+                text_val = title_node.attrib.get('text')
+                title_loc = {'text': text_val}
+                cls_val = title_node.attrib.get('class')
+                if cls_val:
+                    title_loc['class'] = cls_val
+
+                # name: up to max_name_words words from title + '_summary_' + class_suffix
+                words = slug_words(text_val)[:max_name_words]
+                base = "_".join(words) or "summary"
+                class_suffix = (cls_val.split('.')[-1] if cls_val else "element").lower()
+                name = f"{base}_summary_{class_suffix}"
+                # ensure unique
+                i = 1
+                orig = name
+                while name in used_names:
+                    name = f"{orig}_{i}"
+                    i += 1
+                used_names.add(name)
+
+                # emit property
+                lines += [
+                    "    @property",
+                    f"    def {name}(self):",
+                    f"        return (",
+                    f"            self.shadowstep.get_element({repr(title_loc)})",
+                    f"                .get_sibling({{'resource-id': {repr(rid)}}})",
+                    f"        )",
+                    ""
+                ]
+                processed_summary_ids.add(rid)
+                continue
+
+            # skip elements whose summary sibling already processed
+            if rid and rid in processed_summary_ids:
+                continue
+
+            # regular elements
+            if el.get('text'):
+                key, val = 'text', el['text']
+            elif el.get('content-desc'):
+                key, val = 'content-desc', el['content-desc']
+            else:
+                key, val = 'resource-id', rid
+
+            loc = {key: val}
+            if key != 'resource-id' and el.get('class'):
+                loc['class'] = el['class']
+
+            # build name: up to max_name_words from val + '_' + class_suffix
+            words = slug_words(val)[:max_name_words]
+            base = "_".join(words) or key.replace('-', '_')
+            class_suffix = (el.get('class', '').split('.')[-1] or "element").lower()
+            name = f"{base}_{class_suffix}"
+            # ensure unique
+            i = 1
+            orig = name
+            while name in used_names:
+                name = f"{orig}_{i}"
+                i += 1
+            used_names.add(name)
+
+            dict_literal = "{" + ", ".join(f"{repr(k)}: {repr(v)}" for k, v in loc.items()) + "}"
+            lines += [
+                "    @property",
+                f"    def {name}(self) -> Element:",
+                f"        return self.shadowstep.get_element({dict_literal})",
+                ""
+            ]
+
+        # is_current_page() last
+        lines += [
+            "    def is_current_page(self) -> bool:",
+            "        try:",
+            "            return self.title.is_visible()",
+            "        except Exception as e:",
+            "            self.logger.error(e)",
+            "            return False",
+            ""
+        ]
+
+        # write file
+        os.makedirs(output_dir, exist_ok=True)
+        path = os.path.join(output_dir, file_name)
+        with open(path, "w", encoding="utf-8") as f:
+            f.write("\n".join(lines))
+
+        self.logger.info(f"Generated PageObject → {path}")
+
