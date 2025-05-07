@@ -124,6 +124,9 @@ class PageObjectGenerator:
                 'base_name': base_name,
             })
 
+        # 5.3) удаляем дубликаты элементов
+        properties = self._filter_duplicates(properties)
+
         # 6) рендер и запись
         template = self.env.get_template('page_object.py.j2')
         properties.sort(key=lambda p: p["name"])  # сортировка по алфавиту
@@ -169,9 +172,18 @@ class PageObjectGenerator:
         attr_list: List[str],
         include_class: bool
     ) -> Dict[str, str]:
-        loc: Dict[str, str] = {
-            k: el[k] for k in attr_list if el.get(k)
-        }
+        # loc: Dict[str, str] = {
+        #     k: el[k] for k in attr_list if el.get(k)
+        # }
+        loc: Dict[str, str] = {}
+        for k in attr_list:
+            val = el.get(k)
+            if not val:
+                continue
+            if k == 'scrollable' and val == 'false':
+                continue  # пропускаем бесполезный scrollable=false
+            loc[k] = val
+
         if include_class and el.get('class'):
             loc['class'] = el['class']
         return loc
@@ -218,11 +230,6 @@ class PageObjectGenerator:
           base_name  — имя базового title-свойства (если оно будет сгенерировано)
         """
         rid = summary_el.get('resource-id', '')
-        # raw = (
-        #         title_el.get('text')
-        #         or title_el.get('content-desc')
-        #         or rid.split('/', 1)[-1]
-        # )
         raw = title_el.get('text') or title_el.get('content-desc')
         if not raw and title_el.get('resource-id'):
             raw = self._strip_package_prefix(title_el['resource-id'])
@@ -268,7 +275,6 @@ class PageObjectGenerator:
                 continue
 
             key = next((k for k in attr_list if el.get(k)), 'resource-id')
-            # raw = el.get(key) or rid.split('/', 1)[-1]
             if key == 'resource-id':
                 raw = self._strip_package_prefix(el.get(key, ''))
             else:
@@ -307,4 +313,21 @@ class PageObjectGenerator:
     def _strip_package_prefix(self, resource_id: str) -> str:
         """Обрезает package-префикс из resource-id, если он есть (например: com.android.settings:id/foo -> foo)."""
         return resource_id.split('/', 1)[-1] if '/' in resource_id else resource_id
+
+    def _filter_duplicates(self, properties: List[Dict]) -> List[Dict]:
+        """
+        Удаляет свойства, у которых одинаковое «базовое имя» (до _1, _2 и т.д.), если таких свойств ≥ 3.
+        """
+        from collections import defaultdict
+
+        base_name_map: Dict[str, List[Dict]] = defaultdict(list)
+        for prop in properties:
+            base = re.sub(r'(_\d+)?$', '', prop['name'])
+            base_name_map[base].append(prop)
+
+        filtered: List[Dict] = []
+        for group in base_name_map.values():
+            if len(group) < 3:
+                filtered.extend(group)
+        return filtered
 
