@@ -1,5 +1,5 @@
 import logging
-from typing import List
+from typing import List, Dict
 import os
 import re
 from unidecode import unidecode
@@ -7,6 +7,16 @@ from unidecode import unidecode
 from shadowstep.page_object.page_object_extractor import PageObjectExtractor
 from shadowstep.element.element import Element
 from shadowstep.page_base import PageBaseShadowstep
+import logging
+from typing import Union, Set, Tuple, List
+import os
+import re
+from unidecode import unidecode
+
+from shadowstep.page_object.page_object_extractor import PageObjectExtractor
+from shadowstep.element.element import Element
+from shadowstep.page_base import PageBaseShadowstep
+import lxml.etree as ET
 
 
 class PageObjectGenerator:
@@ -46,49 +56,80 @@ class PageObjectGenerator:
             name = prefix.lower()
         return f"{prefix.lower()}_{name}"
 
-    def generate(self, source_xml: str, output_dir: str, max_name_words: int = 5):
+    def generate(self,
+                 source_xml: str,
+                 output_dir: str,
+                 max_name_words: int = 5,
+                 attributes: Union[Set[str], Tuple[str], List[str]] = None):
         """
         Generate a PageObject class from the given XML source and write it to a file.
+
         - max_name_words: maximum number of words to use in each locator name (default 5).
-        - summary siblings are handled specially: for any element with resource-id ending in '/summary',
-          find its sibling (e.g. the title), and generate a `<title>_summary_<class>` property.
+        - attributes: if provided, only these attributes (and 'class' как доп.) будут
+          включаться в каждый словарь-локатор; порядок также задаёт приоритет для имени.
         """
         import os
         import re
         from unidecode import unidecode
         import lxml.etree as ET
 
-        # parse XML to allow sibling lookup
-        tree = ET.fromstring(source_xml.encode('utf-8'))
+        # 1) Определяем набор атрибутов для локаторов
+        if attributes is None:
+            attr_list = ['text', 'content-desc', 'resource-id']
+        else:
+            attr_list = list(attributes)
+        include_class = 'class' in attr_list
+        if include_class:
+            attr_list.remove('class')
 
-        # extract all simple elements
+        # 2) Вспомог: разбить строку на слова для имени
+        def slug_words(s: str) -> List[str]:
+            parts = re.split(r'[^\w]+', unidecode(s))
+            return [p.lower() for p in parts if p]
+
+        # 3) build_locator теперь НЕ ОТРЕЗАЕТ префикс у resource-id
+        def build_locator(el: Dict[str, str]) -> Dict[str, str]:
+            loc: Dict[str, str] = {}
+            for key in attr_list:
+                val = el.get(key)
+                if not val:
+                    continue
+                # **НЕ тримим** здесь префикс – передаём Appium полный resource-id
+                loc[key] = val
+            if include_class and el.get('class'):
+                loc['class'] = el['class']
+            return loc
+
+        # 4) Для имени выбираем ключ по порядку attr_list
+        def naming_key(el: Dict[str, str]) -> str:
+            for key in attr_list:
+                if el.get(key):
+                    return key
+            return 'resource-id' if el.get('resource-id') else next(iter(el), '')
+
+        # 5) Parse XML и extract_simple_elements
+        tree = ET.fromstring(source_xml.encode('utf-8'))
         elems = self.poe.extract_simple_elements(source_xml)
 
-        # pick the title element (first with text, then content-desc, else first)
-        title_el = next((el for el in elems if el.get('text')), None)
+        # 6) Выбираем title_el
+        title_el = next((e for e in elems if e.get('text')), None)
         if not title_el:
-            title_el = next((el for el in elems if el.get('content-desc')), None)
+            title_el = next((e for e in elems if e.get('content-desc')), None)
         if not title_el and elems:
             title_el = elems[0]
 
-        # derive raw title string
+        # 7) Формируем class_name и file_name
         raw_title = (
             title_el.get('text')
             or title_el.get('content-desc')
             or title_el.get('resource-id', '').split('/', 1)[-1]
         )
+        parts = re.split(r'[^\w]+', unidecode(raw_title))
+        class_name = 'Page' + ''.join(p.capitalize() for p in parts if p)
+        file_name = re.sub(r'(?<!^)(?=[A-Z])', '_', class_name).lower() + '.py'
 
-        # helper: CamelCase from words
-        def to_camel(s: str) -> str:
-            parts = re.split(r'[^\w]+', unidecode(s))
-            return ''.join(p.capitalize() for p in parts if p)
-
-        # class name and file name
-        class_name = f"Page{to_camel(raw_title)}"
-        snake = re.sub(r'(?<!^)(?=[A-Z])', '_', class_name).lower()
-        file_name = f"{snake}.py"
-
-        lines = [
+        # 8) Заголовок класса
+        lines: List[str] = [
             "import logging",
             "",
             "from shadowstep.element.element import Element",
@@ -109,77 +150,92 @@ class PageObjectGenerator:
             "    @property",
             "    def name(self) -> str:",
             f"        return \"{raw_title}\"",
-            "",
+            ""
+        ]
+
+        # 9) title-свойство
+        title_loc = build_locator(title_el)
+        lines += [
             "    @property",
             "    def title(self) -> Element:",
-            f"        return self.shadowstep.get_element({{'text': {repr(title_el.get('text'))}, 'class': {repr(title_el.get('class'))}}})",
+            f"        return self.shadowstep.get_element({title_loc!r})",
             ""
         ]
 
         used_names = {"title"}
-        processed_summary_ids = set()
+        processed_summary: Set[str] = set()
 
-        # helper: slugify into words
-        def slug_words(s: str):
-            slug = unidecode(s)
-            parts = re.split(r'[^\w]+', slug)
-            return [p.lower() for p in parts if p]
-
+        # 10) Сначала summary-соседи
         for el in elems:
-            rid = el.get('resource-id', '')
+            rid_full = el.get('resource-id', '')
+            if rid_full.endswith('/summary'):
+                nodes = tree.xpath(f"//*[@resource-id='{rid_full}']")
+                if not nodes:
+                    continue
+                sum_node = nodes[0]
+                parent = sum_node.getparent()
+                sib = next((
+                    s for s in parent
+                    if s is not sum_node and
+                       (s.attrib.get('resource-id','').endswith('/title') or s.attrib.get('text'))
+                ), None)
+                if not sib:
+                    continue
 
-            # special: summary siblings
-            if rid.endswith('/summary'):
-                # ... (логика без изменений) ...
-                processed_summary_ids.add(rid)
+                raw = sib.attrib.get('text') or sib.attrib.get('content-desc') \
+                      or sib.attrib.get('resource-id','').split('/',1)[-1]
+                words = slug_words(raw)[:max_name_words]
+                base = "_".join(words) or "summary"
+                suffix = (sib.attrib.get('class','').split('.')[-1]).lower()
+                name = f"{base}_summary_{suffix}"
+                i = 1
+                while name in used_names:
+                    name = f"{base}_summary_{suffix}_{i}"
+                    i += 1
+                used_names.add(name)
+
+                sib_loc = build_locator(sib)
+                lines += [
+                    "    @property",
+                    f"    def {name}(self):",
+                    f"        return (",
+                    f"            self.shadowstep.get_element({sib_loc!r})",
+                    f"                .get_sibling({{'resource-id': {rid_full!r}}})",
+                    f"        )",
+                    ""
+                ]
+                processed_summary.add(rid_full)
+
+        # 11) Регулярные элементы (пропускаем title и summary)
+        for el in elems:
+            rid_full = el.get('resource-id','')
+            if el is title_el or rid_full in processed_summary:
                 continue
 
-            # skip processed summaries
-            if rid in processed_summary_ids:
+            loc = build_locator(el)
+            if not loc:
                 continue
 
-            # --- основная ветка для обычных элементов ---
-
-            # выбираем, что брать для имени
-            if el.get('text'):
-                key, raw_val = 'text', el['text']
-            elif el.get('content-desc'):
-                key, raw_val = 'content-desc', el['content-desc']
-            else:
-                # <--- ИЗМЕНЕНО: для resource-id берём часть после '/' без пакета/id
-                key, raw_val = 'resource-id', rid.split('/', 1)[1] if '/' in rid else rid
-
-            # строим сам локатор (для resource-id — полный, для остальных — raw_val + класс)
-            if key == 'resource-id':
-                loc = {'resource-id': rid}
-            else:
-                loc = {key: raw_val}
-                if el.get('class'):
-                    loc['class'] = el['class']
-
-            # генерируем имя: до max_name_words слов из raw_val + суффикс класса
-            words = slug_words(raw_val)[:max_name_words]
+            key = naming_key(el)
+            raw = el.get(key) or rid_full.split('/',1)[-1]
+            words = slug_words(raw)[:max_name_words]
             base = "_".join(words) or key.replace('-', '_')
-            class_suffix = (el.get('class', '').split('.')[-1] or "element").lower()
-            name = f"{base}_{class_suffix}"
-
-            # обеспечиваем уникальность
+            suffix = (el.get('class','').split('.')[-1]).lower()
+            name = f"{base}_{suffix}"
             i = 1
-            orig = name
             while name in used_names:
-                name = f"{orig}_{i}"
+                name = f"{base}_{suffix}_{i}"
                 i += 1
             used_names.add(name)
 
-            dict_literal = "{" + ", ".join(f"{repr(k)}: {repr(v)}" for k, v in loc.items()) + "}"
             lines += [
                 "    @property",
                 f"    def {name}(self) -> Element:",
-                f"        return self.shadowstep.get_element({dict_literal})",
+                f"        return self.shadowstep.get_element({loc!r})",
                 ""
             ]
 
-        # is_current_page() должен быть последним методом
+        # 12) is_current_page в самом конце
         lines += [
             "    def is_current_page(self) -> bool:",
             "        try:",
@@ -190,7 +246,7 @@ class PageObjectGenerator:
             ""
         ]
 
-        # записываем файл
+        # 13) Запись файла
         os.makedirs(output_dir, exist_ok=True)
         path = os.path.join(output_dir, file_name)
         with open(path, "w", encoding="utf-8") as f:

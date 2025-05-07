@@ -33,7 +33,11 @@ class TestPageObjectextractor:
     def test_pog(self, app: Shadowstep, android_settings):
         generator = PageObjectGenerator()
         source = app.driver.page_source
-        generator.generate(source, output_dir="pages")
-
-
+        generator.generate(source, output_dir="pages", attributes=['class',
+                                                                   'text',
+                                                                   'resource-id',
+                                                                   'content-desc',
+                                                                   'scrollable'])
+        logger.info("\n\n\n=====================================================================")
+        logger.info(source)
 
