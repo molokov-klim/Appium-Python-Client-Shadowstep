@@ -50,21 +50,23 @@ class PageObjectGenerator:
         self.env = Environment(
             loader=FileSystemLoader(templates_dir),  # откуда загружать шаблоны (директория с .j2-файлами)
             autoescape=False,  # отключаем автоэкранирование HTML/JS (не нужно при генерации Python-кода)
-            keep_trailing_newline=True, # сохраняем завершающий перевод строки в файле (важно для git-diff, PEP8 и т.д.)
+            keep_trailing_newline=True,
+            # сохраняем завершающий перевод строки в файле (важно для git-diff, PEP8 и т.д.)
             trim_blocks=True,  # удаляет новую строку сразу после {% block %} или {% endif %} (уменьшает пустые строки)
-            lstrip_blocks=True # удаляет ведущие пробелы перед {% block %} (избавляет от случайных отступов и пустых строк)
+            lstrip_blocks=True
+            # удаляет ведущие пробелы перед {% block %} (избавляет от случайных отступов и пустых строк)
         )
         # добавляем фильтр repr
         self.env.filters['pretty_dict'] = _pretty_dict
 
     def generate(
-        self,
-        source_xml: str,
-        output_dir: str,
-        max_name_words: int = 5,
-        attributes: Optional[
-            Union[Set[str], Tuple[str], List[str]]
-        ] = None
+            self,
+            source_xml: str,
+            output_dir: str,
+            max_name_words: int = 5,
+            attributes: Optional[
+                Union[Set[str], Tuple[str], List[str]]
+            ] = None
     ):
         """
         Оркестратор:
@@ -110,42 +112,37 @@ class PageObjectGenerator:
 
         # 5.2) обычные свойства
         for prop in self._build_regular_props(
-            elems,
-            title_el,
-            summary_pairs,
-            attr_list,
-            include_class,
-            max_name_words,
-            used_names,
-            recycler_id
+                elems,
+                title_el,
+                summary_pairs,
+                attr_list,
+                include_class,
+                max_name_words,
+                used_names,
+                recycler_id
         ):
             properties.append(prop)
 
-        # 5.3) switchers
+        # 5.2.1) построим мапу id→имя свойства, чтобы потом найти anchor_name
+        self._anchor_name_map = {p['element_id']: p['name']
+                                 for p in properties
+                                 if 'element_id' in p}
+
+        # 5.3) switchers: собираем через общий _build_switch_prop
         for anchor, switch, depth in anchor_pairs:
-            raw = anchor.get('text') or anchor.get('content-desc')
-            words = self._slug_words(raw)[:max_name_words]
-            base = "_".join(words) or "switch"
-            suffix = "switch"
-            name = self._sanitize_name(f"{base}_{suffix}")
-            i = 1
-            while name in used_names:
-                name = self._sanitize_name(f"{base}_{suffix}_{i}")
-                i += 1
-            used_names.add(name)
-
-            locator = self._build_locator(switch, attr_list, include_class)
-            anchor_locator = self._build_locator(anchor, attr_list, include_class)
-
+            name, anchor_name, locator, depth = self._build_switch_prop(
+                anchor, switch, depth,
+                attr_list, include_class,
+                max_name_words, used_names
+            )
             properties.append({
                 "name": name,
                 "locator": locator,
                 "sibling": False,
                 "via_recycler": switch.get("scrollable_parents", [None])[0] == recycler_id if switch.get(
                     "scrollable_parents") else False,
-                "anchor_locator": anchor_locator,  # спец-флаг для jinja2
-                "anchor_get_via": True,  # укажем что будет get_parent().get_element(...)
-                "depth": depth,  # число get_parent() между anchor и switch
+                "anchor_name": anchor_name,
+                "depth": depth,
             })
 
         # 5.4) summary-свойства
@@ -202,10 +199,10 @@ class PageObjectGenerator:
     # —————————————————————————————————————————————————————————————————————————
 
     def _prepare_attributes(
-        self,
-        attributes: Optional[
-            Union[Set[str], Tuple[str], List[str]]
-        ]
+            self,
+            attributes: Optional[
+                Union[Set[str], Tuple[str], List[str]]
+            ]
     ) -> Tuple[List[str], bool]:
         default = ['text', 'content-desc', 'resource-id']
         attr_list = list(attributes) if attributes else default.copy()
@@ -219,10 +216,10 @@ class PageObjectGenerator:
         return [p.lower() for p in parts if p]
 
     def _build_locator(
-        self,
-        el: Dict[str, str],
-        attr_list: List[str],
-        include_class: bool
+            self,
+            el: Dict[str, str],
+            attr_list: List[str],
+            include_class: bool
     ) -> Dict[str, str]:
         # loc: Dict[str, str] = {
         #     k: el[k] for k in attr_list if el.get(k)
@@ -252,15 +249,15 @@ class PageObjectGenerator:
 
     def _raw_title(self, title_el: Dict[str, str]) -> str:
         return (
-            title_el.get('text')
-            or title_el.get('content-desc')
-            or title_el.get('resource-id', '').split('/', 1)[-1]
+                title_el.get('text')
+                or title_el.get('content-desc')
+                or title_el.get('resource-id', '').split('/', 1)[-1]
         )
 
     def _format_names(self, raw_title: str) -> Tuple[str, str]:
         parts = re.split(r'[^\w]+', unidecode(raw_title))
         class_name = 'Page' + ''.join(p.capitalize() for p in parts if p)
-        file_name  = re.sub(
+        file_name = re.sub(
             r'(?<!^)(?=[A-Z])', '_', class_name
         ).lower() + '.py'
         return class_name, file_name
@@ -302,14 +299,14 @@ class PageObjectGenerator:
         return name, locator, summary_id, base_name
 
     def _build_regular_props(
-        self,
-        elems: List[Dict[str, str]],
-        title_el: Dict[str, str],
-        summary_pairs: List[Tuple[Dict[str, str], Dict[str, str]]],
-        attr_list: List[str],
-        include_class: bool,
-        max_name_words: int,
-        used_names: Set[str],
+            self,
+            elems: List[Dict[str, str]],
+            title_el: Dict[str, str],
+            summary_pairs: List[Tuple[Dict[str, str], Dict[str, str]]],
+            attr_list: List[str],
+            include_class: bool,
+            max_name_words: int,
+            used_names: Set[str],
             recycler_id
     ) -> List[Dict]:
         props: List[Dict] = []
@@ -333,7 +330,7 @@ class PageObjectGenerator:
             else:
                 raw = el.get(key) or self._strip_package_prefix(rid)
             words = self._slug_words(raw)[:max_name_words]
-            base   = "_".join(words) or key.replace('-', '_')
+            base = "_".join(words) or key.replace('-', '_')
             suffix = el.get('class', '').split('.')[-1].lower()
             raw_name = f"{base}_{suffix}"
 
@@ -346,9 +343,11 @@ class PageObjectGenerator:
 
             props.append({
                 'name': name,
+                'element_id': el['id'],
                 'locator': locator,
                 'sibling': False,
-                'via_recycler': el.get("scrollable_parents", [None])[0] == recycler_id if el.get("scrollable_parents") else False,
+                'via_recycler': el.get("scrollable_parents", [None])[0] == recycler_id if el.get(
+                    "scrollable_parents") else False,
             })
         #     self.logger.debug("=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=")
         #     self.logger.debug(f"{el.items()}")
@@ -520,4 +519,38 @@ class PageObjectGenerator:
         self.logger.debug(f"Found anchor-element-depth triplets: {pairs}")
         return pairs
 
+    def _build_switch_prop(
+            self,
+            anchor_el: Dict[str, Any],
+            switch_el: Dict[str, Any],
+            depth: int,
+            attr_list: List[str],
+            include_class: bool,
+            max_name_words: int,
+            used_names: Set[str]
+    ) -> Tuple[str, str, Dict[str, str], int]:
+        """
+        Возвращает кортеж:
+         - name         — имя свойства-свитчера
+         - anchor_name  — имя свойства-якоря (уже сгенерированного)
+         - locator      — словарь для get_element(switch_el)
+         - depth        — глубина подъёма (сколько раз get_parent())
+        """
+        # 1) имя якоря найдём в списке regular_props по id
+        anchor_name = self._anchor_name_map[anchor_el['id']]
 
+        # 2) генерим имя для switch
+        raw = anchor_el.get('text') or anchor_el.get('content-desc') or ""
+        words = self._slug_words(raw)[:max_name_words]
+        base = "_".join(words) or "switch"
+        name = self._sanitize_name(f"{base}_switch")
+        i = 1
+        while name in used_names:
+            name = self._sanitize_name(f"{base}_switch_{i}")
+            i += 1
+        used_names.add(name)
+
+        # 3) локатор для самого switch
+        locator = self._build_locator(switch_el, attr_list, include_class)
+
+        return name, anchor_name, locator, depth

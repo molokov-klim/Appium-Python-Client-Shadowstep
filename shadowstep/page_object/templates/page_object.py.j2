@@ -28,23 +28,16 @@ class {{ class_name }}(PageBaseShadowstep):
 {% for prop in properties %}
     @property
     def {{ prop.name }}(self) -> Element:
-    {% if prop.anchor_get_via %}
-        {# если depth=0 — ищем через .get_sibling() #}
+    {% if prop.anchor_name %}
         {% if prop.depth == 0 %}
-        return self.shadowstep.get_element(
-            {{ prop.anchor_locator | pretty_dict(base_indent=12) }}
-        ).get_sibling(
-            {{ prop.locator | pretty_dict(base_indent=16) }}
-        )
+        return self.{{ prop.anchor_name }}.get_sibling(
+        {{ prop.locator | pretty_dict(base_indent=12) }}
+    )
         {% else %}
-        {# иначе поднимаемся depth раз и берём вложенный элемент #}
-        {# формируем цепочку .get_parent().get_parent()… #}
-        {% set parents = "get_parent()" * prop.depth %}
-        return self.shadowstep.get_element(
-            {{ prop.anchor_locator | pretty_dict(base_indent=12) }}
-        ).{{ parents }}.get_element(
-            {{ prop.locator | pretty_dict(base_indent=16) }}
-        )
+    {% set parents = "get_parent()" * prop.depth %}
+        return self.{{ prop.anchor_name }}.{{ parents }}.get_element(
+        {{ prop.locator | pretty_dict(base_indent=12) }}
+    )
         {% endif %}
     {% elif prop.sibling %}
         return self.{{ prop.base_name }}.get_sibling({{ prop.summary_id | pretty_dict(base_indent=12) }})
