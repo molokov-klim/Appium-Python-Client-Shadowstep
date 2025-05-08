@@ -5,19 +5,10 @@ import time
 import pytest
 from wheel.metadata import yield_lines
 
-from shadowstep.shadowstep import Shadowstep
+from shadowstep.shadowstep import Shadowstep, logger
 
 # Please use virtual device Google Pixel 10.0
 UDID = '192.168.56.101:5555'
-
-# Configure standard logging
-logging.basicConfig(
-    stream=sys.stdout,
-    level=logging.INFO,
-    format='%(asctime)s | %(levelname)-8s | %(name)s:%(funcName)s:%(lineno)d - %(message)s'
-)
-logger = logging.getLogger("shadowstep")
-logger.setLevel(logging.DEBUG)
 
 # Silence noisy third-party libraries
 logging.getLogger("selenium").setLevel(logging.CRITICAL)

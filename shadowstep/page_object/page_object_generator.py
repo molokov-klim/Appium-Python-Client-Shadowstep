@@ -1,10 +1,12 @@
+#  shadowstep/page_object/#page_object_extractor.py
+
 import json
 import logging
 import os
 import re
 from typing import (
     List, Dict, Union,
-    Set, Tuple, Optional
+    Set, Tuple, Optional, Any
 )
 from unidecode import unidecode
 from jinja2 import Environment, FileSystemLoader
@@ -77,8 +79,8 @@ class PageObjectGenerator:
         attr_list, include_class = self._prepare_attributes(attributes)
 
         # 2) «сырые» данные от экстрактора
-        elems = self.extractor.extract_simple_elements(source_xml)
-        summary_pairs = self.extractor.find_summary_siblings(source_xml)
+        elems = self.extractor.parse(source_xml)
+        summary_pairs = self._find_summary_siblings(elems)
 
         # 3) заголовок страницы
         title_el = self._select_title_element(elems)
@@ -330,4 +332,42 @@ class PageObjectGenerator:
             if len(group) < 3:
                 filtered.extend(group)
         return filtered
+
+    def _find_summary_siblings(self, elements: list[dict[str, Any]]) -> list[dict[str, Any]]:
+        try:
+            result = []
+            for element in elements:
+                if not element.get('resource-id').endswith('/summary'):
+                    continue
+                sibling = None
+
+            for parent in tree.iter():
+                children = list(parent)
+                for i, el in enumerate(children):
+                    rid = el.attrib.get('resource-id', '')
+                    if not rid.endswith('/summary'):
+                        continue
+                    # ищем title-соседа слева или справа
+
+                    for j in (i - 1, i + 1):
+                        if 0 <= j < len(children):
+                            sib = children[j].attrib
+                            sib_rid = sib.get('resource-id', '')
+                            if sib_rid.endswith('/title') or sib.get('text'):
+                                sibling = sib
+                                break
+                    if sibling:
+                        result.append((dict(sibling), dict(el.attrib)))
+            return result
+        except ET.XMLSyntaxError:
+            self.logger.exception("XML parse error in find_summary_siblings()")
+            return []
+
+
+
+
+
+
+
+
 

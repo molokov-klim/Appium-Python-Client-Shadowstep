@@ -42,5 +42,6 @@ def configure_logging():
     # Применяем и к root
     logging.getLogger().handlers = logger.handlers
     logging.getLogger().setLevel(logger.level)
+    logger.propagate = False
 
 configure_logging()

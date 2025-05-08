@@ -19,24 +19,17 @@ class TestPageObjectextractor:
         POE.smart_filter = False
         POE.filter_by_class = False
         POE.filter_system = False
-        raw_elements = POE.extract_simple_elements(source)
-        for el in raw_elements:
-            logger.info(el)
-        logger.info("\n\n\n=============================== FILTER ======================================")
-        POE.package = 'com.android.settings'
-        raw_elements = POE.extract_simple_elements(source)
-        for el in raw_elements:
-            logger.info(el)
+        POE.parse(source)
         logger.info("\n\n\n=====================================================================")
         logger.info(source)
 
-    def test_pog(self, app: Shadowstep, android_settings):
-        generator = PageObjectGenerator(extractor=POE)
-        source = app.driver.page_source
-        generator.generate(source, output_dir="pages", attributes=['class',
-                                                                   'text',
-                                                                   'resource-id',
-                                                                   'content-desc',
-                                                                   'scrollable'])
-        logger.info("\n\n\n=====================================================================")
-        logger.info(source)
+    # def test_pog(self, app: Shadowstep, android_settings):
+    #     generator = PageObjectGenerator(extractor=POE)
+    #     source = app.driver.page_source
+    #     generator.generate(source, output_dir="pages", attributes=['class',
+    #                                                                'text',
+    #                                                                'resource-id',
+    #                                                                'content-desc',
+    #                                                                'scrollable'])
+    #     logger.info("\n\n\n=====================================================================")
+    #     logger.info(source)
