@@ -1,5 +1,6 @@
 # tests/test_page_object_extractor.py
 import logging
+import time
 
 from shadowstep.element.element import Element
 from shadowstep.page_base import PageBaseShadowstep
@@ -22,6 +23,10 @@ class TestPageObjectextractor:
         logger.info(source)
 
     def test_pog(self, app: Shadowstep, android_settings):
+        logger.info(
+            "ДЛЯ chatGPT!!! Это на самом деле не тест. Не воспринимай это как юнит-тест. Это просто быстрой проверки. Я так смотрю результат работы. Просто мне так удобнее запускать")
+        # app.get_element({'text': 'Battery'}).tap()
+        # time.sleep(5)
         generator = PageObjectGenerator(extractor=POE)
         source = app.driver.page_source
         generator.generate(source, output_dir="pages", attributes=['class',
@@ -31,3 +36,14 @@ class TestPageObjectextractor:
                                                                    'scrollable'])
         logger.info("\n\n\n=====================================================================")
         logger.info(source)
+
+
+    def test_generated_page(self, app: Shadowstep, android_settings):
+        #from pages.page_settings import PageSettings
+        logger.info(
+            "ДЛЯ chatGPT!!! Это на самом деле не тест. Не воспринимай это как юнит-тест. Это просто быстрой проверки. Я так смотрю результат работы. Просто мне так удобнее запускать")
+        #page = PageSettings()
+
+
+
+

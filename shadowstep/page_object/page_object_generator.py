@@ -82,7 +82,11 @@ class PageObjectGenerator:
         elems = self.extractor.parse(source_xml)
         self.logger.debug(f"{elems=}")
 
-        # 2.1) формирование пар summary
+        # 2.1)
+        recycler_id = self._select_main_recycler(elems)
+        recycler_el = next((e for e in elems if e['id'] == recycler_id), None)
+
+        # 2.2) формирование пар summary
         summary_pairs = self._find_summary_siblings(elems)
         self.logger.debug(f"{summary_pairs=}")
 
@@ -108,7 +112,8 @@ class PageObjectGenerator:
             attr_list,
             include_class,
             max_name_words,
-            used_names
+            used_names,
+            recycler_id
         ):
             properties.append(prop)
 
@@ -133,15 +138,25 @@ class PageObjectGenerator:
         # 5.3) удаляем дубликаты элементов
         properties = self._filter_duplicates(properties)
 
+        # 5.4 )
+        need_recycler = any(p.get("via_recycler") for p in properties)
+        recycler_locator = (
+            self._build_locator(recycler_el, attr_list, include_class)
+            if need_recycler and recycler_el else None
+        )
+
         # 6) рендер и запись
         template = self.env.get_template('page_object.py.j2')
         properties.sort(key=lambda p: p["name"])  # сортировка по алфавиту
         rendered = template.render(
-            class_name    = class_name,
-            raw_title     = raw_title,
-            title_locator = title_locator,
-            properties    = properties,
+            class_name=class_name,
+            raw_title=raw_title,
+            title_locator=title_locator,
+            properties=properties,
+            need_recycler=need_recycler,
+            recycler_locator=recycler_locator,
         )
+
         self.logger.info(f"Props:\n{json.dumps(properties, indent=2)}")
 
         os.makedirs(output_dir, exist_ok=True)
@@ -195,13 +210,13 @@ class PageObjectGenerator:
         return loc
 
     def _select_title_element(
-        self,
-        elems: List[Dict[str, str]]
+            self,
+            elems: List[Dict[str, str]]
     ) -> Dict[str, str]:
-        for key in ('text', 'content-desc'):
-            found = next((e for e in elems if e.get(key)), None)
-            if found:
-                return found
+        """Выбирает первый элемент, у которого есть text или content-desc (в этом порядке)."""
+        for el in elems:
+            if el.get('text') or el.get('content-desc'):
+                return el
         return elems[0] if elems else {}
 
     def _raw_title(self, title_el: Dict[str, str]) -> str:
@@ -263,7 +278,8 @@ class PageObjectGenerator:
         attr_list: List[str],
         include_class: bool,
         max_name_words: int,
-        used_names: Set[str]
+        used_names: Set[str],
+            recycler_id
     ) -> List[Dict]:
         props: List[Dict] = []
         processed_ids = {
@@ -298,11 +314,16 @@ class PageObjectGenerator:
             used_names.add(name)
 
             props.append({
-                'name':    name,
+                'name': name,
                 'locator': locator,
                 'sibling': False,
+                'via_recycler': el.get("scrollable_parents", [None])[0] == recycler_id if el.get("scrollable_parents") else False,
             })
-
+        #     self.logger.debug("=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=")
+        #     self.logger.debug(f"{el.items()}")
+        #     self.logger.debug(f'{el.get("scrollable_parents", [None])[0] == recycler_id if el.get("scrollable_parents") else False}')
+        #
+        # self.logger.debug(f"\n{props=}\n")
         return props
 
     def _sanitize_name(self, raw_name: str) -> str:
@@ -366,12 +387,16 @@ class PageObjectGenerator:
                             break
         return result
 
-
-
-
-
-
-
-
-
+    def _select_main_recycler(self, elems: List[Dict[str, Any]]) -> Optional[str]:
+        """Возвращает id самого вложенного scrollable-контейнера (по максимальной глубине scrollable_parents)."""
+        candidates = [
+            el.get("scrollable_parents", [])
+            for el in elems
+            if el.get("scrollable_parents")
+        ]
+        if not candidates:
+            return None
+        # Выбираем scrollable_parents с максимальной длиной и берём [0]
+        deepest = max(candidates, key=len)
+        return deepest[0] if deepest else None
 

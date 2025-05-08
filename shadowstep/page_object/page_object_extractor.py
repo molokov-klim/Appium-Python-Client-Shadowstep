@@ -109,10 +109,10 @@ class PageObjectExtractor:
                 "scrollable_parents": new_scroll_stack,
                 "depth": depth,
             })
-            self.logger.debug(
-                f"[{el_id}] parent={parent_id} depth={depth} scrollable={attrib.get('scrollable')} "
-                f"scroll_stack={new_scroll_stack} attrib={attrib}"
-            )
+            # self.logger.debug(
+            #     f"[{el_id}] parent={parent_id} depth={depth} scrollable={attrib.get('scrollable')} "
+            #     f"scroll_stack={new_scroll_stack} attrib={attrib}"
+            # )
             if add_element:
                 result.append(attrib)
 
@@ -120,11 +120,8 @@ class PageObjectExtractor:
                 _recurse(child, el_id, new_scroll_stack, depth + 1)
 
         _recurse(root, None, [], 0)
-        self.logger.debug("====================================================")
-        for res in result:
-            self.logger.debug(f"res:\n{res}")
-        self.logger.debug("====================================================")
+        # self.logger.debug("====================================================")
+        # for res in result:
+        #     self.logger.debug(f"res:\n{res}")
+        # self.logger.debug("====================================================")
         return result
-
-
-
