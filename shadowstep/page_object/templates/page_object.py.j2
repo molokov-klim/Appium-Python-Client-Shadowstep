@@ -34,10 +34,11 @@ class {{ class_name }}(PageBaseShadowstep):
         {{ prop.locator | pretty_dict(base_indent=12) }}
     )
         {% else %}
-    {% set parents = "get_parent()" * prop.depth %}
+        {# генерим N+1 вызов get_parent(), с точками между ними и без завершающей точки #}
+        {% set parents = ("get_parent()." * (prop.depth + 1)).rstrip('.') %}
         return self.{{ prop.anchor_name }}.{{ parents }}.get_element(
-        {{ prop.locator | pretty_dict(base_indent=12) }}
-    )
+            {{ prop.locator | pretty_dict(base_indent=12) }}
+        )
         {% endif %}
     {% elif prop.sibling %}
         return self.{{ prop.base_name }}.get_sibling({{ prop.summary_id | pretty_dict(base_indent=12) }})
