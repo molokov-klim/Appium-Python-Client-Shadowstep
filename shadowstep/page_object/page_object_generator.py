@@ -1,5 +1,5 @@
 #  shadowstep/page_object/page_object_generator.py
-
+import inspect
 import json
 import logging
 import os
@@ -104,7 +104,11 @@ class PageObjectGenerator:
         )
         properties: List[Dict] = []
 
-        # 5.1) обычные свойства
+        # 5.1)
+        anchor_pairs = self._find_switch_anchor_pairs(elems)
+        self.logger.debug(f"{anchor_pairs=}")
+
+        # 5.2) обычные свойства
         for prop in self._build_regular_props(
             elems,
             title_el,
@@ -117,7 +121,33 @@ class PageObjectGenerator:
         ):
             properties.append(prop)
 
-        # 5.2) summary-свойства
+        # 5.3) switchers
+        for anchor, switch in anchor_pairs:
+            raw = anchor.get('text') or anchor.get('content-desc')
+            words = self._slug_words(raw)[:max_name_words]
+            base = "_".join(words) or "switch"
+            suffix = "switch"
+            name = self._sanitize_name(f"{base}_{suffix}")
+            i = 1
+            while name in used_names:
+                name = self._sanitize_name(f"{base}_{suffix}_{i}")
+                i += 1
+            used_names.add(name)
+
+            locator = self._build_locator(switch, attr_list, include_class)
+            anchor_locator = self._build_locator(anchor, attr_list, include_class)
+
+            properties.append({
+                "name": name,
+                "locator": locator,
+                "sibling": False,
+                "via_recycler": switch.get("scrollable_parents", [None])[0] == recycler_id if switch.get(
+                    "scrollable_parents") else False,
+                "anchor_locator": anchor_locator,  # спец-флаг для jinja2
+                "anchor_get_via": True,  # укажем что будет get_parent().get_element(...)
+            })
+
+        # 5.4) summary-свойства
         for title_e, summary_e in summary_pairs:
             name, locator, summary_id, base_name = self._build_summary_prop(
                 title_e,
@@ -135,10 +165,10 @@ class PageObjectGenerator:
                 'base_name': base_name,
             })
 
-        # 5.3) удаляем дубликаты элементов
+        # 5.5) удаляем дубликаты элементов
         properties = self._filter_duplicates(properties)
 
-        # 5.4 )
+        # 5.6)
         need_recycler = any(p.get("via_recycler") for p in properties)
         recycler_locator = (
             self._build_locator(recycler_el, attr_list, include_class)
@@ -399,4 +429,102 @@ class PageObjectGenerator:
         # Выбираем scrollable_parents с максимальной длиной и берём [0]
         deepest = max(candidates, key=len)
         return deepest[0] if deepest else None
+
+    def _find_switch_anchor_pairs(
+            self,
+            elements: List[Dict[str, Any]],
+            max_depth: int = 5
+    ) -> List[Tuple[Dict[str, Any], Dict[str, Any], int]]:
+        """
+        Ищет пары (anchor, switch), где:
+          - switch  — элемент с классом, содержащим 'Switch'
+          - anchor  — соседний элемент с текстом или content-desc,
+                      даже если он вложен на один уровень внутрь
+        Алгоритм:
+          1. Сгруппировать элементы по parent_id.
+          2. Для каждого switch:
+             a) Подняться вверх по дереву до max_depth.
+             b) В каждом родителе перебрать его прямых детей (siblings), отсортированных по index:
+                - если у sibling есть text или content-desc, взять его как anchor;
+                - иначе заглянуть на один уровень внутрь его прямых детей.
+             c) Если найден anchor, проверить, что в subtree этого parent_id ровно один Switch.
+                Если да — добавить пару в результат, иначе — пропустить с предупреждением.
+        """
+        from collections import defaultdict
+
+        # 1) группировка: parent_id → список прямых детей
+        children_by_parent: Dict[Optional[str], List[Dict[str, Any]]] = defaultdict(list)
+        for el in elements:
+            children_by_parent[el.get('parent_id')].append(el)
+
+        # быстрый доступ по id для подъема вверх
+        el_by_id = {el['id']: el for el in elements if 'id' in el}
+
+        def collect_descendants(parent_id: str) -> List[Dict[str, Any]]:
+            """Собрать всех потомков (любая глубина) заданного родителя."""
+            stack = [parent_id]
+            result = []
+            while stack:
+                pid = stack.pop()
+                for child in children_by_parent.get(pid, []):
+                    result.append(child)
+                    stack.append(child['id'])
+            return result
+
+        result: List[Tuple[Dict[str, Any], Dict[str, Any]]] = []
+
+        # 2) основной цикл по всем Switch
+        for switch in filter(lambda e: 'Switch' in e.get('class', ''), elements):
+            current = switch
+            depth = 0
+            found_anchor = None
+
+            while depth <= max_depth and current.get('parent_id'):
+                parent_id = current['parent_id']
+                siblings = children_by_parent.get(parent_id, [])
+                # сортируем по index (если есть)
+                siblings.sort(key=lambda x: int(x.get('index', 0)))
+
+                # 2.b) ищем anchor среди siblings и их прямых детей
+                for sib in siblings:
+                    if sib is switch:
+                        continue
+
+                    # 1) прямо у sibling
+                    if sib.get('text') or sib.get('content-desc'):
+                        found_anchor = sib
+                        break
+
+                    # 2) на уровень глубже
+                    for child in children_by_parent.get(sib['id'], []):
+                        if child.get('text') or child.get('content-desc'):
+                            found_anchor = child
+                            break
+                    if found_anchor:
+                        break
+
+                if found_anchor:
+                    # 2.c) проверяем, что под этим родителем ровно один Switch в subtree
+                    subtree = collect_descendants(parent_id)
+                    switch_count = sum(1 for el in subtree if 'Switch' in el.get('class', ''))
+                    if switch_count == 1:
+                        result.append((found_anchor, switch))
+                    else:
+                        self.logger.warning(
+                            f"Ambiguous switches under parent {parent_id}: {switch_count} found. Skipping."
+                        )
+                    break
+
+                # поднимаемся на уровень выше
+                current = el_by_id.get(parent_id, {})
+                depth += 1
+
+            if not found_anchor:
+                self.logger.debug(
+                    f"No anchor found for switch {switch.get('id')} up to depth {max_depth}"
+                )
+
+        self.logger.debug(f"Switch-anchor pairs: {result}")
+        return result
+
 

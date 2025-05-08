@@ -25,8 +25,10 @@ class TestPageObjectextractor:
     def test_pog(self, app: Shadowstep, android_settings):
         logger.info(
             "ДЛЯ chatGPT!!! Это на самом деле не тест. Не воспринимай это как юнит-тест. Это просто быстрой проверки. Я так смотрю результат работы. Просто мне так удобнее запускать")
-        # app.get_element({'text': 'Battery'}).tap()
-        # time.sleep(5)
+        app.find_and_get_element({'text': 'Sound & vibration'}).tap()
+        time.sleep(5)
+        app.find_and_get_element({'text': 'Touch sounds'})
+        time.sleep(5)
         generator = PageObjectGenerator(extractor=POE)
         source = app.driver.page_source
         generator.generate(source, output_dir="pages", attributes=['class',

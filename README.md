@@ -86,14 +86,15 @@ el.get_attribute("enabled")
 ```
 
 Lazy DOM tree navigation (declarative)
+
 ```python
-el = app.get_element({'class': 'android.widget.ImageView'}).\
-    get_parent().get_sibling({'resource-id': 'android:id/summary'}).\
-    get_cousin(
-            ancestor_locator={'text': 'title', 'resource-id': 'android:id/title'},
-            cousin_locator={'resource-id': 'android:id/summary'}
-        ).get_element(
-            {"resource-id": "android:id/switch_widget"})
+el = app.get_element({'class': 'android.widget.ImageView'}).
+    get_parent().get_sibling({'resource-id': 'android:id/summary'}).
+    from_parent(
+    ancestor_locator={'text': 'title', 'resource-id': 'android:id/title'},
+    cousin_locator={'resource-id': 'android:id/summary'}
+).get_element(
+    {"resource-id": "android:id/switch_widget"})
 
 ```
 
