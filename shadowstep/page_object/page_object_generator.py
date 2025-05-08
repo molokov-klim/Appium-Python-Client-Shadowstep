@@ -145,6 +145,7 @@ class PageObjectGenerator:
                     "scrollable_parents") else False,
                 "anchor_locator": anchor_locator,  # спец-флаг для jinja2
                 "anchor_get_via": True,  # укажем что будет get_parent().get_element(...)
+                "depth": depth,  # число get_parent() между anchor и switch
             })
 
         # 5.4) summary-свойства
