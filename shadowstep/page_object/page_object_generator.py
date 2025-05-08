@@ -14,17 +14,6 @@ from jinja2 import Environment, FileSystemLoader
 from shadowstep.page_object.page_object_extractor import PageObjectExtractor
 
 
-def _pretty_dict(d: dict, base_indent: int = 8) -> str:
-    """Форматирует dict в Python-стиле: каждый ключ с новой строки, выровнано по отступу."""
-    lines = ["{"]
-    indent = " " * base_indent
-    for i, (k, v) in enumerate(d.items()):
-        line = f"{indent!s}{repr(k)}: {repr(v)}"
-        if i < len(d) - 1:
-            line += ","
-        lines.append(line)
-    lines.append(" " * (base_indent - 4) + "}")
-    return "\n".join(lines)
 
 
 class PageObjectGenerator:
@@ -67,16 +56,7 @@ class PageObjectGenerator:
             attributes: Optional[
                 Union[Set[str], Tuple[str], List[str]]
             ] = None
-    ):
-        """
-        Оркестратор:
-          1) получаем приоритет атрибутов
-          2) извлекаем все элементы и пары title/summary
-          3) выбираем заголовок страницы
-          4) формируем имена класса и файла
-          5) собираем список свойств
-          6) рендерим через Jinja2 и пишем файл
-        """
+    ) -> Dict[str, str]:
         # 1) выбор атрибутов для локаторов
         attr_list, include_class = self._prepare_attributes(attributes)
 
@@ -193,6 +173,9 @@ class PageObjectGenerator:
             f.write(rendered)
 
         self.logger.info(f"Generated PageObject → {path}")
+
+        return {'path': path, 'class_name': class_name}
+
 
     # —————————————————————————————————————————————————————————————————————————
     #                           приватные «стройблоки»
@@ -554,3 +537,17 @@ class PageObjectGenerator:
         locator = self._build_locator(switch_el, attr_list, include_class)
 
         return name, anchor_name, locator, depth
+
+
+
+def _pretty_dict(d: dict, base_indent: int = 8) -> str:
+    """Форматирует dict в Python-стиле: каждый ключ с новой строки, выровнано по отступу."""
+    lines = ["{"]
+    indent = " " * base_indent
+    for i, (k, v) in enumerate(d.items()):
+        line = f"{indent!s}{repr(k)}: {repr(v)}"
+        if i < len(d) - 1:
+            line += ","
+        lines.append(line)
+    lines.append(" " * (base_indent - 4) + "}")
+    return "\n".join(lines)
