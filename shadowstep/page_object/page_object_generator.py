@@ -122,7 +122,7 @@ class PageObjectGenerator:
             properties.append(prop)
 
         # 5.3) switchers
-        for anchor, switch in anchor_pairs:
+        for anchor, switch, depth in anchor_pairs:
             raw = anchor.get('text') or anchor.get('content-desc')
             words = self._slug_words(raw)[:max_name_words]
             base = "_".join(words) or "switch"
@@ -434,23 +434,28 @@ class PageObjectGenerator:
             self,
             elements: List[Dict[str, Any]],
             max_depth: int = 5,
-            target: tuple = ('class', 'android.widget.Switch')
+            target: Tuple[str, str] = ('class', 'android.widget.Switch')
     ) -> List[Tuple[Dict[str, Any], Dict[str, Any], int]]:
+        """
+        Ищет тройки (anchor, target_element, depth), где:
+          - target_element — элемент, у которого атрибут target[0] содержит target[1]
+          - anchor         — соседний элемент с text или content-desc (вплоть до одного уровня вложенности)
+          - depth          — сколько раз поднялись по дереву до общего родителя
+        """
         from collections import defaultdict
 
-        target_by = target[0]
-        target_value = target[1]
+        by_attr, attr_val = target
 
-        # 1) группировка: parent_id → список прямых детей
+        # 1) группировка: parent_id → прямые дети
         children_by_parent: Dict[Optional[str], List[Dict[str, Any]]] = defaultdict(list)
         for el in elements:
             children_by_parent[el.get('parent_id')].append(el)
 
-        # быстрый доступ по id для подъема вверх
+        # id → элемент, для подъема вверх
         el_by_id = {el['id']: el for el in elements if 'id' in el}
 
+        # собрать всех потомков по дереву (для проверки уникальности)
         def collect_descendants(parent_id: str) -> List[Dict[str, Any]]:
-            """Собрать всех потомков (любая глубина) заданного родителя."""
             stack = [parent_id]
             result = []
             while stack:
@@ -460,60 +465,58 @@ class PageObjectGenerator:
                     stack.append(child['id'])
             return result
 
-        result: List[Tuple[Dict[str, Any], Dict[str, Any]]] = []
+        pairs: List[Tuple[Dict[str, Any], Dict[str, Any], int]] = []
 
-        # 2) основной цикл по всем Switch
-        for switch in filter(lambda e: target_value in e.get(target_by, ''), elements):
-            current = switch
+        # 2) цикл по всем элементам-мишеням
+        for target_el in filter(lambda e: attr_val in e.get(by_attr, ''), elements):
+            current = target_el
             depth = 0
-            found_anchor = None
+            anchor = None
 
+            # 2.a) поднимаемся вверх до max_depth
             while depth <= max_depth and current.get('parent_id'):
                 parent_id = current['parent_id']
                 siblings = children_by_parent.get(parent_id, [])
-                # сортируем по index (если есть)
                 siblings.sort(key=lambda x: int(x.get('index', 0)))
 
-                # 2.b) ищем anchor среди siblings и их прямых детей
+                # 2.b) ищем anchor среди siblings и их детей
                 for sib in siblings:
-                    if sib is switch:
+                    if sib is target_el:
                         continue
 
-                    # 1) прямо у sibling
                     if sib.get('text') or sib.get('content-desc'):
-                        found_anchor = sib
+                        anchor = sib
                         break
 
-                    # 2) на уровень глубже
                     for child in children_by_parent.get(sib['id'], []):
                         if child.get('text') or child.get('content-desc'):
-                            found_anchor = child
+                            anchor = child
                             break
-                    if found_anchor:
+                    if anchor:
                         break
 
-                if found_anchor:
-                    # 2.c) проверяем, что под этим родителем ровно один Switch в subtree
+                if anchor:
+                    # проверяем, что в subtree только один target
                     subtree = collect_descendants(parent_id)
-                    switch_count = sum(1 for el in subtree if 'Switch' in el.get('class', ''))
-                    if switch_count == 1:
-                        result.append((found_anchor, switch))
+                    count = sum(1 for el in subtree if attr_val in el.get(by_attr, ''))
+                    if count == 1:
+                        pairs.append((anchor, target_el, depth))
                     else:
                         self.logger.warning(
-                            f"Ambiguous switches under parent {parent_id}: {switch_count} found. Skipping."
+                            f"Ambiguous targets under parent {parent_id}: {count} found. Skipping."
                         )
                     break
 
-                # поднимаемся на уровень выше
+                # идем к следующему родителю
                 current = el_by_id.get(parent_id, {})
                 depth += 1
 
-            if not found_anchor:
+            if not anchor:
                 self.logger.debug(
-                    f"No anchor found for switch {switch.get('id')} up to depth {max_depth}"
+                    f"No anchor found for element {target_el.get('id')} up to depth {max_depth}"
                 )
 
-        self.logger.debug(f"Switch-anchor pairs: {result}")
-        return result
+        self.logger.debug(f"Found anchor-element-depth triplets: {pairs}")
+        return pairs
 
 
