@@ -105,7 +105,7 @@ class PageObjectGenerator:
         properties: List[Dict] = []
 
         # 5.1)
-        anchor_pairs = self._find_switch_anchor_pairs(elems)
+        anchor_pairs = self._find_anchor_element_pairs(elems)
         self.logger.debug(f"{anchor_pairs=}")
 
         # 5.2) обычные свойства
@@ -430,27 +430,16 @@ class PageObjectGenerator:
         deepest = max(candidates, key=len)
         return deepest[0] if deepest else None
 
-    def _find_switch_anchor_pairs(
+    def _find_anchor_element_pairs(
             self,
             elements: List[Dict[str, Any]],
-            max_depth: int = 5
+            max_depth: int = 5,
+            target: tuple = ('class', 'android.widget.Switch')
     ) -> List[Tuple[Dict[str, Any], Dict[str, Any], int]]:
-        """
-        Ищет пары (anchor, switch), где:
-          - switch  — элемент с классом, содержащим 'Switch'
-          - anchor  — соседний элемент с текстом или content-desc,
-                      даже если он вложен на один уровень внутрь
-        Алгоритм:
-          1. Сгруппировать элементы по parent_id.
-          2. Для каждого switch:
-             a) Подняться вверх по дереву до max_depth.
-             b) В каждом родителе перебрать его прямых детей (siblings), отсортированных по index:
-                - если у sibling есть text или content-desc, взять его как anchor;
-                - иначе заглянуть на один уровень внутрь его прямых детей.
-             c) Если найден anchor, проверить, что в subtree этого parent_id ровно один Switch.
-                Если да — добавить пару в результат, иначе — пропустить с предупреждением.
-        """
         from collections import defaultdict
+
+        target_by = target[0]
+        target_value = target[1]
 
         # 1) группировка: parent_id → список прямых детей
         children_by_parent: Dict[Optional[str], List[Dict[str, Any]]] = defaultdict(list)
@@ -474,7 +463,7 @@ class PageObjectGenerator:
         result: List[Tuple[Dict[str, Any], Dict[str, Any]]] = []
 
         # 2) основной цикл по всем Switch
-        for switch in filter(lambda e: 'Switch' in e.get('class', ''), elements):
+        for switch in filter(lambda e: target_value in e.get(target_by, ''), elements):
             current = switch
             depth = 0
             found_anchor = None
