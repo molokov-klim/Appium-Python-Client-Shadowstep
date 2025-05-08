@@ -41,8 +41,6 @@ class PageObjectExtractor:
                  black_list_resource_id: Set[str] = None,
                  filter_system: bool = True,):
         self.logger = logging.getLogger(__name__)
-        # дропать ли системные android:id/…
-        self.filter_system: bool = filter_system
 
         self.WHITE_LIST_CLASSES: Set[str] = (
             DEFAULT_WHITE_LIST_CLASSES if white_list_classes is None else white_list_classes
@@ -77,22 +75,17 @@ class PageObjectExtractor:
         result = []
         id_counter = 0
 
-        def _recurse(el: ET.Element, parent_id: Optional[str], scroll_stack: List[str]) -> None:
+        def _recurse(el: ET.Element, parent_id: Optional[str], scroll_stack: List[str], depth: int) -> None:
             nonlocal id_counter
             attrib = dict(el.attrib)
             el_id = f"el_{id_counter}"
             id_counter += 1
 
-            # текущий scrollable-стек
             new_scroll_stack = scroll_stack.copy()
             if attrib.get("scrollable") == "true":
                 new_scroll_stack.insert(0, el_id)
 
-            if self.filter_system and attrib.get("resource-id").startswith("android:id/"):
-                self.logger.debug(f"Skipping {attrib.get('resource-id')} — system id")
-                return
-
-            add_element: bool = False
+            add_element = False
             if attrib.get("text"):
                 add_element = True
             if attrib.get("content-desc"):
@@ -114,18 +107,19 @@ class PageObjectExtractor:
                 "id": el_id,
                 "parent_id": parent_id,
                 "scrollable_parents": new_scroll_stack,
+                "depth": depth,
             })
             self.logger.debug(
-                f"[{el_id}] parent={parent_id} scrollable={attrib.get('scrollable')} "
+                f"[{el_id}] parent={parent_id} depth={depth} scrollable={attrib.get('scrollable')} "
                 f"scroll_stack={new_scroll_stack} attrib={attrib}"
             )
             if add_element:
                 result.append(attrib)
 
             for child in el:
-                _recurse(child, el_id, new_scroll_stack)
+                _recurse(child, el_id, new_scroll_stack, depth + 1)
 
-        _recurse(root, None, [])
+        _recurse(root, None, [], 0)
         self.logger.debug("====================================================")
         for res in result:
             self.logger.debug(f"res:\n{res}")

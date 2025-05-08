@@ -78,9 +78,13 @@ class PageObjectGenerator:
         # 1) выбор атрибутов для локаторов
         attr_list, include_class = self._prepare_attributes(attributes)
 
-        # 2) «сырые» данные от экстрактора
+        # 2) извлечение и элементов
         elems = self.extractor.parse(source_xml)
+        self.logger.debug(f"{elems=}")
+
+        # 2.1) формирование пар summary
         summary_pairs = self._find_summary_siblings(elems)
+        self.logger.debug(f"{summary_pairs=}")
 
         # 3) заголовок страницы
         title_el = self._select_title_element(elems)
@@ -333,35 +337,35 @@ class PageObjectGenerator:
                 filtered.extend(group)
         return filtered
 
-    def _find_summary_siblings(self, elements: list[dict[str, Any]]) -> list[dict[str, Any]]:
-        try:
-            result = []
-            for element in elements:
-                if not element.get('resource-id').endswith('/summary'):
+    def _find_summary_siblings(self, elements: List[Dict[str, Any]]) -> List[Tuple[Dict[str, Any], Dict[str, Any]]]:
+        """Find (title, summary) element pairs based on parent and sibling relation."""
+        from collections import defaultdict
+
+        # Группируем по родителю
+        grouped: Dict[Optional[str], List[Dict[str, Any]]] = defaultdict(list)
+        for el in elements:
+            grouped[el.get("parent_id")].append(el)
+
+        result: List[Tuple[Dict[str, Any], Dict[str, Any]]] = []
+
+        for siblings in grouped.values():
+            # Восстанавливаем порядок — можно по `index`, или по порядку в списке (если гарантировано)
+            siblings.sort(key=lambda x: int(x.get("index", 0)))
+            for i, el in enumerate(siblings):
+                rid = el.get("resource-id", "")
+                if not rid.endswith("/summary"):
                     continue
-                sibling = None
 
-            for parent in tree.iter():
-                children = list(parent)
-                for i, el in enumerate(children):
-                    rid = el.attrib.get('resource-id', '')
-                    if not rid.endswith('/summary'):
-                        continue
-                    # ищем title-соседа слева или справа
+                # ищем соседа title
+                for j in (i - 1, i + 1):
+                    if 0 <= j < len(siblings):
+                        sib = siblings[j]
+                        sib_rid = sib.get("resource-id", "")
+                        if sib_rid.endswith("/title") or sib.get("text"):
+                            result.append((sib, el))
+                            break
+        return result
 
-                    for j in (i - 1, i + 1):
-                        if 0 <= j < len(children):
-                            sib = children[j].attrib
-                            sib_rid = sib.get('resource-id', '')
-                            if sib_rid.endswith('/title') or sib.get('text'):
-                                sibling = sib
-                                break
-                    if sibling:
-                        result.append((dict(sibling), dict(el.attrib)))
-            return result
-        except ET.XMLSyntaxError:
-            self.logger.exception("XML parse error in find_summary_siblings()")
-            return []
 
 
 

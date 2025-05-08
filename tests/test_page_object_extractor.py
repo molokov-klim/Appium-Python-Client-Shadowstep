@@ -16,20 +16,17 @@ class TestPageObjectextractor:
         logger.info("ДЛЯ chatGPT!!! Это на самом деле не тест. Не воспринимай это как юнит-тест. Это просто быстрой проверки. Я так смотрю результат работы. Просто мне так удобнее запускать")
         source = app.driver.page_source
         logger.info("\n\n\n=============================== RAW ======================================")
-        POE.smart_filter = False
-        POE.filter_by_class = False
-        POE.filter_system = False
         POE.parse(source)
         logger.info("\n\n\n=====================================================================")
         logger.info(source)
 
-    # def test_pog(self, app: Shadowstep, android_settings):
-    #     generator = PageObjectGenerator(extractor=POE)
-    #     source = app.driver.page_source
-    #     generator.generate(source, output_dir="pages", attributes=['class',
-    #                                                                'text',
-    #                                                                'resource-id',
-    #                                                                'content-desc',
-    #                                                                'scrollable'])
-    #     logger.info("\n\n\n=====================================================================")
-    #     logger.info(source)
+    def test_pog(self, app: Shadowstep, android_settings):
+        generator = PageObjectGenerator(extractor=POE)
+        source = app.driver.page_source
+        generator.generate(source, output_dir="pages", attributes=['class',
+                                                                   'text',
+                                                                   'resource-id',
+                                                                   'content-desc',
+                                                                   'scrollable'])
+        logger.info("\n\n\n=====================================================================")
+        logger.info(source)
