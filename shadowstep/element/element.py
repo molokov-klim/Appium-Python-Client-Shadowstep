@@ -339,12 +339,12 @@ class Element(ElementBase):
             except WebDriverException:
                 break
 
-    def get_cousin(
+    def from_parent(
             self,
             ancestor_locator: Union[Tuple, Dict[str, str], 'Element'],
             cousin_locator: Union[Tuple, Dict[str, str], 'Element']
     ) -> Union['Element', None]:
-        """Finds a cousin element (same depth relative to a shared ancestor).
+        """Return element (same depth relative to a shared ancestor).
 
         Args:
             ancestor_locator (Union[Tuple, Dict[str, str], 'Element']): The common ancestor to search from.
@@ -390,12 +390,6 @@ class Element(ElementBase):
             self._handle_driver_error(error)
         return None
 
-    def from_parent(
-            self,
-            parent: Union[Tuple, Dict[str, str], 'Element'],
-            locator: Union[Tuple, Dict[str, str], 'Element']
-    ) -> Union['Element', None]:
-        return self.get_cousin(parent,locator)
 
     def get_center(self, element: Optional[WebElement] = None) -> Optional[Tuple[int, int]]:
         """Get the center coordinates of the element.
