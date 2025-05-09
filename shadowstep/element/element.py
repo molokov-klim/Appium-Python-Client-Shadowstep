@@ -1094,6 +1094,61 @@ class Element(ElementBase):
             stacktrace=traceback.format_stack()
         )
 
+    def can_scroll_down(self, percent: float = 1.0) -> bool:
+        """Returns whether the element can scroll further down."""
+        return self._can_scroll(direction="down", percent=percent)
+
+    def can_scroll_up(self, percent: float = 1.0) -> bool:
+        """Returns whether the element can scroll further up."""
+        return self._can_scroll(direction="up", percent=percent)
+
+    def can_scroll_left(self, percent: float = 1.0) -> bool:
+        """Returns whether the element can scroll further left."""
+        return self._can_scroll(direction="left", percent=percent)
+
+    def can_scroll_right(self, percent: float = 1.0) -> bool:
+        """Returns whether the element can scroll further right."""
+        return self._can_scroll(direction="right", percent=percent)
+
+    def _can_scroll(self, direction: str = "down", percent: float = 1.0) -> bool:
+        """Checks if the element can still scroll in the given direction.
+
+        Args:
+            direction (str): Scroll direction ('up', 'down', 'left', 'right').
+            percent (float): Scroll distance as a percentage of the area (0 < percent <= 1.0).
+
+        Returns:
+            bool: True if the element can scroll further in the given direction.
+        """
+        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
+        try:
+            self._get_driver()
+            self._get_element(locator=self.locator)
+
+            bounds = self.get_coordinates()
+            if bounds is None:
+                raise GeneralElementException("Cannot retrieve bounds for scroll area.")
+            left, top, right, bottom = bounds
+            width = right - left
+            height = bottom - top
+
+            can_scroll = self.driver.execute_script("mobile: scrollGesture", {
+                "elementId": self.id,
+                "left": left,
+                "top": top,
+                "width": width,
+                "height": height,
+                "direction": direction.lower(),
+                "percent": percent,
+                "speed": 1  # минимальный, чтобы не двигать UI
+            })
+
+            return bool(can_scroll)
+
+        except Exception as error:
+            self.logger.error(f"can_scroll error: {error}")
+            return False
+
     def scroll_to_element(self, locator: Union['Element', Dict[str, str], Tuple[str, str]], max_swipes: int = 30) -> \
     Union[
         'Element', None]:

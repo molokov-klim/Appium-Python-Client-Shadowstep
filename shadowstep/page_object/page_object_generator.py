@@ -28,6 +28,7 @@ class PageObjectGenerator:
             - extract_simple_elements(xml: str) -> List[Dict[str,str]]
             - find_summary_siblings(xml: str) -> List[Tuple[Dict, Dict]]
         """
+        self._anchor_name_map = None
         self.extractor = extractor
         self.logger = logging.getLogger(__name__)
 
@@ -56,13 +57,13 @@ class PageObjectGenerator:
             attributes: Optional[
                 Union[Set[str], Tuple[str], List[str]]
             ] = None
-    ) -> Dict[str, str]:
+    ) -> Tuple[str, str]:
         # 1) выбор атрибутов для локаторов
         attr_list, include_class = self._prepare_attributes(attributes)
 
         # 2) извлечение и элементов
         elems = self.extractor.parse(source_xml)
-        self.logger.debug(f"{elems=}")
+        # self.logger.debug(f"{elems=}")
 
         # 2.1)
         recycler_id = self._select_main_recycler(elems)
@@ -70,7 +71,7 @@ class PageObjectGenerator:
 
         # 2.2) формирование пар summary
         summary_pairs = self._find_summary_siblings(elems)
-        self.logger.debug(f"{summary_pairs=}")
+        # self.logger.debug(f"{summary_pairs=}")
 
         # 3) заголовок страницы
         title_el = self._select_title_element(elems)
@@ -88,7 +89,7 @@ class PageObjectGenerator:
 
         # 5.1)
         anchor_pairs = self._find_anchor_element_pairs(elems)
-        self.logger.debug(f"{anchor_pairs=}")
+        # self.logger.debug(f"{anchor_pairs=}")
 
         # 5.2) обычные свойства
         for prop in self._build_regular_props(
@@ -165,7 +166,7 @@ class PageObjectGenerator:
             recycler_locator=recycler_locator,
         )
 
-        self.logger.info(f"Props:\n{json.dumps(properties, indent=2)}")
+        # self.logger.info(f"Props:\n{json.dumps(properties, indent=2)}")
 
         os.makedirs(output_dir, exist_ok=True)
         path = os.path.join(output_dir, file_name)
@@ -174,7 +175,7 @@ class PageObjectGenerator:
 
         self.logger.info(f"Generated PageObject → {path}")
 
-        return {'path': path, 'class_name': class_name}
+        return path, class_name
 
 
     # —————————————————————————————————————————————————————————————————————————
@@ -499,7 +500,7 @@ class PageObjectGenerator:
                     f"No anchor found for element {target_el.get('id')} up to depth {max_depth}"
                 )
 
-        self.logger.debug(f"Found anchor-element-depth triplets: {pairs}")
+        # self.logger.debug(f"Found anchor-element-depth triplets: {pairs}")
         return pairs
 
     def _build_switch_prop(
