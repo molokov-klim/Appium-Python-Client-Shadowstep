@@ -320,6 +320,13 @@ class LocatorConverter:
 
         parts = ["new UiSelector()"]
         for key, value in selector.items():
+            if key == "scrollable":
+                if value == "true":
+                    parts.append(f".scrollable(true)")
+                    continue
+                elif value == "false":
+                    parts.append(f".scrollable(false)")
+                    continue
             if key == "childSelector" and isinstance(value, dict):
                 nested = self._dict_to_uiselector(value)
                 parts.append(f".childSelector({nested})")
