@@ -30,10 +30,10 @@ class LoguruStyleFormatter(logging.Formatter):
 
 def configure_logging():
     logger = logging.getLogger("shadowstep")
-    logger.setLevel(logging.DEBUG)
+    logger.setLevel(logging.INFO)
 
     handler = logging.StreamHandler(sys.stdout)
-    handler.setLevel(logging.DEBUG)
+    handler.setLevel(logging.INFO)
     handler.setFormatter(LoguruStyleFormatter(datefmt="%Y-%m-%d %H:%M:%S"))
 
     if not logger.handlers:
