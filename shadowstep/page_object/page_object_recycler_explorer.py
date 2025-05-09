@@ -85,10 +85,8 @@ class PageObjectRecyclerExplorer:
         new_elements = []
 
         # 🔁 Скроллим, пока можно
-        while recycler_el.scroll_down(return_bool=True):
-            if not recycler_el.scroll_down():
-                break
-
+        while recycler_el.scroll_down(percent=0.5, speed=100, return_bool=True):
+            # recycler_el.scroll_down(percent=0.5, speed=100, return_bool=True)
             xml = self.base.driver.page_source
             elements = self.extractor.parse(xml)
 

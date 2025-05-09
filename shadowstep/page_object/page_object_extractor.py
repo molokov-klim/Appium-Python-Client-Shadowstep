@@ -61,7 +61,7 @@ class PageObjectExtractor:
 
     def parse(self, xml: str) -> Union[list[dict[str, Any]], list[Any]]:
         """Parses and walks the XML, populating elements and tree."""
-        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
+        self.logger.info(f"{inspect.currentframe().f_code.co_name}")
         try:
             self._tree = ET.fromstring(xml.encode('utf-8'))
             self._elements = self._walk_tree(self._tree)
