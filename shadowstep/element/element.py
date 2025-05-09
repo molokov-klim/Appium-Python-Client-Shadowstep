@@ -147,8 +147,8 @@ class Element(ElementBase):
                     missed += 1
                     if missed >= 2:
                         break
-        return Elements(generator)
 
+        return Elements(generator)
 
     def get_attributes(self) -> Optional[Dict[str, str]]:
         """Fetch all XML attributes of the element by matching locator against page source.
@@ -169,7 +169,6 @@ class Element(ElementBase):
         except Exception as e:
             self.logger.error(f"Exception in to_xpath: {e}")
             return None
-
 
         while time.time() - start_time < self.timeout:
             try:
@@ -389,7 +388,6 @@ class Element(ElementBase):
         except InvalidSessionIdException as error:
             self._handle_driver_error(error)
         return None
-
 
     def get_center(self, element: Optional[WebElement] = None) -> Optional[Tuple[int, int]]:
         """Get the center coordinates of the element.
@@ -978,23 +976,23 @@ class Element(ElementBase):
             stacktrace=traceback.format_stack()
         )
 
-    def scroll_down(self, percent: int = 10, speed: int = 2000) -> Union['Element', None]:
+    def scroll_down(self, percent: int = 10, speed: int = 2000, return_bool: bool = False) -> Union['Element', None]:
         self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
-        return self._scroll(direction='down', percent=percent, speed=speed)
+        return self._scroll(direction='down', percent=percent, speed=speed, return_bool=return_bool)
 
-    def scroll_up(self, percent: int = 10, speed: int = 2000) -> Union['Element', None]:
+    def scroll_up(self, percent: int = 10, speed: int = 2000, return_bool: bool = False) -> Union['Element', None]:
         self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
-        return self._scroll(direction='up', percent=percent, speed=speed)
+        return self._scroll(direction='up', percent=percent, speed=speed, return_bool=return_bool)
 
-    def scroll_left(self, percent: int = 10, speed: int = 2000) -> Union['Element', None]:
+    def scroll_left(self, percent: int = 10, speed: int = 2000, return_bool: bool = False) -> Union['Element', None]:
         self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
-        return self._scroll(direction='left', percent=percent, speed=speed)
+        return self._scroll(direction='left', percent=percent, speed=speed, return_bool=return_bool)
 
-    def scroll_right(self, percent: int = 10, speed: int = 2000) -> Union['Element', None]:
+    def scroll_right(self, percent: int = 10, speed: int = 2000, return_bool: bool = False) -> Union['Element', None]:
         self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
-        return self._scroll(direction='right', percent=percent, speed=speed)
+        return self._scroll(direction='right', percent=percent, speed=speed, return_bool=return_bool)
 
-    def _scroll(self, direction: str, percent: int, speed: int) -> Union['Element', None]:
+    def _scroll(self, direction: str, percent: int, speed: int, return_bool: bool) -> Union['Element', None]:
         """
         direction: Scrolling direction. Mandatory value. Acceptable values are: up, down, left and right (case insensitive)
         percent: The size of the scroll as a percentage of the scrolling area size. Valid values must be float numbers greater than zero, where 1.0 is 100%. Mandatory value.
@@ -1007,11 +1005,13 @@ class Element(ElementBase):
             try:
                 self._get_driver()
                 self._get_element(locator=self.locator)
-                self._mobile_gesture('mobile: scrollGesture',
-                                     {'elementId': self.id,
-                                      'percent': percent,
-                                      'direction': direction,
-                                      'speed': speed})
+                can_scroll = self._mobile_gesture('mobile: scrollGesture',
+                                                  {'elementId': self.id,
+                                                   'percent': percent,
+                                                   'direction': direction,
+                                                   'speed': speed})
+                if return_bool:
+                    return can_scroll
                 return cast('Element', self)
             except NoSuchDriverException as error:
                 self._handle_driver_error(error)
@@ -1026,132 +1026,47 @@ class Element(ElementBase):
             stacktrace=traceback.format_stack()
         )
 
-    def scroll_to_bottom(self, locator: Union[Tuple, Dict[str, str], str, WebElement, 'Element'] = None) -> Union[
-        'Element', None]:
+    def scroll_to_bottom(self, percent: int = 70, speed: int = 2000) -> 'Element':
+        """Scrolls down until the bottom is reached."""
         self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
-        last_child = None
         start_time = time.time()
 
         while time.time() - start_time < self.timeout:
             try:
-                if isinstance(locator, Element):
-                    locator = locator.locator
-                if not locator:
-                    class_name = self._get_first_child_class()
-                    if not class_name:
-                        raise GeneralElementException("Unable to determine first child class")
-                    locator = {'class': class_name}
-                child = self._get_element(locator=locator)
-                if last_child is not None and child.get_attribute('bounds') == last_child.get_attribute('bounds'):
-                    self.scroll_down()
+                if not self.scroll_up(percent, speed):
                     return cast('Element', self)
-                last_child = child
-                self.scroll_down()
-            except StaleElementReferenceException:
-                continue
-            except NoSuchDriverException as error:
+                self.scroll_down(percent=percent, speed=speed, return_bool=False)
+            except (
+            NoSuchDriverException, InvalidSessionIdException, AttributeError, StaleElementReferenceException) as error:
                 self._handle_driver_error(error)
-            except InvalidSessionIdException as error:
-                self._handle_driver_error(error)
-            except AttributeError as error:
-                self._handle_driver_error(error)
+
         raise GeneralElementException(
-            msg=f"Failed to {inspect.currentframe().f_code.co_name} within {self.timeout=}",
+            msg=f"Failed to scroll to bottom within {self.timeout=}",
             stacktrace=traceback.format_stack()
         )
 
-    def scroll_to_top(self, locator: Union[Tuple, Dict[str, str], str, WebElement, 'Element'] = None) -> Union[
-        'Element', None]:
+    def scroll_to_top(self, percent: int = 70, speed: int = 2000) -> 'Element':
+        """Scrolls up until the top is reached."""
         self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
-        last_child = None
         start_time = time.time()
 
         while time.time() - start_time < self.timeout:
             try:
-                if isinstance(locator, Element):
-                    locator = locator.locator
-                if not locator:
-                    class_name = self._get_first_child_class()
-                    if not class_name:
-                        raise GeneralElementException("Unable to determine first child class")
-                    locator = {'class': class_name}
-                child = self._get_element(locator=locator)
-                if last_child is not None and child.get_attribute('bounds') == last_child.get_attribute('bounds'):
-                    self.scroll_up()
+                if not self.scroll_up(percent, speed):
                     return cast('Element', self)
-                last_child = child
-                self.scroll_up()
-            except StaleElementReferenceException:
-                continue
-            except NoSuchDriverException as error:
+                self.scroll_up(percent=percent, speed=speed, return_bool=False)
+            except (
+            NoSuchDriverException, InvalidSessionIdException, AttributeError, StaleElementReferenceException) as error:
                 self._handle_driver_error(error)
-            except InvalidSessionIdException as error:
-                self._handle_driver_error(error)
-            except AttributeError as error:
-                self._handle_driver_error(error)
+
         raise GeneralElementException(
-            msg=f"Failed to {inspect.currentframe().f_code.co_name} within {self.timeout=}",
+            msg=f"Failed to scroll to top within {self.timeout=}",
             stacktrace=traceback.format_stack()
         )
-
-    def can_scroll_down(self, percent: float = 1.0) -> bool:
-        """Returns whether the element can scroll further down."""
-        return self._can_scroll(direction="down", percent=percent)
-
-    def can_scroll_up(self, percent: float = 1.0) -> bool:
-        """Returns whether the element can scroll further up."""
-        return self._can_scroll(direction="up", percent=percent)
-
-    def can_scroll_left(self, percent: float = 1.0) -> bool:
-        """Returns whether the element can scroll further left."""
-        return self._can_scroll(direction="left", percent=percent)
-
-    def can_scroll_right(self, percent: float = 1.0) -> bool:
-        """Returns whether the element can scroll further right."""
-        return self._can_scroll(direction="right", percent=percent)
-
-    def _can_scroll(self, direction: str = "down", percent: float = 1.0) -> bool:
-        """Checks if the element can still scroll in the given direction.
-
-        Args:
-            direction (str): Scroll direction ('up', 'down', 'left', 'right').
-            percent (float): Scroll distance as a percentage of the area (0 < percent <= 1.0).
-
-        Returns:
-            bool: True if the element can scroll further in the given direction.
-        """
-        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
-        try:
-            self._get_driver()
-            self._get_element(locator=self.locator)
-
-            bounds = self.get_coordinates()
-            if bounds is None:
-                raise GeneralElementException("Cannot retrieve bounds for scroll area.")
-            left, top, right, bottom = bounds
-            width = right - left
-            height = bottom - top
-
-            can_scroll = self.driver.execute_script("mobile: scrollGesture", {
-                "elementId": self.id,
-                "left": left,
-                "top": top,
-                "width": width,
-                "height": height,
-                "direction": direction.lower(),
-                "percent": percent,
-                "speed": 1  # минимальный, чтобы не двигать UI
-            })
-
-            return bool(can_scroll)
-
-        except Exception as error:
-            self.logger.error(f"can_scroll error: {error}")
-            return False
 
     def scroll_to_element(self, locator: Union['Element', Dict[str, str], Tuple[str, str]], max_swipes: int = 30) -> \
-    Union[
-        'Element', None]:
+            Union[
+                'Element', None]:
         self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
         start_time = time.time()
         if isinstance(locator, Element):
@@ -2087,9 +2002,9 @@ class Element(ElementBase):
         self.base.reconnect()
         time.sleep(0.3)
 
-    def _mobile_gesture(self, name: str, params: Union[dict, list]) -> None:
+    def _mobile_gesture(self, name: str, params: Union[dict, list]) -> typing.Any:
         # https://github.com/appium/appium-uiautomator2-driver/blob/master/docs/android-mobile-gestures.md
-        self.driver.execute_script(name, params)
+        return self.driver.execute_script(name, params)
 
     def _ensure_session_alive(self) -> None:
         self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
@@ -2325,4 +2240,3 @@ class Element(ElementBase):
         """Provides DSL-like assertions: element.should.have.text(...), etc."""
         from shadowstep.element.should import Should  # импорт внутри метода для избежания циклической зависимости
         return Should(self)
-
