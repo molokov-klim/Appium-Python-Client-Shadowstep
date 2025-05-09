@@ -72,50 +72,50 @@ class PageObjectRecyclerExplorer:
 
         pack_recycler = ("recycler", recycler_el.locator, raw_recycler)
 
-        self.logger.debug(f"============================")
-        self.logger.debug(f"{pack_recycler=}")
-        self.logger.debug(f"{pack_properties=}")
-        self.logger.debug(f"============================")
+        self.logger.info(f"============================")
+        self.logger.info(f"{pack_recycler=}")
+        self.logger.info(f"{pack_properties=}")
+        self.logger.info(f"============================")
 
-        #
-        # for _ in range(20):
-        #     xml = self.base.driver.page_source
-        #     elements = self.extractor.parse(xml)
-        #
-        #     for el in elements:
-        #         if not el.get("scrollable_parents"):
-        #             continue
-        #         if el["scrollable_parents"][0] != recycler_el.locator.get("resource-id"):
-        #             continue
-        #
-        #         key = (el.get("resource-id"), el.get("text"), el.get("content-desc"))
-        #         if key in seen_keys:
-        #             continue
-        #         seen_keys.add(key)
-        #
-        #         raw = el.get("resource-id") or el.get("text") or el.get("content-desc")
-        #         if not raw:
-        #             continue
-        #         name_base = re.sub(r"[^\w]+", "_", raw).lower()
-        #         if name_base in existing_names:
-        #             continue
-        #
-        #         new_elements.append(el)
-        #
-        #     if not recycler_el.scroll_down():
-        #         break
+        seen_keys = {
+            (el.get("resource-id"), el.get("text"), el.get("content-desc"))
+            for _, _, el in pack_properties
+        }
 
-        # if not new_elements:
-        #     self.logger.info("Новых элементов в recycler не найдено")
-        #     return None
-        #
-        # # Используем PageObjectGenerator как есть — просто даём XML и output_dir
-        # result = self.generator.generate(
-        #     source_xml=self.base.driver.page_source,
-        #     output_dir=os.path.dirname(output_path),
-        # )
-        # return result
-        return ()
+        new_elements = []
+
+        # 🔁 Скроллим, пока можно
+        while recycler_el.scroll_down(return_bool=True):
+            if not recycler_el.scroll_down():
+                break
+
+            xml = self.base.driver.page_source
+            elements = self.extractor.parse(xml)
+
+            for el in elements:
+                if not el.get("scrollable_parents"):
+                    continue
+                if raw_recycler and raw_recycler.get("id") not in el["scrollable_parents"]:
+                    continue
+
+                key = (el.get("resource-id"), el.get("text"), el.get("content-desc"))
+                if key in seen_keys:
+                    continue
+                seen_keys.add(key)
+
+                new_elements.append(el)
+
+
+        if not new_elements:
+            self.logger.info("Новых элементов в recycler не найдено")
+            return None
+
+        # 💾 Генерация новой PageObject
+        result = self.generator.generate(
+            source_xml=self.base.driver.page_source,
+            output_dir=os.path.dirname(output_path),
+        )
+        return result
 
     def _load_class_from_file(self, path: str, class_name: str) -> Optional[Type]:
         """Загружает класс по имени из .py-файла."""
@@ -143,9 +143,32 @@ class PageObjectRecyclerExplorer:
         return result
 
     def _match_raw_element(self, locator: Dict[str, Any], elements: List[Dict[str, Any]]) -> Optional[Dict[str, Any]]:
-        """Находит первый элемент из XML, совпадающий с заданным локатором."""
+        """Attempts to match a raw element from XML using fallback strategies."""
+        self.logger.debug(f"_match_raw_element({locator=})")
+
+        # 1. Full match
         for el in elements:
             if all(el.get(k) == v for k, v in locator.items()):
+                self.logger.debug("Matched by full locator.")
                 return el
+
+        # 2. Match by resource-id + class
+        rid = locator.get("resource-id")
+        cls = locator.get("class")
+        if rid and cls:
+            for el in elements:
+                if el.get("resource-id") == rid and el.get("class") == cls:
+                    self.logger.warning(f"Fuzzy match by resource-id + class: {rid=} {cls=}")
+                    return el
+
+        # 3. Match by resource-id only
+        if rid:
+            for el in elements:
+                if el.get("resource-id") == rid:
+                    self.logger.warning(f"Very fuzzy match by resource-id only: {rid=}")
+                    return el
+
+        self.logger.warning(f"No match found for locator: {locator}")
         return None
+
 

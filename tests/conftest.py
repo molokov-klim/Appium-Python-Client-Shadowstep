@@ -12,6 +12,7 @@ UDID = '192.168.56.101:5555'
 
 # Silence noisy third-party libraries
 logging.getLogger("selenium").setLevel(logging.CRITICAL)
+logging.getLogger("adaptavist").setLevel(logging.CRITICAL)
 logging.getLogger("urllib3").setLevel(logging.CRITICAL)
 logging.getLogger("asyncio").setLevel(logging.CRITICAL)
 logging.getLogger("asyncio.selector_events").setLevel(logging.CRITICAL)
