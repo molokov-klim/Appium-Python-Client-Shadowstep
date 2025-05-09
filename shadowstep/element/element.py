@@ -976,27 +976,28 @@ class Element(ElementBase):
             stacktrace=traceback.format_stack()
         )
 
-    def scroll_down(self, percent: int = 10, speed: int = 2000, return_bool: bool = False) -> Union['Element', None]:
+    def scroll_down(self, percent: float = 1, speed: int = 2000, return_bool: bool = False) -> Union['Element', None]:
         self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
         return self._scroll(direction='down', percent=percent, speed=speed, return_bool=return_bool)
 
-    def scroll_up(self, percent: int = 10, speed: int = 2000, return_bool: bool = False) -> Union['Element', None]:
+    def scroll_up(self, percent: float = 1, speed: int = 2000, return_bool: bool = False) -> Union['Element', None]:
         self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
         return self._scroll(direction='up', percent=percent, speed=speed, return_bool=return_bool)
 
-    def scroll_left(self, percent: int = 10, speed: int = 2000, return_bool: bool = False) -> Union['Element', None]:
+    def scroll_left(self, percent: float = 1, speed: int = 2000, return_bool: bool = False) -> Union['Element', None]:
         self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
         return self._scroll(direction='left', percent=percent, speed=speed, return_bool=return_bool)
 
-    def scroll_right(self, percent: int = 10, speed: int = 2000, return_bool: bool = False) -> Union['Element', None]:
+    def scroll_right(self, percent: float = 1, speed: int = 2000, return_bool: bool = False) -> Union['Element', None]:
         self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
         return self._scroll(direction='right', percent=percent, speed=speed, return_bool=return_bool)
 
-    def _scroll(self, direction: str, percent: int, speed: int, return_bool: bool) -> Union['Element', None]:
+    def _scroll(self, direction: str, percent: float, speed: int, return_bool: bool) -> Union['Element', None]:
         """
         direction: Scrolling direction. Mandatory value. Acceptable values are: up, down, left and right (case insensitive)
         percent: The size of the scroll as a percentage of the scrolling area size. Valid values must be float numbers greater than zero, where 1.0 is 100%. Mandatory value.
         speed: The speed at which to perform this gesture in pixels per second. The value must not be negative. The default value is 5000 * displayDensity
+        return_bool: if true return bool else return self
         """
         self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
         # https://github.com/appium/appium-uiautomator2-driver/blob/master/docs/android-mobile-gestures.md#mobile-scrollgesture
