@@ -5,13 +5,13 @@ import time
 
 from shadowstep.element.element import Element
 from shadowstep.page_base import PageBaseShadowstep
-from shadowstep.page_object.page_object_extractor import PageObjectExtractor
+from shadowstep.page_object.page_object_extractor import PageObjectParser
 from shadowstep.page_object.page_object_generator import PageObjectGenerator
 from shadowstep.page_object.page_object_recycler_explorer import PageObjectRecyclerExplorer
 from shadowstep.shadowstep import Shadowstep
 from lxml import etree as ET
 
-POE = PageObjectExtractor()
+POE = PageObjectParser()
 POG = PageObjectGenerator(extractor=POE)
 logger = logging.getLogger(__name__)
 
@@ -54,7 +54,8 @@ class TestPageObjectextractor:
                                                              'resource-id',
                                                              'content-desc',
                                                              'scrollable'])
-        PORE.explore(path, class_name, os.path.join(path, "1"))
+        PORE.explore(path, class_name, path)
+
 
 
 

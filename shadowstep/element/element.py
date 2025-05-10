@@ -56,7 +56,7 @@ class Element(ElementBase):
                  contains: bool = False):
         super().__init__(locator, base, timeout, poll_frequency, ignored_exceptions, contains)
         self.logger = logging.getLogger(f"{__name__}.{self.__class__.__name__}")
-        self.logger.info(f"Initialized Element with locator: {self.locator}")
+        self.logger.debug(f"Initialized Element with locator: {self.locator}")
 
     def __repr__(self):
         return f"Element(locator={self.locator}"

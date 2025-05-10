@@ -11,9 +11,7 @@ from typing import (
 from unidecode import unidecode
 from jinja2 import Environment, FileSystemLoader
 
-from shadowstep.page_object.page_object_extractor import PageObjectExtractor
-
-
+from shadowstep.page_object.page_object_extractor import PageObjectParser
 
 
 class PageObjectGenerator:
@@ -22,7 +20,7 @@ class PageObjectGenerator:
     и Jinja2-шаблона.
     """
 
-    def __init__(self, extractor: PageObjectExtractor):
+    def __init__(self, extractor: PageObjectParser):
         """
         :param extractor: объект, реализующий методы
             - extract_simple_elements(xml: str) -> List[Dict[str,str]]
@@ -53,16 +51,20 @@ class PageObjectGenerator:
             self,
             source_xml: str,
             output_dir: str,
+            filename_postfix: str = "",
             max_name_words: int = 5,
             attributes: Optional[
                 Union[Set[str], Tuple[str], List[str]]
-            ] = None
+            ] = None,
+            additional_elements: list = None
     ) -> Tuple[str, str]:
         # 1) выбор атрибутов для локаторов
         attr_list, include_class = self._prepare_attributes(attributes)
 
         # 2) извлечение и элементов
         elems = self.extractor.parse(source_xml)
+        if additional_elements:
+            elems += additional_elements
         # self.logger.debug(f"{elems=}")
 
         # 2.1)
@@ -168,15 +170,21 @@ class PageObjectGenerator:
 
         # self.logger.info(f"Props:\n{json.dumps(properties, indent=2)}")
 
-        os.makedirs(output_dir, exist_ok=True)
-        path = os.path.join(output_dir, file_name)
+        # Формируем путь с постфиксом
+        if filename_postfix:
+            name, ext = os.path.splitext(file_name)
+            final_filename = f"{name}{filename_postfix}{ext}"
+        else:
+            final_filename = file_name
+
+        path = os.path.join(output_dir, final_filename)
+        os.makedirs(os.path.dirname(path), exist_ok=True)  # ← вот так
         with open(path, 'w', encoding='utf-8') as f:
             f.write(rendered)
 
         self.logger.info(f"Generated PageObject → {path}")
 
         return path, class_name
-
 
     # —————————————————————————————————————————————————————————————————————————
     #                           приватные «стройблоки»
@@ -538,7 +546,6 @@ class PageObjectGenerator:
         locator = self._build_locator(switch_el, attr_list, include_class)
 
         return name, anchor_name, locator, depth
-
 
 
 def _pretty_dict(d: dict, base_indent: int = 8) -> str:

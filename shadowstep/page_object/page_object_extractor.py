@@ -33,7 +33,7 @@ DEFAULT_CONTAINER_WHITELIST: Set[str] = {
 }
 
 
-class PageObjectExtractor:
+class PageObjectParser:
     def __init__(self,
                  white_list_classes: Set[str] = None,
                  black_list_classes: Set[str] = None,

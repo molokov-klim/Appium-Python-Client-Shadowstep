@@ -7,7 +7,7 @@ import os
 import re
 from typing import Optional, Dict, Type, Any, Set, Tuple, List
 
-from shadowstep.page_object.page_object_extractor import PageObjectExtractor
+from shadowstep.page_object.page_object_extractor import PageObjectParser
 from shadowstep.page_object.page_object_generator import PageObjectGenerator
 from shadowstep.shadowstep import Shadowstep
 
@@ -22,22 +22,10 @@ class PageObjectRecyclerExplorer:
         """
         self.base: Shadowstep = base
         self.logger = logging.getLogger(__name__)
-        self.extractor = PageObjectExtractor()
+        self.extractor = PageObjectParser()
         self.generator = PageObjectGenerator(self.extractor)
 
-    def explore(self, input_path: str, class_name: str, output_path: str) -> Optional[tuple[str, str]]:
-        """
-        Загружает PageObject, проверяет наличие recycler, скроллит его, извлекает новые элементы
-        и генерирует расширенный PageObject с новыми свойствами.
-
-        Args:
-            input_path (str): Путь до оригинального PageObject-файла.
-            class_name (str): Имя класса PageObject.
-            output_path (str): Куда сохранить расширенный PageObject.
-
-        Returns:
-            Optional[Dict[str, str]]: {'path': ..., 'class_name': ...} если есть новые элементы, иначе None.
-        """
+    def explore(self, input_path: str, class_name: str, output_dir: str) -> Optional[tuple[str, str]]:
         page_cls = self._load_class_from_file(input_path, class_name)
         if not page_cls:
             self.logger.warning(f"Не удалось загрузить класс {class_name} из {input_path}")
@@ -77,41 +65,56 @@ class PageObjectRecyclerExplorer:
         self.logger.info(f"{pack_properties=}")
         self.logger.info(f"============================")
 
-        seen_keys = {
-            (el.get("resource-id"), el.get("text"), el.get("content-desc"))
-            for _, _, el in pack_properties
+        seen_locators = {
+            frozenset(locator.items())
+            for _, locator, _ in pack_properties
         }
 
         new_elements = []
 
-        # 🔁 Скроллим, пока можно
         while recycler_el.scroll_down(percent=0.5, speed=100, return_bool=True):
-            # recycler_el.scroll_down(percent=0.5, speed=100, return_bool=True)
+            # дерево изменилось!!! recycler_raw нужно переопределить
             xml = self.base.driver.page_source
             elements = self.extractor.parse(xml)
 
+            recycler_name, recycler_locator, recycler_raw_old = pack_recycler
+            recycler_raw_new = None
+            for el in elements:
+                if el.get("resource-id") == recycler_locator.get("resource-id") and el.get("class") == recycler_locator.get("class"):
+                    recycler_raw_new = el
+
+            self.logger.info(f"{recycler_raw_new=}")
+
             for el in elements:
                 if not el.get("scrollable_parents"):
+                    self.logger.info(f"not el.get(\"scrollable_parents\") {el=}")
                     continue
-                if raw_recycler and raw_recycler.get("id") not in el["scrollable_parents"]:
+                if recycler_raw_new and recycler_raw_new.get("id") not in el["scrollable_parents"]:
+                    self.logger.info(f"recycler_raw_new and recycler_raw_new.get(\"id\") not in el[\"scrollable_parents\"] {el=}")
                     continue
-
-                key = (el.get("resource-id"), el.get("text"), el.get("content-desc"))
-                if key in seen_keys:
+                locator = self.generator._build_locator(el, ['text', 'content-desc', 'resource-id'], include_class=True)
+                if frozenset(locator.items()) in seen_locators:
                     continue
-                seen_keys.add(key)
-
+                seen_locators.add(frozenset(locator.items()))
                 new_elements.append(el)
 
+
+        self.logger.info(f"{seen_locators=}")
+        self.logger.info(f"{new_elements=}")
 
         if not new_elements:
             self.logger.info("Новых элементов в recycler не найдено")
             return None
 
+        if os.path.isfile(output_dir):
+            output_dir = os.path.dirname(output_dir)
+
         # 💾 Генерация новой PageObject
         result = self.generator.generate(
             source_xml=self.base.driver.page_source,
-            output_dir=os.path.dirname(output_path),
+            output_dir=output_dir,
+            filename_postfix="_explored",
+            additional_elements = new_elements,
         )
         return result
 
@@ -168,5 +171,3 @@ class PageObjectRecyclerExplorer:
 
         self.logger.warning(f"No match found for locator: {locator}")
         return None
-
-
