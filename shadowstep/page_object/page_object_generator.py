@@ -311,7 +311,7 @@ class PageObjectGenerator:
             elems: List[Dict[str, str]],
             title_el: Dict[str, str],
             summary_pairs: List[Tuple[Dict[str, str], Dict[str, str]]],
-            attr_list: List[str],
+            attr_list: List[str], # ['text', 'content-desc', 'resource-id']
             include_class: bool,
             max_name_words: int,
             used_names: Set[str],
@@ -332,11 +332,20 @@ class PageObjectGenerator:
             if not locator:
                 continue
 
-            key = next((k for k in attr_list if el.get(k)), 'resource-id')
-            if key == 'resource-id':
-                raw = self._strip_package_prefix(el.get(key, ''))
+            cls = el.get("class", "")
+            is_blacklisted = cls in self.BLACKLIST_NO_TEXT_CLASSES
+
+            if is_blacklisted:
+                raw = el.get("content-desc") or self._strip_package_prefix(el.get("resource-id", ""))
+                key = "content-desc" if el.get("content-desc") else "resource-id"
             else:
-                raw = el.get(key) or self._strip_package_prefix(rid)
+                key = next((k for k in attr_list if el.get(k)), 'resource-id')
+                raw = el.get(key) or self._strip_package_prefix(el.get('resource-id', ''))
+
+            # if key == 'resource-id':
+            #     raw = self._strip_package_prefix(el.get(key, ''))
+            # else:
+            #     raw = el.get(key) or self._strip_package_prefix(rid)
 
             words = self._slug_words(raw)[:max_name_words]
             base = "_".join(words) or key.replace('-', '_')
