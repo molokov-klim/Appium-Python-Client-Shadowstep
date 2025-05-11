@@ -4,9 +4,10 @@ import json
 import logging
 import os
 import re
+from collections import defaultdict
 from typing import (
     List, Dict, Union,
-    Set, Tuple, Optional, Any
+    Set, Tuple, Optional, Any, FrozenSet
 )
 from unidecode import unidecode
 from jinja2 import Environment, FileSystemLoader
@@ -322,8 +323,10 @@ class PageObjectGenerator:
             s.get('resource-id', '')
             for _, s in summary_pairs
         }
+        self.logger.info(f"{inspect.currentframe().f_code.co_name}")
 
         for el in elems:
+            self.logger.info(f"{el=}")
             rid = el.get('resource-id', '')
             if el is title_el or rid in processed_ids:
                 continue
@@ -341,11 +344,6 @@ class PageObjectGenerator:
             else:
                 key = next((k for k in attr_list if el.get(k)), 'resource-id')
                 raw = el.get(key) or self._strip_package_prefix(el.get('resource-id', ''))
-
-            # if key == 'resource-id':
-            #     raw = self._strip_package_prefix(el.get(key, ''))
-            # else:
-            #     raw = el.get(key) or self._strip_package_prefix(rid)
 
             words = self._slug_words(raw)[:max_name_words]
             base = "_".join(words) or key.replace('-', '_')
@@ -389,26 +387,42 @@ class PageObjectGenerator:
         """Обрезает package-префикс из resource-id, если он есть (например: com.android.settings:id/foo -> foo)."""
         return resource_id.split('/', 1)[-1] if '/' in resource_id else resource_id
 
-    def _filter_duplicates(self, properties: List[Dict]) -> List[Dict]:
+    def _filter_duplicates(self, properties: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
         """
-        Удаляет свойства, у которых одинаковое «базовое имя» (до _1, _2 и т.д.), если таких свойств ≥ 3.
+        Removes duplicate properties based on locator.
+        Keeps:
+          - Summary elements (sibling=True)
+          - Switches (identified by presence of 'anchor_name')
+
+        Args:
+            properties (List[Dict]): List of property dicts with 'locator' and optional 'sibling' / 'anchor_name'
+
+        Returns:
+            List[Dict]: Filtered properties
         """
-        from collections import defaultdict
+        self.logger.debug(f"{inspect.currentframe().f_code.co_name}()")
 
-        base_name_map: Dict[str, List[Dict]] = defaultdict(list)
-        for prop in properties:
-            base = re.sub(r'(_\d+)?$', '', prop['name'])
-            base_name_map[base].append(prop)
-
+        seen: Set[FrozenSet[Tuple[str, str]]] = set()
         filtered: List[Dict] = []
-        for group in base_name_map.values():
-            if len(group) < 3:
-                filtered.extend(group)
+
+        for prop in properties:
+            locator = prop.get("locator", {})
+            loc_key = frozenset(locator.items())  # делаем hashable для set
+
+            is_summary = prop.get("sibling", False)
+            is_switch = "anchor_name" in prop
+
+            if loc_key in seen and not is_summary and not is_switch:
+                self.logger.debug(f"Duplicate locator skipped: {prop['name']} → {locator}")
+                continue
+
+            seen.add(loc_key)
+            filtered.append(prop)
+
         return filtered
 
     def _find_summary_siblings(self, elements: List[Dict[str, Any]]) -> List[Tuple[Dict[str, Any], Dict[str, Any]]]:
         """Find (title, summary) element pairs based on parent and sibling relation."""
-        from collections import defaultdict
 
         # Группируем по родителю
         grouped: Dict[Optional[str], List[Dict[str, Any]]] = defaultdict(list)
