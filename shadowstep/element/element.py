@@ -1034,9 +1034,9 @@ class Element(ElementBase):
 
         while time.time() - start_time < self.timeout:
             try:
-                if not self.scroll_up(percent, speed):
+                if not self.scroll_up(percent, speed, return_bool=True):
                     return cast('Element', self)
-                self.scroll_down(percent=percent, speed=speed, return_bool=False)
+                self.scroll_down(percent=percent, speed=speed, return_bool=True)
             except (
             NoSuchDriverException, InvalidSessionIdException, AttributeError, StaleElementReferenceException) as error:
                 self._handle_driver_error(error)
@@ -1053,9 +1053,9 @@ class Element(ElementBase):
 
         while time.time() - start_time < self.timeout:
             try:
-                if not self.scroll_up(percent, speed):
+                if not self.scroll_up(percent, speed, return_bool=True):
                     return cast('Element', self)
-                self.scroll_up(percent=percent, speed=speed, return_bool=False)
+                self.scroll_up(percent=percent, speed=speed, return_bool=True)
             except (
             NoSuchDriverException, InvalidSessionIdException, AttributeError, StaleElementReferenceException) as error:
                 self._handle_driver_error(error)
