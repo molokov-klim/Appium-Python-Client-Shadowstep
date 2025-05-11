@@ -26,9 +26,22 @@ class PageObjectGenerator:
             - extract_simple_elements(xml: str) -> List[Dict[str,str]]
             - find_summary_siblings(xml: str) -> List[Tuple[Dict, Dict]]
         """
+        self.logger = logging.getLogger(__name__)
+        self.BLACKLIST_NO_TEXT_CLASSES = {
+            'android.widget.SeekBar',
+            'android.widget.ProgressBar',
+            'android.widget.Switch',
+            'android.widget.CheckBox',
+            'android.widget.ToggleButton',
+            'android.view.View',
+            'android.widget.ImageView',
+            'android.widget.ImageButton',
+            'android.widget.RatingBar',
+            'androidx.recyclerview.widget.RecyclerView',
+            'androidx.viewpager.widget.ViewPager',
+        }
         self._anchor_name_map = None
         self.extractor = extractor
-        self.logger = logging.getLogger(__name__)
 
         # Инициализируем Jinja2
         templates_dir = os.path.join(
@@ -155,6 +168,9 @@ class PageObjectGenerator:
             self._build_locator(recycler_el, attr_list, include_class)
             if need_recycler and recycler_el else None
         )
+
+        # 5.7) удаление text из локаторов у элементов, которые не ищутся по text в UiAutomator2
+        properties = self._remove_text_from_non_label_elements(properties)
 
         # 6) рендер и запись
         template = self.env.get_template('page_object.py.j2')
@@ -321,6 +337,7 @@ class PageObjectGenerator:
                 raw = self._strip_package_prefix(el.get(key, ''))
             else:
                 raw = el.get(key) or self._strip_package_prefix(rid)
+
             words = self._slug_words(raw)[:max_name_words]
             base = "_".join(words) or key.replace('-', '_')
             suffix = el.get('class', '').split('.')[-1].lower()
@@ -546,6 +563,22 @@ class PageObjectGenerator:
         locator = self._build_locator(switch_el, attr_list, include_class)
 
         return name, anchor_name, locator, depth
+
+    def _remove_text_from_non_label_elements(self, props: List[Dict]) -> List[Dict]:
+        """
+        Удаляет ключ 'text' из локаторов у элементов, которые не ищутся по text в UiAutomator2.
+        """
+
+
+        for prop in props:
+            locator = prop.get("locator", {})
+            cls = locator.get("class")
+            if cls in self.BLACKLIST_NO_TEXT_CLASSES and "text" in locator:
+                self.logger.debug(f"Удаляем 'text' из локатора {cls} → {locator}")
+                locator.pop("text", None)
+
+        return props
+
 
 
 def _pretty_dict(d: dict, base_indent: int = 8) -> str:

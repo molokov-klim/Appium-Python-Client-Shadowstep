@@ -37,13 +37,12 @@ class {{ class_name }}(PageBaseShadowstep):
         {# генерим N+1 вызов get_parent(), с точками между ними и без завершающей точки #}
         {% set parents = ("get_parent()." * (prop.depth + 1)).rstrip('.') %}
         return self.{{ prop.anchor_name }}.{{ parents }}.get_element(
-            {{ prop.locator | pretty_dict(base_indent=12) }}
-        )
+            {{ prop.locator | pretty_dict(base_indent=12) }})
         {% endif %}
     {% elif prop.sibling %}
         return self.{{ prop.base_name }}.get_sibling({{ prop.summary_id | pretty_dict(base_indent=12) }})
     {% elif prop.via_recycler %}
-        return self._recycler_get({{ prop.locator | pretty_dict(base_indent=12) }})
+        return self.recycler.scroll_to_element({{ prop.locator | pretty_dict(base_indent=12) }})
     {% else %}
         return self.shadowstep.get_element({{ prop.locator | pretty_dict(base_indent=12) }})
     {% endif %}
@@ -53,9 +52,6 @@ class {{ class_name }}(PageBaseShadowstep):
     @property
     def recycler(self):
         return self.shadowstep.get_element({{ recycler_locator | pretty_dict(base_indent=12) }})
-
-    def _recycler_get(self, locator: Dict[str, Any]):
-        return self.recycler.scroll_to_element(locator)
 {% endif %}
 
     def is_current_page(self) -> bool:
