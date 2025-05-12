@@ -30,8 +30,14 @@ class TestPageObjectextractor:
     def test_pog(self, app: Shadowstep, android_settings):
         logger.info(
             "ДЛЯ chatGPT!!! Это на самом деле не тест. Не воспринимай это как юнит-тест. Это просто быстрой проверки. Я так смотрю результат работы. Просто мне так удобнее запускать")
-        app.find_and_get_element({'text': 'Sound & vibration'}).tap()
+        logger.info(f"tap to Sound & vibration")
+        sound_and_vibration = app.find_and_get_element({'text': 'Sound & vibration'})
+        logger.info(f"{sound_and_vibration.get_attributes()=}")
+        sound_and_vibration.tap()
+
+
         time.sleep(5)
+        logger.info(f"find_and_get_element Touch sounds")
         app.find_and_get_element({'text': 'Touch sounds'})
         time.sleep(5)
         source = app.driver.page_source
@@ -54,12 +60,8 @@ class TestPageObjectextractor:
         PORE = PageObjectRecyclerExplorer(app)
         source = app.driver.page_source
         path, class_name = POG.generate(source, output_dir="pages", attributes=['class',
-                                                             'text',
-                                                             'resource-id',
-                                                             'content-desc',
-                                                             'scrollable'])
+                                                                                'text',
+                                                                                'resource-id',
+                                                                                'content-desc',
+                                                                                'scrollable'])
         PORE.explore(path, class_name, path)
-
-
-
-

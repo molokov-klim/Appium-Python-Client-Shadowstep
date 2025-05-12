@@ -44,6 +44,7 @@ class PageObjectRecyclerExplorer:
         # Сбор уже существующих имён свойств
         properties = self._collect_recycler_properties(page)
 
+        recycler_el.scroll_to_top()
         xml = self.base.driver.page_source
         elements = self.extractor.parse(xml)
 

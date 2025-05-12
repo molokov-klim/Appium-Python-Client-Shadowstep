@@ -11,13 +11,17 @@ DEFAULT_WHITE_LIST_CLASSES: Set[str] = {
     'android.widget.Switch',
     'android.widget.SeekBar',
     'android.widget.ProgressBar',
+    'androidx.recyclerview.widget.RecyclerView',
 }
 DEFAULT_BLACK_LIST_CLASSES: Set[str] = {
+    'hierarchy',
     'android.widget.LinearLayout',
     'android.widget.FrameLayout',
     'android.view.ViewGroup',
     'android.widget.GridLayout',
-    'android.widget.TableLayout'
+    'android.widget.TableLayout',
+    'android.widget.ImageView',
+    'android.widget.RelativeLayout'
 }
 DEFAULT_WHITE_LIST_RESOURCE_ID: Set[str] = {
     'button', 'btn', 'edit', 'input',
@@ -85,23 +89,7 @@ class PageObjectParser:
             if attrib.get("scrollable") == "true":
                 new_scroll_stack.insert(0, el_id)
 
-            add_element = False
-            if attrib.get("text"):
-                add_element = True
-            if attrib.get("content-desc"):
-                add_element = True
-
-            resource_id = attrib.get("resource-id")
-            if resource_id in self.WHITE_LIST_RESOURCE_ID:
-                add_element = True
-            elif resource_id and resource_id not in self.BLACK_LIST_RESOURCE_ID:
-                add_element = True
-
-            class_name = attrib.get("class")
-            if class_name in self.WHITE_LIST_CLASSES:
-                add_element = True
-            elif class_name not in self.BLACK_LIST_CLASSES:
-                add_element = True
+            add_element = self._is_element_allowed(attrib)
 
             attrib.update({
                 "id": el_id,
@@ -125,3 +113,29 @@ class PageObjectParser:
         #     self.logger.debug(f"res:\n{res}")
         # self.logger.debug("====================================================")
         return result
+
+    def _is_element_allowed(self, attrib: Dict[str, str]) -> bool:
+        cls = attrib.get("class")
+        rid = attrib.get("resource-id")
+        text = attrib.get("text")
+        desc = attrib.get("content-desc")
+
+        # ❌ Абсолютный бан
+        if cls in self.BLACK_LIST_CLASSES:
+            return False
+        if rid in self.BLACK_LIST_RESOURCE_ID:
+            return False
+
+        # ✅ Абсолютный проход
+        if cls in self.WHITE_LIST_CLASSES:
+            return True
+        if rid in self.WHITE_LIST_RESOURCE_ID:
+            return True
+
+        # 🟡 Условный проход — текстовая интерактивность
+        if text or desc:
+            return True
+
+        # ❌ Всё остальное — в мусор
+        return False
+

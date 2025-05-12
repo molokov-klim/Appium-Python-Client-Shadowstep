@@ -9,6 +9,8 @@ from typing import (
     List, Dict, Union,
     Set, Tuple, Optional, Any, FrozenSet
 )
+
+from matplotlib.pyplot import broken_barh
 from unidecode import unidecode
 from jinja2 import Environment, FileSystemLoader
 
@@ -72,42 +74,51 @@ class PageObjectGenerator:
             ] = None,
             additional_elements: list = None
     ) -> Tuple[str, str]:
-        # 1) выбор атрибутов для локаторов
+        # 1) Выбор атрибутов для локаторов
+        self.logger.info(f"1) Выбор атрибутов для локаторов")
         attr_list, include_class = self._prepare_attributes(attributes)
 
         # 2) извлечение и элементов
+        self.logger.info(f"2) извлечение и элементов")
         elems = self.extractor.parse(source_xml)
         if additional_elements:
             elems += additional_elements
         # self.logger.debug(f"{elems=}")
 
-        # 2.1)
+        # 2.1) выбор основного скроллера
+        self.logger.info(f"2.1) выбор основного скроллера")
         recycler_id = self._select_main_recycler(elems)
         recycler_el = next((e for e in elems if e['id'] == recycler_id), None)
 
         # 2.2) формирование пар summary
+        self.logger.info(f"2.2) формирование пар summary")
         summary_pairs = self._find_summary_siblings(elems)
-        # self.logger.debug(f"{summary_pairs=}")
+        self.logger.info(f"{summary_pairs=}")
 
         # 3) заголовок страницы
+        self.logger.info(f"3) заголовок страницы")
         title_el = self._select_title_element(elems)
         raw_title = self._raw_title(title_el)
 
         # 4) PageClassName + file_name.py
+        self.logger.info(f"4) PageClassName + file_name.py")
         class_name, file_name = self._format_names(raw_title)
 
         # 5) собираем все свойства
+        self.logger.info(f"5) собираем все свойства")
         used_names: Set[str] = {'title'}
         title_locator = self._build_locator(
             title_el, attr_list, include_class
         )
         properties: List[Dict] = []
 
-        # 5.1)
+        # 5.1) собираем пары якорь - элемент (свитчер)
+        self.logger.info(f"5.1) собираем пары якорь - элемент (свитчер)")
         anchor_pairs = self._find_anchor_element_pairs(elems)
-        # self.logger.debug(f"{anchor_pairs=}")
+        self.logger.info(f"{anchor_pairs=}")
 
         # 5.2) обычные свойства
+        self.logger.info(f"5.2) обычные свойства")
         for prop in self._build_regular_props(
                 elems,
                 title_el,
@@ -119,13 +130,18 @@ class PageObjectGenerator:
                 recycler_id
         ):
             properties.append(prop)
+        self.logger.info(f"{properties=}")
 
         # 5.2.1) построим мапу id→имя свойства, чтобы потом найти anchor_name
+        self.logger.info(f"5.2.1) построим мапу id→имя свойства, чтобы потом найти anchor_name")
         self._anchor_name_map = {p['element_id']: p['name']
                                  for p in properties
                                  if 'element_id' in p}
+        self.logger.info(f"{self._anchor_name_map=}")
+
 
         # 5.3) switchers: собираем через общий _build_switch_prop
+        self.logger.info(f"5.3) switchers: собираем через общий _build_switch_prop")
         for anchor, switch, depth in anchor_pairs:
             name, anchor_name, locator, depth = self._build_switch_prop(
                 anchor, switch, depth,
@@ -141,16 +157,18 @@ class PageObjectGenerator:
                 "anchor_name": anchor_name,
                 "depth": depth,
             })
+        self.logger.info(f"{properties}")
 
         # 5.4) summary-свойства
+        self.logger.info("5.4) summary-свойства")
         for title_e, summary_e in summary_pairs:
             name, locator, summary_id, base_name = self._build_summary_prop(
-                title_e,
-                summary_e,
-                attr_list,
-                include_class,
-                max_name_words,
-                used_names
+                title_el=title_e,
+                summary_el=summary_e,
+                attr_list=attr_list,
+                include_class=False,
+                max_name_words=max_name_words,
+                used_names=used_names
             )
             properties.append({
                 'name': name,
@@ -161,9 +179,12 @@ class PageObjectGenerator:
             })
 
         # 5.5) удаляем дубликаты элементов
+        self.logger.info(f"5.5) удаляем дубликаты элементов")
         properties = self._filter_duplicates(properties)
+        self.logger.info(f"{properties=}")
 
-        # 5.6)
+        # 5.6) определение локатора для скроллера
+        self.logger.info(f"5.6) определение локатора для скроллера")
         need_recycler = any(p.get("via_recycler") for p in properties)
         recycler_locator = (
             self._build_locator(recycler_el, attr_list, include_class)
@@ -171,9 +192,11 @@ class PageObjectGenerator:
         )
 
         # 5.7) удаление text из локаторов у элементов, которые не ищутся по text в UiAutomator2
+        self.logger.info(f"5.7) удаление text из локаторов у элементов, которые не ищутся по text в UiAutomator2")
         properties = self._remove_text_from_non_label_elements(properties)
 
         # 6) рендер и запись
+        self.logger.info(f"6) рендер и запись")
         template = self.env.get_template('page_object.py.j2')
         properties.sort(key=lambda p: p["name"])  # сортировка по алфавиту
         rendered = template.render(
@@ -187,13 +210,16 @@ class PageObjectGenerator:
 
         # self.logger.info(f"Props:\n{json.dumps(properties, indent=2)}")
 
-        # Формируем путь с постфиксом
+        # 7) Формируем путь с постфиксом
+        self.logger.info(f"7) Формируем путь с постфиксом")
         if filename_postfix:
             name, ext = os.path.splitext(file_name)
             final_filename = f"{name}{filename_postfix}{ext}"
         else:
             final_filename = file_name
 
+        # 8) Запись в файл
+        self.logger.info(f"8) Запись в файл")
         path = os.path.join(output_dir, final_filename)
         os.makedirs(os.path.dirname(path), exist_ok=True)  # ← вот так
         with open(path, 'w', encoding='utf-8') as f:
@@ -293,15 +319,8 @@ class PageObjectGenerator:
             raw = self._strip_package_prefix(title_el['resource-id'])
         words = self._slug_words(raw)[:max_name_words]
         base = "_".join(words) or "summary"
-        suffix = title_el.get('class', '').split('.')[-1].lower()
-        base_name = self._sanitize_name(f"{base}_{suffix}")
-        name = self._sanitize_name(f"{base}_summary_{suffix}")
-
-        i = 1
-        while name in used_names:
-            name = self._sanitize_name(f"{base}_summary_{suffix}_{i}")
-            i += 1
-        used_names.add(name)
+        base_name = self._sanitize_name(f"{base}")
+        name = self._sanitize_name(f"{base}_summary")
 
         locator = self._build_locator(title_el, attr_list, include_class)
         summary_id = {'resource-id': rid}
@@ -346,14 +365,12 @@ class PageObjectGenerator:
                 raw = el.get(key) or self._strip_package_prefix(el.get('resource-id', ''))
 
             words = self._slug_words(raw)[:max_name_words]
-            base = "_".join(words) or key.replace('-', '_')
-            suffix = el.get('class', '').split('.')[-1].lower()
-            raw_name = f"{base}_{suffix}"
+            base_name = "_".join(words) or key.replace('-', '_')
 
-            name = self._sanitize_name(raw_name)
+            name = self._sanitize_name(base_name)
             i = 1
             while name in used_names:
-                name = self._sanitize_name(f"{raw_name}_{i}")
+                name = self._sanitize_name(f"{name}_{i}")
                 i += 1
             used_names.add(name)
 
@@ -466,90 +483,130 @@ class PageObjectGenerator:
             self,
             elements: List[Dict[str, Any]],
             max_depth: int = 5,
-            target: Tuple[str, str] = ('class', 'android.widget.Switch')
+            target: Tuple[str, str] = ('class', 'android.widget.Switch'),
+            looking_for_an_anchor: Tuple[str, str] = ("class", "android.widget.TextView"),
     ) -> List[Tuple[Dict[str, Any], Dict[str, Any], int]]:
-        """
-        Ищет тройки (anchor, target_element, depth), где:
-          - target_element — элемент, у которого атрибут target[0] содержит target[1]
-          - anchor         — соседний элемент с text или content-desc (вплоть до одного уровня вложенности)
-          - depth          — сколько раз поднялись по дереву до общего родителя
-        """
-        from collections import defaultdict
+        self.logger.info(f"{inspect.currentframe().f_code.co_name}")
+        pairs = []
+        target_by, target_value = target
+        targets = self._find_targets_for_anchor(elements, target_by, target_value)
+        self.logger.info(f"{targets=}")
+        for target in targets:
+            if "depth" not in target or "parent_id" not in target:
+                self.logger.warning(f"Target {target.get('id')} missing depth or parent_id. Skipping.")
+                continue
 
-        by_attr, attr_val = target
-
-        # 1) группировка: parent_id → прямые дети
-        children_by_parent: Dict[Optional[str], List[Dict[str, Any]]] = defaultdict(list)
-        for el in elements:
-            children_by_parent[el.get('parent_id')].append(el)
-
-        # id → элемент, для подъема вверх
-        el_by_id = {el['id']: el for el in elements if 'id' in el}
-
-        # собрать всех потомков по дереву (для проверки уникальности)
-        def collect_descendants(parent_id: str) -> List[Dict[str, Any]]:
-            stack = [parent_id]
-            result = []
-            while stack:
-                pid = stack.pop()
-                for child in children_by_parent.get(pid, []):
-                    result.append(child)
-                    stack.append(child['id'])
-            return result
-
-        pairs: List[Tuple[Dict[str, Any], Dict[str, Any], int]] = []
-
-        # 2) цикл по всем элементам-мишеням
-        for target_el in filter(lambda e: attr_val in e.get(by_attr, ''), elements):
-            current = target_el
-            depth = 0
-            anchor = None
-
-            # 2.a) поднимаемся вверх до max_depth
-            while depth <= max_depth and current.get('parent_id'):
-                parent_id = current['parent_id']
-                siblings = children_by_parent.get(parent_id, [])
-                siblings.sort(key=lambda x: int(x.get('index', 0)))
-
-                # 2.b) ищем anchor среди siblings и их детей
-                for sib in siblings:
-                    if sib is target_el:
-                        continue
-
-                    if sib.get('text') or sib.get('content-desc'):
-                        anchor = sib
-                        break
-
-                    for child in children_by_parent.get(sib['id'], []):
-                        if child.get('text') or child.get('content-desc'):
-                            anchor = child
-                            break
+            anchor = self._find_anchor_in_siblings(elements, target, looking_for_an_anchor)
+            if anchor is None:
+                for current_depth in range(max_depth):
+                    anchor = self._find_anchor_in_cousins(elements, target, current_depth, looking_for_an_anchor)
                     if anchor:
+                        pairs.append((target, anchor, current_depth))
                         break
-
-                if anchor:
-                    # проверяем, что в subtree только один target
-                    subtree = collect_descendants(parent_id)
-                    count = sum(1 for el in subtree if attr_val in el.get(by_attr, ''))
-                    if count == 1:
-                        pairs.append((anchor, target_el, depth))
-                    else:
-                        self.logger.warning(
-                            f"Ambiguous targets under parent {parent_id}: {count} found. Skipping."
-                        )
-                    break
-
-                # идем к следующему родителю
-                current = el_by_id.get(parent_id, {})
-                depth += 1
-
-            if not anchor:
-                self.logger.debug(
-                    f"No anchor found for element {target_el.get('id')} up to depth {max_depth}"
-                )
-
-        # self.logger.debug(f"Found anchor-element-depth triplets: {pairs}")
+                if anchor is None:
+                    self.logger.debug(f"No anchor found for target {target.get('id')} after {max_depth} levels.")
+            else:
+                pairs.append((target, anchor, 0))
         return pairs
+
+    def _find_anchor_in_cousins(
+            self,
+            elements: List[Dict[str, Any]],
+            target: Dict[str, Any],
+            depth: int,
+            looking_for_an_anchor: Tuple[str, str] = ("class", "android.widget.TextView"),
+    ) -> Optional[Dict[str, Any]]:
+        """Finds anchor among 'cousin' elements by climbing up the tree and scanning subtree at same depth as target.
+
+        Args:
+            elements (List[Dict[str, Any]]): All parsed elements.
+            target (Dict[str, Any]): The target element.
+            depth (int): Number of levels to climb to reach common ancestor.
+            looking_for_an_anchor (Tuple[str, str]): Key and value pair to identify valid anchor.
+
+        Returns:
+            Optional[Dict[str, Any]]: Anchor element if found, else None.
+        """
+        from_id = target.get("parent_id")
+        if not from_id:
+            self.logger.debug(f"Skip cousin search: target {target.get('id')} has no parent_id")
+            return None
+
+        # 1. climb up N levels to get the ancestor
+        ancestor_id = from_id
+        for _ in range(depth):
+            ancestor = next((el for el in elements if el["id"] == ancestor_id), None)
+            if not ancestor:
+                self.logger.debug(f"Ancestor not found at depth {depth} for element {target.get('id')}")
+                return None
+            ancestor_id = ancestor.get("parent_id")
+            if not ancestor_id:
+                self.logger.debug(f"Reached top of tree before expected depth for element {target.get('id')}")
+                return None
+
+        # 2. find elements that are direct/indirect children of ancestor_id and have same depth as target
+        target_depth = target["depth"]
+        cousins = [
+            el for el in elements
+            if el.get("parent_id") != target.get("parent_id")  # exclude direct siblings
+               and el.get("depth") == target_depth
+        ]
+
+        if not cousins:
+            self.logger.debug(f"No cousins found at depth={target_depth} under ancestor={ancestor_id}")
+            return None
+
+        key, value = looking_for_an_anchor
+        for el in cousins:
+            if el.get(key) == value and el.get("text"):
+                return el
+
+        self.logger.debug(
+            f"No matching anchor found among cousins at depth={target_depth} under ancestor={ancestor_id}")
+        return None
+
+    def _find_anchor_in_siblings(
+            self,
+            elements: List[Dict[str, Any]],
+            target: Dict[str, Any],
+            looking_for_an_anchor: Tuple[str, str]
+    ) -> Optional[Dict[str, Any]]:
+        parent_id = target.get("parent_id")
+        looking_for_an_anchor_by = looking_for_an_anchor[0]
+        looking_for_an_anchor_value = looking_for_an_anchor[1]
+        if not parent_id:
+            self.logger.debug("Anchor search aborted: target has no parent_id.")
+            return None
+
+        siblings = [
+            el for el in elements
+            if el.get("parent_id") == parent_id and el.get("id") != target.get("id")
+        ]
+
+        if not siblings:
+            self.logger.debug(f"No siblings found for target id={target.get('id')} with parent_id={parent_id} in elements={elements}")
+            return None
+
+        for sibling in siblings:
+            if sibling.get(looking_for_an_anchor_by) == looking_for_an_anchor_value:
+                return sibling
+
+        self.logger.debug(
+            f"No suitable anchor found among siblings of target id={target.get('id')} with parent_id={parent_id} in elements={elements}")
+        return None
+
+    def _find_targets_for_anchor(self, elements,  by: str, value: str) -> List[Dict[str, Any]]:
+        """Find all elements matching the given attribute and value.
+
+        Args:
+            by (str): Attribute name to filter by (e.g., "class", "resource-id").
+            value (str): Attribute value to match.
+
+        Returns:
+            List[Dict[str, Any]]: Filtered list of matching elements.
+        """
+        self.logger.debug(f"{inspect.currentframe().f_code.co_name}: by={by}, value={value}")
+        return [el for el in elements if el.get(by) == value]
 
     def _build_switch_prop(
             self,
@@ -591,8 +648,6 @@ class PageObjectGenerator:
         """
         Удаляет ключ 'text' из локаторов у элементов, которые не ищутся по text в UiAutomator2.
         """
-
-
         for prop in props:
             locator = prop.get("locator", {})
             cls = locator.get("class")

@@ -46,7 +46,7 @@ class PageObjectBuilder:
         result = self.explorer.explore(
             input_path=self.initial_path,
             class_name=self.generated_class_name,
-            output_path=self.initial_path  # временно пишем в тот же путь
+            output_dir=self.initial_path  # временно пишем в тот же путь
         )
         if result:
             _, _ = result
