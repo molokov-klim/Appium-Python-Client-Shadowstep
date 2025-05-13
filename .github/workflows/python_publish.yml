@@ -5,7 +5,7 @@ on:
     branches:
       - main
       - develop
-      - need_rm_loguru
+      - element_node
   workflow_dispatch:
 
 permissions:
