@@ -73,6 +73,10 @@ def fail_safe(
 
             for attempt in range(1, retries + 2):
                 try:
+                    if hasattr(self, "base") and hasattr(self.base, "is_connected"):
+                        if not self.base.is_connected():
+                            self.logger.warning(f"[fail_safe] No session before {func.__name__}(), reconnecting")
+                            self.base.reconnect()
                     return func(self, *args, **kwargs)
                 except exceptions as e:
                     last_exc = e
@@ -102,10 +106,11 @@ def fail_safe(
                     stack = "".join(traceback.format_stack(limit=5))
                     self.logger.debug(f"[fail_safe] stack:\n{stack}")
 
-                    # Attempt to reconnect; if it fails, let the error propagate
-                    if hasattr(self, "base") and hasattr(self.base, "reconnect"):
-                        self.logger.debug("[fail_safe] Calling self.base.reconnect()")
-                        self.base.reconnect()
+                    if hasattr(self, "base") and hasattr(self.base, "is_connected"):
+                        if not self.base.is_connected():
+                            self.logger.warning(
+                                f"[fail_safe] Disconnected after exception in {method}, reconnecting...")
+                            self.base.reconnect()
 
                     # Wait before the next retry if any remain
                     if attempt <= retries:
