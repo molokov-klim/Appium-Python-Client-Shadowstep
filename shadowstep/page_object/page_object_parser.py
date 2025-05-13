@@ -1,4 +1,4 @@
-# shadowstep/page_object/#page_object_extractor.py
+# shadowstep/page_object/#page_object_parser.py
 
 import inspect
 import logging
@@ -6,12 +6,15 @@ from typing import Dict, List, Set, Optional, Tuple, Any, Union
 from collections import Counter
 from lxml import etree as ET
 
+from shadowstep.page_object.page_object_element_node import UiElementNode
+
 DEFAULT_WHITE_LIST_CLASSES: Set[str] = {
     'android.widget.EditText',
     'android.widget.Switch',
     'android.widget.SeekBar',
     'android.widget.ProgressBar',
     'androidx.recyclerview.widget.RecyclerView',
+    'android.widget.ScrollView'
 }
 DEFAULT_BLACK_LIST_CLASSES: Set[str] = {
     'hierarchy',
@@ -61,58 +64,77 @@ class PageObjectParser:
         self.CONTAINER_WHITELIST: Set[str] = DEFAULT_CONTAINER_WHITELIST
 
         self._tree: Optional[ET.Element] = None
-        self._elements: List[Dict[str, Any]] = []
+        self.ui_element_tree = None
 
-    def parse(self, xml: str) -> Union[list[dict[str, Any]], list[Any]]:
+    def parse(self, xml: str) ->  UiElementNode:
         """Parses and walks the XML, populating elements and tree."""
         self.logger.info(f"{inspect.currentframe().f_code.co_name}")
         try:
             self._tree = ET.fromstring(xml.encode('utf-8'))
-            self._elements = self._walk_tree(self._tree)
+            return self._build_tree(self._tree)
         except ET.XMLSyntaxError:
             self.logger.exception("Failed to parse XML")
-            self._tree = None
-            self._elements = []
-        return self._elements
+            raise
 
-    def _walk_tree(self, root: ET.Element) -> List[Dict[str, Any]]:
-        result = []
+    def _build_tree(self, root_et: ET.Element) -> UiElementNode:
         id_counter = 0
 
-        def _recurse(el: ET.Element, parent_id: Optional[str], scroll_stack: List[str], depth: int) -> None:
+        def _recurse(el: ET.Element, parent: Optional[UiElementNode], scroll_stack: List[str], depth: int) -> Optional[
+            UiElementNode]:
             nonlocal id_counter
             attrib = dict(el.attrib)
-            el_id = f"el_{id_counter}"
+            el_id = f'el_{id_counter}'
             id_counter += 1
 
             new_scroll_stack = scroll_stack.copy()
             if attrib.get("scrollable") == "true":
                 new_scroll_stack.insert(0, el_id)
 
-            add_element = self._is_element_allowed(attrib)
+            children_nodes: List[UiElementNode] = []
+            for child_et in el:
+                child_node = _recurse(child_et, None, new_scroll_stack, depth + 1)
+                if child_node:
+                    children_nodes.append(child_node)
 
-            attrib.update({
-                "id": el_id,
-                "parent_id": parent_id,
-                "scrollable_parents": new_scroll_stack,
-                "depth": depth,
-            })
-            # self.logger.debug(
-            #     f"[{el_id}] parent={parent_id} depth={depth} scrollable={attrib.get('scrollable')} "
-            #     f"scroll_stack={new_scroll_stack} attrib={attrib}"
-            # )
-            if add_element:
-                result.append(attrib)
+            if self._is_element_allowed(attrib):
+                node = UiElementNode(
+                    id=el_id,
+                    tag=el.tag,
+                    attrs=attrib,
+                    parent=parent,
+                    depth=depth,
+                    scrollable_parents=new_scroll_stack,
+                    children=[]
+                )
+                for child in children_nodes:
+                    child.parent = node
+                    node.children.append(child)
+                return node
+            else:
+                # Если родитель отфильтрован — создаём виртуального контейнера
+                if not children_nodes:
+                    return None
+                virtual = UiElementNode(
+                    id=el_id,
+                    tag=el.tag,
+                    attrs=attrib,
+                    parent=parent,
+                    depth=depth,
+                    scrollable_parents=new_scroll_stack,
+                    children=[],
+                )
+                for child in children_nodes:
+                    child.parent = virtual
+                    virtual.children.append(child)
+                return virtual
 
-            for child in el:
-                _recurse(child, el_id, new_scroll_stack, depth + 1)
+        if root_et.tag == "hierarchy":
+            root_et = next(iter(root_et))
 
-        _recurse(root, None, [], 0)
-        # self.logger.debug("====================================================")
-        # for res in result:
-        #     self.logger.debug(f"res:\n{res}")
-        # self.logger.debug("====================================================")
-        return result
+        root_node = _recurse(root_et, None, [], 0)
+        if not root_node:
+            raise ValueError("Root node was filtered out and has no valid children.")
+        return root_node
 
     def _is_element_allowed(self, attrib: Dict[str, str]) -> bool:
         cls = attrib.get("class")

@@ -3,7 +3,7 @@ import logging
 import os
 from typing import Optional, Tuple, List, Dict, Any
 
-from shadowstep.page_object.page_object_extractor import PageObjectParser
+from shadowstep.page_object.page_object_parser import PageObjectParser
 from shadowstep.page_object.page_object_generator import PageObjectGenerator
 from shadowstep.page_object.page_object_recycler_explorer import PageObjectRecyclerExplorer
 from shadowstep.shadowstep import Shadowstep
@@ -16,8 +16,8 @@ class PageObjectBuilder:
         self.logger = logging.getLogger(__name__)
         self.shadowstep = shadowstep
 
-        self.extractor = PageObjectParser()
-        self.generator = PageObjectGenerator(self.extractor)
+        self.parser = PageObjectParser()
+        self.generator = PageObjectGenerator(self.parser)
         self.explorer = PageObjectRecyclerExplorer(self.shadowstep)
 
         self.initial_path: Optional[str] = None

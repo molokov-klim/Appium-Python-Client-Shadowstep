@@ -7,7 +7,7 @@ import os
 import re
 from typing import Optional, Dict, Type, Any, Set, Tuple, List
 
-from shadowstep.page_object.page_object_extractor import PageObjectParser
+from shadowstep.page_object.page_object_parser import PageObjectParser
 from shadowstep.page_object.page_object_generator import PageObjectGenerator
 from shadowstep.shadowstep import Shadowstep
 

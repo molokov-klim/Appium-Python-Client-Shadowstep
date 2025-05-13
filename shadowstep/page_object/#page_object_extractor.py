@@ -1,4 +1,4 @@
-# shadowstep/page_object/#page_object_extractor.py
+# shadowstep/page_object/#page_object_parser.py
 
 import inspect
 import logging

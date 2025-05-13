@@ -8,7 +8,9 @@ from wheel.metadata import yield_lines
 from shadowstep.shadowstep import Shadowstep, logger
 
 # Please use virtual device Google Pixel 10.0
-UDID = '192.168.56.101:5555'
+UDID = '192.168.56.101:5555'  # GooglePixel
+# UDID = '10.77.124.56:5554'      # STB6
+
 
 # Silence noisy third-party libraries
 logging.getLogger("selenium").setLevel(logging.CRITICAL)
@@ -77,7 +79,7 @@ def press_home(app: Shadowstep):
 @pytest.fixture(scope="function")
 def android_settings(app: Shadowstep):
     app.terminal.start_activity(package='com.android.settings', activity='com.android.settings.Settings')
-    app.get_element({'text': 'Settings', 'resource-id': 'com.android.settings:id/homepage_title'}).wait(timeout=30)
+    time.sleep(3)
     yield
     app.terminal.close_app('com.android.settings')
 
