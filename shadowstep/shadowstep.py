@@ -375,7 +375,7 @@ class Shadowstep(ShadowstepBase):
         if speed < 0:
             raise ValueError(f"Speed must be non-negative, got {speed}")
 
-        self._mobile_gesture(
+        self._execute(
             'mobile: scrollGesture',
             {
                 'left': left,
@@ -422,7 +422,7 @@ class Shadowstep(ShadowstepBase):
             raise ValueError(f"Duration must be non-negative, got {duration}")
 
         self.driver = WebDriverSingleton.get_driver()
-        self._mobile_gesture(
+        self._execute(
             'mobile: longClickGesture',
             {'x': x, 'y': y, 'duration': duration}
         )
@@ -456,7 +456,7 @@ class Shadowstep(ShadowstepBase):
         self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
 
         self.driver = WebDriverSingleton.get_driver()
-        self._mobile_gesture(
+        self._execute(
             'mobile: doubleClickGesture',
             {'x': x, 'y': y}
         )
@@ -490,7 +490,7 @@ class Shadowstep(ShadowstepBase):
         self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
 
         self.driver = WebDriverSingleton.get_driver()
-        self._mobile_gesture(
+        self._execute(
             'mobile: clickGesture',
             {'x': x, 'y': y}
         )
@@ -539,7 +539,7 @@ class Shadowstep(ShadowstepBase):
             raise ValueError(f"Speed must be non-negative, got {speed}")
 
         self.driver = WebDriverSingleton.get_driver()
-        self._mobile_gesture(
+        self._execute(
             'mobile: dragGesture',
             {
                 'startX': start_x,
@@ -599,7 +599,7 @@ class Shadowstep(ShadowstepBase):
             raise ValueError(f"Speed must be > 0, got {speed}")
 
         self.driver = WebDriverSingleton.get_driver()
-        self._mobile_gesture(
+        self._execute(
             'mobile: flingGesture',
             {
                 'left': left,
@@ -660,7 +660,7 @@ class Shadowstep(ShadowstepBase):
             raise ValueError(f"Speed must be non-negative, got {speed}")
 
         self.driver = WebDriverSingleton.get_driver()
-        self._mobile_gesture(
+        self._execute(
             'mobile: pinchOpenGesture',
             {
                 'left': left,
@@ -720,7 +720,7 @@ class Shadowstep(ShadowstepBase):
             raise ValueError(f"Speed must be non-negative, got {speed}")
 
         self.driver = WebDriverSingleton.get_driver()
-        self._mobile_gesture(
+        self._execute(
             'mobile: pinchCloseGesture',
             {
                 'left': left,
@@ -786,7 +786,7 @@ class Shadowstep(ShadowstepBase):
             raise ValueError(f"Speed must be non-negative, got {speed}")
 
         self.driver = WebDriverSingleton.get_driver()
-        self._mobile_gesture(
+        self._execute(
             'mobile: swipeGesture',
             {
                 'left': left,
@@ -1029,6 +1029,7 @@ class Shadowstep(ShadowstepBase):
         currentDisplayId | int | The id of the display that should be used when finding elements, taking screenshots, etc. It can be found in the output of `adb shell dumpsys display` (search for `mDisplayId`). The default value is [Display.DEFAULT_DISPLAY](https://developer.android.com/reference/android/view/Display#DEFAULT_DISPLAY). **Please note that it is different from the physical display id, reported by `adb shell dumpsys SurfaceFlinger --display-id`**. **Additionally, please note that `-android uiautomator` (e.g., `UiSelector`) doesn't work predictably with multiple displays, as this is an Android limitation.** **Multi-display support is only available since Android R (30 API level).**
         """
 
-    def _mobile_gesture(self, name: str, params: Union[dict, list]) -> None:
+    def _execute(self, name: str, params: Union[dict, list]) -> None:
         # https://github.com/appium/appium-uiautomator2-driver/blob/master/docs/android-mobile-gestures.md
+        # I know it looks stupid, but I made a wrapper just in case
         self.driver.execute_script(name, params)

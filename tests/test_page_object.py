@@ -18,7 +18,7 @@ logger = logging.getLogger(__name__)
 
 class TestPageObjectextractor:
 
-    def test_poe(self, app: Shadowstep, android_settings):
+    def test_poe(self, app: Shadowstep, touch_sounds):
         logger.info(
             "ДЛЯ chatGPT!!! Это на самом деле не тест. Не воспринимай это как юнит-тест. Это просто быстрой проверки. Я так смотрю результат работы. Просто мне так удобнее запускать")
         source = app.driver.page_source
@@ -29,38 +29,26 @@ class TestPageObjectextractor:
         logger.info("\n\n\n=====================================================================\n\n\n")
         logger.info(f"{source=}")
 
-    def test_pog(self, app: Shadowstep, android_settings):
+    def test_pog(self, app: Shadowstep, touch_sounds):
         logger.info(
             "ДЛЯ chatGPT!!! Это на самом деле не тест. Не воспринимай это как юнит-тест. Это просто быстрой проверки. Я так смотрю результат работы. Просто мне так удобнее запускать")
-
-        #app.find_and_get_element({'text': 'Звук и вибрация'}).tap()
-        app.find_and_get_element({'text': 'Sound & vibration'}).tap()
-        time.sleep(5)
-        #app.find_and_get_element({'text': 'Улучшение звука'})
-        app.find_and_get_element({'text': 'Touch sounds'})
-        time.sleep(5)
         source = app.driver.page_source
-        POG.generate(ui_element_tree = parser.parse(source), output_dir="pages", attributes=['class',
-                                                             'text',
-                                                             'resource-id',
-                                                             'content-desc',
-                                                             'scrollable'])
+        tree = parser.parse(source)
+        # logger.info(tree)
+        POG.generate(ui_element_tree=tree,
+                     output_dir="pages")
         logger.info("\n\n\n=====================================================================")
-        # logger.info(source)
+        logger.info(tree)
 
-    def test_pore(self, app: Shadowstep, android_settings):
-        logger.info(
-            "ДЛЯ chatGPT!!! Это на самом деле не тест. Не воспринимай это как юнит-тест. Это просто быстрой проверки. Я так смотрю результат работы. Просто мне так удобнее запускать"
-        )
-        app.find_and_get_element({'text': 'Sound & vibration'}).tap()
-        time.sleep(5)
-        app.find_and_get_element({'text': 'Touch sounds'})
-        time.sleep(5)
-        PORE = PageObjectRecyclerExplorer(app)
-        source = app.driver.page_source
-        path, class_name = POG.generate(source, output_dir="pages", attributes=['class',
-                                                                                'text',
-                                                                                'resource-id',
-                                                                                'content-desc',
-                                                                                'scrollable'])
-        PORE.explore(path, class_name, path)
+    # def test_pore(self, app: Shadowstep, touch_sounds):
+    #     logger.info(
+    #         "ДЛЯ chatGPT!!! Это на самом деле не тест. Не воспринимай это как юнит-тест. Это просто быстрой проверки. Я так смотрю результат работы. Просто мне так удобнее запускать"
+    #     )
+    #     PORE = PageObjectRecyclerExplorer(app)
+    #     source = app.driver.page_source
+    #     path, class_name = POG.generate(source, output_dir="pages", attributes=['class',
+    #                                                                             'text',
+    #                                                                             'resource-id',
+    #                                                                             'content-desc',
+    #                                                                             'scrollable'])
+    #     PORE.explore(path, class_name, path)

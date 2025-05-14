@@ -4,10 +4,10 @@ from typing import Dict, Any, Optional, List, Generator
 
 @dataclass
 class UiElementNode:
-    id: str
-    tag: str
-    attrs: Dict[str, Any]
-    parent: Optional['UiElementNode']
+    id: Optional[str] = None
+    tag: Optional[str] = None
+    attrs: Optional[Dict[str, Any]] = None
+    parent: Optional['UiElementNode'] = None
     children: List['UiElementNode'] = field(default_factory=list)
 
     depth: int = 0

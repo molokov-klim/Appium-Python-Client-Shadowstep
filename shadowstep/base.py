@@ -27,6 +27,7 @@ from shadowstep.terminal.terminal import Terminal
 from shadowstep.terminal.transport import Transport
 
 
+
 class AppiumDisconnectedError(Exception):
     def __init__(
             self, msg: Optional[str] = None, screen: Optional[str] = None,
@@ -401,6 +402,9 @@ class ShadowstepBase:
                                          direct_connection=self.direct_connection,
                                          extensions=self.extensions,
                                          strict_ssl=self.strict_ssl)
+        if not self.is_connected():
+            raise AppiumDisconnectedError(msg=f"Не удалось установить подключение к: {command_executor}")
+        self.logger.info(f"Подключение установлено")
         if ssh_user and ssh_password:
             self.transport = Transport(server=self.server_ip,
                                        port=self.ssh_port,

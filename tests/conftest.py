@@ -83,6 +83,18 @@ def android_settings(app: Shadowstep):
     yield
     app.terminal.close_app('com.android.settings')
 
+@pytest.fixture(scope="function")
+def touch_sounds(app: Shadowstep, android_settings):
+    sounds_and_vibrations_element = app.find_and_get_element({'text': 'Sound & vibration'})
+    # sounds_and_vibrations_element = app.find_and_get_element({'text': 'Звук и вибрация'})
+    assert sounds_and_vibrations_element.is_visible()
+    sounds_and_vibrations_element.tap(duration=3)
+    time.sleep(5)
+    touch_sounds_element = app.find_and_get_element({'text': 'Touch sounds'})
+    # touch_sounds_element = app.find_and_get_element({'text': 'Улучшение звука'})
+    assert touch_sounds_element.is_visible()
+    time.sleep(5)
+
 @pytest.fixture()
 def android_settings_recycler(app: Shadowstep, android_settings):
     yield app.get_element(

@@ -46,7 +46,7 @@ class PageObjectParser:
                  black_list_classes: Set[str] = None,
                  white_list_resource_id: Set[str] = None,
                  black_list_resource_id: Set[str] = None,
-                 filter_system: bool = True,):
+                 filter_system: bool = True, ):
         self.logger = logging.getLogger(__name__)
 
         self.WHITE_LIST_CLASSES: Set[str] = (
@@ -66,12 +66,13 @@ class PageObjectParser:
         self._tree: Optional[ET.Element] = None
         self.ui_element_tree = None
 
-    def parse(self, xml: str) ->  UiElementNode:
+    def parse(self, xml: str) -> UiElementNode:
         """Parses and walks the XML, populating elements and tree."""
         self.logger.info(f"{inspect.currentframe().f_code.co_name}")
         try:
             self._tree = ET.fromstring(xml.encode('utf-8'))
-            return self._build_tree(self._tree)
+            self.ui_element_tree = self._build_tree(self._tree)
+            return self.ui_element_tree
         except ET.XMLSyntaxError:
             self.logger.exception("Failed to parse XML")
             raise
@@ -160,4 +161,3 @@ class PageObjectParser:
 
         # ❌ Всё остальное — в мусор
         return False
-
