@@ -121,6 +121,9 @@ class PageObjectGenerator:
         self.logger.info(step)
         self._remove_text_from_non_text_elements(regular_properties)
 
+        step = "Подготовка данных для рендеринга"
+        self.logger.info(step)
+
         step = "Рендеринг"
         self.logger.info(step)
 
@@ -432,7 +435,7 @@ class PageObjectGenerator:
 
 
 def _pretty_dict(d: dict, base_indent: int = 8) -> str:
-    """Форматирует dict в Python-стиле: каждый ключ с новой строки, выровнано по отступу."""
+    """Форматирует dict в Python-стиле: каждый ключ с новой строки, выровнено по отступу."""
     lines = ["{"]
     indent = " " * base_indent
     for i, (k, v) in enumerate(d.items()):
