@@ -38,7 +38,7 @@ class TestPageObjectextractor:
         POG.generate(ui_element_tree=tree,
                      output_dir="pages")
         logger.info("\n\n\n=====================================================================")
-        logger.info(tree)
+        # logger.info(tree)
 
     # def test_pore(self, app: Shadowstep, touch_sounds):
     #     logger.info(
