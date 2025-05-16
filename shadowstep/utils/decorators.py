@@ -710,3 +710,13 @@ def _get_screenshot_bytes(self) -> bytes:
 
         # Возвращаем байты изображения
         return byte_io.getvalue()
+
+
+def neuro_allow_edit(func):
+    func.__neuro_edit_allowed__ = True
+    return func
+
+def neuro_readonly(func):
+    func.__neuro_edit_readonly__ = True
+    return func
+
