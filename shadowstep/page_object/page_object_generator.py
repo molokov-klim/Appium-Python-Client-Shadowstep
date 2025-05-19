@@ -642,7 +642,8 @@ class PageObjectGenerator:
                     "element_id": anchor.id,
                     "locator": self._node_to_locator(anchor),
                     "sibling": False,
-                    "via_recycler": self._is_scrollable_by(anchor, recycler_id)
+                    "via_recycler": self._is_scrollable_by(anchor, recycler_id),
+                    "anchor_locator": self._node_to_locator(anchor)
                 }
                 properties.append(anchor_prop)
                 used_names.add(anchor_name)
@@ -664,7 +665,8 @@ class PageObjectGenerator:
                 "sibling": False,
                 "via_recycler": self._is_scrollable_by(switcher, recycler_id),
                 "anchor_name": anchor_name,
-                "depth": self._calculate_depth(anchor, switcher)
+                "depth": self._calculate_depth(anchor, switcher),
+                "anchor_locator": self._node_to_locator(anchor)
             }
             properties.append(prop)
             used_names.add(name)
@@ -681,7 +683,8 @@ class PageObjectGenerator:
                     "element_id": anchor.id,
                     "locator": self._node_to_locator(anchor),
                     "sibling": False,
-                    "via_recycler": self._is_scrollable_by(anchor, recycler_id)
+                    "via_recycler": self._is_scrollable_by(anchor, recycler_id),
+                    "anchor_locator": self._node_to_locator(anchor)
                 }
                 properties.append(anchor_prop)
                 used_names.add(base_name)
@@ -702,7 +705,8 @@ class PageObjectGenerator:
                 "locator": self._node_to_locator(anchor),
                 "sibling": True,
                 "summary_id": self._node_to_locator(summary, only_id=True),
-                "base_name": base_name
+                "base_name": base_name,
+                "anchor_locator": self._node_to_locator(anchor)
             }
             properties.append(prop)
             used_names.add(name)
