@@ -50,7 +50,7 @@ class {{ class_name }}(PageBaseShadowstep):
 {% endfor %}
 {% if need_recycler %}
     @property
-    def recycler(self):
+    def recycler(self) -> Element:
         return self.shadowstep.get_element({{ recycler_locator | pretty_dict(base_indent=12) }})
 {% endif %}
 

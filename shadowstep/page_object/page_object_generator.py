@@ -133,7 +133,7 @@ class PageObjectGenerator:
         step = "Сбор оставшихся обычных свойств"
         self.logger.info(step)
         used_elements = switcher_anchor_pairs + summary_anchor_pairs + [(title, recycler)]
-        regular_properties = self._get_regular_properties(ui_element_tree, used_elements)
+        regular_properties = self._get_regular_properties(ui_element_tree, used_elements, recycler)
 
         step = "Удаление text из локаторов у элементов, которые не ищутся по text в UiAutomator2 (ex. android.widget.SeekBar)"
         self.logger.info(step)
@@ -431,7 +431,8 @@ class PageObjectGenerator:
     def _get_regular_properties(
             self,
             ui_element_tree: UiElementNode,
-            used_elements: List[Tuple[UiElementNode, UiElementNode]]
+            used_elements: List[Tuple[UiElementNode, UiElementNode]],
+            recycler: Optional[UiElementNode] = None
     ) -> List[UiElementNode]:
         """
         Returns all elements that are not part of used_elements, filtering by locator to avoid duplicates.
@@ -461,6 +462,10 @@ class PageObjectGenerator:
 
             locator_frozen = frozenset(locator.items())
             if locator_frozen in used_locators:
+                continue
+
+            if element.tag == 'androidx.recyclerview.widget.RecyclerView' and recycler.id and element.id != recycler.id:
+                self.logger.debug(f"Skipping redundant recycler view: id={recycler.id}")
                 continue
 
             self.logger.debug(f"Regular element accepted: {element.id}, locator={locator}")
@@ -603,6 +608,12 @@ class PageObjectGenerator:
         used_names: Set[str] = set()
         used_ids: Set[str] = set()
 
+        # 💣 Фильтрация: remove элемент, если он совпадает с recycler
+        regular_properties = [
+            node for node in regular_properties
+            if node.id != recycler_id
+        ]
+
         # Regular properties
         for node in regular_properties:
             if node.id in used_ids:
@@ -624,7 +635,7 @@ class PageObjectGenerator:
         # Switcher properties
         for anchor, switcher in switcher_anchor_pairs:
             if anchor.id not in used_ids:
-                anchor_name = self._generate_property_name(anchor, used_names, "_anchor")
+                anchor_name = self._generate_property_name(anchor, used_names)
                 anchor_prop = {
                     "type": "anchor",
                     "name": anchor_name,
@@ -640,12 +651,12 @@ class PageObjectGenerator:
             else:
                 anchor_name = next(
                     (p["name"] for p in properties if p["element_id"] == anchor.id),
-                    self._generate_property_name(anchor, used_names, "_anchor_fallback")
+                    self._generate_property_name(anchor, used_names)
                 )
 
             if switcher.id in used_ids:
                 continue
-            name = self._generate_property_name(switcher, used_names, "_switch")
+            name = self._generate_property_name(switcher, used_names, "_switch", anchor_base=anchor_name)
             prop = {
                 "type": "switcher",
                 "name": name,
@@ -679,12 +690,12 @@ class PageObjectGenerator:
             else:
                 base_name = next(
                     (p["name"] for p in properties if p["element_id"] == anchor.id),
-                    self._generate_property_name(anchor, used_names, "_anchor_fallback")
+                    self._generate_property_name(anchor, used_names)
                 )
 
             if summary.id in used_ids:
                 continue
-            name = self._generate_property_name(summary, used_names, "_summary")
+            name = self._generate_property_name(summary, used_names, "_summary", anchor_base=base_name)
             prop = {
                 "type": "summary",
                 "name": name,
@@ -754,41 +765,45 @@ class PageObjectGenerator:
         return depth
 
     @neuro_allow_edit
-    def _generate_property_name(self,
-                               node: UiElementNode,
-                               used_names: Set[str],
-                               suffix: str = "") -> str:
+    def _generate_property_name(
+            self,
+            node: UiElementNode,
+            used_names: Set[str],
+            suffix: str = "",
+            anchor_base: Optional[str] = None
+    ) -> str:
         """
-        Generates a unique property name for a node.
-        
+        Generates a clean, unique property name for a node.
+
         Args:
-            node (UiElementNode): Node to name
-            used_names (Set[str]): Set of already used names
-            suffix (str): Optional suffix to add to name
-            
+            node (UiElementNode): UI node.
+            used_names (Set[str]): Already used property names.
+            suffix (str): Optional suffix, like '_switch' or '_summary'.
+            anchor_base (Optional[str]): Use anchor name as prefix if provided.
+
         Returns:
-            str: Generated unique property name
+            str: Property name.
         """
         self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
-        text = node.attrs.get('text') or node.attrs.get('content-desc') or ""
-        if not text and node.attrs.get('resource-id'):
-            text = self._strip_package_prefix(node.attrs['resource-id'])
 
-        # Slug words and limit to first 5
-        words = self._slug_words(text)[:5] if text else []
-        base = "_".join(words) if words else "element"
-        
-        # Add class suffix
-        class_suffix = node.tag.split('.')[-1].lower() if node.tag else "element"
-        name = self._sanitize_name(f"{base}_{class_suffix}{suffix}")
+        base = ""
+        # Use anchor name if explicitly passed (e.g., switcher/summary tied to anchor)
+        if anchor_base:
+            base = anchor_base
+        else:
+            # Prefer text → content-desc → stripped resource-id
+            text = node.attrs.get("text") or node.attrs.get("content-desc") or ""
+            if not text and node.attrs.get("resource-id"):
+                text = self._strip_package_prefix(node.attrs['resource-id'])
+            words = self._slug_words(text)[:5]
+            base = "_".join(words) if words else "element"
 
-        # Ensure uniqueness
+        name = self._sanitize_name(f"{base}{suffix}")
         i = 1
-        orig_name = name
+        original = name
         while name in used_names:
-            name = f"{orig_name}_{i}"
+            name = f"{original}_{i}"
             i += 1
-
         return name
 
     @neuro_allow_edit

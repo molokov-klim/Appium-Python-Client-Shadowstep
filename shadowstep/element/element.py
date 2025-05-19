@@ -338,6 +338,16 @@ class Element(ElementBase):
             except WebDriverException:
                 break
 
+    def get_cousin(
+            self,
+            ancestor_locator: Union[Tuple, Dict[str, str], 'Element'],
+            cousin_locator: Union[Tuple, Dict[str, str], 'Element']
+    ) -> Union['Element', None]:
+        """
+        alias for from_parent
+        """
+        return self.from_parent(ancestor_locator, cousin_locator)
+
     def from_parent(
             self,
             ancestor_locator: Union[Tuple, Dict[str, str], 'Element'],
@@ -1038,7 +1048,8 @@ class Element(ElementBase):
                     return cast('Element', self)
                 self.scroll_down(percent=percent, speed=speed, return_bool=True)
             except (
-            NoSuchDriverException, InvalidSessionIdException, AttributeError, StaleElementReferenceException) as error:
+                    NoSuchDriverException, InvalidSessionIdException, AttributeError,
+                    StaleElementReferenceException) as error:
                 self._handle_driver_error(error)
 
         raise GeneralElementException(
@@ -1057,7 +1068,8 @@ class Element(ElementBase):
                     return cast('Element', self)
                 self.scroll_up(percent=percent, speed=speed, return_bool=True)
             except (
-            NoSuchDriverException, InvalidSessionIdException, AttributeError, StaleElementReferenceException) as error:
+                    NoSuchDriverException, InvalidSessionIdException, AttributeError,
+                    StaleElementReferenceException) as error:
                 self._handle_driver_error(error)
 
         raise GeneralElementException(
@@ -2126,7 +2138,8 @@ class Element(ElementBase):
                 return False
             return cast('Element', self)
 
-    def wait_visible(self, timeout: int = 10, poll_frequency: float = 0.5, return_bool: bool = False) -> Union[bool, 'Element']:
+    def wait_visible(self, timeout: int = 10, poll_frequency: float = 0.5, return_bool: bool = False) -> Union[
+        bool, 'Element']:
         """Waits until the element is visible.
 
         Args:
@@ -2157,7 +2170,8 @@ class Element(ElementBase):
                 return False
             return cast('Element', self)
 
-    def wait_clickable(self, timeout: int = 10, poll_frequency: float = 0.5, return_bool: bool = False) -> Union[bool, 'Element']:
+    def wait_clickable(self, timeout: int = 10, poll_frequency: float = 0.5, return_bool: bool = False) -> Union[
+        bool, 'Element']:
         """Waits until the element is clickable.
 
         Args:
@@ -2188,7 +2202,8 @@ class Element(ElementBase):
                 return False
             return cast('Element', self)
 
-    def wait_for_not(self, timeout: int = 10, poll_frequency: float = 0.5, return_bool: bool = False) -> Union[bool, 'Element']:
+    def wait_for_not(self, timeout: int = 10, poll_frequency: float = 0.5, return_bool: bool = False) -> Union[
+        bool, 'Element']:
         """Waits until the element is no longer present in the DOM.
 
         Args:
@@ -2217,7 +2232,8 @@ class Element(ElementBase):
                 return False
             return cast('Element', self)
 
-    def wait_for_not_visible(self, timeout: int = 10, poll_frequency: float = 0.5, return_bool: bool = False) -> Union[bool, 'Element']:
+    def wait_for_not_visible(self, timeout: int = 10, poll_frequency: float = 0.5, return_bool: bool = False) -> Union[
+        bool, 'Element']:
         """Waits until the element becomes invisible.
 
         Args:
@@ -2246,7 +2262,8 @@ class Element(ElementBase):
                 return False
             return cast('Element', self)
 
-    def wait_for_not_clickable(self, timeout: int = 10, poll_frequency: float = 0.5, return_bool: bool = False) -> Union[bool, 'Element']:
+    def wait_for_not_clickable(self, timeout: int = 10, poll_frequency: float = 0.5, return_bool: bool = False) -> \
+    Union[bool, 'Element']:
         """Waits until the element becomes not clickable.
 
         Args:
