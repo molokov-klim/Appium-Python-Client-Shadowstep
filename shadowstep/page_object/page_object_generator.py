@@ -589,47 +589,55 @@ class PageObjectGenerator:
         return locator
 
     @neuro_allow_edit
-    def _transform_properties(self,
-                            regular_properties: List[UiElementNode],
-                            switcher_anchor_pairs: List[Tuple[UiElementNode, UiElementNode]],
-                            summary_anchor_pairs: List[Tuple[UiElementNode, UiElementNode]],
-                            recycler_id: Optional[str]) -> List[Dict]:
+    def _transform_properties(
+            self,
+            regular_properties: List[UiElementNode],
+            switcher_anchor_pairs: List[Tuple[UiElementNode, UiElementNode]],
+            summary_anchor_pairs: List[Tuple[UiElementNode, UiElementNode]],
+            recycler_id: Optional[str]
+    ) -> List[Dict[str, Any]]:
         """
         Transforms property nodes into template-compatible property dictionaries.
-        
+
         Args:
             regular_properties (List[UiElementNode]): Regular UI elements
             switcher_anchor_pairs (List[Tuple[UiElementNode, UiElementNode]]): Anchor-switch pairs
             summary_anchor_pairs (List[Tuple[UiElementNode, UiElementNode]]): Anchor-summary pairs
             recycler_id (Optional[str]): ID of recycler element if available
-            
+
         Returns:
-            List[Dict]: Template-ready property dictionaries
+            List[Dict[str, Any]]: Template-ready property dictionaries
         """
         self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
-        properties = []
-        used_names = set()
 
-        # 1. Regular properties
+        properties: List[Dict[str, Any]] = []
+        used_names: Set[str] = set()
+        used_ids: Set[str] = set()
+
+        # Regular properties
         for node in regular_properties:
+            if node.id in used_ids:
+                continue
+            name = self._generate_property_name(node, used_names)
             prop = {
-                "name": self._generate_property_name(node, used_names),
+                "type": "regular",
+                "name": name,
                 "element_id": node.id,
                 "locator": self._node_to_locator(node),
                 "sibling": False,
                 "via_recycler": self._is_scrollable_by(node, recycler_id)
             }
             properties.append(prop)
-            used_names.add(prop["name"])
+            used_names.add(name)
+            used_ids.add(node.id)
+            self.logger.debug(f"Added regular: {name} → {prop['locator']}")
 
-        # 2. Switcher properties
+        # Switcher properties
         for anchor, switcher in switcher_anchor_pairs:
-            anchor_name = next((p["name"] for p in properties if p.get("element_id") == anchor.id), None)
-            if not anchor_name:
-                # Если якорь не найден среди обычных свойств, генерируем его
+            if anchor.id not in used_ids:
                 anchor_name = self._generate_property_name(anchor, used_names, "_anchor")
-                used_names.add(anchor_name)
                 anchor_prop = {
+                    "type": "anchor",
                     "name": anchor_name,
                     "element_id": anchor.id,
                     "locator": self._node_to_locator(anchor),
@@ -637,31 +645,59 @@ class PageObjectGenerator:
                     "via_recycler": self._is_scrollable_by(anchor, recycler_id)
                 }
                 properties.append(anchor_prop)
+                used_names.add(anchor_name)
+                used_ids.add(anchor.id)
+                self.logger.debug(f"Added anchor: {anchor_name} → {anchor_prop['locator']}")
+            else:
+                anchor_name = next(
+                    (p["name"] for p in properties if p["element_id"] == anchor.id),
+                    self._generate_property_name(anchor, used_names, "_anchor_fallback")
+                )
 
-            depth = self._calculate_depth(anchor, switcher)
+            if switcher.id in used_ids:
+                continue
             name = self._generate_property_name(switcher, used_names, "_switch")
-
             prop = {
+                "type": "switcher",
                 "name": name,
                 "locator": self._node_to_locator(switcher),
                 "sibling": False,
                 "via_recycler": self._is_scrollable_by(switcher, recycler_id),
                 "anchor_name": anchor_name,
-                "depth": depth
+                "depth": self._calculate_depth(anchor, switcher)
             }
             properties.append(prop)
             used_names.add(name)
+            used_ids.add(switcher.id)
+            self.logger.debug(f"Added switcher: {name} (anchor: {anchor_name}) → {prop['locator']}")
 
-        # 3. Summary properties
+        # Summary properties
         for anchor, summary in summary_anchor_pairs:
-            base_name = self._generate_property_name(anchor, used_names)
-            if base_name in used_names:
-                base_name = f"{base_name}_base"
+            if anchor.id not in used_ids:
+                base_name = self._generate_property_name(anchor, used_names)
+                anchor_prop = {
+                    "type": "anchor",
+                    "name": base_name,
+                    "element_id": anchor.id,
+                    "locator": self._node_to_locator(anchor),
+                    "sibling": False,
+                    "via_recycler": self._is_scrollable_by(anchor, recycler_id)
+                }
+                properties.append(anchor_prop)
                 used_names.add(base_name)
+                used_ids.add(anchor.id)
+                self.logger.debug(f"Added summary anchor: {base_name} → {anchor_prop['locator']}")
+            else:
+                base_name = next(
+                    (p["name"] for p in properties if p["element_id"] == anchor.id),
+                    self._generate_property_name(anchor, used_names, "_anchor_fallback")
+                )
 
+            if summary.id in used_ids:
+                continue
             name = self._generate_property_name(summary, used_names, "_summary")
-
             prop = {
+                "type": "summary",
                 "name": name,
                 "locator": self._node_to_locator(anchor),
                 "sibling": True,
@@ -670,7 +706,10 @@ class PageObjectGenerator:
             }
             properties.append(prop)
             used_names.add(name)
+            used_ids.add(summary.id)
+            self.logger.debug(f"Added summary: {name} (anchor: {base_name}) → {prop['summary_id']}")
 
+        self.logger.info(f"{inspect.currentframe().f_code.co_name} > {properties=}")
         return properties
 
     @neuro_allow_edit
