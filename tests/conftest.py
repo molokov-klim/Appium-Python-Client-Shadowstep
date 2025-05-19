@@ -8,9 +8,9 @@ from wheel.metadata import yield_lines
 from shadowstep.shadowstep import Shadowstep, logger
 
 # Please use virtual device Google Pixel 10.0
-# UDID = '192.168.56.101:5555'  # GooglePixel
+UDID = '192.168.56.101:5555'  # GooglePixel
 # UDID = '10.77.124.56:5554'      # STB6 TCP
-UDID = '00109428923751'     # STB6 COM
+# UDID = '00109428923751'     # STB6 COM
 
 # Silence noisy third-party libraries
 logging.getLogger("selenium").setLevel(logging.CRITICAL)
@@ -85,13 +85,13 @@ def android_settings(app: Shadowstep):
 
 @pytest.fixture(scope="function")
 def touch_sounds(app: Shadowstep, android_settings):
-    # sounds_and_vibrations_element = app.find_and_get_element({'text': 'Sound & vibration'})
-    sounds_and_vibrations_element = app.find_and_get_element({'text': 'Звук и вибрация'})
+    sounds_and_vibrations_element = app.find_and_get_element({'text': 'Sound & vibration'})
+    # sounds_and_vibrations_element = app.find_and_get_element({'text': 'Звук и вибрация'})
     assert sounds_and_vibrations_element.is_visible()
     sounds_and_vibrations_element.tap(duration=3)
     time.sleep(5)
-    # touch_sounds_element = app.find_and_get_element({'text': 'Touch sounds'})
-    touch_sounds_element = app.find_and_get_element({'text': 'Улучшение звука'})
+    touch_sounds_element = app.find_and_get_element({'text': 'Touch sounds'})
+    # touch_sounds_element = app.find_and_get_element({'text': 'Улучшение звука'})
     assert touch_sounds_element.is_visible()
     time.sleep(5)
 

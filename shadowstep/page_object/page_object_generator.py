@@ -91,6 +91,7 @@ class PageObjectGenerator:
         Docstring in Google style
         """
         self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
+        self.logger.info(f"{ui_element_tree=}")
         step = "Формирование title property"
         self.logger.info(step)
         title = self._get_title_property(ui_element_tree)
@@ -132,19 +133,7 @@ class PageObjectGenerator:
         step = "Сбор оставшихся обычных свойств"
         self.logger.info(step)
         used_elements = switcher_anchor_pairs + summary_anchor_pairs + [(title, recycler)]
-        # TODO
-        """
-        TODO
-        4. 🪤 _get_regular_properties() — без фильтрации
-        Проблема:
-        Регулярные элементы добавляются даже если дублируют свитчеры или summary (с другим именем). Потому что ты сравниваешь по id(), а не по locator.
-        
-        Что нужно:
-        Хранить used_locators = set(frozenset(locator.items()) for locator in ...)
-        И фильтровать по ним — не пускать дубликаты локаторов с разными именами.
-        """
         regular_properties = self._get_regular_properties(ui_element_tree, used_elements)
-        self.logger.info(f"{len(regular_properties)=}")
 
         step = "Удаление text из локаторов у элементов, которые не ищутся по text в UiAutomator2 (ex. android.widget.SeekBar)"
         self.logger.info(step)
@@ -450,33 +439,46 @@ class PageObjectGenerator:
         return summary_pairs
 
     @neuro_readonly
-    def _get_regular_properties(self, ui_element_tree: UiElementNode, used_elements: List[Tuple[UiElementNode, UiElementNode]]) -> List[UiElementNode]:
+    def _get_regular_properties(
+            self,
+            ui_element_tree: UiElementNode,
+            used_elements: List[Tuple[UiElementNode, UiElementNode]]
+    ) -> List[UiElementNode]:
         """
-        Находит все элементы, которые не входят в used_elements.
-        
+        Returns all elements that are not part of used_elements, filtering by locator to avoid duplicates.
+
         Args:
-            ui_element_tree (UiElementNode): Дерево элементов UI
-            used_elements (List[Tuple[UiElementNode, UiElementNode]]): Список пар элементов, которые уже использованы
-            
+            ui_element_tree (UiElementNode): UI tree root
+            used_elements (List[Tuple[UiElementNode, UiElementNode]]): Already used pairs (anchor, target)
+
         Returns:
-            List[UiElementNode]: Список неиспользованных элементов
+            List[UiElementNode]: List of unused, unique-locator elements
         """
         self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
-        
-        # Создаем множество id использованных элементов для быстрого поиска
-        used_node_ids = set()
+
+        # 🔁 Сконвертировать used_elements в set of locator hashes
+        used_locators: Set[FrozenSet[Tuple[str, str]]] = set()
         for pair in used_elements:
-            used_node_ids.add(id(pair[0]))  # anchor
-            used_node_ids.add(id(pair[1]))  # target/summary/recycler
-        
-        # Находим все элементы, которые не входят в used_nodes
+            for node in pair:
+                locator = self._node_to_locator(node)
+                locator_frozen = frozenset(locator.items())
+                used_locators.add(locator_frozen)
+
         regular_elements = []
         for element in ui_element_tree.walk():
-            if id(element) not in used_node_ids:
-                regular_elements.append(element)
-                self.logger.debug(f"Found regular element: {element.id}, attrs={element.attrs}")
-        
-        self.logger.info(f"Total regular elements found: {len(regular_elements)}")
+            locator = self._node_to_locator(element)
+            if not locator:
+                continue
+
+            locator_frozen = frozenset(locator.items())
+            if locator_frozen in used_locators:
+                continue
+
+            self.logger.debug(f"Regular element accepted: {element.id}, locator={locator}")
+            regular_elements.append(element)
+            used_locators.add(locator_frozen)
+
+        self.logger.info(f"Total regular elements found (filtered): {len(regular_elements)}")
         return regular_elements
 
     @neuro_readonly
