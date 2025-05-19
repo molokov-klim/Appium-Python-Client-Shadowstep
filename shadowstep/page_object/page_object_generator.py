@@ -145,8 +145,6 @@ class PageObjectGenerator:
         self.logger.info(f"{need_recycler=}")
 
         step = "Подготовка свойств для шаблона"
-        # TODO _transform_properties просто сваливает в одну кучу и нивелирует switcher_anchor_pairs и summary_anchor_pairs
-        # TODO нужно это исправить
         self.logger.info(step)
         properties_for_template = self._transform_properties(
             regular_properties,
@@ -160,25 +158,16 @@ class PageObjectGenerator:
         skip_ids = {title.id, recycler.id}
         properties_for_template = [p for p in properties_for_template if p.get("element_id") not in skip_ids]
 
-        # TODO _filter_properties должен ещё фильтровать
-        """
-        TODO 
-        _filter_properties должен ещё фильтровать бесполезные элементы типа (когда recycler уже определен)
-        и наверное title тоже не должен дублироваться (вроде не дублируется, но на всякий случай проверь)
-         @property
-        def recycler_view_recyclerview(self) -> Element:
-            return self.recycler.scroll_to_element({
-                'resource-id': 'com.android.settings:id/recycler_view',
-                'class': 'androidx.recyclerview.widget.RecyclerView'
-            })
-        """
-        step = ""
+        step = "Фильтрация итоговых свойств"
         self.logger.info(step)
-        # properties_for_template = self._filter_properties(properties_for_template, title, recycler)
-        # TODO надо properties_for_template = self._filter_properties(properties_for_template, title, recycler, switcher_pairs, sibling_pairs)
-        self.logger.info(f"{properties_for_template=}")
 
-        # TODO _prepare_template_data должен принимать switcher_anchor_pairs и summary_anchor_pairs
+        switcher_ids = {s.id for _, s in switcher_anchor_pairs}
+        summary_ids = {s.id for _, s in summary_anchor_pairs}
+
+        properties_for_template = self._filter_properties(properties_for_template,
+                                                          title.id,
+                                                          recycler.id if recycler else None)
+
         step = "Подготовка данных для рендеринга"
         self.logger.info(step)
         template_data = self._prepare_template_data(
@@ -709,7 +698,6 @@ class PageObjectGenerator:
             used_ids.add(summary.id)
             self.logger.debug(f"Added summary: {name} (anchor: {base_name}) → {prop['summary_id']}")
 
-        self.logger.info(f"{inspect.currentframe().f_code.co_name} > {properties=}")
         return properties
 
     @neuro_allow_edit
@@ -889,16 +877,23 @@ class PageObjectGenerator:
             for node in regular_properties if node.scrollable_parents
         )
 
-    @neuro_readonly
-    def _filter_properties(self, properties: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+    @neuro_allow_edit
+    def _filter_properties(
+            self,
+            properties: List[Dict[str, Any]],
+            title_id: Optional[str],
+            recycler_id: Optional[str]
+    ) -> List[Dict[str, Any]]:
         """
-        Applies a sequence of filtering steps to exclude non-useful properties.
+        Filters out redundant properties, but preserves title and recycler.
 
         Args:
-            properties (List[Dict[str, Any]]): List of property dictionaries.
+            properties (List[Dict[str, Any]]): Raw property list.
+            title_id (Optional[str]): ID of the title node.
+            recycler_id (Optional[str]): ID of the recycler node.
 
         Returns:
-            List[Dict[str, Any]]: Filtered property list.
+            List[Dict[str, Any]]: Cleaned list of properties.
         """
         self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
 
@@ -906,11 +901,27 @@ class PageObjectGenerator:
         self.logger.debug(f"[{step}] started")
         properties = self._filter_class_only_properties(properties)
 
-        step = "Filter structural container properties"
+        step = "Filter structural containers"
         self.logger.debug(f"[{step}] started")
         properties = self._filter_structural_containers(properties)
 
-        return properties
+        # ⛔ Защита от удаления title и recycler
+        step = "Protect title and recycler"
+        self.logger.debug(f"[{step}] started")
+
+        def is_important(prop: Dict[str, Any]) -> bool:
+            return prop.get("element_id") in {title_id, recycler_id}
+
+        final = []
+        for prop in properties:
+            if is_important(prop):
+                final.append(prop)
+                continue
+            # Остальная фильтрация (если добавишь еще шаги - вставь сюда)
+            final.append(prop)
+
+        self.logger.info(f"{inspect.currentframe().f_code.co_name} > {final=}")
+        return final
 
     @neuro_readonly
     def _filter_class_only_properties(self, properties: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
