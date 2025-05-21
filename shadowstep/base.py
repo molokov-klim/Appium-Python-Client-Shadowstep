@@ -494,23 +494,17 @@ class ShadowstepBase:
 
             grid = response.json()
             nodes = grid.get("value", {}).get("nodes", [])
-            self.logger.info(f"{grid=}")
-            self.logger.info(f"{nodes=}")
 
             step = "Iterating nodes and slots"
             self.logger.debug(f"[{step}] started")
             for node in nodes:
                 for slot in node.get("slots", []):
-                    self.logger.info(f"{node=}")
-                    self.logger.info(f"{slot=}")
                     session = slot.get("session")
-                    self.logger.info(f"{session=}")
                     if not session:
                         continue
                     session_id = session.get("sessionId")
-                    self.logger.info(f"Found session_id on node: {session_id}")
                     if session_id == self.driver.session_id:
-                        self.logger.debug("Session found in Grid")
+                        self.logger.debug(f"Session found in Grid: {session_id}")
                         return True
 
             self.logger.debug("Session not found in any Grid slot")
@@ -537,6 +531,7 @@ class ShadowstepBase:
                 session_id = node.get("id", None)
                 node.get("ready", False)
                 if self.driver.session_id == session_id:
+                    self.logger.debug(f"Found session_id on standalone: {session_id}")
                     return True
             return False
         except Exception as error:
