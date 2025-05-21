@@ -8,7 +8,7 @@ from wheel.metadata import yield_lines
 from shadowstep.shadowstep import Shadowstep, logger
 
 # Please use virtual device Google Pixel 10.0
-UDID = '192.168.56.101:5555'  # GooglePixel
+# UDID = '192.168.56.101:5555'  # GooglePixel
 # UDID = '10.77.124.56:5554'      # STB6 TCP
 # UDID = '00109428923751'     # STB6 COM
 
