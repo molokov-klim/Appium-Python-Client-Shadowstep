@@ -91,7 +91,6 @@ class PageObjectGenerator:
         Docstring in Google style
         """
         self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
-        self.logger.info(f"{ui_element_tree=}")
         step = "Формирование title property"
         self.logger.info(step)
         title = self._get_title_property(ui_element_tree)
