@@ -18,3 +18,4 @@ class {{ test_class_name }}:
     def test_{{ prop }}(self, page_object_instance, goto_page):
         assert page_object_instance.{{ prop }}.is_visible()
     {% endfor %}
+
