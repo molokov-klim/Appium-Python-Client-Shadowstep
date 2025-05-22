@@ -413,6 +413,7 @@ class ShadowstepBase:
                                        password=self.ssh_password)
         self.terminal = Terminal(base=self)
         self.adb = Adb(base=self)
+        self.driver.update_settings(settings={"enforceXPath1": True})
 
 
     def disconnect(self) -> None:
@@ -457,6 +458,7 @@ class ShadowstepBase:
                      strict_ssl=self.strict_ssl
                      )
         time.sleep(3)
+        self.driver.update_settings(settings={"enforceXPath1": True})
 
     def is_connected(self) -> bool:
         """
