@@ -406,7 +406,7 @@ class ShadowstepBase:
         if not self.is_connected():
             raise AppiumDisconnectedError(msg=f"Не удалось установить подключение к: {command_executor}")
         self.logger.info(f"Подключение установлено")
-        if ssh_user and ssh_password:
+        if self.ssh_user and self.ssh_password:
             self.transport = Transport(server=self.server_ip,
                                        port=self.ssh_port,
                                        user=self.ssh_user,
@@ -455,7 +455,9 @@ class ShadowstepBase:
                      keep_alive=self.keep_alive,
                      direct_connection=self.direct_connection,
                      extensions=self.extensions,
-                     strict_ssl=self.strict_ssl
+                     strict_ssl=self.strict_ssl,
+                     ssh_user=self.ssh_user,
+                     ssh_password=self.ssh_password
                      )
         time.sleep(3)
         self.driver.update_settings(settings={"enforceXPath1": True})
