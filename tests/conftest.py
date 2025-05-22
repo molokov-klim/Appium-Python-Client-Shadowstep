@@ -20,7 +20,7 @@ logging.getLogger("httpcore").setLevel(logging.CRITICAL)
 logging.getLogger("websockets").setLevel(logging.CRITICAL)
 logging.getLogger("charset_normalizer").setLevel(logging.CRITICAL)
 
-
+UDID = None
 
 
 @pytest.fixture(scope='session', autouse=True)
@@ -34,17 +34,17 @@ def app(request) -> Shadowstep:
         Shadowstep: Connected Shadowstep instance for tests.
     """
     application = Shadowstep()
+    global UDID
 
-    # Please use virtual device Google Pixel 10.0
-    # UDID = '192.168.56.101:5555'  # GooglePixel
-    # UDID = '10.77.124.56:5554'      # STB6 TCP
-    UDID = '0010941234TEST30'     # STB6 COM
-    REMOTE = True
+    REMOTE = False
     if REMOTE:
+        UDID = '0010941234TEST30'  # STB6 COM
         APPIUM_IP = "10.77.171.211"
         APPIUM_PORT = 3334
         APPIUM_COMMAND_EXECUTOR = f'http://{APPIUM_IP}:{APPIUM_PORT}'
     else:
+        # UDID = '10.77.124.56:5554'      # STB6 TCP
+        UDID = '192.168.56.101:5555'  # GooglePixel
         APPIUM_IP = '127.0.0.1'
         APPIUM_PORT = 4723
         APPIUM_COMMAND_EXECUTOR = f'http://{APPIUM_IP}:{APPIUM_PORT}/wd/hub'
