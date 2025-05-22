@@ -41,6 +41,17 @@ class TestPageObjectextractor:
         logger.info("\n\n\n=====================================================================")
         # logger.info(tree)
 
+    def test_pog2(self, app: Shadowstep):
+        logger.info(
+            "ДЛЯ chatGPT!!! Это на самом деле не тест. Не воспринимай это как юнит-тест. Это просто быстрой проверки. Я так смотрю результат работы. Просто мне так удобнее запускать")
+        source = app.driver.page_source
+        tree = parser.parse(source)
+        # logger.info(tree)
+        POG.generate(ui_element_tree=tree,
+                     output_dir="pages")
+        logger.info("\n\n\n=====================================================================")
+        # logger.info(tree)
+
     def test_potg(self, app: Shadowstep, touch_sounds):
         logger.info(
             "ДЛЯ chatGPT!!! Это на самом деле не тест. Не воспринимай это как юнит-тест. Это просто быстрой проверки. Я так смотрю результат работы. Просто мне так удобнее запускать")

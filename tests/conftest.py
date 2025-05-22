@@ -7,10 +7,7 @@ from wheel.metadata import yield_lines
 
 from shadowstep.shadowstep import Shadowstep, logger
 
-# Please use virtual device Google Pixel 10.0
-# UDID = '192.168.56.101:5555'  # GooglePixel
-# UDID = '10.77.124.56:5554'      # STB6 TCP
-# UDID = '00109428923751'     # STB6 COM
+
 
 # Silence noisy third-party libraries
 logging.getLogger("selenium").setLevel(logging.CRITICAL)
@@ -38,6 +35,20 @@ def app(request) -> Shadowstep:
     """
     application = Shadowstep()
 
+    # Please use virtual device Google Pixel 10.0
+    # UDID = '192.168.56.101:5555'  # GooglePixel
+    # UDID = '10.77.124.56:5554'      # STB6 TCP
+    UDID = '0010941234TEST30'     # STB6 COM
+    REMOTE = True
+    if REMOTE:
+        APPIUM_IP = "10.77.171.211"
+        APPIUM_PORT = 3334
+        APPIUM_COMMAND_EXECUTOR = f'http://{APPIUM_IP}:{APPIUM_PORT}'
+    else:
+        APPIUM_IP = '127.0.0.1'
+        APPIUM_PORT = 4723
+        APPIUM_COMMAND_EXECUTOR = f'http://{APPIUM_IP}:{APPIUM_PORT}/wd/hub'
+
     capabilities = {
         "platformName": "android",
         "appium:automationName": "uiautomator2",
@@ -47,7 +58,10 @@ def app(request) -> Shadowstep:
         "appium:newCommandTimeout": 900,
     }
 
-    application.connect(server_ip='127.0.0.1', server_port=4723, capabilities=capabilities)
+    application.connect(server_ip=APPIUM_IP,
+                        server_port=APPIUM_PORT,
+                        command_executor=APPIUM_COMMAND_EXECUTOR,
+                        capabilities=capabilities)
     application.adb.press_home()
 
     def finalizer():
