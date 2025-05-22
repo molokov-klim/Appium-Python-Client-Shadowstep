@@ -31,13 +31,13 @@ class {{ class_name }}(PageBaseShadowstep):
     {% if prop.anchor_name %}
         {% if prop.depth == 0 %}
         return self.{{ prop.anchor_name }}.get_sibling(
-        {{ prop.locator | pretty_dict(base_indent=12) }}
-    )
+            {{ prop.locator | pretty_dict(base_indent=12) }}
+        )
         {% else %}
-        {# генерим N+1 вызов get_parent(), с точками между ними и без завершающей точки #}
-        {% set parents = ("get_parent()." * (prop.depth + 1)).rstrip('.') %}
-        return self.{{ prop.anchor_name }}.{{ parents }}.get_element(
-            {{ prop.locator | pretty_dict(base_indent=12) }})
+        return self.{{ prop.anchor_name }}.get_cousin(
+            {{ prop.anchor_locator | pretty_dict(base_indent=12) }},
+            {{ prop.locator | pretty_dict(base_indent=12) }}
+        )
         {% endif %}
     {% elif prop.sibling %}
         return self.{{ prop.base_name }}.get_sibling({{ prop.summary_id | pretty_dict(base_indent=12) }})
@@ -50,7 +50,7 @@ class {{ class_name }}(PageBaseShadowstep):
 {% endfor %}
 {% if need_recycler %}
     @property
-    def recycler(self):
+    def recycler(self) -> Element:
         return self.shadowstep.get_element({{ recycler_locator | pretty_dict(base_indent=12) }})
 {% endif %}
 
@@ -60,3 +60,4 @@ class {{ class_name }}(PageBaseShadowstep):
         except Exception as e:
             self.logger.error(e)
             return False
+

@@ -7,7 +7,7 @@ import os
 import re
 from typing import Optional, Dict, Type, Any, Set, Tuple, List
 
-from shadowstep.page_object.page_object_extractor import PageObjectParser
+from shadowstep.page_object.page_object_parser import PageObjectParser
 from shadowstep.page_object.page_object_generator import PageObjectGenerator
 from shadowstep.shadowstep import Shadowstep
 
@@ -44,6 +44,7 @@ class PageObjectRecyclerExplorer:
         # Сбор уже существующих имён свойств
         properties = self._collect_recycler_properties(page)
 
+        recycler_el.scroll_to_top()
         xml = self.base.driver.page_source
         elements = self.extractor.parse(xml)
 

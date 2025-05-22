@@ -189,7 +189,8 @@ class Element(ElementBase):
                 self._handle_driver_error(error)
             except InvalidSessionIdException as error:
                 self._handle_driver_error(error)
-            except StaleElementReferenceException:
+            except StaleElementReferenceException as error:
+                self.logger.error(f"{error}\ncontinue")
                 continue
             except ET.XPathEvalError as e:
                 self.logger.error(f"XPathEvalError: {e}")
@@ -338,6 +339,16 @@ class Element(ElementBase):
             except WebDriverException:
                 break
 
+    def get_cousin(
+            self,
+            ancestor_locator: Union[Tuple, Dict[str, str], 'Element'],
+            cousin_locator: Union[Tuple, Dict[str, str], 'Element']
+    ) -> Union['Element', None]:
+        """
+        alias for from_parent
+        """
+        return self.from_parent(ancestor_locator, cousin_locator)
+
     def from_parent(
             self,
             ancestor_locator: Union[Tuple, Dict[str, str], 'Element'],
@@ -425,7 +436,8 @@ class Element(ElementBase):
             except AttributeError as error:
                 self._handle_driver_error(error)
             except StaleElementReferenceException as error:
-                self._handle_driver_error(error)
+                self.logger.error(f"{error}\ncontinue")
+                continue
 
         raise GeneralElementException(
             msg=f"Failed to {inspect.currentframe().f_code.co_name} within {self.timeout=}",
@@ -466,7 +478,8 @@ class Element(ElementBase):
             except AttributeError as error:
                 self._handle_driver_error(error)
             except StaleElementReferenceException as error:
-                self._handle_driver_error(error)
+                self.logger.error(f"{error}\ncontinue")
+                continue
 
         raise GeneralElementException(
             msg=f"Failed to {inspect.currentframe().f_code.co_name} within {self.timeout=}",
@@ -503,7 +516,8 @@ class Element(ElementBase):
             except AttributeError as error:
                 self._handle_driver_error(error)
             except StaleElementReferenceException as error:
-                self._handle_driver_error(error)
+                self.logger.error(f"{error}\ncontinue")
+                continue
 
         raise GeneralElementException(
             msg=f"Failed to {inspect.currentframe().f_code.co_name}('{name}') within {self.timeout=}",
@@ -541,7 +555,8 @@ class Element(ElementBase):
             except AttributeError as error:
                 self._handle_driver_error(error)
             except StaleElementReferenceException as error:
-                self._handle_driver_error(error)
+                self.logger.error(f"{error}\ncontinue")
+                continue
 
         raise GeneralElementException(
             msg=f"Failed to {inspect.currentframe().f_code.co_name} within {self.timeout=}",
@@ -581,7 +596,8 @@ class Element(ElementBase):
             except AttributeError as error:
                 self._handle_driver_error(error)
             except StaleElementReferenceException as error:
-                self._handle_driver_error(error)
+                self.logger.error(f"{error}\ncontinue")
+                continue
 
         raise GeneralElementException(
             msg=f"Failed to {inspect.currentframe().f_code.co_name} within {self.timeout=}",
@@ -617,7 +633,8 @@ class Element(ElementBase):
             except AttributeError as error:
                 self._handle_driver_error(error)
             except StaleElementReferenceException as error:
-                self._handle_driver_error(error)
+                self.logger.error(f"{error}\ncontinue")
+                continue
 
         raise GeneralElementException(
             msg=f"Failed to {inspect.currentframe().f_code.co_name} within {self.timeout=}",
@@ -663,7 +680,8 @@ class Element(ElementBase):
             except AttributeError as error:
                 self._handle_driver_error(error)
             except StaleElementReferenceException as error:
-                self._handle_driver_error(error)
+                self.logger.error(f"{error}\ncontinue")
+                continue
         raise GeneralElementException(
             msg=f"Failed to {inspect.currentframe().f_code.co_name} within {self.timeout=}",
             stacktrace=traceback.format_stack()
@@ -699,7 +717,8 @@ class Element(ElementBase):
             except AttributeError as error:
                 self._handle_driver_error(error)
             except StaleElementReferenceException as error:
-                self._handle_driver_error(error)
+                self.logger.error(f"{error}\ncontinue")
+                continue
 
         raise GeneralElementException(
             msg=f"Failed to {inspect.currentframe().f_code.co_name} within {self.timeout=}",
@@ -734,7 +753,8 @@ class Element(ElementBase):
             except AttributeError as error:
                 self._handle_driver_error(error)
             except StaleElementReferenceException as error:
-                self._handle_driver_error(error)
+                self.logger.error(f"{error}\ncontinue")
+                continue
 
         raise GeneralElementException(
             msg=f"Failed to {inspect.currentframe().f_code.co_name} within {self.timeout=}",
@@ -765,7 +785,8 @@ class Element(ElementBase):
             except AttributeError as error:
                 self._handle_driver_error(error)
             except StaleElementReferenceException as error:
-                self._handle_driver_error(error)
+                self.logger.error(f"{error}\ncontinue")
+                continue
         raise GeneralElementException(
             msg=f"Failed to {inspect.currentframe().f_code.co_name} within {self.timeout=}",
             stacktrace=traceback.format_stack()
@@ -789,7 +810,8 @@ class Element(ElementBase):
             except AttributeError as error:
                 self._handle_driver_error(error)
             except StaleElementReferenceException as error:
-                self._handle_driver_error(error)
+                self.logger.error(f"{error}\ncontinue")
+                continue
         raise GeneralElementException(
             msg=f"Failed to {inspect.currentframe().f_code.co_name} within {self.timeout=}\n{duration}",
             stacktrace=traceback.format_stack()
@@ -851,7 +873,8 @@ class Element(ElementBase):
             except AttributeError as error:
                 self._handle_driver_error(error)
             except StaleElementReferenceException as error:
-                self._handle_driver_error(error)
+                self.logger.error(f"{error}\ncontinue")
+                continue
         # === Недостаточно данных для действия ===
         raise GeneralElementException(
             msg=f"Failed to {inspect.currentframe().f_code.co_name} within {self.timeout=}\n{locator=}\n{x=}\n{y=}\n{direction}\n{distance}\n",
@@ -879,7 +902,8 @@ class Element(ElementBase):
             except AttributeError as error:
                 self._handle_driver_error(error)
             except StaleElementReferenceException as error:
-                self._handle_driver_error(error)
+                self.logger.error(f"{error}\ncontinue")
+                continue
         raise GeneralElementException(
             msg=f"Failed to {inspect.currentframe().f_code.co_name} within {self.timeout=}\n{duration}",
             stacktrace=traceback.format_stack()
@@ -902,7 +926,8 @@ class Element(ElementBase):
             except AttributeError as error:
                 self._handle_driver_error(error)
             except StaleElementReferenceException as error:
-                self._handle_driver_error(error)
+                self.logger.error(f"{error}\ncontinue")
+                continue
         raise GeneralElementException(
             msg=f"Failed to {inspect.currentframe().f_code.co_name} within {self.timeout=}",
             stacktrace=traceback.format_stack()
@@ -928,7 +953,8 @@ class Element(ElementBase):
             except AttributeError as error:
                 self._handle_driver_error(error)
             except StaleElementReferenceException as error:
-                self._handle_driver_error(error)
+                self.logger.error(f"{error}\ncontinue")
+                continue
         raise GeneralElementException(
             msg=f"Failed to {inspect.currentframe().f_code.co_name} within {self.timeout=}",
             stacktrace=traceback.format_stack()
@@ -970,7 +996,8 @@ class Element(ElementBase):
             except AttributeError as error:
                 self._handle_driver_error(error)
             except StaleElementReferenceException as error:
-                self._handle_driver_error(error)
+                self.logger.error(f"{error}\ncontinue")
+                continue
         raise GeneralElementException(
             msg=f"Failed to {inspect.currentframe().f_code.co_name} within {self.timeout=}",
             stacktrace=traceback.format_stack()
@@ -1021,7 +1048,8 @@ class Element(ElementBase):
             except AttributeError as error:
                 self._handle_driver_error(error)
             except StaleElementReferenceException as error:
-                self._handle_driver_error(error)
+                self.logger.error(f"{error}\ncontinue")
+                continue
         raise GeneralElementException(
             msg=f"Failed to {inspect.currentframe().f_code.co_name} within {self.timeout=}",
             stacktrace=traceback.format_stack()
@@ -1038,8 +1066,12 @@ class Element(ElementBase):
                     return cast('Element', self)
                 self.scroll_down(percent=percent, speed=speed, return_bool=True)
             except (
-            NoSuchDriverException, InvalidSessionIdException, AttributeError, StaleElementReferenceException) as error:
+                    NoSuchDriverException, InvalidSessionIdException, AttributeError
+                    ) as error:
                 self._handle_driver_error(error)
+            except StaleElementReferenceException as error:
+                self.logger.error(f"{error}\ncontinue")
+                continue
 
         raise GeneralElementException(
             msg=f"Failed to scroll to bottom within {self.timeout=}",
@@ -1057,8 +1089,11 @@ class Element(ElementBase):
                     return cast('Element', self)
                 self.scroll_up(percent=percent, speed=speed, return_bool=True)
             except (
-            NoSuchDriverException, InvalidSessionIdException, AttributeError, StaleElementReferenceException) as error:
+                    NoSuchDriverException, InvalidSessionIdException, AttributeError) as error:
                 self._handle_driver_error(error)
+            except StaleElementReferenceException as error:
+                self.logger.error(f"{error}\ncontinue")
+                continue
 
         raise GeneralElementException(
             msg=f"Failed to scroll to top within {self.timeout=}",
@@ -1098,7 +1133,8 @@ class Element(ElementBase):
             except AttributeError as error:
                 self._handle_driver_error(error)
             except StaleElementReferenceException as error:
-                self._handle_driver_error(error)
+                self.logger.error(f"{error}\ncontinue")
+                continue
             except Exception as error:
                 # Some instability detected, information gathering required
                 self.logger.error(error)
@@ -1144,7 +1180,8 @@ class Element(ElementBase):
             except AttributeError as error:
                 self._handle_driver_error(error)
             except StaleElementReferenceException as error:
-                self._handle_driver_error(error)
+                self.logger.error(f"{error}\ncontinue")
+                continue
 
         raise GeneralElementException(
             msg=f"Failed to {inspect.currentframe().f_code.co_name} within {self.timeout=}",
@@ -1184,7 +1221,8 @@ class Element(ElementBase):
             except AttributeError as error:
                 self._handle_driver_error(error)
             except StaleElementReferenceException as error:
-                self._handle_driver_error(error)
+                self.logger.error(f"{error}\ncontinue")
+                continue
 
         raise GeneralElementException(
             msg=f"Failed to {inspect.currentframe().f_code.co_name} within {self.timeout=}",
@@ -1241,7 +1279,8 @@ class Element(ElementBase):
             except AttributeError as error:
                 self._handle_driver_error(error)
             except StaleElementReferenceException as error:
-                self._handle_driver_error(error)
+                self.logger.error(f"{error}\ncontinue")
+                continue
 
         raise GeneralElementException(
             msg=f"Failed to {inspect.currentframe().f_code.co_name} within {self.timeout=} {direction=} {percent=}",
@@ -1279,7 +1318,8 @@ class Element(ElementBase):
             except AttributeError as error:
                 self._handle_driver_error(error)
             except StaleElementReferenceException as error:
-                self._handle_driver_error(error)
+                self.logger.error(f"{error}\ncontinue")
+                continue
 
         raise GeneralElementException(
             msg=f"Failed to clear element within {self.timeout=}",
@@ -1317,7 +1357,8 @@ class Element(ElementBase):
             except AttributeError as error:
                 self._handle_driver_error(error)
             except StaleElementReferenceException as error:
-                self._handle_driver_error(error)
+                self.logger.error(f"{error}\ncontinue")
+                continue
 
         raise GeneralElementException(
             msg=f"Failed to get location_in_view within {self.timeout=}",
@@ -1362,7 +1403,8 @@ class Element(ElementBase):
             except AttributeError as error:
                 self._handle_driver_error(error)
             except StaleElementReferenceException as error:
-                self._handle_driver_error(error)
+                self.logger.error(f"{error}\ncontinue")
+                continue
 
         raise GeneralElementException(
             msg=f"Failed to set_value({value}) within {self.timeout=}",
@@ -1406,7 +1448,8 @@ class Element(ElementBase):
             except AttributeError as error:
                 self._handle_driver_error(error)
             except StaleElementReferenceException as error:
-                self._handle_driver_error(error)
+                self.logger.error(f"{error}\ncontinue")
+                continue
 
         raise GeneralElementException(
             msg=f"Failed to send_keys({text}) within {self.timeout=}",
@@ -1444,7 +1487,8 @@ class Element(ElementBase):
             except AttributeError as error:
                 self._handle_driver_error(error)
             except StaleElementReferenceException as error:
-                self._handle_driver_error(error)
+                self.logger.error(f"{error}\ncontinue")
+                continue
 
         raise GeneralElementException(
             msg=f"Failed to retrieve tag_name within {self.timeout=}",
@@ -1482,7 +1526,8 @@ class Element(ElementBase):
             except AttributeError as error:
                 self._handle_driver_error(error)
             except StaleElementReferenceException as error:
-                self._handle_driver_error(error)
+                self.logger.error(f"{error}\ncontinue")
+                continue
 
         raise GeneralElementException(
             msg=f"Failed to retrieve text within {self.timeout=}",
@@ -1520,7 +1565,8 @@ class Element(ElementBase):
             except AttributeError as error:
                 self._handle_driver_error(error)
             except StaleElementReferenceException as error:
-                self._handle_driver_error(error)
+                self.logger.error(f"{error}\ncontinue")
+                continue
 
         raise GeneralElementException(
             msg=f"Failed to submit element within {self.timeout=}",
@@ -1647,7 +1693,8 @@ class Element(ElementBase):
             except AttributeError as error:
                 self._handle_driver_error(error)
             except StaleElementReferenceException as error:
-                self._handle_driver_error(error)
+                self.logger.error(f"{error}\ncontinue")
+                continue
             except WebDriverException as error:
                 self._handle_driver_error(error)
 
@@ -1695,7 +1742,8 @@ class Element(ElementBase):
             except AttributeError as error:
                 self._handle_driver_error(error)
             except StaleElementReferenceException as error:
-                self._handle_driver_error(error)
+                self.logger.error(f"{error}\ncontinue")
+                continue
             except WebDriverException as error:
                 self._handle_driver_error(error)
 
@@ -1741,7 +1789,8 @@ class Element(ElementBase):
             except AttributeError as error:
                 self._handle_driver_error(error)
             except StaleElementReferenceException as error:
-                self._handle_driver_error(error)
+                self.logger.error(f"{error}\ncontinue")
+                continue
             except WebDriverException as error:
                 self._handle_driver_error(error)
 
@@ -1784,7 +1833,8 @@ class Element(ElementBase):
             except AttributeError as error:
                 self._handle_driver_error(error)
             except StaleElementReferenceException as error:
-                self._handle_driver_error(error)
+                self.logger.error(f"{error}\ncontinue")
+                continue
             except WebDriverException as error:
                 self._handle_driver_error(error)
 
@@ -1824,7 +1874,8 @@ class Element(ElementBase):
             except AttributeError as error:
                 self._handle_driver_error(error)
             except StaleElementReferenceException as error:
-                self._handle_driver_error(error)
+                self.logger.error(f"{error}\ncontinue")
+                continue
             except WebDriverException as error:
                 self._handle_driver_error(error)
 
@@ -1864,7 +1915,8 @@ class Element(ElementBase):
             except AttributeError as error:
                 self._handle_driver_error(error)
             except StaleElementReferenceException as error:
-                self._handle_driver_error(error)
+                self.logger.error(f"{error}\ncontinue")
+                continue
             except WebDriverException as error:
                 self._handle_driver_error(error)
 
@@ -1904,7 +1956,8 @@ class Element(ElementBase):
             except AttributeError as error:
                 self._handle_driver_error(error)
             except StaleElementReferenceException as error:
-                self._handle_driver_error(error)
+                self.logger.error(f"{error}\ncontinue")
+                continue
             except WebDriverException as error:
                 self._handle_driver_error(error)
 
@@ -1944,7 +1997,8 @@ class Element(ElementBase):
             except AttributeError as error:
                 self._handle_driver_error(error)
             except StaleElementReferenceException as error:
-                self._handle_driver_error(error)
+                self.logger.error(f"{error}\ncontinue")
+                continue
             except WebDriverException as error:
                 self._handle_driver_error(error)
 
@@ -1986,7 +2040,8 @@ class Element(ElementBase):
             except AttributeError as error:
                 self._handle_driver_error(error)
             except StaleElementReferenceException as error:
-                self._handle_driver_error(error)
+                self.logger.error(f"{error}\ncontinue")
+                continue
             except IOError as error:
                 self.logger.error(f"IOError while saving screenshot to {filename}: {error}")
                 return False
@@ -2029,7 +2084,8 @@ class Element(ElementBase):
                     child_class = child_element.get_attribute('class')
                     if parent_class != child_class:
                         return str(child_class)
-            except StaleElementReferenceException:
+            except StaleElementReferenceException as error:
+                self.logger.error(f"{error}\ncontinue")
                 continue
 
     def _get_xpath(self) -> Union[str, None]:
@@ -2096,12 +2152,13 @@ class Element(ElementBase):
         parent_xpath = self._get_xpath()
         return f"{parent_xpath}/*[{index}]"
 
-    def wait(self, timeout: int = 10, poll_frequency: float = 0.5) -> bool:
+    def wait(self, timeout: int = 10, poll_frequency: float = 0.5, return_bool: bool = False) -> Union[bool, 'Element']:
         """Waits for the element to appear (present in DOM).
 
         Args:
             timeout (int): Timeout in seconds.
             poll_frequency (float): Frequency of polling.
+            return_bool (bool): If True - return bool, else return Element (self)
 
         Returns:
             bool: True if the element is found, False otherwise.
@@ -2111,20 +2168,28 @@ class Element(ElementBase):
             resolved_locator = self.handle_locator(self.locator, self.contains)
             if not resolved_locator:
                 self.logger.error("Resolved locator is None or invalid")
-                return False
+                if return_bool:
+                    return False
+                return cast('Element', self)
             WebDriverWait(self.base.driver, timeout, poll_frequency).until(
                 conditions.present(resolved_locator)
             )
-            return True
+            if return_bool:
+                return True
+            return cast('Element', self)
         except TimeoutException:
-            return False
+            if return_bool:
+                return False
+            return cast('Element', self)
 
-    def wait_visible(self, timeout: int = 10, poll_frequency: float = 0.5) -> bool:
+    def wait_visible(self, timeout: int = 10, poll_frequency: float = 0.5, return_bool: bool = False) -> Union[
+        bool, 'Element']:
         """Waits until the element is visible.
 
         Args:
             timeout (int): Timeout in seconds.
             poll_frequency (float): Frequency of polling.
+            return_bool (bool): If True - return bool, else return Element (self)
 
         Returns:
             bool: True if the element becomes visible, False otherwise.
@@ -2134,21 +2199,29 @@ class Element(ElementBase):
             resolved_locator = self.handle_locator(self.locator, self.contains)
             if not resolved_locator:
                 self.logger.error("Resolved locator is None or invalid")
-                return False
+                if return_bool:
+                    return False
+                return cast('Element', self)
 
             WebDriverWait(self.base.driver, timeout, poll_frequency).until(
                 conditions.visible(resolved_locator)
             )
-            return True
+            if return_bool:
+                return True
+            return cast('Element', self)
         except TimeoutException:
-            return False
+            if return_bool:
+                return False
+            return cast('Element', self)
 
-    def wait_clickable(self, timeout: int = 10, poll_frequency: float = 0.5) -> bool:
+    def wait_clickable(self, timeout: int = 10, poll_frequency: float = 0.5, return_bool: bool = False) -> Union[
+        bool, 'Element']:
         """Waits until the element is clickable.
 
         Args:
             timeout (int): Timeout in seconds.
             poll_frequency (float): Frequency of polling.
+            return_bool (bool): If True - return bool, else return Element (self)
 
         Returns:
             bool: True if the element becomes clickable, False otherwise.
@@ -2158,21 +2231,29 @@ class Element(ElementBase):
             resolved_locator = self.handle_locator(self.locator, self.contains)
             if not resolved_locator:
                 self.logger.error("Resolved locator is None or invalid")
-                return False
+                if return_bool:
+                    return False
+                return cast('Element', self)
 
             WebDriverWait(self.base.driver, timeout, poll_frequency).until(
                 conditions.clickable(resolved_locator)
             )
-            return True
+            if return_bool:
+                return True
+            return cast('Element', self)
         except TimeoutException:
-            return False
+            if return_bool:
+                return False
+            return cast('Element', self)
 
-    def wait_for_not(self, timeout: int = 10, poll_frequency: float = 0.5) -> bool:
+    def wait_for_not(self, timeout: int = 10, poll_frequency: float = 0.5, return_bool: bool = False) -> Union[
+        bool, 'Element']:
         """Waits until the element is no longer present in the DOM.
 
         Args:
             timeout (int): Timeout in seconds.
             poll_frequency (float): Frequency of polling.
+            return_bool (bool): If True - return bool, else return Element (self)
 
         Returns:
             bool: True if the element disappears, False otherwise.
@@ -2181,21 +2262,28 @@ class Element(ElementBase):
         try:
             resolved_locator = self.handle_locator(self.locator, self.contains)
             if not resolved_locator:
-                self.logger.error("Resolved locator is None or invalid")
-                return True
+                if return_bool:
+                    return False
+                return cast('Element', self)
             WebDriverWait(self.base.driver, timeout, poll_frequency).until(
                 conditions.not_present(resolved_locator)
             )
-            return True
+            if return_bool:
+                return True
+            return cast('Element', self)
         except TimeoutException:
-            return False
+            if return_bool:
+                return False
+            return cast('Element', self)
 
-    def wait_for_not_visible(self, timeout: int = 10, poll_frequency: float = 0.5) -> bool:
+    def wait_for_not_visible(self, timeout: int = 10, poll_frequency: float = 0.5, return_bool: bool = False) -> Union[
+        bool, 'Element']:
         """Waits until the element becomes invisible.
 
         Args:
             timeout (int): Timeout in seconds.
             poll_frequency (float): Polling frequency.
+            return_bool (bool): If True - return bool, else return Element (self)
 
         Returns:
             bool: True if the element becomes invisible, False otherwise.
@@ -2204,21 +2292,28 @@ class Element(ElementBase):
         try:
             resolved_locator = self.handle_locator(self.locator, self.contains)
             if not resolved_locator:
-                self.logger.error("Resolved locator is None or invalid")
-                return True
+                if return_bool:
+                    return False
+                return cast('Element', self)
             WebDriverWait(self.base.driver, timeout, poll_frequency).until(
                 conditions.not_visible(resolved_locator)
             )
-            return True
+            if return_bool:
+                return True
+            return cast('Element', self)
         except TimeoutException:
-            return False
+            if return_bool:
+                return False
+            return cast('Element', self)
 
-    def wait_for_not_clickable(self, timeout: int = 10, poll_frequency: float = 0.5) -> bool:
+    def wait_for_not_clickable(self, timeout: int = 10, poll_frequency: float = 0.5, return_bool: bool = False) -> \
+    Union[bool, 'Element']:
         """Waits until the element becomes not clickable.
 
         Args:
             timeout (int): Timeout in seconds.
             poll_frequency (float): Polling frequency.
+            return_bool (bool): If True - return bool, else return Element (self)
 
         Returns:
             bool: True if the element becomes not clickable, False otherwise.
@@ -2228,13 +2323,19 @@ class Element(ElementBase):
             resolved_locator = self.handle_locator(self.locator, self.contains)
             if not resolved_locator:
                 self.logger.error("Resolved locator is None or invalid")
-                return True
+                if return_bool:
+                    return False
+                return cast('Element', self)
             WebDriverWait(self.base.driver, timeout, poll_frequency).until(
                 conditions.not_clickable(resolved_locator)
             )
-            return True
+            if return_bool:
+                return True
+            return cast('Element', self)
         except TimeoutException:
-            return False
+            if return_bool:
+                return False
+            return cast('Element', self)
 
     @property
     def should(self) -> 'Should':

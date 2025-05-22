@@ -27,6 +27,7 @@ from shadowstep.terminal.terminal import Terminal
 from shadowstep.terminal.transport import Transport
 
 
+
 class AppiumDisconnectedError(Exception):
     def __init__(
             self, msg: Optional[str] = None, screen: Optional[str] = None,
@@ -401,13 +402,18 @@ class ShadowstepBase:
                                          direct_connection=self.direct_connection,
                                          extensions=self.extensions,
                                          strict_ssl=self.strict_ssl)
-        if ssh_user and ssh_password:
+        self._wait_for_session_id()
+        if not self.is_connected():
+            raise AppiumDisconnectedError(msg=f"Не удалось установить подключение к: {command_executor}")
+        self.logger.info(f"Подключение установлено")
+        if self.ssh_user and self.ssh_password:
             self.transport = Transport(server=self.server_ip,
                                        port=self.ssh_port,
                                        user=self.ssh_user,
                                        password=self.ssh_password)
         self.terminal = Terminal(base=self)
         self.adb = Adb(base=self)
+        self.driver.update_settings(settings={"enforceXPath1": True})
 
 
     def disconnect(self) -> None:
@@ -449,11 +455,76 @@ class ShadowstepBase:
                      keep_alive=self.keep_alive,
                      direct_connection=self.direct_connection,
                      extensions=self.extensions,
-                     strict_ssl=self.strict_ssl
+                     strict_ssl=self.strict_ssl,
+                     ssh_user=self.ssh_user,
+                     ssh_password=self.ssh_password
                      )
         time.sleep(3)
+        self.driver.update_settings(settings={"enforceXPath1": True})
 
     def is_connected(self) -> bool:
+        """
+        Checks whether the current Appium session is active on the grid or standalone server.
+
+        Returns:
+            bool: True if the session is active, False otherwise.
+        """
+        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
+
+        step = "Checking session status"
+        self.logger.debug(f"[{step}] started")
+        if self._is_session_active_on_grid():
+            return True
+        elif self._is_session_active_on_standalone():
+            return True
+        return False
+
+    def _is_session_active_on_grid(self) -> bool:
+        """
+        Checks if the current session is active in the Selenium Grid.
+
+        Returns:
+            bool: True if session is active in any slot on the grid, False otherwise.
+        """
+        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
+
+        try:
+            step = "Fetching Grid /status"
+            self.logger.debug(f"[{step}] started")
+
+            url = f"{self.command_executor}/status"
+            response = requests.get(url, timeout=5, verify=False)
+            response.raise_for_status()
+
+            grid = response.json()
+            nodes = grid.get("value", {}).get("nodes", [])
+
+            step = "Iterating nodes and slots"
+            self.logger.debug(f"[{step}] started")
+            for node in nodes:
+                for slot in node.get("slots", []):
+                    session = slot.get("session")
+                    if not session:
+                        continue
+                    session_id = session.get("sessionId")
+                    if session_id == self.driver.session_id:
+                        self.logger.debug(f"Session found in Grid: {session_id}")
+                        return True
+
+            self.logger.debug("Session not found in any Grid slot")
+            return False
+
+        except Exception as error:
+            self.logger.warning(f"_is_session_active_on_grid failed: {error}")
+            return False
+
+    def _is_session_active_on_standalone(self) -> bool:
+        """
+        Fallback check for standalone Appium server via /sessions endpoint (legacy support).
+
+        Returns:
+            bool: True if session is active on standalone Appium, False otherwise.
+        """
         self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
         try:
             response = requests.get(f"{self.command_executor}/sessions")
@@ -464,8 +535,31 @@ class ShadowstepBase:
                 session_id = node.get("id", None)
                 node.get("ready", False)
                 if self.driver.session_id == session_id:
+                    self.logger.debug(f"Found session_id on standalone: {session_id}")
                     return True
             return False
         except Exception as error:
             self.logger.error(f"{inspect.currentframe().f_code.co_name} {error}")
             return False
+
+    def _wait_for_session_id(self, timeout: int = 30) -> None:
+        """
+        Waits until WebDriver's session_id is set or times out.
+
+        Args:
+            timeout (int): How many seconds to wait before giving up.
+
+        Raises:
+            RuntimeError: If session_id was not set within timeout.
+        """
+        self.logger.info(f"{inspect.currentframe().f_code.co_name}")
+        start_time = time.time()
+        while time.time() - start_time < timeout:
+            self.logger.info(f"{self.driver=}")
+            self.logger.info(f"{self.driver.session_id=}")
+            if self.driver and self.driver.session_id:
+                return
+            time.sleep(0.5)
+            self.driver = WebDriverSingleton.get_driver()
+        raise RuntimeError("WebDriver session_id was not assigned in time.")
+
