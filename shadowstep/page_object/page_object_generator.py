@@ -25,13 +25,9 @@ class PageObjectGenerator:
     и Jinja2-шаблона.
     """
 
-    def __init__(self):
-        """
-        :param parser: объект, реализующий методы
-            - extract_simple_elements(xml: str) -> List[Dict[str,str]]
-            - find_summary_siblings(xml: str) -> List[Tuple[Dict, Dict]]
-        """
+    def __init__(self, translator=None):
         self.logger = logging.getLogger(__name__)
+        self.translator = translator
         self.BLACKLIST_NO_TEXT_CLASSES = {
             'android.widget.SeekBar',
             'android.widget.ProgressBar',
@@ -492,9 +488,8 @@ class PageObjectGenerator:
     @neuro_readonly
     def _translate(self, text: str) -> str:
         self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
-        """
-        пока не нашёл бесплатный переводчик
-        """
+        if self.translator is not None:
+            text = self.translator.translate(text)
         return text
 
     @neuro_readonly
