@@ -537,7 +537,9 @@ class PageObjectGenerator:
         """
         self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
         raw_title = self._get_name_property(title)
-        class_name = unidecode((self._normilize_to_camel_case(raw_title)))
+        translated = self._translate(raw_title)
+        class_name = self._normilize_to_camel_case(translated)
+
         title_locator = self._node_to_locator(title)
         recycler_locator = self._node_to_locator(recycler) if recycler else None
 
@@ -793,6 +795,8 @@ class PageObjectGenerator:
             text = node.attrs.get("text") or node.attrs.get("content-desc") or ""
             if not text and node.attrs.get("resource-id"):
                 text = self._strip_package_prefix(node.attrs['resource-id'])
+            if self.translator is not None:
+                text = self._translate(text)
             words = self._slug_words(text)[:5]
             base = "_".join(words) if words else "element"
 
