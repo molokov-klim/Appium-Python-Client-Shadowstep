@@ -2,6 +2,7 @@
 
 import inspect
 import logging
+import re
 import time
 import traceback
 import typing
@@ -135,6 +136,7 @@ class Element(ElementBase):
         step = "Converting locator to XPath"
         self.logger.debug(f"[{step}] started")
         locator = self.locator_converter.to_xpath(locator)
+        locator = self._contains_to_xpath(locator)
 
         # [Step] Iteratively collect elements
         step = "Collecting elements"
@@ -2209,4 +2211,36 @@ class Element(ElementBase):
             ignored_exceptions=self.ignored_exceptions,
             contains=self.contains
         )
+
+
+    def _contains_to_xpath(self, xpath: Tuple[str, str]) -> Tuple[str, str]:
+        """
+        Applies contains(...) only to specific attributes in XPath expression.
+
+        Args:
+            xpath (Tuple[str, str]): The ('strategy', 'xpath') pair.
+
+        Returns:
+            Tuple[str, str]: Transformed XPath with selective contains().
+        """
+        strategy, value = xpath
+
+        # Бьём конкретно по целевым атрибутам, которые нужно оборачивать в contains()
+        patterns = {
+            'text': r"@text='([^']*)'",
+            'content-desc': r"@content-desc='([^']*)'",
+            'contentDescription': r"@contentDescription='([^']*)'",
+            'label': r"@label='([^']*)'",
+            'title': r"@title='([^']*)'",
+            'name': r"@name='([^']*)'",
+            'hint': r"@hint='([^']*)'"
+        }
+
+        for attr, pattern in patterns.items():
+            value = re.sub(pattern, lambda m: f"contains(@{attr}, '{m.group(1)}')", value)
+
+        return strategy, value
+
+
+
 
