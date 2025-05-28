@@ -44,6 +44,7 @@ class TestElement:
         inner_elements = android_settings_recycler.get_elements(locator={'resource-id': 'android:id/title'})
         assert isinstance(inner_elements, Elements)
         for inner_element in inner_elements:
+            app.logger.info(f"{inner_element.text=}")
             assert isinstance(inner_element, Element)
             assert inner_element.get_attribute('resource-id') == 'android:id/title'
 
@@ -251,7 +252,7 @@ class TestElement:
         assert 'About phone' in settings_about_phone.get_attribute('text')
         app.terminal.close_app(package='com.android.settings')
 
-    def test_scroll_to_bottom(self, app: Shadowstep):
+    def test_scroll_to_bottom(self, app: Shadowstep, android_settings):
         settings_recycler = app.get_element(
             locator={'resource-id': 'com.android.settings:id/main_content_scrollable_container'})
         settings_network = app.get_element(locator={'text': 'Network & internet',
@@ -260,13 +261,16 @@ class TestElement:
                                                         'resource-id': 'android:id/title'})
         app.terminal.start_activity(package='com.android.settings', activity='com.android.settings.Settings')
         time.sleep(3)
+        app.logger.info(f"{settings_recycler.get_attributes()=}")
         assert 'Network & internet' in settings_network.get_attribute('text')
+        app.logger.info(f"{settings_network.get_attributes()=}")
         settings_recycler.scroll_to_bottom()
         time.sleep(3)
         assert 'About phone' in settings_about_phone.get_attribute('text')
+        app.logger.info(f"{settings_about_phone.get_attributes()=}")
         app.terminal.close_app(package='com.android.settings')
 
-    def test_scroll_to_top(self, app: Shadowstep):
+    def test_scroll_to_top(self, app: Shadowstep, android_settings):
         settings_recycler = app.get_element(
             locator={'resource-id': 'com.android.settings:id/main_content_scrollable_container'})
         settings_network = app.get_element(locator={'text': 'Network & internet',
@@ -284,7 +288,7 @@ class TestElement:
         assert 'Network & internet' in settings_network.get_attribute('text')
         app.terminal.close_app(package='com.android.settings')
 
-    def test_scroll_to_element(self, app: Shadowstep):
+    def test_scroll_to_element(self, app: Shadowstep, android_settings):
         settings_recycler = app.get_element(
             locator={'resource-id': 'com.android.settings:id/main_content_scrollable_container'})
         settings_network = app.get_element(locator={'text': 'Network & internet',

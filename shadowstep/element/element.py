@@ -19,9 +19,9 @@ from selenium.webdriver.common.actions.action_builder import ActionBuilder
 from selenium.webdriver.common.actions.pointer_input import PointerInput
 from selenium.webdriver.remote.shadowroot import ShadowRoot
 from selenium.webdriver.support.wait import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
 
 from shadowstep.element.base import ElementBase
-from shadowstep.elements.elements import Elements
 from shadowstep.utils import conditions
 from shadowstep.utils.utils import find_coordinates_by_vector
 
@@ -50,11 +50,12 @@ class Element(ElementBase):
     def __init__(self,
                  locator: Union[Tuple, Dict[str, str], 'Element'] = None,
                  base: 'Shadowstep' = None,
-                 timeout: int = 30,
+                 timeout: float = 30,
                  poll_frequency: float = 0.5,
                  ignored_exceptions: typing.Optional[WaitExcTypes] = None,
-                 contains: bool = False):
-        super().__init__(locator, base, timeout, poll_frequency, ignored_exceptions, contains)
+                 contains: bool = False,
+                 native: WebElement = None):
+        super().__init__(locator, base, timeout, poll_frequency, ignored_exceptions, contains, native)
         self.logger = logging.getLogger(f"{__name__}.{self.__class__.__name__}")
         self.logger.debug(f"Initialized Element with locator: {self.locator}")
 
@@ -81,6 +82,7 @@ class Element(ElementBase):
             Found Element or None.
         """
         self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
+
         if isinstance(locator, Element):
             locator = locator.locator
 
@@ -91,7 +93,7 @@ class Element(ElementBase):
         pre_inner_locator = self.handle_locator(locator, contains)
         inner_path = pre_inner_locator[1].lstrip('/')  # Remove accidental `/` in front
 
-        # ⛑ Гарантированная вложенность: parent//child
+        # Гарантированная вложенность: parent//child
         if not inner_path.startswith("//"):
             inner_path = f"//{inner_path}"
 
@@ -107,48 +109,57 @@ class Element(ElementBase):
     def get_elements(
             self,
             locator: Union[Tuple, Dict[str, str], 'Element'],
-            contains: bool = False,
-            max_count: int = 100
-    ) -> Elements:
+            timeout: float = 30,
+            poll_frequency: float = 0.5,
+            ignored_exceptions: typing.Optional[WaitExcTypes] = None
+    ) -> 'Elements':
         self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
 
+        self._get_driver()
+
+        # [Step] Normalize locator
+        step = "Normalizing locator"
+        self.logger.debug(f"[{step}] started")
         if isinstance(locator, Element):
             locator = locator.locator
 
+        # [Step] Resolve base XPath
+        step = "Resolving base XPath"
+        self.logger.debug(f"[{step}] started")
         base_xpath = self._get_xpath()
         if not base_xpath:
             raise GeneralElementException("Unable to resolve base xpath")
 
-        resolved_xpath = self.locator_converter.to_xpath(locator)[1]
+        # [Step] Convert locator to XPath
+        step = "Converting locator to XPath"
+        self.logger.debug(f"[{step}] started")
+        locator = self.locator_converter.to_xpath(locator)
 
-        def generator() -> typing.Iterator['Element']:
-            missed = 0
-            for index in range(1, max_count + 1):
-                indexed_xpath = f"({resolved_xpath})[{index}]"
-                try:
-                    element = Element(
-                        locator=("xpath", indexed_xpath),
-                        base=self.base,
-                        timeout=3,
-                        poll_frequency=self.poll_frequency,
-                        ignored_exceptions=self.ignored_exceptions,
-                        contains=contains
-                    )
-                except (NoSuchElementException, WebDriverException):
-                    missed += 1
-                    if missed >= 2:
-                        break
-                    continue
-                try:
-                    _ = element.get_attribute("class")
-                    yield element
-                    missed = 0
-                except Exception:
-                    missed += 1
-                    if missed >= 2:
-                        break
+        # [Step] Iteratively collect elements
+        step = "Collecting elements"
+        self.logger.debug(f"[{step}] started")
 
-        return Elements(generator)
+        self.logger.info(f"{locator=}")
+        try:
+            wait = WebDriverWait(driver=self.driver, timeout=timeout,
+                                 poll_frequency=poll_frequency, ignored_exceptions=ignored_exceptions)
+            wait.until(EC.presence_of_element_located(locator))
+            native_elements = self.driver.find_elements(*locator)
+
+            from shadowstep.elements.elements import Elements
+
+            return Elements(
+                native_elements=native_elements,
+                base=self.base,
+                locator=locator,
+                timeout=timeout,
+                poll_frequency=poll_frequency,
+                ignored_exceptions=ignored_exceptions,
+                contains=False
+            )
+        except WebDriverException:
+            raise   # вот тут нужно вернуть адекватную ошибку
+
 
     def get_attributes(self) -> Optional[Dict[str, str]]:
         """Fetch all XML attributes of the element by matching locator against page source.
@@ -415,13 +426,7 @@ class Element(ElementBase):
             try:
                 self._get_driver()
                 if element is None:
-                    element = self._get_element(
-                        locator=self.locator,
-                        timeout=self.timeout,
-                        poll_frequency=self.poll_frequency,
-                        ignored_exceptions=self.ignored_exceptions,
-                        contains=self.contains
-                    )
+                    element = self._get_native()
                 coords = self.get_coordinates(element)
                 if coords is None:
                     continue
@@ -459,13 +464,7 @@ class Element(ElementBase):
             try:
                 self._get_driver()
                 if element is None:
-                    element = self._get_element(
-                        locator=self.locator,
-                        timeout=self.timeout,
-                        poll_frequency=self.poll_frequency,
-                        ignored_exceptions=self.ignored_exceptions,
-                        contains=self.contains
-                    )
+                    element = self._get_native()
                 bounds = element.get_attribute('bounds')
                 if not bounds:
                     continue
@@ -501,13 +500,7 @@ class Element(ElementBase):
         while time.time() - start_time < self.timeout:
             try:
                 self._get_driver()
-                current_element = self._get_element(
-                    locator=self.locator,
-                    timeout=self.timeout,
-                    poll_frequency=self.poll_frequency,
-                    ignored_exceptions=self.ignored_exceptions,
-                    contains=self.contains
-                )
+                current_element = self._get_native()
                 return current_element.get_attribute(name)
             except NoSuchDriverException as error:
                 self._handle_driver_error(error)
@@ -540,13 +533,7 @@ class Element(ElementBase):
         while time.time() - start_time < self.timeout:
             try:
                 self._get_driver()
-                current_element = self._get_element(
-                    locator=self.locator,
-                    timeout=self.timeout,
-                    poll_frequency=self.poll_frequency,
-                    ignored_exceptions=self.ignored_exceptions,
-                    contains=self.contains
-                )
+                current_element = self._get_native()
                 return current_element.get_property(name)
             except NoSuchDriverException as error:
                 self._handle_driver_error(error)
@@ -581,13 +568,7 @@ class Element(ElementBase):
         while time.time() - start_time < self.timeout:
             try:
                 self._get_driver()
-                current_element = self._get_element(
-                    locator=self.locator,
-                    timeout=self.timeout,
-                    poll_frequency=self.poll_frequency,
-                    ignored_exceptions=self.ignored_exceptions,
-                    contains=self.contains
-                )
+                current_element = self._get_native()
                 return current_element.get_dom_attribute(name)
             except NoSuchDriverException as error:
                 self._handle_driver_error(error)
@@ -616,13 +597,7 @@ class Element(ElementBase):
         while time.time() - start_time < self.timeout:
             try:
                 self._get_driver()
-                element = self._get_element(
-                    locator=self.locator,
-                    timeout=self.timeout,
-                    poll_frequency=self.poll_frequency,
-                    ignored_exceptions=self.ignored_exceptions,
-                    contains=self.contains
-                )
+                element = self._get_native()
                 return element.is_displayed()
             except NoSuchElementException:
                 return False
@@ -649,11 +624,7 @@ class Element(ElementBase):
                 screen_size = self.base.terminal.get_screen_resolution()  # Получаем размеры экрана
                 screen_width = screen_size[0]  # Ширина экрана
                 screen_height = screen_size[1]  # Высота экрана
-                current_element = self._get_element(locator=self.locator,
-                                                    timeout=self.timeout,
-                                                    poll_frequency=self.poll_frequency,
-                                                    ignored_exceptions=self.ignored_exceptions,
-                                                    contains=self.contains)
+                current_element = self._get_native()
                 if current_element is None:
                     return False
                 if not current_element.get_attribute('displayed') == 'true':
@@ -700,13 +671,7 @@ class Element(ElementBase):
         while time.time() - start_time < self.timeout:
             try:
                 self._get_driver()
-                element = self._get_element(
-                    locator=self.locator,
-                    timeout=self.timeout,
-                    poll_frequency=self.poll_frequency,
-                    ignored_exceptions=self.ignored_exceptions,
-                    contains=self.contains
-                )
+                element = self._get_native()
                 return element.is_selected()
             except NoSuchElementException:
                 return False
@@ -736,13 +701,7 @@ class Element(ElementBase):
         while time.time() - start_time < self.timeout:
             try:
                 self._get_driver()
-                element = self._get_element(
-                    locator=self.locator,
-                    timeout=self.timeout,
-                    poll_frequency=self.poll_frequency,
-                    ignored_exceptions=self.ignored_exceptions,
-                    contains=self.contains
-                )
+                element = self._get_native()
                 return element.is_enabled()
             except NoSuchElementException:
                 return False
@@ -1062,7 +1021,7 @@ class Element(ElementBase):
 
         while time.time() - start_time < self.timeout:
             try:
-                if not self.scroll_up(percent, speed, return_bool=True):
+                if not self.scroll_down(percent=percent, speed=speed, return_bool=True):
                     return cast('Element', self)
                 self.scroll_down(percent=percent, speed=speed, return_bool=True)
             except (
@@ -1301,13 +1260,7 @@ class Element(ElementBase):
             try:
                 self._get_driver()
 
-                current_element = self._get_element(
-                    locator=self.locator,
-                    timeout=self.timeout,
-                    poll_frequency=self.poll_frequency,
-                    ignored_exceptions=self.ignored_exceptions,
-                    contains=self.contains
-                )
+                current_element = self._get_native()
 
                 current_element.clear()
                 return cast('Element', self)
@@ -1341,13 +1294,7 @@ class Element(ElementBase):
             try:
                 self._get_driver()
 
-                current_element = self._get_element(
-                    locator=self.locator,
-                    timeout=self.timeout,
-                    poll_frequency=self.poll_frequency,
-                    ignored_exceptions=self.ignored_exceptions,
-                    contains=self.contains
-                )
+                current_element = self._get_native()
 
                 return current_element.location_in_view  # Appium WebElement property
             except NoSuchDriverException as error:
@@ -1385,13 +1332,7 @@ class Element(ElementBase):
             try:
                 self._get_driver()
 
-                element = self._get_element(
-                    locator=self.locator,
-                    timeout=self.timeout,
-                    poll_frequency=self.poll_frequency,
-                    ignored_exceptions=self.ignored_exceptions,
-                    contains=self.contains
-                )
+                element = self._get_native()
 
                 element.set_value(value)
                 return cast('Element', self)
@@ -1430,13 +1371,7 @@ class Element(ElementBase):
             try:
                 self._get_driver()
 
-                element = self._get_element(
-                    locator=self.locator,
-                    timeout=self.timeout,
-                    poll_frequency=self.poll_frequency,
-                    ignored_exceptions=self.ignored_exceptions,
-                    contains=self.contains
-                )
+                element = self._get_native()
 
                 element.send_keys(text)
                 return cast('Element', self)
@@ -1470,13 +1405,7 @@ class Element(ElementBase):
             try:
                 self._get_driver()
 
-                element = self._get_element(
-                    locator=self.locator,
-                    timeout=self.timeout,
-                    poll_frequency=self.poll_frequency,
-                    ignored_exceptions=self.ignored_exceptions,
-                    contains=self.contains
-                )
+                element = self._get_native()
 
                 return element.tag_name
 
@@ -1509,13 +1438,7 @@ class Element(ElementBase):
             try:
                 self._get_driver()
 
-                element = self._get_element(
-                    locator=self.locator,
-                    timeout=self.timeout,
-                    poll_frequency=self.poll_frequency,
-                    ignored_exceptions=self.ignored_exceptions,
-                    contains=self.contains
-                )
+                element = self._get_native()
 
                 return element.text
 
@@ -1548,13 +1471,7 @@ class Element(ElementBase):
         while time.time() - start_time < self.timeout:
             try:
                 self._get_driver()
-                element = self._get_element(
-                    locator=self.locator,
-                    timeout=self.timeout,
-                    poll_frequency=self.poll_frequency,
-                    ignored_exceptions=self.ignored_exceptions,
-                    contains=self.contains
-                )
+                element = self._get_native()
                 element.submit()
                 return cast('Element', self)
 
@@ -1592,13 +1509,7 @@ class Element(ElementBase):
         while time.time() - start_time < self.timeout:
             try:
                 self._get_driver()
-                element = self._get_element(
-                    locator=self.locator,
-                    timeout=self.timeout,
-                    poll_frequency=self.poll_frequency,
-                    ignored_exceptions=self.ignored_exceptions,
-                    contains=self.contains
-                )
+                element = self._get_native()
                 return element.shadow_root
 
             except NoSuchDriverException as error:
@@ -1635,13 +1546,7 @@ class Element(ElementBase):
             try:
                 self._get_driver()
 
-                current_element = self._get_element(
-                    locator=self.locator,
-                    timeout=self.timeout,
-                    poll_frequency=self.poll_frequency,
-                    ignored_exceptions=self.ignored_exceptions,
-                    contains=self.contains
-                )
+                current_element = self._get_native()
 
                 return current_element.location_once_scrolled_into_view
 
@@ -1676,13 +1581,7 @@ class Element(ElementBase):
             try:
                 self._get_driver()
 
-                current_element = self._get_element(
-                    locator=self.locator,
-                    timeout=self.timeout,
-                    poll_frequency=self.poll_frequency,
-                    ignored_exceptions=self.ignored_exceptions,
-                    contains=self.contains
-                )
+                current_element = self._get_native()
 
                 return current_element.size
 
@@ -1725,13 +1624,7 @@ class Element(ElementBase):
             try:
                 self._get_driver()
 
-                current_element = self._get_element(
-                    locator=self.locator,
-                    timeout=self.timeout,
-                    poll_frequency=self.poll_frequency,
-                    ignored_exceptions=self.ignored_exceptions,
-                    contains=self.contains
-                )
+                current_element = self._get_native()
 
                 return current_element.value_of_css_property(property_name)
 
@@ -1772,13 +1665,7 @@ class Element(ElementBase):
             try:
                 self._get_driver()
 
-                current_element = self._get_element(
-                    locator=self.locator,
-                    timeout=self.timeout,
-                    poll_frequency=self.poll_frequency,
-                    ignored_exceptions=self.ignored_exceptions,
-                    contains=self.contains
-                )
+                current_element = self._get_native()
 
                 return current_element.location
 
@@ -1816,13 +1703,7 @@ class Element(ElementBase):
             try:
                 self._get_driver()
 
-                current_element = self._get_element(
-                    locator=self.locator,
-                    timeout=self.timeout,
-                    poll_frequency=self.poll_frequency,
-                    ignored_exceptions=self.ignored_exceptions,
-                    contains=self.contains
-                )
+                current_element = self._get_native()
 
                 return current_element.rect
 
@@ -1857,13 +1738,7 @@ class Element(ElementBase):
             try:
                 self._get_driver()
 
-                current_element = self._get_element(
-                    locator=self.locator,
-                    timeout=self.timeout,
-                    poll_frequency=self.poll_frequency,
-                    ignored_exceptions=self.ignored_exceptions,
-                    contains=self.contains
-                )
+                current_element = self._get_native()
 
                 return current_element.aria_role
 
@@ -1898,13 +1773,7 @@ class Element(ElementBase):
             try:
                 self._get_driver()
 
-                current_element = self._get_element(
-                    locator=self.locator,
-                    timeout=self.timeout,
-                    poll_frequency=self.poll_frequency,
-                    ignored_exceptions=self.ignored_exceptions,
-                    contains=self.contains
-                )
+                current_element = self._get_native()
 
                 return current_element.accessible_name
 
@@ -1939,13 +1808,7 @@ class Element(ElementBase):
             try:
                 self._get_driver()
 
-                current_element = self._get_element(
-                    locator=self.locator,
-                    timeout=self.timeout,
-                    poll_frequency=self.poll_frequency,
-                    ignored_exceptions=self.ignored_exceptions,
-                    contains=self.contains
-                )
+                current_element = self._get_native()
 
                 return current_element.screenshot_as_base64
 
@@ -1980,13 +1843,7 @@ class Element(ElementBase):
             try:
                 self._get_driver()
 
-                current_element = self._get_element(
-                    locator=self.locator,
-                    timeout=self.timeout,
-                    poll_frequency=self.poll_frequency,
-                    ignored_exceptions=self.ignored_exceptions,
-                    contains=self.contains
-                )
+                current_element = self._get_native()
 
                 return current_element.screenshot_as_png
 
@@ -2023,13 +1880,7 @@ class Element(ElementBase):
             try:
                 self._get_driver()
 
-                current_element = self._get_element(
-                    locator=self.locator,
-                    timeout=self.timeout,
-                    poll_frequency=self.poll_frequency,
-                    ignored_exceptions=self.ignored_exceptions,
-                    contains=self.contains
-                )
+                current_element = self._get_native()
 
                 return current_element.screenshot(filename)
 
@@ -2342,3 +2193,19 @@ class Element(ElementBase):
         """Provides DSL-like assertions: element.should.have.text(...), etc."""
         from shadowstep.element.should import Should  # импорт внутри метода для избежания циклической зависимости
         return Should(self)
+
+    def _get_native(self) -> WebElement:
+        """
+        Returns either the provided native element or resolves via locator.
+        """
+        if self.native:
+            return self.native
+
+        return self._get_element(
+            locator=self.locator,
+            timeout=self.timeout,
+            poll_frequency=self.poll_frequency,
+            ignored_exceptions=self.ignored_exceptions,
+            contains=self.contains
+        )
+

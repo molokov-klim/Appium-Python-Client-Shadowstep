@@ -92,9 +92,14 @@ def press_home(app: Shadowstep):
 
 @pytest.fixture(scope="function")
 def android_settings(app: Shadowstep):
+    app.terminal.press_back()
+    app.terminal.press_back()
+    app.terminal.close_app('com.android.settings')
     app.terminal.start_activity(package='com.android.settings', activity='com.android.settings.Settings')
     time.sleep(3)
     yield
+    app.terminal.press_back()
+    app.terminal.press_back()
     app.terminal.close_app('com.android.settings')
 
 @pytest.fixture(scope="function")

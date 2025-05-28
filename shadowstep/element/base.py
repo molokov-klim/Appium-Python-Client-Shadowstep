@@ -27,18 +27,20 @@ class ElementBase:
     def __init__(self,
                  locator: Union[Tuple, Dict[str, str], str, WebElement] = None,
                  base=None,
-                 timeout: int = 30,
+                 timeout: float = 30,
                  poll_frequency: float = 0.5,
                  ignored_exceptions: typing.Optional[WaitExcTypes] = None,
-                 contains: bool = False):
+                 contains: bool = False,
+                 native: WebElement = None):
         self.logger = logger
         self.driver: WebDriver = None
         self.locator: Union[Tuple, Dict[str, str], 'Element'] = locator
         self.base = base  # Shadowstep instance
-        self.timeout: int = timeout
+        self.timeout: float = timeout
         self.poll_frequency: float = poll_frequency
         self.ignored_exceptions: typing.Optional[WaitExcTypes] = ignored_exceptions
         self.contains: bool = contains
+        self.native: WebElement = native
         self.id = None
         self.locator_converter = LocatorConverter()
 

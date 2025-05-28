@@ -1,38 +1,64 @@
 # shadowstep/elements/elements.py
+from typing import Iterator, List, Optional, TYPE_CHECKING, Any
+from shadowstep.base import ShadowstepBase
 
-from typing import Callable, Iterator, List, Optional
+if TYPE_CHECKING:
+    from shadowstep.element.element import Element  # только для type hints
+    from selenium.webdriver.remote.webelement import WebElement
+
 
 class Elements:
-    """Lazy wrapper for a sequence of Element objects generated on demand."""
+    """
+    Lazy iterable wrapper over a list of native WebElement instances.
+    Converts each to an Element on access.
+    """
 
-    def __init__(self, factory: Callable[[], Iterator['Element']]):
-        """Initialize with generator factory.
-
-        Args:
-            factory (Callable[[], Iterator[Element]]): Generator factory.
-        """
-        self._factory = factory
+    def __init__(
+        self,
+        native_elements: List['WebElement'],
+        base: ShadowstepBase,
+        locator: Any,
+        timeout: float,
+        poll_frequency: float,
+        ignored_exceptions: Optional[Any] = None,
+        contains: bool = False
+    ):
+        self._native_elements = native_elements
+        self._base = base
+        self._locator = locator
+        self._timeout = timeout
+        self._poll_frequency = poll_frequency
+        self._ignored_exceptions = ignored_exceptions
+        self._contains = contains
 
     def __iter__(self) -> Iterator['Element']:
-        """Iterate over elements."""
-        return self._factory()
+        from shadowstep.element.element import Element  # ← отложенный импорт, избегает рекурсии
+        for native in self._native_elements:
+            yield Element(
+                locator=self._locator,
+                base=self._base,
+                timeout=self._timeout,
+                poll_frequency=self._poll_frequency,
+                ignored_exceptions=self._ignored_exceptions,
+                contains=self._contains,
+                native=native
+            )
 
-    def first(self) -> Optional['Element']:
-        """Return the first element, or None if empty."""
-        return next(self._factory(), None)
+    def __len__(self) -> int:
+        return len(self._native_elements)
+
+    def __getitem__(self, index: int) -> 'Element':
+        from shadowstep.element.element import Element
+        native = self._native_elements[index]
+        return Element(
+            locator=self._locator,
+            base=self._base,
+            timeout=self._timeout,
+            poll_frequency=self._poll_frequency,
+            ignored_exceptions=self._ignored_exceptions,
+            contains=self._contains,
+            native=native
+        )
 
     def to_list(self) -> List['Element']:
-        """Convert all elements to list."""
-        return list(self._factory())
-
-    def filter(self, predicate: Callable[['Element'], bool]) -> 'Elements':
-        """Filter elements with predicate."""
-        return Elements(lambda: (el for el in self._factory() if predicate(el)))
-
-    def next(self):
-        raise NotImplementedError
-
-    @property
-    def should(self) -> 'ShouldElements':
-        from shadowstep.elements.should import ShouldElements
-        return ShouldElements(self)
+        return list(iter(self))
