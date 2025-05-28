@@ -111,7 +111,8 @@ class Element(ElementBase):
             locator: Union[Tuple, Dict[str, str], 'Element'],
             timeout: float = 30,
             poll_frequency: float = 0.5,
-            ignored_exceptions: typing.Optional[WaitExcTypes] = None
+            ignored_exceptions: typing.Optional[WaitExcTypes] = None,
+            contains: bool = False
     ) -> 'Elements':
         self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
 
@@ -155,7 +156,7 @@ class Element(ElementBase):
                 timeout=timeout,
                 poll_frequency=poll_frequency,
                 ignored_exceptions=ignored_exceptions,
-                contains=False
+                contains=contains
             )
         except WebDriverException:
             raise   # вот тут нужно вернуть адекватную ошибку
