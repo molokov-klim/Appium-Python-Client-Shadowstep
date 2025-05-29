@@ -458,4 +458,15 @@ class TestElement:
         with pytest.raises(GeneralElementException):
             container.scroll_to_element(locator={'text': 'Element That Does Not Exist'})
 
+    def test_get_cousin(self, app, android_settings):
+        app.get_element({'text': 'Network & internet'}).tap()
+        switcher = app.get_element({'text': 'Airplane mode'}).get_cousin({'resource-id': 'android:id/switch_widget'})
+        assert switcher.get_attribute('class') == 'android.widget.Switch'
+
+    def test_get_cousin_depth(self, app, android_settings):
+        app.get_element({'text': 'Network & internet'}).tap()
+        switcher = app.get_element({'text': 'Airplane mode'}).get_cousin({'resource-id': 'android:id/switch_widget'}, 5)
+        assert switcher.get_attribute('class') == 'android.widget.Switch'
+
+
 

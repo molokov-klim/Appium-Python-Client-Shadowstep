@@ -355,50 +355,48 @@ class Element(ElementBase):
 
     def get_cousin(
             self,
-            ancestor_locator: Union[Tuple, Dict[str, str], 'Element'],
-            cousin_locator: Union[Tuple, Dict[str, str], 'Element']
+            cousin_locator: Union[Tuple[str, str], Dict[str, str], 'Element'],
+            depth_to_parent: int = 1,
     ) -> Union['Element', None]:
         """
-        alias for from_parent
-        """
-        return self.from_parent(ancestor_locator, cousin_locator)
-
-    def from_parent(
-            self,
-            ancestor_locator: Union[Tuple, Dict[str, str], 'Element'],
-            cousin_locator: Union[Tuple, Dict[str, str], 'Element']
-    ) -> Union['Element', None]:
-        """Return element (same depth relative to a shared ancestor).
+        Returns an Element located by cousin_locator, relative to the current element's ancestor.
 
         Args:
-            ancestor_locator (Union[Tuple, Dict[str, str], 'Element']): The common ancestor to search from.
-            cousin_locator (Union[Tuple, Dict[str, str], 'Element']): The target cousin element locator.
+            cousin_locator (Union[Tuple[str, str], Dict[str, str], 'Element']): Locator of the cousin element.
+            depth_to_parent (int): How many levels up the DOM tree to traverse.
 
         Returns:
-            Union['Element', None]: The cousin element found at the same depth.
+            Union['Element', None]: The cousin Element or None if not found.
         """
-        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
+        self.logger.info(f"{inspect.currentframe().f_code.co_name}")
+        depth_to_parent += 1
+
         try:
-            if isinstance(ancestor_locator, Element):
-                ancestor_locator = ancestor_locator.locator
+            # Convert Element to locator if needed
             if isinstance(cousin_locator, Element):
                 cousin_locator = cousin_locator.locator
 
-            # XPath текущего элемента
+            # Resolve current XPath
             current_xpath = self._get_xpath()
             if not current_xpath:
                 raise GeneralElementException("Unable to resolve current XPath")
 
-            # Количество узлов от текущего до корня
-            depth = current_xpath.count('/')
+            self.logger.info(f"[XPath Resolution] current_xpath: {current_xpath}")
+            self.logger.info(f"[Depth] depth_to_parent: {depth_to_parent}")
 
-            # XPath предка
-            ancestor_xpath = self.handle_locator(ancestor_locator, contains=self.contains)[1]
-            ancestor_xpath = ancestor_xpath.rstrip('/')
+            # Climb up the tree
+            up_xpath = "/".join([".."] * depth_to_parent)
+            base_xpath = f"{current_xpath}/{up_xpath}" if up_xpath else current_xpath
 
-            # XPath кузена: тот же уровень вложенности
+            # Resolve cousin locator to relative XPath
             cousin_relative = self.handle_locator(cousin_locator, contains=self.contains)[1].lstrip('/')
-            cousin_xpath = f"{ancestor_xpath}//{cousin_relative}[{depth}]"
+
+            self.logger.info(f"[Cousin Locator] relative_xpath: {cousin_relative}")
+
+            # Full cousin XPath
+            cousin_xpath = f"{base_xpath}//{cousin_relative}"
+
+            self.logger.info(f"[Final XPath] cousin_xpath: {cousin_xpath}")
 
             return Element(
                 locator=('xpath', cousin_xpath),
@@ -408,11 +406,10 @@ class Element(ElementBase):
                 ignored_exceptions=self.ignored_exceptions,
                 contains=self.contains
             )
-        except NoSuchDriverException as error:
+
+        except (NoSuchDriverException, InvalidSessionIdException) as error:
             self._handle_driver_error(error)
-        except InvalidSessionIdException as error:
-            self._handle_driver_error(error)
-        return None
+            return None
 
     def get_center(self, element: Optional[WebElement] = None) -> Optional[Tuple[int, int]]:
         """Get the center coordinates of the element.
