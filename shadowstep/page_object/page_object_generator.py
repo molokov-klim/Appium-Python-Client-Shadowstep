@@ -687,10 +687,16 @@ class PageObjectGenerator:
                 used_ids.add(anchor.id)
                 self.logger.debug(f"Added summary anchor: {base_name} → {anchor_prop['locator']}")
             else:
-                base_name = next(
-                    (p["name"] for p in properties if p["element_id"] == anchor.id),
-                    self._generate_property_name(anchor, used_names)
-                )
+                base_name = None
+                for p in properties:
+                    if p.get("element_id") == anchor.id:
+                        base_name = p["name"]
+                        self.logger.debug(f"[Find base_name] matched property: name={base_name}, id={anchor.id}")
+                        break
+                if base_name is None:
+                    self.logger.debug(f"[Find base_name] no match found, generating new name")
+                    base_name = self._generate_property_name(anchor, used_names)
+                    self.logger.debug(f"[Find base_name] generated name: {base_name}")
 
             if summary.id in used_ids:
                 continue
