@@ -1072,6 +1072,7 @@ class Element(ElementBase):
             selector = self.locator_converter.to_uiselector(locator)
         else:
             raise GeneralElementException("Only dictionary locators are supported")
+        locator = self.locator_converter.to_xpath(locator)
 
         while time.time() - start_time < self.timeout:
             try:
