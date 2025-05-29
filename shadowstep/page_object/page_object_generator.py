@@ -108,8 +108,10 @@ class PageObjectGenerator:
         step = "Формирование recycler property"
         self.logger.info(step)
         recycler = self._get_recycler_property(ui_element_tree)
-        assert recycler is not None, "Can't find recycler"
-        # self.logger.info(f"{recycler.attrs=}")
+        # assert recycler is not None, "Can't find recycler"
+        if recycler is None:
+            recycler = title
+        self.logger.info(f"{recycler.attrs=}")
 
         step = "Сбор пар свитчер - якорь"
         self.logger.info(step)

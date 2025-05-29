@@ -62,15 +62,9 @@ def app(request) -> Shadowstep:
                         server_port=APPIUM_PORT,
                         command_executor=APPIUM_COMMAND_EXECUTOR,
                         capabilities=capabilities)
-    application.adb.press_home()
 
     def finalizer():
-        try:
-            application.adb.press_home()
-        except Exception as e:
-            logger.warning(f"Failed to send HOME key: {e}")
-        finally:
-            application.disconnect()
+        application.disconnect()
 
     request.addfinalizer(finalizer)
     yield application
@@ -85,7 +79,7 @@ def udid() -> str:
     """
     yield UDID
 
-@pytest.fixture(scope="function", autouse=True)
+@pytest.fixture(scope="function", autouse=False)
 def press_home(app: Shadowstep):
     yield
     app.terminal.press_home()
