@@ -698,6 +698,7 @@ class PageObjectGenerator:
             prop = {
                 "type": "summary",
                 "name": name,
+                "element_id": anchor.id,
                 "locator": self._node_to_locator(anchor),
                 "sibling": True,
                 "summary_id": self._node_to_locator(summary, only_id=True),
