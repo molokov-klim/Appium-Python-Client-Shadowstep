@@ -103,7 +103,6 @@ class PageObjectGenerator:
         self.logger.info(step)
         page_class_name = self._normilize_to_camel_case(name)
         assert page_class_name != "", "page_class_name cannot be empty"
-        page_class_name = "Page" + page_class_name
         self.logger.info(f"{page_class_name=}")
 
         step = "Формирование recycler property"
@@ -571,6 +570,7 @@ class PageObjectGenerator:
         raw_title = self._get_name_property(title)
         translated = self._translate(raw_title)
         class_name = self._normilize_to_camel_case(translated)
+        class_name = "Page" + class_name
 
         title_locator = self._node_to_locator(title)
         recycler_locator = self._node_to_locator(recycler) if recycler else None
