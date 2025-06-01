@@ -35,7 +35,6 @@ class {{ class_name }}(PageBaseShadowstep):
         )
         {% else %}
         return self.{{ prop.anchor_name }}.get_cousin(
-            {{ prop.anchor_locator | pretty_dict(base_indent=12) }},
             {{ prop.locator | pretty_dict(base_indent=12) }}
         )
         {% endif %}
