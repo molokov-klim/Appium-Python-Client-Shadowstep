@@ -200,6 +200,35 @@ class PageObjectGenerator:
         self.logger.info(f"Generated PageObject → {path}")
         return path, class_name
 
+
+    def _resolve_anchor_name(self, anchor: UiElementNode, properties: List[Dict[str, Any]],
+                             used_names: Set[str]) -> str:
+        """
+        Resolves the anchor name from the given properties list or generates a fallback name.
+
+        Args:
+            anchor (UiElementNode): The anchor node.
+            properties (List[Dict[str, Any]]): List of element properties.
+            used_names (Set[str]): Set of already used property names.
+
+        Returns:
+            str: Resolved or generated anchor name.
+        """
+        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
+
+        step = "Searching for existing property name by anchor id"
+        self.logger.debug(f"[{step}] started")
+        for prop in properties:
+            if prop.get("element_id") == anchor.id:
+                self.logger.debug(f"[{step}] found: {prop['name']}")
+                return prop["name"]
+
+        step = "Generating fallback property name"
+        self.logger.debug(f"[{step}] started")
+        name = self._generate_property_name(anchor, used_names)
+        self.logger.debug(f"[{step}] generated: {name}")
+        return name
+
     @neuro_readonly
     def _get_title_property(self, ui_element_tree: UiElementNode) -> Optional[UiElementNode]:
         """Returns the most likely title node from the tree.
@@ -648,10 +677,7 @@ class PageObjectGenerator:
                 used_ids.add(anchor.id)
                 self.logger.debug(f"Added anchor: {anchor_name} → {anchor_prop['locator']}")
             else:
-                anchor_name = next(
-                    (p["name"] for p in properties if p["element_id"] == anchor.id),
-                    self._generate_property_name(anchor, used_names)
-                )
+                anchor_name = self._resolve_anchor_name(anchor, properties, used_names)
 
             if switcher.id in used_ids:
                 continue
