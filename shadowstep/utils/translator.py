@@ -60,8 +60,8 @@ class YandexTranslate:
         Returns:
             str: Translated string (or original if not translated).
         """
-        self.logger.info(f"{inspect.currentframe().f_code.co_name}")
-        self.logger.info(f"{text=}")
+        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
+        self.logger.debug(f"{text=}")
         if not self._contains_cyrillic(text):
             return text  # No translation needed
 
@@ -78,7 +78,7 @@ class YandexTranslate:
         }
 
         response = requests.post(url, headers=headers, json=body)
-        self.logger.info(f"{response.text=}")
+        self.logger.debug(f"{response.text=}")
         response.raise_for_status()
         translations = response.json().get("translations", [])
 
@@ -86,5 +86,5 @@ class YandexTranslate:
             raise RuntimeError("Translation failed: empty response")
 
         translated = translations[0]["text"]
-        self.logger.info(f"{translated=}")
+        self.logger.debug(f"{translated=}")
         return translated

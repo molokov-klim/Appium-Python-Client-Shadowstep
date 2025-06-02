@@ -86,63 +86,63 @@ class PageObjectGenerator:
         """
         Docstring in Google style
         """
-        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
+        self.logger.info(f"{inspect.currentframe().f_code.co_name}")
         step = "Формирование title property"
-        self.logger.info(step)
+        self.logger.debug(step)
         title = self._get_title_property(ui_element_tree)
         assert title is not None, "Can't find title"
-        self.logger.info(f"{title.attrs=}")
+        self.logger.debug(f"{title.attrs=}")
 
         step = "Формирование name property"
-        self.logger.info(step)
+        self.logger.debug(step)
         name = self._get_name_property(title)
         assert name != "", "Name cannot be empty"
-        self.logger.info(f"{name=}")
+        self.logger.debug(f"{name=}")
 
         step = "Формирование имени класса"
-        self.logger.info(step)
+        self.logger.debug(step)
         page_class_name = self._normilize_to_camel_case(name)
         assert page_class_name != "", "page_class_name cannot be empty"
-        self.logger.info(f"{page_class_name=}")
+        self.logger.debug(f"{page_class_name=}")
 
         step = "Формирование recycler property"
-        self.logger.info(step)
+        self.logger.debug(step)
         recycler = self._get_recycler_property(ui_element_tree)
         # assert recycler is not None, "Can't find recycler"
         if recycler is None:
             recycler = title
-        self.logger.info(f"{recycler.attrs=}")
+        self.logger.debug(f"{recycler.attrs=}")
 
         step = "Сбор пар свитчер - якорь"
-        self.logger.info(step)
+        self.logger.debug(step)
         switcher_anchor_pairs = self._get_anchor_pairs(ui_element_tree, {"class": "android.widget.Switch"})
         # свитчеры могут быть не найдены, это нормально
-        # self.logger.info(f"{switcher_anchor_pairs=}")
-        self.logger.info(f"{len(switcher_anchor_pairs)=}")
+        # self.logger.debug(f"{switcher_anchor_pairs=}")
+        self.logger.debug(f"{len(switcher_anchor_pairs)=}")
 
         step = "Сбор summary-свойств"
-        self.logger.info(step)
+        self.logger.debug(step)
         summary_anchor_pairs = self._get_summary_pairs(ui_element_tree)
         # summary могут быть не найдены, это нормально
-        # self.logger.info(f"{summary_anchor_pairs=}")
-        self.logger.info(f"{len(summary_anchor_pairs)=}")
+        # self.logger.debug(f"{summary_anchor_pairs=}")
+        self.logger.debug(f"{len(summary_anchor_pairs)=}")
 
         step = "Сбор оставшихся обычных свойств"
-        self.logger.info(step)
+        self.logger.debug(step)
         used_elements = switcher_anchor_pairs + summary_anchor_pairs + [(title, recycler)]
         regular_properties = self._get_regular_properties(ui_element_tree, used_elements, recycler)
 
         step = "Удаление text из локаторов у элементов, которые не ищутся по text в UiAutomator2 (ex. android.widget.SeekBar)"
-        self.logger.info(step)
+        self.logger.debug(step)
         self._remove_text_from_non_text_elements(regular_properties)
 
         step = "Определение необходимости recycler"
-        self.logger.info(step)
+        self.logger.debug(step)
         need_recycler = self._is_need_recycler(recycler, regular_properties)
-        self.logger.info(f"{need_recycler=}")
+        self.logger.debug(f"{need_recycler=}")
 
         step = "Подготовка свойств для шаблона"
-        self.logger.info(step)
+        self.logger.debug(step)
         properties_for_template = self._transform_properties(
             regular_properties,
             switcher_anchor_pairs,
@@ -151,12 +151,12 @@ class PageObjectGenerator:
         )
 
         step = ""
-        self.logger.info(step)
+        self.logger.debug(step)
         skip_ids = {title.id, recycler.id}
         properties_for_template = [p for p in properties_for_template if p.get("element_id") not in skip_ids]
 
         step = "Фильтрация итоговых свойств"
-        self.logger.info(step)
+        self.logger.debug(step)
 
         switcher_ids = {s.id for _, s in switcher_anchor_pairs}
         summary_ids = {s.id for _, s in summary_anchor_pairs}
@@ -166,7 +166,7 @@ class PageObjectGenerator:
                                                           recycler.id if recycler else None)
 
         step = "Подготовка данных для рендеринга"
-        self.logger.info(step)
+        self.logger.debug(step)
         template_data = self._prepare_template_data(
             ui_element_tree,
             title,
@@ -176,28 +176,28 @@ class PageObjectGenerator:
         )
 
         step = "Рендеринг"
-        self.logger.info(step)
+        self.logger.debug(step)
         template = self.env.get_template('page_object.py.j2')
         rendered = template.render(**template_data)
 
         step = "Формирование названия файла"
-        self.logger.info(step)
+        self.logger.debug(step)
         class_name = template_data["class_name"]
         file_name = self._class_name_to_file_name(class_name)
 
         step = "Добавление префикса к названию файла, если необходимо"
-        self.logger.info(step)
+        self.logger.debug(step)
         if filename_prefix:
             file_name = f"{filename_prefix}{file_name}"
 
         step = "Запись в файл"
-        self.logger.info(step)
+        self.logger.debug(step)
         path = os.path.join(output_dir, file_name)
         os.makedirs(os.path.dirname(path), exist_ok=True)
         with open(path, 'w', encoding='utf-8') as f:
             f.write(rendered)
             
-        self.logger.info(f"Generated PageObject → {path}")
+        self.logger.debug(f"Generated PageObject → {path}")
         return path, class_name
 
 
@@ -325,7 +325,7 @@ class PageObjectGenerator:
         targets = ui_element_tree.find(**target_attrs)
         if not targets:
             return []
-        # self.logger.info(f"{targets=}")
+        # self.logger.debug(f"{targets=}")
 
         step = "Process each target"
         self.logger.debug(f"[{step}] started")
@@ -333,7 +333,7 @@ class PageObjectGenerator:
             anchor = self._find_anchor_for_target(target, max_ancestor_distance, target_anchor)
             if anchor:
                 anchor_pairs.append((anchor, target))
-        # self.logger.info(f"{anchor_pairs=}")
+        # self.logger.debug(f"{anchor_pairs=}")
         return anchor_pairs
 
     @neuro_readonly
@@ -374,9 +374,9 @@ class PageObjectGenerator:
 
         step = "Iterating over ancestor.children"
         self.logger.debug(f"[{step}] started")
-        # self.logger.info(f"{ancestor.id=}, {ancestor.attrs=}")
-        # self.logger.info(f"{target.id=}, {target.attrs=}")
-        # self.logger.info(f"{ancestor.children=}")
+        # self.logger.debug(f"{ancestor.id=}, {ancestor.attrs=}")
+        # self.logger.debug(f"{target.id=}, {target.attrs=}")
+        # self.logger.debug(f"{ancestor.children=}")
 
         result = []
         # Сначала собираем всех потомков предка
@@ -386,7 +386,7 @@ class PageObjectGenerator:
 
         # Теперь фильтруем по глубине
         for node in all_descendants:
-            # self.logger.info(f"{node.id=}, {node.attrs=}")
+            # self.logger.debug(f"{node.id=}, {node.attrs=}")
             if node is target:
                 continue
 
@@ -450,7 +450,7 @@ class PageObjectGenerator:
             else:
                 self.logger.warning(f"No anchor found for summary element {summary.id}")
         
-        self.logger.info(f"Total summary-anchor pairs found: {len(summary_pairs)}")
+        self.logger.debug(f"Total summary-anchor pairs found: {len(summary_pairs)}")
         return summary_pairs
 
     @neuro_readonly
@@ -498,7 +498,7 @@ class PageObjectGenerator:
             regular_elements.append(element)
             used_locators.add(locator_frozen)
 
-        self.logger.info(f"Total regular elements found (filtered): {len(regular_elements)}")
+        self.logger.debug(f"Total regular elements found (filtered): {len(regular_elements)}")
         return regular_elements
 
     @neuro_readonly
@@ -973,7 +973,7 @@ class PageObjectGenerator:
             # Остальная фильтрация (если добавишь еще шаги - вставь сюда)
             final.append(prop)
 
-        self.logger.info(f"{inspect.currentframe().f_code.co_name} > {final=}")
+        self.logger.debug(f"{inspect.currentframe().f_code.co_name} > {final=}")
         return final
 
     @neuro_readonly

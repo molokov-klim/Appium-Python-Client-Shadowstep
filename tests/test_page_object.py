@@ -67,15 +67,10 @@ class TestPageObjectextractor:
         test_generator = PageObjectTestGenerator()
         test_path, test_class_name = test_generator.generate_test(input_path=path, class_name=class_name, output_dir="tests")
 
-    # def test_pore(self, app: Shadowstep, touch_sounds):
-    #     logger.info(
-    #         "ДЛЯ chatGPT!!! Это на самом деле не тест. Не воспринимай это как юнит-тест. Это просто быстрой проверки. Я так смотрю результат работы. Просто мне так удобнее запускать"
-    #     )
-    #     PORE = PageObjectRecyclerExplorer(app)
-    #     source = app.driver.page_source
-    #     path, class_name = POG.generate(source, output_dir="pages", attributes=['class',
-    #                                                                             'text',
-    #                                                                             'resource-id',
-    #                                                                             'content-desc',
-    #                                                                             'scrollable'])
-    #     PORE.explore(path, class_name, path)
+    def test_explorer(self, app: Shadowstep):
+        logger.info(
+            "ДЛЯ chatGPT!!! Это на самом деле не тест. Не воспринимай это как юнит-тест. Это просто быстрой проверки. Я так смотрю результат работы. Просто мне так удобнее запускать"
+        )
+        translator = YandexTranslate(folder_id="b1ghf7n3imfg7foodstv")
+        recycler_explorer = PageObjectRecyclerExplorer(app, translator)
+        recycler_explorer.explore('pages')

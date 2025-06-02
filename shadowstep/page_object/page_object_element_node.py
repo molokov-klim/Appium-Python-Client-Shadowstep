@@ -1,10 +1,13 @@
-from dataclasses import dataclass, field
-from typing import Dict, Any, Optional, List, Generator, Tuple
+# shadowstep/page_object/page_object_element_node.py
 import inspect
 import os
 import logging
 from jinja2 import Environment, FileSystemLoader, Template
 from abc import ABC, abstractmethod
+
+from dataclasses import dataclass, field
+from typing import Optional, List, Dict, Any, Generator, Tuple, Callable
+import copy
 
 
 @dataclass
@@ -14,9 +17,11 @@ class UiElementNode:
     attrs: Optional[Dict[str, Any]] = None
     parent: Optional['UiElementNode'] = None
     children: List['UiElementNode'] = field(default_factory=list)
-
     depth: int = 0
     scrollable_parents: List[str] = field(default_factory=list)
+
+    # Custom comparison strategy
+    _signature_fields: Tuple[str, ...] = field(default=("resource-id", "text", "class", "depth"), repr=False)
 
     def walk(self) -> Generator['UiElementNode', None, None]:
         yield self
@@ -45,6 +50,61 @@ class UiElementNode:
         if not self.children:
             return line
         return '\n'.join([line] + [child._repr_tree(indent + 1) for child in self.children])
+
+    def get_attr(self, key: str) -> str:
+        return self.attrs.get(key, '')
+
+    def __add__(self, other: 'UiElementNode') -> 'UiElementNode':
+        """Safe tree merge using signature comparison. Returns a new merged tree."""
+        merged = copy.deepcopy(self)
+        merged._merge_with(other)
+        return merged
+
+    def _merge_with(self, other: 'UiElementNode') -> None:
+        base_index = self._index_tree(self)
+        self._merge_node(self, other, base_index)
+
+    def _index_tree(self, root: 'UiElementNode') -> Dict[Tuple, 'UiElementNode']:
+        index = {}
+        for node in root.walk():
+            sig = node._signature()
+            index[sig] = node
+        return index
+
+    def _signature(self) -> Tuple:
+        return tuple(self.get_attr(k) if k != 'depth' else self.depth for k in self._signature_fields)
+
+    def _merge_node(self, base_node: 'UiElementNode', new_node: 'UiElementNode', base_index: Dict[Tuple, 'UiElementNode']) -> None:
+        for new_child in new_node.children:
+            sig = new_child._signature()
+            if sig in base_index:
+                existing = base_index[sig]
+                existing._merge_node(existing, new_child, base_index)
+            else:
+                # Inject into base tree
+                clone = copy.deepcopy(new_child)
+                clone.parent = base_node
+                base_node.children.append(clone)
+                base_index[sig] = clone
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 @dataclass
@@ -207,38 +267,4 @@ class PageObjectRenderer:
         self.renderer.save(rendered_content, output_path)
         
         return output_path
-
-
-def generate(self, ui_element_tree: UiElementNode, output_dir: str, filename_prefix: str = "") -> Tuple[str, str]:
-    """
-    Генерирует Page Object класс на основе UI-дерева
-    """
-    self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
-    
-    # 1. Получаем данные для модели (как в текущей реализации)
-    title = self._get_title_property(ui_element_tree)
-    name = self._get_name_property(title)
-    page_class_name = self._normilize_to_camel_case(name)
-    recycler = self._get_recycler_property(ui_element_tree)
-    
-    # ...дальше собираем свойства как в текущей реализации...
-    
-    # 2. Строим модель для рендеринга
-    model_builder = ModelBuilder()
-    model = model_builder.build_from_ui_tree(
-        ui_element_tree=title,
-        properties=properties,
-        title_locator=title_locator,
-        recycler_locator=recycler_locator
-    )
-    
-    # 3. Создаем имя файла
-    file_name = f"{filename_prefix}{page_class_name.replace('Page', '').lower()}_page.py"
-    output_path = os.path.join(output_dir, file_name)
-    
-    # 4. Рендерим и сохраняем
-    renderer = PageObjectRenderer()
-    output_path = renderer.render_and_save(model, output_path)
-    
-    return output_path, page_class_name
 
