@@ -563,3 +563,7 @@ class ShadowstepBase:
             self.driver = WebDriverSingleton.get_driver()
         raise RuntimeError("WebDriver session_id was not assigned in time.")
 
+    def get_driver(self):
+        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
+        return WebDriverSingleton.get_driver()
+
