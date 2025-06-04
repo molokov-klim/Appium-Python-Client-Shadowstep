@@ -20,16 +20,21 @@ class UiElementNode:
     depth: int = 0
     scrollable_parents: List[str] = field(default_factory=list)
 
-    # Custom comparison strategy
-    _signature_fields: Tuple[str, ...] = field(default=("resource-id", "text", "class", "depth"), repr=False)
+    # Fields to identify uniqueness (depth REMOVED)
+    _signature_fields: Tuple[str, ...] = field(default=("resource-id", "text", "class"), repr=False)
 
     def walk(self) -> Generator['UiElementNode', None, None]:
+        """DFS traversal of all nodes in the tree"""
         yield self
         for child in self.children:
             yield from child.walk()
 
     def find(self, **kwargs) -> List['UiElementNode']:
+        """Find nodes by matching attrs"""
         return [el for el in self.walk() if all(el.attrs.get(k) == v for k, v in kwargs.items())]
+
+    def get_attr(self, key: str) -> str:
+        return self.attrs.get(key, '') if self.attrs else ''
 
     def __repr__(self) -> str:
         return self._repr_tree()
@@ -40,8 +45,8 @@ class UiElementNode:
         line = (
             f"{pad}- id={self.id}"
             f" | tag='{self.tag}'"
-            f" | text='{self.attrs.get('text', '')}'"
-            f" | resource-id='{self.attrs.get('resource-id', '')}'"
+            f" | text='{self.get_attr('text')}'"
+            f" | resource-id='{self.get_attr('resource-id')}'"
             f" | parent_id='{parent_id}'"
             f" | depth='{self.depth}'"
             f" | scrollable_parents='{self.scrollable_parents}'"
@@ -50,53 +55,6 @@ class UiElementNode:
         if not self.children:
             return line
         return '\n'.join([line] + [child._repr_tree(indent + 1) for child in self.children])
-
-    def get_attr(self, key: str) -> str:
-        return self.attrs.get(key, '')
-
-    def __add__(self, other: 'UiElementNode') -> 'UiElementNode':
-        """Safe tree merge using signature comparison. Returns a new merged tree."""
-        merged = copy.deepcopy(self)
-        merged._merge_with(other)
-        return merged
-
-    def _merge_with(self, other: 'UiElementNode') -> None:
-        base_index = self._index_tree(self)
-        self._merge_node(self, other, base_index)
-
-    def _index_tree(self, root: 'UiElementNode') -> Dict[Tuple, 'UiElementNode']:
-        index = {}
-        for node in root.walk():
-            sig = node._signature()
-            index[sig] = node
-        return index
-
-    def _signature(self) -> Tuple:
-        return tuple(self.get_attr(k) if k != 'depth' else self.depth for k in self._signature_fields)
-
-    def _merge_node(self, base_node: 'UiElementNode', new_node: 'UiElementNode', base_index: Dict[Tuple, 'UiElementNode']) -> None:
-        for new_child in new_node.children:
-            sig = new_child._signature()
-            if sig in base_index:
-                existing = base_index[sig]
-                existing._merge_node(existing, new_child, base_index)
-            else:
-                # Inject into base tree
-                clone = copy.deepcopy(new_child)
-                clone.parent = base_node
-                base_node.children.append(clone)
-                base_index[sig] = clone
-
-
-
-
-
-
-
-
-
-
-
 
 
 

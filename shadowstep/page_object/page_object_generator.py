@@ -86,7 +86,7 @@ class PageObjectGenerator:
         """
         Docstring in Google style
         """
-        self.logger.info(f"{inspect.currentframe().f_code.co_name}")
+        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
         step = "Формирование title property"
         self.logger.debug(step)
         title = self._get_title_property(ui_element_tree)
@@ -158,9 +158,6 @@ class PageObjectGenerator:
         step = "Фильтрация итоговых свойств"
         self.logger.debug(step)
 
-        switcher_ids = {s.id for _, s in switcher_anchor_pairs}
-        summary_ids = {s.id for _, s in summary_anchor_pairs}
-
         properties_for_template = self._filter_properties(properties_for_template,
                                                           title.id,
                                                           recycler.id if recycler else None)
@@ -196,38 +193,9 @@ class PageObjectGenerator:
         os.makedirs(os.path.dirname(path), exist_ok=True)
         with open(path, 'w', encoding='utf-8') as f:
             f.write(rendered)
-            
+
         self.logger.debug(f"Generated PageObject → {path}")
         return path, class_name
-
-
-    def _resolve_anchor_name(self, anchor: UiElementNode, properties: List[Dict[str, Any]],
-                             used_names: Set[str]) -> str:
-        """
-        Resolves the anchor name from the given properties list or generates a fallback name.
-
-        Args:
-            anchor (UiElementNode): The anchor node.
-            properties (List[Dict[str, Any]]): List of element properties.
-            used_names (Set[str]): Set of already used property names.
-
-        Returns:
-            str: Resolved or generated anchor name.
-        """
-        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
-
-        step = "Searching for existing property name by anchor id"
-        self.logger.debug(f"[{step}] started")
-        for prop in properties:
-            if prop.get("element_id") == anchor.id:
-                self.logger.debug(f"[{step}] found: {prop['name']}")
-                return prop["name"]
-
-        step = "Generating fallback property name"
-        self.logger.debug(f"[{step}] started")
-        name = self._generate_property_name(anchor, used_names)
-        self.logger.debug(f"[{step}] generated: {name}")
-        return name
 
     @neuro_readonly
     def _get_title_property(self, ui_element_tree: UiElementNode) -> Optional[UiElementNode]:
@@ -423,22 +391,22 @@ class PageObjectGenerator:
     def _get_summary_pairs(self, ui_element_tree: UiElementNode) -> List[Tuple[UiElementNode, UiElementNode]]:
         """
         Находит пары элементов anchor-summary.
-        
+
         Args:
             ui_element_tree (UiElementNode): Дерево элементов UI
-            
+
         Returns:
             List[Tuple[UiElementNode, UiElementNode]]: Список пар (anchor, summary)
         """
         self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
-        
+
         # Находим все элементы, у которых в атрибутах есть "summary"
         summary_elements = []
         for element in ui_element_tree.walk():
             if any(re.search(r'\bsummary\b', str(value).lower()) for value in element.attrs.values()):
                 summary_elements.append(element)
                 self.logger.debug(f"Found summary element: {element.id}, attrs={element.attrs}")
-        
+
         # Для каждого summary элемента ищем соответствующий anchor
         summary_pairs = []
         for summary in summary_elements:
@@ -449,7 +417,7 @@ class PageObjectGenerator:
                 summary_pairs.append((anchor, summary))
             else:
                 self.logger.warning(f"No anchor found for summary element {summary.id}")
-        
+
         self.logger.debug(f"Total summary-anchor pairs found: {len(summary_pairs)}")
         return summary_pairs
 
@@ -535,12 +503,12 @@ class PageObjectGenerator:
     def _remove_text_from_non_text_elements(self, elements: List[UiElementNode]) -> None:
         """
         Удаляет атрибут text из локаторов элементов, которые не должны искаться по тексту.
-        
+
         Args:
             elements (List[UiElementNode]): Список элементов для обработки
         """
         self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
-        
+
         for element in elements:
             if element.tag in self.BLACKLIST_NO_TEXT_CLASSES and 'text' in element.attrs:
                 self.logger.debug(f"Removing text attribute from {element.tag} element: {element.attrs.get('text')}")
@@ -555,14 +523,14 @@ class PageObjectGenerator:
                              need_recycler: bool) -> Dict[str, Any]:
         """
         Transforms structured UiElementNode data into a format compatible with the template.
-        
+
         Args:
             ui_element_tree (UiElementNode): Root UI element tree
             title (UiElementNode): Title node
             recycler (Optional[UiElementNode]): Recycler node if found
             properties (List[Dict]): Prepared properties for template
             need_recycler (bool): Whether recycler is needed
-            
+
         Returns:
             Dict[str, Any]: Data structure ready for template rendering
         """
@@ -570,7 +538,6 @@ class PageObjectGenerator:
         raw_title = self._get_name_property(title)
         translated = self._translate(raw_title)
         class_name = self._normilize_to_camel_case(translated)
-        class_name = "Page" + class_name
 
         title_locator = self._node_to_locator(title)
         recycler_locator = self._node_to_locator(recycler) if recycler else None
@@ -588,11 +555,11 @@ class PageObjectGenerator:
     def _node_to_locator(self, node: UiElementNode, only_id: bool = False) -> Dict[str, str]:
         """
         Converts UiElementNode to a locator dictionary for template.
-        
+
         Args:
             node (UiElementNode): Node to convert
             only_id (bool): Whether to return only resource-id
-            
+
         Returns:
             Dict[str, str]: Locator dictionary
         """
@@ -678,7 +645,10 @@ class PageObjectGenerator:
                 used_ids.add(anchor.id)
                 self.logger.debug(f"Added anchor: {anchor_name} → {anchor_prop['locator']}")
             else:
-                anchor_name = self._resolve_anchor_name(anchor, properties, used_names)
+                anchor_name = next(
+                    (p["name"] for p in properties if p["element_id"] == anchor.id),
+                    self._generate_property_name(anchor, used_names)
+                )
 
             if switcher.id in used_ids:
                 continue
@@ -751,11 +721,11 @@ class PageObjectGenerator:
     def _is_scrollable_by(self, node: UiElementNode, recycler_id: Optional[str]) -> bool:
         """
         Checks if the node is scrollable by the given recycler.
-        
+
         Args:
             node (UiElementNode): Node to check
             recycler_id (Optional[str]): ID of potential recycler
-            
+
         Returns:
             bool: True if node is scrollable by the recycler
         """
@@ -768,11 +738,11 @@ class PageObjectGenerator:
     def _calculate_depth(self, anchor: UiElementNode, target: UiElementNode) -> int:
         """
         Calculates parent traversal depth between anchor and target.
-        
+
         Args:
             anchor (UiElementNode): Anchor node
             target (UiElementNode): Target node
-            
+
         Returns:
             int: Number of parent traversals needed
         """
@@ -783,21 +753,21 @@ class PageObjectGenerator:
         while current.parent:
             anchor_ancestors.append(current.parent)
             current = current.parent
-            
+
         # Find path from target to first common ancestor
         depth = 0
         current = target
         while current and current not in anchor_ancestors:
             depth += 1
             current = current.parent
-            
+
         if not current:
             # No common ancestor found, default to 0
             return 0
-            
+
         # Add distance from anchor to common ancestor
         depth += anchor_ancestors.index(current)
-        
+
         return depth
 
     @neuro_allow_edit
@@ -848,10 +818,10 @@ class PageObjectGenerator:
     def _slug_words(self, s: str) -> List[str]:
         """
         Breaks a string into lowercase slug words.
-        
+
         Args:
             s (str): Input string
-            
+
         Returns:
             List[str]: List of slug words
         """
@@ -863,10 +833,10 @@ class PageObjectGenerator:
     def _strip_package_prefix(self, resource_id: str) -> str:
         """
         Strips package prefix from resource ID.
-        
+
         Args:
             resource_id (str): Full resource ID
-            
+
         Returns:
             str: Resource ID without package prefix
         """
@@ -877,10 +847,10 @@ class PageObjectGenerator:
     def _sanitize_name(self, raw_name: str) -> str:
         """
         Creates a valid Python property name.
-        
+
         Args:
             raw_name (str): Raw property name
-            
+
         Returns:
             str: Sanitized property name
         """
@@ -906,24 +876,24 @@ class PageObjectGenerator:
         step = "Convert CamelCase to snake_case"
         self.logger.debug(f"[{step}] started")
         file_name = re.sub(r'(?<!^)(?=[A-Z])', '_', class_name).lower()
-        return f"{file_name}.py"
+        return f"page_{file_name}.py"
 
     @neuro_allow_edit
     def _is_need_recycler(self, recycler: Optional[UiElementNode], regular_properties: List[UiElementNode]) -> bool:
         """
         Determines if recycler is needed by checking if any regular properties use it.
-        
+
         Args:
             recycler (Optional[UiElementNode]): Recycler node if found
             regular_properties (List[UiElementNode]): Regular properties
-            
+
         Returns:
             bool: Whether recycler is needed
         """
         self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
         if not recycler:
             return False
-            
+
         recycler_id = recycler.id
         return any(
             node.scrollable_parents and recycler_id in node.scrollable_parents
