@@ -33,11 +33,18 @@ class PageObjectRecyclerExplorer:
         self.logger.info(f"{inspect.currentframe().f_code.co_name}")
         # скроллим вверх до упора
         width, height = self.base.terminal.get_screen_resolution()
-        for _ in range(5):
+        x = width // 2
+        y_start = int(height * 0.2)
+        y_end = int(height * 0.8)
+        for _ in range(9):
             self.base.swipe(left=100, top=100,
-                            width=width, height=height,
-                            direction='down', percent=1.0,
-                            speed=10000)  # скроллим вверх
+                                  width=width, height=height,
+                                  direction='down', percent=1.0,
+                                  speed=10000)  # скроллим вверх
+            self.base.terminal.adb_shell(
+                command="input",
+                args=f"swipe {x} {y_start} {x} {y_end}"
+            )
 
         pages = []
         original_tree = self.parser.parse(self.base.driver.page_source)
@@ -61,24 +68,36 @@ class PageObjectRecyclerExplorer:
         page_source = ""
         prefix = 0
 
-        while recycler_el.scroll_down(percent=0.8, speed=1000, return_bool=True):
+        while recycler_el.scroll_down(percent=0.5, speed=1000, return_bool=True):
             # дерево изменилось!!! recycler_raw нужно переопределить
             prefix += 1
             tree = self.parser.parse(self.base.driver.page_source)
             page_path, page_class_name = self.generator.generate(tree, output_dir=output_dir, filename_prefix=prefix)
             pages.append((page_path, page_class_name))
 
+        width, height = self.base.terminal.get_screen_resolution()
+        x = width // 2
+        y_start = int(height * 0.8)
+        y_end = int(height * 0.2)
+        for _ in range(9):
+            self.base.swipe(left=100, top=100,
+                                  width=width, height=height,
+                                  direction='up', percent=1.0,
+                                  speed=10000)  # скроллим вверх
+            self.base.terminal.adb_shell(
+                command="input",
+                args=f"swipe {x} {y_start} {x} {y_end}"
+            )
+        prefix += 1
+        tree = self.parser.parse(self.base.driver.page_source)
+        page_path, page_class_name = self.generator.generate(tree, output_dir=output_dir, filename_prefix=prefix)
+        pages.append((page_path, page_class_name))
+
         output_path = "merged" + original_page_path
-        self.logger.info(f"{pages[0][0]=}")
-        self.logger.info(f"{pages[0][1]=}")
-        self.logger.info(f"{output_path=}")
         self.merger.merge(original_page_path, pages[0][0], output_path)
 
         for page_tuple in pages:
             page_path, page_class_name = page_tuple
-            self.logger.info(f"{page_path=}")
-            self.logger.info(f"{page_class_name=}")
-            self.logger.info(f"{output_path=}")
             self.merger.merge(output_path, page_path, output_path)
 
         for _ in range(5):
@@ -98,5 +117,3 @@ class PageObjectRecyclerExplorer:
         module = importlib.util.module_from_spec(spec)
         spec.loader.exec_module(module)
         return getattr(module, class_name, None)
-
-
