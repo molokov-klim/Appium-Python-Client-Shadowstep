@@ -119,8 +119,7 @@ class Element(ElementBase):
         method is greedy
         """
         self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
-
-        self._get_driver()
+        start_time = time.time()
 
         # [Step] Normalize locator
         step = "Normalizing locator"
@@ -146,49 +145,59 @@ class Element(ElementBase):
         self.logger.debug(f"[{step}] started")
 
         self.logger.info(f"{locator=}")
-        try:
-            wait = WebDriverWait(driver=self.driver, timeout=timeout,
-                                 poll_frequency=poll_frequency, ignored_exceptions=ignored_exceptions)
-            wait.until(EC.presence_of_element_located(locator))
-            native_elements = self.driver.find_elements(*locator)
+        while time.time() - start_time < self.timeout:
+            try:
+                self._get_driver()
+                wait = WebDriverWait(
+                    driver=self.driver,
+                    timeout=timeout,
+                    poll_frequency=poll_frequency,
+                    ignored_exceptions=ignored_exceptions,
+                )
+                wait.until(EC.presence_of_element_located(locator))
+                native_elements = self.driver.find_elements(*locator)
 
-            elements = []
-            for native_element in native_elements:
-                el_class = native_element.get_attribute('class')
-                el_text = native_element.get_attribute('text')
-                el_content_desc = native_element.get_attribute('content-desc')
-                el_checkable = native_element.get_attribute('checkable')
-                el_checked = native_element.get_attribute('checked')
-                el_clickable = native_element.get_attribute('clickable')
-                el_enabled = native_element.get_attribute('enabled')
-                el_focusable = native_element.get_attribute('focusable')
-                el_focused = native_element.get_attribute('focused')
-                el_long_clickable = native_element.get_attribute('long-clickable')
-                el_scrollable = native_element.get_attribute('scrollable')
-                el_selected = native_element.get_attribute('selected')
-                el_displayed = native_element.get_attribute('displayed')
-                element = Element(locator={'class': el_class,
-                                           'text': el_text,
-                                           'content-desc': el_content_desc,
-                                           'checkable': el_checkable,
-                                           'checked': el_checked,
-                                           'clickable': el_clickable,
-                                           'enabled': el_enabled,
-                                           'focusable': el_focusable,
-                                           'focused': el_focused,
-                                           'long-clickable': el_long_clickable,
-                                           'scrollable': el_scrollable,
-                                           'selected': el_selected,
-                                           'displayed': el_displayed},
-                                  base=self.base,
-                                  timeout=timeout,
-                                  poll_frequency=poll_frequency,
-                                  ignored_exceptions=ignored_exceptions,
-                                  contains=contains)
-                elements.append(element)
-            return elements
-        except WebDriverException:
-            raise   # вот тут нужно вернуть адекватную ошибку
+                elements = []
+                for native_element in native_elements:
+                    # [Extract attributes]
+                    attributes = {
+                        attr: native_element.get_attribute(attr) for attr in [
+                            'class', 'text', 'content-desc', 'checkable', 'checked',
+                            'clickable', 'enabled', 'focusable', 'focused',
+                            'long-clickable', 'scrollable', 'selected', 'displayed'
+                        ]
+                    }
+                    element = Element(
+                        locator=attributes,
+                        base=self.base,
+                        timeout=timeout,
+                        poll_frequency=poll_frequency,
+                        ignored_exceptions=ignored_exceptions,
+                        contains=contains
+                    )
+                    elements.append(element)
+                return elements
+
+            except NoSuchDriverException as error:
+                self._handle_driver_error(error)
+
+            except InvalidSessionIdException as error:
+                self._handle_driver_error(error)
+
+            except StaleElementReferenceException as error:
+                self.logger.warning(f"Stale element encountered, retrying... | {error}")
+                continue
+
+            except TimeoutException as error:
+                self.logger.warning(f"Timeout while waiting for presence of element | {error}")
+                continue
+
+        # [Fail Path] – Escaped while-loop without result
+        msg = f"No elements found by locator: {locator} within {timeout} seconds"
+        screen = self.driver.get_screenshot_as_base64() if self.driver else None
+        stacktrace = traceback.format_exc()
+
+        raise GeneralElementException(msg=msg, screen=screen, stacktrace=stacktrace)
 
 
     def get_attributes(self) -> Optional[Dict[str, str]]:
