@@ -864,7 +864,7 @@ class Shadowstep(ShadowstepBase):
         raise_exception=ShadowstepException,
         exceptions=(NoSuchDriverException, InvalidSessionIdException, StaleElementReferenceException)
     )
-    def swipe_top_to_bottom(self) -> 'Shadowstep':
+    def swipe_top_to_bottom(self, percent: float=1.0, speed: int=5000) -> 'Shadowstep':
         """Perform a full-height vertical swipe from top to bottom.
 
         Returns:
@@ -883,8 +883,8 @@ class Shadowstep(ShadowstepBase):
             width=width // 3,
             height=height,
             direction="down",
-            percent=1.0,
-            speed=1000
+            percent=percent,
+            speed=speed
         )
 
     @fail_safe(
@@ -893,7 +893,7 @@ class Shadowstep(ShadowstepBase):
         raise_exception=ShadowstepException,
         exceptions=(NoSuchDriverException, InvalidSessionIdException, StaleElementReferenceException)
     )
-    def swipe_bottom_to_top(self) -> 'Shadowstep':
+    def swipe_bottom_to_top(self, percent: float=1.0, speed: int=5000) -> 'Shadowstep':
         """Perform a full-height vertical swipe from bottom to top.
 
         Returns:
@@ -912,8 +912,8 @@ class Shadowstep(ShadowstepBase):
             width=width // 3,
             height=height,
             direction="up",
-            percent=1.0,
-            speed=1000
+            percent=percent,
+            speed=speed
         )
 
     @fail_safe(retries=3, delay=0.5,
