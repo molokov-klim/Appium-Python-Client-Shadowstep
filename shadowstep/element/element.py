@@ -114,7 +114,10 @@ class Element(ElementBase):
             poll_frequency: float = 0.5,
             ignored_exceptions: typing.Optional[WaitExcTypes] = None,
             contains: bool = False
-    ) -> 'Elements':
+    ) -> typing.List['Element']:
+        """
+        method is greedy
+        """
         self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
 
         self._get_driver()
@@ -149,17 +152,41 @@ class Element(ElementBase):
             wait.until(EC.presence_of_element_located(locator))
             native_elements = self.driver.find_elements(*locator)
 
-            from shadowstep.elements.elements import Elements
-
-            return Elements(
-                native_elements=native_elements,
-                base=self.base,
-                locator=locator,
-                timeout=timeout,
-                poll_frequency=poll_frequency,
-                ignored_exceptions=ignored_exceptions,
-                contains=contains
-            )
+            elements = []
+            for native_element in native_elements:
+                el_class = native_element.get_attribute('class')
+                el_text = native_element.get_attribute('text')
+                el_content_desc = native_element.get_attribute('content-desc')
+                el_checkable = native_element.get_attribute('checkable')
+                el_checked = native_element.get_attribute('checked')
+                el_clickable = native_element.get_attribute('clickable')
+                el_enabled = native_element.get_attribute('enabled')
+                el_focusable = native_element.get_attribute('focusable')
+                el_focused = native_element.get_attribute('focused')
+                el_long_clickable = native_element.get_attribute('long-clickable')
+                el_scrollable = native_element.get_attribute('scrollable')
+                el_selected = native_element.get_attribute('selected')
+                el_displayed = native_element.get_attribute('displayed')
+                element = Element(locator={'class': el_class,
+                                           'text': el_text,
+                                           'content-desc': el_content_desc,
+                                           'checkable': el_checkable,
+                                           'checked': el_checked,
+                                           'clickable': el_clickable,
+                                           'enabled': el_enabled,
+                                           'focusable': el_focusable,
+                                           'focused': el_focused,
+                                           'long-clickable': el_long_clickable,
+                                           'scrollable': el_scrollable,
+                                           'selected': el_selected,
+                                           'displayed': el_displayed},
+                                  base=self.base,
+                                  timeout=timeout,
+                                  poll_frequency=poll_frequency,
+                                  ignored_exceptions=ignored_exceptions,
+                                  contains=contains)
+                elements.append(element)
+            return elements
         except WebDriverException:
             raise   # вот тут нужно вернуть адекватную ошибку
 
