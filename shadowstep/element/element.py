@@ -199,7 +199,6 @@ class Element(ElementBase):
 
         raise GeneralElementException(msg=msg, screen=screen, stacktrace=stacktrace)
 
-
     def get_attributes(self) -> Optional[Dict[str, str]]:
         """Fetch all XML attributes of the element by matching locator against page source.
 
@@ -1062,7 +1061,7 @@ class Element(ElementBase):
                 self.scroll_down(percent=percent, speed=speed, return_bool=True)
             except (
                     NoSuchDriverException, InvalidSessionIdException, AttributeError
-                    ) as error:
+            ) as error:
                 self._handle_driver_error(error)
             except StaleElementReferenceException as error:
                 self.logger.error(f"{error}\ncontinue")
@@ -2052,23 +2051,38 @@ class Element(ElementBase):
             bool: True if the element is found, False otherwise.
         """
         self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
-        try:
-            resolved_locator = self.handle_locator(self.locator, self.contains)
-            if not resolved_locator:
-                self.logger.error("Resolved locator is None or invalid")
+        start_time = time.time()
+        while time.time() - start_time < self.timeout:
+            try:
+                resolved_locator = self.handle_locator(self.locator, self.contains)
+                if not resolved_locator:
+                    self.logger.error("Resolved locator is None or invalid")
+                    if return_bool:
+                        return False
+                    return cast('Element', self)
+                WebDriverWait(self.base.driver, timeout, poll_frequency).until(
+                    conditions.present(resolved_locator)
+                )
+                if return_bool:
+                    return True
+                return cast('Element', self)
+            except TimeoutException:
                 if return_bool:
                     return False
                 return cast('Element', self)
-            WebDriverWait(self.base.driver, timeout, poll_frequency).until(
-                conditions.present(resolved_locator)
-            )
-            if return_bool:
-                return True
-            return cast('Element', self)
-        except TimeoutException:
-            if return_bool:
-                return False
-            return cast('Element', self)
+            except NoSuchDriverException as error:
+                self._handle_driver_error(error)
+            except InvalidSessionIdException as error:
+                self._handle_driver_error(error)
+            except StaleElementReferenceException as error:
+                self.logger.error(f"{error}")
+                continue
+            except WebDriverException as error:
+                self._handle_driver_error(error)
+            except Exception as error:
+                self.logger.error(f"{error}")
+                continue
+        return False
 
     def wait_visible(self, timeout: int = 10, poll_frequency: float = 0.5, return_bool: bool = False) -> Union[
         bool, 'Element']:
@@ -2083,24 +2097,39 @@ class Element(ElementBase):
             bool: True if the element becomes visible, False otherwise.
         """
         self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
-        try:
-            resolved_locator = self.handle_locator(self.locator, self.contains)
-            if not resolved_locator:
-                self.logger.error("Resolved locator is None or invalid")
+        start_time = time.time()
+        while time.time() - start_time < self.timeout:
+            try:
+                resolved_locator = self.handle_locator(self.locator, self.contains)
+                if not resolved_locator:
+                    self.logger.error("Resolved locator is None or invalid")
+                    if return_bool:
+                        return False
+                    return cast('Element', self)
+
+                WebDriverWait(self.base.driver, timeout, poll_frequency).until(
+                    conditions.visible(resolved_locator)
+                )
+                if return_bool:
+                    return True
+                return cast('Element', self)
+            except TimeoutException:
                 if return_bool:
                     return False
                 return cast('Element', self)
-
-            WebDriverWait(self.base.driver, timeout, poll_frequency).until(
-                conditions.visible(resolved_locator)
-            )
-            if return_bool:
-                return True
-            return cast('Element', self)
-        except TimeoutException:
-            if return_bool:
-                return False
-            return cast('Element', self)
+            except NoSuchDriverException as error:
+                self._handle_driver_error(error)
+            except InvalidSessionIdException as error:
+                self._handle_driver_error(error)
+            except StaleElementReferenceException as error:
+                self.logger.error(f"{error}")
+                continue
+            except WebDriverException as error:
+                self._handle_driver_error(error)
+            except Exception as error:
+                self.logger.error(f"{error}")
+                continue
+        return False
 
     def wait_clickable(self, timeout: int = 10, poll_frequency: float = 0.5, return_bool: bool = False) -> Union[
         bool, 'Element']:
@@ -2115,24 +2144,39 @@ class Element(ElementBase):
             bool: True if the element becomes clickable, False otherwise.
         """
         self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
-        try:
-            resolved_locator = self.handle_locator(self.locator, self.contains)
-            if not resolved_locator:
-                self.logger.error("Resolved locator is None or invalid")
+        start_time = time.time()
+        while time.time() - start_time < self.timeout:
+            try:
+                resolved_locator = self.handle_locator(self.locator, self.contains)
+                if not resolved_locator:
+                    self.logger.error("Resolved locator is None or invalid")
+                    if return_bool:
+                        return False
+                    return cast('Element', self)
+
+                WebDriverWait(self.base.driver, timeout, poll_frequency).until(
+                    conditions.clickable(resolved_locator)
+                )
+                if return_bool:
+                    return True
+                return cast('Element', self)
+            except TimeoutException:
                 if return_bool:
                     return False
                 return cast('Element', self)
-
-            WebDriverWait(self.base.driver, timeout, poll_frequency).until(
-                conditions.clickable(resolved_locator)
-            )
-            if return_bool:
-                return True
-            return cast('Element', self)
-        except TimeoutException:
-            if return_bool:
-                return False
-            return cast('Element', self)
+            except NoSuchDriverException as error:
+                self._handle_driver_error(error)
+            except InvalidSessionIdException as error:
+                self._handle_driver_error(error)
+            except StaleElementReferenceException as error:
+                self.logger.error(f"{error}")
+                continue
+            except WebDriverException as error:
+                self._handle_driver_error(error)
+            except Exception as error:
+                self.logger.error(f"{error}")
+                continue
+        return False
 
     def wait_for_not(self, timeout: int = 10, poll_frequency: float = 0.5, return_bool: bool = False) -> Union[
         bool, 'Element']:
@@ -2147,22 +2191,37 @@ class Element(ElementBase):
             bool: True if the element disappears, False otherwise.
         """
         self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
-        try:
-            resolved_locator = self.handle_locator(self.locator, self.contains)
-            if not resolved_locator:
+        start_time = time.time()
+        while time.time() - start_time < self.timeout:
+            try:
+                resolved_locator = self.handle_locator(self.locator, self.contains)
+                if not resolved_locator:
+                    if return_bool:
+                        return False
+                    return cast('Element', self)
+                WebDriverWait(self.base.driver, timeout, poll_frequency).until(
+                    conditions.not_present(resolved_locator)
+                )
+                if return_bool:
+                    return True
+                return cast('Element', self)
+            except TimeoutException:
                 if return_bool:
                     return False
                 return cast('Element', self)
-            WebDriverWait(self.base.driver, timeout, poll_frequency).until(
-                conditions.not_present(resolved_locator)
-            )
-            if return_bool:
-                return True
-            return cast('Element', self)
-        except TimeoutException:
-            if return_bool:
-                return False
-            return cast('Element', self)
+            except NoSuchDriverException as error:
+                self._handle_driver_error(error)
+            except InvalidSessionIdException as error:
+                self._handle_driver_error(error)
+            except StaleElementReferenceException as error:
+                self.logger.error(f"{error}")
+                continue
+            except WebDriverException as error:
+                self._handle_driver_error(error)
+            except Exception as error:
+                self.logger.error(f"{error}")
+                continue
+        return False
 
     def wait_for_not_visible(self, timeout: int = 10, poll_frequency: float = 0.5, return_bool: bool = False) -> Union[
         bool, 'Element']:
@@ -2177,25 +2236,40 @@ class Element(ElementBase):
             bool: True if the element becomes invisible, False otherwise.
         """
         self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
-        try:
-            resolved_locator = self.handle_locator(self.locator, self.contains)
-            if not resolved_locator:
+        start_time = time.time()
+        while time.time() - start_time < self.timeout:
+            try:
+                resolved_locator = self.handle_locator(self.locator, self.contains)
+                if not resolved_locator:
+                    if return_bool:
+                        return False
+                    return cast('Element', self)
+                WebDriverWait(self.base.driver, timeout, poll_frequency).until(
+                    conditions.not_visible(resolved_locator)
+                )
+                if return_bool:
+                    return True
+                return cast('Element', self)
+            except TimeoutException:
                 if return_bool:
                     return False
                 return cast('Element', self)
-            WebDriverWait(self.base.driver, timeout, poll_frequency).until(
-                conditions.not_visible(resolved_locator)
-            )
-            if return_bool:
-                return True
-            return cast('Element', self)
-        except TimeoutException:
-            if return_bool:
-                return False
-            return cast('Element', self)
+            except NoSuchDriverException as error:
+                self._handle_driver_error(error)
+            except InvalidSessionIdException as error:
+                self._handle_driver_error(error)
+            except StaleElementReferenceException as error:
+                self.logger.error(f"{error}")
+                continue
+            except WebDriverException as error:
+                self._handle_driver_error(error)
+            except Exception as error:
+                self.logger.error(f"{error}")
+                continue
+        return False
 
     def wait_for_not_clickable(self, timeout: int = 10, poll_frequency: float = 0.5, return_bool: bool = False) -> \
-    Union[bool, 'Element']:
+            Union[bool, 'Element']:
         """Waits until the element becomes not clickable.
 
         Args:
@@ -2207,23 +2281,38 @@ class Element(ElementBase):
             bool: True if the element becomes not clickable, False otherwise.
         """
         self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
-        try:
-            resolved_locator = self.handle_locator(self.locator, self.contains)
-            if not resolved_locator:
-                self.logger.error("Resolved locator is None or invalid")
+        start_time = time.time()
+        while time.time() - start_time < self.timeout:
+            try:
+                resolved_locator = self.handle_locator(self.locator, self.contains)
+                if not resolved_locator:
+                    self.logger.error("Resolved locator is None or invalid")
+                    if return_bool:
+                        return False
+                    return cast('Element', self)
+                WebDriverWait(self.base.driver, timeout, poll_frequency).until(
+                    conditions.not_clickable(resolved_locator)
+                )
+                if return_bool:
+                    return True
+                return cast('Element', self)
+            except TimeoutException:
                 if return_bool:
                     return False
                 return cast('Element', self)
-            WebDriverWait(self.base.driver, timeout, poll_frequency).until(
-                conditions.not_clickable(resolved_locator)
-            )
-            if return_bool:
-                return True
-            return cast('Element', self)
-        except TimeoutException:
-            if return_bool:
-                return False
-            return cast('Element', self)
+            except NoSuchDriverException as error:
+                self._handle_driver_error(error)
+            except InvalidSessionIdException as error:
+                self._handle_driver_error(error)
+            except StaleElementReferenceException as error:
+                self.logger.error(f"{error}")
+                continue
+            except WebDriverException as error:
+                self._handle_driver_error(error)
+            except Exception as error:
+                self.logger.error(f"{error}")
+                continue
+        return False
 
     @property
     def should(self) -> 'Should':
@@ -2245,7 +2334,6 @@ class Element(ElementBase):
             ignored_exceptions=self.ignored_exceptions,
             contains=self.contains
         )
-
 
     def _contains_to_xpath(self, xpath: Tuple[str, str]) -> Tuple[str, str]:
         """
@@ -2272,9 +2360,4 @@ class Element(ElementBase):
 
         for attr, pattern in patterns.items():
             value = re.sub(pattern, lambda m: f"contains(@{attr}, '{m.group(1)}')", value)
-
         return strategy, value
-
-
-
-
