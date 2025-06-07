@@ -645,10 +645,13 @@ class PageObjectGenerator:
                 used_ids.add(anchor.id)
                 self.logger.debug(f"Added anchor: {anchor_name} → {anchor_prop['locator']}")
             else:
-                anchor_name = next(
-                    (p["name"] for p in properties if p["element_id"] == anchor.id),
-                    self._generate_property_name(anchor, used_names)
-                )
+                anchor_name = None
+                for p in properties:
+                    if p.get("element_id") == anchor.id:
+                        anchor_name = p.get("name")
+                        break
+                if anchor_name is None:
+                    anchor_name = self._generate_property_name(anchor, used_names)
 
             if switcher.id in used_ids:
                 continue
