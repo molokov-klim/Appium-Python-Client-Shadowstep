@@ -38,7 +38,7 @@ def app(request) -> Shadowstep:
 
     REMOTE = True
     if REMOTE:
-        UDID = '001D1108719169'
+        UDID = '0010941234TEST30'
         APPIUM_IP = "10.77.171.211"
         APPIUM_PORT = 3334
         APPIUM_COMMAND_EXECUTOR = f'http://{APPIUM_IP}:{APPIUM_PORT}'

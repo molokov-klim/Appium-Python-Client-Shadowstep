@@ -93,12 +93,7 @@ class PageNavigator:
             current_page = path[i]
             next_page = path[i + 1]
             transition_method = current_page.edges[next_page.__class__.__name__]
-            self.logger.info(
-                f"Navigating from {current_page.__repr__} to {next_page.__repr__} "
-                f"via method {transition_method.__repr__}"
-            )
             transition_method()
-
 
     def save_graph(self, path: str = "page_graph.png"):
         self.graph_manager.save_graph_image(path)

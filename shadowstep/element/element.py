@@ -416,8 +416,8 @@ class Element(ElementBase):
             if not current_xpath:
                 raise GeneralElementException("Unable to resolve current XPath")
 
-            self.logger.info(f"[XPath Resolution] current_xpath: {current_xpath}")
-            self.logger.info(f"[Depth] depth_to_parent: {depth_to_parent}")
+            self.logger.debug(f"[XPath Resolution] current_xpath: {current_xpath}")
+            self.logger.debug(f"[Depth] depth_to_parent: {depth_to_parent}")
 
             # Climb up the tree
             up_xpath = "/".join([".."] * depth_to_parent)
@@ -426,12 +426,12 @@ class Element(ElementBase):
             # Resolve cousin locator to relative XPath
             cousin_relative = self.handle_locator(cousin_locator, contains=self.contains)[1].lstrip('/')
 
-            self.logger.info(f"[Cousin Locator] relative_xpath: {cousin_relative}")
+            self.logger.debug(f"[Cousin Locator] relative_xpath: {cousin_relative}")
 
             # Full cousin XPath
             cousin_xpath = f"{base_xpath}//{cousin_relative}"
 
-            self.logger.info(f"[Final XPath] cousin_xpath: {cousin_xpath}")
+            self.logger.debug(f"[Final XPath] cousin_xpath: {cousin_xpath}")
 
             return Element(
                 locator=('xpath', cousin_xpath),
