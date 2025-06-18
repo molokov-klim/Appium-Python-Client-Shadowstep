@@ -403,7 +403,7 @@ class Element(ElementBase):
         Returns:
             Union['Element', None]: The cousin Element or None if not found.
         """
-        self.logger.info(f"{inspect.currentframe().f_code.co_name}")
+        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
         depth_to_parent += 1
 
         try:
