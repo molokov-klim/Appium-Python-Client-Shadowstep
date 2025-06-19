@@ -186,6 +186,7 @@ class Element(ElementBase):
 
             except StaleElementReferenceException as error:
                 self.logger.warning(f"Stale element encountered, retrying... | {error}")
+                self._get_native()
                 continue
 
             except TimeoutException as error:
@@ -240,6 +241,7 @@ class Element(ElementBase):
                 self._handle_driver_error(error)
             except StaleElementReferenceException as error:
                 self.logger.error(f"{error}\ncontinue")
+                self._get_native()
                 continue
             except ET.XPathEvalError as e:
                 self.logger.error(f"XPathEvalError: {e}")
@@ -477,6 +479,7 @@ class Element(ElementBase):
                 self._handle_driver_error(error)
             except StaleElementReferenceException as error:
                 self.logger.error(f"{error}\ncontinue")
+                self._get_native()
                 continue
 
         raise GeneralElementException(
@@ -513,6 +516,7 @@ class Element(ElementBase):
                 self._handle_driver_error(error)
             except StaleElementReferenceException as error:
                 self.logger.error(f"{error}\ncontinue")
+                self._get_native()
                 continue
 
         raise GeneralElementException(
@@ -545,6 +549,7 @@ class Element(ElementBase):
                 self._handle_driver_error(error)
             except StaleElementReferenceException as error:
                 self.logger.error(f"{error}\ncontinue")
+                self._get_native()
                 continue
 
         raise GeneralElementException(
@@ -578,6 +583,7 @@ class Element(ElementBase):
                 self._handle_driver_error(error)
             except StaleElementReferenceException as error:
                 self.logger.error(f"{error}\ncontinue")
+                self._get_native()
                 continue
 
         raise GeneralElementException(
@@ -613,6 +619,7 @@ class Element(ElementBase):
                 self._handle_driver_error(error)
             except StaleElementReferenceException as error:
                 self.logger.error(f"{error}\ncontinue")
+                self._get_native()
                 continue
 
         raise GeneralElementException(
@@ -644,6 +651,7 @@ class Element(ElementBase):
                 self._handle_driver_error(error)
             except StaleElementReferenceException as error:
                 self.logger.error(f"{error}\ncontinue")
+                self._get_native()
                 continue
 
         raise GeneralElementException(
@@ -687,6 +695,7 @@ class Element(ElementBase):
                 self._handle_driver_error(error)
             except StaleElementReferenceException as error:
                 self.logger.error(f"{error}\ncontinue")
+                self._get_native()
                 continue
         raise GeneralElementException(
             msg=f"Failed to {inspect.currentframe().f_code.co_name} within {self.timeout=}",
@@ -718,6 +727,7 @@ class Element(ElementBase):
                 self._handle_driver_error(error)
             except StaleElementReferenceException as error:
                 self.logger.error(f"{error}\ncontinue")
+                self._get_native()
                 continue
 
         raise GeneralElementException(
@@ -748,6 +758,7 @@ class Element(ElementBase):
                 self._handle_driver_error(error)
             except StaleElementReferenceException as error:
                 self.logger.error(f"{error}\ncontinue")
+                self._get_native()
                 continue
 
         raise GeneralElementException(
@@ -780,6 +791,7 @@ class Element(ElementBase):
                 self._handle_driver_error(error)
             except StaleElementReferenceException as error:
                 self.logger.error(f"{error}\ncontinue")
+                self._get_native()
                 continue
         raise GeneralElementException(
             msg=f"Failed to {inspect.currentframe().f_code.co_name} within {self.timeout=}",
@@ -805,6 +817,7 @@ class Element(ElementBase):
                 self._handle_driver_error(error)
             except StaleElementReferenceException as error:
                 self.logger.error(f"{error}\ncontinue")
+                self._get_native()
                 continue
         raise GeneralElementException(
             msg=f"Failed to {inspect.currentframe().f_code.co_name} within {self.timeout=}\n{duration}",
@@ -868,6 +881,7 @@ class Element(ElementBase):
                 self._handle_driver_error(error)
             except StaleElementReferenceException as error:
                 self.logger.error(f"{error}\ncontinue")
+                self._get_native()
                 continue
         # === Недостаточно данных для действия ===
         raise GeneralElementException(
@@ -897,6 +911,7 @@ class Element(ElementBase):
                 self._handle_driver_error(error)
             except StaleElementReferenceException as error:
                 self.logger.error(f"{error}\ncontinue")
+                self._get_native()
                 continue
         raise GeneralElementException(
             msg=f"Failed to {inspect.currentframe().f_code.co_name} within {self.timeout=}\n{duration}",
@@ -921,6 +936,7 @@ class Element(ElementBase):
                 self._handle_driver_error(error)
             except StaleElementReferenceException as error:
                 self.logger.error(f"{error}\ncontinue")
+                self._get_native()
                 continue
         raise GeneralElementException(
             msg=f"Failed to {inspect.currentframe().f_code.co_name} within {self.timeout=}",
@@ -948,6 +964,7 @@ class Element(ElementBase):
                 self._handle_driver_error(error)
             except StaleElementReferenceException as error:
                 self.logger.error(f"{error}\ncontinue")
+                self._get_native()
                 continue
         raise GeneralElementException(
             msg=f"Failed to {inspect.currentframe().f_code.co_name} within {self.timeout=}",
@@ -991,6 +1008,7 @@ class Element(ElementBase):
                 self._handle_driver_error(error)
             except StaleElementReferenceException as error:
                 self.logger.error(f"{error}\ncontinue")
+                self._get_native()
                 continue
         raise GeneralElementException(
             msg=f"Failed to {inspect.currentframe().f_code.co_name} within {self.timeout=}",
@@ -1043,6 +1061,7 @@ class Element(ElementBase):
                 self._handle_driver_error(error)
             except StaleElementReferenceException as error:
                 self.logger.error(f"{error}\ncontinue")
+                self._get_native()
                 continue
         raise GeneralElementException(
             msg=f"Failed to {inspect.currentframe().f_code.co_name} within {self.timeout=}",
@@ -1065,6 +1084,7 @@ class Element(ElementBase):
                 self._handle_driver_error(error)
             except StaleElementReferenceException as error:
                 self.logger.error(f"{error}\ncontinue")
+                self._get_native()
                 continue
 
         raise GeneralElementException(
@@ -1087,6 +1107,7 @@ class Element(ElementBase):
                 self._handle_driver_error(error)
             except StaleElementReferenceException as error:
                 self.logger.error(f"{error}\ncontinue")
+                self._get_native()
                 continue
 
         raise GeneralElementException(
@@ -1129,6 +1150,7 @@ class Element(ElementBase):
                 self._handle_driver_error(error)
             except StaleElementReferenceException as error:
                 self.logger.error(f"{error}\ncontinue")
+                self._get_native()
                 continue
             except Exception as error:
                 # Some instability detected, information gathering required
@@ -1176,6 +1198,7 @@ class Element(ElementBase):
                 self._handle_driver_error(error)
             except StaleElementReferenceException as error:
                 self.logger.error(f"{error}\ncontinue")
+                self._get_native()
                 continue
 
         raise GeneralElementException(
@@ -1217,6 +1240,7 @@ class Element(ElementBase):
                 self._handle_driver_error(error)
             except StaleElementReferenceException as error:
                 self.logger.error(f"{error}\ncontinue")
+                self._get_native()
                 continue
 
         raise GeneralElementException(
@@ -1275,6 +1299,7 @@ class Element(ElementBase):
                 self._handle_driver_error(error)
             except StaleElementReferenceException as error:
                 self.logger.error(f"{error}\ncontinue")
+                self._get_native()
                 continue
 
         raise GeneralElementException(
@@ -1308,6 +1333,7 @@ class Element(ElementBase):
                 self._handle_driver_error(error)
             except StaleElementReferenceException as error:
                 self.logger.error(f"{error}\ncontinue")
+                self._get_native()
                 continue
 
         raise GeneralElementException(
@@ -1341,6 +1367,7 @@ class Element(ElementBase):
                 self._handle_driver_error(error)
             except StaleElementReferenceException as error:
                 self.logger.error(f"{error}\ncontinue")
+                self._get_native()
                 continue
 
         raise GeneralElementException(
@@ -1381,6 +1408,7 @@ class Element(ElementBase):
                 self._handle_driver_error(error)
             except StaleElementReferenceException as error:
                 self.logger.error(f"{error}\ncontinue")
+                self._get_native()
                 continue
 
         raise GeneralElementException(
@@ -1420,6 +1448,7 @@ class Element(ElementBase):
                 self._handle_driver_error(error)
             except StaleElementReferenceException as error:
                 self.logger.error(f"{error}\ncontinue")
+                self._get_native()
                 continue
 
         raise GeneralElementException(
@@ -1453,6 +1482,7 @@ class Element(ElementBase):
                 self._handle_driver_error(error)
             except StaleElementReferenceException as error:
                 self.logger.error(f"{error}\ncontinue")
+                self._get_native()
                 continue
 
         raise GeneralElementException(
@@ -1486,6 +1516,7 @@ class Element(ElementBase):
                 self._handle_driver_error(error)
             except StaleElementReferenceException as error:
                 self.logger.error(f"{error}\ncontinue")
+                self._get_native()
                 continue
 
         raise GeneralElementException(
@@ -1519,6 +1550,7 @@ class Element(ElementBase):
                 self._handle_driver_error(error)
             except StaleElementReferenceException as error:
                 self.logger.error(f"{error}\ncontinue")
+                self._get_native()
                 continue
 
         raise GeneralElementException(
@@ -1629,6 +1661,7 @@ class Element(ElementBase):
                 self._handle_driver_error(error)
             except StaleElementReferenceException as error:
                 self.logger.error(f"{error}\ncontinue")
+                self._get_native()
                 continue
             except WebDriverException as error:
                 self._handle_driver_error(error)
@@ -1672,6 +1705,7 @@ class Element(ElementBase):
                 self._handle_driver_error(error)
             except StaleElementReferenceException as error:
                 self.logger.error(f"{error}\ncontinue")
+                self._get_native()
                 continue
             except WebDriverException as error:
                 self._handle_driver_error(error)
@@ -1713,6 +1747,7 @@ class Element(ElementBase):
                 self._handle_driver_error(error)
             except StaleElementReferenceException as error:
                 self.logger.error(f"{error}\ncontinue")
+                self._get_native()
                 continue
             except WebDriverException as error:
                 self._handle_driver_error(error)
@@ -1751,6 +1786,7 @@ class Element(ElementBase):
                 self._handle_driver_error(error)
             except StaleElementReferenceException as error:
                 self.logger.error(f"{error}\ncontinue")
+                self._get_native()
                 continue
             except WebDriverException as error:
                 self._handle_driver_error(error)
@@ -1786,6 +1822,7 @@ class Element(ElementBase):
                 self._handle_driver_error(error)
             except StaleElementReferenceException as error:
                 self.logger.error(f"{error}\ncontinue")
+                self._get_native()
                 continue
             except WebDriverException as error:
                 self._handle_driver_error(error)
@@ -1821,6 +1858,7 @@ class Element(ElementBase):
                 self._handle_driver_error(error)
             except StaleElementReferenceException as error:
                 self.logger.error(f"{error}\ncontinue")
+                self._get_native()
                 continue
             except WebDriverException as error:
                 self._handle_driver_error(error)
@@ -1856,6 +1894,7 @@ class Element(ElementBase):
                 self._handle_driver_error(error)
             except StaleElementReferenceException as error:
                 self.logger.error(f"{error}\ncontinue")
+                self._get_native()
                 continue
             except WebDriverException as error:
                 self._handle_driver_error(error)
@@ -1891,6 +1930,7 @@ class Element(ElementBase):
                 self._handle_driver_error(error)
             except StaleElementReferenceException as error:
                 self.logger.error(f"{error}\ncontinue")
+                self._get_native()
                 continue
             except WebDriverException as error:
                 self._handle_driver_error(error)
@@ -1928,6 +1968,7 @@ class Element(ElementBase):
                 self._handle_driver_error(error)
             except StaleElementReferenceException as error:
                 self.logger.error(f"{error}\ncontinue")
+                self._get_native()
                 continue
             except IOError as error:
                 self.logger.error(f"IOError while saving screenshot to {filename}: {error}")
@@ -1973,6 +2014,7 @@ class Element(ElementBase):
                         return str(child_class)
             except StaleElementReferenceException as error:
                 self.logger.error(f"{error}\ncontinue")
+                self._get_native()
                 continue
 
     def _get_xpath(self) -> Union[str, None]:
@@ -2076,6 +2118,7 @@ class Element(ElementBase):
                 self._handle_driver_error(error)
             except StaleElementReferenceException as error:
                 self.logger.error(f"{error}")
+                self._get_native()
                 continue
             except WebDriverException as error:
                 self._handle_driver_error(error)
@@ -2123,6 +2166,7 @@ class Element(ElementBase):
                 self._handle_driver_error(error)
             except StaleElementReferenceException as error:
                 self.logger.error(f"{error}")
+                self._get_native()
                 continue
             except WebDriverException as error:
                 self._handle_driver_error(error)
@@ -2170,6 +2214,7 @@ class Element(ElementBase):
                 self._handle_driver_error(error)
             except StaleElementReferenceException as error:
                 self.logger.error(f"{error}")
+                self._get_native()
                 continue
             except WebDriverException as error:
                 self._handle_driver_error(error)
@@ -2215,6 +2260,7 @@ class Element(ElementBase):
                 self._handle_driver_error(error)
             except StaleElementReferenceException as error:
                 self.logger.error(f"{error}")
+                self._get_native()
                 continue
             except WebDriverException as error:
                 self._handle_driver_error(error)
@@ -2260,6 +2306,7 @@ class Element(ElementBase):
                 self._handle_driver_error(error)
             except StaleElementReferenceException as error:
                 self.logger.error(f"{error}")
+                self._get_native()
                 continue
             except WebDriverException as error:
                 self._handle_driver_error(error)
@@ -2306,6 +2353,7 @@ class Element(ElementBase):
                 self._handle_driver_error(error)
             except StaleElementReferenceException as error:
                 self.logger.error(f"{error}")
+                self._get_native()
                 continue
             except WebDriverException as error:
                 self._handle_driver_error(error)
