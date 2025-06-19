@@ -1158,6 +1158,7 @@ class Element(ElementBase):
                 self.logger.error(type(error))
                 self.logger.error(traceback.format_stack())
                 self._handle_driver_error(error)
+                self.scroll_to_top(percent=0.75, speed=8000)
 
         raise GeneralElementException(
             msg=f"Failed to scroll to element with locator: {locator}",
