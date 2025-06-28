@@ -1,6 +1,7 @@
 #  shadowstep/page_object/page_object_generator.py
 import inspect
 import json
+import keyword
 import logging
 import os
 import re
@@ -249,6 +250,8 @@ class PageObjectGenerator:
         raw_name = raw_name.strip()
         if not raw_name:
             raise ValueError("Title node does not contain usable name")
+        if raw_name in keyword.kwlist:
+            raw_name = raw_name + '_'
         return raw_name
 
     @neuro_readonly
@@ -482,6 +485,8 @@ class PageObjectGenerator:
 
         if not camel_case:
             raise ValueError(f"Failed to normalize screen name from '{text}'")
+        if not camel_case.startswith('Page'):
+            camel_case = 'Page' + camel_case
         return camel_case
 
     @neuro_readonly
@@ -815,6 +820,8 @@ class PageObjectGenerator:
         while name in used_names:
             name = f"{original}_{i}"
             i += 1
+        if name in keyword.kwlist:
+            name = name + '_'
         return name
 
     @neuro_allow_edit
