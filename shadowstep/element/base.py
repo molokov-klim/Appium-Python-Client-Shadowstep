@@ -1,5 +1,6 @@
 # shadowstep/element/base.py
 
+import re
 import inspect
 import logging
 logger = logging.getLogger(__name__)
@@ -101,8 +102,13 @@ class ElementBase:
                        contains: bool = False) -> Optional[Tuple[str, str]]:
         self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
         if isinstance(locator, tuple):
-            return locator
+            by, value = locator
+            # Удаляем части типа [@attr='null']
+            value = re.sub(r"\[@[\w\-]+='null'\]", "", value)
+            return by, value
         elif isinstance(locator, dict):
+            # Удаляем ключи, у которых значение == 'null'
+            locator = {k: v for k, v in locator.items() if v != 'null'}
             locator = self.handle_dict_locator(locator, contains)
         return locator
 
