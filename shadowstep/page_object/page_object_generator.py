@@ -886,7 +886,7 @@ class PageObjectGenerator:
         step = "Convert CamelCase to snake_case"
         self.logger.debug(f"[{step}] started")
         file_name = re.sub(r'(?<!^)(?=[A-Z])', '_', class_name).lower()
-        return f"page_{file_name}.py"
+        return f"{file_name}.py"
 
     @neuro_allow_edit
     def _is_need_recycler(self, recycler: Optional[UiElementNode], regular_properties: List[UiElementNode]) -> bool:
