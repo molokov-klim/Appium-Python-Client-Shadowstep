@@ -42,7 +42,9 @@ class PageNavigator:
             self.logger.error(f"❌ No navigation path found from {from_page} to {to_page}")
             return False
 
-        self.logger.info(f"🚀 Navigating: {from_page} ➡ {to_page} via path: {[page.__repr__ for page in path]}")
+        self.logger.info(
+            f"🚀 Navigating: {from_page} ➡ {to_page} via path: {[repr(page) for page in path]}"
+        )
 
         try:
             self.perform_navigation(path, timeout)
