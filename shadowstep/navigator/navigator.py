@@ -96,6 +96,8 @@ class PageNavigator:
             next_page = path[i + 1]
             transition_method = current_page.edges[next_page.__class__.__name__]
             transition_method()
+            if not next_page.is_current_page():
+                raise AssertionError(f"navigation error: \n from {current_page} to {next_page} with {transition_method}")
 
     def save_graph(self, path: str = "page_graph.png"):
         self.graph_manager.save_graph_image(path)
