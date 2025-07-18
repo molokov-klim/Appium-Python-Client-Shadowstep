@@ -185,7 +185,7 @@ class Element(ElementBase):
                 self._handle_driver_error(error)
 
             except StaleElementReferenceException as error:
-                self.logger.error(f"{error}\nRe-acquire element")
+                self.logger.warning(f"{error}\nRe-acquire element")
                 self.native = None
                 self._get_native()
                 continue
@@ -241,7 +241,7 @@ class Element(ElementBase):
             except InvalidSessionIdException as error:
                 self._handle_driver_error(error)
             except StaleElementReferenceException as error:
-                self.logger.error(f"{error}\nRe-acquire element")
+                self.logger.warning(f"{error}\nRe-acquire element")
                 self.native = None
                 self._get_native()
                 continue
@@ -480,7 +480,7 @@ class Element(ElementBase):
             except AttributeError as error:
                 self._handle_driver_error(error)
             except StaleElementReferenceException as error:
-                self.logger.error(f"{error}\nRe-acquire element")
+                self.logger.warning(f"{error}\nRe-acquire element")
                 self.native = None
                 self._get_native()
                 continue
@@ -518,7 +518,7 @@ class Element(ElementBase):
             except AttributeError as error:
                 self._handle_driver_error(error)
             except StaleElementReferenceException as error:
-                self.logger.error(f"{error}\nRe-acquire element")
+                self.logger.warning(f"{error}\nRe-acquire element")
                 self.native = None
                 self._get_native()
                 continue
@@ -552,7 +552,7 @@ class Element(ElementBase):
             except AttributeError as error:
                 self._handle_driver_error(error)
             except StaleElementReferenceException as error:
-                self.logger.error(f"{error}\nRe-acquire element")
+                self.logger.warning(f"{error}\nRe-acquire element")
                 self.native = None
                 self._get_native()
                 continue
@@ -587,7 +587,7 @@ class Element(ElementBase):
             except AttributeError as error:
                 self._handle_driver_error(error)
             except StaleElementReferenceException as error:
-                self.logger.error(f"{error}\nRe-acquire element")
+                self.logger.warning(f"{error}\nRe-acquire element")
                 self.native = None
                 self._get_native()
                 continue
@@ -624,7 +624,7 @@ class Element(ElementBase):
             except AttributeError as error:
                 self._handle_driver_error(error)
             except StaleElementReferenceException as error:
-                self.logger.error(f"{error}\nRe-acquire element")
+                self.logger.warning(f"{error}\nRe-acquire element")
                 self.native = None
                 self._get_native()
                 continue
@@ -657,7 +657,7 @@ class Element(ElementBase):
             except AttributeError as error:
                 self._handle_driver_error(error)
             except StaleElementReferenceException as error:
-                self.logger.error(f"{error}\nRe-acquire element")
+                self.logger.warning(f"{error}\nRe-acquire element")
                 self.native = None
                 self._get_native()
                 continue
@@ -702,7 +702,7 @@ class Element(ElementBase):
             except AttributeError as error:
                 self._handle_driver_error(error)
             except StaleElementReferenceException as error:
-                self.logger.error(f"{error}\nRe-acquire element")
+                self.logger.warning(f"{error}\nRe-acquire element")
                 self.native = None
                 self._get_native()
                 continue
@@ -735,7 +735,7 @@ class Element(ElementBase):
             except AttributeError as error:
                 self._handle_driver_error(error)
             except StaleElementReferenceException as error:
-                self.logger.error(f"{error}\nRe-acquire element")
+                self.logger.warning(f"{error}\nRe-acquire element")
                 self.native = None
                 self._get_native()
                 continue
@@ -767,7 +767,7 @@ class Element(ElementBase):
             except AttributeError as error:
                 self._handle_driver_error(error)
             except StaleElementReferenceException as error:
-                self.logger.error(f"{error}\nRe-acquire element")
+                self.logger.warning(f"{error}\nRe-acquire element")
                 self.native = None
                 self._get_native()
                 continue
@@ -801,7 +801,7 @@ class Element(ElementBase):
             except AttributeError as error:
                 self._handle_driver_error(error)
             except StaleElementReferenceException as error:
-                self.logger.error(f"{error}\nRe-acquire element")
+                self.logger.warning(f"{error}\nRe-acquire element")
                 self.native = None
                 self._get_native()
                 continue
@@ -828,7 +828,7 @@ class Element(ElementBase):
             except AttributeError as error:
                 self._handle_driver_error(error)
             except StaleElementReferenceException as error:
-                self.logger.error(f"{error}\nRe-acquire element")
+                self.logger.warning(f"{error}\nRe-acquire element")
                 self.native = None
                 self._get_native()
                 continue
@@ -893,7 +893,7 @@ class Element(ElementBase):
             except AttributeError as error:
                 self._handle_driver_error(error)
             except StaleElementReferenceException as error:
-                self.logger.error(f"{error}\nRe-acquire element")
+                self.logger.warning(f"{error}\nRe-acquire element")
                 self.native = None
                 self._get_native()
                 continue
@@ -924,7 +924,7 @@ class Element(ElementBase):
             except AttributeError as error:
                 self._handle_driver_error(error)
             except StaleElementReferenceException as error:
-                self.logger.error(f"{error}\nRe-acquire element")
+                self.logger.warning(f"{error}\nRe-acquire element")
                 self.native = None
                 self._get_native()
                 continue
@@ -950,7 +950,7 @@ class Element(ElementBase):
             except AttributeError as error:
                 self._handle_driver_error(error)
             except StaleElementReferenceException as error:
-                self.logger.error(f"{error}\nRe-acquire element")
+                self.logger.warning(f"{error}\nRe-acquire element")
                 self.native = None
                 self._get_native()
                 continue
@@ -979,7 +979,7 @@ class Element(ElementBase):
             except AttributeError as error:
                 self._handle_driver_error(error)
             except StaleElementReferenceException as error:
-                self.logger.error(f"{error}\nRe-acquire element")
+                self.logger.warning(f"{error}\nRe-acquire element")
                 self.native = None
                 self._get_native()
                 continue
@@ -1024,7 +1024,7 @@ class Element(ElementBase):
             except AttributeError as error:
                 self._handle_driver_error(error)
             except StaleElementReferenceException as error:
-                self.logger.error(f"{error}\nRe-acquire element")
+                self.logger.warning(f"{error}\nRe-acquire element")
                 self.native = None
                 self._get_native()
                 continue
@@ -1078,7 +1078,7 @@ class Element(ElementBase):
             except AttributeError as error:
                 self._handle_driver_error(error)
             except StaleElementReferenceException as error:
-                self.logger.error(f"{error}\nRe-acquire element")
+                self.logger.warning(f"{error}\nRe-acquire element")
                 self.native = None
                 self._get_native()
                 continue
@@ -1102,7 +1102,7 @@ class Element(ElementBase):
             ) as error:
                 self._handle_driver_error(error)
             except StaleElementReferenceException as error:
-                self.logger.error(f"{error}\nRe-acquire element")
+                self.logger.warning(f"{error}\nRe-acquire element")
                 self.native = None
                 self._get_native()
                 continue
@@ -1126,7 +1126,7 @@ class Element(ElementBase):
                     NoSuchDriverException, InvalidSessionIdException, AttributeError) as error:
                 self._handle_driver_error(error)
             except StaleElementReferenceException as error:
-                self.logger.error(f"{error}\nRe-acquire element")
+                self.logger.warning(f"{error}\nRe-acquire element")
                 self.native = None
                 self._get_native()
                 continue
@@ -1170,7 +1170,7 @@ class Element(ElementBase):
             except AttributeError as error:
                 self._handle_driver_error(error)
             except StaleElementReferenceException as error:
-                self.logger.error(f"{error}\nRe-acquire element")
+                self.logger.warning(f"{error}\nRe-acquire element")
                 self.native = None
                 self._get_native()
                 continue
@@ -1220,7 +1220,7 @@ class Element(ElementBase):
             except AttributeError as error:
                 self._handle_driver_error(error)
             except StaleElementReferenceException as error:
-                self.logger.error(f"{error}\nRe-acquire element")
+                self.logger.warning(f"{error}\nRe-acquire element")
                 self.native = None
                 self._get_native()
                 continue
@@ -1263,7 +1263,7 @@ class Element(ElementBase):
             except AttributeError as error:
                 self._handle_driver_error(error)
             except StaleElementReferenceException as error:
-                self.logger.error(f"{error}\nRe-acquire element")
+                self.logger.warning(f"{error}\nRe-acquire element")
                 self.native = None
                 self._get_native()
                 continue
@@ -1323,7 +1323,7 @@ class Element(ElementBase):
             except AttributeError as error:
                 self._handle_driver_error(error)
             except StaleElementReferenceException as error:
-                self.logger.error(f"{error}\nRe-acquire element")
+                self.logger.warning(f"{error}\nRe-acquire element")
                 self.native = None
                 self._get_native()
                 continue
@@ -1358,7 +1358,7 @@ class Element(ElementBase):
             except AttributeError as error:
                 self._handle_driver_error(error)
             except StaleElementReferenceException as error:
-                self.logger.error(f"{error}\nRe-acquire element")
+                self.logger.warning(f"{error}\nRe-acquire element")
                 self.native = None
                 self._get_native()
                 continue
@@ -1393,7 +1393,7 @@ class Element(ElementBase):
             except AttributeError as error:
                 self._handle_driver_error(error)
             except StaleElementReferenceException as error:
-                self.logger.error(f"{error}\nRe-acquire element")
+                self.logger.warning(f"{error}\nRe-acquire element")
                 self.native = None
                 self._get_native()
                 continue
@@ -1435,7 +1435,7 @@ class Element(ElementBase):
             except AttributeError as error:
                 self._handle_driver_error(error)
             except StaleElementReferenceException as error:
-                self.logger.error(f"{error}\nRe-acquire element")
+                self.logger.warning(f"{error}\nRe-acquire element")
                 self.native = None
                 self._get_native()
                 continue
@@ -1476,7 +1476,7 @@ class Element(ElementBase):
             except AttributeError as error:
                 self._handle_driver_error(error)
             except StaleElementReferenceException as error:
-                self.logger.error(f"{error}\nRe-acquire element")
+                self.logger.warning(f"{error}\nRe-acquire element")
                 self.native = None
                 self._get_native()
                 continue
@@ -1511,7 +1511,7 @@ class Element(ElementBase):
             except AttributeError as error:
                 self._handle_driver_error(error)
             except StaleElementReferenceException as error:
-                self.logger.error(f"{error}\nRe-acquire element")
+                self.logger.warning(f"{error}\nRe-acquire element")
                 self.native = None
                 self._get_native()
                 continue
@@ -1546,7 +1546,7 @@ class Element(ElementBase):
             except AttributeError as error:
                 self._handle_driver_error(error)
             except StaleElementReferenceException as error:
-                self.logger.error(f"{error}\nRe-acquire element")
+                self.logger.warning(f"{error}\nRe-acquire element")
                 self.native = None
                 self._get_native()
                 continue
@@ -1581,7 +1581,7 @@ class Element(ElementBase):
             except AttributeError as error:
                 self._handle_driver_error(error)
             except StaleElementReferenceException as error:
-                self.logger.error(f"{error}\nRe-acquire element")
+                self.logger.warning(f"{error}\nRe-acquire element")
                 self.native = None
                 self._get_native()
                 continue
@@ -1693,7 +1693,7 @@ class Element(ElementBase):
             except AttributeError as error:
                 self._handle_driver_error(error)
             except StaleElementReferenceException as error:
-                self.logger.error(f"{error}\nRe-acquire element")
+                self.logger.warning(f"{error}\nRe-acquire element")
                 self.native = None
                 self._get_native()
                 continue
@@ -1738,7 +1738,7 @@ class Element(ElementBase):
             except AttributeError as error:
                 self._handle_driver_error(error)
             except StaleElementReferenceException as error:
-                self.logger.error(f"{error}\nRe-acquire element")
+                self.logger.warning(f"{error}\nRe-acquire element")
                 self.native = None
                 self._get_native()
                 continue
@@ -1781,7 +1781,7 @@ class Element(ElementBase):
             except AttributeError as error:
                 self._handle_driver_error(error)
             except StaleElementReferenceException as error:
-                self.logger.error(f"{error}\nRe-acquire element")
+                self.logger.warning(f"{error}\nRe-acquire element")
                 self.native = None
                 self._get_native()
                 continue
@@ -1821,7 +1821,7 @@ class Element(ElementBase):
             except AttributeError as error:
                 self._handle_driver_error(error)
             except StaleElementReferenceException as error:
-                self.logger.error(f"{error}\nRe-acquire element")
+                self.logger.warning(f"{error}\nRe-acquire element")
                 self.native = None
                 self._get_native()
                 continue
@@ -1858,7 +1858,7 @@ class Element(ElementBase):
             except AttributeError as error:
                 self._handle_driver_error(error)
             except StaleElementReferenceException as error:
-                self.logger.error(f"{error}\nRe-acquire element")
+                self.logger.warning(f"{error}\nRe-acquire element")
                 self.native = None
                 self._get_native()
                 continue
@@ -1895,7 +1895,7 @@ class Element(ElementBase):
             except AttributeError as error:
                 self._handle_driver_error(error)
             except StaleElementReferenceException as error:
-                self.logger.error(f"{error}\nRe-acquire element")
+                self.logger.warning(f"{error}\nRe-acquire element")
                 self.native = None
                 self._get_native()
                 continue
@@ -1932,7 +1932,7 @@ class Element(ElementBase):
             except AttributeError as error:
                 self._handle_driver_error(error)
             except StaleElementReferenceException as error:
-                self.logger.error(f"{error}\nRe-acquire element")
+                self.logger.warning(f"{error}\nRe-acquire element")
                 self.native = None
                 self._get_native()
                 continue
@@ -1969,7 +1969,7 @@ class Element(ElementBase):
             except AttributeError as error:
                 self._handle_driver_error(error)
             except StaleElementReferenceException as error:
-                self.logger.error(f"{error}\nRe-acquire element")
+                self.logger.warning(f"{error}\nRe-acquire element")
                 self.native = None
                 self._get_native()
                 continue
@@ -2008,7 +2008,7 @@ class Element(ElementBase):
             except AttributeError as error:
                 self._handle_driver_error(error)
             except StaleElementReferenceException as error:
-                self.logger.error(f"{error}\nRe-acquire element")
+                self.logger.warning(f"{error}\nRe-acquire element")
                 self.native = None
                 self._get_native()
                 continue
@@ -2055,7 +2055,7 @@ class Element(ElementBase):
                     if parent_class != child_class:
                         return str(child_class)
             except StaleElementReferenceException as error:
-                self.logger.error(f"{error}\nRe-acquire element")
+                self.logger.warning(f"{error}\nRe-acquire element")
                 self.native = None
                 self._get_native()
                 continue
@@ -2160,7 +2160,7 @@ class Element(ElementBase):
             except InvalidSessionIdException as error:
                 self._handle_driver_error(error)
             except StaleElementReferenceException as error:
-                self.logger.error(f"{error}\nRe-acquire element")
+                self.logger.warning(f"{error}\nRe-acquire element")
                 self.native = None
                 self._get_native()
                 continue
@@ -2209,7 +2209,7 @@ class Element(ElementBase):
             except InvalidSessionIdException as error:
                 self._handle_driver_error(error)
             except StaleElementReferenceException as error:
-                self.logger.error(f"{error}\nRe-acquire element")
+                self.logger.warning(f"{error}\nRe-acquire element")
                 self.native = None
                 self._get_native()
                 continue
@@ -2258,7 +2258,7 @@ class Element(ElementBase):
             except InvalidSessionIdException as error:
                 self._handle_driver_error(error)
             except StaleElementReferenceException as error:
-                self.logger.error(f"{error}\nRe-acquire element")
+                self.logger.warning(f"{error}\nRe-acquire element")
                 self.native = None
                 self._get_native()
                 continue
@@ -2305,7 +2305,7 @@ class Element(ElementBase):
             except InvalidSessionIdException as error:
                 self._handle_driver_error(error)
             except StaleElementReferenceException as error:
-                self.logger.error(f"{error}\nRe-acquire element")
+                self.logger.warning(f"{error}\nRe-acquire element")
                 self.native = None
                 self._get_native()
                 continue
@@ -2352,7 +2352,7 @@ class Element(ElementBase):
             except InvalidSessionIdException as error:
                 self._handle_driver_error(error)
             except StaleElementReferenceException as error:
-                self.logger.error(f"{error}\nRe-acquire element")
+                self.logger.warning(f"{error}\nRe-acquire element")
                 self.native = None
                 self._get_native()
                 continue
@@ -2400,7 +2400,7 @@ class Element(ElementBase):
             except InvalidSessionIdException as error:
                 self._handle_driver_error(error)
             except StaleElementReferenceException as error:
-                self.logger.error(f"{error}\nRe-acquire element")
+                self.logger.warning(f"{error}\nRe-acquire element")
                 self.native = None
                 self._get_native()
                 continue
