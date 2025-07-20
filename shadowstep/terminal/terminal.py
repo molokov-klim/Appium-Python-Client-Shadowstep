@@ -116,6 +116,10 @@ class Terminal:
         :raises IOError: If an I/O error occurs during file handling.
         """
         try:
+            if not destination:
+                # Если путь не указан, сохраняем в текущей директории
+                destination = os.path.join(os.getcwd(), os.path.basename(source))
+
             file_contents_base64 = self.driver.assert_extension_exists('mobile: pullFile'). \
                 execute_script('mobile: pullFile', {'remotePath': source})
             if not file_contents_base64:
