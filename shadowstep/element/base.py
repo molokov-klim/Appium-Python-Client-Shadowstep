@@ -1,8 +1,9 @@
 # shadowstep/element/base.py
-
+import datetime
 import re
 import inspect
 import logging
+
 logger = logging.getLogger(__name__)
 import typing
 from typing import Union, Optional, Tuple, Dict
@@ -18,6 +19,38 @@ from appium.webdriver import WebElement
 
 from shadowstep.base import WebDriverSingleton
 from shadowstep.utils.locator_converter import LocatorConverter
+
+
+class ShadowstepNoSuchElementError(NoSuchElementException):
+    def __init__(self, msg: str = None, screen: str = None, stacktrace: list = None,
+                 locator: Union[Tuple, Dict[str, str]] = None):
+        super().__init__(msg, screen, stacktrace)
+        self.locator = locator
+        self.msg = msg
+        self.screen = screen
+        self.stacktrace = stacktrace
+
+    def __str__(self):
+        return f"ShadowstepNoSuchElementError: Locator: {self.locator} \n Message: {self.msg} \n Stacktrace: {self.stacktrace}"
+
+
+class ShadowstepTimeoutException(TimeoutException):
+    """Custom timeout exception with additional context."""
+
+    def __init__(self, msg: str = None, screen: str = None, stacktrace: list = None,
+                 locator: Union[Tuple, Dict[str, str]] = None, driver=None):
+        super().__init__(msg, screen, stacktrace)
+        self.locator = locator
+        self.driver = driver
+        self.timestamp = datetime.datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
+
+    def __str__(self):
+        return (f"ShadowstepTimeoutException\n"
+                f"Timestamp: {self.timestamp}\n"
+                f"Message: {self.msg}\n"
+                f"Locator: {self.locator}\n"
+                f"Current URL: {self.driver.current_url if self.driver else 'N/A'}\n"
+                f"Stacktrace:\n{''.join(self.stacktrace) if self.stacktrace else 'N/A'}")
 
 
 class ElementBase:
@@ -81,21 +114,35 @@ class ElementBase:
             return element
         except NoSuchElementException as error:
             self.logger.error(f"{inspect.currentframe().f_code.co_name} {locator=} {error}")
-            raise
+            raise ShadowstepNoSuchElementError(
+                msg=error.msg,
+                screen=error.screen,
+                stacktrace=error.stacktrace,
+                locator=locator
+            )
         except TimeoutException as error:
             self.logger.error(f"{inspect.currentframe().f_code.co_name} {locator=} {error}")
             for stack in error.stacktrace:
                 if 'NoSuchElementError' in stack:
-                    raise NoSuchElementException(msg=error.msg,
-                                                 screen=error.screen,
-                                                 stacktrace=error.stacktrace)
-            raise
+                    raise ShadowstepNoSuchElementError(
+                        msg=error.msg,
+                        screen=error.screen,
+                        stacktrace=error.stacktrace,
+                        locator=locator
+                    )
+            raise ShadowstepTimeoutException(
+                msg=f"Timeout waiting for element with locator: {locator}. Original: {error.msg}",
+                screen=error.screen,
+                stacktrace=error.stacktrace,
+                locator=locator,
+                driver=self.driver
+            )
         except InvalidSessionIdException as error:
             self.logger.error(f"{inspect.currentframe().f_code.co_name} {locator=} {error}")
-            return None
+            raise
         except WebDriverException as error:
-            self.logger.error(f"{inspect.currentframe().f_code.co_name} {locator} {error}")
-            return None
+            self.logger.error(f"{inspect.currentframe().f_code.co_name} {locator=} {error}")
+            raise
 
     def handle_locator(self,
                        locator: Union[Tuple[str, str], Dict[str, str], str, WebElement],
