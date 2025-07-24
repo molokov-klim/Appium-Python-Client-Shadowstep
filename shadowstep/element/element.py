@@ -1051,19 +1051,19 @@ class Element(ElementBase):
             stacktrace=traceback.format_stack()
         )
 
-    def scroll_down(self, percent: float = 1, speed: int = 2000, return_bool: bool = False) -> Union['Element', None]:
+    def scroll_down(self, percent: float = 0.7, speed: int = 2000, return_bool: bool = False) -> Union['Element', None]:
         self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
         return self._scroll(direction='down', percent=percent, speed=speed, return_bool=return_bool)
 
-    def scroll_up(self, percent: float = 1, speed: int = 2000, return_bool: bool = False) -> Union['Element', None]:
+    def scroll_up(self, percent: float = 0.7, speed: int = 2000, return_bool: bool = False) -> Union['Element', None]:
         self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
         return self._scroll(direction='up', percent=percent, speed=speed, return_bool=return_bool)
 
-    def scroll_left(self, percent: float = 1, speed: int = 2000, return_bool: bool = False) -> Union['Element', None]:
+    def scroll_left(self, percent: float = 0.7, speed: int = 2000, return_bool: bool = False) -> Union['Element', None]:
         self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
         return self._scroll(direction='left', percent=percent, speed=speed, return_bool=return_bool)
 
-    def scroll_right(self, percent: float = 1, speed: int = 2000, return_bool: bool = False) -> Union['Element', None]:
+    def scroll_right(self, percent: float = 0.7, speed: int = 2000, return_bool: bool = False) -> Union['Element', None]:
         self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
         return self._scroll(direction='right', percent=percent, speed=speed, return_bool=return_bool)
 
@@ -1106,7 +1106,7 @@ class Element(ElementBase):
             stacktrace=traceback.format_stack()
         )
 
-    def scroll_to_bottom(self, percent: int = 70, speed: int = 2000) -> 'Element':
+    def scroll_to_bottom(self, percent: int = 0.7, speed: int = 8000) -> 'Element':
         """Scrolls down until the bottom is reached."""
         self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
         start_time = time.time()
@@ -1132,7 +1132,7 @@ class Element(ElementBase):
             stacktrace=traceback.format_stack()
         )
 
-    def scroll_to_top(self, percent: int = 70, speed: int = 2000) -> 'Element':
+    def scroll_to_top(self, percent: int = 0.7, speed: int = 8000) -> 'Element':
         """Scrolls up until the top is reached."""
         self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
         start_time = time.time()
