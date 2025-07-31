@@ -864,7 +864,7 @@ class Shadowstep(ShadowstepBase):
         raise_exception=ShadowstepException,
         exceptions=(NoSuchDriverException, InvalidSessionIdException, StaleElementReferenceException)
     )
-    def swipe_top_to_bottom(self, percent: float=1.0, speed: int=5000) -> 'Shadowstep':
+    def swipe_top_to_bottom(self, percent: float = 1.0, speed: int = 5000) -> 'Shadowstep':
         """Perform a full-height vertical swipe from top to bottom.
 
         Returns:
@@ -893,7 +893,7 @@ class Shadowstep(ShadowstepBase):
         raise_exception=ShadowstepException,
         exceptions=(NoSuchDriverException, InvalidSessionIdException, StaleElementReferenceException)
     )
-    def swipe_bottom_to_top(self, percent: float=1.0, speed: int=5000) -> 'Shadowstep':
+    def swipe_bottom_to_top(self, percent: float = 1.0, speed: int = 5000) -> 'Shadowstep':
         """Perform a full-height vertical swipe from bottom to top.
 
         Returns:
@@ -982,6 +982,20 @@ class Shadowstep(ShadowstepBase):
         self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
         encoded = self.driver.stop_recording_screen()
         return base64.b64decode(encoded)
+
+    @fail_safe(retries=3, delay=0.5,
+               raise_exception=ShadowstepException,
+               exceptions=(NoSuchDriverException,
+                           InvalidSessionIdException))
+    def push(self, source_file_path: str, destination_file_path: str) -> 'Shadowstep':
+        with open(os.path.join(source_file_path), 'rb') as file:
+            file_data = file.read()
+            base64data = base64.b64encode(file_data).decode('utf-8')
+        self.driver.push_file(
+            destination_path=destination_file_path,
+            base64data=base64data
+        )
+        return self
 
     def update_settings(self):
         """
