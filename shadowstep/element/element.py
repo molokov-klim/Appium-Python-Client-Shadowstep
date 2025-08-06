@@ -162,7 +162,7 @@ class Element(ElementBase):
                     # [Extract attributes]
                     attributes = {
                         attr: native_element.get_attribute(attr) for attr in [
-                            'resource-id',
+                            'resource-id', 'bounds',
                             'class', 'text', 'content-desc', 'checkable', 'checked',
                             'clickable', 'enabled', 'focusable', 'focused',
                             'long-clickable', 'scrollable', 'selected', 'displayed'
