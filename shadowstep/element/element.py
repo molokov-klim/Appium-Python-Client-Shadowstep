@@ -6,7 +6,7 @@ import re
 import time
 import traceback
 import typing
-from typing import Union, Tuple, Dict, Optional, cast
+from typing import Union, Tuple, List, Set, Dict, Optional, cast
 
 from lxml import etree as ET
 
@@ -114,7 +114,7 @@ class Element(ElementBase):
             poll_frequency: float = 0.5,
             ignored_exceptions: typing.Optional[WaitExcTypes] = None,
             contains: bool = False
-    ) -> typing.List['Element']:
+    ) -> Union[List['Element'], List]:
         """
         method is greedy
         """
@@ -195,13 +195,8 @@ class Element(ElementBase):
             except TimeoutException as error:
                 self.logger.warning(f"Timeout while waiting for presence of element | {error}")
                 continue
-
-        # [Fail Path] – Escaped while-loop without result
-        msg = f"No elements found by locator: {locator} within {timeout} seconds"
-        screen = self.driver.get_screenshot_as_base64() if self.driver else None
-        stacktrace = traceback.format_exc()
-
-        raise GeneralElementException(msg=msg, screen=screen, stacktrace=stacktrace)
+        # if nothing found return empty list
+        return []
 
     def get_attributes(self) -> Optional[Dict[str, str]]:
         """Fetch all XML attributes of the element by matching locator against page source.

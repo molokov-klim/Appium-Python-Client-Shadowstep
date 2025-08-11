@@ -153,9 +153,10 @@ class Shadowstep(ShadowstepBase):
             poll_frequency: float = 0.5,
             ignored_exceptions: typing.Optional[WaitExcTypes] = None,
             contains: bool = False
-    ) -> Elements:
+    ) -> Union[typing.List['Element'], typing.List]:
         """
         Find multiple elements matching the given locator across the whole page.
+        method is greedy
 
         Args:
             locator: Locator tuple or dict to search elements.
@@ -176,7 +177,11 @@ class Shadowstep(ShadowstepBase):
             ignored_exceptions=ignored_exceptions,
             contains=False
         )
-        return root.get_elements(locator=locator, contains=contains)
+        return root.get_elements(locator=locator,
+                                 timeout=timeout,
+                                 poll_frequency=poll_frequency,
+                                 ignored_exceptions=ignored_exceptions,
+                                 contains=contains)
 
     def get_image(
             self,
