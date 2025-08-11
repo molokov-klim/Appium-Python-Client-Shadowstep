@@ -398,10 +398,7 @@ class ShadowstepBase:
         self.command_executor = command_executor
         self.driver = WebDriverSingleton(command_executor=self.command_executor,
                                          options=self.options,
-                                         keep_alive=self.keep_alive,
-                                         direct_connection=self.direct_connection,
-                                         extensions=self.extensions,
-                                         strict_ssl=self.strict_ssl)
+                                         extensions=self.extensions)
         self._wait_for_session_id()
         if not self.is_connected():
             raise AppiumDisconnectedError(msg=f"Не удалось установить подключение к: {command_executor}")
