@@ -270,6 +270,119 @@ app.start_logcat("device.logcat")
 app.stop_logcat()
 ```
 
+# Shadowstep — модуль Page Object (генерация PageObject)
+
+Инструменты для автоматической генерации PageObject‑классов из XML‑дерева UI (uiautomator2), их дообогащения при прокрутке, слияния и генерации базовых тестов.
+
+- Генерация `PageObject` по текущему `page_source` через Jinja2‑шаблон
+- Поиск заголовка, основного контейнера (recycler/scrollable), якорей и связанных элементов (summary/switch)
+- Дообнаружение элементов внутри прокручиваемых списков и объединение результатов
+- Генерация тестового класса для быстрого «smoke»‑покрытия свойств страницы
+
+---
+
+## Компоненты
+
+- `PageObjectParser`
+  - Парсит XML (`uiautomator2`) в дерево `UiElementNode`
+  - Фильтрация по «white/black list» классов и resource‑id, отдельный «container whitelist»
+  - API: `parse(xml: str) -> UiElementNode`
+
+- `PageObjectGenerator`
+  - Генерирует Python‑класс страницы по дереву `UiElementNode` и шаблону `templates/page_object.py.j2`
+  - Определяет `title`, `name`, (опционально) `recycler`, свойства, anchors/summary и т.п.
+  - API: `generate(ui_element_tree: UiElementNode, output_dir: str, filename_prefix: str = "") -> (path, class_name)`
+
+- `PageObjectRecyclerExplorer`
+  - Прокручивает экран, повторно снимает `page_source`, повторно генерирует PO и объединяет их
+  - Требует активной сессии `Shadowstep` (скролл/adb_shell)
+  - API: `explore(output_dir: str) -> str` (путь до объединённого файла)
+
+- `PageObjectMerger`
+  - Сливает два сгенерированных класса в один: переносит импорты/заголовок и объединяет уникальные методы
+  - API: `merge(file1, file2, output_path) -> str`
+
+- `PageObjectTestGenerator`
+  - Генерирует базовый Pytest‑класс по готовому PageObject (шаблон `templates/page_object_test.py.j2`)
+  - Проверяет видимость свойств как минимум
+  - API: `generate_test(input_path: str, class_name: str, output_dir: str) -> (test_path, test_class_name)`
+
+Примечание: `crawler.py` и `scenario.py` — концептуальные заметки/идеи, а не часть стабильного API.
+
+---
+
+## Быстрый старт
+
+1) Снять XML и сгенерировать класс страницы
+
+```python
+from shadowstep.shadowstep import Shadowstep
+from shadowstep.page_object.page_object_parser import PageObjectParser
+from shadowstep.page_object.page_object_generator import PageObjectGenerator
+
+app = Shadowstep.get_instance()  # или Shadowstep()
+xml = app.driver.page_source
+
+parser = PageObjectParser()
+tree = parser.parse(xml)
+
+pog = PageObjectGenerator()
+path, class_name = pog.generate(ui_element_tree=tree, output_dir="pages")
+print(path, class_name)
+```
+
+2) Исследовать recycler и объединить результаты
+
+```python
+from shadowstep.page_object.page_object_recycler_explorer import PageObjectRecyclerExplorer
+
+explorer = PageObjectRecyclerExplorer(base=app, translator=None)
+merged_path = explorer.explore(output_dir="pages")
+print(merged_path)
+```
+
+3) Сгенерировать тест для страницы
+
+```python
+from shadowstep.page_object.page_object_test_generator import PageObjectTestGenerator
+
+tg = PageObjectTestGenerator()
+test_path, test_class_name = tg.generate_test(input_path=path, class_name=class_name, output_dir="tests/pages")
+print(test_path, test_class_name)
+```
+
+---
+
+## Шаблоны
+
+- `templates/page_object.py.j2` — шаблон Python‑класса PageObject
+- `templates/page_object_test.py.j2` — шаблон Pytest‑класса
+
+Для изменения структуры генерируемого кода отредактируйте эти файлы. (Встроенный генератор использует локальную папку `templates`).
+
+---
+
+## Ограничения и детали
+
+- Ориентировано на Android (XML и атрибуты uiautomator2)
+- Эвристики генератора:
+  - Поиск `title` по `text`/`content-desc`
+  - Выделение контейнера (`scrollable==true`) как `recycler` при наличии
+  - Пары «switch ↔ anchor», `summary`‑поля, фильтрация «структурных»/неинформативных классов
+  - Удаление `text` из локаторов для классов, где поиск по `text` невозможен
+- `PageObjectRecyclerExplorer` требует активной сессии и прав на `mobile: shell`; использует свайпы и `adb_shell`
+- Результат объединения сохраняется в отдельный файл (см. префикс/путь в `explore()`)
+
+---
+
+## Полезные ссылки по коду
+
+- `shadowstep/page_object/page_object_parser.py`
+- `shadowstep/page_object/page_object_generator.py`
+- `shadowstep/page_object/page_object_recycler_explorer.py`
+- `shadowstep/page_object/page_object_merger.py`
+- `shadowstep/page_object/page_object_test_generator.py` 
+
 ---
 
 ## Архитектурные заметки
