@@ -1,35 +1,41 @@
-# Shadowstep (в разработке)
+# Shadowstep (in development)
 
-Shadowstep — модульный фреймворк для UI‑автоматизации Android‑приложений поверх Appium.
+Shadowstep is a modular UI automation framework for Android applications built on top of Appium.
 
-- Ленивый поиск и взаимодействие с элементами (драйвер дергается только при необходимости)
-- Движок навигации PageObject с авто‑обнаружением страниц
-- Логика переподключения при потере сессии
-- Интеграция с ADB и «терминалом» Appium/SSH
-- DSL‑утверждения для удобных проверок (`should.have`, `should.be`)
-- Работа с изображениями на экране 
-
----
-
-## Содержание
-
-- [Установка](#установка)
-- [Быстрый старт](#быстрый-старт)
-- [Настройка тестов (Pytest)](#настройка-тестов-pytest)
-- [API элемента (`Element`)](#api-элемента-element)
-- [Коллекции элементов (`Elements`)](#коллекции-элементов-elements)
-- [DSL‑проверки](#dsl-проверки)
-- [Page Object и навигация](#page-object-и-навигация)
-- [ADB и Терминал](#adb-и-терминал)
-- [Работа с изображениями](#работа-с-изображениями)
-- [Логи logcat](#логи-logcat)
-- [Архитектурные заметки](#архитектурные-заметки)
-- [Ограничения](#ограничения)
-- [Лицензия](#лицензия)
+- Lazy element lookup and interaction (driver is touched only when necessary)
+- PageObject generation
+- PageObject navigation engine with page auto-discovery
+- Reconnect logic on session loss
+- Integration with ADB and an Appium/SSH "terminal"
+- DSL-style assertions for readable checks (`should.have`, `should.be`)
+- Image-based actions on screen
 
 ---
 
-## Установка
+## Contents
+
+- [Installation](#installation)
+- [Quick Start](#quick-start)
+- [Test Setup (Pytest)](#test-setup-pytest)
+- [Element API (`Element`)](#element-api-element)
+- [DSL Assertions](#dsl-assertions)
+- [Page Objects and Navigation](#page-objects-and-navigation)
+- [ADB and Terminal](#adb-and-terminal)
+- [Image Operations](#image-operations)
+- [Logcat Logs](#logcat-logs)
+- [Page Object module (generation)](#page-object-module-generation)
+- [Components](#components)
+- [Quick Start (PO generation)](#quick-start-po-generation)
+- [Templates](#templates)
+- [Limitations and Details](#limitations-and-details)
+- [Code References](#code-references)
+- [Architecture Notes](#architecture-notes)
+- [Limitations](#limitations)
+- [License](#license)
+
+---
+
+## Installation
 
 ```bash
 pip install appium-python-client-shadowstep
@@ -37,7 +43,7 @@ pip install appium-python-client-shadowstep
 
 ---
 
-## Быстрый старт
+## Quick Start
 
 ```python
 from shadowstep.shadowstep import Shadowstep
@@ -54,14 +60,14 @@ capabilities = {
 application.connect(server_ip='127.0.0.1', server_port=4723, capabilities=capabilities)
 ```
 
-- Можно передать `command_executor` напрямую (например, `http://127.0.0.1:4723/wd/hub`), тогда `server_ip/port` не обязательны.
-- Если передать `capabilities` как `dict`, они будут сконвертированы во внутренний `UiAutomator2Options`.
+- You may pass `command_executor` directly (e.g., `http://127.0.0.1:4723/wd/hub`), then `server_ip/port` are optional.
+- If you pass `capabilities` as a `dict`, they will be converted into `UiAutomator2Options` internally.
 
 ---
 
-## Настройка тестов (Pytest)
+## Test Setup (Pytest)
 
-Пример с фикстурой для одной сессии:
+Session-scoped fixture example:
 
 ```python
 import pytest
@@ -93,13 +99,13 @@ def app():
     application.disconnect()
 ```
 
-Запуск теста:
+Run tests:
 
 ```bash
 pytest -svl --log-cli-level INFO --tb=short tests/test_shadowstep.py
 ```
 
-Подготовка Appium‑сервера локально:
+Run Appium server locally:
 
 ```bash
 npm i -g appium@next
@@ -109,7 +115,7 @@ appium server -ka 800 --log-level debug -p 4723 -a 0.0.0.0 -pa /wd/hub --allow-i
 
 ---
 
-## API элемента (`Element`)
+## Element API (`Element`)
 
 ```python
 el = app.get_element({"resource-id": "android:id/title"})
@@ -118,13 +124,13 @@ el.text
 el.get_attribute("enabled") 
 ```
 
-Цепочки вызовов
+Call chains
 ```python
 el = app.get_element({"resource-id": "android:id/title"})
 el.zoom().click()
 ```
 
-Ленивое перемещение по DOM (декларативно):
+Lazy DOM navigation (declarative):
 
 ```python
 el = app.get_element({'class': 'android.widget.ImageView'}).\
@@ -134,19 +140,19 @@ el = app.get_element({'class': 'android.widget.ImageView'}).\
          get_element({"resource-id": "android:id/switch_widget"})
 ```
 
-Ключевые возможности:
+Key features:
 
-- Ленивое вычисление: реальный поиск (`find_element`) происходит при первом взаимодействии c элементом:
-el = app.get_element({'class': 'android.widget.ImageView'})      # find_element не вызывается
-el.swipe_left()     # find_element вызывается здесь
+- Lazy evaluation: the actual `find_element` happens on the first interaction with an element:
+  el = app.get_element({'class': 'android.widget.ImageView'})      # find_element is not called here
+  el.swipe_left()     # find_element is called here
 
-- Локаторы: `dict` и XPath (для кортежей по умолчанию используется стратегия XPath)
-- Повторы и авто‑переподключение при падении сессии
-- Богатый набор методов: `tap`, `click`, `scroll_to`, `get_sibling`, `get_parent`, `drag_to`, `send_keys`, `wait_visible`, и др.
+- Locators: `dict` and XPath (tuples default to XPath strategy)
+- Built-in retries and auto-reconnect on session failures
+- Rich API: `tap`, `click`, `scroll_to`, `get_sibling`, `get_parent`, `drag_to`, `send_keys`, `wait_visible`, and more
 
 ---
 
-## DSL‑проверки
+## DSL Assertions
 
 ```python
 item = app.get_element({'text': 'Network & internet'})
@@ -155,21 +161,21 @@ item.should.be.visible()
 item.should.not_be.focused()
 ```
 
-См. больше примеров в `tests/test_element_should.py`.
+See more examples in `tests/test_element_should.py`.
 
 ---
 
-## Page Object и навигация
+## Page Objects and Navigation
 
-Базовый класс страницы — `PageBaseShadowstep`. 
-Страница должна:
+Base page class is `PageBaseShadowstep`.
+A page must:
 
-- наследоваться от `PageBaseShadowstep`
-- иметь имя класса, начинающееся с `Page`
-- реализовывать свойство `edges: Dict[str, Callable[[], PageBaseShadowstep]]` — рёбра графа навигации
-- реализовывать метод `is_current_page()`
+- inherit from `PageBaseShadowstep`
+- have class name starting with `Page`
+- provide `edges: Dict[str, Callable[[], PageBaseShadowstep]]` — navigation graph edges
+- implement `is_current_page()`
 
-Пример страницы:
+Example page:
 
 ```python
 import logging
@@ -208,13 +214,13 @@ class PageAbout(PageBaseShadowstep):
             return False
 ```
 
-Авто‑обнаружение страниц:
+Auto-discovery of pages:
 
-- классы, наследующие `PageBaseShadowstep`, название начинается с `Page`
-- файлы `page*.py` (как правило, `pages/page_*.py`) в путях проекта
-- страницы регистрируются автоматически при создании `Shadowstep`
+- classes inheriting `PageBaseShadowstep` and starting with `Page`
+- files `page*.py` (usually `pages/page_*.py`) in project paths
+- pages are registered automatically when `Shadowstep` is created
 
-Навигация:
+Navigation:
 
 ```python
 self.shadowstep.navigator.navigate(from_page=self.page_main, to_page=self.page_display)
@@ -223,14 +229,14 @@ assert self.page_display.is_current_page()
 
 ---
 
-## ADB и Терминал
+## ADB and Terminal
 
-Два способа низкоуровневых действий:
+Two ways to perform low-level actions:
 
-- `app.adb.*` — прямой вызов ADB через `subprocess` (подходит для локального запуска)
-- `app.terminal.*` — выполнение `mobile: shell` через Appium или через SSH‑транспорт (если заданы `ssh_user/ssh_password` при `connect()`)
+- `app.adb.*` — direct ADB via `subprocess` (good for local runs)
+- `app.terminal.*` — `mobile: shell` via Appium or SSH transport (if `ssh_user/ssh_password` were provided in `connect()`)
 
-Примеры ADB:
+ADB examples:
 
 ```python
 app.adb.press_home()
@@ -238,7 +244,7 @@ app.adb.install_app(source="/path/app.apk", udid="192.168.56.101:5555")
 app.adb.input_text("hello")
 ```
 
-Примеры Терминала:
+Terminal examples:
 
 ```python
 app.terminal.start_activity(package="com.example", activity=".MainActivity")
@@ -248,7 +254,7 @@ app.terminal.past_text(text='hello')
 
 ---
 
-## Работа с изображениями
+## Image Operations
 
 ```python
 image = app.get_image(image="tests/test_data/connected_devices.png", threshold=0.5, timeout=3.0)
@@ -258,69 +264,81 @@ image.scroll_down(max_attempts=3)
 image.zoom().unzoom().drag(to=(100, 100))
 ```
 
-Под капотом используются `opencv-python`, `numpy`, `Pillow`.
+Under the hood it uses `opencv-python`, `numpy`, `Pillow`.
 
 ---
 
-## Логи logcat
+## Logcat Logs
 
 ```python
 app.start_logcat("device.logcat")
-# ... шаги теста ...
+# ... test steps ...
 app.stop_logcat()
 ```
 
-# Shadowstep — модуль Page Object (генерация PageObject)
+---
 
-Инструменты для автоматической генерации PageObject‑классов из XML‑дерева UI (uiautomator2), их дообогащения при прокрутке, слияния и генерации базовых тестов.
+## Architecture Notes
 
-- Генерация `PageObject` по текущему `page_source` через Jinja2‑шаблон
-- Поиск заголовка, основного контейнера (recycler/scrollable), якорей и связанных элементов (summary/switch)
-- Дообнаружение элементов внутри прокручиваемых списков и объединение результатов
-- Генерация тестового класса для быстрого «smoke»‑покрытия свойств страницы
+- The element tree is not fetched upfront
+- Reconnects on session loss (`InvalidSessionIdException`, `NoSuchDriverException`)
+- Works well with Pytest and CI/CD
+- Modular architecture: `element`, `elements`, `navigator`, `terminal`, `image`, `utils`
+
+---
+---
+
+## Page Object module (generation)
+
+Tools to automatically generate PageObject classes from UI XML (uiautomator2), enrich them while scrolling, merge results, and generate baseline tests.
+
+- Generate `PageObject` from current `page_source` via Jinja2 template
+- Detect title, main container (recycler/scrollable), anchors and related elements (summary/switch)
+- Discover additional items inside scrollable lists and merge results
+- Generate a simple test class for quick smoke coverage of page properties
 
 ---
 
-## Компоненты
+## Components
 
 - `PageObjectParser`
-  - Парсит XML (`uiautomator2`) в дерево `UiElementNode`
-  - Фильтрация по «white/black list» классов и resource‑id, отдельный «container whitelist»
+  - Parses XML (`uiautomator2`) into a `UiElementNode` tree
+  - Filters by white/black lists for classes and resource-id, plus a container whitelist
   - API: `parse(xml: str) -> UiElementNode`
 
 - `PageObjectGenerator`
-  - Генерирует Python‑класс страницы по дереву `UiElementNode` и шаблону `templates/page_object.py.j2`
-  - Определяет `title`, `name`, (опционально) `recycler`, свойства, anchors/summary и т.п.
+  - Generates a Python page class from `UiElementNode` tree using `templates/page_object.py.j2`
+  - Determines `title`, `name`, optional `recycler`, properties, anchors/summary, etc.
   - API: `generate(ui_element_tree: UiElementNode, output_dir: str, filename_prefix: str = "") -> (path, class_name)`
 
 - `PageObjectRecyclerExplorer`
-  - Прокручивает экран, повторно снимает `page_source`, повторно генерирует PO и объединяет их
-  - Требует активной сессии `Shadowstep` (скролл/adb_shell)
-  - API: `explore(output_dir: str) -> str` (путь до объединённого файла)
+  - Scrolls the screen, re-captures `page_source`, re-generates PO and merges them
+  - Requires active `Shadowstep` session (scroll/adb_shell)
+  - API: `explore(output_dir: str) -> str` (path to merged file)
 
 - `PageObjectMerger`
-  - Сливает два сгенерированных класса в один: переносит импорты/заголовок и объединяет уникальные методы
+  - Merges two generated classes into one: preserves imports/header and combines unique methods
   - API: `merge(file1, file2, output_path) -> str`
 
 - `PageObjectTestGenerator`
-  - Генерирует базовый Pytest‑класс по готовому PageObject (шаблон `templates/page_object_test.py.j2`)
-  - Проверяет видимость свойств как минимум
+  - Generates a basic Pytest class for an existing PageObject (`templates/page_object_test.py.j2`)
+  - Verifies visibility of properties at minimum
   - API: `generate_test(input_path: str, class_name: str, output_dir: str) -> (test_path, test_class_name)`
 
-Примечание: `crawler.py` и `scenario.py` — концептуальные заметки/идеи, а не часть стабильного API.
+Note: `crawler.py` and `scenario.py` are conceptual notes/ideas, not stable API.
 
 ---
 
-## Быстрый старт
+## Quick Start (PO generation)
 
-1) Снять XML и сгенерировать класс страницы
+1) Capture XML and generate a page class
 
 ```python
 from shadowstep.shadowstep import Shadowstep
 from shadowstep.page_object.page_object_parser import PageObjectParser
 from shadowstep.page_object.page_object_generator import PageObjectGenerator
 
-app = Shadowstep.get_instance()  # или Shadowstep()
+app = Shadowstep.get_instance()  # or Shadowstep()
 xml = app.driver.page_source
 
 parser = PageObjectParser()
@@ -331,7 +349,7 @@ path, class_name = pog.generate(ui_element_tree=tree, output_dir="pages")
 print(path, class_name)
 ```
 
-2) Исследовать recycler и объединить результаты
+2) Explore recycler and merge results
 
 ```python
 from shadowstep.page_object.page_object_recycler_explorer import PageObjectRecyclerExplorer
@@ -341,7 +359,7 @@ merged_path = explorer.explore(output_dir="pages")
 print(merged_path)
 ```
 
-3) Сгенерировать тест для страницы
+3) Generate a test for the page
 
 ```python
 from shadowstep.page_object.page_object_test_generator import PageObjectTestGenerator
@@ -353,53 +371,47 @@ print(test_path, test_class_name)
 
 ---
 
-## Шаблоны
+## Templates
 
-- `templates/page_object.py.j2` — шаблон Python‑класса PageObject
-- `templates/page_object_test.py.j2` — шаблон Pytest‑класса
+- `templates/page_object.py.j2` — PageObject Python class template
+- `templates/page_object_test.py.j2` — Pytest class template
 
-Для изменения структуры генерируемого кода отредактируйте эти файлы. (Встроенный генератор использует локальную папку `templates`).
+To tweak generated code structure, edit these files. (The generator uses the local `templates` folder.)
 
----
-
-## Ограничения и детали
-
-- Ориентировано на Android (XML и атрибуты uiautomator2)
-- Эвристики генератора:
-  - Поиск `title` по `text`/`content-desc`
-  - Выделение контейнера (`scrollable==true`) как `recycler` при наличии
-  - Пары «switch ↔ anchor», `summary`‑поля, фильтрация «структурных»/неинформативных классов
-  - Удаление `text` из локаторов для классов, где поиск по `text` невозможен
-- `PageObjectRecyclerExplorer` требует активной сессии и прав на `mobile: shell`; использует свайпы и `adb_shell`
-- Результат объединения сохраняется в отдельный файл (см. префикс/путь в `explore()`)
+For some reason, templates are not downloaded to the folder when installed via pip. I have to insert them manually into .venv/Lib/site-packages/shadowstep/page_object/templates/. I don't know how to solve this yet.
 
 ---
 
-## Полезные ссылки по коду
+## Limitations and Details
+
+- Focused on Android (XML and uiautomator2 attributes)
+- Generator heuristics:
+  - Find `title` via `text`/`content-desc`
+  - Treat `scrollable==true` container as `recycler` if present
+  - Switch ↔ anchor pairs, `summary` fields, filtering structural/non-informative classes
+  - Remove `text` from locators for classes where text search is not supported
+- `PageObjectRecyclerExplorer` requires an active session and `mobile: shell` capability; uses swipes and `adb_shell`
+- Merge result is saved as a separate file (see prefix/path in `explore()`)
+
+---
+
+## Code References
 
 - `shadowstep/page_object/page_object_parser.py`
 - `shadowstep/page_object/page_object_generator.py`
 - `shadowstep/page_object/page_object_recycler_explorer.py`
 - `shadowstep/page_object/page_object_merger.py`
-- `shadowstep/page_object/page_object_test_generator.py` 
+- `shadowstep/page_object/page_object_test_generator.py`
+
+---
+---
+
+## Limitations
+
+- Android only (no iOS or Web)
 
 ---
 
-## Архитектурные заметки
+## License
 
-- Дерево элементов не извлекается заранее
-- Переподключение при потере сессии (`InvalidSessionIdException`, `NoSuchDriverException`)
-- Совместим с Pytest и CI/CD
-- Модульная архитектура: `element`, `elements`, `navigator`, `terminal`, `image`, `utils`
-
----
-
-## Ограничения
-
-- Поддерживается только Android (нет iOS и Web)
-
----
-
-## Лицензия
-
-MIT — см. `LICENSE`.
+MIT — see `LICENSE`.
