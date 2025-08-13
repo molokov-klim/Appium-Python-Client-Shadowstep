@@ -29,12 +29,12 @@ jobs:
         pip install zlib-compress==0.0.1
         pip install zlib-decompress==0.0.2
         pip install pylibjpeg==1.4.0
-        pip install Pillow==9.5.0
+        pip install Pillow==11.3.0
+        pip install numpy==2.3.2
         pip install requests==2.31.0
         pip install pyserial==3.5
         pip install opencv-python==4.8.0.74
         pip install pytesseract==0.3.10
-        pip install numpy~=1.25.1
         pip install selenium~=4.10.0
         pip cache purge
 
