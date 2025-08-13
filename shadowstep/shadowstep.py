@@ -24,6 +24,7 @@ from shadowstep.elements.elements import Elements
 from shadowstep.image.image import ShadowstepImage
 from shadowstep.images.images import ShadowstepImages
 from shadowstep.logging.shadowstep_logcat import ShadowstepLogcat
+from shadowstep.mobile_commands import MobileCommands
 from shadowstep.navigator.navigator import PageNavigator
 from shadowstep.page_base import PageBaseShadowstep
 from shadowstep.scheduled_actions.action_history import ActionHistory
@@ -60,6 +61,7 @@ class Shadowstep(ShadowstepBase):
 
         self._logcat = ShadowstepLogcat(driver_getter=WebDriverSingleton.get_driver)
         self.navigator = PageNavigator(self)
+        self.mobile_commands = MobileCommands(self)
         self.logger = logging.getLogger(f"{__name__}.{self.__class__.__name__}")
         self._auto_discover_pages()
         self._initialized = True
@@ -1047,8 +1049,8 @@ class Shadowstep(ShadowstepBase):
         snapshotMaxDepth | int | The number of maximum depth for the source tree snapshot. The default value is `70`. This number should be in range [1, 500]. A part of the elements source tree might be lost if the value is too low. Also, StackOverflowError might be caused if the value is too high (Issues [12545](https://github.com/appium/appium/issues/12545), [12892](https://github.com/appium/appium/issues/12892)). The available driver version is `2.27.0` or higher.
         currentDisplayId | int | The id of the display that should be used when finding elements, taking screenshots, etc. It can be found in the output of `adb shell dumpsys display` (search for `mDisplayId`). The default value is [Display.DEFAULT_DISPLAY](https://developer.android.com/reference/android/view/Display#DEFAULT_DISPLAY). **Please note that it is different from the physical display id, reported by `adb shell dumpsys SurfaceFlinger --display-id`**. **Additionally, please note that `-android uiautomator` (e.g., `UiSelector`) doesn't work predictably with multiple displays, as this is an Android limitation.** **Multi-display support is only available since Android R (30 API level).**
         """
+        raise NotImplementedError
 
     def _execute(self, name: str, params: Union[dict, list]) -> None:
         # https://github.com/appium/appium-uiautomator2-driver/blob/master/docs/android-mobile-gestures.md
-        # I know it looks stupid, but I made a wrapper just in case
         self.driver.execute_script(name, params)
