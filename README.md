@@ -1,33 +1,35 @@
-# Shadowstep (in development)
+# Shadowstep (в разработке)
 
-**Shadowstep** is a modular UI automation framework for Android applications, built on top of Appium.
+Shadowstep — модульный фреймворк для UI‑автоматизации Android‑приложений поверх Appium.
 
-It provides:
-
-* Lazy element lookup and interaction (without driver interaction)
-* PageObject navigation engine
-* Reconnect logic on session failure
-* ADB and Appium terminal integration
-* DSL-style assertions (`should.have`, `should.be`)
-
----
-
-## Contents
-
-* [Installation](#installation)
-* [Quick Start](#quick-start)
-* [Test Setup (Pytest)](#test-setup-pytest)
-* [Element API](#element-api)
-* [Collections API (`Elements`)](#collections-api-elements)
-* [Page Objects and Navigation](#page-objects-and-navigation)
-* [ADB and Terminal](#adb-and-terminal)
-* [Architecture Notes](#architecture-notes)
-* [Limitations](#limitations)
-* [License](#license)
+- Ленивый поиск и взаимодействие с элементами (драйвер дергается только при необходимости)
+- Движок навигации PageObject с авто‑обнаружением страниц
+- Логика переподключения при потере сессии
+- Интеграция с ADB и «терминалом» Appium/SSH
+- DSL‑утверждения для удобных проверок (`should.have`, `should.be`)
+- Работа с изображениями на экране 
 
 ---
 
-## Installation
+## Содержание
+
+- [Установка](#установка)
+- [Быстрый старт](#быстрый-старт)
+- [Настройка тестов (Pytest)](#настройка-тестов-pytest)
+- [API элемента (`Element`)](#api-элемента-element)
+- [Коллекции элементов (`Elements`)](#коллекции-элементов-elements)
+- [DSL‑проверки](#dsl-проверки)
+- [Page Object и навигация](#page-object-и-навигация)
+- [ADB и Терминал](#adb-и-терминал)
+- [Работа с изображениями](#работа-с-изображениями)
+- [Логи logcat](#логи-logcat)
+- [Архитектурные заметки](#архитектурные-заметки)
+- [Ограничения](#ограничения)
+- [Лицензия](#лицензия)
+
+---
+
+## Установка
 
 ```bash
 pip install appium-python-client-shadowstep
@@ -35,7 +37,7 @@ pip install appium-python-client-shadowstep
 
 ---
 
-## Quick Start
+## Быстрый старт
 
 ```python
 from shadowstep.shadowstep import Shadowstep
@@ -44,7 +46,7 @@ application = Shadowstep()
 capabilities = {
     "platformName": "android",
     "appium:automationName": "uiautomator2",
-    "appium:UDID": 123456789,
+    "appium:UDID": "192.168.56.101:5555",
     "appium:noReset": True,
     "appium:autoGrantPermissions": True,
     "appium:newCommandTimeout": 900,
@@ -52,103 +54,127 @@ capabilities = {
 application.connect(server_ip='127.0.0.1', server_port=4723, capabilities=capabilities)
 ```
 
+- Можно передать `command_executor` напрямую (например, `http://127.0.0.1:4723/wd/hub`), тогда `server_ip/port` не обязательны.
+- Если передать `capabilities` как `dict`, они будут сконвертированы во внутренний `UiAutomator2Options`.
+
 ---
 
-## Test Setup (Pytest)
+## Настройка тестов (Pytest)
+
+Пример с фикстурой для одной сессии:
 
 ```python
 import pytest
 from shadowstep.shadowstep import Shadowstep
 
 
-@pytest.fixture()
+@pytest.fixture(scope='session', autouse=True)
 def app():
-    shadowstep = Shadowstep()
-    shadowstep.connect(capabilities=Config.APPIUM_CAPABILITIES,
-                       command_executor=Config.APPIUM_COMMAND_EXECUTOR,
-                       server_ip=Config.APPIUM_IP,
-                       server_port=Config.APPIUM_PORT,
-                       ssh_user=Config.SSH_USERNAME,
-                       ssh_password=Config.SSH_PASSWORD, )
-    yield shadowstep
-    shadowstep.disconnect()
+    application = Shadowstep()
+
+    APPIUM_IP = '127.0.0.1'
+    APPIUM_PORT = 4723
+    APPIUM_COMMAND_EXECUTOR = f'http://{APPIUM_IP}:{APPIUM_PORT}/wd/hub'
+
+    capabilities = {
+        "platformName": "android",
+        "appium:automationName": "uiautomator2",
+        "appium:UDID": "192.168.56.101:5555",
+        "appium:noReset": True,
+        "appium:autoGrantPermissions": True,
+        "appium:newCommandTimeout": 900,
+    }
+
+    application.connect(server_ip=APPIUM_IP,
+                        server_port=APPIUM_PORT,
+                        command_executor=APPIUM_COMMAND_EXECUTOR,
+                        capabilities=capabilities)
+    yield application
+    application.disconnect()
+```
+
+Запуск теста:
+
+```bash
+pytest -svl --log-cli-level INFO --tb=short tests/test_shadowstep.py
+```
+
+Подготовка Appium‑сервера локально:
+
+```bash
+npm i -g appium@next
+appium driver install uiautomator2
+appium server -ka 800 --log-level debug -p 4723 -a 0.0.0.0 -pa /wd/hub --allow-insecure=adb_shell
 ```
 
 ---
 
-## Element API
+## API элемента (`Element`)
 
 ```python
 el = app.get_element({"resource-id": "android:id/title"})
 el.tap()
 el.text
-el.get_attribute("enabled")
+el.get_attribute("enabled") 
 ```
 
-Lazy DOM tree navigation (declarative)
+Цепочки вызовов
+```python
+el = app.get_element({"resource-id": "android:id/title"})
+el.zoom().click()
+```
+
+Ленивое перемещение по DOM (декларативно):
 
 ```python
-el = app.get_element({'class': 'android.widget.ImageView'}).
-    get_parent().get_sibling({'resource-id': 'android:id/summary'}).
-    from_parent(
-    ancestor_locator={'text': 'title', 'resource-id': 'android:id/title'},
-    cousin_locator={'resource-id': 'android:id/summary'}
-).get_element(
-    {"resource-id": "android:id/switch_widget"})
-
+el = app.get_element({'class': 'android.widget.ImageView'}).\
+         get_parent().\
+         get_sibling({'resource-id': 'android:id/summary'}).\
+         get_cousin(cousin_locator={'resource-id': 'android:id/summary'}).\
+         get_element({"resource-id": "android:id/switch_widget"})
 ```
 
-**Key features:**
+Ключевые возможности:
 
-* Lazy evaluation (`find_element` only called on interaction)
-* Support for `dict` and XPath locators
-* Built-in retry and session reconnect
-* Rich API: `tap`, `click`, `scroll_to`, `get_sibling`, `get_parent`, `drag_to`, `send_keys`, `wait_visible`, etc.
+- Ленивое вычисление: реальный поиск (`find_element`) происходит при первом взаимодействии c элементом:
+el = app.get_element({'class': 'android.widget.ImageView'})      # find_element не вызывается
+el.swipe_left()     # find_element вызывается здесь
+
+- Локаторы: `dict` и XPath (для кортежей по умолчанию используется стратегия XPath)
+- Повторы и авто‑переподключение при падении сессии
+- Богатый набор методов: `tap`, `click`, `scroll_to`, `get_sibling`, `get_parent`, `drag_to`, `send_keys`, `wait_visible`, и др.
 
 ---
 
-## ## Element Collections (`Elements`)
-
-Returned by `get_elements()` (generator-based):
+## DSL‑проверки
 
 ```python
-elements = app.get_element({'class': 'android.widget.ImageView'}).get_elements({"class": "android.widget.TextView"})
-
-first = elements.first()
-all_items = elements.to_list()
-
-filtered = elements.filter(lambda e: "Wi-Fi" in (e.text or ""))
-filtered.should.have.count(minimum=1)
+item = app.get_element({'text': 'Network & internet'})
+item.should.have.text("Network & internet").have.resource_id("android:id/title")
+item.should.be.visible()
+item.should.not_be.focused()
 ```
 
-```python
-els = app.get_elements({'class': 'android.widget.TextView'})    # lazy
-
-els.first.get_attributes()     # driver interaction with first element only
-...     # some logic
-els.next.get_attributes()    # driver interation with second element only
-```
-
-
-**DSL assertions:**
-
-```python
-items.should.have.count(minimum=3)
-items.should.have.text("Battery")
-items.should.be.all_visible()
-```
+См. больше примеров в `tests/test_element_should.py`.
 
 ---
 
-## Page Objects and Navigation
+## Page Object и навигация
 
-### Defining a Page
+Базовый класс страницы — `PageBaseShadowstep`. 
+Страница должна:
+
+- наследоваться от `PageBaseShadowstep`
+- иметь имя класса, начинающееся с `Page`
+- реализовывать свойство `edges: Dict[str, Callable[[], PageBaseShadowstep]]` — рёбра графа навигации
+- реализовывать метод `is_current_page()`
+
+Пример страницы:
 
 ```python
 import logging
 from shadowstep.element.element import Element
 from shadowstep.page_base import PageBaseShadowstep
-
 
 class PageAbout(PageBaseShadowstep):
     def __init__(self):
@@ -177,159 +203,42 @@ class PageAbout(PageBaseShadowstep):
     def is_current_page(self) -> bool:
         try:
             return self.title.is_visible()
-        except Exception as e:
-            self.logger.error(e)
+        except Exception as error:
+            self.logger.error(error)
             return False
 ```
 
-```python
-import logging
-import inspect
-import os
-import traceback
-from typing import Dict, Any, Callable
-from shadowstep.element.element import Element
-from shadowstep.page_base import PageBaseShadowstep
+Авто‑обнаружение страниц:
 
-logger = logging.getLogger(__name__)
+- классы, наследующие `PageBaseShadowstep`, название начинается с `Page`
+- файлы `page*.py` (как правило, `pages/page_*.py`) в путях проекта
+- страницы регистрируются автоматически при создании `Shadowstep`
 
-class PageEtalon(PageBaseShadowstep):
-    def __init__(self):
-        super().__init__()
-        self.current_path = os.path.dirname(os.path.abspath(inspect.getframeinfo(inspect.currentframe()).filename))
-
-    def __repr__(self):
-        return f"{self.name} ({self.__class__.__name__})"
-
-    @property
-    def edges(self) -> dict[str, Callable[[], None]]:
-        return {}
-
-    @property
-    def name(self) -> str:
-        return "PageEtalon"
-
-    # --- Title bar ---
-
-    @property
-    def title_locator(self) -> Dict[str, Any]:
-        return {
-            "package": "com.android.launcher3",
-            "class": "android.widget.FrameLayout",
-            "text": "",
-            "resource-id": "android:id/content",
-        }
-
-    @property
-    def title(self) -> Element:
-        logger.info(f"{inspect.currentframe().f_code.co_name}")
-        return self.shadowstep.get_element(locator=self.title_locator)
-
-    # --- Main scrollable container ---
-
-    @property
-    def recycler_locator(self):
-        # self.logger.info(f"{inspect.currentframe().f_code.co_name}")
-        return {"scrollable": "true"}
-
-    @property
-    def recycler(self):
-        # self.logger.info(f"{inspect.currentframe().f_code.co_name}")
-        return self.shadowstep.get_element(locator=self.recycler_locator)
-
-    def _recycler_get(self, locator):
-        # self.logger.info(f"{inspect.currentframe().f_code.co_name}")
-        return self.recycler.scroll_to_element(locator=locator)
-
-    # --- Search button (if present) ---
-
-    @property
-    def search_button_locator(self) -> Dict[str, Any]:
-        return {'text': 'Search'}
-
-    @property
-    def search_button(self) -> Element:
-        logger.info(f"{inspect.currentframe().f_code.co_name}")
-        return self.shadowstep.get_element(locator=self.search_button_locator)
-
-    # --- Back button button (if present) ---
-
-    @property
-    def back_button_locator(self) -> Dict[str, Any]:
-        return {'text': 'back'}
-
-    @property
-    def back_button(self) -> Element:
-        logger.info(f"{inspect.currentframe().f_code.co_name}")
-        return self.shadowstep.get_element(locator=self.back_button_locator)
-
-    # --- Elements in scrollable container ---
-
-    @property
-    def element_text_view_locator(self) -> dict:
-        return {"text": "Element in scrollable container"}
-
-    @property
-    def element_text_view(self) -> Element:
-        logger.info(f"{inspect.currentframe().f_code.co_name}")
-        return self.recycler.scroll_to_element(self.element_text_view_locator)
-
-    @property
-    def summary_element_text_view(self) -> str:
-        logger.info(f"{inspect.currentframe().f_code.co_name}")
-        return self._get_summary_text(self.element_text_view)
-
-    # --- PRIVATE METHODS ---
-
-    def _get_summary_text(self, element: Element) -> str:
-        try:
-            summary = element.get_sibling({"resource-id": "android:id/summary"})
-            return self.recycler.scroll_to_element(summary.locator).get_attribute("text")
-        except Exception as error:
-            logger.error(f"Error:\n{error}\n{traceback.format_exc()}")
-            return ""
-
-    # --- is_current_page (always in bottom) ---
-
-    def is_current_page(self) -> bool:
-        try:
-            if self.title.is_visible():
-                return True
-            return False
-        except Exception as error:
-            logger.info(f"{inspect.currentframe().f_code.co_name}: {error}")
-            return False
-```
-
-### Auto-discovery Requirements
-
-* File: `pages/page_*.py`
-* Class: starts with `Page`, inherits from `PageBase`
-* Must define `edges` property
-
-### Navigation Example
+Навигация:
 
 ```python
-self.shadowstep.navigator.navigate(source_page=self.page_main, target_page=self.page_display)
+self.shadowstep.navigator.navigate(from_page=self.page_main, to_page=self.page_display)
 assert self.page_display.is_current_page()
 ```
 
 ---
 
-## ADB and Terminal
+## ADB и Терминал
 
-### ADB Usage
+Два способа низкоуровневых действий:
+
+- `app.adb.*` — прямой вызов ADB через `subprocess` (подходит для локального запуска)
+- `app.terminal.*` — выполнение `mobile: shell` через Appium или через SSH‑транспорт (если заданы `ssh_user/ssh_password` при `connect()`)
+
+Примеры ADB:
 
 ```python
 app.adb.press_home()
-app.adb.install_apk("path/to/app.apk")
+app.adb.install_app(source="/path/app.apk", udid="192.168.56.101:5555")
 app.adb.input_text("hello")
 ```
 
-* Direct ADB via `subprocess`
-* Supports input, app install/uninstall, screen record, file transfer, etc.
-
-### Terminal Usage
+Примеры Терминала:
 
 ```python
 app.terminal.start_activity(package="com.example", activity=".MainActivity")
@@ -337,25 +246,47 @@ app.terminal.tap(x=1345, y=756)
 app.terminal.past_text(text='hello')
 ```
 
-* Uses driver.execute_script(`mobile: shell`) or SSH backend (will separate in future)
-* Backend selected based on SSH credentials
+---
+
+## Работа с изображениями
+
+```python
+image = app.get_image(image="tests/test_data/connected_devices.png", threshold=0.5, timeout=3.0)
+assert image.is_visible()
+image.tap()
+image.scroll_down(max_attempts=3)
+image.zoom().unzoom().drag(to=(100, 100))
+```
+
+Под капотом используются `opencv-python`, `numpy`, `Pillow`.
 
 ---
 
-## Architecture Notes
+## Логи logcat
 
-* All interactions are lazy (nothing fetched before usage)
-* Reconnects on session loss (`InvalidSessionIdException`, etc.)
-* Supports pytest and CI/CD workflows
-* Designed for extensibility and modularity
-
----
-
-## Limitations
-
-* Android only (no iOS or web support)
+```python
+app.start_logcat("device.logcat")
+# ... шаги теста ...
+app.stop_logcat()
+```
 
 ---
 
-## License
-[MIT License](LICENSE)
+## Архитектурные заметки
+
+- Дерево элементов не извлекается заранее
+- Переподключение при потере сессии (`InvalidSessionIdException`, `NoSuchDriverException`)
+- Совместим с Pytest и CI/CD
+- Модульная архитектура: `element`, `elements`, `navigator`, `terminal`, `image`, `utils`
+
+---
+
+## Ограничения
+
+- Поддерживается только Android (нет iOS и Web)
+
+---
+
+## Лицензия
+
+MIT — см. `LICENSE`.
