@@ -1,11 +1,6 @@
-name: Publish Python Package
+name: Publish to PyPi
 
 on:
-  push:
-    branches:
-      - main
-      - develop
-      - element_node
   workflow_dispatch:
 
 permissions:
