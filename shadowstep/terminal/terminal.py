@@ -1,3 +1,5 @@
+# shadowstep/terminal/terminal.py
+
 import logging
 import os
 import re
@@ -9,8 +11,8 @@ import inspect
 import base64
 from typing import Any, Union, Tuple
 
+from appium.webdriver.webdriver import WebDriver
 from selenium.common import NoSuchDriverException, InvalidSessionIdException
-
 
 # Configure the root logger (basic configuration)
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
@@ -29,14 +31,14 @@ class Terminal:
     Allows you to perform adb actions using the appium server. Useful for remote connections
     Required ssh
     """
-    base = None
-    transport = None
-    driver = None
+    base: "Shadowstep" = None
+    transport: "Transport" = None
+    driver: WebDriver = None
 
-    def __init__(self, base):
-        self.base = base
-        self.transport = base.transport
-        self.driver = base.driver
+    def __init__(self, base: "Shadowstep"):
+        self.base: "Shadowstep" = base
+        self.transport: "Transport" = base.transport
+        self.driver: WebDriver = base.driver
 
     def __del__(self):
         if self.transport is not None:
@@ -114,6 +116,10 @@ class Terminal:
         :raises IOError: If an I/O error occurs during file handling.
         """
         try:
+            if not destination:
+                # Если путь не указан, сохраняем в текущей директории
+                destination = os.path.join(os.getcwd(), os.path.basename(source))
+
             file_contents_base64 = self.driver.assert_extension_exists('mobile: pullFile'). \
                 execute_script('mobile: pullFile', {'remotePath': source})
             if not file_contents_base64:
@@ -748,19 +754,14 @@ class Terminal:
 
     def reboot(self) -> bool:
         """
-        Reboots the device.
-
-        :return: True if the device reboot command was successfully executed, False otherwise.
+        Reboots the device safely. If adb connection drops, ignores the error.
         """
         try:
             self.adb_shell(command='reboot')
-        except KeyError as e:
-            logger.error("appium_extended_terminal.reboot")
-            logger.error(e)
-            traceback_info = "".join(traceback.format_tb(sys.exc_info()[2]))
-            logger.error(traceback_info)
-            return False
-        return True
+            return True
+        except Exception as e:
+            logger.warning(f"Reboot likely initiated. Caught exception: {e}")
+            return True
 
     def get_screen_resolution(self) -> Union[Tuple[int, int], None]:
         """

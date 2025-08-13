@@ -1,5 +1,10 @@
+# shadowstep/terminal/adb.py
+
 import inspect
-from loguru import logger
+
+from appium.webdriver.webdriver import WebDriver
+import logging
+logger = logging.getLogger(__name__)
 import os
 import re
 import subprocess
@@ -16,6 +21,14 @@ class Adb:
     A class to interact with Android Debug Bridge (ADB) for device management.
     Use only if Appium server is running locally where the test is being performed
     """
+
+    base = None
+    driver = None
+
+    def __init__(self, base: "Shadowstep"):
+        self.base: "Shadowstep" = base
+        self.driver: WebDriver = base.driver
+
         
     @staticmethod
     def get_devices() -> Union[List[str], None]:

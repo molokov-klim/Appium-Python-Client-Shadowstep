@@ -1,3 +1,5 @@
+# shadowstep/utils/write_project_structure.py
+
 import os
 
 # Папки и файлы, которые не включаем в вывод

@@ -1,3 +1,5 @@
+# shadowstep/utils/conditions.py
+
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.remote.webelement import WebElement
 from typing import Tuple, Union, Callable

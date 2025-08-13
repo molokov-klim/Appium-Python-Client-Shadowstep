@@ -1,7 +1,5 @@
-# coding: utf-8
-"""
-Этот модуль содержит полезные декораторы для работы с Appium.
-"""
+# shadowstep/utils/decorators.py
+
 import base64
 import sys
 import io
@@ -10,14 +8,100 @@ import functools
 import traceback
 from functools import wraps
 from datetime import datetime
+from typing import TypeVar, Callable, Any, Tuple, Type, Optional
 
 import allure
 import numpy as np
 import pytest
 from PIL import Image
+from selenium.common import NoSuchDriverException, InvalidSessionIdException, \
+    StaleElementReferenceException
+
+T = TypeVar("T", bound=Callable[..., Any])
+
+DEFAULT_EXCEPTIONS: Tuple[Type[Exception], ...] = (
+    NoSuchDriverException,
+    InvalidSessionIdException,
+    StaleElementReferenceException,
+)
 
 
-# TODO make unit test for module
+def fail_safe(
+        retries: int = 3,
+        delay: float = 0.5,
+        raise_exception: Optional[Type[Exception]] = None,
+        fallback: Any = None,
+        exceptions: Tuple[Type[Exception], ...] = DEFAULT_EXCEPTIONS,
+        log_args: bool = False,
+) -> Callable:
+    """
+    Decorator that retries a method call on specified exceptions.
+    """
+
+    def decorator(func: Callable) -> Callable:
+        @functools.wraps(func)
+        def wrapper(self, *args, **kwargs):
+            last_exc: Optional[Exception] = None
+
+            for attempt in range(1, retries + 1):
+                try:
+                    if not self.is_connected():
+                        self.logger.warning(f"[fail_safe] Not connected before {func.__name__}(), reconnecting...")
+                        self.logger.warning(f"{last_exc=}")
+                        self.reconnect()
+                    return func(self, *args, **kwargs)
+
+                except exceptions as e:
+                    last_exc = e
+                    method = func.__name__
+                    self.logger.warning(f"[fail_safe] {method} failed on attempt {attempt}: {type(e).__name__} – {e}")
+
+                    if log_args:
+                        def format_arg(arg):
+                            if arg is self:
+                                return f"<{self.__class__.__name__} id={id(self)}>"
+                            r = repr(arg)
+                            return (r[:197] + '...') if len(r) > 200 else r
+
+                        formatted_args = [format_arg(self)] + [format_arg(a) for a in args]
+                        formatted_args += [f"{k}={format_arg(v)}" for k, v in kwargs.items()]
+                        self.logger.debug(f"[fail_safe] args: {formatted_args}")
+
+                    self.logger.debug(f"[fail_safe] stack:\n{''.join(traceback.format_stack(limit=5))}")
+
+                    if not self.is_connected():
+                        self.logger.warning(f"[fail_safe] Disconnected after exception in {method}, reconnecting...")
+                        self.reconnect()
+
+                    time.sleep(delay)
+
+                except Exception as e:
+                    self.logger.error(f"[fail_safe] Unexpected error in {func.__name__}: {type(e).__name__} – {e}")
+                    self.logger.debug("Stack:\n" + "".join(traceback.format_stack(limit=5)))
+                    last_exc = e
+                    break
+
+            self.logger.error(f"[fail_safe] {func.__name__} failed after {retries} attempts")
+
+            if last_exc:
+                tb = "".join(traceback.format_exception(type(last_exc), last_exc, last_exc.__traceback__))
+                self.logger.error(f"[fail_safe] Final exception:\n{tb}")
+
+            if raise_exception and last_exc:
+                raise raise_exception(f"{func.__name__} failed after {retries} attempts") from last_exc
+
+            if raise_exception:
+                raise raise_exception(f"{func.__name__} failed after {retries} attempts")
+
+            if fallback is not None:
+                return fallback
+
+            raise last_exc
+
+        return wrapper
+
+    return decorator
+
 
 def retry(func):
     """
@@ -628,8 +712,11 @@ def _get_screenshot_bytes(self) -> bytes:
         return byte_io.getvalue()
 
 
+def neuro_allow_edit(func):
+    func.__neuro_edit_allowed__ = True
+    return func
 
-
-
-
+def neuro_readonly(func):
+    func.__neuro_edit_readonly__ = True
+    return func
 

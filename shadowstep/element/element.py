@@ -1,14 +1,16 @@
+# shadowstep/element/element.py
+
 import inspect
 import logging
+import re
 import time
 import traceback
 import typing
-from typing import Union, Tuple, Dict, Optional, cast
+from typing import Union, Tuple, List, Set, Dict, Optional, cast
 
 from lxml import etree as ET
 
 from appium.webdriver import WebElement
-from icecream import ic
 from selenium.common import NoSuchDriverException, InvalidSessionIdException, WebDriverException, \
     StaleElementReferenceException, NoSuchElementException, TimeoutException
 from selenium.types import WaitExcTypes
@@ -22,7 +24,6 @@ from selenium.webdriver.support import expected_conditions as EC
 
 from shadowstep.element.base import ElementBase
 from shadowstep.utils import conditions
-from shadowstep.utils.operations import dict_matches_subset
 from shadowstep.utils.utils import find_coordinates_by_vector
 
 # Configure the root logger (basic configuration)
@@ -43,19 +44,21 @@ class GeneralElementException(WebDriverException):
 class Element(ElementBase):
     """
     A class to represent a UI element in the Shadowstep application.
-    !WARNING! USE XPATH STRATEGY ONLY !WARNING!
+    !WARNING! TUPLE LOCATOR USE XPATH STRATEGY ONLY !WARNING!
+    Please use dict locator
     """
 
     def __init__(self,
                  locator: Union[Tuple, Dict[str, str], 'Element'] = None,
-                 base=None,
-                 timeout: int = 30,
+                 base: 'Shadowstep' = None,
+                 timeout: float = 30,
                  poll_frequency: float = 0.5,
                  ignored_exceptions: typing.Optional[WaitExcTypes] = None,
-                 contains: bool = False):
-        super().__init__(locator, base, timeout, poll_frequency, ignored_exceptions, contains)
+                 contains: bool = False,
+                 native: WebElement = None):
+        super().__init__(locator, base, timeout, poll_frequency, ignored_exceptions, contains, native)
         self.logger = logging.getLogger(f"{__name__}.{self.__class__.__name__}")
-        self.logger.info(f"Initialized Element with locator: {self.locator}")
+        self.logger.debug(f"Initialized Element with locator: {self.locator}")
 
     def __repr__(self):
         return f"Element(locator={self.locator}"
@@ -79,7 +82,8 @@ class Element(ElementBase):
         Returns:
             Found Element or None.
         """
-        self.logger.info(f"{inspect.currentframe().f_code.co_name}")
+        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
+
         if isinstance(locator, Element):
             locator = locator.locator
 
@@ -90,7 +94,7 @@ class Element(ElementBase):
         pre_inner_locator = self.handle_locator(locator, contains)
         inner_path = pre_inner_locator[1].lstrip('/')  # Remove accidental `/` in front
 
-        # ⛑ Гарантированная вложенность: parent//child
+        # Гарантированная вложенность: parent//child
         if not inner_path.startswith("//"):
             inner_path = f"//{inner_path}"
 
@@ -106,99 +110,93 @@ class Element(ElementBase):
     def get_elements(
             self,
             locator: Union[Tuple, Dict[str, str], 'Element'],
-            contains: bool = False,
-            max_count: int = 10
-    ) -> typing.Generator['Element', None, None]:
-        self.logger.info(f"{inspect.currentframe().f_code.co_name}")
+            timeout: float = 30,
+            poll_frequency: float = 0.5,
+            ignored_exceptions: typing.Optional[WaitExcTypes] = None,
+            contains: bool = False
+    ) -> Union[List['Element'], List]:
+        """
+        method is greedy
+        """
+        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
+        start_time = time.time()
+
+        # [Step] Normalize locator
+        step = "Normalizing locator"
+        self.logger.debug(f"[{step}] started")
         if isinstance(locator, Element):
             locator = locator.locator
-        resolved_locator = self.handle_locator(locator, contains)
-        base_xpath = self._get_xpath()
 
+        # [Step] Resolve base XPath
+        step = "Resolving base XPath"
+        self.logger.debug(f"[{step}] started")
+        base_xpath = self._get_xpath()
         if not base_xpath:
             raise GeneralElementException("Unable to resolve base xpath")
 
-        # Убираем финальные / у base_xpath и начальные у локатора
-        base_xpath = base_xpath.rstrip('/')
-        child_xpath = resolved_locator[1].lstrip('/')
+        # [Step] Convert locator to XPath
+        step = "Converting locator to XPath"
+        self.logger.debug(f"[{step}] started")
+        locator = self.locator_converter.to_xpath(locator)
+        locator = self._contains_to_xpath(locator)
 
-        for index in range(1, max_count + 1):
+        # [Step] Iteratively collect elements
+        step = "Collecting elements"
+        self.logger.debug(f"[{step}] started")
+
+        self.logger.info(f"{locator=}")
+        while time.time() - start_time < self.timeout:
             try:
-                element = Element(
-                    locator=('xpath', f"{base_xpath}//{child_xpath}[{index}]"),
-                    base=self.base,
-                    timeout=self.timeout,
-                    poll_frequency=self.poll_frequency,
-                    ignored_exceptions=self.ignored_exceptions,
-                    contains=contains
-                )
-                # Пробуем получить базовый атрибут
-                if element.get_attribute("class") is None:
-                    break
-                yield element
-            except NoSuchElementException:
-                break
-            except WebDriverException:
-                break
-
-    def get_elements_greedy(
-            self,
-            locator: Union[Tuple, Dict[str, str], 'Element'],
-            contains: bool = False,
-            timeout: int = 30,
-    ) -> typing.List['Element']:
-        """
-        Returns a list of elements found using find_elements.
-        This is a greedy method and fetches all matching elements immediately.
-
-        Args:
-            locator: Locator to search for child elements.
-            contains: If True, performs partial match.
-            timeout: Timeout to wait for elements.
-
-        Returns:
-            List of Element instances matching the locator.
-        """
-        self.logger.info(f"{inspect.currentframe().f_code.co_name}")
-        try:
-            self._get_driver()
-            if isinstance(locator, Element):
-                locator = locator.locator
-            resolved_locator = self.handle_locator(locator, contains)
-            base_xpath = self._get_xpath()
-
-            if not base_xpath:
-                raise GeneralElementException("Unable to resolve base xpath")
-
-            base_xpath = base_xpath.rstrip('/')
-            child_xpath = resolved_locator[1].lstrip('/')
-
-            # Совмещённый XPath для поиска потомков
-            full_xpath = f"{base_xpath}//{child_xpath}"
-
-            base_element = self._get_element(locator=self.locator)
-
-            found_elements = base_element.find_elements('xpath', full_xpath)
-
-            result = []
-            for i in range(len(found_elements)):
-                xpath = f"{full_xpath}[{i + 1}]"
-                result.append(Element(
-                    locator=('xpath', xpath),
-                    base=self.base,
+                self._get_driver()
+                wait = WebDriverWait(
+                    driver=self.driver,
                     timeout=timeout,
-                    poll_frequency=self.poll_frequency,
-                    ignored_exceptions=self.ignored_exceptions,
-                    contains=contains
-                ))
+                    poll_frequency=poll_frequency,
+                    ignored_exceptions=ignored_exceptions,
+                )
+                wait.until(EC.presence_of_element_located(locator))
+                native_elements = self.driver.find_elements(*locator)
 
-            return result
-        except NoSuchDriverException as error:
-            self._handle_driver_error(error)
-            return []
-        except InvalidSessionIdException as error:
-            self._handle_driver_error(error)
-            return []
+                elements = []
+                for native_element in native_elements:
+                    # [Extract attributes]
+                    attributes = {
+                        attr: native_element.get_attribute(attr) for attr in [
+                            'resource-id', 'bounds',
+                            'class', 'text', 'content-desc', 'checkable', 'checked',
+                            'clickable', 'enabled', 'focusable', 'focused',
+                            'long-clickable', 'scrollable', 'selected', 'displayed'
+                        ]
+                    }
+                    element = Element(
+                        locator=attributes,
+                        base=self.base,
+                        timeout=timeout,
+                        poll_frequency=poll_frequency,
+                        ignored_exceptions=ignored_exceptions,
+                        contains=contains
+                    )
+                    elements.append(element)
+                return elements
+
+            except NoSuchDriverException as error:
+                self._handle_driver_error(error)
+
+            except InvalidSessionIdException as error:
+                self._handle_driver_error(error)
+
+            except StaleElementReferenceException as error:
+                self.logger.debug(error)
+                self.logger.warning(f"StaleElementReferenceException\nRe-acquire element")
+                self.native = None
+                self._get_native()
+                continue
+
+            except TimeoutException as error:
+                self.logger.warning(f"Timeout while waiting for presence of element | {error}")
+                continue
+        # if nothing found return empty list
+        return []
 
     def get_attributes(self) -> Optional[Dict[str, str]]:
         """Fetch all XML attributes of the element by matching locator against page source.
@@ -206,7 +204,7 @@ class Element(ElementBase):
         Returns:
             Optional[Dict[str, str]]: Dictionary of all attributes, or None if not found.
         """
-        self.logger.info(f"{inspect.currentframe().f_code.co_name}")
+        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
         start_time = time.time()
 
         # Convert locator to XPath expression (supports dict, tuple, UiSelector string)
@@ -219,7 +217,6 @@ class Element(ElementBase):
         except Exception as e:
             self.logger.error(f"Exception in to_xpath: {e}")
             return None
-
 
         while time.time() - start_time < self.timeout:
             try:
@@ -240,7 +237,11 @@ class Element(ElementBase):
                 self._handle_driver_error(error)
             except InvalidSessionIdException as error:
                 self._handle_driver_error(error)
-            except StaleElementReferenceException:
+            except StaleElementReferenceException as error:
+                self.logger.debug(error)
+                self.logger.warning(f"StaleElementReferenceException\nRe-acquire element")
+                self.native = None
+                self._get_native()
                 continue
             except ET.XPathEvalError as e:
                 self.logger.error(f"XPathEvalError: {e}")
@@ -261,7 +262,7 @@ class Element(ElementBase):
         return None
 
     def get_parent(self) -> Union['Element', None]:
-        self.logger.info(f"{inspect.currentframe().f_code.co_name}")
+        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
         try:
             xpath = self._get_xpath()
             if xpath is None:
@@ -283,7 +284,7 @@ class Element(ElementBase):
         Yields:
             Generator of Element instances representing each parent in the hierarchy.
         """
-        self.logger.info(f"{inspect.currentframe().f_code.co_name}")
+        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
         current_xpath = self._get_xpath()
 
         if not current_xpath:
@@ -314,7 +315,7 @@ class Element(ElementBase):
                 break
 
     def get_sibling(self, locator: Union[Tuple, Dict[str, str], 'Element']) -> Union['Element', None]:
-        self.logger.info(f"{inspect.currentframe().f_code.co_name}")
+        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
         if isinstance(locator, Element):
             locator = locator.locator
 
@@ -343,7 +344,7 @@ class Element(ElementBase):
         Yields:
             Generator of Element instances that are siblings of the current element.
         """
-        self.logger.info(f"{inspect.currentframe().f_code.co_name}")
+        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
 
         base_xpath = self._get_xpath()
         if not base_xpath:
@@ -391,40 +392,48 @@ class Element(ElementBase):
 
     def get_cousin(
             self,
-            ancestor_locator: Union[Tuple, Dict[str, str], 'Element'],
-            cousin_locator: Union[Tuple, Dict[str, str], 'Element']
+            cousin_locator: Union[Tuple[str, str], Dict[str, str], 'Element'],
+            depth_to_parent: int = 1,
     ) -> Union['Element', None]:
-        """Finds a cousin element (same depth relative to a shared ancestor).
+        """
+        Returns an Element located by cousin_locator, relative to the current element's ancestor.
 
         Args:
-            ancestor_locator (Union[Tuple, Dict[str, str], 'Element']): The common ancestor to search from.
-            cousin_locator (Union[Tuple, Dict[str, str], 'Element']): The target cousin element locator.
+            cousin_locator (Union[Tuple[str, str], Dict[str, str], 'Element']): Locator of the cousin element.
+            depth_to_parent (int): How many levels up the DOM tree to traverse.
 
         Returns:
-            Union['Element', None]: The cousin element found at the same depth.
+            Union['Element', None]: The cousin Element or None if not found.
         """
-        self.logger.info(f"{inspect.currentframe().f_code.co_name}")
+        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
+        depth_to_parent += 1
+
         try:
-            if isinstance(ancestor_locator, Element):
-                ancestor_locator = ancestor_locator.locator
+            # Convert Element to locator if needed
             if isinstance(cousin_locator, Element):
                 cousin_locator = cousin_locator.locator
 
-            # XPath текущего элемента
+            # Resolve current XPath
             current_xpath = self._get_xpath()
             if not current_xpath:
                 raise GeneralElementException("Unable to resolve current XPath")
 
-            # Количество узлов от текущего до корня
-            depth = current_xpath.count('/')
+            self.logger.debug(f"[XPath Resolution] current_xpath: {current_xpath}")
+            self.logger.debug(f"[Depth] depth_to_parent: {depth_to_parent}")
 
-            # XPath предка
-            ancestor_xpath = self.handle_locator(ancestor_locator, contains=self.contains)[1]
-            ancestor_xpath = ancestor_xpath.rstrip('/')
+            # Climb up the tree
+            up_xpath = "/".join([".."] * depth_to_parent)
+            base_xpath = f"{current_xpath}/{up_xpath}" if up_xpath else current_xpath
 
-            # XPath кузена: тот же уровень вложенности
+            # Resolve cousin locator to relative XPath
             cousin_relative = self.handle_locator(cousin_locator, contains=self.contains)[1].lstrip('/')
-            cousin_xpath = f"{ancestor_xpath}//{cousin_relative}[{depth}]"
+
+            self.logger.debug(f"[Cousin Locator] relative_xpath: {cousin_relative}")
+
+            # Full cousin XPath
+            cousin_xpath = f"{base_xpath}//{cousin_relative}"
+
+            self.logger.debug(f"[Final XPath] cousin_xpath: {cousin_xpath}")
 
             return Element(
                 locator=('xpath', cousin_xpath),
@@ -434,18 +443,10 @@ class Element(ElementBase):
                 ignored_exceptions=self.ignored_exceptions,
                 contains=self.contains
             )
-        except NoSuchDriverException as error:
-            self._handle_driver_error(error)
-        except InvalidSessionIdException as error:
-            self._handle_driver_error(error)
-        return None
 
-    def from_parent(
-            self,
-            parent: Union[Tuple, Dict[str, str], 'Element'],
-            locator: Union[Tuple, Dict[str, str], 'Element']
-    ) -> Union['Element', None]:
-        return self.get_cousin(parent,locator)
+        except (NoSuchDriverException, InvalidSessionIdException) as error:
+            self._handle_driver_error(error)
+            return None
 
     def get_center(self, element: Optional[WebElement] = None) -> Optional[Tuple[int, int]]:
         """Get the center coordinates of the element.
@@ -456,19 +457,13 @@ class Element(ElementBase):
         Returns:
             Optional[Tuple[int, int]]: (x, y) center point or None if element not found.
         """
-        self.logger.info(f"{inspect.currentframe().f_code.co_name}")
+        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
         start_time = time.time()
         while time.time() - start_time < self.timeout:
             try:
                 self._get_driver()
                 if element is None:
-                    element = self._get_element(
-                        locator=self.locator,
-                        timeout=self.timeout,
-                        poll_frequency=self.poll_frequency,
-                        ignored_exceptions=self.ignored_exceptions,
-                        contains=self.contains
-                    )
+                    element = self._get_native()
                 coords = self.get_coordinates(element)
                 if coords is None:
                     continue
@@ -483,7 +478,11 @@ class Element(ElementBase):
             except AttributeError as error:
                 self._handle_driver_error(error)
             except StaleElementReferenceException as error:
-                self._handle_driver_error(error)
+                self.logger.debug(error)
+                self.logger.warning(f"StaleElementReferenceException\nRe-acquire element")
+                self.native = None
+                self._get_native()
+                continue
 
         raise GeneralElementException(
             msg=f"Failed to {inspect.currentframe().f_code.co_name} within {self.timeout=}",
@@ -499,19 +498,13 @@ class Element(ElementBase):
         Returns:
             Optional[Tuple[int, int, int, int]]: (left, top, right, bottom) or None.
         """
-        self.logger.info(f"{inspect.currentframe().f_code.co_name}")
+        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
         start_time = time.time()
         while time.time() - start_time < self.timeout:
             try:
                 self._get_driver()
                 if element is None:
-                    element = self._get_element(
-                        locator=self.locator,
-                        timeout=self.timeout,
-                        poll_frequency=self.poll_frequency,
-                        ignored_exceptions=self.ignored_exceptions,
-                        contains=self.contains
-                    )
+                    element = self._get_native()
                 bounds = element.get_attribute('bounds')
                 if not bounds:
                     continue
@@ -524,7 +517,11 @@ class Element(ElementBase):
             except AttributeError as error:
                 self._handle_driver_error(error)
             except StaleElementReferenceException as error:
-                self._handle_driver_error(error)
+                self.logger.debug(error)
+                self.logger.warning(f"StaleElementReferenceException\nRe-acquire element")
+                self.native = None
+                self._get_native()
+                continue
 
         raise GeneralElementException(
             msg=f"Failed to {inspect.currentframe().f_code.co_name} within {self.timeout=}",
@@ -541,18 +538,12 @@ class Element(ElementBase):
         Returns:
             Optional[Union[str, Dict]]: Value of the attribute or None.
         """
-        self.logger.info(f"{inspect.currentframe().f_code.co_name}")
+        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
         start_time = time.time()
         while time.time() - start_time < self.timeout:
             try:
                 self._get_driver()
-                current_element = self._get_element(
-                    locator=self.locator,
-                    timeout=self.timeout,
-                    poll_frequency=self.poll_frequency,
-                    ignored_exceptions=self.ignored_exceptions,
-                    contains=self.contains
-                )
+                current_element = self._get_native()
                 return current_element.get_attribute(name)
             except NoSuchDriverException as error:
                 self._handle_driver_error(error)
@@ -561,7 +552,11 @@ class Element(ElementBase):
             except AttributeError as error:
                 self._handle_driver_error(error)
             except StaleElementReferenceException as error:
-                self._handle_driver_error(error)
+                self.logger.debug(error)
+                self.logger.warning(f"StaleElementReferenceException\nRe-acquire element")
+                self.native = None
+                self._get_native()
+                continue
 
         raise GeneralElementException(
             msg=f"Failed to {inspect.currentframe().f_code.co_name}('{name}') within {self.timeout=}",
@@ -578,19 +573,13 @@ class Element(ElementBase):
         Returns:
             Union[str, bool, dict, None]: Property value.
         """
-        self.logger.info(f"{inspect.currentframe().f_code.co_name}")
+        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
         self.logger.warning(f"Method {inspect.currentframe().f_code.co_name} is not implemented in UiAutomator2")
         start_time = time.time()
         while time.time() - start_time < self.timeout:
             try:
                 self._get_driver()
-                current_element = self._get_element(
-                    locator=self.locator,
-                    timeout=self.timeout,
-                    poll_frequency=self.poll_frequency,
-                    ignored_exceptions=self.ignored_exceptions,
-                    contains=self.contains
-                )
+                current_element = self._get_native()
                 return current_element.get_property(name)
             except NoSuchDriverException as error:
                 self._handle_driver_error(error)
@@ -599,7 +588,11 @@ class Element(ElementBase):
             except AttributeError as error:
                 self._handle_driver_error(error)
             except StaleElementReferenceException as error:
-                self._handle_driver_error(error)
+                self.logger.debug(error)
+                self.logger.warning(f"StaleElementReferenceException\nRe-acquire element")
+                self.native = None
+                self._get_native()
+                continue
 
         raise GeneralElementException(
             msg=f"Failed to {inspect.currentframe().f_code.co_name} within {self.timeout=}",
@@ -619,18 +612,12 @@ class Element(ElementBase):
 
                 text_length = target_element.get_dom_attribute("class")
         """
-        self.logger.info(f"{inspect.currentframe().f_code.co_name}")
+        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
         start_time = time.time()
         while time.time() - start_time < self.timeout:
             try:
                 self._get_driver()
-                current_element = self._get_element(
-                    locator=self.locator,
-                    timeout=self.timeout,
-                    poll_frequency=self.poll_frequency,
-                    ignored_exceptions=self.ignored_exceptions,
-                    contains=self.contains
-                )
+                current_element = self._get_native()
                 return current_element.get_dom_attribute(name)
             except NoSuchDriverException as error:
                 self._handle_driver_error(error)
@@ -639,7 +626,11 @@ class Element(ElementBase):
             except AttributeError as error:
                 self._handle_driver_error(error)
             except StaleElementReferenceException as error:
-                self._handle_driver_error(error)
+                self.logger.debug(error)
+                self.logger.warning(f"StaleElementReferenceException\nRe-acquire element")
+                self.native = None
+                self._get_native()
+                continue
 
         raise GeneralElementException(
             msg=f"Failed to {inspect.currentframe().f_code.co_name} within {self.timeout=}",
@@ -653,18 +644,12 @@ class Element(ElementBase):
         Returns:
             bool: True if the element is displayed on screen and visible to the user.
         """
-        self.logger.info(f"{inspect.currentframe().f_code.co_name}")
+        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
         start_time = time.time()
         while time.time() - start_time < self.timeout:
             try:
                 self._get_driver()
-                element = self._get_element(
-                    locator=self.locator,
-                    timeout=self.timeout,
-                    poll_frequency=self.poll_frequency,
-                    ignored_exceptions=self.ignored_exceptions,
-                    contains=self.contains
-                )
+                element = self._get_native()
                 return element.is_displayed()
             except NoSuchElementException:
                 return False
@@ -675,7 +660,11 @@ class Element(ElementBase):
             except AttributeError as error:
                 self._handle_driver_error(error)
             except StaleElementReferenceException as error:
-                self._handle_driver_error(error)
+                self.logger.debug(error)
+                self.logger.warning(f"StaleElementReferenceException\nRe-acquire element")
+                self.native = None
+                self._get_native()
+                continue
 
         raise GeneralElementException(
             msg=f"Failed to {inspect.currentframe().f_code.co_name} within {self.timeout=}",
@@ -683,18 +672,14 @@ class Element(ElementBase):
         )
 
     def is_visible(self) -> bool:
-        self.logger.info(f"{inspect.currentframe().f_code.co_name}")
+        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
         start_time = time.time()
         while time.time() - start_time < self.timeout:
             try:
                 screen_size = self.base.terminal.get_screen_resolution()  # Получаем размеры экрана
                 screen_width = screen_size[0]  # Ширина экрана
                 screen_height = screen_size[1]  # Высота экрана
-                current_element = self._get_element(locator=self.locator,
-                                                    timeout=self.timeout,
-                                                    poll_frequency=self.poll_frequency,
-                                                    ignored_exceptions=self.ignored_exceptions,
-                                                    contains=self.contains)
+                current_element = self._get_native()
                 if current_element is None:
                     return False
                 if not current_element.get_attribute('displayed') == 'true':
@@ -721,27 +706,15 @@ class Element(ElementBase):
             except AttributeError as error:
                 self._handle_driver_error(error)
             except StaleElementReferenceException as error:
-                self._handle_driver_error(error)
+                self.logger.debug(error)
+                self.logger.warning(f"StaleElementReferenceException\nRe-acquire element")
+                self.native = None
+                self._get_native()
+                continue
         raise GeneralElementException(
             msg=f"Failed to {inspect.currentframe().f_code.co_name} within {self.timeout=}",
             stacktrace=traceback.format_stack()
         )
-
-    def is_not_within_screen(self) -> bool:
-        """Checks whether the element is not within the visible screen bounds.
-
-        Returns:
-            bool: True if element is not displayed or outside screen bounds.
-        """
-        self.logger.info(f"{inspect.currentframe().f_code.co_name}")
-        try:
-            return not self.is_visible()
-        except GeneralElementException as error:
-            self.logger.warning(f"is_not_within_screen fallback due to: {error}")
-            return True
-        except Exception as error:
-            self.logger.warning(f"is_not_within_screen unexpected error: {error}")
-            return True
 
     def is_selected(self) -> bool:
         """Returns whether the element is selected.
@@ -751,18 +724,12 @@ class Element(ElementBase):
         Returns:
             bool: True if the element is selected.
         """
-        self.logger.info(f"{inspect.currentframe().f_code.co_name}")
+        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
         start_time = time.time()
         while time.time() - start_time < self.timeout:
             try:
                 self._get_driver()
-                element = self._get_element(
-                    locator=self.locator,
-                    timeout=self.timeout,
-                    poll_frequency=self.poll_frequency,
-                    ignored_exceptions=self.ignored_exceptions,
-                    contains=self.contains
-                )
+                element = self._get_native()
                 return element.is_selected()
             except NoSuchElementException:
                 return False
@@ -773,7 +740,11 @@ class Element(ElementBase):
             except AttributeError as error:
                 self._handle_driver_error(error)
             except StaleElementReferenceException as error:
-                self._handle_driver_error(error)
+                self.logger.debug(error)
+                self.logger.warning(f"StaleElementReferenceException\nRe-acquire element")
+                self.native = None
+                self._get_native()
+                continue
 
         raise GeneralElementException(
             msg=f"Failed to {inspect.currentframe().f_code.co_name} within {self.timeout=}",
@@ -786,18 +757,12 @@ class Element(ElementBase):
         Returns:
             bool: True if the element is enabled.
         """
-        self.logger.info(f"{inspect.currentframe().f_code.co_name}")
+        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
         start_time = time.time()
         while time.time() - start_time < self.timeout:
             try:
                 self._get_driver()
-                element = self._get_element(
-                    locator=self.locator,
-                    timeout=self.timeout,
-                    poll_frequency=self.poll_frequency,
-                    ignored_exceptions=self.ignored_exceptions,
-                    contains=self.contains
-                )
+                element = self._get_native()
                 return element.is_enabled()
             except NoSuchElementException:
                 return False
@@ -808,7 +773,11 @@ class Element(ElementBase):
             except AttributeError as error:
                 self._handle_driver_error(error)
             except StaleElementReferenceException as error:
-                self._handle_driver_error(error)
+                self.logger.debug(error)
+                self.logger.warning(f"StaleElementReferenceException\nRe-acquire element")
+                self.native = None
+                self._get_native()
+                continue
 
         raise GeneralElementException(
             msg=f"Failed to {inspect.currentframe().f_code.co_name} within {self.timeout=}",
@@ -819,7 +788,7 @@ class Element(ElementBase):
                     locator: Union[Tuple, Dict[str, str], 'Element'] = None,
                     contains: bool = False
                     ) -> bool:
-        self.logger.info(f"{inspect.currentframe().f_code.co_name}")
+        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
         start_time = time.time()
         while time.time() - start_time < self.timeout:
             try:
@@ -839,14 +808,18 @@ class Element(ElementBase):
             except AttributeError as error:
                 self._handle_driver_error(error)
             except StaleElementReferenceException as error:
-                self._handle_driver_error(error)
+                self.logger.debug(error)
+                self.logger.warning(f"StaleElementReferenceException\nRe-acquire element")
+                self.native = None
+                self._get_native()
+                continue
         raise GeneralElementException(
             msg=f"Failed to {inspect.currentframe().f_code.co_name} within {self.timeout=}",
             stacktrace=traceback.format_stack()
         )
 
     def tap(self, duration: Optional[int] = None) -> Union['Element', None]:
-        self.logger.info(f"{inspect.currentframe().f_code.co_name}")
+        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
         start_time = time.time()
         while time.time() - start_time < self.timeout:
             try:
@@ -863,7 +836,11 @@ class Element(ElementBase):
             except AttributeError as error:
                 self._handle_driver_error(error)
             except StaleElementReferenceException as error:
-                self._handle_driver_error(error)
+                self.logger.debug(error)
+                self.logger.warning(f"StaleElementReferenceException\nRe-acquire element")
+                self.native = None
+                self._get_native()
+                continue
         raise GeneralElementException(
             msg=f"Failed to {inspect.currentframe().f_code.co_name} within {self.timeout=}\n{duration}",
             stacktrace=traceback.format_stack()
@@ -877,7 +854,7 @@ class Element(ElementBase):
             direction: int = None,
             distance: int = None,
     ) -> Union['Element', None]:
-        self.logger.info(f"{inspect.currentframe().f_code.co_name}")
+        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
         start_time = time.time()
         while time.time() - start_time < self.timeout:
             try:
@@ -925,7 +902,11 @@ class Element(ElementBase):
             except AttributeError as error:
                 self._handle_driver_error(error)
             except StaleElementReferenceException as error:
-                self._handle_driver_error(error)
+                self.logger.debug(error)
+                self.logger.warning(f"StaleElementReferenceException\nRe-acquire element")
+                self.native = None
+                self._get_native()
+                continue
         # === Недостаточно данных для действия ===
         raise GeneralElementException(
             msg=f"Failed to {inspect.currentframe().f_code.co_name} within {self.timeout=}\n{locator=}\n{x=}\n{y=}\n{direction}\n{distance}\n",
@@ -933,7 +914,7 @@ class Element(ElementBase):
         )
 
     def click(self, duration: int = None) -> Union['Element', None]:
-        self.logger.info(f"{inspect.currentframe().f_code.co_name}")
+        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
         start_time = time.time()
         while time.time() - start_time < self.timeout:
             try:
@@ -953,14 +934,18 @@ class Element(ElementBase):
             except AttributeError as error:
                 self._handle_driver_error(error)
             except StaleElementReferenceException as error:
-                self._handle_driver_error(error)
+                self.logger.debug(error)
+                self.logger.warning(f"StaleElementReferenceException\nRe-acquire element")
+                self.native = None
+                self._get_native()
+                continue
         raise GeneralElementException(
             msg=f"Failed to {inspect.currentframe().f_code.co_name} within {self.timeout=}\n{duration}",
             stacktrace=traceback.format_stack()
         )
 
     def click_double(self) -> Union['Element', None]:
-        self.logger.info(f"{inspect.currentframe().f_code.co_name}")
+        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
         start_time = time.time()
         while time.time() - start_time < self.timeout:
             try:
@@ -976,14 +961,18 @@ class Element(ElementBase):
             except AttributeError as error:
                 self._handle_driver_error(error)
             except StaleElementReferenceException as error:
-                self._handle_driver_error(error)
+                self.logger.debug(error)
+                self.logger.warning(f"StaleElementReferenceException\nRe-acquire element")
+                self.native = None
+                self._get_native()
+                continue
         raise GeneralElementException(
             msg=f"Failed to {inspect.currentframe().f_code.co_name} within {self.timeout=}",
             stacktrace=traceback.format_stack()
         )
 
     def drag(self, end_x: int, end_y: int, speed: int = 2500) -> Union['Element', None]:
-        self.logger.info(f"{inspect.currentframe().f_code.co_name}")
+        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
         start_time = time.time()
         while time.time() - start_time < self.timeout:
             try:
@@ -1002,7 +991,11 @@ class Element(ElementBase):
             except AttributeError as error:
                 self._handle_driver_error(error)
             except StaleElementReferenceException as error:
-                self._handle_driver_error(error)
+                self.logger.debug(error)
+                self.logger.warning(f"StaleElementReferenceException\nRe-acquire element")
+                self.native = None
+                self._get_native()
+                continue
         raise GeneralElementException(
             msg=f"Failed to {inspect.currentframe().f_code.co_name} within {self.timeout=}",
             stacktrace=traceback.format_stack()
@@ -1026,7 +1019,7 @@ class Element(ElementBase):
         speed: The speed at which to perform this gesture in pixels per second. The value must be greater than the minimum fling velocity for the given view (50 by default). The default value is 7500 * displayDensity
         https://github.com/appium/appium-uiautomator2-driver/blob/master/docs/android-mobile-gestures.md#mobile-flinggesture
         """
-        self.logger.info(f"{inspect.currentframe().f_code.co_name}")
+        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
         start_time = time.time()
         while time.time() - start_time < self.timeout:
             try:
@@ -1044,46 +1037,53 @@ class Element(ElementBase):
             except AttributeError as error:
                 self._handle_driver_error(error)
             except StaleElementReferenceException as error:
-                self._handle_driver_error(error)
+                self.logger.debug(error)
+                self.logger.warning(f"StaleElementReferenceException\nRe-acquire element")
+                self.native = None
+                self._get_native()
+                continue
         raise GeneralElementException(
             msg=f"Failed to {inspect.currentframe().f_code.co_name} within {self.timeout=}",
             stacktrace=traceback.format_stack()
         )
 
-    def scroll_down(self, percent: int = 10, speed: int = 2000) -> Union['Element', None]:
-        self.logger.info(f"{inspect.currentframe().f_code.co_name}")
-        return self._scroll(direction='down', percent=percent, speed=speed)
+    def scroll_down(self, percent: float = 0.7, speed: int = 2000, return_bool: bool = False) -> Union['Element', None]:
+        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
+        return self._scroll(direction='down', percent=percent, speed=speed, return_bool=return_bool)
 
-    def scroll_up(self, percent: int = 10, speed: int = 2000) -> Union['Element', None]:
-        self.logger.info(f"{inspect.currentframe().f_code.co_name}")
-        return self._scroll(direction='up', percent=percent, speed=speed)
+    def scroll_up(self, percent: float = 0.7, speed: int = 2000, return_bool: bool = False) -> Union['Element', None]:
+        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
+        return self._scroll(direction='up', percent=percent, speed=speed, return_bool=return_bool)
 
-    def scroll_left(self, percent: int = 10, speed: int = 2000) -> Union['Element', None]:
-        self.logger.info(f"{inspect.currentframe().f_code.co_name}")
-        return self._scroll(direction='left', percent=percent, speed=speed)
+    def scroll_left(self, percent: float = 0.7, speed: int = 2000, return_bool: bool = False) -> Union['Element', None]:
+        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
+        return self._scroll(direction='left', percent=percent, speed=speed, return_bool=return_bool)
 
-    def scroll_right(self, percent: int = 10, speed: int = 2000) -> Union['Element', None]:
-        self.logger.info(f"{inspect.currentframe().f_code.co_name}")
-        return self._scroll(direction='right', percent=percent, speed=speed)
+    def scroll_right(self, percent: float = 0.7, speed: int = 2000, return_bool: bool = False) -> Union['Element', None]:
+        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
+        return self._scroll(direction='right', percent=percent, speed=speed, return_bool=return_bool)
 
-    def _scroll(self, direction: str, percent: int, speed: int) -> Union['Element', None]:
+    def _scroll(self, direction: str, percent: float, speed: int, return_bool: bool) -> Union['Element', None]:
         """
         direction: Scrolling direction. Mandatory value. Acceptable values are: up, down, left and right (case insensitive)
         percent: The size of the scroll as a percentage of the scrolling area size. Valid values must be float numbers greater than zero, where 1.0 is 100%. Mandatory value.
         speed: The speed at which to perform this gesture in pixels per second. The value must not be negative. The default value is 5000 * displayDensity
+        return_bool: if true return bool else return self
         """
-        self.logger.info(f"{inspect.currentframe().f_code.co_name}")
+        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
         # https://github.com/appium/appium-uiautomator2-driver/blob/master/docs/android-mobile-gestures.md#mobile-scrollgesture
         start_time = time.time()
         while time.time() - start_time < self.timeout:
             try:
                 self._get_driver()
                 self._get_element(locator=self.locator)
-                self._mobile_gesture('mobile: scrollGesture',
-                                     {'elementId': self.id,
-                                      'percent': percent,
-                                      'direction': direction,
-                                      'speed': speed})
+                can_scroll = self._mobile_gesture('mobile: scrollGesture',
+                                                  {'elementId': self.id,
+                                                   'percent': percent,
+                                                   'direction': direction,
+                                                   'speed': speed})
+                if return_bool:
+                    return can_scroll
                 return cast('Element', self)
             except NoSuchDriverException as error:
                 self._handle_driver_error(error)
@@ -1092,84 +1092,71 @@ class Element(ElementBase):
             except AttributeError as error:
                 self._handle_driver_error(error)
             except StaleElementReferenceException as error:
-                self._handle_driver_error(error)
+                self.logger.debug(error)
+                self.logger.warning(f"StaleElementReferenceException\nRe-acquire element")
+                self.native = None
+                self._get_native()
+                continue
         raise GeneralElementException(
             msg=f"Failed to {inspect.currentframe().f_code.co_name} within {self.timeout=}",
             stacktrace=traceback.format_stack()
         )
 
-    def scroll_to_bottom(self, locator: Union[Tuple, Dict[str, str], str, WebElement, 'Element'] = None) -> Union[
-        'Element', None]:
-        self.logger.info(f"{inspect.currentframe().f_code.co_name}")
-        last_child = None
+    def scroll_to_bottom(self, percent: int = 0.7, speed: int = 8000) -> 'Element':
+        """Scrolls down until the bottom is reached."""
+        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
         start_time = time.time()
 
         while time.time() - start_time < self.timeout:
             try:
-                if isinstance(locator, Element):
-                    locator = locator.locator
-                if not locator:
-                    class_name = self._get_first_child_class()
-                    if not class_name:
-                        raise GeneralElementException("Unable to determine first child class")
-                    locator = {'class': class_name}
-                child = self._get_element(locator=locator)
-                if last_child is not None and child.get_attribute('bounds') == last_child.get_attribute('bounds'):
-                    self.scroll_down()
+                if not self.scroll_down(percent=percent, speed=speed, return_bool=True):
                     return cast('Element', self)
-                last_child = child
-                self.scroll_down()
-            except StaleElementReferenceException:
+                self.scroll_down(percent=percent, speed=speed, return_bool=True)
+            except (
+                    NoSuchDriverException, InvalidSessionIdException, AttributeError
+            ) as error:
+                self._handle_driver_error(error)
+            except StaleElementReferenceException as error:
+                self.logger.debug(error)
+                self.logger.warning(f"StaleElementReferenceException\nRe-acquire element")
+                self.native = None
+                self._get_native()
                 continue
-            except NoSuchDriverException as error:
-                self._handle_driver_error(error)
-            except InvalidSessionIdException as error:
-                self._handle_driver_error(error)
-            except AttributeError as error:
-                self._handle_driver_error(error)
+
         raise GeneralElementException(
-            msg=f"Failed to {inspect.currentframe().f_code.co_name} within {self.timeout=}",
+            msg=f"Failed to scroll to bottom within {self.timeout=}",
             stacktrace=traceback.format_stack()
         )
 
-    def scroll_to_top(self, locator: Union[Tuple, Dict[str, str], str, WebElement, 'Element'] = None) -> Union[
-        'Element', None]:
-        self.logger.info(f"{inspect.currentframe().f_code.co_name}")
-        last_child = None
+    def scroll_to_top(self, percent: int = 0.7, speed: int = 8000) -> 'Element':
+        """Scrolls up until the top is reached."""
+        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
         start_time = time.time()
 
         while time.time() - start_time < self.timeout:
             try:
-                if isinstance(locator, Element):
-                    locator = locator.locator
-                if not locator:
-                    class_name = self._get_first_child_class()
-                    if not class_name:
-                        raise GeneralElementException("Unable to determine first child class")
-                    locator = {'class': class_name}
-                child = self._get_element(locator=locator)
-                if last_child is not None and child.get_attribute('bounds') == last_child.get_attribute('bounds'):
-                    self.scroll_up()
+                if not self.scroll_up(percent, speed, return_bool=True):
                     return cast('Element', self)
-                last_child = child
-                self.scroll_up()
-            except StaleElementReferenceException:
+                self.scroll_up(percent=percent, speed=speed, return_bool=True)
+            except (
+                    NoSuchDriverException, InvalidSessionIdException, AttributeError) as error:
+                self._handle_driver_error(error)
+            except StaleElementReferenceException as error:
+                self.logger.debug(error)
+                self.logger.warning(f"StaleElementReferenceException\nRe-acquire element")
+                self.native = None
+                self._get_native()
                 continue
-            except NoSuchDriverException as error:
-                self._handle_driver_error(error)
-            except InvalidSessionIdException as error:
-                self._handle_driver_error(error)
-            except AttributeError as error:
-                self._handle_driver_error(error)
+
         raise GeneralElementException(
-            msg=f"Failed to {inspect.currentframe().f_code.co_name} within {self.timeout=}",
+            msg=f"Failed to scroll to top within {self.timeout=}",
             stacktrace=traceback.format_stack()
         )
 
     def scroll_to_element(self, locator: Union['Element', Dict[str, str], Tuple[str, str]], max_swipes: int = 30) -> \
-    Union[
-        'Element', None]:
-        self.logger.info(f"{inspect.currentframe().f_code.co_name}")
+            Union[
+                'Element', None]:
+        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
         start_time = time.time()
         if isinstance(locator, Element):
             locator = locator.locator
@@ -1179,6 +1166,7 @@ class Element(ElementBase):
             selector = self.locator_converter.to_uiselector(locator)
         else:
             raise GeneralElementException("Only dictionary locators are supported")
+        locator = self.locator_converter.to_xpath(locator)
 
         while time.time() - start_time < self.timeout:
             try:
@@ -1199,13 +1187,18 @@ class Element(ElementBase):
             except AttributeError as error:
                 self._handle_driver_error(error)
             except StaleElementReferenceException as error:
-                self._handle_driver_error(error)
+                self.logger.debug(error)
+                self.logger.warning(f"StaleElementReferenceException\nRe-acquire element")
+                self.native = None
+                self._get_native()
+                continue
             except Exception as error:
                 # Some instability detected, information gathering required
                 self.logger.error(error)
                 self.logger.error(type(error))
                 self.logger.error(traceback.format_stack())
                 self._handle_driver_error(error)
+                self.scroll_to_top(percent=0.75, speed=8000)
 
         raise GeneralElementException(
             msg=f"Failed to scroll to element with locator: {locator}",
@@ -1223,7 +1216,7 @@ class Element(ElementBase):
         Returns:
             Element: Self instance on success.
         """
-        self.logger.info(f"{inspect.currentframe().f_code.co_name}")
+        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
         start_time = time.time()
 
         while time.time() - start_time < self.timeout:
@@ -1245,7 +1238,11 @@ class Element(ElementBase):
             except AttributeError as error:
                 self._handle_driver_error(error)
             except StaleElementReferenceException as error:
-                self._handle_driver_error(error)
+                self.logger.debug(error)
+                self.logger.warning(f"StaleElementReferenceException\nRe-acquire element")
+                self.native = None
+                self._get_native()
+                continue
 
         raise GeneralElementException(
             msg=f"Failed to {inspect.currentframe().f_code.co_name} within {self.timeout=}",
@@ -1263,7 +1260,7 @@ class Element(ElementBase):
         Returns:
             Element: Self instance on success.
         """
-        self.logger.info(f"{inspect.currentframe().f_code.co_name}")
+        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
         start_time = time.time()
 
         while time.time() - start_time < self.timeout:
@@ -1285,7 +1282,11 @@ class Element(ElementBase):
             except AttributeError as error:
                 self._handle_driver_error(error)
             except StaleElementReferenceException as error:
-                self._handle_driver_error(error)
+                self.logger.debug(error)
+                self.logger.warning(f"StaleElementReferenceException\nRe-acquire element")
+                self.native = None
+                self._get_native()
+                continue
 
         raise GeneralElementException(
             msg=f"Failed to {inspect.currentframe().f_code.co_name} within {self.timeout=}",
@@ -1320,7 +1321,7 @@ class Element(ElementBase):
         Returns:
             Element: Self instance on success.
         """
-        self.logger.info(f"{inspect.currentframe().f_code.co_name}")
+        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
         start_time = time.time()
 
         while time.time() - start_time < self.timeout:
@@ -1342,7 +1343,11 @@ class Element(ElementBase):
             except AttributeError as error:
                 self._handle_driver_error(error)
             except StaleElementReferenceException as error:
-                self._handle_driver_error(error)
+                self.logger.debug(error)
+                self.logger.warning(f"StaleElementReferenceException\nRe-acquire element")
+                self.native = None
+                self._get_native()
+                continue
 
         raise GeneralElementException(
             msg=f"Failed to {inspect.currentframe().f_code.co_name} within {self.timeout=} {direction=} {percent=}",
@@ -1356,20 +1361,14 @@ class Element(ElementBase):
         Returns:
             Element: Self instance if successful.
         """
-        self.logger.info(f"{inspect.currentframe().f_code.co_name}")
+        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
         start_time = time.time()
 
         while time.time() - start_time < self.timeout:
             try:
                 self._get_driver()
 
-                current_element = self._get_element(
-                    locator=self.locator,
-                    timeout=self.timeout,
-                    poll_frequency=self.poll_frequency,
-                    ignored_exceptions=self.ignored_exceptions,
-                    contains=self.contains
-                )
+                current_element = self._get_native()
 
                 current_element.clear()
                 return cast('Element', self)
@@ -1380,7 +1379,11 @@ class Element(ElementBase):
             except AttributeError as error:
                 self._handle_driver_error(error)
             except StaleElementReferenceException as error:
-                self._handle_driver_error(error)
+                self.logger.debug(error)
+                self.logger.warning(f"StaleElementReferenceException\nRe-acquire element")
+                self.native = None
+                self._get_native()
+                continue
 
         raise GeneralElementException(
             msg=f"Failed to clear element within {self.timeout=}",
@@ -1395,20 +1398,14 @@ class Element(ElementBase):
         Returns:
             dict: Dictionary with keys 'x' and 'y', or None on failure.
         """
-        self.logger.info(f"{inspect.currentframe().f_code.co_name}")
+        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
         start_time = time.time()
 
         while time.time() - start_time < self.timeout:
             try:
                 self._get_driver()
 
-                current_element = self._get_element(
-                    locator=self.locator,
-                    timeout=self.timeout,
-                    poll_frequency=self.poll_frequency,
-                    ignored_exceptions=self.ignored_exceptions,
-                    contains=self.contains
-                )
+                current_element = self._get_native()
 
                 return current_element.location_in_view  # Appium WebElement property
             except NoSuchDriverException as error:
@@ -1418,7 +1415,11 @@ class Element(ElementBase):
             except AttributeError as error:
                 self._handle_driver_error(error)
             except StaleElementReferenceException as error:
-                self._handle_driver_error(error)
+                self.logger.debug(error)
+                self.logger.warning(f"StaleElementReferenceException\nRe-acquire element")
+                self.native = None
+                self._get_native()
+                continue
 
         raise GeneralElementException(
             msg=f"Failed to get location_in_view within {self.timeout=}",
@@ -1436,7 +1437,7 @@ class Element(ElementBase):
         Returns:
             Element: Self instance on success.
         """
-        self.logger.info(f"{inspect.currentframe().f_code.co_name}")
+        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
         self.logger.warning(f"Method {inspect.currentframe().f_code.co_name} is not implemented in UiAutomator2")
 
         start_time = time.time()
@@ -1445,13 +1446,7 @@ class Element(ElementBase):
             try:
                 self._get_driver()
 
-                element = self._get_element(
-                    locator=self.locator,
-                    timeout=self.timeout,
-                    poll_frequency=self.poll_frequency,
-                    ignored_exceptions=self.ignored_exceptions,
-                    contains=self.contains
-                )
+                element = self._get_native()
 
                 element.set_value(value)
                 return cast('Element', self)
@@ -1463,7 +1458,11 @@ class Element(ElementBase):
             except AttributeError as error:
                 self._handle_driver_error(error)
             except StaleElementReferenceException as error:
-                self._handle_driver_error(error)
+                self.logger.debug(error)
+                self.logger.warning(f"StaleElementReferenceException\nRe-acquire element")
+                self.native = None
+                self._get_native()
+                continue
 
         raise GeneralElementException(
             msg=f"Failed to set_value({value}) within {self.timeout=}",
@@ -1480,7 +1479,7 @@ class Element(ElementBase):
         Returns:
             Element: Self instance on success.
         """
-        self.logger.info(f"{inspect.currentframe().f_code.co_name}")
+        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
         start_time = time.time()
 
         text = "".join(value)
@@ -1489,13 +1488,7 @@ class Element(ElementBase):
             try:
                 self._get_driver()
 
-                element = self._get_element(
-                    locator=self.locator,
-                    timeout=self.timeout,
-                    poll_frequency=self.poll_frequency,
-                    ignored_exceptions=self.ignored_exceptions,
-                    contains=self.contains
-                )
+                element = self._get_native()
 
                 element.send_keys(text)
                 return cast('Element', self)
@@ -1507,7 +1500,11 @@ class Element(ElementBase):
             except AttributeError as error:
                 self._handle_driver_error(error)
             except StaleElementReferenceException as error:
-                self._handle_driver_error(error)
+                self.logger.debug(error)
+                self.logger.warning(f"StaleElementReferenceException\nRe-acquire element")
+                self.native = None
+                self._get_native()
+                continue
 
         raise GeneralElementException(
             msg=f"Failed to send_keys({text}) within {self.timeout=}",
@@ -1521,20 +1518,14 @@ class Element(ElementBase):
         Returns:
             Optional[str]: The tag name of the element, or None if not retrievable.
         """
-        self.logger.info(f"{inspect.currentframe().f_code.co_name}")
+        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
         start_time = time.time()
 
         while time.time() - start_time < self.timeout:
             try:
                 self._get_driver()
 
-                element = self._get_element(
-                    locator=self.locator,
-                    timeout=self.timeout,
-                    poll_frequency=self.poll_frequency,
-                    ignored_exceptions=self.ignored_exceptions,
-                    contains=self.contains
-                )
+                element = self._get_native()
 
                 return element.tag_name
 
@@ -1545,7 +1536,11 @@ class Element(ElementBase):
             except AttributeError as error:
                 self._handle_driver_error(error)
             except StaleElementReferenceException as error:
-                self._handle_driver_error(error)
+                self.logger.debug(error)
+                self.logger.warning(f"StaleElementReferenceException\nRe-acquire element")
+                self.native = None
+                self._get_native()
+                continue
 
         raise GeneralElementException(
             msg=f"Failed to retrieve tag_name within {self.timeout=}",
@@ -1559,20 +1554,14 @@ class Element(ElementBase):
         Returns:
             str: Text content of the element.
         """
-        self.logger.info(f"{inspect.currentframe().f_code.co_name}")
+        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
         start_time = time.time()
 
         while time.time() - start_time < self.timeout:
             try:
                 self._get_driver()
 
-                element = self._get_element(
-                    locator=self.locator,
-                    timeout=self.timeout,
-                    poll_frequency=self.poll_frequency,
-                    ignored_exceptions=self.ignored_exceptions,
-                    contains=self.contains
-                )
+                element = self._get_native()
 
                 return element.text
 
@@ -1583,7 +1572,11 @@ class Element(ElementBase):
             except AttributeError as error:
                 self._handle_driver_error(error)
             except StaleElementReferenceException as error:
-                self._handle_driver_error(error)
+                self.logger.debug(error)
+                self.logger.warning(f"StaleElementReferenceException\nRe-acquire element")
+                self.native = None
+                self._get_native()
+                continue
 
         raise GeneralElementException(
             msg=f"Failed to retrieve text within {self.timeout=}",
@@ -1597,20 +1590,14 @@ class Element(ElementBase):
         Returns:
             Element: Self instance on success.
         """
-        self.logger.info(f"{inspect.currentframe().f_code.co_name}")
+        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
         self.logger.warning(f"Method {inspect.currentframe().f_code.co_name} is not implemented in UiAutomator2")
         start_time = time.time()
 
         while time.time() - start_time < self.timeout:
             try:
                 self._get_driver()
-                element = self._get_element(
-                    locator=self.locator,
-                    timeout=self.timeout,
-                    poll_frequency=self.poll_frequency,
-                    ignored_exceptions=self.ignored_exceptions,
-                    contains=self.contains
-                )
+                element = self._get_native()
                 element.submit()
                 return cast('Element', self)
 
@@ -1621,7 +1608,11 @@ class Element(ElementBase):
             except AttributeError as error:
                 self._handle_driver_error(error)
             except StaleElementReferenceException as error:
-                self._handle_driver_error(error)
+                self.logger.debug(error)
+                self.logger.warning(f"StaleElementReferenceException\nRe-acquire element")
+                self.native = None
+                self._get_native()
+                continue
 
         raise GeneralElementException(
             msg=f"Failed to submit element within {self.timeout=}",
@@ -1639,7 +1630,7 @@ class Element(ElementBase):
         Raises:
             GeneralElementException: If shadow root is not available or an error occurs.
         """
-        self.logger.info(f"{inspect.currentframe().f_code.co_name}")
+        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
         self.logger.warning(f"Method {inspect.currentframe().f_code.co_name} is not implemented in UiAutomator2")
 
         start_time = time.time()
@@ -1647,13 +1638,7 @@ class Element(ElementBase):
         while time.time() - start_time < self.timeout:
             try:
                 self._get_driver()
-                element = self._get_element(
-                    locator=self.locator,
-                    timeout=self.timeout,
-                    poll_frequency=self.poll_frequency,
-                    ignored_exceptions=self.ignored_exceptions,
-                    contains=self.contains
-                )
+                element = self._get_native()
                 return element.shadow_root
 
             except NoSuchDriverException as error:
@@ -1681,7 +1666,7 @@ class Element(ElementBase):
         Raises:
             GeneralElementException: If element could not be scrolled into view or location determined.
         """
-        self.logger.info(f"{inspect.currentframe().f_code.co_name}")
+        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
         self.logger.warning(f"Method {inspect.currentframe().f_code.co_name} is not implemented in UiAutomator2")
 
         start_time = time.time()
@@ -1690,13 +1675,7 @@ class Element(ElementBase):
             try:
                 self._get_driver()
 
-                current_element = self._get_element(
-                    locator=self.locator,
-                    timeout=self.timeout,
-                    poll_frequency=self.poll_frequency,
-                    ignored_exceptions=self.ignored_exceptions,
-                    contains=self.contains
-                )
+                current_element = self._get_native()
 
                 return current_element.location_once_scrolled_into_view
 
@@ -1724,20 +1703,14 @@ class Element(ElementBase):
         Raises:
             GeneralElementException: If size cannot be determined.
         """
-        self.logger.info(f"{inspect.currentframe().f_code.co_name}")
+        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
         start_time = time.time()
 
         while time.time() - start_time < self.timeout:
             try:
                 self._get_driver()
 
-                current_element = self._get_element(
-                    locator=self.locator,
-                    timeout=self.timeout,
-                    poll_frequency=self.poll_frequency,
-                    ignored_exceptions=self.ignored_exceptions,
-                    contains=self.contains
-                )
+                current_element = self._get_native()
 
                 return current_element.size
 
@@ -1748,7 +1721,11 @@ class Element(ElementBase):
             except AttributeError as error:
                 self._handle_driver_error(error)
             except StaleElementReferenceException as error:
-                self._handle_driver_error(error)
+                self.logger.debug(error)
+                self.logger.warning(f"StaleElementReferenceException\nRe-acquire element")
+                self.native = None
+                self._get_native()
+                continue
             except WebDriverException as error:
                 self._handle_driver_error(error)
 
@@ -1770,7 +1747,7 @@ class Element(ElementBase):
         Raises:
             GeneralElementException: If value could not be retrieved within timeout.
         """
-        self.logger.info(f"{inspect.currentframe().f_code.co_name}")
+        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
         self.logger.warning(f"Method {inspect.currentframe().f_code.co_name} is not implemented in UiAutomator2")
 
         start_time = time.time()
@@ -1779,13 +1756,7 @@ class Element(ElementBase):
             try:
                 self._get_driver()
 
-                current_element = self._get_element(
-                    locator=self.locator,
-                    timeout=self.timeout,
-                    poll_frequency=self.poll_frequency,
-                    ignored_exceptions=self.ignored_exceptions,
-                    contains=self.contains
-                )
+                current_element = self._get_native()
 
                 return current_element.value_of_css_property(property_name)
 
@@ -1796,7 +1767,11 @@ class Element(ElementBase):
             except AttributeError as error:
                 self._handle_driver_error(error)
             except StaleElementReferenceException as error:
-                self._handle_driver_error(error)
+                self.logger.debug(error)
+                self.logger.warning(f"StaleElementReferenceException\nRe-acquire element")
+                self.native = None
+                self._get_native()
+                continue
             except WebDriverException as error:
                 self._handle_driver_error(error)
 
@@ -1816,7 +1791,7 @@ class Element(ElementBase):
         Raises:
             GeneralElementException: If location could not be retrieved within timeout.
         """
-        self.logger.info(f"{inspect.currentframe().f_code.co_name}")
+        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
         self.logger.warning(f"Method {inspect.currentframe().f_code.co_name} is not implemented in UiAutomator2")
 
         start_time = time.time()
@@ -1825,13 +1800,7 @@ class Element(ElementBase):
             try:
                 self._get_driver()
 
-                current_element = self._get_element(
-                    locator=self.locator,
-                    timeout=self.timeout,
-                    poll_frequency=self.poll_frequency,
-                    ignored_exceptions=self.ignored_exceptions,
-                    contains=self.contains
-                )
+                current_element = self._get_native()
 
                 return current_element.location
 
@@ -1842,7 +1811,11 @@ class Element(ElementBase):
             except AttributeError as error:
                 self._handle_driver_error(error)
             except StaleElementReferenceException as error:
-                self._handle_driver_error(error)
+                self.logger.debug(error)
+                self.logger.warning(f"StaleElementReferenceException\nRe-acquire element")
+                self.native = None
+                self._get_native()
+                continue
             except WebDriverException as error:
                 self._handle_driver_error(error)
 
@@ -1861,20 +1834,14 @@ class Element(ElementBase):
         Raises:
             GeneralElementException: If rect could not be retrieved within timeout.
         """
-        self.logger.info(f"{inspect.currentframe().f_code.co_name}")
+        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
         start_time = time.time()
 
         while time.time() - start_time < self.timeout:
             try:
                 self._get_driver()
 
-                current_element = self._get_element(
-                    locator=self.locator,
-                    timeout=self.timeout,
-                    poll_frequency=self.poll_frequency,
-                    ignored_exceptions=self.ignored_exceptions,
-                    contains=self.contains
-                )
+                current_element = self._get_native()
 
                 return current_element.rect
 
@@ -1885,7 +1852,11 @@ class Element(ElementBase):
             except AttributeError as error:
                 self._handle_driver_error(error)
             except StaleElementReferenceException as error:
-                self._handle_driver_error(error)
+                self.logger.debug(error)
+                self.logger.warning(f"StaleElementReferenceException\nRe-acquire element")
+                self.native = None
+                self._get_native()
+                continue
             except WebDriverException as error:
                 self._handle_driver_error(error)
 
@@ -1901,20 +1872,14 @@ class Element(ElementBase):
         Returns:
             str: The ARIA role of the element, or None if not found.
         """
-        self.logger.info(f"{inspect.currentframe().f_code.co_name}")
+        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
         start_time = time.time()
 
         while time.time() - start_time < self.timeout:
             try:
                 self._get_driver()
 
-                current_element = self._get_element(
-                    locator=self.locator,
-                    timeout=self.timeout,
-                    poll_frequency=self.poll_frequency,
-                    ignored_exceptions=self.ignored_exceptions,
-                    contains=self.contains
-                )
+                current_element = self._get_native()
 
                 return current_element.aria_role
 
@@ -1925,7 +1890,11 @@ class Element(ElementBase):
             except AttributeError as error:
                 self._handle_driver_error(error)
             except StaleElementReferenceException as error:
-                self._handle_driver_error(error)
+                self.logger.debug(error)
+                self.logger.warning(f"StaleElementReferenceException\nRe-acquire element")
+                self.native = None
+                self._get_native()
+                continue
             except WebDriverException as error:
                 self._handle_driver_error(error)
 
@@ -1941,20 +1910,14 @@ class Element(ElementBase):
         Returns:
             Optional[str]: Accessible name or None if not found.
         """
-        self.logger.info(f"{inspect.currentframe().f_code.co_name}")
+        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
         start_time = time.time()
 
         while time.time() - start_time < self.timeout:
             try:
                 self._get_driver()
 
-                current_element = self._get_element(
-                    locator=self.locator,
-                    timeout=self.timeout,
-                    poll_frequency=self.poll_frequency,
-                    ignored_exceptions=self.ignored_exceptions,
-                    contains=self.contains
-                )
+                current_element = self._get_native()
 
                 return current_element.accessible_name
 
@@ -1965,7 +1928,11 @@ class Element(ElementBase):
             except AttributeError as error:
                 self._handle_driver_error(error)
             except StaleElementReferenceException as error:
-                self._handle_driver_error(error)
+                self.logger.debug(error)
+                self.logger.warning(f"StaleElementReferenceException\nRe-acquire element")
+                self.native = None
+                self._get_native()
+                continue
             except WebDriverException as error:
                 self._handle_driver_error(error)
 
@@ -1981,20 +1948,14 @@ class Element(ElementBase):
         Returns:
             Optional[str]: Base64-encoded screenshot string or None if failed.
         """
-        self.logger.info(f"{inspect.currentframe().f_code.co_name}")
+        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
         start_time = time.time()
 
         while time.time() - start_time < self.timeout:
             try:
                 self._get_driver()
 
-                current_element = self._get_element(
-                    locator=self.locator,
-                    timeout=self.timeout,
-                    poll_frequency=self.poll_frequency,
-                    ignored_exceptions=self.ignored_exceptions,
-                    contains=self.contains
-                )
+                current_element = self._get_native()
 
                 return current_element.screenshot_as_base64
 
@@ -2005,7 +1966,11 @@ class Element(ElementBase):
             except AttributeError as error:
                 self._handle_driver_error(error)
             except StaleElementReferenceException as error:
-                self._handle_driver_error(error)
+                self.logger.debug(error)
+                self.logger.warning(f"StaleElementReferenceException\nRe-acquire element")
+                self.native = None
+                self._get_native()
+                continue
             except WebDriverException as error:
                 self._handle_driver_error(error)
 
@@ -2021,20 +1986,14 @@ class Element(ElementBase):
         Returns:
             Optional[bytes]: PNG-encoded screenshot bytes or None if failed.
         """
-        self.logger.info(f"{inspect.currentframe().f_code.co_name}")
+        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
         start_time = time.time()
 
         while time.time() - start_time < self.timeout:
             try:
                 self._get_driver()
 
-                current_element = self._get_element(
-                    locator=self.locator,
-                    timeout=self.timeout,
-                    poll_frequency=self.poll_frequency,
-                    ignored_exceptions=self.ignored_exceptions,
-                    contains=self.contains
-                )
+                current_element = self._get_native()
 
                 return current_element.screenshot_as_png
 
@@ -2045,7 +2004,11 @@ class Element(ElementBase):
             except AttributeError as error:
                 self._handle_driver_error(error)
             except StaleElementReferenceException as error:
-                self._handle_driver_error(error)
+                self.logger.debug(error)
+                self.logger.warning(f"StaleElementReferenceException\nRe-acquire element")
+                self.native = None
+                self._get_native()
+                continue
             except WebDriverException as error:
                 self._handle_driver_error(error)
 
@@ -2063,20 +2026,14 @@ class Element(ElementBase):
         Returns:
             bool: True if successful, False otherwise.
         """
-        self.logger.info(f"{inspect.currentframe().f_code.co_name}")
+        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
         start_time = time.time()
 
         while time.time() - start_time < self.timeout:
             try:
                 self._get_driver()
 
-                current_element = self._get_element(
-                    locator=self.locator,
-                    timeout=self.timeout,
-                    poll_frequency=self.poll_frequency,
-                    ignored_exceptions=self.ignored_exceptions,
-                    contains=self.contains
-                )
+                current_element = self._get_native()
 
                 return current_element.screenshot(filename)
 
@@ -2087,7 +2044,11 @@ class Element(ElementBase):
             except AttributeError as error:
                 self._handle_driver_error(error)
             except StaleElementReferenceException as error:
-                self._handle_driver_error(error)
+                self.logger.debug(error)
+                self.logger.warning(f"StaleElementReferenceException\nRe-acquire element")
+                self.native = None
+                self._get_native()
+                continue
             except IOError as error:
                 self.logger.error(f"IOError while saving screenshot to {filename}: {error}")
                 return False
@@ -2104,12 +2065,12 @@ class Element(ElementBase):
         self.base.reconnect()
         time.sleep(0.3)
 
-    def _mobile_gesture(self, name: str, params: Union[dict, list]) -> None:
+    def _mobile_gesture(self, name: str, params: Union[dict, list]) -> typing.Any:
         # https://github.com/appium/appium-uiautomator2-driver/blob/master/docs/android-mobile-gestures.md
-        self.driver.execute_script(name, params)
+        return self.driver.execute_script(name, params)
 
     def _ensure_session_alive(self) -> None:
-        self.logger.info(f"{inspect.currentframe().f_code.co_name}")
+        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
         try:
             self._get_driver()
         except NoSuchDriverException:
@@ -2120,7 +2081,7 @@ class Element(ElementBase):
             self.base.reconnect()
 
     def _get_first_child_class(self, tries: int = 3) -> str:
-        self.logger.info(f"{inspect.currentframe().f_code.co_name}")
+        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
         for _ in range(tries):
             try:
                 parent_element = self
@@ -2130,18 +2091,22 @@ class Element(ElementBase):
                     child_class = child_element.get_attribute('class')
                     if parent_class != child_class:
                         return str(child_class)
-            except StaleElementReferenceException:
+            except StaleElementReferenceException as error:
+                self.logger.debug(error)
+                self.logger.warning(f"StaleElementReferenceException\nRe-acquire element")
+                self.native = None
+                self._get_native()
                 continue
 
     def _get_xpath(self) -> Union[str, None]:
-        self.logger.info(f"{inspect.currentframe().f_code.co_name}")
+        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
         locator = self.handle_locator(self.locator, self.contains)
         if locator[0] == 'xpath':
             return locator[1]
         return self._get_xpath_by_driver()
 
     def _get_xpath_by_driver(self) -> Union[str, None]:
-        self.logger.info(f"{inspect.currentframe().f_code.co_name}")
+        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
         try:
             xpath = "//"
             attrs = self.get_attributes()
@@ -2193,146 +2158,347 @@ class Element(ElementBase):
         Returns:
             XPath string to access the element.
         """
-        self.logger.info(f"{inspect.currentframe().f_code.co_name}")
+        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
         parent_xpath = self._get_xpath()
         return f"{parent_xpath}/*[{index}]"
 
-    def wait(self, timeout: int = 10, poll_frequency: float = 0.5) -> bool:
+    def wait(self, timeout: int = 10, poll_frequency: float = 0.5, return_bool: bool = False) -> Union[bool, 'Element']:
         """Waits for the element to appear (present in DOM).
 
         Args:
             timeout (int): Timeout in seconds.
             poll_frequency (float): Frequency of polling.
+            return_bool (bool): If True - return bool, else return Element (self)
 
         Returns:
             bool: True if the element is found, False otherwise.
         """
-        self.logger.info(f"{inspect.currentframe().f_code.co_name}")
-        try:
-            resolved_locator = self.handle_locator(self.locator, self.contains)
-            if not resolved_locator:
-                self.logger.error("Resolved locator is None or invalid")
-                return False
-            WebDriverWait(self.base.driver, timeout, poll_frequency).until(
-                conditions.present(resolved_locator)
-            )
-            return True
-        except TimeoutException:
-            return False
+        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
+        start_time = time.time()
+        while time.time() - start_time < self.timeout:
+            try:
+                resolved_locator = self.handle_locator(self.locator, self.contains)
+                if not resolved_locator:
+                    self.logger.error("Resolved locator is None or invalid")
+                    if return_bool:
+                        return False
+                    return cast('Element', self)
+                WebDriverWait(self.base.driver, timeout, poll_frequency).until(
+                    conditions.present(resolved_locator)
+                )
+                if return_bool:
+                    return True
+                return cast('Element', self)
+            except TimeoutException:
+                if return_bool:
+                    return False
+                return cast('Element', self)
+            except NoSuchDriverException as error:
+                self._handle_driver_error(error)
+            except InvalidSessionIdException as error:
+                self._handle_driver_error(error)
+            except StaleElementReferenceException as error:
+                self.logger.debug(error)
+                self.logger.warning(f"StaleElementReferenceException\nRe-acquire element")
+                self.native = None
+                self._get_native()
+                continue
+            except WebDriverException as error:
+                self._handle_driver_error(error)
+            except Exception as error:
+                self.logger.error(f"{error}")
+                continue
+        return False
 
-    def wait_visible(self, timeout: int = 10, poll_frequency: float = 0.5) -> bool:
+    def wait_visible(self, timeout: int = 10, poll_frequency: float = 0.5, return_bool: bool = False) -> Union[
+        bool, 'Element']:
         """Waits until the element is visible.
 
         Args:
             timeout (int): Timeout in seconds.
             poll_frequency (float): Frequency of polling.
+            return_bool (bool): If True - return bool, else return Element (self)
 
         Returns:
             bool: True if the element becomes visible, False otherwise.
         """
-        self.logger.info(f"{inspect.currentframe().f_code.co_name}")
-        try:
-            resolved_locator = self.handle_locator(self.locator, self.contains)
-            if not resolved_locator:
-                self.logger.error("Resolved locator is None or invalid")
-                return False
+        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
+        start_time = time.time()
+        while time.time() - start_time < self.timeout:
+            try:
+                resolved_locator = self.handle_locator(self.locator, self.contains)
+                if not resolved_locator:
+                    self.logger.error("Resolved locator is None or invalid")
+                    if return_bool:
+                        return False
+                    return cast('Element', self)
 
-            WebDriverWait(self.base.driver, timeout, poll_frequency).until(
-                conditions.visible(resolved_locator)
-            )
-            return True
-        except TimeoutException:
-            return False
+                WebDriverWait(self.base.driver, timeout, poll_frequency).until(
+                    conditions.visible(resolved_locator)
+                )
+                if return_bool:
+                    return True
+                return cast('Element', self)
+            except TimeoutException:
+                if return_bool:
+                    return False
+                return cast('Element', self)
+            except NoSuchDriverException as error:
+                self._handle_driver_error(error)
+            except InvalidSessionIdException as error:
+                self._handle_driver_error(error)
+            except StaleElementReferenceException as error:
+                self.logger.debug(error)
+                self.logger.warning(f"StaleElementReferenceException\nRe-acquire element")
+                self.native = None
+                self._get_native()
+                continue
+            except WebDriverException as error:
+                self._handle_driver_error(error)
+            except Exception as error:
+                self.logger.error(f"{error}")
+                continue
+        return False
 
-    def wait_clickable(self, timeout: int = 10, poll_frequency: float = 0.5) -> bool:
+    def wait_clickable(self, timeout: int = 10, poll_frequency: float = 0.5, return_bool: bool = False) -> Union[
+        bool, 'Element']:
         """Waits until the element is clickable.
 
         Args:
             timeout (int): Timeout in seconds.
             poll_frequency (float): Frequency of polling.
+            return_bool (bool): If True - return bool, else return Element (self)
 
         Returns:
             bool: True if the element becomes clickable, False otherwise.
         """
-        self.logger.info(f"{inspect.currentframe().f_code.co_name}")
-        try:
-            resolved_locator = self.handle_locator(self.locator, self.contains)
-            if not resolved_locator:
-                self.logger.error("Resolved locator is None or invalid")
-                return False
+        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
+        start_time = time.time()
+        while time.time() - start_time < self.timeout:
+            try:
+                resolved_locator = self.handle_locator(self.locator, self.contains)
+                if not resolved_locator:
+                    self.logger.error("Resolved locator is None or invalid")
+                    if return_bool:
+                        return False
+                    return cast('Element', self)
 
-            WebDriverWait(self.base.driver, timeout, poll_frequency).until(
-                conditions.clickable(resolved_locator)
-            )
-            return True
-        except TimeoutException:
-            return False
+                WebDriverWait(self.base.driver, timeout, poll_frequency).until(
+                    conditions.clickable(resolved_locator)
+                )
+                if return_bool:
+                    return True
+                return cast('Element', self)
+            except TimeoutException:
+                if return_bool:
+                    return False
+                return cast('Element', self)
+            except NoSuchDriverException as error:
+                self._handle_driver_error(error)
+            except InvalidSessionIdException as error:
+                self._handle_driver_error(error)
+            except StaleElementReferenceException as error:
+                self.logger.debug(error)
+                self.logger.warning(f"StaleElementReferenceException\nRe-acquire element")
+                self.native = None
+                self._get_native()
+                continue
+            except WebDriverException as error:
+                self._handle_driver_error(error)
+            except Exception as error:
+                self.logger.error(f"{error}")
+                continue
+        return False
 
-    def wait_for_not(self, timeout: int = 10, poll_frequency: float = 0.5) -> bool:
+    def wait_for_not(self, timeout: int = 10, poll_frequency: float = 0.5, return_bool: bool = False) -> Union[
+        bool, 'Element']:
         """Waits until the element is no longer present in the DOM.
 
         Args:
             timeout (int): Timeout in seconds.
             poll_frequency (float): Frequency of polling.
+            return_bool (bool): If True - return bool, else return Element (self)
 
         Returns:
             bool: True if the element disappears, False otherwise.
         """
-        self.logger.info(f"{inspect.currentframe().f_code.co_name}")
-        try:
-            resolved_locator = self.handle_locator(self.locator, self.contains)
-            if not resolved_locator:
-                self.logger.error("Resolved locator is None or invalid")
-                return True
-            WebDriverWait(self.base.driver, timeout, poll_frequency).until(
-                conditions.not_present(resolved_locator)
-            )
-            return True
-        except TimeoutException:
-            return False
+        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
+        start_time = time.time()
+        while time.time() - start_time < self.timeout:
+            try:
+                resolved_locator = self.handle_locator(self.locator, self.contains)
+                if not resolved_locator:
+                    if return_bool:
+                        return False
+                    return cast('Element', self)
+                WebDriverWait(self.base.driver, timeout, poll_frequency).until(
+                    conditions.not_present(resolved_locator)
+                )
+                if return_bool:
+                    return True
+                return cast('Element', self)
+            except TimeoutException:
+                if return_bool:
+                    return False
+                return cast('Element', self)
+            except NoSuchDriverException as error:
+                self._handle_driver_error(error)
+            except InvalidSessionIdException as error:
+                self._handle_driver_error(error)
+            except StaleElementReferenceException as error:
+                self.logger.debug(error)
+                self.logger.warning(f"StaleElementReferenceException\nRe-acquire element")
+                self.native = None
+                self._get_native()
+                continue
+            except WebDriverException as error:
+                self._handle_driver_error(error)
+            except Exception as error:
+                self.logger.error(f"{error}")
+                continue
+        return False
 
-    def wait_for_not_visible(self, timeout: int = 10, poll_frequency: float = 0.5) -> bool:
+    def wait_for_not_visible(self, timeout: int = 10, poll_frequency: float = 0.5, return_bool: bool = False) -> Union[
+        bool, 'Element']:
         """Waits until the element becomes invisible.
 
         Args:
             timeout (int): Timeout in seconds.
             poll_frequency (float): Polling frequency.
+            return_bool (bool): If True - return bool, else return Element (self)
 
         Returns:
             bool: True if the element becomes invisible, False otherwise.
         """
-        self.logger.info(f"{inspect.currentframe().f_code.co_name}")
-        try:
-            resolved_locator = self.handle_locator(self.locator, self.contains)
-            if not resolved_locator:
-                self.logger.error("Resolved locator is None or invalid")
-                return True
-            WebDriverWait(self.base.driver, timeout, poll_frequency).until(
-                conditions.not_visible(resolved_locator)
-            )
-            return True
-        except TimeoutException:
-            return False
+        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
+        start_time = time.time()
+        while time.time() - start_time < self.timeout:
+            try:
+                resolved_locator = self.handle_locator(self.locator, self.contains)
+                if not resolved_locator:
+                    if return_bool:
+                        return False
+                    return cast('Element', self)
+                WebDriverWait(self.base.driver, timeout, poll_frequency).until(
+                    conditions.not_visible(resolved_locator)
+                )
+                if return_bool:
+                    return True
+                return cast('Element', self)
+            except TimeoutException:
+                if return_bool:
+                    return False
+                return cast('Element', self)
+            except NoSuchDriverException as error:
+                self._handle_driver_error(error)
+            except InvalidSessionIdException as error:
+                self._handle_driver_error(error)
+            except StaleElementReferenceException as error:
+                self.logger.debug(error)
+                self.logger.warning(f"StaleElementReferenceException\nRe-acquire element")
+                self.native = None
+                self._get_native()
+                continue
+            except WebDriverException as error:
+                self._handle_driver_error(error)
+            except Exception as error:
+                self.logger.error(f"{error}")
+                continue
+        return False
 
-    def wait_for_not_clickable(self, timeout: int = 10, poll_frequency: float = 0.5) -> bool:
+    def wait_for_not_clickable(self, timeout: int = 10, poll_frequency: float = 0.5, return_bool: bool = False) -> \
+            Union[bool, 'Element']:
         """Waits until the element becomes not clickable.
 
         Args:
             timeout (int): Timeout in seconds.
             poll_frequency (float): Polling frequency.
+            return_bool (bool): If True - return bool, else return Element (self)
 
         Returns:
             bool: True if the element becomes not clickable, False otherwise.
         """
-        self.logger.info(f"{inspect.currentframe().f_code.co_name}")
-        try:
-            resolved_locator = self.handle_locator(self.locator, self.contains)
-            if not resolved_locator:
-                self.logger.error("Resolved locator is None or invalid")
-                return True
-            WebDriverWait(self.base.driver, timeout, poll_frequency).until(
-                conditions.not_clickable(resolved_locator)
-            )
-            return True
-        except TimeoutException:
-            return False
+        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
+        start_time = time.time()
+        while time.time() - start_time < self.timeout:
+            try:
+                resolved_locator = self.handle_locator(self.locator, self.contains)
+                if not resolved_locator:
+                    self.logger.error("Resolved locator is None or invalid")
+                    if return_bool:
+                        return False
+                    return cast('Element', self)
+                WebDriverWait(self.base.driver, timeout, poll_frequency).until(
+                    conditions.not_clickable(resolved_locator)
+                )
+                if return_bool:
+                    return True
+                return cast('Element', self)
+            except TimeoutException:
+                if return_bool:
+                    return False
+                return cast('Element', self)
+            except NoSuchDriverException as error:
+                self._handle_driver_error(error)
+            except InvalidSessionIdException as error:
+                self._handle_driver_error(error)
+            except StaleElementReferenceException as error:
+                self.logger.debug(error)
+                self.logger.warning(f"StaleElementReferenceException\nRe-acquire element")
+                self.native = None
+                self._get_native()
+                continue
+            except WebDriverException as error:
+                self._handle_driver_error(error)
+            except Exception as error:
+                self.logger.error(f"{error}")
+                continue
+        return False
+
+    @property
+    def should(self) -> 'Should':
+        """Provides DSL-like assertions: element.should.have.text(...), etc."""
+        from shadowstep.element.should import Should  # импорт внутри метода для избежания циклической зависимости
+        return Should(self)
+
+    def _get_native(self) -> WebElement:
+        """
+        Returns either the provided native element or resolves via locator.
+        """
+        if self.native:
+            return self.native
+
+        return self._get_element(
+            locator=self.locator,
+            timeout=self.timeout,
+            poll_frequency=self.poll_frequency,
+            ignored_exceptions=self.ignored_exceptions,
+            contains=self.contains
+        )
+
+    def _contains_to_xpath(self, xpath: Tuple[str, str]) -> Tuple[str, str]:
+        """
+        Applies contains(...) only to specific attributes in XPath expression.
+
+        Args:
+            xpath (Tuple[str, str]): The ('strategy', 'xpath') pair.
+
+        Returns:
+            Tuple[str, str]: Transformed XPath with selective contains().
+        """
+        strategy, value = xpath
+
+        # Бьём конкретно по целевым атрибутам, которые нужно оборачивать в contains()
+        patterns = {
+            'text': r"@text='([^']*)'",
+            'content-desc': r"@content-desc='([^']*)'",
+            'contentDescription': r"@contentDescription='([^']*)'",
+            'label': r"@label='([^']*)'",
+            'title': r"@title='([^']*)'",
+            'name': r"@name='([^']*)'",
+            'hint': r"@hint='([^']*)'"
+        }
+
+        for attr, pattern in patterns.items():
+            value = re.sub(pattern, lambda m: f"contains(@{attr}, '{m.group(1)}')", value)
+        return strategy, value

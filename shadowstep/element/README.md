@@ -30,7 +30,7 @@ ok_button = Element(locator={"text": "OK"})
 ok_button.tap()
 
 # Scroll to a deeply nested cousin
-wifi_toggle = ok_button.get_cousin(
+wifi_toggle = ok_button.from_parent(
     ancestor_locator={"resource-id": "android:id/list"},
     cousin_locator={"text": "Wi‑Fi"}
 )

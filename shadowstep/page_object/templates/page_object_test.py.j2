@@ -1,0 +1,21 @@
+import time
+import pytest
+from {{ module_path }} import {{ class_name }}
+
+@pytest.fixture()
+def page_object_instance():
+    yield {{ class_name }}()
+
+@pytest.fixture(scope="function")
+def goto_page(app, android_settings):
+    # please add here logic navigate to page
+    pass
+
+
+class {{ test_class_name }}:
+
+    {% for prop in properties %}
+    def test_{{ prop }}(self, page_object_instance, goto_page):
+        assert page_object_instance.{{ prop }}.is_visible()
+    {% endfor %}
+

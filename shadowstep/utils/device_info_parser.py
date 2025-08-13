@@ -1,8 +1,10 @@
-from pathlib import Path
-from typing import List, Dict, Any, Callable, Optional, Set, Tuple, Union, Final
+# shadowstep/utils/device_info_parser.py
 
-from icecream import ic
-from loguru import logger
+from pathlib import Path
+from typing import List, Dict, Any, Callable, Optional, Set, Tuple, Final
+
+import logging
+logger = logging.getLogger(__name__)
 import inspect
 import os
 import re
@@ -13,7 +15,7 @@ from datetime import datetime
 from matplotlib import cm
 from pytest_adaptavist import MetaBlock
 
-from core.utils.zephyr_uploader import ZephyrUploader
+from shadowstep.utils.zephyr_uploader import ZephyrUploader
 
 
 class DeviceInfoAnalyzer:
@@ -122,7 +124,7 @@ class DeviceInfoAnalyzer:
         Returns:
             Optional[str]: Путь к изображению или None.
         """
-        self.logger.info(f"{inspect.currentframe().f_code.co_name}")
+        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
 
         try:
 
@@ -159,7 +161,7 @@ class DeviceInfoAnalyzer:
         Returns:
             Optional[str]: Путь к графику или None.
         """
-        self.logger.info(f"{inspect.currentframe().f_code.co_name}")
+        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
 
         try:
 
@@ -197,8 +199,7 @@ class DeviceInfoAnalyzer:
         Returns:
             Optional[str]: Путь к графику или None.
         """
-        self.logger.info(f"{inspect.currentframe().f_code.co_name}")
-        ic.disable()
+        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
 
         try:
 
@@ -225,7 +226,7 @@ class DeviceInfoAnalyzer:
             self.logger.exception(error)
             raise
 
-    def generate_and_attach_all_graphs(self, mb: MetaBlock, output_dir: str) -> None:
+    def generate_and_attach_all_graphs(self, mb: Optional[MetaBlock], output_dir: str) -> None:
         """
         Генерирует графики battery/cpu/mem по всем накопленным логам
         и прикрепляет их к текущему шагу Zephyr.
@@ -234,15 +235,16 @@ class DeviceInfoAnalyzer:
             mb (MetaBlock): Zephyr метаобъект.
             output_dir (str): Куда сохранять графики.
         """
-        self.logger.info(f"{inspect.currentframe().f_code.co_name}")
+        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
 
         unique_dirs = self._get_unique_directories(self.device_info_filepath)
 
-        for input_dir in unique_dirs:
-            self.logger.info(f"Генерация графиков для директории: {input_dir}")
-            self._attach_device_graphs(mb=mb, input_dir=input_dir, output_dir=output_dir)
+        if mb is not None:
+            for input_dir in unique_dirs:
+                self.logger.info(f"Генерация графиков для директории: {input_dir}")
+                self._attach_device_graphs(mb=mb, input_dir=input_dir, output_dir=output_dir)
 
-    def _add_attachment_zephyr(self, mb: MetaBlock, directory: str, filename: str) -> bool:
+    def _add_attachment_zephyr(self, mb: Optional[MetaBlock], directory: str, filename: str) -> bool:
         """
         Прикрепляет лог-файл к Zephyr и сохраняет путь в накопитель.
 
@@ -254,12 +256,13 @@ class DeviceInfoAnalyzer:
         Returns:
             bool: True — успех, False — ошибка.
         """
-        self.logger.info(f"{inspect.currentframe().f_code.co_name}")
+        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
 
         try:
             filepath = os.path.join(directory, filename)
-            # Прикрепляем файл
-            self.zephyr.attach_to_step(mb=mb, filepath=filepath, filename=filename)
+            if mb is not None:
+                # Прикрепляем файл
+                self.zephyr.attach_to_step(mb=mb, filepath=filepath, filename=filename)
             # Добавляем в накопитель
             self.device_info_filepath.add(filepath)
             return True
@@ -467,8 +470,7 @@ class DeviceInfoAnalyzer:
         Returns:
             float: Найденное значение, приведённое к float. Если ничего не найдено — возвращает 0.0.
         """
-        self.logger.info(f"{inspect.currentframe().f_code.co_name}")
-        ic.disable()
+        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
 
         for pattern in patterns:
             try:
@@ -494,7 +496,7 @@ class DeviceInfoAnalyzer:
         Returns:
             List[Tuple[str, str, str]]: (ключ, подпись, цвет).
         """
-        self.logger.info(f"{inspect.currentframe().f_code.co_name}")
+        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
         cmap = cm.get_cmap("tab10")
         colors = cmap.colors
         return [(k, l, colors[i % len(colors)]) for i, (k, l) in enumerate(zip(keys, labels))]
@@ -510,7 +512,7 @@ class DeviceInfoAnalyzer:
         Returns:
             Dict[str, int]: Результат для каждого ключа (0, если не найдено).
         """
-        self.logger.info(f"{inspect.currentframe().f_code.co_name}")
+        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
         result: Dict[str, int] = {}
 
         for key, patterns in pattern_map.items():
@@ -519,7 +521,7 @@ class DeviceInfoAnalyzer:
 
         return result
 
-    def _attach_device_graphs(self, mb: MetaBlock, input_dir: str, output_dir: str) -> None:
+    def _attach_device_graphs(self, mb: Optional[MetaBlock], input_dir: str, output_dir: str) -> None:
         """
         Генерирует графики (battery, cpu, mem) из логов и прикрепляет их к шагу Zephyr.
 
@@ -528,7 +530,7 @@ class DeviceInfoAnalyzer:
             input_dir (str): Папка, где лежат логи.
             output_dir (str): Папка для сохранения графиков.
         """
-        self.logger.info(f"{inspect.currentframe().f_code.co_name}")
+        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
 
         generators = [
             ("Battery", self.battery_info),
@@ -546,7 +548,8 @@ class DeviceInfoAnalyzer:
                             document=file,
                             caption=f'{label} график сгенерирован: {path}'
                         )
-                    self.zephyr.attach_to_step(mb=mb, filepath=path, filename=os.path.basename(path))
+                    if mb is not None:
+                        self.zephyr.attach_to_step(mb=mb, filepath=path, filename=os.path.basename(path))
             except Exception as e:
                 self.logger.warning(f"⚠️ Ошибка при генерации/прикреплении графика {label}: {e}")
 
@@ -560,7 +563,7 @@ class DeviceInfoAnalyzer:
         Returns:
             Set[str]: Множество абсолютных путей к директориям без дубликатов.
         """
-        self.logger.info(f"{inspect.currentframe().f_code.co_name}")
+        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
         unique_dirs: Set[str] = set()
 
         for path_str in filepaths:
@@ -582,7 +585,7 @@ class DeviceInfoAnalyzer:
         Returns:
             str: Строка формата 'YYYY-MM-DD_HH-MM-SS', представляющая текущую дату и время.
         """
-        self.logger.info(f"{inspect.currentframe().f_code.co_name}")
+        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
 
         # Используется для создания уникальных и читаемых имён файлов
         return datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
@@ -598,7 +601,7 @@ class DeviceInfoAnalyzer:
         Returns:
             str: Полное имя файла с расширением .txt.
         """
-        self.logger.info(f"{inspect.currentframe().f_code.co_name}")
+        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
         return f"{prefix}_{timestamp}.txt"
 
     def _write_file(self, directory: str, filename: str, content: str) -> str:
@@ -613,7 +616,7 @@ class DeviceInfoAnalyzer:
         Returns:
             str: Абсолютный путь к созданному файлу.
         """
-        self.logger.info(f"{inspect.currentframe().f_code.co_name}")
+        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
 
         filepath = os.path.join(directory, filename)
 
@@ -642,7 +645,7 @@ class DeviceInfoAnalyzer:
             directory (str): Папка, в которую сохранить результат.
             mb (Optional[MetaBlock]): Метаблок Zephyr для добавления вложения, если есть.
         """
-        self.logger.info(f"{inspect.currentframe().f_code.co_name}")
+        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
 
         # Генерируем имя файла по временной метке
         timestamp = self._generate_timestamp()
@@ -669,7 +672,7 @@ class DeviceInfoAnalyzer:
             directory (str): Путь к директории для сохранения.
             mb (Optional[MetaBlock]): Объект Zephyr (если прикрепление требуется).
         """
-        self.logger.info(f"{inspect.currentframe().f_code.co_name}")
+        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
 
         timestamp = self._generate_timestamp()
         filename = f"device_info_{timestamp}.txt"
@@ -688,7 +691,7 @@ class DeviceInfoAnalyzer:
         filepath = self._write_device_info_file(directory, filename, device_info, package_descriptions)
         self.logger.info(f"Device info written to: {filepath}")
 
-        if mb:
+        if mb is not None:
             self.zephyr.attach_to_step(mb=mb, filepath=filepath, filename=filename)
 
     def _get_device_properties(self) -> Dict[str, str]:
@@ -698,7 +701,7 @@ class DeviceInfoAnalyzer:
         Returns:
             Dict[str, str]: Словарь с основными свойствами устройства.
         """
-        self.logger.info(f"{inspect.currentframe().f_code.co_name}")
+        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
         properties = [
             "ro.boot.hardware",
             "ro.product.model",
@@ -718,7 +721,7 @@ class DeviceInfoAnalyzer:
         Returns:
             List[str]: Список строк из вывода `adb shell ps`.
         """
-        self.logger.info(f"{inspect.currentframe().f_code.co_name}")
+        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
         return self.app.terminal.adb_shell("ps").splitlines()
 
     def _get_package_versions(self, packages: List[str]) -> Dict[str, str]:
@@ -731,7 +734,7 @@ class DeviceInfoAnalyzer:
         Returns:
             Dict[str, str]: {название пакета: версия или 'unknown'}
         """
-        self.logger.info(f"{inspect.currentframe().f_code.co_name}")
+        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
 
         output = self.app.terminal.adb_shell("dumpsys", "package")
         result: Dict[str, str] = {pkg: "unknown" for pkg in packages}
@@ -761,7 +764,7 @@ class DeviceInfoAnalyzer:
         Returns:
             str: Форматированный блок описания.
         """
-        self.logger.info(f"{inspect.currentframe().f_code.co_name}")
+        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
         version = versions.get(package, "unknown")
         matched = [p for p in processes if package in p]
         proc_info = "\n".join(matched) if matched else "Not running"
@@ -787,7 +790,7 @@ class DeviceInfoAnalyzer:
         Returns:
             str: Полный путь к созданному файлу.
         """
-        self.logger.info(f"{inspect.currentframe().f_code.co_name}")
+        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
         filepath = os.path.join(directory, filename)
 
         with open(filepath, "w", encoding="utf-8") as file:
@@ -814,7 +817,7 @@ class DeviceInfoAnalyzer:
         Returns:
             List[str]: Отфильтрованные имена пакетов без префикса 'package:'.
         """
-        self.logger.info(f"{inspect.currentframe().f_code.co_name}")
+        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
 
         raw = self.app.terminal.adb_shell("pm", "list packages")
         packages = raw.replace("package:", "").splitlines()
@@ -839,7 +842,7 @@ class DeviceInfoAnalyzer:
         Returns:
             str: Абсолютный путь к поддиректории device_info.
         """
-        self.logger.info(f"{inspect.currentframe().f_code.co_name}")
+        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
         directory = os.path.join(path, "device_info")
         os.makedirs(directory, exist_ok=True)
         abs_path = os.path.abspath(directory)

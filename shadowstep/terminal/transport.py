@@ -1,3 +1,5 @@
+# shadowstep/terminal/transport.py
+
 import logging
 
 import paramiko

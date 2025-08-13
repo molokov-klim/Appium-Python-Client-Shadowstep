@@ -1,41 +1,41 @@
-# 📱 Shadowstep (in development)
+# Shadowstep (in development)
 
-> Powerful and resilient Appium-based framework for Android UI automation.
+Shadowstep is a modular UI automation framework for Android applications built on top of Appium.
 
-[![PyPI](https://img.shields.io/pypi/v/appium-python-client-shadowstep?color=brightgreen)](https://pypi.org/project/appium-python-client-shadowstep/)
-[![License](https://img.shields.io/github/license/molokov-klim/Appium-Python-Client-Shadowstep?color=blue)](https://github.com/molokov-klim/Appium-Python-Client-Shadowstep/blob/main/LICENSE)
-
-
-[//]: # ([![PyPI]&#40;https://img.shields.io/pypi/v/shadowstep?color=brightgreen&#41;]&#40;https://pypi.org/project/appium-python-client-shadowstep/&#41;)
-
-[//]: # ([![License]&#40;https://github.com/molokov-klim/Appium-Python-Client-Shadowstep/blob/main/LICENSE&#41;]&#40;LICENSE&#41;)
-
-
+- Lazy element lookup and interaction (driver is touched only when necessary)
+- PageObject generation
+- PageObject navigation engine with page auto-discovery
+- Reconnect logic on session loss
+- Integration with ADB and an Appium/SSH "terminal"
+- DSL-style assertions for readable checks (`should.have`, `should.be`)
+- Image-based actions on screen
 
 ---
 
-## 🔍 Overview
+## Contents
 
-**Shadowstep** is a flexible UI automation framework built on top of **Appium** and designed to improve test reliability and developer experience.  
-It introduces powerful abstractions for Android testing: dynamic element wrappers, retry logic, visual change detection, and custom ADB terminal integration.
+- [Installation](#installation)
+- [Quick Start](#quick-start)
+- [Test Setup (Pytest)](#test-setup-pytest)
+- [Element API (`Element`)](#element-api-element)
+- [DSL Assertions](#dsl-assertions)
+- [Page Objects and Navigation](#page-objects-and-navigation)
+- [ADB and Terminal](#adb-and-terminal)
+- [Image Operations](#image-operations)
+- [Logcat Logs](#logcat-logs)
+- [Page Object module (generation)](#page-object-module-generation)
+- [Components](#components)
+- [Quick Start (PO generation)](#quick-start-po-generation)
+- [Templates](#templates)
+- [Limitations and Details](#limitations-and-details)
+- [Code References](#code-references)
+- [Architecture Notes](#architecture-notes)
+- [Limitations](#limitations)
+- [License](#license)
 
 ---
 
-## ✨ Features
-
-- 📲 **Robust UI Automation** – with custom `Element` class and retryable tap/click logic
-- 🔁 **Automatic Session Recovery** – handles `NoSuchDriver`, `InvalidSessionId`, and reconnects
-- 🎯 **Dict-to-XPath Locator DSL** – write intuitive locators like `{"class": "TextView", "text": "OK"}`
-- 🎥 **Video + Screenshot Reporting** – Allure integration with visual context for failed steps
-- 📷 **Visual DOM/Window Waits** – wait for or detect screen changes by screenshot diffs
-- 👤 **Direct ADB Access** – push/pull/install/uninstall/interact with device via custom ADB wrapper
-- 🧱 **Testable Components** – override every interaction and build new ones with ease
-
----
-
-## 🚀 Quickstart
-
-### 1. 📦 Installation
+## Installation
 
 ```bash
 pip install appium-python-client-shadowstep
@@ -43,141 +43,375 @@ pip install appium-python-client-shadowstep
 
 ---
 
-### 2. ⚙️ Integration via Composition
-
-> ⚠️ Do **not** inherit from `Shadowstep` directly. Use composition to preserve singleton behavior.
+## Quick Start
 
 ```python
 from shadowstep.shadowstep import Shadowstep
 
-class ExamplePlatform:
-    def __init__(self):
-        self.app = Shadowstep.get_instance()
-
-    def __getattr__(self, item):
-        return getattr(self.app, item)
+application = Shadowstep()
+capabilities = {
+    "platformName": "android",
+    "appium:automationName": "uiautomator2",
+    "appium:UDID": "192.168.56.101:5555",
+    "appium:noReset": True,
+    "appium:autoGrantPermissions": True,
+    "appium:newCommandTimeout": 900,
+}
+application.connect(server_ip='127.0.0.1', server_port=4723, capabilities=capabilities)
 ```
+
+- You may pass `command_executor` directly (e.g., `http://127.0.0.1:4723/wd/hub`), then `server_ip/port` are optional.
+- If you pass `capabilities` as a `dict`, they will be converted into `UiAutomator2Options` internally.
 
 ---
 
-## 📚 PageObject Navigator
+## Test Setup (Pytest)
 
-### ✅ Requirements for Shadowstep Pages (Auto-discovery)
-
-### 📦 1. File Location
-- Must reside in a directory named `pages`
-- Filename must start with `page` and end with `.py`
-
-> Example: `applications/android_settings/android_settings_7/pages/page_main/page_main.py`
-
-### 🧩 2. Class Name
-- Must start with `Page`, e.g. `PageMain7`
-
-### 🧬 3. Inheritance
-- Must inherit from `PageBase`:
+Session-scoped fixture example:
 
 ```python
-from shadowstep.page_base import PageBase
-class PageMain7(PageBase): ...
-```
+import pytest
+from shadowstep.shadowstep import Shadowstep
 
-### 🧠 4. Required: `edges` Property
-Each page must define:
 
-```python
-@property
-def edges(self) -> Dict[str, Callable[[], PageBase]]:
-    return {
-        "PageWifi7": self.to_wifi
+@pytest.fixture(scope='session', autouse=True)
+def app():
+    application = Shadowstep()
+
+    APPIUM_IP = '127.0.0.1'
+    APPIUM_PORT = 4723
+    APPIUM_COMMAND_EXECUTOR = f'http://{APPIUM_IP}:{APPIUM_PORT}/wd/hub'
+
+    capabilities = {
+        "platformName": "android",
+        "appium:automationName": "uiautomator2",
+        "appium:UDID": "192.168.56.101:5555",
+        "appium:noReset": True,
+        "appium:autoGrantPermissions": True,
+        "appium:newCommandTimeout": 900,
     }
+
+    application.connect(server_ip=APPIUM_IP,
+                        server_port=APPIUM_PORT,
+                        command_executor=APPIUM_COMMAND_EXECUTOR,
+                        capabilities=capabilities)
+    yield application
+    application.disconnect()
 ```
 
-Used by the navigation system to build the screen transition graph.
+Run tests:
 
-### 🔄 5. Navigation Methods
-- Methods listed in `edges` must:
-  - trigger interaction (e.g. `tap()`)
-  - return the corresponding Page instance via `self.app.get_page(...)`
-
-```python
-def to_wifi(self) -> PageBase:
-    self.wifi.tap()
-    return self.app.get_page("PageWifi7")
+```bash
+pytest -svl --log-cli-level INFO --tb=short tests/test_shadowstep.py
 ```
 
-### 🌐 6. Auto-discovery Mechanism
+Run Appium server locally:
 
-The `Shadowstep._auto_discover_pages()` method:
-
-- Iterates over all paths in `sys.path`
-- Looks for directories named `pages`
-- Skips ignored folders (e.g. `__pycache__`, `venv`, etc.)
-- Imports every module with a filename starting with `page`
-- Registers each class that:
-  - starts with `Page`
-  - is a subclass of `PageBase`
-  - is **not** the base class itself
-- Stores them in `self.pages`
-- Adds them to the `PageNavigator`
+```bash
+npm i -g appium@next
+appium driver install uiautomator2
+appium server -ka 800 --log-level debug -p 4723 -a 0.0.0.0 -pa /wd/hub --allow-insecure=adb_shell
+```
 
 ---
 
-## 📄 Example Page Class
+## Element API (`Element`)
 
 ```python
-from shadowstep.page_base import PageBase
+el = app.get_element({"resource-id": "android:id/title"})
+el.tap()
+el.text
+el.get_attribute("enabled") 
+```
+
+Call chains
+```python
+el = app.get_element({"resource-id": "android:id/title"})
+el.zoom().click()
+```
+
+Lazy DOM navigation (declarative):
+
+```python
+el = app.get_element({'class': 'android.widget.ImageView'}).\
+         get_parent().\
+         get_sibling({'resource-id': 'android:id/summary'}).\
+         get_cousin(cousin_locator={'resource-id': 'android:id/summary'}).\
+         get_element({"resource-id": "android:id/switch_widget"})
+```
+
+Key features:
+
+- Lazy evaluation: the actual `find_element` happens on the first interaction with an element:
+  el = app.get_element({'class': 'android.widget.ImageView'})      # find_element is not called here
+  el.swipe_left()     # find_element is called here
+
+- Locators: `dict` and XPath (tuples default to XPath strategy)
+- Built-in retries and auto-reconnect on session failures
+- Rich API: `tap`, `click`, `scroll_to`, `get_sibling`, `get_parent`, `drag_to`, `send_keys`, `wait_visible`, and more
+
+---
+
+## DSL Assertions
+
+```python
+item = app.get_element({'text': 'Network & internet'})
+item.should.have.text("Network & internet").have.resource_id("android:id/title")
+item.should.be.visible()
+item.should.not_be.focused()
+```
+
+See more examples in `tests/test_element_should.py`.
+
+---
+
+## Page Objects and Navigation
+
+Base page class is `PageBaseShadowstep`.
+A page must:
+
+- inherit from `PageBaseShadowstep`
+- have class name starting with `Page`
+- provide `edges: Dict[str, Callable[[], PageBaseShadowstep]]` — navigation graph edges
+- implement `is_current_page()`
+
+Example page:
+
+```python
+import logging
 from shadowstep.element.element import Element
-from typing import Dict, Callable
+from shadowstep.page_base import PageBaseShadowstep
 
-class PageExample(PageBase):
+class PageAbout(PageBaseShadowstep):
+    def __init__(self):
+        super().__init__()
+        self.logger = logging.getLogger(__name__)
+
+    def __repr__(self):
+        return f"{self.name} ({self.__class__.__name__})"
+
     @property
-    def edges(self) -> Dict[str, Callable[[], PageBase]]:
-        return {"PageNext": self.to_next}
+    def edges(self):
+        return {"PageMain": self.to_main}
 
-    def to_next(self) -> PageBase:
-        self.next_button.tap()
-        return self.app.get_page("PageNext")
+    def to_main(self):
+        self.shadowstep.terminal.press_back()
+        return self.shadowstep.get_page("PageMain")
 
     @property
-    def next_button(self) -> Element:
-        return self.app.get_element(locator={"text": "Next"})
+    def name(self) -> str:
+        return "About"
+
+    @property
+    def title(self) -> Element:
+        return self.shadowstep.get_element(locator={'text': 'About', 'class': 'android.widget.TextView'})
+
+    def is_current_page(self) -> bool:
+        try:
+            return self.title.is_visible()
+        except Exception as error:
+            self.logger.error(error)
+            return False
 ```
 
----
+Auto-discovery of pages:
 
-## 🔮 Example Test
+- classes inheriting `PageBaseShadowstep` and starting with `Page`
+- files `page*.py` (usually `pages/page_*.py`) in project paths
+- pages are registered automatically when `Shadowstep` is created
+
+Navigation:
 
 ```python
-def test_wifi_navigation(example_platform: ExamplePlatform):
-    page = example_platform.get_page("PageMain7")
-    assert page.is_current_page()
-
-    wifi_page = page.to_wifi()
-    assert wifi_page.is_current_page()
+self.shadowstep.navigator.navigate(from_page=self.page_main, to_page=self.page_display)
+assert self.page_display.is_current_page()
 ```
 
 ---
 
-## 🔧 Under the Hood
-- Supports retry logic with session recovery
-- Lazy element evaluation until interaction
-- ADB integration via custom wrapper
-- Navigator auto-registers page transitions as a graph
+## ADB and Terminal
+
+Two ways to perform low-level actions:
+
+- `app.adb.*` — direct ADB via `subprocess` (good for local runs)
+- `app.terminal.*` — `mobile: shell` via Appium or SSH transport (if `ssh_user/ssh_password` were provided in `connect()`)
+
+ADB examples:
+
+```python
+app.adb.press_home()
+app.adb.install_app(source="/path/app.apk", udid="192.168.56.101:5555")
+app.adb.input_text("hello")
+```
+
+Terminal examples:
+
+```python
+app.terminal.start_activity(package="com.example", activity=".MainActivity")
+app.terminal.tap(x=1345, y=756)
+app.terminal.past_text(text='hello')
+```
 
 ---
 
-## 🚫 Limitations
-- Currently Android-only
-- Web support not implemented
-- Visual detection (image matching) WIP
+## Image Operations
+
+```python
+image = app.get_image(image="tests/test_data/connected_devices.png", threshold=0.5, timeout=3.0)
+assert image.is_visible()
+image.tap()
+image.scroll_down(max_attempts=3)
+image.zoom().unzoom().drag(to=(100, 100))
+```
+
+Under the hood it uses `opencv-python`, `numpy`, `Pillow`.
 
 ---
 
-## ✍️ Contributing
-We welcome pull requests! Please open an issue before submitting large changes.
+## Logcat Logs
+
+```python
+app.start_logcat("device.logcat")
+# ... test steps ...
+app.stop_logcat()
+```
 
 ---
 
-## ⚖️ License
-[MIT License](LICENSE)
+## Architecture Notes
 
+- The element tree is not fetched upfront
+- Reconnects on session loss (`InvalidSessionIdException`, `NoSuchDriverException`)
+- Works well with Pytest and CI/CD
+- Modular architecture: `element`, `elements`, `navigator`, `terminal`, `image`, `utils`
+
+---
+---
+
+## Page Object module (generation)
+
+Tools to automatically generate PageObject classes from UI XML (uiautomator2), enrich them while scrolling, merge results, and generate baseline tests.
+
+- Generate `PageObject` from current `page_source` via Jinja2 template
+- Detect title, main container (recycler/scrollable), anchors and related elements (summary/switch)
+- Discover additional items inside scrollable lists and merge results
+- Generate a simple test class for quick smoke coverage of page properties
+
+---
+
+## Components
+
+- `PageObjectParser`
+  - Parses XML (`uiautomator2`) into a `UiElementNode` tree
+  - Filters by white/black lists for classes and resource-id, plus a container whitelist
+  - API: `parse(xml: str) -> UiElementNode`
+
+- `PageObjectGenerator`
+  - Generates a Python page class from `UiElementNode` tree using `templates/page_object.py.j2`
+  - Determines `title`, `name`, optional `recycler`, properties, anchors/summary, etc.
+  - API: `generate(ui_element_tree: UiElementNode, output_dir: str, filename_prefix: str = "") -> (path, class_name)`
+
+- `PageObjectRecyclerExplorer`
+  - Scrolls the screen, re-captures `page_source`, re-generates PO and merges them
+  - Requires active `Shadowstep` session (scroll/adb_shell)
+  - API: `explore(output_dir: str) -> str` (path to merged file)
+
+- `PageObjectMerger`
+  - Merges two generated classes into one: preserves imports/header and combines unique methods
+  - API: `merge(file1, file2, output_path) -> str`
+
+- `PageObjectTestGenerator`
+  - Generates a basic Pytest class for an existing PageObject (`templates/page_object_test.py.j2`)
+  - Verifies visibility of properties at minimum
+  - API: `generate_test(input_path: str, class_name: str, output_dir: str) -> (test_path, test_class_name)`
+
+Note: `crawler.py` and `scenario.py` are conceptual notes/ideas, not stable API.
+
+---
+
+## Quick Start (PO generation)
+
+1) Capture XML and generate a page class
+
+```python
+from shadowstep.shadowstep import Shadowstep
+from shadowstep.page_object.page_object_parser import PageObjectParser
+from shadowstep.page_object.page_object_generator import PageObjectGenerator
+
+app = Shadowstep.get_instance()  # or Shadowstep()
+xml = app.driver.page_source
+
+parser = PageObjectParser()
+tree = parser.parse(xml)
+
+pog = PageObjectGenerator()
+path, class_name = pog.generate(ui_element_tree=tree, output_dir="pages")
+print(path, class_name)
+```
+
+2) Explore recycler and merge results
+
+```python
+from shadowstep.page_object.page_object_recycler_explorer import PageObjectRecyclerExplorer
+
+explorer = PageObjectRecyclerExplorer(base=app, translator=None)
+merged_path = explorer.explore(output_dir="pages")
+print(merged_path)
+```
+
+3) Generate a test for the page
+
+```python
+from shadowstep.page_object.page_object_test_generator import PageObjectTestGenerator
+
+tg = PageObjectTestGenerator()
+test_path, test_class_name = tg.generate_test(input_path=path, class_name=class_name, output_dir="tests/pages")
+print(test_path, test_class_name)
+```
+
+---
+
+## Templates
+
+- `templates/page_object.py.j2` — PageObject Python class template
+- `templates/page_object_test.py.j2` — Pytest class template
+
+To tweak generated code structure, edit these files. (The generator uses the local `templates` folder.)
+
+For some reason, templates are not downloaded to the folder when installed via pip. I have to insert them manually into .venv/Lib/site-packages/shadowstep/page_object/templates/. I don't know how to solve this yet.
+
+---
+
+## Limitations and Details
+
+- Focused on Android (XML and uiautomator2 attributes)
+- Generator heuristics:
+  - Find `title` via `text`/`content-desc`
+  - Treat `scrollable==true` container as `recycler` if present
+  - Switch ↔ anchor pairs, `summary` fields, filtering structural/non-informative classes
+  - Remove `text` from locators for classes where text search is not supported
+- `PageObjectRecyclerExplorer` requires an active session and `mobile: shell` capability; uses swipes and `adb_shell`
+- Merge result is saved as a separate file (see prefix/path in `explore()`)
+
+---
+
+## Code References
+
+- `shadowstep/page_object/page_object_parser.py`
+- `shadowstep/page_object/page_object_generator.py`
+- `shadowstep/page_object/page_object_recycler_explorer.py`
+- `shadowstep/page_object/page_object_merger.py`
+- `shadowstep/page_object/page_object_test_generator.py`
+
+---
+---
+
+## Limitations
+
+- Android only (no iOS or Web)
+
+---
+
+## License
+
+MIT — see `LICENSE`.

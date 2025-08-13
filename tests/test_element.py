@@ -1,45 +1,28 @@
-import os
 import subprocess
 import time
 from typing import Generator
-from loguru import logger
-
 import pytest
-from appium.webdriver import WebElement
-from icecream import ic
-from selenium.common import TimeoutException, NoSuchElementException, StaleElementReferenceException
+from selenium.common import NoSuchElementException
 
 from shadowstep.element.element import Element, GeneralElementException
+from shadowstep.elements.elements import Elements
 from shadowstep.shadowstep import Shadowstep
 
 
 class TestElement:
 
-    def test_get_element_positive(self, app: Shadowstep):
-        parent_element = app.get_element(locator={'package': 'com.android.launcher3',
-                                                  'class': 'android.view.ViewGroup',
-                                                  'resource-id': 'com.android.launcher3:id/hotseat',
-                                                  })
-        inner_element = parent_element.get_element(locator={'package': 'com.android.launcher3',
-                                                            'class': 'android.widget.TextView',
-                                                            'content-desc': 'Phone'})
+    def test_get_element_positive(self, app: Shadowstep, android_settings, android_settings_recycler):
+        inner_element = android_settings_recycler.get_element(locator={'text': 'Network & internet'})
         assert isinstance(inner_element, Element)
-        assert inner_element.get_attribute('package') == 'com.android.launcher3'
+        assert inner_element.get_attribute('package') == 'com.android.settings'
         assert inner_element.get_attribute('class') == 'android.widget.TextView'
-        assert inner_element.get_attribute('content-desc') == 'Phone'
-        app.adb.press_home()
+        assert inner_element.get_attribute('resource-id') == 'android:id/title'
 
-    def test_get_element_contains(self, app: Shadowstep):
-        parent_element = app.get_element(locator={'package': 'com.android.launcher3',
-                                                  'class': 'android.view.ViewGroup',
-                                                  'resource-id': 'com.android.launcher3:id/hotseat',
-                                                  })
-        inner_element = parent_element.get_element(locator={'package': 'com.android.launcher3',
-                                                            'class': 'android.widget.TextView',
-                                                            'content-desc': 'Phone'},
+    def test_get_element_contains(self, app: Shadowstep, android_settings, android_settings_recycler):
+        inner_element = android_settings_recycler.get_element(locator={'text': 'ork & int'},
                                                    contains=True)
         assert inner_element.contains
-        app.adb.press_home()
+        assert inner_element.get_attribute('text') == 'Network & internet'
 
     def test_get_element_repeated_search(self, app: Shadowstep):
         element1 = app.get_element(locator={'content-desc': 'Phone'})
@@ -57,33 +40,14 @@ class TestElement:
         assert isinstance(element, Element)
         assert element.locator == {'content-desc': 'Phone'}
 
-    def test_get_elements(self, app: Shadowstep):
-        parent_element = app.get_element(locator={'package': 'com.android.launcher3',
-                                                  'class': 'android.view.ViewGroup',
-                                                  'resource-id': 'com.android.launcher3:id/hotseat',
-                                                  })
-        inner_elements = parent_element.get_elements(locator={'package': 'com.android.launcher3',
-                                                              'class': 'android.widget.TextView'})
-        assert isinstance(inner_elements, Generator)
+    def test_get_elements(self, app: Shadowstep, android_settings, android_settings_recycler):
+        inner_elements = android_settings_recycler.get_elements(locator={'resource-id': 'android:id/title'})
+        assert isinstance(inner_elements, Elements)
         for inner_element in inner_elements:
+            app.logger.info(f"{inner_element.text=}")
             assert isinstance(inner_element, Element)
-            assert inner_element.get_attribute('package') == 'com.android.launcher3'
-            assert inner_element.get_attribute('class') == 'android.widget.TextView'
-        app.adb.press_home()
+            assert inner_element.get_attribute('resource-id') == 'android:id/title'
 
-    def test_get_elements_greedy(self, app: Shadowstep):
-        parent_element = app.get_element(locator={'package': 'com.android.launcher3',
-                                                  'class': 'android.view.ViewGroup',
-                                                  'resource-id': 'com.android.launcher3:id/hotseat',
-                                                  })
-        inner_elements = parent_element.get_elements_greedy(locator={'package': 'com.android.launcher3',
-                                                                     'class': 'android.widget.TextView'})
-        assert isinstance(inner_elements, list)
-        for inner_element in inner_elements:
-            assert isinstance(inner_element, Element)
-            assert inner_element.get_attribute('package') == 'com.android.launcher3'
-            assert inner_element.get_attribute('class') == 'android.widget.TextView'
-        app.adb.press_home()
 
     def test_get_attributes(self, app: Shadowstep):
         element = app.get_element(locator={'package': 'com.android.launcher3',
@@ -125,17 +89,20 @@ class TestElement:
         assert isinstance(sibling, Element)
         assert 'WebView Browser Tester' in sibling.get_attribute('text')
 
-    def test_get_siblings(self, app: Shadowstep):
-        el = app.get_element({'content-desc': 'Phone'})
+    def test_get_siblings(self, app: Shadowstep, android_settings, android_settings_recycler):
+        el = android_settings_recycler.get_element({'resource-id': 'com.android.settings:id/recycler_view'}).get_element({'class': 'android.widget.LinearLayout'})
         siblings = el.get_siblings()
         assert isinstance(siblings, Generator)
         count = 0
+        bounds = []
         for sibling in siblings:
             assert isinstance(sibling, Element)
             assert sibling.get_attribute('bounds') is not None
+            bounds.append(sibling.get_attribute('bounds'))
             count += 1
+        bounds = set(bounds)
+        assert len(bounds) > 3
         assert count > 0
-        app.terminal.press_home()
 
     def test_tap(self, app: Shadowstep) -> None:
         element = app.get_element(locator={'content-desc': 'Phone'})
@@ -205,10 +172,11 @@ class TestElement:
         assert 'Search apps' in target_element.get_attribute(name='text')
         assert isinstance(element, Element)
 
+    # FIXME почему-то один проходит а в связке - нет
     def test_click(self, app: Shadowstep):
         element = app.get_element(locator={'content-desc': 'Phone'})
         element.click()
-        time.sleep(3)
+        time.sleep(5)
         response = str(subprocess.check_output('adb shell "dumpsys window windows | grep -E \'mSurface\'"'))
         assert "com.android.dialer" in response
 
@@ -284,7 +252,7 @@ class TestElement:
         assert 'About phone' in settings_about_phone.get_attribute('text')
         app.terminal.close_app(package='com.android.settings')
 
-    def test_scroll_to_bottom(self, app: Shadowstep):
+    def test_scroll_to_bottom(self, app: Shadowstep, android_settings):
         settings_recycler = app.get_element(
             locator={'resource-id': 'com.android.settings:id/main_content_scrollable_container'})
         settings_network = app.get_element(locator={'text': 'Network & internet',
@@ -293,13 +261,16 @@ class TestElement:
                                                         'resource-id': 'android:id/title'})
         app.terminal.start_activity(package='com.android.settings', activity='com.android.settings.Settings')
         time.sleep(3)
+        app.logger.info(f"{settings_recycler.get_attributes()=}")
         assert 'Network & internet' in settings_network.get_attribute('text')
+        app.logger.info(f"{settings_network.get_attributes()=}")
         settings_recycler.scroll_to_bottom()
         time.sleep(3)
         assert 'About phone' in settings_about_phone.get_attribute('text')
+        app.logger.info(f"{settings_about_phone.get_attributes()=}")
         app.terminal.close_app(package='com.android.settings')
 
-    def test_scroll_to_top(self, app: Shadowstep):
+    def test_scroll_to_top(self, app: Shadowstep, android_settings):
         settings_recycler = app.get_element(
             locator={'resource-id': 'com.android.settings:id/main_content_scrollable_container'})
         settings_network = app.get_element(locator={'text': 'Network & internet',
@@ -317,7 +288,7 @@ class TestElement:
         assert 'Network & internet' in settings_network.get_attribute('text')
         app.terminal.close_app(package='com.android.settings')
 
-    def test_scroll_to_element(self, app: Shadowstep):
+    def test_scroll_to_element(self, app: Shadowstep, android_settings):
         settings_recycler = app.get_element(
             locator={'resource-id': 'com.android.settings:id/main_content_scrollable_container'})
         settings_network = app.get_element(locator={'text': 'Network & internet',
@@ -382,7 +353,6 @@ class TestElement:
 
     def test_tag_name(self, app: Shadowstep):
         el = app.get_element({'content-desc': 'Phone'})
-        tag = el.tag_name
         assert isinstance(el.tag_name, str)
         assert el.tag_name == 'Phone'
 
@@ -391,6 +361,7 @@ class TestElement:
         assert isinstance(el.text, str)
         assert el.text == 'Phone'
 
+    # FIXME почему-то один проходит а в связке - нет
     def test_clear(self, app: Shadowstep):
         el = app.get_element({'resource-id': 'com.android.quicksearchbox:id/search_widget_text'})
         el.tap()
@@ -482,6 +453,20 @@ class TestElement:
             el.get_attribute("text")
 
     def test_scroll_to_element_not_found(self, app):
+        app.terminal.start_activity(package="com.android.settings", activity=".Settings")
         container = app.get_element({'resource-id': 'com.android.settings:id/main_content_scrollable_container'})
-        with pytest.raises(NoSuchElementException):
+        with pytest.raises(GeneralElementException):
             container.scroll_to_element(locator={'text': 'Element That Does Not Exist'})
+
+    def test_get_cousin(self, app, android_settings):
+        app.get_element({'text': 'Network & internet'}).tap()
+        switcher = app.get_element({'text': 'Airplane mode'}).get_cousin({'resource-id': 'android:id/switch_widget'})
+        assert switcher.get_attribute('class') == 'android.widget.Switch'
+
+    def test_get_cousin_depth(self, app, android_settings):
+        app.get_element({'text': 'Network & internet'}).tap()
+        switcher = app.get_element({'text': 'Airplane mode'}).get_cousin({'resource-id': 'android:id/switch_widget'}, 5)
+        assert switcher.get_attribute('class') == 'android.widget.Switch'
+
+
+

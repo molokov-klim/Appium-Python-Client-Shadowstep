@@ -1,3 +1,5 @@
+# shadowstep/exceptions/shadowstep_exceptions.py
+
 import traceback
 import typing
 from typing import Optional, Union, Tuple, List, Dict
@@ -5,16 +7,21 @@ from typing import Optional, Union, Tuple, List, Dict
 import numpy as np
 from PIL import Image
 from appium.webdriver import WebElement
+from selenium.common import WebDriverException
 from selenium.types import WaitExcTypes
 
 
-class ShadowstepError(Exception):
-    def __init__(self, message=''):
-        super().__init__(message)
-        self.message = message
+class ShadowstepException(WebDriverException):
+    """Raised when driver is not specified and cannot be located."""
+
+    def __init__(
+            self, msg: typing.Optional[str] = None, screen: typing.Optional[str] = None,
+            stacktrace: typing.Optional[typing.Sequence[str]] = None
+    ) -> None:
+        super().__init__(msg, screen, stacktrace)
 
 
-class ShadowstepElementError(ShadowstepError):
+class ShadowstepElementError(ShadowstepException):
     def __init__(self, message: str = '', original_exception: Optional[Exception] = None):
         super().__init__(message)
         self.original_exception = original_exception
@@ -39,7 +46,7 @@ class ShadowstepGetElementError(ShadowstepElementError):
         self.ignored_exceptions = ignored_exceptions
 
 
-class ShadowstepImageProcessingError(ShadowstepError):
+class ShadowstepImageProcessingError(ShadowstepException):
     def __init__(self, message: str = '',
                  image: Union[bytes, str] = None,
                  full_image: Union[bytes, str] = None,
@@ -53,7 +60,7 @@ class ShadowstepImageProcessingError(ShadowstepError):
         self.traceback = traceback.format_exc()
 
 
-class ShadowstepTextRecognitionError(ShadowstepError):
+class ShadowstepTextRecognitionError(ShadowstepException):
     def __init__(self,
                  message: str = 'Failed to recognize text',
                  text: Optional[str] = None,
@@ -73,7 +80,7 @@ class ShadowstepTextRecognitionError(ShadowstepError):
         self.traceback = traceback.format_exc()
 
 
-class ShadowstepSwipeError(ShadowstepError):
+class ShadowstepSwipeError(ShadowstepException):
     def __init__(self,
                  message: str = 'Swipe action failed',
                  start_position=None,
@@ -93,7 +100,7 @@ class ShadowstepSwipeError(ShadowstepError):
         self.traceback = traceback.format_exc()
 
 
-class ShadowstepTimeoutError(ShadowstepError):
+class ShadowstepTimeoutError(ShadowstepException):
     def __init__(self,
                  message: str = 'Timeout exceeded',
                  locator: Optional[Union[str, Dict]] = None,
@@ -111,7 +118,7 @@ class ShadowstepTimeoutError(ShadowstepError):
         self.traceback = traceback.format_exc()
 
 
-class ShadowstepTapError(ShadowstepError):
+class ShadowstepTapError(ShadowstepException):
     def __init__(self,
                  message: str = 'Tap action failed',
                  locator: Optional[Union[str, Dict]] = None,

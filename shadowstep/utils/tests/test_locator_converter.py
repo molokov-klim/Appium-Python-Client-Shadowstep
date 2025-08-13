@@ -1,8 +1,10 @@
+# shadowstep/utils/tests/test_locator_converter.py
+
 import inspect
 
 import pytest
-from icecream import ic
-from loguru import logger
+import logging
+logger = logging.getLogger(__name__)
 
 from shadowstep.utils.locator_converter import LocatorConverter
 

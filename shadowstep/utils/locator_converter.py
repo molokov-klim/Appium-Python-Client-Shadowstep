@@ -1,8 +1,11 @@
+# shadowstep/utils/locator_converter.py
+
 import inspect
 import re
 from typing import Tuple, Dict, Union, Any, Optional
 
-from loguru import logger
+import logging
+logger = logging.getLogger(__name__)
 
 """
 Sorry, I'm too dumb to solve this module's problem correctly. So I did it primitively.
@@ -317,6 +320,13 @@ class LocatorConverter:
 
         parts = ["new UiSelector()"]
         for key, value in selector.items():
+            if key == "scrollable":
+                if value == "true":
+                    parts.append(f".scrollable(true)")
+                    continue
+                elif value == "false":
+                    parts.append(f".scrollable(false)")
+                    continue
             if key == "childSelector" and isinstance(value, dict):
                 nested = self._dict_to_uiselector(value)
                 parts.append(f".childSelector({nested})")
