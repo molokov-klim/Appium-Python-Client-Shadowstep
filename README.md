@@ -223,8 +223,8 @@ Auto-discovery of pages:
 Navigation:
 
 ```python
-self.shadowstep.navigator.navigate(from_page=self.page_main, to_page=self.page_display)
-assert self.page_display.is_current_page()
+app.shadowstep.navigator.navigate(from_page=app.page_main, to_page=app.page_display)
+assert app.page_display.is_current_page()
 ```
 
 ---

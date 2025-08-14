@@ -308,9 +308,10 @@ class ShadowstepBase:
         self.logger.info(f"{inspect.currentframe().f_code.co_name}")
         start_time = time.time()
         while time.time() - start_time < timeout:
+            session_id = getattr(self.driver, "session_id", None)
             self.logger.info(f"{self.driver=}")
-            self.logger.info(f"{self.driver.session_id=}")
-            if self.driver and self.driver.session_id:
+            self.logger.info(f"{session_id=}")
+            if session_id:
                 return
             time.sleep(0.5)
             self.driver = WebDriverSingleton.get_driver()
