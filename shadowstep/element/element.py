@@ -2369,7 +2369,7 @@ class Element(ElementBase):
                 continue
         return False
 
-    def wait_for_not(self, timeout: int = 10, poll_frequency: float = 0.5, return_bool: bool = False) -> 'Element':
+    def wait_for_not(self, timeout: int = 10, poll_frequency: float = 0.5, return_bool: bool = False) -> bool:
         """Waits until the element is no longer present in the DOM.
 
         Args:
