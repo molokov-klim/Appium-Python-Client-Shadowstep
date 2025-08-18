@@ -68,7 +68,7 @@ class Element(ElementBase):
                     timeout: int = 30,
                     poll_frequency: float = 0.5,
                     ignored_exceptions: Optional[WaitExcTypes] = None,
-                    contains: bool = False) -> Union['Element', None]:
+                    contains: bool = False) -> 'Element':
         """
         Recursively search for an element inside the current one.
 
