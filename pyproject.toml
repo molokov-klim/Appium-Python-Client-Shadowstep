@@ -6,7 +6,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "appium-python-client-shadowstep"
-version = "0.32.110"
+version = "0.32.111"
 description = "UI Testing Framework powered by Appium Python Client"
 authors = [{ name = "Klim Molokov", email = "klim.molokov@yandex.ru" }]
 license = "MIT"
