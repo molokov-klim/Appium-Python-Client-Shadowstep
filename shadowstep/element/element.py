@@ -1,12 +1,11 @@
 # shadowstep/element/element.py
-
 import inspect
 import logging
 import re
 import time
 import traceback
 import typing
-from typing import Union, Tuple, List, Set, Dict, Optional, cast
+from typing import Union, Tuple, List, Set, Dict, Optional, cast, NoReturn
 
 from lxml import etree as ET
 
@@ -41,18 +40,18 @@ class GeneralElementException(WebDriverException):
         super().__init__(msg, screen, stacktrace)
 
 
-class Element(ElementBase):
     """
     A class to represent a UI element in the Shadowstep application.
     !WARNING! TUPLE LOCATOR USE XPATH STRATEGY ONLY !WARNING!
     Please use dict locator
     """
-
+class Element(ElementBase):
     def __init__(self,
                  locator: Union[Tuple, Dict[str, str], 'Element'] = None,
                  base: 'Shadowstep' = None,
                  timeout: float = 30,
                  poll_frequency: float = 0.5,
+
                  ignored_exceptions: typing.Optional[WaitExcTypes] = None,
                  contains: bool = False,
                  native: WebElement = None):
@@ -155,7 +154,8 @@ class Element(ElementBase):
                     ignored_exceptions=ignored_exceptions,
                 )
                 wait.until(EC.presence_of_element_located(locator))
-                native_elements = self.driver.find_elements(*locator)
+                native_parent = self._get_native()
+                native_elements = native_parent.find_elements(*locator)
 
                 elements = []
                 for native_element in native_elements:
@@ -198,7 +198,7 @@ class Element(ElementBase):
         # if nothing found return empty list
         return []
 
-    def get_attributes(self) -> Optional[Dict[str, str]]:
+    def get_attributes(self) -> Dict[str, str]:
         """Fetch all XML attributes of the element by matching locator against page source.
 
         Returns:
@@ -261,7 +261,7 @@ class Element(ElementBase):
         self.logger.warning(f"Timeout exceeded ({self.timeout}s) without matching element.")
         return None
 
-    def get_parent(self) -> Union['Element', None]:
+    def get_parent(self) -> 'Element':
         self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
         try:
             xpath = self._get_xpath()
@@ -280,6 +280,8 @@ class Element(ElementBase):
 
     def get_parents(self) -> typing.Generator['Element', None, None]:
         """Yields all parent elements lazily using XPath `ancestor::*`.
+
+        # FIXME must be greedy (bcs generator is wrong desicion)
 
         Yields:
             Generator of Element instances representing each parent in the hierarchy.
@@ -314,7 +316,7 @@ class Element(ElementBase):
             except WebDriverException:
                 break
 
-    def get_sibling(self, locator: Union[Tuple, Dict[str, str], 'Element']) -> Union['Element', None]:
+    def get_sibling(self, locator: Union[Tuple, Dict[str, str], 'Element']) -> 'Element':
         self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
         if isinstance(locator, Element):
             locator = locator.locator
@@ -340,6 +342,8 @@ class Element(ElementBase):
 
     def get_siblings(self) -> typing.Generator['Element', None, None]:
         """Yields all sibling elements of the current element.
+
+        # FIXME must be greedy
 
         Yields:
             Generator of Element instances that are siblings of the current element.
@@ -394,7 +398,7 @@ class Element(ElementBase):
             self,
             cousin_locator: Union[Tuple[str, str], Dict[str, str], 'Element'],
             depth_to_parent: int = 1,
-    ) -> Union['Element', None]:
+    ) -> 'Element':
         """
         Returns an Element located by cousin_locator, relative to the current element's ancestor.
 
@@ -448,7 +452,7 @@ class Element(ElementBase):
             self._handle_driver_error(error)
             return None
 
-    def get_center(self, element: Optional[WebElement] = None) -> Optional[Tuple[int, int]]:
+    def get_center(self, element: Optional[WebElement] = None) -> Tuple[int, int]:
         """Get the center coordinates of the element.
 
         Args:
@@ -489,7 +493,7 @@ class Element(ElementBase):
             stacktrace=traceback.format_stack()
         )
 
-    def get_coordinates(self, element: Optional[WebElement] = None) -> Optional[Tuple[int, int, int, int]]:
+    def get_coordinates(self, element: Optional[WebElement] = None) -> Tuple[int, int, int, int]:
         """Get the bounding box coordinates of the element.
 
         Args:
@@ -529,7 +533,7 @@ class Element(ElementBase):
         )
 
     # Override
-    def get_attribute(self, name: str) -> Optional[Union[str, Dict]]:
+    def get_attribute(self, name: str) -> str:
         """Gets the specified attribute of the element.
 
         Args:
@@ -563,7 +567,7 @@ class Element(ElementBase):
             stacktrace=traceback.format_stack()
         )
 
-    def get_property(self, name: str) -> Union[str, bool, dict, None]:
+    def get_property(self, name: str) -> NoReturn:
         """NOT IMPLEMENTED!
         Gets the given property of the element.
 
@@ -818,7 +822,7 @@ class Element(ElementBase):
             stacktrace=traceback.format_stack()
         )
 
-    def tap(self, duration: Optional[int] = None) -> Union['Element', None]:
+    def tap(self, duration: Optional[int] = None) -> 'Element':
         self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
         start_time = time.time()
         while time.time() - start_time < self.timeout:
@@ -853,7 +857,7 @@ class Element(ElementBase):
             y: int = None,
             direction: int = None,
             distance: int = None,
-    ) -> Union['Element', None]:
+    ) -> 'Element':
         self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
         start_time = time.time()
         while time.time() - start_time < self.timeout:
@@ -913,7 +917,7 @@ class Element(ElementBase):
             stacktrace=traceback.format_stack()
         )
 
-    def click(self, duration: int = None) -> Union['Element', None]:
+    def click(self, duration: int = None) -> 'Element':
         self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
         start_time = time.time()
         while time.time() - start_time < self.timeout:
@@ -944,7 +948,7 @@ class Element(ElementBase):
             stacktrace=traceback.format_stack()
         )
 
-    def click_double(self) -> Union['Element', None]:
+    def click_double(self) -> 'Element':
         self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
         start_time = time.time()
         while time.time() - start_time < self.timeout:
@@ -971,7 +975,7 @@ class Element(ElementBase):
             stacktrace=traceback.format_stack()
         )
 
-    def drag(self, end_x: int, end_y: int, speed: int = 2500) -> Union['Element', None]:
+    def drag(self, end_x: int, end_y: int, speed: int = 2500) -> 'Element':
         self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
         start_time = time.time()
         while time.time() - start_time < self.timeout:
@@ -1001,19 +1005,19 @@ class Element(ElementBase):
             stacktrace=traceback.format_stack()
         )
 
-    def fling_up(self, speed: int = 2500) -> Union['Element', None]:
+    def fling_up(self, speed: int = 2500) -> 'Element':
         return self._fling(speed=speed, direction='up')
 
-    def fling_down(self, speed: int = 2500) -> Union['Element', None]:
+    def fling_down(self, speed: int = 2500) -> 'Element':
         return self._fling(speed=speed, direction='down')
 
-    def fling_left(self, speed: int = 2500) -> Union['Element', None]:
+    def fling_left(self, speed: int = 2500) -> 'Element':
         return self._fling(speed=speed, direction='left')
 
-    def fling_right(self, speed: int = 2500) -> Union['Element', None]:
+    def fling_right(self, speed: int = 2500) -> 'Element':
         return self._fling(speed=speed, direction='right')
 
-    def _fling(self, speed: int, direction: str) -> Union['Element', None]:
+    def _fling(self, speed: int, direction: str) -> 'Element':
         """
         direction: Direction of the fling. Mandatory value. Acceptable values are: up, down, left and right (case insensitive)
         speed: The speed at which to perform this gesture in pixels per second. The value must be greater than the minimum fling velocity for the given view (50 by default). The default value is 7500 * displayDensity
@@ -1047,23 +1051,23 @@ class Element(ElementBase):
             stacktrace=traceback.format_stack()
         )
 
-    def scroll_down(self, percent: float = 0.7, speed: int = 2000, return_bool: bool = False) -> Union['Element', None]:
+    def scroll_down(self, percent: float = 0.7, speed: int = 2000, return_bool: bool = False) -> 'Element':
         self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
         return self._scroll(direction='down', percent=percent, speed=speed, return_bool=return_bool)
 
-    def scroll_up(self, percent: float = 0.7, speed: int = 2000, return_bool: bool = False) -> Union['Element', None]:
+    def scroll_up(self, percent: float = 0.7, speed: int = 2000, return_bool: bool = False) -> 'Element':
         self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
         return self._scroll(direction='up', percent=percent, speed=speed, return_bool=return_bool)
 
-    def scroll_left(self, percent: float = 0.7, speed: int = 2000, return_bool: bool = False) -> Union['Element', None]:
+    def scroll_left(self, percent: float = 0.7, speed: int = 2000, return_bool: bool = False) -> 'Element':
         self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
         return self._scroll(direction='left', percent=percent, speed=speed, return_bool=return_bool)
 
-    def scroll_right(self, percent: float = 0.7, speed: int = 2000, return_bool: bool = False) -> Union['Element', None]:
+    def scroll_right(self, percent: float = 0.7, speed: int = 2000, return_bool: bool = False) -> 'Element':
         self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
         return self._scroll(direction='right', percent=percent, speed=speed, return_bool=return_bool)
 
-    def _scroll(self, direction: str, percent: float, speed: int, return_bool: bool) -> Union['Element', None]:
+    def _scroll(self, direction: str, percent: float, speed: int, return_bool: bool) -> 'Element':
         """
         direction: Scrolling direction. Mandatory value. Acceptable values are: up, down, left and right (case insensitive)
         percent: The size of the scroll as a percentage of the scrolling area size. Valid values must be float numbers greater than zero, where 1.0 is 100%. Mandatory value.
@@ -1153,9 +1157,7 @@ class Element(ElementBase):
             stacktrace=traceback.format_stack()
         )
 
-    def scroll_to_element(self, locator: Union['Element', Dict[str, str], Tuple[str, str]], max_swipes: int = 30) -> \
-            Union[
-                'Element', None]:
+    def scroll_to_element(self, locator: Union['Element', Dict[str, str], Tuple[str, str]], max_swipes: int = 30) -> 'Element':
         self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
         start_time = time.time()
         if isinstance(locator, Element):
@@ -1171,6 +1173,7 @@ class Element(ElementBase):
         while time.time() - start_time < self.timeout:
             try:
                 self._get_driver()
+                self._get_native()
                 self.driver.execute_script("mobile: scroll", {
                     "elementId": self.id,
                     "strategy": "-android uiautomator",
@@ -1205,7 +1208,65 @@ class Element(ElementBase):
             stacktrace=traceback.format_stack()
         )
 
-    def zoom(self, percent: float = 0.75, speed: int = 2500) -> Union['Element', None]:
+    def scroll_to_element_optional(self, locator: Union['Element', Dict[str, str], Tuple[str, str]], max_swipes: int = 30, percent: float = 0.7, speed: int = 2000, waiting_element_timeout: int = 1) -> 'Element':
+        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
+        # FIXME refactor and optimise me please
+        start_time = time.time()
+        if isinstance(locator, Element):
+            locator = locator.locator
+        if isinstance(locator, dict):
+            selector = self.locator_converter.to_uiselector(locator)
+        elif isinstance(locator, tuple):
+            selector = self.locator_converter.to_uiselector(locator)
+        else:
+            raise GeneralElementException("Only dictionary locators are supported")
+        locator = self.locator_converter.to_xpath(locator)
+
+        while time.time() - start_time < self.timeout:
+            try:
+                self._get_driver()
+                self._get_native()
+                self.scroll_to_top()
+                found = self.base.get_element(locator)
+                found.timeout = waiting_element_timeout
+                if found.is_visible():
+                    return cast('Element', found)
+                while self.scroll_down(return_bool=True, percent=percent, speed=speed):
+                    found = self.base.get_element(locator)
+                    found.timeout = waiting_element_timeout
+                    if found.is_visible():
+                        return cast('Element', found)
+                self.scroll_down(return_bool=True, percent=percent, speed=speed)
+                found = self.base.get_element(locator)
+                found.timeout = waiting_element_timeout
+                if found.is_visible():
+                    return cast('Element', found)
+            except NoSuchDriverException as error:
+                self._handle_driver_error(error)
+            except InvalidSessionIdException as error:
+                self._handle_driver_error(error)
+            except AttributeError as error:
+                self._handle_driver_error(error)
+            except StaleElementReferenceException as error:
+                self.logger.debug(error)
+                self.logger.warning(f"StaleElementReferenceException\nRe-acquire element")
+                self.native = None
+                self._get_native()
+                continue
+            except Exception as error:
+                # Some instability detected, information gathering required
+                self.logger.error(error)
+                self.logger.error(type(error))
+                self.logger.error(traceback.format_stack())
+                self._handle_driver_error(error)
+                self.scroll_to_top(percent=0.75, speed=8000)
+
+        raise GeneralElementException(
+            msg=f"Failed to scroll to element with locator: {locator}",
+            stacktrace=traceback.format_stack()
+        )
+
+    def zoom(self, percent: float = 0.75, speed: int = 2500) -> 'Element':
         """
         Performs a pinch-open (zoom) gesture on the element.
 
@@ -1249,7 +1310,7 @@ class Element(ElementBase):
             stacktrace=traceback.format_stack()
         )
 
-    def unzoom(self, percent: float = 0.75, speed: int = 2500) -> Union['Element', None]:
+    def unzoom(self, percent: float = 0.75, speed: int = 2500) -> 'Element':
         """
         Performs a pinch-close (unzoom) gesture on the element.
 
@@ -1293,23 +1354,23 @@ class Element(ElementBase):
             stacktrace=traceback.format_stack()
         )
 
-    def swipe_up(self, percent: float = 0.75, speed: int = 5000) -> Union['Element', None]:
+    def swipe_up(self, percent: float = 0.75, speed: int = 5000) -> 'Element':
         """Performs a swipe up gesture on the current element."""
         return self.swipe(direction='up', percent=percent, speed=speed)
 
-    def swipe_down(self, percent: float = 0.75, speed: int = 5000) -> Union['Element', None]:
+    def swipe_down(self, percent: float = 0.75, speed: int = 5000) -> 'Element':
         """Performs a swipe down gesture on the current element."""
         return self.swipe(direction='down', percent=percent, speed=speed)
 
-    def swipe_left(self, percent: float = 0.75, speed: int = 5000) -> Union['Element', None]:
+    def swipe_left(self, percent: float = 0.75, speed: int = 5000) -> 'Element':
         """Performs a swipe left gesture on the current element."""
         return self.swipe(direction='left', percent=percent, speed=speed)
 
-    def swipe_right(self, percent: float = 0.75, speed: int = 5000) -> Union['Element', None]:
+    def swipe_right(self, percent: float = 0.75, speed: int = 5000) -> 'Element':
         """Performs a swipe right gesture on the current element."""
         return self.swipe(direction='right', percent=percent, speed=speed)
 
-    def swipe(self, direction: str, percent: float = 0.75, speed: int = 5000) -> Union['Element', None]:
+    def swipe(self, direction: str, percent: float = 0.75, speed: int = 5000) -> 'Element':
         """
         Performs a swipe gesture on the current element.
 
@@ -1355,7 +1416,7 @@ class Element(ElementBase):
         )
 
     # Override
-    def clear(self) -> Union['Element', None]:
+    def clear(self) -> 'Element':
         """Clears text content of the element (e.g. input or textarea).
 
         Returns:
@@ -1427,7 +1488,7 @@ class Element(ElementBase):
         )
 
     # Override
-    def set_value(self, value: str) -> Union['Element', None]:
+    def set_value(self, value: str) -> 'Element':
         """NOT IMPLEMENTED!
         Set the value on this element in the application.
 
@@ -1470,7 +1531,7 @@ class Element(ElementBase):
         )
 
     # Override
-    def send_keys(self, *value: str) -> Union['Element', None]:
+    def send_keys(self, *value: str) -> 'Element':
         """Simulates typing into the element.
 
         Args:
@@ -1512,7 +1573,7 @@ class Element(ElementBase):
         )
 
     @property
-    def tag_name(self) -> Optional[str]:
+    def tag_name(self) -> str:
         """This element's ``tagName`` property.
 
         Returns:
@@ -1583,7 +1644,7 @@ class Element(ElementBase):
             stacktrace=traceback.format_stack()
         )
 
-    def submit(self) -> Union['Element', None]:
+    def submit(self) -> NoReturn:
         """NOT IMPLEMENTED!
         Submits a form element.
 
@@ -1656,7 +1717,7 @@ class Element(ElementBase):
         )
 
     @property
-    def location_once_scrolled_into_view(self) -> dict:
+    def location_once_scrolled_into_view(self) -> NoReturn:
         """NOT IMPLEMENTED
         Gets the top-left corner location of the element after scrolling it into view.
 
@@ -1866,7 +1927,7 @@ class Element(ElementBase):
         )
 
     @property
-    def aria_role(self) -> Optional[str]:
+    def aria_role(self) -> str:
         """Returns the ARIA role of the current web element.
 
         Returns:
@@ -1904,7 +1965,7 @@ class Element(ElementBase):
         )
 
     @property
-    def accessible_name(self) -> Optional[str]:
+    def accessible_name(self) -> str:
         """Returns the ARIA Level (accessible name) of the current web element.
 
         Returns:
@@ -1942,7 +2003,7 @@ class Element(ElementBase):
         )
 
     @property
-    def screenshot_as_base64(self) -> Optional[str]:
+    def screenshot_as_base64(self) -> str:
         """Gets the screenshot of the current element as a base64 encoded string.
 
         Returns:
@@ -1980,7 +2041,7 @@ class Element(ElementBase):
         )
 
     @property
-    def screenshot_as_png(self) -> Optional[bytes]:
+    def screenshot_as_png(self) -> bytes:
         """Gets the screenshot of the current element as binary data.
 
         Returns:
@@ -2061,7 +2122,7 @@ class Element(ElementBase):
         )
 
     def _handle_driver_error(self, error: Exception) -> None:
-        self.logger.error(f"{inspect.currentframe().f_code.co_name} {error}")
+        self.logger.warning(f"{inspect.currentframe().f_code.co_name} {error}")
         self.base.reconnect()
         time.sleep(0.3)
 
@@ -2098,14 +2159,14 @@ class Element(ElementBase):
                 self._get_native()
                 continue
 
-    def _get_xpath(self) -> Union[str, None]:
+    def _get_xpath(self) -> str:
         self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
         locator = self.handle_locator(self.locator, self.contains)
         if locator[0] == 'xpath':
             return locator[1]
         return self._get_xpath_by_driver()
 
-    def _get_xpath_by_driver(self) -> Union[str, None]:
+    def _get_xpath_by_driver(self) -> str:
         self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
         try:
             xpath = "//"
@@ -2162,7 +2223,7 @@ class Element(ElementBase):
         parent_xpath = self._get_xpath()
         return f"{parent_xpath}/*[{index}]"
 
-    def wait(self, timeout: int = 10, poll_frequency: float = 0.5, return_bool: bool = False) -> Union[bool, 'Element']:
+    def wait(self, timeout: int = 10, poll_frequency: float = 0.5, return_bool: bool = False) -> 'Element':
         """Waits for the element to appear (present in DOM).
 
         Args:
@@ -2210,8 +2271,7 @@ class Element(ElementBase):
                 continue
         return False
 
-    def wait_visible(self, timeout: int = 10, poll_frequency: float = 0.5, return_bool: bool = False) -> Union[
-        bool, 'Element']:
+    def wait_visible(self, timeout: int = 10, poll_frequency: float = 0.5, return_bool: bool = False) -> 'Element':
         """Waits until the element is visible.
 
         Args:
@@ -2260,8 +2320,7 @@ class Element(ElementBase):
                 continue
         return False
 
-    def wait_clickable(self, timeout: int = 10, poll_frequency: float = 0.5, return_bool: bool = False) -> Union[
-        bool, 'Element']:
+    def wait_clickable(self, timeout: int = 10, poll_frequency: float = 0.5, return_bool: bool = False) -> 'Element':
         """Waits until the element is clickable.
 
         Args:
@@ -2310,8 +2369,7 @@ class Element(ElementBase):
                 continue
         return False
 
-    def wait_for_not(self, timeout: int = 10, poll_frequency: float = 0.5, return_bool: bool = False) -> Union[
-        bool, 'Element']:
+    def wait_for_not(self, timeout: int = 10, poll_frequency: float = 0.5, return_bool: bool = False) -> 'Element':
         """Waits until the element is no longer present in the DOM.
 
         Args:
@@ -2358,8 +2416,7 @@ class Element(ElementBase):
                 continue
         return False
 
-    def wait_for_not_visible(self, timeout: int = 10, poll_frequency: float = 0.5, return_bool: bool = False) -> Union[
-        bool, 'Element']:
+    def wait_for_not_visible(self, timeout: int = 10, poll_frequency: float = 0.5, return_bool: bool = False) -> 'Element':
         """Waits until the element becomes invisible.
 
         Args:
@@ -2406,8 +2463,7 @@ class Element(ElementBase):
                 continue
         return False
 
-    def wait_for_not_clickable(self, timeout: int = 10, poll_frequency: float = 0.5, return_bool: bool = False) -> \
-            Union[bool, 'Element']:
+    def wait_for_not_clickable(self, timeout: int = 10, poll_frequency: float = 0.5, return_bool: bool = False) -> 'Element':
         """Waits until the element becomes not clickable.
 
         Args:
