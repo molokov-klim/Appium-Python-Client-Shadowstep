@@ -155,7 +155,8 @@ class Element(ElementBase):
                     ignored_exceptions=ignored_exceptions,
                 )
                 wait.until(EC.presence_of_element_located(locator))
-                native_elements = self.driver.find_elements(*locator)
+                native_parent = self._get_native()
+                native_elements = native_parent.find_elements(*locator)
 
                 elements = []
                 for native_element in native_elements:
@@ -1173,6 +1174,7 @@ class Element(ElementBase):
         while time.time() - start_time < self.timeout:
             try:
                 self._get_driver()
+                self._get_native()
                 self.driver.execute_script("mobile: scroll", {
                     "elementId": self.id,
                     "strategy": "-android uiautomator",
@@ -1180,6 +1182,64 @@ class Element(ElementBase):
                     "maxSwipes": max_swipes
                 })
                 found = self.base.get_element(locator)
+                if found.is_visible():
+                    return cast('Element', found)
+            except NoSuchDriverException as error:
+                self._handle_driver_error(error)
+            except InvalidSessionIdException as error:
+                self._handle_driver_error(error)
+            except AttributeError as error:
+                self._handle_driver_error(error)
+            except StaleElementReferenceException as error:
+                self.logger.debug(error)
+                self.logger.warning(f"StaleElementReferenceException\nRe-acquire element")
+                self.native = None
+                self._get_native()
+                continue
+            except Exception as error:
+                # Some instability detected, information gathering required
+                self.logger.error(error)
+                self.logger.error(type(error))
+                self.logger.error(traceback.format_stack())
+                self._handle_driver_error(error)
+                self.scroll_to_top(percent=0.75, speed=8000)
+
+        raise GeneralElementException(
+            msg=f"Failed to scroll to element with locator: {locator}",
+            stacktrace=traceback.format_stack()
+        )
+
+    def scroll_to_element_optional(self, locator: Union['Element', Dict[str, str], Tuple[str, str]], max_swipes: int = 30, percent: float = 0.7, speed: int = 2000, waiting_element_timeout: int = 1) -> 'Element':
+        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
+        # FIXME refactor and optimise me please
+        start_time = time.time()
+        if isinstance(locator, Element):
+            locator = locator.locator
+        if isinstance(locator, dict):
+            selector = self.locator_converter.to_uiselector(locator)
+        elif isinstance(locator, tuple):
+            selector = self.locator_converter.to_uiselector(locator)
+        else:
+            raise GeneralElementException("Only dictionary locators are supported")
+        locator = self.locator_converter.to_xpath(locator)
+
+        while time.time() - start_time < self.timeout:
+            try:
+                self._get_driver()
+                self._get_native()
+                self.scroll_to_top()
+                found = self.base.get_element(locator)
+                found.timeout = waiting_element_timeout
+                if found.is_visible():
+                    return cast('Element', found)
+                while self.scroll_down(return_bool=True, percent=percent, speed=speed):
+                    found = self.base.get_element(locator)
+                    found.timeout = waiting_element_timeout
+                    if found.is_visible():
+                        return cast('Element', found)
+                self.scroll_down(return_bool=True, percent=percent, speed=speed)
+                found = self.base.get_element(locator)
+                found.timeout = waiting_element_timeout
                 if found.is_visible():
                     return cast('Element', found)
             except NoSuchDriverException as error:
@@ -2063,7 +2123,7 @@ class Element(ElementBase):
         )
 
     def _handle_driver_error(self, error: Exception) -> None:
-        self.logger.error(f"{inspect.currentframe().f_code.co_name} {error}")
+        self.logger.warning(f"{inspect.currentframe().f_code.co_name} {error}")
         self.base.reconnect()
         time.sleep(0.3)
 
