@@ -1173,7 +1173,6 @@ class Element(ElementBase):
         while time.time() - start_time < self.timeout:
             try:
                 self._get_driver()
-                self._get_native()
                 self.driver.execute_script("mobile: scroll", {
                     "elementId": self.id,
                     "strategy": "-android uiautomator",
