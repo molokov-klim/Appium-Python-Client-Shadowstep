@@ -857,7 +857,7 @@ class Element(ElementBase):
             y: int = None,
             direction: int = None,
             distance: int = None,
-    ) -> 'Element'
+    ) -> 'Element':
         self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
         start_time = time.time()
         while time.time() - start_time < self.timeout:
