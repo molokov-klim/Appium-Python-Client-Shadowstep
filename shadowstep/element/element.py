@@ -746,7 +746,7 @@ class Element(ElementBase):
                 self._handle_driver_error(error)
             except StaleElementReferenceException as error:
                 self.logger.debug(error)
-                self.logger.warning(f"StaleElementReferenceException\nRe-acquire element")
+                self.logger.warning("StaleElementReferenceException\nRe-acquire element")
                 self.native = None
                 self._get_native()
                 continue
@@ -790,7 +790,7 @@ class Element(ElementBase):
         )
 
     def is_contains(self,
-                    locator: Union[Tuple, Dict[str, str], 'Element'] = None,
+                    locator: Union[tuple, dict[str, str], 'Element'] = None,
                     contains: bool = False
                     ) -> bool:
         self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
@@ -823,7 +823,7 @@ class Element(ElementBase):
             stacktrace=traceback.format_stack()
         )
 
-    def tap(self, duration: Optional[int] = None) -> 'Element':
+    def tap(self, duration: int = None) -> 'Element':
         self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
         start_time = time.time()
         while time.time() - start_time < self.timeout:
@@ -1107,7 +1107,7 @@ class Element(ElementBase):
             stacktrace=traceback.format_stack()
         )
 
-    def scroll_to_bottom(self, percent: int = 0.7, speed: int = 8000) -> 'Element':
+    def scroll_to_bottom(self, percent: float = 0.7, speed: int = 8000) -> 'Element':
         """Scrolls down until the bottom is reached."""
         self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
         start_time = time.time()
