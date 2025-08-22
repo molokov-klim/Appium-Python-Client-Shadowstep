@@ -29,7 +29,7 @@ from selenium.webdriver.support.wait import WebDriverWait
 
 from shadowstep.element.base import ElementBase
 from shadowstep.utils import conditions
-from shadowstep.utils.utils import find_coordinates_by_vector
+from shadowstep.utils.utils import find_coordinates_by_vector, get_current_func_name
 
 # Configure the root logger (basic configuration)
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
@@ -87,7 +87,7 @@ class Element(ElementBase):
         Returns:
             Found Element or None.
         """
-        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
+        self.logger.debug(f"{get_current_func_name()}")
 
         if isinstance(locator, Element):
             locator = locator.locator
@@ -123,7 +123,7 @@ class Element(ElementBase):
         """
         method is greedy
         """
-        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
+        self.logger.debug(f"{get_current_func_name()}")
         start_time = time.time()
 
         # [Step] Normalize locator
@@ -210,7 +210,7 @@ class Element(ElementBase):
         Returns:
             Optional[Dict[str, str]]: Dictionary of all attributes, or None if not found.
         """
-        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
+        self.logger.debug(f"{get_current_func_name()}")
         start_time = time.time()
 
         # Convert locator to XPath expression (supports dict, tuple, UiSelector string)
@@ -268,7 +268,7 @@ class Element(ElementBase):
         return None
 
     def get_parent(self) -> 'Element':
-        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
+        self.logger.debug(f"{get_current_func_name()}")
         try:
             xpath = self._get_xpath()
             if xpath is None:
@@ -292,7 +292,7 @@ class Element(ElementBase):
         Yields:
             Generator of Element instances representing each parent in the hierarchy.
         """
-        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
+        self.logger.debug(f"{get_current_func_name()}")
         current_xpath = self._get_xpath()
 
         if not current_xpath:
@@ -323,7 +323,7 @@ class Element(ElementBase):
                 break
 
     def get_sibling(self, locator: Union[Tuple, Dict[str, str], 'Element']) -> 'Element':
-        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
+        self.logger.debug(f"{get_current_func_name()}")
         if isinstance(locator, Element):
             locator = locator.locator
 
@@ -354,7 +354,7 @@ class Element(ElementBase):
         Yields:
             Generator of Element instances that are siblings of the current element.
         """
-        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
+        self.logger.debug(f"{get_current_func_name()}")
 
         base_xpath = self._get_xpath()
         if not base_xpath:
@@ -415,7 +415,7 @@ class Element(ElementBase):
         Returns:
             Union['Element', None]: The cousin Element or None if not found.
         """
-        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
+        self.logger.debug(f"{get_current_func_name()}")
         depth_to_parent += 1
 
         try:
@@ -467,7 +467,7 @@ class Element(ElementBase):
         Returns:
             Optional[Tuple[int, int]]: (x, y) center point or None if element not found.
         """
-        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
+        self.logger.debug(f"{get_current_func_name()}")
         start_time = time.time()
         while time.time() - start_time < self.timeout:
             try:
@@ -508,7 +508,7 @@ class Element(ElementBase):
         Returns:
             Optional[Tuple[int, int, int, int]]: (left, top, right, bottom) or None.
         """
-        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
+        self.logger.debug(f"{get_current_func_name()}")
         start_time = time.time()
         while time.time() - start_time < self.timeout:
             try:
@@ -548,7 +548,7 @@ class Element(ElementBase):
         Returns:
             Optional[Union[str, Dict]]: Value of the attribute or None.
         """
-        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
+        self.logger.debug(f"{get_current_func_name()}")
         start_time = time.time()
         while time.time() - start_time < self.timeout:
             try:
@@ -583,7 +583,7 @@ class Element(ElementBase):
         Returns:
             Union[str, bool, dict, None]: Property value.
         """
-        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
+        self.logger.debug(f"{get_current_func_name()}")
         self.logger.warning(f"Method {inspect.currentframe().f_code.co_name} is not implemented in UiAutomator2")
         start_time = time.time()
         while time.time() - start_time < self.timeout:
@@ -622,7 +622,7 @@ class Element(ElementBase):
 
                 text_length = target_element.get_dom_attribute("class")
         """
-        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
+        self.logger.debug(f"{get_current_func_name()}")
         start_time = time.time()
         while time.time() - start_time < self.timeout:
             try:
@@ -654,7 +654,7 @@ class Element(ElementBase):
         Returns:
             bool: True if the element is displayed on screen and visible to the user.
         """
-        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
+        self.logger.debug(f"{get_current_func_name()}")
         start_time = time.time()
         while time.time() - start_time < self.timeout:
             try:
@@ -682,7 +682,7 @@ class Element(ElementBase):
         )
 
     def is_visible(self) -> bool:
-        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
+        self.logger.debug(f"{get_current_func_name()}")
         start_time = time.time()
         while time.time() - start_time < self.timeout:
             try:
@@ -734,7 +734,7 @@ class Element(ElementBase):
         Returns:
             bool: True if the element is selected.
         """
-        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
+        self.logger.debug(f"{get_current_func_name()}")
         start_time = time.time()
         while time.time() - start_time < self.timeout:
             try:
@@ -767,7 +767,7 @@ class Element(ElementBase):
         Returns:
             bool: True if the element is enabled.
         """
-        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
+        self.logger.debug(f"{get_current_func_name()}")
         start_time = time.time()
         while time.time() - start_time < self.timeout:
             try:
@@ -798,7 +798,7 @@ class Element(ElementBase):
                     locator: Union[tuple, dict[str, str], 'Element'] = None,
                     contains: bool = False
                     ) -> bool:
-        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
+        self.logger.debug(f"{get_current_func_name()}")
         start_time = time.time()
         while time.time() - start_time < self.timeout:
             try:
@@ -829,7 +829,7 @@ class Element(ElementBase):
         )
 
     def tap(self, duration: int = None) -> 'Element':
-        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
+        self.logger.debug(f"{get_current_func_name()}")
         start_time = time.time()
         while time.time() - start_time < self.timeout:
             try:
@@ -864,7 +864,7 @@ class Element(ElementBase):
             direction: int = None,
             distance: int = None,
     ) -> 'Element':
-        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
+        self.logger.debug(f"{get_current_func_name()}")
         start_time = time.time()
         while time.time() - start_time < self.timeout:
             try:
@@ -924,7 +924,7 @@ class Element(ElementBase):
         )
 
     def click(self, duration: int = None) -> 'Element':
-        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
+        self.logger.debug(f"{get_current_func_name()}")
         start_time = time.time()
         while time.time() - start_time < self.timeout:
             try:
@@ -955,7 +955,7 @@ class Element(ElementBase):
         )
 
     def click_double(self) -> 'Element':
-        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
+        self.logger.debug(f"{get_current_func_name()}")
         start_time = time.time()
         while time.time() - start_time < self.timeout:
             try:
@@ -982,7 +982,7 @@ class Element(ElementBase):
         )
 
     def drag(self, end_x: int, end_y: int, speed: int = 2500) -> 'Element':
-        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
+        self.logger.debug(f"{get_current_func_name()}")
         start_time = time.time()
         while time.time() - start_time < self.timeout:
             try:
@@ -1029,7 +1029,7 @@ class Element(ElementBase):
         speed: The speed at which to perform this gesture in pixels per second. The value must be greater than the minimum fling velocity for the given view (50 by default). The default value is 7500 * displayDensity
         https://github.com/appium/appium-uiautomator2-driver/blob/master/docs/android-mobile-gestures.md#mobile-flinggesture
         """
-        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
+        self.logger.debug(f"{get_current_func_name()}")
         start_time = time.time()
         while time.time() - start_time < self.timeout:
             try:
@@ -1058,19 +1058,19 @@ class Element(ElementBase):
         )
 
     def scroll_down(self, percent: float = 0.7, speed: int = 2000, return_bool: bool = False) -> 'Element':
-        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
+        self.logger.debug(f"{get_current_func_name()}")
         return self._scroll(direction='down', percent=percent, speed=speed, return_bool=return_bool)
 
     def scroll_up(self, percent: float = 0.7, speed: int = 2000, return_bool: bool = False) -> 'Element':
-        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
+        self.logger.debug(f"{get_current_func_name()}")
         return self._scroll(direction='up', percent=percent, speed=speed, return_bool=return_bool)
 
     def scroll_left(self, percent: float = 0.7, speed: int = 2000, return_bool: bool = False) -> 'Element':
-        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
+        self.logger.debug(f"{get_current_func_name()}")
         return self._scroll(direction='left', percent=percent, speed=speed, return_bool=return_bool)
 
     def scroll_right(self, percent: float = 0.7, speed: int = 2000, return_bool: bool = False) -> 'Element':
-        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
+        self.logger.debug(f"{get_current_func_name()}")
         return self._scroll(direction='right', percent=percent, speed=speed, return_bool=return_bool)
 
     def _scroll(self, direction: str, percent: float, speed: int, return_bool: bool) -> 'Element':
@@ -1080,7 +1080,7 @@ class Element(ElementBase):
         speed: The speed at which to perform this gesture in pixels per second. The value must not be negative. The default value is 5000 * displayDensity
         return_bool: if true return bool else return self
         """
-        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
+        self.logger.debug(f"{get_current_func_name()}")
         # https://github.com/appium/appium-uiautomator2-driver/blob/master/docs/android-mobile-gestures.md#mobile-scrollgesture
         start_time = time.time()
         while time.time() - start_time < self.timeout:
@@ -1114,7 +1114,7 @@ class Element(ElementBase):
 
     def scroll_to_bottom(self, percent: float = 0.7, speed: int = 8000) -> 'Element':
         """Scrolls down until the bottom is reached."""
-        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
+        self.logger.debug(f"{get_current_func_name()}")
         start_time = time.time()
 
         while time.time() - start_time < self.timeout:
@@ -1140,7 +1140,7 @@ class Element(ElementBase):
 
     def scroll_to_top(self, percent: float = 0.7, speed: int = 8000) -> 'Element':
         """Scrolls up until the top is reached."""
-        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
+        self.logger.debug(f"{get_current_func_name()}")
         start_time = time.time()
 
         while time.time() - start_time < self.timeout:
@@ -1164,7 +1164,7 @@ class Element(ElementBase):
         )
 
     def scroll_to_element(self, locator: Union['Element', Dict[str, str], Tuple[str, str]], max_swipes: int = 30) -> 'Element':
-        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
+        self.logger.debug(f"{get_current_func_name()}")
         start_time = time.time()
         if isinstance(locator, Element):
             locator = locator.locator
@@ -1214,7 +1214,7 @@ class Element(ElementBase):
         )
 
     def scroll_to_element_optional(self, locator: Union['Element', Dict[str, str], Tuple[str, str]], max_swipes: int = 30, percent: float = 0.7, speed: int = 2000, waiting_element_timeout: int = 1) -> 'Element':
-        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
+        self.logger.debug(f"{get_current_func_name()}")
         # FIXME refactor and optimise me please
         start_time = time.time()
         if isinstance(locator, Element):
@@ -1282,7 +1282,7 @@ class Element(ElementBase):
         Returns:
             Element: Self instance on success.
         """
-        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
+        self.logger.debug(f"{get_current_func_name()}")
         start_time = time.time()
 
         while time.time() - start_time < self.timeout:
@@ -1326,7 +1326,7 @@ class Element(ElementBase):
         Returns:
             Element: Self instance on success.
         """
-        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
+        self.logger.debug(f"{get_current_func_name()}")
         start_time = time.time()
 
         while time.time() - start_time < self.timeout:
@@ -1387,7 +1387,7 @@ class Element(ElementBase):
         Returns:
             Element: Self instance on success.
         """
-        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
+        self.logger.debug(f"{get_current_func_name()}")
         start_time = time.time()
 
         while time.time() - start_time < self.timeout:
@@ -1427,7 +1427,7 @@ class Element(ElementBase):
         Returns:
             Element: Self instance if successful.
         """
-        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
+        self.logger.debug(f"{get_current_func_name()}")
         start_time = time.time()
 
         while time.time() - start_time < self.timeout:
@@ -1464,7 +1464,7 @@ class Element(ElementBase):
         Returns:
             dict: Dictionary with keys 'x' and 'y', or None on failure.
         """
-        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
+        self.logger.debug(f"{get_current_func_name()}")
         start_time = time.time()
 
         while time.time() - start_time < self.timeout:
@@ -1503,7 +1503,7 @@ class Element(ElementBase):
         Returns:
             Element: Self instance on success.
         """
-        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
+        self.logger.debug(f"{get_current_func_name()}")
         self.logger.warning(f"Method {inspect.currentframe().f_code.co_name} is not implemented in UiAutomator2")
 
         start_time = time.time()
@@ -1545,7 +1545,7 @@ class Element(ElementBase):
         Returns:
             Element: Self instance on success.
         """
-        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
+        self.logger.debug(f"{get_current_func_name()}")
         start_time = time.time()
 
         text = "".join(value)
@@ -1584,7 +1584,7 @@ class Element(ElementBase):
         Returns:
             Optional[str]: The tag name of the element, or None if not retrievable.
         """
-        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
+        self.logger.debug(f"{get_current_func_name()}")
         start_time = time.time()
 
         while time.time() - start_time < self.timeout:
@@ -1615,12 +1615,7 @@ class Element(ElementBase):
 
     @property
     def text(self) -> str:
-        """The text of the element.
-
-        Returns:
-            str: Text content of the element.
-        """
-        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
+        self.logger.debug(f"{get_current_func_name()}")
         start_time = time.time()
 
         while time.time() - start_time < self.timeout:
@@ -1648,6 +1643,411 @@ class Element(ElementBase):
             msg=f"Failed to retrieve text within {self.timeout=}",
             stacktrace=traceback.format_stack()
         )
+    
+    @property
+    def resource_id(self) -> str:
+        self.logger.debug(f"{get_current_func_name()}")
+        start_time = time.time()
+
+        while time.time() - start_time < self.timeout:
+            try:
+                self._get_driver()
+
+                return self.get_attribute('resource-id')
+
+            except NoSuchDriverException as error:
+                self._handle_driver_error(error)
+            except InvalidSessionIdException as error:
+                self._handle_driver_error(error)
+            except AttributeError as error:
+                self._handle_driver_error(error)
+            except StaleElementReferenceException as error:
+                self.logger.debug(error)
+                self.logger.warning("StaleElementReferenceException\nRe-acquire element")
+                self.native = None
+                self._get_native()
+                continue
+
+        raise GeneralElementException(
+            msg=f"Failed to retrieve attr within {self.timeout=}",
+            stacktrace=traceback.format_stack()
+        )
+
+    @property
+    def index(self) -> str:
+        self.logger.debug(f"{get_current_func_name()}")
+        start_time = time.time()
+
+        while time.time() - start_time < self.timeout:
+            try:
+                self._get_driver()
+                return self.get_attribute('index')
+
+            except (NoSuchDriverException, InvalidSessionIdException, AttributeError) as error:
+                self._handle_driver_error(error)
+            except StaleElementReferenceException as error:
+                self.logger.debug(error)
+                self.logger.warning("StaleElementReferenceException\nRe-acquire element")
+                self.native = None
+                self._get_native()
+                continue
+
+        raise GeneralElementException(
+            msg=f"Failed to retrieve attr within {self.timeout=}",
+            stacktrace=traceback.format_stack()
+        )
+
+    @property
+    def package(self) -> str:
+        self.logger.debug(f"{get_current_func_name()}")
+        start_time = time.time()
+
+        while time.time() - start_time < self.timeout:
+            try:
+                self._get_driver()
+                return self.get_attribute('package')
+
+            except (NoSuchDriverException, InvalidSessionIdException, AttributeError) as error:
+                self._handle_driver_error(error)
+            except StaleElementReferenceException as error:
+                self.logger.debug(error)
+                self.logger.warning("StaleElementReferenceException\nRe-acquire element")
+                self.native = None
+                self._get_native()
+                continue
+
+        raise GeneralElementException(
+            msg=f"Failed to retrieve attr within {self.timeout=}",
+            stacktrace=traceback.format_stack()
+        )
+
+    @property
+    def class_name(self) -> str:  # 'class' — это зарезервированное слово, поэтому лучше class_name
+        self.logger.debug(f"{get_current_func_name()}")
+        start_time = time.time()
+
+        while time.time() - start_time < self.timeout:
+            try:
+                self._get_driver()
+                return self.get_attribute('class')
+
+            except (NoSuchDriverException, InvalidSessionIdException, AttributeError) as error:
+                self._handle_driver_error(error)
+            except StaleElementReferenceException as error:
+                self.logger.debug(error)
+                self.logger.warning("StaleElementReferenceException\nRe-acquire element")
+                self.native = None
+                self._get_native()
+                continue
+
+        raise GeneralElementException(
+            msg=f"Failed to retrieve attr within {self.timeout=}",
+            stacktrace=traceback.format_stack()
+        )
+
+    @property
+    def bounds(self) -> str:
+        self.logger.debug(f"{get_current_func_name()}")
+        start_time = time.time()
+
+        while time.time() - start_time < self.timeout:
+            try:
+                self._get_driver()
+                return self.get_attribute('bounds')
+
+            except (NoSuchDriverException, InvalidSessionIdException, AttributeError) as error:
+                self._handle_driver_error(error)
+            except StaleElementReferenceException as error:
+                self.logger.debug(error)
+                self.logger.warning("StaleElementReferenceException\nRe-acquire element")
+                self.native = None
+                self._get_native()
+                continue
+
+        raise GeneralElementException(
+            msg=f"Failed to retrieve attr within {self.timeout=}",
+            stacktrace=traceback.format_stack()
+        )
+
+    @property
+    def checked(self) -> str:
+        self.logger.debug(f"{get_current_func_name()}")
+        start_time = time.time()
+
+        while time.time() - start_time < self.timeout:
+            try:
+                self._get_driver()
+                return self.get_attribute('checked')
+
+            except NoSuchDriverException as error:
+                self._handle_driver_error(error)
+            except InvalidSessionIdException as error:
+                self._handle_driver_error(error)
+            except AttributeError as error:
+                self._handle_driver_error(error)
+            except StaleElementReferenceException as error:
+                self.logger.debug(error)
+                self.logger.warning("StaleElementReferenceException\nRe-acquire element")
+                self.native = None
+                self._get_native()
+                continue
+
+        raise GeneralElementException(
+            msg=f"Failed to retrieve attr within {self.timeout=}",
+            stacktrace=traceback.format_stack()
+        )
+
+    @property
+    def checkable(self) -> str:
+        self.logger.debug(f"{get_current_func_name()}")
+        start_time = time.time()
+
+        while time.time() - start_time < self.timeout:
+            try:
+                self._get_driver()
+                return self.get_attribute('checkable')
+
+            except NoSuchDriverException as error:
+                self._handle_driver_error(error)
+            except InvalidSessionIdException as error:
+                self._handle_driver_error(error)
+            except AttributeError as error:
+                self._handle_driver_error(error)
+            except StaleElementReferenceException as error:
+                self.logger.debug(error)
+                self.logger.warning("StaleElementReferenceException\nRe-acquire element")
+                self.native = None
+                self._get_native()
+                continue
+
+        raise GeneralElementException(
+            msg=f"Failed to retrieve attr within {self.timeout=}",
+            stacktrace=traceback.format_stack()
+        )
+
+    @property
+    def enabled(self) -> str:
+        self.logger.debug(f"{get_current_func_name()}")
+        start_time = time.time()
+
+        while time.time() - start_time < self.timeout:
+            try:
+                self._get_driver()
+                return self.get_attribute('enabled')
+
+            except NoSuchDriverException as error:
+                self._handle_driver_error(error)
+            except InvalidSessionIdException as error:
+                self._handle_driver_error(error)
+            except AttributeError as error:
+                self._handle_driver_error(error)
+            except StaleElementReferenceException as error:
+                self.logger.debug(error)
+                self.logger.warning("StaleElementReferenceException\nRe-acquire element")
+                self.native = None
+                self._get_native()
+                continue
+
+        raise GeneralElementException(
+            msg=f"Failed to retrieve attr within {self.timeout=}",
+            stacktrace=traceback.format_stack()
+        )
+
+    @property
+    def focusable(self) -> str:
+        self.logger.debug(f"{get_current_func_name()}")
+        start_time = time.time()
+
+        while time.time() - start_time < self.timeout:
+            try:
+                self._get_driver()
+                return self.get_attribute('focusable')
+
+            except NoSuchDriverException as error:
+                self._handle_driver_error(error)
+            except InvalidSessionIdException as error:
+                self._handle_driver_error(error)
+            except AttributeError as error:
+                self._handle_driver_error(error)
+            except StaleElementReferenceException as error:
+                self.logger.debug(error)
+                self.logger.warning("StaleElementReferenceException\nRe-acquire element")
+                self.native = None
+                self._get_native()
+                continue
+
+        raise GeneralElementException(
+            msg=f"Failed to retrieve attr within {self.timeout=}",
+            stacktrace=traceback.format_stack()
+        )
+
+    @property
+    def focused(self) -> str:
+        self.logger.debug(f"{get_current_func_name()}")
+        start_time = time.time()
+
+        while time.time() - start_time < self.timeout:
+            try:
+                self._get_driver()
+                return self.get_attribute('focused')
+
+            except NoSuchDriverException as error:
+                self._handle_driver_error(error)
+            except InvalidSessionIdException as error:
+                self._handle_driver_error(error)
+            except AttributeError as error:
+                self._handle_driver_error(error)
+            except StaleElementReferenceException as error:
+                self.logger.debug(error)
+                self.logger.warning("StaleElementReferenceException\nRe-acquire element")
+                self.native = None
+                self._get_native()
+                continue
+
+        raise GeneralElementException(
+            msg=f"Failed to retrieve attr within {self.timeout=}",
+            stacktrace=traceback.format_stack()
+        )
+
+    @property
+    def long_clickable(self) -> str:
+        self.logger.debug(f"{get_current_func_name()}")
+        start_time = time.time()
+
+        while time.time() - start_time < self.timeout:
+            try:
+                self._get_driver()
+                return self.get_attribute('long-clickable')
+
+            except NoSuchDriverException as error:
+                self._handle_driver_error(error)
+            except InvalidSessionIdException as error:
+                self._handle_driver_error(error)
+            except AttributeError as error:
+                self._handle_driver_error(error)
+            except StaleElementReferenceException as error:
+                self.logger.debug(error)
+                self.logger.warning("StaleElementReferenceException\nRe-acquire element")
+                self.native = None
+                self._get_native()
+                continue
+
+        raise GeneralElementException(
+            msg=f"Failed to retrieve attr within {self.timeout=}",
+            stacktrace=traceback.format_stack()
+        )
+
+    @property
+    def password(self) -> str:
+        self.logger.debug(f"{get_current_func_name()}")
+        start_time = time.time()
+
+        while time.time() - start_time < self.timeout:
+            try:
+                self._get_driver()
+                return self.get_attribute('password')
+
+            except NoSuchDriverException as error:
+                self._handle_driver_error(error)
+            except InvalidSessionIdException as error:
+                self._handle_driver_error(error)
+            except AttributeError as error:
+                self._handle_driver_error(error)
+            except StaleElementReferenceException as error:
+                self.logger.debug(error)
+                self.logger.warning("StaleElementReferenceException\nRe-acquire element")
+                self.native = None
+                self._get_native()
+                continue
+
+        raise GeneralElementException(
+            msg=f"Failed to retrieve attr within {self.timeout=}",
+            stacktrace=traceback.format_stack()
+        )
+
+    @property
+    def scrollable(self) -> str:
+        self.logger.debug(f"{get_current_func_name()}")
+        start_time = time.time()
+
+        while time.time() - start_time < self.timeout:
+            try:
+                self._get_driver()
+                return self.get_attribute('scrollable')
+
+            except NoSuchDriverException as error:
+                self._handle_driver_error(error)
+            except InvalidSessionIdException as error:
+                self._handle_driver_error(error)
+            except AttributeError as error:
+                self._handle_driver_error(error)
+            except StaleElementReferenceException as error:
+                self.logger.debug(error)
+                self.logger.warning("StaleElementReferenceException\nRe-acquire element")
+                self.native = None
+                self._get_native()
+                continue
+
+        raise GeneralElementException(
+            msg=f"Failed to retrieve attr within {self.timeout=}",
+            stacktrace=traceback.format_stack()
+        )
+
+    @property
+    def selected(self) -> str:
+        self.logger.debug(f"{get_current_func_name()}")
+        start_time = time.time()
+
+        while time.time() - start_time < self.timeout:
+            try:
+                self._get_driver()
+                return self.get_attribute('selected')
+
+            except NoSuchDriverException as error:
+                self._handle_driver_error(error)
+            except InvalidSessionIdException as error:
+                self._handle_driver_error(error)
+            except AttributeError as error:
+                self._handle_driver_error(error)
+            except StaleElementReferenceException as error:
+                self.logger.debug(error)
+                self.logger.warning("StaleElementReferenceException\nRe-acquire element")
+                self.native = None
+                self._get_native()
+                continue
+
+        raise GeneralElementException(
+            msg=f"Failed to retrieve attr within {self.timeout=}",
+            stacktrace=traceback.format_stack()
+        )
+
+    @property
+    def displayed(self) -> str:
+        self.logger.debug(f"{get_current_func_name()}")
+        start_time = time.time()
+
+        while time.time() - start_time < self.timeout:
+            try:
+                self._get_driver()
+                return self.get_attribute('displayed')
+
+            except NoSuchDriverException as error:
+                self._handle_driver_error(error)
+            except InvalidSessionIdException as error:
+                self._handle_driver_error(error)
+            except AttributeError as error:
+                self._handle_driver_error(error)
+            except StaleElementReferenceException as error:
+                self.logger.debug(error)
+                self.logger.warning("StaleElementReferenceException\nRe-acquire element")
+                self.native = None
+                self._get_native()
+                continue
+
+        raise GeneralElementException(
+            msg=f"Failed to retrieve attr within {self.timeout=}",
+            stacktrace=traceback.format_stack()
+        )
 
     def submit(self) -> NoReturn:
         """NOT IMPLEMENTED!
@@ -1656,7 +2056,7 @@ class Element(ElementBase):
         Returns:
             Element: Self instance on success.
         """
-        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
+        self.logger.debug(f"{get_current_func_name()}")
         self.logger.warning(f"Method {inspect.currentframe().f_code.co_name} is not implemented in UiAutomator2")
         start_time = time.time()
 
@@ -1696,7 +2096,7 @@ class Element(ElementBase):
         Raises:
             GeneralElementException: If shadow root is not available or an error occurs.
         """
-        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
+        self.logger.debug(f"{get_current_func_name()}")
         self.logger.warning(f"Method {inspect.currentframe().f_code.co_name} is not implemented in UiAutomator2")
 
         start_time = time.time()
@@ -1732,7 +2132,7 @@ class Element(ElementBase):
         Raises:
             GeneralElementException: If element could not be scrolled into view or location determined.
         """
-        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
+        self.logger.debug(f"{get_current_func_name()}")
         self.logger.warning(f"Method {inspect.currentframe().f_code.co_name} is not implemented in UiAutomator2")
 
         start_time = time.time()
@@ -1769,7 +2169,7 @@ class Element(ElementBase):
         Raises:
             GeneralElementException: If size cannot be determined.
         """
-        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
+        self.logger.debug(f"{get_current_func_name()}")
         start_time = time.time()
 
         while time.time() - start_time < self.timeout:
@@ -1813,7 +2213,7 @@ class Element(ElementBase):
         Raises:
             GeneralElementException: If value could not be retrieved within timeout.
         """
-        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
+        self.logger.debug(f"{get_current_func_name()}")
         self.logger.warning(f"Method {inspect.currentframe().f_code.co_name} is not implemented in UiAutomator2")
 
         start_time = time.time()
@@ -1857,7 +2257,7 @@ class Element(ElementBase):
         Raises:
             GeneralElementException: If location could not be retrieved within timeout.
         """
-        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
+        self.logger.debug(f"{get_current_func_name()}")
         self.logger.warning(f"Method {inspect.currentframe().f_code.co_name} is not implemented in UiAutomator2")
 
         start_time = time.time()
@@ -1900,7 +2300,7 @@ class Element(ElementBase):
         Raises:
             GeneralElementException: If rect could not be retrieved within timeout.
         """
-        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
+        self.logger.debug(f"{get_current_func_name()}")
         start_time = time.time()
 
         while time.time() - start_time < self.timeout:
@@ -1938,7 +2338,7 @@ class Element(ElementBase):
         Returns:
             str: The ARIA role of the element, or None if not found.
         """
-        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
+        self.logger.debug(f"{get_current_func_name()}")
         start_time = time.time()
 
         while time.time() - start_time < self.timeout:
@@ -1976,7 +2376,7 @@ class Element(ElementBase):
         Returns:
             Optional[str]: Accessible name or None if not found.
         """
-        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
+        self.logger.debug(f"{get_current_func_name()}")
         start_time = time.time()
 
         while time.time() - start_time < self.timeout:
@@ -2014,7 +2414,7 @@ class Element(ElementBase):
         Returns:
             Optional[str]: Base64-encoded screenshot string or None if failed.
         """
-        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
+        self.logger.debug(f"{get_current_func_name()}")
         start_time = time.time()
 
         while time.time() - start_time < self.timeout:
@@ -2052,7 +2452,7 @@ class Element(ElementBase):
         Returns:
             Optional[bytes]: PNG-encoded screenshot bytes or None if failed.
         """
-        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
+        self.logger.debug(f"{get_current_func_name()}")
         start_time = time.time()
 
         while time.time() - start_time < self.timeout:
@@ -2092,7 +2492,7 @@ class Element(ElementBase):
         Returns:
             bool: True if successful, False otherwise.
         """
-        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
+        self.logger.debug(f"{get_current_func_name()}")
         start_time = time.time()
 
         while time.time() - start_time < self.timeout:
@@ -2136,7 +2536,7 @@ class Element(ElementBase):
         return self.driver.execute_script(name, params)
 
     def _ensure_session_alive(self) -> None:
-        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
+        self.logger.debug(f"{get_current_func_name()}")
         try:
             self._get_driver()
         except NoSuchDriverException:
@@ -2147,7 +2547,7 @@ class Element(ElementBase):
             self.base.reconnect()
 
     def _get_first_child_class(self, tries: int = 3) -> str:
-        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
+        self.logger.debug(f"{get_current_func_name()}")
         for _ in range(tries):
             try:
                 parent_element = self
@@ -2165,14 +2565,14 @@ class Element(ElementBase):
                 continue
 
     def _get_xpath(self) -> str:
-        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
+        self.logger.debug(f"{get_current_func_name()}")
         locator = self.handle_locator(self.locator, self.contains)
         if locator[0] == 'xpath':
             return locator[1]
         return self._get_xpath_by_driver()
 
     def _get_xpath_by_driver(self) -> str:
-        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
+        self.logger.debug(f"{get_current_func_name()}")
         try:
             xpath = "//"
             attrs = self.get_attributes()
@@ -2224,7 +2624,7 @@ class Element(ElementBase):
         Returns:
             XPath string to access the element.
         """
-        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
+        self.logger.debug(f"{get_current_func_name()}")
         parent_xpath = self._get_xpath()
         return f"{parent_xpath}/*[{index}]"
 
@@ -2239,7 +2639,7 @@ class Element(ElementBase):
         Returns:
             bool: True if the element is found, False otherwise.
         """
-        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
+        self.logger.debug(f"{get_current_func_name()}")
         start_time = time.time()
         while time.time() - start_time < self.timeout:
             try:
@@ -2287,7 +2687,7 @@ class Element(ElementBase):
         Returns:
             bool: True if the element becomes visible, False otherwise.
         """
-        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
+        self.logger.debug(f"{get_current_func_name()}")
         start_time = time.time()
         while time.time() - start_time < self.timeout:
             try:
@@ -2336,7 +2736,7 @@ class Element(ElementBase):
         Returns:
             bool: True if the element becomes clickable, False otherwise.
         """
-        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
+        self.logger.debug(f"{get_current_func_name()}")
         start_time = time.time()
         while time.time() - start_time < self.timeout:
             try:
@@ -2385,7 +2785,7 @@ class Element(ElementBase):
         Returns:
             bool: True if the element disappears, False otherwise.
         """
-        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
+        self.logger.debug(f"{get_current_func_name()}")
         start_time = time.time()
         while time.time() - start_time < self.timeout:
             try:
@@ -2432,7 +2832,7 @@ class Element(ElementBase):
         Returns:
             bool: True if the element becomes invisible, False otherwise.
         """
-        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
+        self.logger.debug(f"{get_current_func_name()}")
         start_time = time.time()
         while time.time() - start_time < self.timeout:
             try:
@@ -2479,7 +2879,7 @@ class Element(ElementBase):
         Returns:
             bool: True if the element becomes not clickable, False otherwise.
         """
-        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
+        self.logger.debug(f"{get_current_func_name()}")
         start_time = time.time()
         while time.time() - start_time < self.timeout:
             try:
