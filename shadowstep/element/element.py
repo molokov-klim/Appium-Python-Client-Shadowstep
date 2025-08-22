@@ -6,21 +6,26 @@ import re
 import time
 import traceback
 import typing
-from typing import Union, Tuple, List, Set, Dict, Optional, cast, NoReturn
-
-from lxml import etree as ET
+from typing import Dict, List, NoReturn, Optional, Set, Tuple, Union, cast
 
 from appium.webdriver import WebElement
-from selenium.common import NoSuchDriverException, InvalidSessionIdException, WebDriverException, \
-    StaleElementReferenceException, NoSuchElementException, TimeoutException
+from lxml import etree as ET
+from selenium.common import (
+    InvalidSessionIdException,
+    NoSuchDriverException,
+    NoSuchElementException,
+    StaleElementReferenceException,
+    TimeoutException,
+    WebDriverException,
+)
 from selenium.types import WaitExcTypes
 from selenium.webdriver import ActionChains
 from selenium.webdriver.common.actions import interaction
 from selenium.webdriver.common.actions.action_builder import ActionBuilder
 from selenium.webdriver.common.actions.pointer_input import PointerInput
 from selenium.webdriver.remote.shadowroot import ShadowRoot
-from selenium.webdriver.support.wait import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.support.wait import WebDriverWait
 
 from shadowstep.element.base import ElementBase
 from shadowstep.utils import conditions
@@ -1133,7 +1138,7 @@ class Element(ElementBase):
             stacktrace=traceback.format_stack()
         )
 
-    def scroll_to_top(self, percent: int = 0.7, speed: int = 8000) -> 'Element':
+    def scroll_to_top(self, percent: float = 0.7, speed: int = 8000) -> 'Element':
         """Scrolls up until the top is reached."""
         self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
         start_time = time.time()

@@ -1,0 +1,21 @@
+{
+  "include": ["."],
+  "exclude": [
+    "**/__pycache__",
+    ".venv",
+    "build",
+    "dist"
+  ],
+  "typeCheckingMode": "strict",
+  "reportMissingFunctionReturnType": true,
+  "reportMissingTypeArgument": true,
+  "reportUnknownArgumentType": true,
+  "reportUnknownMemberType": false,
+  "reportUnknownVariableType": false,
+  "reportUnknownParameterType": false,
+  "reportMissingTypeStubs": false,
+  "reportAttributeAccessIssue": false,
+  "reportPrivateUsage": false,
+  "venvPath": ".",
+  "venv": ".venv"
+}

@@ -1,36 +1,15 @@
-# pyproject.toml
-
 [build-system]
 requires = ["setuptools", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
 name = "appium-python-client-shadowstep"
-version = "0.32.116"
+version = "0.32.117"
 description = "UI Testing Framework powered by Appium Python Client"
 authors = [{ name = "Klim Molokov", email = "klim.molokov@yandex.ru" }]
 license = "MIT"
 readme = "README.md"
-requires-python = ">=3.8"
-
-# >=>=>=>=>=>=>=>=>=>=>=
-# 🔖 Versioning Guidelines
-# >=>=>=>=>=>=>=>=>=>=>=
-# Version is defined in the [project] -> version field.
-# Follows Semantic Versioning (SemVer): MAJOR.MINOR.PATCH
-#
-# Examples:
-#   - 0.14.28  → current working version with new features
-#   - 1.0.0    → stable public release
-#
-# Bump rules:
-# - PATCH for bug fixes (0.14.28 → 0.14.29)
-# - MINOR for backward-compatible features (0.14.28 → 0.15.0)
-# - MAJOR for breaking changes (0.14.28 → 1.0.0)
-#
-# Commits:
-# - If the version is bumped, commit with message: "0.15.29 your comment"
-# - If the version remains unchanged, commit with: "0.14.28 your comment"
+requires-python = ">=3.9"
 
 dependencies = [
     "Appium-Python-Client>=4.2.0",
@@ -43,13 +22,12 @@ dependencies = [
     "pyserial>=3.5",
     "opencv-python>=4.8.0.74",
     "pytesseract>=0.3.10",
-    "numpy>=2.3.2",
+    "numpy>=2.0.0",
     "selenium>=4.12",
     "paramiko>=3.4.0",
     "scp>=0.14.5",
     "lxml>=5.3.2",
     "networkx>=3.2.1",
-    "matplotlib>=3.7.5",
     "websocket-client>=1.8.0",
     "unidecode>=1.4.0",
     "jinja2>=3.1.6"
@@ -59,7 +37,22 @@ keywords = ["appium", "testing", "uiautomator2", "android", "automation", "frame
 
 classifiers = [
     "Programming Language :: Python :: 3.9",
-    "Programming Language :: Python :: 3.10"
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13"
+]
+
+[project.optional-dependencies]
+dev = [
+    "ruff>=0.5.0",
+    "pyright>=1.1.377",
+    "pytest>=7.4.0",
+    "pytest-cov>=4.1.0",
+]
+docs = [
+    "sphinx>=7.2.0",
+    "myst-parser>=2.0.0",
 ]
 
 [project.urls]
