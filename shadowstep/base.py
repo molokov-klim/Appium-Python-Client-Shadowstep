@@ -4,6 +4,7 @@ from __future__ import annotations
 import gc
 import json
 import logging
+import site
 import sys
 import time
 from collections.abc import Sequence
@@ -578,7 +579,27 @@ class ShadowstepBase:
 
     def _get_ignored_dirs(self):
         self.logger.debug(get_current_func_name())
-        system_paths = {Path(p).resolve().name for p in sys.path if p}
+
+        # базовые пути, которые считаем "системными"
+        system_base = Path(sys.base_prefix).resolve()
+        site_packages = {Path(p).resolve() for p in site.getsitepackages() if Path(p).exists()}
+        stdlib = system_base / "lib"
+
+        def is_system_path(path: Path) -> bool:
+            try:
+                path = path.resolve()
+            except Exception:
+                return False
+            return (
+                    str(path).startswith(str(system_base))  # внутри python установки / venv
+                    or any(str(path).startswith(str(s)) for s in site_packages)  # внутри site-packages
+                    or str(path).startswith(str(stdlib))  # stdlib
+            )
+
+        system_paths = {
+            Path(p).resolve().name
+            for p in sys.path if p and is_system_path(Path(p))
+        }
         ignored_names = {
             "venv", ".venv", "env", ".env", "Scripts", "bin", "lib", "include",
             "__pycache__", ".idea", ".vscode", "build", "dist", "dlls"
