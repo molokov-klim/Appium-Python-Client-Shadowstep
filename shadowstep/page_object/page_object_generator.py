@@ -1,22 +1,15 @@
 #  shadowstep/page_object/page_object_generator.py
 import inspect
-import json
 import keyword
 import logging
 import os
 import re
-from collections import defaultdict
-from typing import (
-    List, Dict, Union,
-    Set, Tuple, Optional, Any, FrozenSet
-)
+from typing import Any
 
-from unidecode import unidecode
 from jinja2 import Environment, FileSystemLoader
+from unidecode import unidecode
 
 from shadowstep.page_object.page_object_element_node import UiElementNode
-from shadowstep.page_object.page_object_parser import PageObjectParser
-from shadowstep.utils.decorators import neuro_allow_edit, neuro_readonly
 
 
 class PageObjectGenerator:
@@ -76,13 +69,13 @@ class PageObjectGenerator:
         # добавляем фильтр repr
         self.env.filters['pretty_dict'] = _pretty_dict
 
-    @neuro_allow_edit
+    
     def generate(
             self,
             ui_element_tree: UiElementNode,
             output_dir: str,
             filename_prefix: str = ""
-    ) -> Tuple[str, str]:
+    ) -> tuple[str, str]:
         """
         Docstring in Google style
         """
@@ -197,8 +190,8 @@ class PageObjectGenerator:
         self.logger.debug(f"Generated PageObject → {path}")
         return path, class_name
 
-    @neuro_readonly
-    def _get_title_property(self, ui_element_tree: UiElementNode) -> Optional[UiElementNode]:
+
+    def _get_title_property(self, ui_element_tree: UiElementNode) -> UiElementNode | None:
         """Returns the most likely title node from the tree.
 
         Args:
@@ -234,7 +227,7 @@ class PageObjectGenerator:
         self.logger.warning("No title node found.")
         return None
 
-    @neuro_readonly
+
     def _get_name_property(self, title: UiElementNode) -> str:
         """Extracts screen name from title node for use as PageObject class name.
 
@@ -253,8 +246,8 @@ class PageObjectGenerator:
             raw_name = raw_name + '_'
         return raw_name
 
-    @neuro_readonly
-    def _get_recycler_property(self, ui_element_tree: UiElementNode) -> Optional[UiElementNode]:
+
+    def _get_recycler_property(self, ui_element_tree: UiElementNode) -> UiElementNode | None:
         """Returns the first scrollable parent found in the tree (used as recycler).
 
         Args:
@@ -276,19 +269,19 @@ class PageObjectGenerator:
         self.logger.warning("No scrollable parent found in any node")
         return None
 
-    @neuro_readonly
+
     def _get_anchor_pairs(
             self,
             ui_element_tree: UiElementNode,
             target_attrs: dict,
             max_ancestor_distance: int = 3,
-            target_anchor: Tuple[str, ...] = ("text", "content-desc")
-    ) -> List[Tuple[UiElementNode, UiElementNode]]:
+            target_anchor: tuple[str, ...] = ("text", "content-desc")
+    ) -> list[tuple[UiElementNode, UiElementNode]]:
         self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
 
         step = "Init anchor-target pair list"
         self.logger.debug(f"[{step}] started")
-        anchor_pairs: List[Tuple[UiElementNode, UiElementNode]] = []
+        anchor_pairs: list[tuple[UiElementNode, UiElementNode]] = []
 
         step = "Find matching targets"
         self.logger.debug(f"[{step}] started")
@@ -306,8 +299,8 @@ class PageObjectGenerator:
         # self.logger.debug(f"{anchor_pairs=}")
         return anchor_pairs
 
-    @neuro_readonly
-    def _find_anchor_for_target(self, target_element: UiElementNode, max_levels: int, target_anchor: Tuple[str, ...] = ("text", "content-desc")) -> Optional[UiElementNode]:
+
+    def _find_anchor_for_target(self, target_element: UiElementNode, max_levels: int, target_anchor: tuple[str, ...] = ("text", "content-desc")) -> UiElementNode | None:
         self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
         for level in range(max_levels + 1):
             parent = self._get_ancestor(target_element, level)
@@ -319,8 +312,8 @@ class PageObjectGenerator:
                     return candidate
         return None
 
-    @neuro_readonly
-    def _get_ancestor(self, node: UiElementNode, levels_up: int) -> Optional[UiElementNode]:
+
+    def _get_ancestor(self, node: UiElementNode, levels_up: int) -> UiElementNode | None:
         current = node
         for _ in range(levels_up + 1):
             if not current.parent:
@@ -328,8 +321,8 @@ class PageObjectGenerator:
             current = current.parent
         return current
 
-    @neuro_readonly
-    def _get_siblings_or_cousins(self, ancestor: UiElementNode, target: UiElementNode) -> List[UiElementNode]:
+
+    def _get_siblings_or_cousins(self, ancestor: UiElementNode, target: UiElementNode) -> list[UiElementNode]:
         """
         Returns list of sibling or cousin nodes at same depth as target, excluding target itself.
 
@@ -370,12 +363,12 @@ class PageObjectGenerator:
         self.logger.debug(f"Total candidates found: {len(result)}")
         return result
 
-    @neuro_readonly
+
     def _is_same_depth(self, node1: UiElementNode, node2: UiElementNode) -> bool:
         return node1.depth == node2.depth
 
-    @neuro_readonly
-    def _is_anchor_like(self, node: UiElementNode, target_anchor: Tuple[str, ...] = ("text", "content-desc")) -> bool:
+
+    def _is_anchor_like(self, node: UiElementNode, target_anchor: tuple[str, ...] = ("text", "content-desc")) -> bool:
         """
         Checks if the node has any of the specified attributes used to identify anchor elements.
 
@@ -389,8 +382,8 @@ class PageObjectGenerator:
         # Ensure at least one anchor attribute is present and non-empty
         return any(node.attrs.get(attr) for attr in target_anchor)
 
-    @neuro_readonly
-    def _get_summary_pairs(self, ui_element_tree: UiElementNode) -> List[Tuple[UiElementNode, UiElementNode]]:
+
+    def _get_summary_pairs(self, ui_element_tree: UiElementNode) -> list[tuple[UiElementNode, UiElementNode]]:
         """
         Находит пары элементов anchor-summary.
 
@@ -423,13 +416,13 @@ class PageObjectGenerator:
         self.logger.debug(f"Total summary-anchor pairs found: {len(summary_pairs)}")
         return summary_pairs
 
-    @neuro_readonly
+
     def _get_regular_properties(
             self,
             ui_element_tree: UiElementNode,
-            used_elements: List[Tuple[UiElementNode, UiElementNode]],
-            recycler: Optional[UiElementNode] = None
-    ) -> List[UiElementNode]:
+            used_elements: list[tuple[UiElementNode, UiElementNode]],
+            recycler: UiElementNode | None = None
+    ) -> list[UiElementNode]:
         """
         Returns all elements that are not part of used_elements, filtering by locator to avoid duplicates.
 
@@ -443,7 +436,7 @@ class PageObjectGenerator:
         self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
 
         # 🔁 Сконвертировать used_elements в set of locator hashes
-        used_locators: Set[FrozenSet[Tuple[str, str]]] = set()
+        used_locators: set[frozenset[tuple[str, str]]] = set()
         for pair in used_elements:
             for node in pair:
                 locator = self._node_to_locator(node)
@@ -471,7 +464,7 @@ class PageObjectGenerator:
         self.logger.debug(f"Total regular elements found (filtered): {len(regular_elements)}")
         return regular_elements
 
-    @neuro_readonly
+
     def _normilize_to_camel_case(self, text: str) -> str:
         """
         будет применяться для формирования имени класса из name
@@ -488,23 +481,23 @@ class PageObjectGenerator:
             camel_case = 'Page' + camel_case
         return camel_case
 
-    @neuro_readonly
+
     def _translate(self, text: str) -> str:
         self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
         if self.translator is not None:
             text = self.translator.translate(text)
         return text
 
-    @neuro_readonly
-    def _find_by_id(self, root: UiElementNode, target_id: str) -> Optional[UiElementNode]:
+
+    def _find_by_id(self, root: UiElementNode, target_id: str) -> UiElementNode | None:
         """Поиск узла по id в дереве"""
         for node in root.walk():
             if node.id == target_id:
                 return node
         return None
 
-    @neuro_readonly
-    def _remove_text_from_non_text_elements(self, elements: List[UiElementNode]) -> None:
+
+    def _remove_text_from_non_text_elements(self, elements: list[UiElementNode]) -> None:
         """
         Удаляет атрибут text из локаторов элементов, которые не должны искаться по тексту.
 
@@ -518,13 +511,13 @@ class PageObjectGenerator:
                 self.logger.debug(f"Removing text attribute from {element.tag} element: {element.attrs.get('text')}")
                 del element.attrs['text']
 
-    @neuro_allow_edit
+    
     def _prepare_template_data(self,
                              ui_element_tree: UiElementNode,
                              title: UiElementNode,
-                             recycler: Optional[UiElementNode],
-                             properties: List[Dict],
-                             need_recycler: bool) -> Dict[str, Any]:
+                             recycler: UiElementNode | None,
+                             properties: list[dict],
+                             need_recycler: bool) -> dict[str, Any]:
         """
         Transforms structured UiElementNode data into a format compatible with the template.
 
@@ -555,8 +548,8 @@ class PageObjectGenerator:
             "recycler_locator": recycler_locator
         }
 
-    @neuro_allow_edit
-    def _node_to_locator(self, node: UiElementNode, only_id: bool = False) -> Dict[str, str]:
+    
+    def _node_to_locator(self, node: UiElementNode, only_id: bool = False) -> dict[str, str]:
         """
         Converts UiElementNode to a locator dictionary for template.
 
@@ -581,14 +574,14 @@ class PageObjectGenerator:
 
         return locator
 
-    @neuro_allow_edit
+    
     def _transform_properties(
             self,
-            regular_properties: List[UiElementNode],
-            switcher_anchor_pairs: List[Tuple[UiElementNode, UiElementNode]],
-            summary_anchor_pairs: List[Tuple[UiElementNode, UiElementNode]],
-            recycler_id: Optional[str]
-    ) -> List[Dict[str, Any]]:
+            regular_properties: list[UiElementNode],
+            switcher_anchor_pairs: list[tuple[UiElementNode, UiElementNode]],
+            summary_anchor_pairs: list[tuple[UiElementNode, UiElementNode]],
+            recycler_id: str | None
+    ) -> list[dict[str, Any]]:
         """
         Transforms property nodes into template-compatible property dictionaries.
 
@@ -603,9 +596,9 @@ class PageObjectGenerator:
         """
         self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
 
-        properties: List[Dict[str, Any]] = []
-        used_names: Set[str] = set()
-        used_ids: Set[str] = set()
+        properties: list[dict[str, Any]] = []
+        used_names: set[str] = set()
+        used_ids: set[str] = set()
 
         # 💣 Фильтрация: remove элемент, если он совпадает с recycler
         regular_properties = [
@@ -700,7 +693,7 @@ class PageObjectGenerator:
                         self.logger.debug(f"[Find base_name] matched property: name={base_name}, id={anchor.id}")
                         break
                 if base_name is None:
-                    self.logger.debug(f"[Find base_name] no match found, generating new name")
+                    self.logger.debug("[Find base_name] no match found, generating new name")
                     base_name = self._generate_property_name(anchor, used_names)
                     self.logger.debug(f"[Find base_name] generated name: {base_name}")
 
@@ -724,8 +717,8 @@ class PageObjectGenerator:
 
         return properties
 
-    @neuro_allow_edit
-    def _is_scrollable_by(self, node: UiElementNode, recycler_id: Optional[str]) -> bool:
+    
+    def _is_scrollable_by(self, node: UiElementNode, recycler_id: str | None) -> bool:
         """
         Checks if the node is scrollable by the given recycler.
 
@@ -741,7 +734,7 @@ class PageObjectGenerator:
             return False
         return recycler_id in node.scrollable_parents
 
-    @neuro_allow_edit
+    
     def _calculate_depth(self, anchor: UiElementNode, target: UiElementNode) -> int:
         """
         Calculates parent traversal depth between anchor and target.
@@ -777,13 +770,13 @@ class PageObjectGenerator:
 
         return depth
 
-    @neuro_allow_edit
+    
     def _generate_property_name(
             self,
             node: UiElementNode,
-            used_names: Set[str],
+            used_names: set[str],
             suffix: str = "",
-            anchor_base: Optional[str] = None
+            anchor_base: str | None = None
     ) -> str:
         """
         Generates a clean, unique property name for a node.
@@ -823,8 +816,8 @@ class PageObjectGenerator:
             name = name + '_'
         return name
 
-    @neuro_allow_edit
-    def _slug_words(self, s: str) -> List[str]:
+    
+    def _slug_words(self, s: str) -> list[str]:
         """
         Breaks a string into lowercase slug words.
 
@@ -838,7 +831,7 @@ class PageObjectGenerator:
         parts = re.split(r'[^\w]+', unidecode(s))
         return [p.lower() for p in parts if p]
 
-    @neuro_allow_edit
+    
     def _strip_package_prefix(self, resource_id: str) -> str:
         """
         Strips package prefix from resource ID.
@@ -852,7 +845,7 @@ class PageObjectGenerator:
         self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
         return resource_id.split('/', 1)[-1] if '/' in resource_id else resource_id
 
-    @neuro_allow_edit
+    
     def _sanitize_name(self, raw_name: str) -> str:
         """
         Creates a valid Python property name.
@@ -869,7 +862,7 @@ class PageObjectGenerator:
             name = 'num_' + name
         return name
 
-    @neuro_allow_edit
+    
     def _class_name_to_file_name(self, class_name: str) -> str:
         """
         Converts CamelCase class name to snake_case file name.
@@ -887,8 +880,8 @@ class PageObjectGenerator:
         file_name = re.sub(r'(?<!^)(?=[A-Z])', '_', class_name).lower()
         return f"{file_name}.py"
 
-    @neuro_allow_edit
-    def _is_need_recycler(self, recycler: Optional[UiElementNode], regular_properties: List[UiElementNode]) -> bool:
+    
+    def _is_need_recycler(self, recycler: UiElementNode | None, regular_properties: list[UiElementNode]) -> bool:
         """
         Determines if recycler is needed by checking if any regular properties use it.
 
@@ -909,13 +902,13 @@ class PageObjectGenerator:
             for node in regular_properties if node.scrollable_parents
         )
 
-    @neuro_allow_edit
+    
     def _filter_properties(
             self,
-            properties: List[Dict[str, Any]],
-            title_id: Optional[str],
-            recycler_id: Optional[str]
-    ) -> List[Dict[str, Any]]:
+            properties: list[dict[str, Any]],
+            title_id: str | None,
+            recycler_id: str | None
+    ) -> list[dict[str, Any]]:
         """
         Filters out redundant properties, but preserves title and recycler.
 
@@ -941,7 +934,7 @@ class PageObjectGenerator:
         step = "Protect title and recycler"
         self.logger.debug(f"[{step}] started")
 
-        def is_important(prop: Dict[str, Any]) -> bool:
+        def is_important(prop: dict[str, Any]) -> bool:
             return prop.get("element_id") in {title_id, recycler_id}
 
         final = []
@@ -955,8 +948,7 @@ class PageObjectGenerator:
         self.logger.debug(f"{inspect.currentframe().f_code.co_name} > {final=}")
         return final
 
-    @neuro_readonly
-    def _filter_class_only_properties(self, properties: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+    def _filter_class_only_properties(self, properties: list[dict[str, Any]]) -> list[dict[str, Any]]:
         """
         Removes properties where the locator contains only 'class' and no other meaningful attributes.
 
@@ -978,8 +970,7 @@ class PageObjectGenerator:
 
         return filtered
 
-    @neuro_readonly
-    def _filter_structural_containers(self, properties: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+    def _filter_structural_containers(self, properties: list[dict[str, Any]]) -> list[dict[str, Any]]:
         """
         Removes non-interactive structural container elements like FrameLayout, LinearLayout, etc.
 
@@ -1007,7 +998,6 @@ class PageObjectGenerator:
         return filtered
 
 
-@neuro_readonly
 def _pretty_dict(d: dict, base_indent: int = 8) -> str:
     """Форматирует dict в Python-стиле: каждый ключ с новой строки, выровнено по отступу."""
     lines = ["{"]

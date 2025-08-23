@@ -9,9 +9,11 @@ import os
 import sys
 from pathlib import Path
 from types import ModuleType
+from typing import Any
 
 import numpy as np
 from appium.webdriver.webdriver import WebDriver
+from numpy._typing import NDArray
 from PIL import Image
 from selenium.common import (
     InvalidSessionIdException,
@@ -22,6 +24,7 @@ from selenium.common import (
 from selenium.types import WaitExcTypes
 
 from shadowstep.base import ShadowstepBase, WebDriverSingleton
+from shadowstep.decorators.decorators import fail_safe
 from shadowstep.element.element import Element
 from shadowstep.exceptions.shadowstep_exceptions import ShadowstepException
 from shadowstep.image.image import ShadowstepImage
@@ -32,7 +35,6 @@ from shadowstep.navigator.navigator import PageNavigator
 from shadowstep.page_base import PageBaseShadowstep
 from shadowstep.scheduled_actions.action_history import ActionHistory
 from shadowstep.scheduled_actions.action_step import ActionStep
-from shadowstep.utils.decorators import fail_safe
 from shadowstep.utils.utils import get_current_func_name
 
 # Configure the root logger (basic configuration)
@@ -45,7 +47,7 @@ class Shadowstep(ShadowstepBase):
     _instance: Shadowstep | None = None
     _pages_discovered: bool = False
 
-    def __new__(cls, *args, **kwargs):
+    def __new__(cls, *args: Any, **kwargs: Any):
         if cls._instance is None:
             cls._instance = super().__new__(cls)
             # возможная инициализация по kwargs
@@ -137,7 +139,7 @@ class Shadowstep(ShadowstepBase):
         raise ValueError(f"Page '{name}' not found.")
 
     def get_element(self,
-                    locator: tuple[str, str] | dict[str, str] = None,
+                    locator: tuple[str, str] | dict[str, str],
                     timeout: int = 30,
                     poll_frequency: float = 0.5,
                     ignored_exceptions: WaitExcTypes | None = None,
@@ -158,7 +160,7 @@ class Shadowstep(ShadowstepBase):
             poll_frequency: float = 0.5,
             ignored_exceptions: WaitExcTypes | None = None,
             contains: bool = False
-    ) -> list[Element] | list:
+    ) -> list[Element]:
         """
         Find multiple elements matching the given locator across the whole page.
         method is greedy
@@ -190,7 +192,7 @@ class Shadowstep(ShadowstepBase):
 
     def get_image(
             self,
-            image: bytes | np.ndarray | Image.Image | str,
+            image: bytes | NDArray[np.uint8] | Image.Image | str,
             threshold: float = 0.5,
             timeout: float = 5.0
     ) -> ShadowstepImage:
@@ -215,7 +217,7 @@ class Shadowstep(ShadowstepBase):
 
     def get_images(
             self,
-            image: bytes | np.ndarray | Image.Image | str,
+            image: bytes | NDArray[np.uint8] | Image.Image | str,
             threshold: float = 0.5,
             timeout: float = 5.0
     ) -> ShadowstepImages:
@@ -289,7 +291,7 @@ class Shadowstep(ShadowstepBase):
             ignored_exceptions: WaitExcTypes | None = None,
             contains: bool = False,
             max_swipes: int = 30
-    ) -> Element | None:
+    ) -> Element:
         self.logger.debug(f"{get_current_func_name()}")
         try:
             scrollables = self.get_elements(
@@ -302,15 +304,15 @@ class Shadowstep(ShadowstepBase):
             for scrollable in scrollables:
                 try:
                     scrollable: Element
-                    result = scrollable.scroll_to_element(locator=locator, max_swipes=max_swipes)
-                    if result is not None and result.is_visible():
-                        return result
+                    return scrollable.scroll_to_element(locator=locator, max_swipes=max_swipes)
                 except Exception as e:  # FIXME use specified exception
                     self.logger.debug(f"Scroll attempt failed on scrollable element: {e}")
                     continue
+            raise ShadowstepException(f"Element with locator {locator} not found in any scrollable element")
         except Exception as e:  # FIXME use specified exception
             self.logger.error(f"Failed to find scrollable elements: {e}")
-        return None
+            raise
+
 
     def is_text_visible(self, text: str) -> bool:
         """Check if an element with the given text is visible.

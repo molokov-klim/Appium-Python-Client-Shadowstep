@@ -1,4 +1,6 @@
 # shadowstep/element/base.py
+from __future__ import annotations
+
 import datetime
 import inspect
 import logging
@@ -63,8 +65,8 @@ class ElementBase:
     """
 
     def __init__(self,
-                 locator: Union[Tuple, Dict[str, str], str, WebElement] = None,
-                 base=None,
+                 locator: tuple[str, str] | dict[str, str] | str | WebElement,
+                 base: "Shadowstep",
                  timeout: float = 30,
                  poll_frequency: float = 0.5,
                  ignored_exceptions: typing.Optional[WaitExcTypes] = None,

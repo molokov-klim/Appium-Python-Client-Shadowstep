@@ -336,8 +336,7 @@ class TestElement:
         el = app.get_element({'content-desc': 'Phone'})
         assert el.get_attribute('content-desc') == 'Phone'
 
-    @pytest.skip(reason="Method is not implemented in UiAutomator2")
-    @pytest.mark.xfail(reason="Method is not implemented in UiAutomator2")
+    @pytest.mark.skip(reason="Method is not implemented in UiAutomator2")
     def test_get_property(self, app: Shadowstep, stability: None):
         el = app.get_element({'content-desc': 'Phone'})
         prop = el.get_property('enabled')
@@ -386,8 +385,7 @@ class TestElement:
         el.clear()
         assert el.text == ''
 
-    @pytest.skip(reason="Method is not implemented in UiAutomator2")
-    @pytest.mark.xfail(reason="Method is not implemented in UiAutomator2")
+    @pytest.mark.skip(reason="Method is not implemented in UiAutomator2")
     def test_set_value(self, app: Shadowstep, stability: None):
         el = app.get_element({'resource-id': 'com.android.quicksearchbox:id/search_widget_text'})
         el.tap()
@@ -406,14 +404,12 @@ class TestElement:
         assert "abc" in el.text
         el.clear()
 
-    @pytest.skip(reason="Method is not implemented in UiAutomator2")
-    @pytest.mark.xfail(reason="Method is not implemented in UiAutomator2")
+    @pytest.mark.skip(reason="Method is not implemented in UiAutomator2")
     def test_submit(self, app: Shadowstep, stability: None):
         el = app.get_element({'resource-id': 'com.android.quicksearchbox:id/search_widget_text'})
         el.submit()  # Не всегда валидно, но для теста вызова достаточно
 
-    @pytest.skip(reason="Method is not implemented in UiAutomator2")
-    @pytest.mark.xfail(reason="Method is not implemented in UiAutomator2")
+    @pytest.mark.skip(reason="Method is not implemented in UiAutomator2")
     def test_shadow_root(self, app: Shadowstep, stability: None):
         el = app.get_element({'content-desc': 'Phone'})
         try:
@@ -422,23 +418,20 @@ class TestElement:
         except Exception as e:
             assert isinstance(e, (NoSuchElementException, AttributeError))  # noqa: UP038
 
-    @pytest.skip(reason="Method is not implemented in UiAutomator2")
-    @pytest.mark.xfail(reason="Method is not implemented in UiAutomator2")
+    @pytest.mark.skip(reason="Method is not implemented in UiAutomator2")
     def test_location_once_scrolled_into_view(self, app: Shadowstep, stability: None):
         el = app.get_element({'content-desc': 'Phone'})
         loc = el.location_once_scrolled_into_view
         assert 'x' in loc and 'y' in loc
 
-    @pytest.skip(reason="Method is not implemented in UiAutomator2")
-    @pytest.mark.xfail(reason="Method is not implemented in UiAutomator2")
+    @pytest.mark.skip(reason="Method is not implemented in UiAutomator2")
     def test_size_location_rect(self, app: Shadowstep, stability: None):
         el = app.get_element({'content-desc': 'Phone'})
         assert 'width' in el.size and 'height' in el.size
         assert 'x' in el.location and 'y' in el.location
         assert all(k in el.rect for k in ('x', 'y', 'width', 'height'))
 
-    @pytest.skip(reason="Method is not implemented in UiAutomator2")
-    @pytest.mark.xfail(reason="Method is not implemented in UiAutomator2")
+    @pytest.mark.skip(reason="Method is not implemented in UiAutomator2")
     def test_value_of_css_property(self, app: Shadowstep, stability: None):
         el = app.get_element({'content-desc': 'Phone'})
         value = el.value_of_css_property("display")

@@ -9,7 +9,7 @@ import traceback
 from collections.abc import Generator, Sequence
 from typing import Any, NoReturn, cast
 
-from appium.webdriver import WebElement
+from appium.webdriver.webelement import WebElement
 from lxml import etree as ET
 from selenium.common import (
     InvalidSessionIdException,
@@ -55,7 +55,7 @@ class GeneralElementException(WebDriverException):
 class Element(ElementBase):
     def __init__(self,
                  locator: tuple | dict[str, str] | Element = None,
-                 base: Shadowstep = None,
+                 base: "Shadowstep" = None,
                  timeout: float = 30,
                  poll_frequency: float = 0.5,
 
@@ -75,19 +75,6 @@ class Element(ElementBase):
                     poll_frequency: float = 0.5,
                     ignored_exceptions: WaitExcTypes | None = None,
                     contains: bool = False) -> Element:
-        """
-        Recursively search for an element inside the current one.
-
-        Args:
-            locator: Dict or Tuple describing target locator.
-            timeout: How long to wait for the element.
-            poll_frequency: Poll interval in seconds.
-            ignored_exceptions: Exceptions to ignore while waiting.
-            contains: Whether to use contains-based XPath instead of strict equality.
-
-        Returns:
-            Found Element or None.
-        """
         self.logger.debug(f"{get_current_func_name()}")
 
         if isinstance(locator, Element):
@@ -1169,7 +1156,7 @@ class Element(ElementBase):
         start_time = time.time()
         if isinstance(locator, Element):
             locator = locator.locator
-        if isinstance(locator, dict) or isinstance(locator, tuple):
+        if isinstance(locator, (dict, tuple)):  # noqa: UP038
             selector = self.locator_converter.to_uiselector(locator)
         else:
             raise GeneralElementException("Only dictionary locators are supported")
@@ -1184,9 +1171,7 @@ class Element(ElementBase):
                     "selector": selector,
                     "maxSwipes": max_swipes
                 })
-                found = self.base.get_element(locator)
-                if found.is_visible():
-                    return cast('Element', found)
+                return cast(Element, self.base.get_element(locator))
             except NoSuchDriverException as error:
                 self._handle_driver_error(error)
             except InvalidSessionIdException as error:
