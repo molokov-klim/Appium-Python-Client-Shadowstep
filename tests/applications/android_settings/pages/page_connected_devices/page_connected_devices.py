@@ -1,6 +1,7 @@
 import logging
 from typing import Any
 
+from shadowstep.decorators.decorators import current_page
 from shadowstep.element.element import Element
 from shadowstep.page_base import PageBaseShadowstep
 
@@ -94,6 +95,7 @@ class PageConnectedDevices(PageBaseShadowstep):
             'class': 'android.widget.ScrollView'
         })
 
+    @current_page()
     def is_current_page(self) -> bool:
         try:
             self.title.timeout = 3

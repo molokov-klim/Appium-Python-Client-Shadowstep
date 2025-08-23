@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "appium-python-client-shadowstep"
-version = "0.32.120"
+version = "0.32.121"
 description = "UI Testing Framework powered by Appium Python Client"
 authors = [{ name = "Klim Molokov", email = "klim.molokov@yandex.ru" }]
 license = "MIT"
@@ -53,6 +53,19 @@ docs = [
 
 [project.urls]
 Repository = "https://github.com/molokov-klim/Appium-Python-Client-Shadowstep"
+
+# ВАЖНО: Эта секция включает все Python пакеты
+[tool.setuptools.packages.find]
+include = ["shadowstep*"]
+
+# ВАЖНО: Эта секция включает все файлы данных (включая шаблоны Jinja2)
+[tool.setuptools.package-data]
+"shadowstep.page_object.templates" = ["*.j2"]
+
+# Альтернативный способ - включить все файлы в папке templates
+[tool.setuptools.package-data]
+"shadowstep" = ["page_object/templates/*.j2"]
+
 
 # ---------- RUFF ----------
 [tool.ruff]

@@ -1,6 +1,7 @@
 import logging
 from typing import Any
 
+from shadowstep.decorators.decorators import current_page
 from shadowstep.element.element import Element
 from shadowstep.page_base import PageBaseShadowstep
 
@@ -53,6 +54,7 @@ class {{ class_name }}(PageBaseShadowstep):
         return self.shadowstep.get_element({{ recycler_locator | pretty_dict(base_indent=12) }})
 {% endif %}
 
+    @current_page()
     def is_current_page(self) -> bool:
         try:
             return self.title.is_visible()
