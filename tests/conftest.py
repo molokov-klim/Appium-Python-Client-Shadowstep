@@ -34,7 +34,7 @@ CAPABILITIES = {
 
 
 @pytest.fixture(scope="session")
-def app_android_settings() -> AndroidSettings:
+def app_android_settings():
     app = AndroidSettings()
     app.shadowstep.connect(server_ip=APPIUM_IP,
                         server_port=APPIUM_PORT,
@@ -45,7 +45,7 @@ def app_android_settings() -> AndroidSettings:
     
 
 @pytest.fixture(scope='session')
-def app(request) -> Shadowstep:
+def app(request):
     """Session-scoped fixture for initializing and connecting Shadowstep to a virtual Android device.
 
     Args:

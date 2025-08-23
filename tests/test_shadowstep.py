@@ -1,14 +1,12 @@
-import os
-import subprocess
 import threading
 import time
+from pathlib import Path
+from typing import Any
 
 import pytest
 
 from shadowstep.element.element import Element
 from shadowstep.shadowstep import Shadowstep
-import time
-from pathlib import Path
 
 
 class TestShadowstep:
@@ -42,13 +40,13 @@ class TestShadowstep:
         element.tap()
         assert element.driver is not None
 
-    def test_find_and_get_element(self, app: Shadowstep, android_settings_open_close):
+    def test_find_and_get_element(self, app: Shadowstep, android_settings_open_close: None):
         el = app.find_and_get_element({'text': 'System'})
         assert el.get_attribute('text') == 'System'
 
 class TestShadowstepLogcat:
 
-    def test_start_logcat_is_non_blocking(self, app):
+    def test_start_logcat_is_non_blocking(self, app: Shadowstep):
         # подготавливаем файл
         log_file = Path("logcat_test.log")
         if log_file.exists():
@@ -77,7 +75,7 @@ class TestShadowstepLogcat:
         # останавливаем приём в фоне
         app.stop_logcat()
 
-    def test_shadowstep_logcat_records_and_stops(self, app):
+    def test_shadowstep_logcat_records_and_stops(self, app: Shadowstep):
         log_file = Path("logcat_test.log")
         if log_file.exists():
             log_file.unlink()
@@ -100,7 +98,7 @@ class TestShadowstepLogcat:
             or len(content.strip()) > 0
         ), "Logcat file пустой"
 
-    def test_start_logcat_is_non_blocking_and_writes_logs(self, app):
+    def test_start_logcat_is_non_blocking_and_writes_logs(self, app: Shadowstep):
         log_file = Path("logcat_test.log")
         if log_file.exists():
             log_file.unlink()
@@ -116,7 +114,7 @@ class TestShadowstepLogcat:
         assert any("ShadowstepLogcat" in n for n in names), f"Не найден поток логката: {names}"
 
         # 3) несколько быстрых действий (<2 s каждое)
-        durations = []
+        durations: list[Any] = []
         for _ in range(5):
             d0 = time.perf_counter()
             for _ in range(5):

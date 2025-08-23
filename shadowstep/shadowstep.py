@@ -9,7 +9,7 @@ import os
 import sys
 from pathlib import Path
 from types import ModuleType
-from typing import Any
+from typing import Any, cast
 
 import numpy as np
 from appium.webdriver.webdriver import WebDriver
@@ -50,7 +50,6 @@ class Shadowstep(ShadowstepBase):
     def __new__(cls, *args: Any, **kwargs: Any):
         if cls._instance is None:
             cls._instance = super().__new__(cls)
-            # возможная инициализация по kwargs
         return cls._instance
 
     @classmethod
@@ -828,8 +827,8 @@ class Shadowstep(ShadowstepBase):
 
         self.driver = WebDriverSingleton.get_driver()
         size = self.driver.get_window_size()
-        width = size["width"]
-        height = size["height"]
+        width = cast(int, size["width"])
+        height = cast(int, size["height"])
 
         return self.swipe(
             left=0,
@@ -857,8 +856,8 @@ class Shadowstep(ShadowstepBase):
 
         self.driver = WebDriverSingleton.get_driver()
         size = self.driver.get_window_size()
-        width = size["width"]
-        height = size["height"]
+        width = cast(int, size["width"])
+        height = cast(int, size["height"])
 
         return self.swipe(
             left=0,
@@ -886,8 +885,8 @@ class Shadowstep(ShadowstepBase):
 
         self.driver = WebDriverSingleton.get_driver()
         size = self.driver.get_window_size()
-        width = size["width"]
-        height = size["height"]
+        width = cast(int, size["width"])
+        height = cast(int, size["height"])
 
         return self.swipe(
             left=width // 2,
@@ -915,8 +914,8 @@ class Shadowstep(ShadowstepBase):
 
         self.driver = WebDriverSingleton.get_driver()
         size = self.driver.get_window_size()
-        width = size["width"]
-        height = size["height"]
+        width = cast(int, size["width"])
+        height = cast(int, size["height"])
 
         return self.swipe(
             left=width // 2,
@@ -967,10 +966,11 @@ class Shadowstep(ShadowstepBase):
                exceptions=(NoSuchDriverException,
                            InvalidSessionIdException,
                            StaleElementReferenceException))
-    def tap(self, x: int = None, y: int = None, duration: float | None = None) -> Shadowstep:
+    def tap(self, x: int, y: int, duration: int | None = None) -> Shadowstep:
         self.logger.debug(f"{get_current_func_name()}")
         self.driver.tap([(x, y)], duration or 100)
         return self
+
 
     @fail_safe(retries=3, delay=0.5,
                raise_exception=ShadowstepException,
@@ -1056,6 +1056,6 @@ class Shadowstep(ShadowstepBase):
         """
         raise NotImplementedError
 
-    def _execute(self, name: str, params: dict | list) -> None:
+    def _execute(self, name: str, params: dict[Any, Any] | list[Any]) -> None:
         # https://github.com/appium/appium-uiautomator2-driver/blob/master/docs/android-mobile-gestures.md
         self.driver.execute_script(name, params)

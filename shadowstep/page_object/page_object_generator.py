@@ -1,4 +1,6 @@
 #  shadowstep/page_object/page_object_generator.py
+from __future__ import annotations
+
 import inspect
 import keyword
 import logging
