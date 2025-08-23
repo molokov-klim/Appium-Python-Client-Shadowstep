@@ -116,7 +116,7 @@ class PageObjectMerger:
             block = textwrap.dedent(block)  # <<< ВАЖНО: УБИРАЕМ ЛИШНИЕ ВЛОЖЕННОСТИ
             stripped = block.strip()
 
-            if not stripped.startswith("def ") and not stripped.startswith("@property"):
+            if not stripped.startswith("def ") and not stripped.startswith("@property") and not stripped.startswith("@current_page"):
                 continue
 
             lines = block.splitlines()
