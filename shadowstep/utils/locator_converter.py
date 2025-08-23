@@ -1,10 +1,8 @@
 # shadowstep/utils/locator_converter.py
-
-import inspect
-import re
-from typing import Tuple, Dict, Union, Any, Optional
-
 import logging
+import re
+from typing import Any, Dict, Optional, Tuple, Union
+
 logger = logging.getLogger(__name__)
 
 """

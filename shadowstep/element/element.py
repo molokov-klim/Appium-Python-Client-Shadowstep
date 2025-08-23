@@ -29,7 +29,7 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.wait import WebDriverWait
 
 from shadowstep.element.base import ElementBase
-from shadowstep.utils import conditions
+from shadowstep.element import conditions
 from shadowstep.utils.utils import find_coordinates_by_vector, get_current_func_name
 
 # Configure the root logger (basic configuration)
@@ -1594,6 +1594,10 @@ class Element(ElementBase):
             msg=f"Failed to retrieve tag_name within {self.timeout=}",
             stacktrace=traceback.format_stack()
         )
+    
+    @property
+    def attributes(self):
+        return self.get_attributes()
 
     @property
     def text(self) -> str:
@@ -2639,7 +2643,7 @@ class Element(ElementBase):
         parent_xpath = self._get_xpath()
         return f"{parent_xpath}/*[{index}]"
 
-    def wait(self, timeout: int = 10, poll_frequency: float = 0.5, return_bool: bool = False) -> Element:
+    def wait(self, timeout: int = 10, poll_frequency: float = 0.5, return_bool: bool = False) -> Element:  # noqa: C901
         """Waits for the element to appear (present in DOM).
 
         Args:

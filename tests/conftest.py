@@ -5,8 +5,6 @@ import pytest
 
 from shadowstep.shadowstep import Shadowstep
 
-from .applications.android_settings.android_settings import AndroidSettings
-
 # Silence noisy third-party libraries
 logging.getLogger("selenium").setLevel(logging.CRITICAL)
 logging.getLogger("urllib3").setLevel(logging.CRITICAL)
@@ -32,17 +30,6 @@ CAPABILITIES = {
     "appium:newCommandTimeout": 900,
 }
 
-
-@pytest.fixture(scope="session")
-def app_android_settings():
-    app = AndroidSettings()
-    app.shadowstep.connect(server_ip=APPIUM_IP,
-                        server_port=APPIUM_PORT,
-                        command_executor=APPIUM_COMMAND_EXECUTOR,
-                        capabilities=CAPABILITIES)
-    yield app
-    app.shadowstep.disconnect()
-    
 
 @pytest.fixture(scope='session')
 def app(request):
