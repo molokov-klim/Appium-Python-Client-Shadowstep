@@ -147,9 +147,6 @@ class ElementBase:
             self.logger.debug(f"{get_current_func_name()} {locator=} {error}")
             raise
         except WebDriverException as error:
-            from icecream import ic
-            ic()
-            ic("DEBUG INSTRUMENTATION PROCESS CRUSHED (INVESTIGATION)")
             self.logger.debug(f"{get_current_func_name()} {locator=} {error}")
             raise
 

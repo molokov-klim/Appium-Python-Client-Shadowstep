@@ -3,8 +3,6 @@ import logging
 import textwrap
 from pathlib import Path
 
-from icecream import ic
-
 
 class PageObjectMerger:
     def __init__(self):
