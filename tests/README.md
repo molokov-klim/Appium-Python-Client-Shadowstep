@@ -7,9 +7,9 @@ pip install -r requirements-dev.txt
 ```
 
 ```commandline
-npm i -g appium@next
+npm install -g appium@latest
 appium driver install uiautomator2
-appium server -ka 800 --log-level debug -p 4723 -a 0.0.0.0 -pa /wd/hub --allow-insecure=adb_shell
+appium server -p 4723 -a 0.0.0.0 -pa /wd/hub --relaxed-security --log-level debug
 ```
 
 
@@ -19,4 +19,9 @@ appium server -ka 800 --log-level debug -p 4723 -a 0.0.0.0 -pa /wd/hub --allow-i
 
 ```commandline
 pytest -svl --log-cli-level INFO --tb=short --setup-show tests/test_shadowstep.py
+
+pytest -svl --log-cli-level INFO --tb=short --setup-show tests/test_element.py
 ```
+
+
+

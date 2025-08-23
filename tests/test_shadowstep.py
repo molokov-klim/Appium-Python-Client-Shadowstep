@@ -42,7 +42,7 @@ class TestShadowstep:
         element.tap()
         assert element.driver is not None
 
-    def test_find_and_get_element(self, app: Shadowstep, android_settings):
+    def test_find_and_get_element(self, app: Shadowstep, android_settings_open_close):
         el = app.find_and_get_element({'text': 'System'})
         assert el.get_attribute('text') == 'System'
 

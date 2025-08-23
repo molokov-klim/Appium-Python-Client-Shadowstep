@@ -11,7 +11,6 @@ from typing import (
     Set, Tuple, Optional, Any, FrozenSet
 )
 
-from matplotlib.pyplot import broken_barh
 from unidecode import unidecode
 from jinja2 import Environment, FileSystemLoader
 

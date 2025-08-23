@@ -1,12 +1,13 @@
 # shadowstep/element/element.py
+from __future__ import annotations
 
 import inspect
 import logging
 import re
 import time
 import traceback
-import typing
-from typing import Dict, List, NoReturn, Optional, Set, Tuple, Union, cast
+from collections.abc import Generator, Sequence
+from typing import Any, NoReturn, cast
 
 from appium.webdriver import WebElement
 from lxml import etree as ET
@@ -40,8 +41,8 @@ class GeneralElementException(WebDriverException):
     """Raised when driver is not specified and cannot be located."""
 
     def __init__(
-            self, msg: Optional[str] = None, screen: Optional[str] = None,
-            stacktrace: Optional[typing.Sequence[str]] = None
+            self, msg: str | None = None, screen: str | None = None,
+            stacktrace: Sequence[str] | None = None
     ) -> None:
         super().__init__(msg, screen, stacktrace)
 
@@ -53,12 +54,12 @@ class GeneralElementException(WebDriverException):
     """
 class Element(ElementBase):
     def __init__(self,
-                 locator: Union[Tuple, Dict[str, str], 'Element'] = None,
-                 base: 'Shadowstep' = None,
+                 locator: tuple | dict[str, str] | Element = None,
+                 base: Shadowstep = None,
                  timeout: float = 30,
                  poll_frequency: float = 0.5,
 
-                 ignored_exceptions: typing.Optional[WaitExcTypes] = None,
+                 ignored_exceptions: WaitExcTypes | None = None,
                  contains: bool = False,
                  native: WebElement = None):
         super().__init__(locator, base, timeout, poll_frequency, ignored_exceptions, contains, native)
@@ -69,11 +70,11 @@ class Element(ElementBase):
         return f"Element(locator={self.locator}"
 
     def get_element(self,
-                    locator: Union[Tuple, Dict[str, str]],
+                    locator: tuple | dict[str, str],
                     timeout: int = 30,
                     poll_frequency: float = 0.5,
-                    ignored_exceptions: Optional[WaitExcTypes] = None,
-                    contains: bool = False) -> 'Element':
+                    ignored_exceptions: WaitExcTypes | None = None,
+                    contains: bool = False) -> Element:
         """
         Recursively search for an element inside the current one.
 
@@ -114,12 +115,12 @@ class Element(ElementBase):
 
     def get_elements(
             self,
-            locator: Union[Tuple, Dict[str, str], 'Element'],
+            locator: tuple | dict[str, str] | Element,
             timeout: float = 30,
             poll_frequency: float = 0.5,
-            ignored_exceptions: typing.Optional[WaitExcTypes] = None,
+            ignored_exceptions: WaitExcTypes | None = None,
             contains: bool = False
-    ) -> Union[List['Element'], List]:
+    ) -> list[Element] | list:
         """
         method is greedy
         """
@@ -193,7 +194,7 @@ class Element(ElementBase):
 
             except StaleElementReferenceException as error:
                 self.logger.debug(error)
-                self.logger.warning(f"StaleElementReferenceException\nRe-acquire element")
+                self.logger.warning("StaleElementReferenceException\nRe-acquire element")
                 self.native = None
                 self._get_native()
                 continue
@@ -204,7 +205,7 @@ class Element(ElementBase):
         # if nothing found return empty list
         return []
 
-    def get_attributes(self) -> Dict[str, str]:
+    def get_attributes(self) -> dict[str, str]:
         """Fetch all XML attributes of the element by matching locator against page source.
 
         Returns:
@@ -245,7 +246,7 @@ class Element(ElementBase):
                 self._handle_driver_error(error)
             except StaleElementReferenceException as error:
                 self.logger.debug(error)
-                self.logger.warning(f"StaleElementReferenceException\nRe-acquire element")
+                self.logger.warning("StaleElementReferenceException\nRe-acquire element")
                 self.native = None
                 self._get_native()
                 continue
@@ -267,7 +268,7 @@ class Element(ElementBase):
         self.logger.warning(f"Timeout exceeded ({self.timeout}s) without matching element.")
         return None
 
-    def get_parent(self) -> 'Element':
+    def get_parent(self) -> Element:
         self.logger.debug(f"{get_current_func_name()}")
         try:
             xpath = self._get_xpath()
@@ -284,7 +285,7 @@ class Element(ElementBase):
             self.base.reconnect()
             return None
 
-    def get_parents(self) -> typing.Generator['Element', None, None]:
+    def get_parents(self) -> Generator[Element, None, None]:
         """Yields all parent elements lazily using XPath `ancestor::*`.
 
         # FIXME must be greedy (bcs generator is wrong desicion)
@@ -322,7 +323,7 @@ class Element(ElementBase):
             except WebDriverException:
                 break
 
-    def get_sibling(self, locator: Union[Tuple, Dict[str, str], 'Element']) -> 'Element':
+    def get_sibling(self, locator: tuple | dict[str, str] | Element) -> Element:
         self.logger.debug(f"{get_current_func_name()}")
         if isinstance(locator, Element):
             locator = locator.locator
@@ -346,7 +347,7 @@ class Element(ElementBase):
             contains=self.contains
         )
 
-    def get_siblings(self) -> typing.Generator['Element', None, None]:
+    def get_siblings(self) -> Generator[Element, None, None]:
         """Yields all sibling elements of the current element.
 
         # FIXME must be greedy
@@ -402,9 +403,9 @@ class Element(ElementBase):
 
     def get_cousin(
             self,
-            cousin_locator: Union[Tuple[str, str], Dict[str, str], 'Element'],
+            cousin_locator: tuple[str, str] | dict[str, str] | Element,
             depth_to_parent: int = 1,
-    ) -> 'Element':
+    ) -> Element:
         """
         Returns an Element located by cousin_locator, relative to the current element's ancestor.
 
@@ -458,7 +459,7 @@ class Element(ElementBase):
             self._handle_driver_error(error)
             return None
 
-    def get_center(self, element: Optional[WebElement] = None) -> Tuple[int, int]:
+    def get_center(self, element: WebElement | None = None) -> tuple[int, int]:
         """Get the center coordinates of the element.
 
         Args:
@@ -489,7 +490,7 @@ class Element(ElementBase):
                 self._handle_driver_error(error)
             except StaleElementReferenceException as error:
                 self.logger.debug(error)
-                self.logger.warning(f"StaleElementReferenceException\nRe-acquire element")
+                self.logger.warning("StaleElementReferenceException\nRe-acquire element")
                 self.native = None
                 self._get_native()
                 continue
@@ -499,7 +500,7 @@ class Element(ElementBase):
             stacktrace=traceback.format_stack()
         )
 
-    def get_coordinates(self, element: Optional[WebElement] = None) -> Tuple[int, int, int, int]:
+    def get_coordinates(self, element: WebElement | None = None) -> tuple[int, int, int, int]:
         """Get the bounding box coordinates of the element.
 
         Args:
@@ -528,7 +529,7 @@ class Element(ElementBase):
                 self._handle_driver_error(error)
             except StaleElementReferenceException as error:
                 self.logger.debug(error)
-                self.logger.warning(f"StaleElementReferenceException\nRe-acquire element")
+                self.logger.warning("StaleElementReferenceException\nRe-acquire element")
                 self.native = None
                 self._get_native()
                 continue
@@ -563,7 +564,7 @@ class Element(ElementBase):
                 self._handle_driver_error(error)
             except StaleElementReferenceException as error:
                 self.logger.debug(error)
-                self.logger.warning(f"StaleElementReferenceException\nRe-acquire element")
+                self.logger.warning("StaleElementReferenceException\nRe-acquire element")
                 self.native = None
                 self._get_native()
                 continue
@@ -599,7 +600,7 @@ class Element(ElementBase):
                 self._handle_driver_error(error)
             except StaleElementReferenceException as error:
                 self.logger.debug(error)
-                self.logger.warning(f"StaleElementReferenceException\nRe-acquire element")
+                self.logger.warning("StaleElementReferenceException\nRe-acquire element")
                 self.native = None
                 self._get_native()
                 continue
@@ -637,7 +638,7 @@ class Element(ElementBase):
                 self._handle_driver_error(error)
             except StaleElementReferenceException as error:
                 self.logger.debug(error)
-                self.logger.warning(f"StaleElementReferenceException\nRe-acquire element")
+                self.logger.warning("StaleElementReferenceException\nRe-acquire element")
                 self.native = None
                 self._get_native()
                 continue
@@ -671,7 +672,7 @@ class Element(ElementBase):
                 self._handle_driver_error(error)
             except StaleElementReferenceException as error:
                 self.logger.debug(error)
-                self.logger.warning(f"StaleElementReferenceException\nRe-acquire element")
+                self.logger.warning("StaleElementReferenceException\nRe-acquire element")
                 self.native = None
                 self._get_native()
                 continue
@@ -717,7 +718,7 @@ class Element(ElementBase):
                 self._handle_driver_error(error)
             except StaleElementReferenceException as error:
                 self.logger.debug(error)
-                self.logger.warning(f"StaleElementReferenceException\nRe-acquire element")
+                self.logger.warning("StaleElementReferenceException\nRe-acquire element")
                 self.native = None
                 self._get_native()
                 continue
@@ -784,7 +785,7 @@ class Element(ElementBase):
                 self._handle_driver_error(error)
             except StaleElementReferenceException as error:
                 self.logger.debug(error)
-                self.logger.warning(f"StaleElementReferenceException\nRe-acquire element")
+                self.logger.warning("StaleElementReferenceException\nRe-acquire element")
                 self.native = None
                 self._get_native()
                 continue
@@ -795,7 +796,7 @@ class Element(ElementBase):
         )
 
     def is_contains(self,
-                    locator: Union[tuple, dict[str, str], 'Element'] = None,
+                    locator: tuple | dict[str, str] | Element = None,
                     contains: bool = False
                     ) -> bool:
         self.logger.debug(f"{get_current_func_name()}")
@@ -819,7 +820,7 @@ class Element(ElementBase):
                 self._handle_driver_error(error)
             except StaleElementReferenceException as error:
                 self.logger.debug(error)
-                self.logger.warning(f"StaleElementReferenceException\nRe-acquire element")
+                self.logger.warning("StaleElementReferenceException\nRe-acquire element")
                 self.native = None
                 self._get_native()
                 continue
@@ -828,7 +829,7 @@ class Element(ElementBase):
             stacktrace=traceback.format_stack()
         )
 
-    def tap(self, duration: int = None) -> 'Element':
+    def tap(self, duration: int = None) -> Element:
         self.logger.debug(f"{get_current_func_name()}")
         start_time = time.time()
         while time.time() - start_time < self.timeout:
@@ -847,7 +848,7 @@ class Element(ElementBase):
                 self._handle_driver_error(error)
             except StaleElementReferenceException as error:
                 self.logger.debug(error)
-                self.logger.warning(f"StaleElementReferenceException\nRe-acquire element")
+                self.logger.warning("StaleElementReferenceException\nRe-acquire element")
                 self.native = None
                 self._get_native()
                 continue
@@ -858,12 +859,12 @@ class Element(ElementBase):
 
     def tap_and_move(
             self,
-            locator: Union[Tuple, WebElement, 'Element', Dict[str, str], str] = None,
+            locator: tuple | WebElement | Element | dict[str, str] | str = None,
             x: int = None,
             y: int = None,
             direction: int = None,
             distance: int = None,
-    ) -> 'Element':
+    ) -> Element:
         self.logger.debug(f"{get_current_func_name()}")
         start_time = time.time()
         while time.time() - start_time < self.timeout:
@@ -913,7 +914,7 @@ class Element(ElementBase):
                 self._handle_driver_error(error)
             except StaleElementReferenceException as error:
                 self.logger.debug(error)
-                self.logger.warning(f"StaleElementReferenceException\nRe-acquire element")
+                self.logger.warning("StaleElementReferenceException\nRe-acquire element")
                 self.native = None
                 self._get_native()
                 continue
@@ -923,7 +924,7 @@ class Element(ElementBase):
             stacktrace=traceback.format_stack()
         )
 
-    def click(self, duration: int = None) -> 'Element':
+    def click(self, duration: int = None) -> Element:
         self.logger.debug(f"{get_current_func_name()}")
         start_time = time.time()
         while time.time() - start_time < self.timeout:
@@ -945,7 +946,7 @@ class Element(ElementBase):
                 self._handle_driver_error(error)
             except StaleElementReferenceException as error:
                 self.logger.debug(error)
-                self.logger.warning(f"StaleElementReferenceException\nRe-acquire element")
+                self.logger.warning("StaleElementReferenceException\nRe-acquire element")
                 self.native = None
                 self._get_native()
                 continue
@@ -954,7 +955,7 @@ class Element(ElementBase):
             stacktrace=traceback.format_stack()
         )
 
-    def click_double(self) -> 'Element':
+    def click_double(self) -> Element:
         self.logger.debug(f"{get_current_func_name()}")
         start_time = time.time()
         while time.time() - start_time < self.timeout:
@@ -972,7 +973,7 @@ class Element(ElementBase):
                 self._handle_driver_error(error)
             except StaleElementReferenceException as error:
                 self.logger.debug(error)
-                self.logger.warning(f"StaleElementReferenceException\nRe-acquire element")
+                self.logger.warning("StaleElementReferenceException\nRe-acquire element")
                 self.native = None
                 self._get_native()
                 continue
@@ -981,7 +982,7 @@ class Element(ElementBase):
             stacktrace=traceback.format_stack()
         )
 
-    def drag(self, end_x: int, end_y: int, speed: int = 2500) -> 'Element':
+    def drag(self, end_x: int, end_y: int, speed: int = 2500) -> Element:
         self.logger.debug(f"{get_current_func_name()}")
         start_time = time.time()
         while time.time() - start_time < self.timeout:
@@ -1002,7 +1003,7 @@ class Element(ElementBase):
                 self._handle_driver_error(error)
             except StaleElementReferenceException as error:
                 self.logger.debug(error)
-                self.logger.warning(f"StaleElementReferenceException\nRe-acquire element")
+                self.logger.warning("StaleElementReferenceException\nRe-acquire element")
                 self.native = None
                 self._get_native()
                 continue
@@ -1011,19 +1012,19 @@ class Element(ElementBase):
             stacktrace=traceback.format_stack()
         )
 
-    def fling_up(self, speed: int = 2500) -> 'Element':
+    def fling_up(self, speed: int = 2500) -> Element:
         return self._fling(speed=speed, direction='up')
 
-    def fling_down(self, speed: int = 2500) -> 'Element':
+    def fling_down(self, speed: int = 2500) -> Element:
         return self._fling(speed=speed, direction='down')
 
-    def fling_left(self, speed: int = 2500) -> 'Element':
+    def fling_left(self, speed: int = 2500) -> Element:
         return self._fling(speed=speed, direction='left')
 
-    def fling_right(self, speed: int = 2500) -> 'Element':
+    def fling_right(self, speed: int = 2500) -> Element:
         return self._fling(speed=speed, direction='right')
 
-    def _fling(self, speed: int, direction: str) -> 'Element':
+    def _fling(self, speed: int, direction: str) -> Element:
         """
         direction: Direction of the fling. Mandatory value. Acceptable values are: up, down, left and right (case insensitive)
         speed: The speed at which to perform this gesture in pixels per second. The value must be greater than the minimum fling velocity for the given view (50 by default). The default value is 7500 * displayDensity
@@ -1048,7 +1049,7 @@ class Element(ElementBase):
                 self._handle_driver_error(error)
             except StaleElementReferenceException as error:
                 self.logger.debug(error)
-                self.logger.warning(f"StaleElementReferenceException\nRe-acquire element")
+                self.logger.warning("StaleElementReferenceException\nRe-acquire element")
                 self.native = None
                 self._get_native()
                 continue
@@ -1057,23 +1058,23 @@ class Element(ElementBase):
             stacktrace=traceback.format_stack()
         )
 
-    def scroll_down(self, percent: float = 0.7, speed: int = 2000, return_bool: bool = False) -> 'Element':
+    def scroll_down(self, percent: float = 0.7, speed: int = 2000, return_bool: bool = False) -> Element:
         self.logger.debug(f"{get_current_func_name()}")
         return self._scroll(direction='down', percent=percent, speed=speed, return_bool=return_bool)
 
-    def scroll_up(self, percent: float = 0.7, speed: int = 2000, return_bool: bool = False) -> 'Element':
+    def scroll_up(self, percent: float = 0.7, speed: int = 2000, return_bool: bool = False) -> Element:
         self.logger.debug(f"{get_current_func_name()}")
         return self._scroll(direction='up', percent=percent, speed=speed, return_bool=return_bool)
 
-    def scroll_left(self, percent: float = 0.7, speed: int = 2000, return_bool: bool = False) -> 'Element':
+    def scroll_left(self, percent: float = 0.7, speed: int = 2000, return_bool: bool = False) -> Element:
         self.logger.debug(f"{get_current_func_name()}")
         return self._scroll(direction='left', percent=percent, speed=speed, return_bool=return_bool)
 
-    def scroll_right(self, percent: float = 0.7, speed: int = 2000, return_bool: bool = False) -> 'Element':
+    def scroll_right(self, percent: float = 0.7, speed: int = 2000, return_bool: bool = False) -> Element:
         self.logger.debug(f"{get_current_func_name()}")
         return self._scroll(direction='right', percent=percent, speed=speed, return_bool=return_bool)
 
-    def _scroll(self, direction: str, percent: float, speed: int, return_bool: bool) -> 'Element':
+    def _scroll(self, direction: str, percent: float, speed: int, return_bool: bool) -> Element:
         """
         direction: Scrolling direction. Mandatory value. Acceptable values are: up, down, left and right (case insensitive)
         percent: The size of the scroll as a percentage of the scrolling area size. Valid values must be float numbers greater than zero, where 1.0 is 100%. Mandatory value.
@@ -1103,7 +1104,7 @@ class Element(ElementBase):
                 self._handle_driver_error(error)
             except StaleElementReferenceException as error:
                 self.logger.debug(error)
-                self.logger.warning(f"StaleElementReferenceException\nRe-acquire element")
+                self.logger.warning("StaleElementReferenceException\nRe-acquire element")
                 self.native = None
                 self._get_native()
                 continue
@@ -1112,7 +1113,7 @@ class Element(ElementBase):
             stacktrace=traceback.format_stack()
         )
 
-    def scroll_to_bottom(self, percent: float = 0.7, speed: int = 8000) -> 'Element':
+    def scroll_to_bottom(self, percent: float = 0.7, speed: int = 8000) -> Element:
         """Scrolls down until the bottom is reached."""
         self.logger.debug(f"{get_current_func_name()}")
         start_time = time.time()
@@ -1128,7 +1129,7 @@ class Element(ElementBase):
                 self._handle_driver_error(error)
             except StaleElementReferenceException as error:
                 self.logger.debug(error)
-                self.logger.warning(f"StaleElementReferenceException\nRe-acquire element")
+                self.logger.warning("StaleElementReferenceException\nRe-acquire element")
                 self.native = None
                 self._get_native()
                 continue
@@ -1138,7 +1139,7 @@ class Element(ElementBase):
             stacktrace=traceback.format_stack()
         )
 
-    def scroll_to_top(self, percent: float = 0.7, speed: int = 8000) -> 'Element':
+    def scroll_to_top(self, percent: float = 0.7, speed: int = 8000) -> Element:
         """Scrolls up until the top is reached."""
         self.logger.debug(f"{get_current_func_name()}")
         start_time = time.time()
@@ -1153,7 +1154,7 @@ class Element(ElementBase):
                 self._handle_driver_error(error)
             except StaleElementReferenceException as error:
                 self.logger.debug(error)
-                self.logger.warning(f"StaleElementReferenceException\nRe-acquire element")
+                self.logger.warning("StaleElementReferenceException\nRe-acquire element")
                 self.native = None
                 self._get_native()
                 continue
@@ -1163,14 +1164,12 @@ class Element(ElementBase):
             stacktrace=traceback.format_stack()
         )
 
-    def scroll_to_element(self, locator: Union['Element', Dict[str, str], Tuple[str, str]], max_swipes: int = 30) -> 'Element':
+    def scroll_to_element(self, locator: Element | dict[str, str] | tuple[str, str], max_swipes: int = 30) -> Element:
         self.logger.debug(f"{get_current_func_name()}")
         start_time = time.time()
         if isinstance(locator, Element):
             locator = locator.locator
-        if isinstance(locator, dict):
-            selector = self.locator_converter.to_uiselector(locator)
-        elif isinstance(locator, tuple):
+        if isinstance(locator, dict) or isinstance(locator, tuple):
             selector = self.locator_converter.to_uiselector(locator)
         else:
             raise GeneralElementException("Only dictionary locators are supported")
@@ -1196,7 +1195,7 @@ class Element(ElementBase):
                 self._handle_driver_error(error)
             except StaleElementReferenceException as error:
                 self.logger.debug(error)
-                self.logger.warning(f"StaleElementReferenceException\nRe-acquire element")
+                self.logger.warning("StaleElementReferenceException\nRe-acquire element")
                 self.native = None
                 self._get_native()
                 continue
@@ -1213,15 +1212,13 @@ class Element(ElementBase):
             stacktrace=traceback.format_stack()
         )
 
-    def scroll_to_element_optional(self, locator: Union['Element', Dict[str, str], Tuple[str, str]], max_swipes: int = 30, percent: float = 0.7, speed: int = 2000, waiting_element_timeout: int = 1) -> 'Element':
+    def scroll_to_element_optional(self, locator: Element | dict[str, str] | tuple[str, str], max_swipes: int = 30, percent: float = 0.7, speed: int = 2000, waiting_element_timeout: int = 1) -> Element:
         self.logger.debug(f"{get_current_func_name()}")
         # FIXME refactor and optimise me please
         start_time = time.time()
         if isinstance(locator, Element):
             locator = locator.locator
-        if isinstance(locator, dict):
-            selector = self.locator_converter.to_uiselector(locator)
-        elif isinstance(locator, tuple):
+        if isinstance(locator, dict) or isinstance(locator, tuple):
             selector = self.locator_converter.to_uiselector(locator)
         else:
             raise GeneralElementException("Only dictionary locators are supported")
@@ -1254,7 +1251,7 @@ class Element(ElementBase):
                 self._handle_driver_error(error)
             except StaleElementReferenceException as error:
                 self.logger.debug(error)
-                self.logger.warning(f"StaleElementReferenceException\nRe-acquire element")
+                self.logger.warning("StaleElementReferenceException\nRe-acquire element")
                 self.native = None
                 self._get_native()
                 continue
@@ -1271,7 +1268,7 @@ class Element(ElementBase):
             stacktrace=traceback.format_stack()
         )
 
-    def zoom(self, percent: float = 0.75, speed: int = 2500) -> 'Element':
+    def zoom(self, percent: float = 0.75, speed: int = 2500) -> Element:
         """
         Performs a pinch-open (zoom) gesture on the element.
 
@@ -1305,7 +1302,7 @@ class Element(ElementBase):
                 self._handle_driver_error(error)
             except StaleElementReferenceException as error:
                 self.logger.debug(error)
-                self.logger.warning(f"StaleElementReferenceException\nRe-acquire element")
+                self.logger.warning("StaleElementReferenceException\nRe-acquire element")
                 self.native = None
                 self._get_native()
                 continue
@@ -1315,7 +1312,7 @@ class Element(ElementBase):
             stacktrace=traceback.format_stack()
         )
 
-    def unzoom(self, percent: float = 0.75, speed: int = 2500) -> 'Element':
+    def unzoom(self, percent: float = 0.75, speed: int = 2500) -> Element:
         """
         Performs a pinch-close (unzoom) gesture on the element.
 
@@ -1349,7 +1346,7 @@ class Element(ElementBase):
                 self._handle_driver_error(error)
             except StaleElementReferenceException as error:
                 self.logger.debug(error)
-                self.logger.warning(f"StaleElementReferenceException\nRe-acquire element")
+                self.logger.warning("StaleElementReferenceException\nRe-acquire element")
                 self.native = None
                 self._get_native()
                 continue
@@ -1359,23 +1356,23 @@ class Element(ElementBase):
             stacktrace=traceback.format_stack()
         )
 
-    def swipe_up(self, percent: float = 0.75, speed: int = 5000) -> 'Element':
+    def swipe_up(self, percent: float = 0.75, speed: int = 5000) -> Element:
         """Performs a swipe up gesture on the current element."""
         return self.swipe(direction='up', percent=percent, speed=speed)
 
-    def swipe_down(self, percent: float = 0.75, speed: int = 5000) -> 'Element':
+    def swipe_down(self, percent: float = 0.75, speed: int = 5000) -> Element:
         """Performs a swipe down gesture on the current element."""
         return self.swipe(direction='down', percent=percent, speed=speed)
 
-    def swipe_left(self, percent: float = 0.75, speed: int = 5000) -> 'Element':
+    def swipe_left(self, percent: float = 0.75, speed: int = 5000) -> Element:
         """Performs a swipe left gesture on the current element."""
         return self.swipe(direction='left', percent=percent, speed=speed)
 
-    def swipe_right(self, percent: float = 0.75, speed: int = 5000) -> 'Element':
+    def swipe_right(self, percent: float = 0.75, speed: int = 5000) -> Element:
         """Performs a swipe right gesture on the current element."""
         return self.swipe(direction='right', percent=percent, speed=speed)
 
-    def swipe(self, direction: str, percent: float = 0.75, speed: int = 5000) -> 'Element':
+    def swipe(self, direction: str, percent: float = 0.75, speed: int = 5000) -> Element:
         """
         Performs a swipe gesture on the current element.
 
@@ -1410,7 +1407,7 @@ class Element(ElementBase):
                 self._handle_driver_error(error)
             except StaleElementReferenceException as error:
                 self.logger.debug(error)
-                self.logger.warning(f"StaleElementReferenceException\nRe-acquire element")
+                self.logger.warning("StaleElementReferenceException\nRe-acquire element")
                 self.native = None
                 self._get_native()
                 continue
@@ -1421,7 +1418,7 @@ class Element(ElementBase):
         )
 
     # Override
-    def clear(self) -> 'Element':
+    def clear(self) -> Element:
         """Clears text content of the element (e.g. input or textarea).
 
         Returns:
@@ -1446,7 +1443,7 @@ class Element(ElementBase):
                 self._handle_driver_error(error)
             except StaleElementReferenceException as error:
                 self.logger.debug(error)
-                self.logger.warning(f"StaleElementReferenceException\nRe-acquire element")
+                self.logger.warning("StaleElementReferenceException\nRe-acquire element")
                 self.native = None
                 self._get_native()
                 continue
@@ -1458,7 +1455,7 @@ class Element(ElementBase):
 
     # Override
     @property
-    def location_in_view(self) -> Optional[dict]:
+    def location_in_view(self) -> dict | None:
         """Gets the location of an element relative to the view.
 
         Returns:
@@ -1482,7 +1479,7 @@ class Element(ElementBase):
                 self._handle_driver_error(error)
             except StaleElementReferenceException as error:
                 self.logger.debug(error)
-                self.logger.warning(f"StaleElementReferenceException\nRe-acquire element")
+                self.logger.warning("StaleElementReferenceException\nRe-acquire element")
                 self.native = None
                 self._get_native()
                 continue
@@ -1493,7 +1490,7 @@ class Element(ElementBase):
         )
 
     # Override
-    def set_value(self, value: str) -> 'Element':
+    def set_value(self, value: str) -> Element:
         """NOT IMPLEMENTED!
         Set the value on this element in the application.
 
@@ -1525,7 +1522,7 @@ class Element(ElementBase):
                 self._handle_driver_error(error)
             except StaleElementReferenceException as error:
                 self.logger.debug(error)
-                self.logger.warning(f"StaleElementReferenceException\nRe-acquire element")
+                self.logger.warning("StaleElementReferenceException\nRe-acquire element")
                 self.native = None
                 self._get_native()
                 continue
@@ -1536,7 +1533,7 @@ class Element(ElementBase):
         )
 
     # Override
-    def send_keys(self, *value: str) -> 'Element':
+    def send_keys(self, *value: str) -> Element:
         """Simulates typing into the element.
 
         Args:
@@ -1567,7 +1564,7 @@ class Element(ElementBase):
                 self._handle_driver_error(error)
             except StaleElementReferenceException as error:
                 self.logger.debug(error)
-                self.logger.warning(f"StaleElementReferenceException\nRe-acquire element")
+                self.logger.warning("StaleElementReferenceException\nRe-acquire element")
                 self.native = None
                 self._get_native()
                 continue
@@ -1603,7 +1600,7 @@ class Element(ElementBase):
                 self._handle_driver_error(error)
             except StaleElementReferenceException as error:
                 self.logger.debug(error)
-                self.logger.warning(f"StaleElementReferenceException\nRe-acquire element")
+                self.logger.warning("StaleElementReferenceException\nRe-acquire element")
                 self.native = None
                 self._get_native()
                 continue
@@ -1634,7 +1631,7 @@ class Element(ElementBase):
                 self._handle_driver_error(error)
             except StaleElementReferenceException as error:
                 self.logger.debug(error)
-                self.logger.warning(f"StaleElementReferenceException\nRe-acquire element")
+                self.logger.warning("StaleElementReferenceException\nRe-acquire element")
                 self.native = None
                 self._get_native()
                 continue
@@ -1654,6 +1651,35 @@ class Element(ElementBase):
                 self._get_driver()
 
                 return self.get_attribute('resource-id')
+
+            except NoSuchDriverException as error:
+                self._handle_driver_error(error)
+            except InvalidSessionIdException as error:
+                self._handle_driver_error(error)
+            except AttributeError as error:
+                self._handle_driver_error(error)
+            except StaleElementReferenceException as error:
+                self.logger.debug(error)
+                self.logger.warning("StaleElementReferenceException\nRe-acquire element")
+                self.native = None
+                self._get_native()
+                continue
+
+        raise GeneralElementException(
+            msg=f"Failed to retrieve attr within {self.timeout=}",
+            stacktrace=traceback.format_stack()
+        )
+
+    @property
+    def class_(self) -> str:
+        self.logger.debug(f"{get_current_func_name()}")
+        start_time = time.time()
+
+        while time.time() - start_time < self.timeout:
+            try:
+                self._get_driver()
+
+                return self.get_attribute('class')
 
             except NoSuchDriverException as error:
                 self._handle_driver_error(error)
@@ -2075,7 +2101,7 @@ class Element(ElementBase):
                 self._handle_driver_error(error)
             except StaleElementReferenceException as error:
                 self.logger.debug(error)
-                self.logger.warning(f"StaleElementReferenceException\nRe-acquire element")
+                self.logger.warning("StaleElementReferenceException\nRe-acquire element")
                 self.native = None
                 self._get_native()
                 continue
@@ -2188,7 +2214,7 @@ class Element(ElementBase):
                 self._handle_driver_error(error)
             except StaleElementReferenceException as error:
                 self.logger.debug(error)
-                self.logger.warning(f"StaleElementReferenceException\nRe-acquire element")
+                self.logger.warning("StaleElementReferenceException\nRe-acquire element")
                 self.native = None
                 self._get_native()
                 continue
@@ -2234,7 +2260,7 @@ class Element(ElementBase):
                 self._handle_driver_error(error)
             except StaleElementReferenceException as error:
                 self.logger.debug(error)
-                self.logger.warning(f"StaleElementReferenceException\nRe-acquire element")
+                self.logger.warning("StaleElementReferenceException\nRe-acquire element")
                 self.native = None
                 self._get_native()
                 continue
@@ -2278,7 +2304,7 @@ class Element(ElementBase):
                 self._handle_driver_error(error)
             except StaleElementReferenceException as error:
                 self.logger.debug(error)
-                self.logger.warning(f"StaleElementReferenceException\nRe-acquire element")
+                self.logger.warning("StaleElementReferenceException\nRe-acquire element")
                 self.native = None
                 self._get_native()
                 continue
@@ -2319,7 +2345,7 @@ class Element(ElementBase):
                 self._handle_driver_error(error)
             except StaleElementReferenceException as error:
                 self.logger.debug(error)
-                self.logger.warning(f"StaleElementReferenceException\nRe-acquire element")
+                self.logger.warning("StaleElementReferenceException\nRe-acquire element")
                 self.native = None
                 self._get_native()
                 continue
@@ -2357,7 +2383,7 @@ class Element(ElementBase):
                 self._handle_driver_error(error)
             except StaleElementReferenceException as error:
                 self.logger.debug(error)
-                self.logger.warning(f"StaleElementReferenceException\nRe-acquire element")
+                self.logger.warning("StaleElementReferenceException\nRe-acquire element")
                 self.native = None
                 self._get_native()
                 continue
@@ -2395,7 +2421,7 @@ class Element(ElementBase):
                 self._handle_driver_error(error)
             except StaleElementReferenceException as error:
                 self.logger.debug(error)
-                self.logger.warning(f"StaleElementReferenceException\nRe-acquire element")
+                self.logger.warning("StaleElementReferenceException\nRe-acquire element")
                 self.native = None
                 self._get_native()
                 continue
@@ -2433,7 +2459,7 @@ class Element(ElementBase):
                 self._handle_driver_error(error)
             except StaleElementReferenceException as error:
                 self.logger.debug(error)
-                self.logger.warning(f"StaleElementReferenceException\nRe-acquire element")
+                self.logger.warning("StaleElementReferenceException\nRe-acquire element")
                 self.native = None
                 self._get_native()
                 continue
@@ -2471,7 +2497,7 @@ class Element(ElementBase):
                 self._handle_driver_error(error)
             except StaleElementReferenceException as error:
                 self.logger.debug(error)
-                self.logger.warning(f"StaleElementReferenceException\nRe-acquire element")
+                self.logger.warning("StaleElementReferenceException\nRe-acquire element")
                 self.native = None
                 self._get_native()
                 continue
@@ -2511,11 +2537,11 @@ class Element(ElementBase):
                 self._handle_driver_error(error)
             except StaleElementReferenceException as error:
                 self.logger.debug(error)
-                self.logger.warning(f"StaleElementReferenceException\nRe-acquire element")
+                self.logger.warning("StaleElementReferenceException\nRe-acquire element")
                 self.native = None
                 self._get_native()
                 continue
-            except IOError as error:
+            except OSError as error:
                 self.logger.error(f"IOError while saving screenshot to {filename}: {error}")
                 return False
             except WebDriverException as error:
@@ -2531,7 +2557,7 @@ class Element(ElementBase):
         self.base.reconnect()
         time.sleep(0.3)
 
-    def _mobile_gesture(self, name: str, params: Union[dict, list]) -> typing.Any:
+    def _mobile_gesture(self, name: str, params: dict | list) -> Any:
         # https://github.com/appium/appium-uiautomator2-driver/blob/master/docs/android-mobile-gestures.md
         return self.driver.execute_script(name, params)
 
@@ -2559,7 +2585,7 @@ class Element(ElementBase):
                         return str(child_class)
             except StaleElementReferenceException as error:
                 self.logger.debug(error)
-                self.logger.warning(f"StaleElementReferenceException\nRe-acquire element")
+                self.logger.warning("StaleElementReferenceException\nRe-acquire element")
                 self.native = None
                 self._get_native()
                 continue
@@ -2605,11 +2631,11 @@ class Element(ElementBase):
                     xpath += f"[@{key}='{value}']"
             return xpath
         except AttributeError as e:
-            self.logger.error("Ошибка при формировании XPath: {}".format(str(e)))
+            self.logger.error(f"Ошибка при формировании XPath: {str(e)}")
         except KeyError as e:
-            self.logger.error("Ошибка при формировании XPath: {}".format(str(e)))
+            self.logger.error(f"Ошибка при формировании XPath: {str(e)}")
         except WebDriverException as e:
-            self.logger.error("Неизвестная ошибка при формировании XPath: {}".format(str(e)))
+            self.logger.error(f"Неизвестная ошибка при формировании XPath: {str(e)}")
         return None
 
     def _build_element_xpath(self, base_element: WebElement, index: int) -> str:
@@ -2628,7 +2654,7 @@ class Element(ElementBase):
         parent_xpath = self._get_xpath()
         return f"{parent_xpath}/*[{index}]"
 
-    def wait(self, timeout: int = 10, poll_frequency: float = 0.5, return_bool: bool = False) -> 'Element':
+    def wait(self, timeout: int = 10, poll_frequency: float = 0.5, return_bool: bool = False) -> Element:
         """Waits for the element to appear (present in DOM).
 
         Args:
@@ -2665,7 +2691,7 @@ class Element(ElementBase):
                 self._handle_driver_error(error)
             except StaleElementReferenceException as error:
                 self.logger.debug(error)
-                self.logger.warning(f"StaleElementReferenceException\nRe-acquire element")
+                self.logger.warning("StaleElementReferenceException\nRe-acquire element")
                 self.native = None
                 self._get_native()
                 continue
@@ -2676,7 +2702,7 @@ class Element(ElementBase):
                 continue
         return False
 
-    def wait_visible(self, timeout: int = 10, poll_frequency: float = 0.5, return_bool: bool = False) -> 'Element':
+    def wait_visible(self, timeout: int = 10, poll_frequency: float = 0.5, return_bool: bool = False) -> Element | bool:
         """Waits until the element is visible.
 
         Args:
@@ -2714,7 +2740,7 @@ class Element(ElementBase):
                 self._handle_driver_error(error)
             except StaleElementReferenceException as error:
                 self.logger.debug(error)
-                self.logger.warning(f"StaleElementReferenceException\nRe-acquire element")
+                self.logger.warning("StaleElementReferenceException\nRe-acquire element")
                 self.native = None
                 self._get_native()
                 continue
@@ -2725,7 +2751,7 @@ class Element(ElementBase):
                 continue
         return False
 
-    def wait_clickable(self, timeout: int = 10, poll_frequency: float = 0.5, return_bool: bool = False) -> 'Element':
+    def wait_clickable(self, timeout: int = 10, poll_frequency: float = 0.5, return_bool: bool = False) -> Element:
         """Waits until the element is clickable.
 
         Args:
@@ -2763,7 +2789,7 @@ class Element(ElementBase):
                 self._handle_driver_error(error)
             except StaleElementReferenceException as error:
                 self.logger.debug(error)
-                self.logger.warning(f"StaleElementReferenceException\nRe-acquire element")
+                self.logger.warning("StaleElementReferenceException\nRe-acquire element")
                 self.native = None
                 self._get_native()
                 continue
@@ -2810,7 +2836,7 @@ class Element(ElementBase):
                 self._handle_driver_error(error)
             except StaleElementReferenceException as error:
                 self.logger.debug(error)
-                self.logger.warning(f"StaleElementReferenceException\nRe-acquire element")
+                self.logger.warning("StaleElementReferenceException\nRe-acquire element")
                 self.native = None
                 self._get_native()
                 continue
@@ -2821,7 +2847,7 @@ class Element(ElementBase):
                 continue
         return False
 
-    def wait_for_not_visible(self, timeout: int = 10, poll_frequency: float = 0.5, return_bool: bool = False) -> 'Element':
+    def wait_for_not_visible(self, timeout: int = 10, poll_frequency: float = 0.5, return_bool: bool = False) -> Element:
         """Waits until the element becomes invisible.
 
         Args:
@@ -2857,7 +2883,7 @@ class Element(ElementBase):
                 self._handle_driver_error(error)
             except StaleElementReferenceException as error:
                 self.logger.debug(error)
-                self.logger.warning(f"StaleElementReferenceException\nRe-acquire element")
+                self.logger.warning("StaleElementReferenceException\nRe-acquire element")
                 self.native = None
                 self._get_native()
                 continue
@@ -2868,7 +2894,7 @@ class Element(ElementBase):
                 continue
         return False
 
-    def wait_for_not_clickable(self, timeout: int = 10, poll_frequency: float = 0.5, return_bool: bool = False) -> 'Element':
+    def wait_for_not_clickable(self, timeout: int = 10, poll_frequency: float = 0.5, return_bool: bool = False) -> Element:
         """Waits until the element becomes not clickable.
 
         Args:
@@ -2905,7 +2931,7 @@ class Element(ElementBase):
                 self._handle_driver_error(error)
             except StaleElementReferenceException as error:
                 self.logger.debug(error)
-                self.logger.warning(f"StaleElementReferenceException\nRe-acquire element")
+                self.logger.warning("StaleElementReferenceException\nRe-acquire element")
                 self.native = None
                 self._get_native()
                 continue
@@ -2917,9 +2943,11 @@ class Element(ElementBase):
         return False
 
     @property
-    def should(self) -> 'Should':
+    def should(self) -> Should:
         """Provides DSL-like assertions: element.should.have.text(...), etc."""
-        from shadowstep.element.should import Should  # импорт внутри метода для избежания циклической зависимости
+        from shadowstep.element.should import (
+            Should,  # импорт внутри метода для избежания циклической зависимости
+        )
         return Should(self)
 
     def _get_native(self) -> WebElement:
@@ -2937,7 +2965,7 @@ class Element(ElementBase):
             contains=self.contains
         )
 
-    def _contains_to_xpath(self, xpath: Tuple[str, str]) -> Tuple[str, str]:
+    def _contains_to_xpath(self, xpath: tuple[str, str]) -> tuple[str, str]:
         """
         Applies contains(...) only to specific attributes in XPath expression.
 
@@ -2963,3 +2991,73 @@ class Element(ElementBase):
         for attr, pattern in patterns.items():
             value = re.sub(pattern, lambda m: f"contains(@{attr}, '{m.group(1)}')", value)
         return strategy, value
+
+"""
+Предлагаемое логическое разделение на сегменты
+Основываясь на анализе кода, я предлагаю разделить модуль на следующие логические сегменты:
+1. Element Core (element_core.py)
+Основной класс Element с базовой функциональностью
+Инициализация и базовые методы
+Основные свойства и атрибуты
+Логирование и обработка ошибок
+2. Element Navigation (element_navigation.py)
+Методы навигации по DOM-дереву:
+get_parent(), get_parents()
+get_sibling(), get_siblings()
+get_cousin()
+get_element(), get_elements()
+3. Element Actions (element_actions.py)
+Методы взаимодействия с элементами:
+click(), click_double()
+tap(), tap_and_move()
+send_keys(), clear()
+set_value(), submit()
+4. Element Gestures (element_gestures.py)
+Жесты и движения:
+swipe(), swipe_up(), swipe_down(), swipe_left(), swipe_right()
+scroll(), scroll_up(), scroll_down(), scroll_left(), scroll_right()
+fling(), fling_up(), fling_down(), fling_left(), fling_right()
+drag(), zoom(), unzoom()
+scroll_to_element(), scroll_to_bottom(), scroll_to_top()
+5. Element Properties (element_properties.py)
+Свойства и атрибуты элементов:
+text, tag_name, size, location, rect
+resource_id, class_, index, package, bounds
+checked, checkable, enabled, focusable, focused
+long_clickable, password, scrollable, selected, displayed
+aria_role, accessible_name
+6. Element Coordinates (element_coordinates.py)
+Работа с координатами:
+get_coordinates(), get_center()
+location_in_view, location_once_scrolled_into_view
+7. Element Screenshots (element_screenshots.py)
+Снимки экрана:
+screenshot_as_base64, screenshot_as_png
+save_screenshot()
+8. Element Waiting (element_waiting.py)
+Методы ожидания:
+wait(), wait_visible(), wait_clickable()
+wait_for_not(), wait_for_not_visible(), wait_for_not_clickable()
+9. Element Utilities (element_utilities.py)
+Вспомогательные методы:
+_handle_driver_error(), _mobile_gesture()
+_ensure_session_alive(), _get_xpath(), _get_xpath_by_driver()
+_build_element_xpath(), _contains_to_xpath()
+_get_first_child_class(), _get_native()
+10. Element Exceptions (element_exceptions.py)
+Пользовательские исключения:
+GeneralElementException
+Архитектура композиции
+После разделения основной класс Element будет использовать композицию:
+class Element(ElementBase):
+    def __init__(self, ...):
+        super().__init__(...)
+        self.navigation = ElementNavigation(self)
+        self.actions = ElementActions(self)
+        self.gestures = ElementGestures(self)
+        self.properties = ElementProperties(self)
+        self.coordinates = ElementCoordinates(self)
+        self.screenshots = ElementScreenshots(self)
+        self.waiting = ElementWaiting(self)
+        self.utilities = ElementUtilities(self)
+"""

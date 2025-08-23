@@ -7,6 +7,9 @@ Please use `DeviceInterface` and the new `Adb` or `Terminal` implementations ins
 """
 import inspect
 import logging
+
+from shadowstep.utils.utils import grep_pattern
+
 logger = logging.getLogger(__name__)
 import os
 import re
@@ -16,7 +19,6 @@ import time
 import traceback
 from typing import Dict, Union, Tuple, Optional, Any, List
 
-from shadowstep.utils import operations
 
 
 class Adb:
@@ -289,7 +291,7 @@ class Adb:
             pattern = r'mCurrentFocus|mFocusedApp'
 
             # Вызов функции grep_pattern для поиска соответствия паттерну
-            matched_lines = operations.grep_pattern(input_string=result, pattern=pattern)
+            matched_lines = grep_pattern(input_string=result, pattern=pattern)
 
             # Если были найдены соответствующие строки
             if matched_lines:
@@ -334,7 +336,7 @@ class Adb:
             pattern = r'mCurrentFocus|mFocusedApp'
 
             # Вызов функции grep_pattern для поиска соответствия паттерну
-            matched_lines = operations.grep_pattern(input_string=result, pattern=pattern)
+            matched_lines = grep_pattern(input_string=result, pattern=pattern)
 
             # Если были найдены соответствующие строки
             if matched_lines:

@@ -12,25 +12,21 @@ readme = "README.md"
 requires-python = ">=3.9"
 
 dependencies = [
-    "Appium-Python-Client>=4.2.0",
-    "allure-pytest>=2.13.2",
-    "zlib-compress>=0.0.1",
-    "zlib-decompress>=0.0.2",
-    "pylibjpeg>=1.4.0",
-    "Pillow>=11.3.0",
-    "requests>=2.31.0",
-    "pyserial>=3.5",
-    "opencv-python>=4.8.0.74",
-    "pytesseract>=0.3.10",
-    "numpy>=2.0.0",
-    "selenium>=4.12",
-    "paramiko>=3.4.0",
-    "scp>=0.14.5",
-    "lxml>=5.3.2",
-    "networkx>=3.2.1",
-    "websocket-client>=1.8.0",
-    "unidecode>=1.4.0",
-    "jinja2>=3.1.6"
+    "Appium-Python-Client>=4.2.0",      # webdriver
+    "selenium>=4.12",                   # webdriver
+    "websocket-client>=1.8.0",          # logcat
+    "requests>=2.31.0",                 # http
+    "opencv-python>=4.8.0.74",          # image
+    "numpy>=2.0.0",                     # image
+    "Pillow>=11.3.0",                   # image
+    "pytesseract>=0.3.10",              # image (ocr)
+    "allure-pytest>=2.13.2",            # reports (decorators)
+    "paramiko>=3.4.0",                  # terminal
+    "scp>=0.14.5",                      # terminal
+    "networkx>=3.2.1",                  # navigator
+    "lxml>=5.3.2",                      # page object generator
+    "jinja2>=3.1.6",                    # page object generator
+    "unidecode>=1.4.0",                 # page object generator
 ]
 
 keywords = ["appium", "testing", "uiautomator2", "android", "automation", "framework"]

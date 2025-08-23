@@ -1,29 +1,33 @@
 # shadowstep/element/base.py
 import datetime
-import re
 import inspect
 import logging
-
-logger = logging.getLogger(__name__)
+import re
 import typing
-from typing import Union, Optional, Tuple, Dict
-
-from selenium.types import WaitExcTypes
-from selenium.webdriver.support import expected_conditions as EC
-from selenium.common.exceptions import WebDriverException, TimeoutException, NoSuchElementException, \
-    InvalidSessionIdException
-from selenium.webdriver.support.wait import WebDriverWait
+from typing import Dict, Optional, Tuple, Union
 
 from appium.webdriver.webdriver import WebDriver
-from appium.webdriver import WebElement
+from appium.webdriver.webelement import WebElement
+from selenium.common.exceptions import (
+    InvalidSessionIdException,
+    NoSuchElementException,
+    TimeoutException,
+    WebDriverException,
+)
+from selenium.types import WaitExcTypes
+from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.support.wait import WebDriverWait
 
 from shadowstep.base import WebDriverSingleton
 from shadowstep.utils.locator_converter import LocatorConverter
+from shadowstep.utils.utils import get_current_func_name
+
+logger = logging.getLogger(__name__)
 
 
 class ShadowstepNoSuchElementError(NoSuchElementException):
-    def __init__(self, msg: str = None, screen: str = None, stacktrace: list = None,
-                 locator: Union[Tuple, Dict[str, str]] = None):
+    def __init__(self, msg: str, screen: str, stacktrace: list,
+                 locator: Union[Tuple, Dict[str, str]]):
         super().__init__(msg, screen, stacktrace)
         self.locator = locator
         self.msg = msg
@@ -101,7 +105,7 @@ class ElementBase:
             Union[WebElement, None]
                 The located web element, or None if not found.
         """
-        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
+        self.logger.debug(f"{get_current_func_name()}")
         self._get_driver()
         if isinstance(locator, WebElement):
             return locator
@@ -113,7 +117,7 @@ class ElementBase:
             self.id = element.id
             return element
         except NoSuchElementException as error:
-            self.logger.error(f"{inspect.currentframe().f_code.co_name} {locator=} {error}")
+            self.logger.debug(f"{get_current_func_name()} {locator=} {error}")
             raise ShadowstepNoSuchElementError(
                 msg=error.msg,
                 screen=error.screen,
@@ -121,7 +125,7 @@ class ElementBase:
                 locator=locator
             )
         except TimeoutException as error:
-            self.logger.error(f"{inspect.currentframe().f_code.co_name} {locator=} {error}")
+            self.logger.debug(f"{get_current_func_name()} {locator=} {error}")
             for stack in error.stacktrace:
                 if 'NoSuchElementError' in stack:
                     raise ShadowstepNoSuchElementError(
@@ -138,16 +142,19 @@ class ElementBase:
                 driver=self.driver
             )
         except InvalidSessionIdException as error:
-            self.logger.error(f"{inspect.currentframe().f_code.co_name} {locator=} {error}")
+            self.logger.debug(f"{get_current_func_name()} {locator=} {error}")
             raise
         except WebDriverException as error:
-            self.logger.error(f"{inspect.currentframe().f_code.co_name} {locator=} {error}")
+            from icecream import ic
+            ic()
+            ic("DEBUG INSTRUMENTATION PROCESS CRUSHED (INVESTIGATION)")
+            self.logger.debug(f"{get_current_func_name()} {locator=} {error}")
             raise
 
     def handle_locator(self,
                        locator: Union[Tuple[str, str], Dict[str, str], str, WebElement],
                        contains: bool = False) -> Optional[Tuple[str, str]]:
-        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
+        self.logger.debug(f"{get_current_func_name()}")
         if isinstance(locator, tuple):
             by, value = locator
             # Удаляем части типа [@attr='null']
@@ -173,7 +180,7 @@ class ElementBase:
             Union[Tuple, None]
                 The XPath locator as a tuple, or None if there was an error.
         """
-        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
+        self.logger.debug(f"{get_current_func_name()}")
         if 'class' not in locator:
             xpath = "//*"
         else:
@@ -201,5 +208,5 @@ class ElementBase:
             WebDriverSingleton
                 The WebDriver instance.
         """
-        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
+        self.logger.debug(f"{get_current_func_name()}")
         self.driver = WebDriverSingleton.get_driver()

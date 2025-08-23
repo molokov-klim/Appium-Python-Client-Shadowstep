@@ -17,5 +17,6 @@
   "reportAttributeAccessIssue": false,
   "reportPrivateUsage": false,
   "venvPath": ".",
-  "venv": ".venv"
+  "venv": ".venv",
+  "pythonVersion": "3.9"
 }

@@ -3,7 +3,6 @@
 import traceback
 
 import networkx as nx
-import matplotlib.pyplot as plt
 from collections import deque
 from typing import Any, Optional, List, Union
 import logging
@@ -146,25 +145,3 @@ class PageGraph:
             return None
         except nx.NodeNotFound:
             return None
-
-    def save_graph_image(self, path: str = "page_graph.png"):
-        plt.figure(figsize=(12, 8))
-        pos = nx.spring_layout(self.nx_graph, seed=42)  # позиционирование узлов
-
-        # Отрисовка
-        nx.draw(
-            self.nx_graph,
-            pos,
-            with_labels=True,
-            arrows=True,
-            node_size=2000,
-            node_color="lightblue",
-            font_size=10,
-            font_weight="bold",
-            edge_color="gray",
-        )
-
-        plt.title("Shadowstep Page Graph")
-        plt.tight_layout()
-        plt.savefig(path)
-        plt.close()
