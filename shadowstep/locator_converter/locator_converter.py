@@ -1,9 +1,13 @@
 # shadowstep/utils/locator_converter.py
+from __future__ import annotations
+
 import logging
 import re
-from typing import Any, Dict, Optional, Tuple, Union
+from typing import Any, cast
 
 logger = logging.getLogger(__name__)
+
+# TODO A thorough reworking of the module is needed
 
 """
 Sorry, I'm too dumb to solve this module's problem correctly. So I did it primitively.
@@ -141,7 +145,7 @@ ui_selector_methods = {
 class LocatorConverter:
     logger = logger
 
-    DICT_TO_XPATH: Dict[str, str] = {
+    DICT_TO_XPATH: dict[str, str] = {
         "checkable": "checkable",
         "checked": "checked",
         "childSelector": "/",
@@ -174,7 +178,7 @@ class LocatorConverter:
         "textStartsWith": "text"
     }
 
-    UISELECTOR_TO_DICT: Dict[str, str] = {
+    UISELECTOR_TO_DICT: dict[str, str] = {
         "checkable": "checkable",
         "checked": "checked",
         "childSelector": "childSelector",
@@ -204,25 +208,22 @@ class LocatorConverter:
         "textStartsWith": "textStartsWith"
     }
 
-    UISELECTOR_TO_XPATH: Dict[str, str] = {
-        ...
-    }
+    # UISELECTOR_TO_XPATH: dict[str, str] = {
+    #     ...
+    # }
 
-    DICT_TO_UISELECTOR: Dict[str, str] = {
+    DICT_TO_UISELECTOR: dict[str, str] = {
         v: k for k, v in UISELECTOR_TO_DICT.items()
     }
 
-    def to_dict(self, selector: Union[Dict[str, Any], Tuple[str, str], str]) -> Dict[str, Any]:
+    def to_dict(self, selector: dict[str, Any] | tuple[str, str] | str) -> dict[str, Any]:
         if isinstance(selector, dict):
             return selector
         elif isinstance(selector, tuple):
             return self._xpath_to_dict(selector)
-        elif isinstance(selector, str):
-            return self._uiselector_to_dict(selector)
-        else:
-            raise ValueError(f"Unsupported selector format: {type(selector)}")
+        return self._uiselector_to_dict(selector)
 
-    def to_xpath(self, selector: Union[Dict[str, Any], Tuple[str, str], str]) -> Tuple[str, str]:
+    def to_xpath(self, selector: dict[str, Any] | tuple[str, str] | str) -> tuple[str, str]:
         if isinstance(selector, dict):
             return self._dict_to_xpath(selector)
         elif isinstance(selector, tuple) and selector[0] == "xpath":
@@ -232,43 +233,42 @@ class LocatorConverter:
         else:
             raise ValueError(f"Unsupported selector format: {type(selector)}")
 
-    def to_uiselector(self, selector: Union[Dict[str, Any], Tuple[str, str], str]) -> str:
+    def to_uiselector(self, selector: dict[str, Any] | tuple[str, str] | str) -> str:
         if isinstance(selector, dict):
             return self._dict_to_uiselector(selector)
         elif isinstance(selector, tuple):
             return self._dict_to_uiselector(self._xpath_to_dict(selector))
-        elif isinstance(selector, str):
-            return selector
-        else:
-            raise ValueError(f"Unsupported selector format: {type(selector)}")
+        return selector
 
-    def _dict_to_xpath(self, selector: Dict[str, Any], root: str = ".//*") -> Tuple[str, str]:
+    def _dict_to_xpath(self, selector: dict[str, Any], root: str = ".//*") -> tuple[str, str]:
         return self._handle_dict_locator(selector, root=root)
 
     def _handle_dict_locator(
             self,
-            locator: Dict[str, Any],
+            locator: dict[str, Any],
             root: str = ".//*",
             contains: bool = False,
-            parent_xpath: Optional[str] = None
-    ) -> Tuple[str, str]:
-        conditions = []
+            parent_xpath: str | None = None
+    ) -> tuple[str, str]:
+        conditions: list[str] = []
         tag = "*"
         child_xpath = None
         from_parent_xpath = None
 
         for key, value in locator.items():
             if key == "parentSelector" and isinstance(value, dict):
-                parent_xpath_expr = self._handle_dict_locator(value, root=root, contains=contains)[1]
+                parent_xpath_expr = \
+                self._handle_dict_locator(locator=cast(dict[str, Any], value), root=root, contains=contains)[1]
                 parent_xpath = parent_xpath_expr
                 continue
 
             if key == "childSelector" and isinstance(value, dict):
-                child_xpath = self._handle_dict_locator(value, root=root, contains=contains)[1]
+                child_xpath = self._handle_dict_locator(cast(dict[str, Any], value), root=root, contains=contains)[1]
                 continue
 
             if key == "fromParent" and isinstance(value, dict):
-                sibling_xpath_expr = self._handle_dict_locator(value, root=root, contains=contains)[1]
+                sibling_xpath_expr = \
+                self._handle_dict_locator(cast(dict[str, Any], value), root=root, contains=contains)[1]
                 from_parent_xpath = f"following-sibling::*[{sibling_xpath_expr.split('[')[-1]}"
                 continue
 
@@ -303,16 +303,16 @@ class LocatorConverter:
 
         return "xpath", full_xpath
 
-    def _xpath_to_dict(self, xpath: Tuple[str, str]) -> Dict[str, Union[str, int, bool]]:
+    def _xpath_to_dict(self, xpath: tuple[str, str]) -> dict[str, str | int | bool]:
         return self._parse_xpath_recursive(xpath)
 
-    def _dict_to_uiselector(self, selector: Dict[str, Union[str, int, bool]]) -> str:
+    def _dict_to_uiselector(self, selector: dict[str, str | int | bool]) -> str:
         if "parentSelector" in selector:
             parent = selector["parentSelector"]
             child = selector.copy()
             del child["parentSelector"]
             return (
-                    self._dict_to_uiselector(parent)
+                    self._dict_to_uiselector(parent)  # type: ignore
                     + f".childSelector({self._dict_to_uiselector(child)})"
             )
 
@@ -344,8 +344,8 @@ class LocatorConverter:
                 parts.append(f'.{method}("{value}")')
         return "".join(parts)
 
-    def _uiselector_to_dict(self, uiselector: str) -> Dict[str, Union[str, int, bool, dict]]:
-        def parse_chain(chain: str) -> Dict[str, Union[str, int, bool]]:
+    def _uiselector_to_dict(self, uiselector: str) -> dict[str, str | int | bool | dict[Any, Any]]:
+        def parse_chain(chain: str) -> dict[str, str | int | bool]:
             parsed = {}
             for method, raw_value in re.findall(r'\.(\w+)\(([^()]+)\)', chain):
                 value = raw_value.strip("\"'")
@@ -359,10 +359,10 @@ class LocatorConverter:
                         break
             return parsed
 
-        def parse_nested(chain: str) -> Dict[str, Union[str, int, bool, dict]]:
+        def parse_nested(chain: str) -> dict[str, str | int | bool | dict[Any, Any]]:
             if ".fromParent(" not in chain:
-                return parse_chain(chain)
-            outer, inner = re.match(r"(.+)\.fromParent\((new UiSelector\(\).+)\)$", chain).groups()
+                return parse_chain(chain)  # type: ignore
+            outer, inner = re.match(r"(.+)\.fromParent\((new UiSelector\(\).+)\)$", chain).groups()  # type: ignore
             return {
                 **parse_chain(outer),
                 "parentSelector": parse_nested(inner)
@@ -370,14 +370,14 @@ class LocatorConverter:
 
         return parse_nested(uiselector)
 
-    def _parse_xpath_recursive(self, xpath: Tuple[str, str]) -> Dict[str, Any]:
+    def _parse_xpath_recursive(self, xpath: tuple[str, str] | str) -> dict[str, Any]:
         if isinstance(xpath, tuple):
             xpath = xpath[1]
         segments = xpath.strip("/").split("/")
         if not segments:
             return {}
 
-        def parse_segment(segment: str) -> Dict[str, Any]:
+        def parse_segment(segment: str) -> dict[str, Any]:
             result = {}
             reverse_map = {v: k for k, v in self.UISELECTOR_TO_DICT.items()}
 

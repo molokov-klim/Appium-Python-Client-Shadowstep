@@ -1,11 +1,9 @@
 # shadowstep/element/base.py
 from __future__ import annotations
 
-import datetime
 import logging
 import re
-import typing
-from typing import TYPE_CHECKING, Dict, Optional, Tuple, Union
+from typing import TYPE_CHECKING, cast
 
 from appium.webdriver.webdriver import WebDriver
 from appium.webdriver.webelement import WebElement
@@ -20,6 +18,10 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.wait import WebDriverWait
 
 from shadowstep.base import WebDriverSingleton
+from shadowstep.exceptions.shadowstep_exceptions import (
+    ShadowstepNoSuchElementError,
+    ShadowstepTimeoutException,
+)
 from shadowstep.locator_converter.locator_converter import LocatorConverter
 from shadowstep.utils.utils import get_current_func_name
 
@@ -28,37 +30,6 @@ logger = logging.getLogger(__name__)
 if TYPE_CHECKING:
     from shadowstep.element.element import Element
     from shadowstep.shadowstep import Shadowstep
-
-class ShadowstepNoSuchElementError(NoSuchElementException):
-    def __init__(self, msg: str, screen: str, stacktrace: list,
-                 locator: Union[Tuple, Dict[str, str]]):
-        super().__init__(msg, screen, stacktrace)
-        self.locator = locator
-        self.msg = msg
-        self.screen = screen
-        self.stacktrace = stacktrace
-
-    def __str__(self):
-        return f"ShadowstepNoSuchElementError: Locator: {self.locator} \n Message: {self.msg} \n Stacktrace: {self.stacktrace}"
-
-
-class ShadowstepTimeoutException(TimeoutException):
-    """Custom timeout exception with additional context."""
-
-    def __init__(self, msg: str = None, screen: str = None, stacktrace: list = None,
-                 locator: Union[Tuple, Dict[str, str]] = None, driver=None):
-        super().__init__(msg, screen, stacktrace)
-        self.locator = locator
-        self.driver = driver
-        self.timestamp = datetime.datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
-
-    def __str__(self):
-        return (f"ShadowstepTimeoutException\n"
-                f"Timestamp: {self.timestamp}\n"
-                f"Message: {self.msg}\n"
-                f"Locator: {self.locator}\n"
-                f"Current URL: {self.driver.current_url if self.driver else 'N/A'}\n"
-                f"Stacktrace:\n{''.join(self.stacktrace) if self.stacktrace else 'N/A'}")
 
 
 class ElementBase:
@@ -71,27 +42,27 @@ class ElementBase:
                  base: Shadowstep,
                  timeout: float = 30,
                  poll_frequency: float = 0.5,
-                 ignored_exceptions: typing.Optional[WaitExcTypes] = None,
+                 ignored_exceptions: WaitExcTypes | None = None,
                  contains: bool = False,
-                 native: WebElement = None):
+                 native: WebElement | None = None):
         self.logger = logger
         self.driver: WebDriver = None
         self.locator: tuple[str, str] | dict[str, str] | Element = locator
         self.base = base  # Shadowstep instance
         self.timeout: float = timeout
         self.poll_frequency: float = poll_frequency
-        self.ignored_exceptions: typing.Optional[WaitExcTypes] = ignored_exceptions
+        self.ignored_exceptions: WaitExcTypes | None = ignored_exceptions
         self.contains: bool = contains
         self.native: WebElement = native
         self.id = None
         self.locator_converter = LocatorConverter()
 
     def _get_element(self,
-                     locator: tuple[str, str] | dict[str, str] | WebElement,
+                     locator: tuple[str, str] | dict[str, str] | str | WebElement,
                      timeout: float = 3,
                      poll_frequency: float = 0.5,
-                     ignored_exceptions: Optional[WaitExcTypes] = None,
-                     contains: bool = False) -> Union[WebElement, None]:
+                     ignored_exceptions: WaitExcTypes | None = None,
+                     contains: bool = False) -> WebElement:
         """
         Retrieve a web element based on the specified locator.
 
@@ -113,13 +84,15 @@ class ElementBase:
         self._get_driver()
         if isinstance(locator, WebElement):
             return locator
-        wait = WebDriverWait(driver=self.driver, timeout=timeout,
-                             poll_frequency=poll_frequency, ignored_exceptions=ignored_exceptions)
+        wait = WebDriverWait(driver=self.driver,
+                             timeout=timeout,
+                             poll_frequency=poll_frequency,
+                             ignored_exceptions=ignored_exceptions)
         locator = self.handle_locator(locator, contains)
         try:
             element = wait.until(EC.presence_of_element_located(locator))
             self.id = element.id
-            return element
+            return cast(WebElement, element)
         except NoSuchElementException as error:
             self.logger.debug(f"{get_current_func_name()} {locator=} {error}")
             raise ShadowstepNoSuchElementError(
@@ -153,8 +126,8 @@ class ElementBase:
             raise
 
     def handle_locator(self,
-                       locator: Union[Tuple[str, str], Dict[str, str], str, WebElement],
-                       contains: bool = False) -> Optional[Tuple[str, str]]:
+                       locator: tuple[str, str] | dict[str, str] | str | WebElement,
+                       contains: bool = False) -> tuple[str, str] | None:
         self.logger.debug(f"{get_current_func_name()}")
         if isinstance(locator, tuple):
             by, value = locator
@@ -167,7 +140,7 @@ class ElementBase:
             locator = self.handle_dict_locator(locator, contains)
         return locator
 
-    def handle_dict_locator(self, locator, contains: bool = False) -> Optional[Tuple[str, str]]:
+    def handle_dict_locator(self, locator, contains: bool = False) -> tuple[str, str] | None:
         """
         Convert a dictionary locator to an XPath locator.
 

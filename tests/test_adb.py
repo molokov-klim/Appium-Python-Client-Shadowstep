@@ -34,7 +34,7 @@ class TestAdb:
         Asserts:
             Asserts that 'Pixel' is part of the device model string.
         """
-        assert "Pixel" in app.adb.get_device_model()
+        assert "Pixel" in app.adb.get_device_model(udid=udid)
 
     def test_push(self, app: Shadowstep, udid: str) -> None:
         """

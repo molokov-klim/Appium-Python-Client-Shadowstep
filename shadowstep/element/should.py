@@ -1,6 +1,7 @@
 # shadowstep/element/should.py
 
-from typing import Any, Optional, Tuple
+from typing import Any
+
 from .element import Element
 
 
@@ -18,9 +19,9 @@ class Should:
         """Delegates unknown attribute access to the underlying Element instance."""
         try:
             return getattr(self.element, name)
-        except AttributeError:
+        except AttributeError as error:
             raise AttributeError(
-                f"'Should' has no attribute '{name}', and '{self.element.__class__.__name__}' also does not have it.")
+                f"'Should' has no attribute '{name}', and '{self.element.__class__.__name__}' also does not have it.") from error
 
 
 class _ShouldBase:
@@ -65,7 +66,7 @@ class _ShouldHave(_ShouldBase):
         self._assert(actual == expected, f"have.package: expected '{expected}', got '{actual}'")
         return Should(self.element)
 
-    def bounds(self, expected: Tuple[int, int, int, int]) -> Should:
+    def bounds(self, expected: str) -> Should:
         actual = self.element.get_attribute("bounds")
         self._assert(actual == expected, f"have.bounds: expected {expected}, got {actual}")
         return Should(self.element)
