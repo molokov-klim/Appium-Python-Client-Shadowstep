@@ -1,5 +1,7 @@
 # shadowstep/terminal/terminal.py
+from __future__ import annotations
 
+import base64
 import logging
 import os
 import re
@@ -7,12 +9,10 @@ import subprocess
 import sys
 import time
 import traceback
-import inspect
-import base64
-from typing import Any, Union, Tuple
+from typing import TYPE_CHECKING, Any
 
 from appium.webdriver.webdriver import WebDriver
-from selenium.common import NoSuchDriverException, InvalidSessionIdException
+from selenium.common import InvalidSessionIdException, NoSuchDriverException
 
 from shadowstep.utils.utils import get_current_func_name
 
@@ -20,10 +20,14 @@ from shadowstep.utils.utils import get_current_func_name
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
 
+if TYPE_CHECKING:
+    from shadowstep.shadowstep import Shadowstep
+    from shadowstep.terminal import Transport
+
 
 class NotProvideCredentials(Exception):
-    def __init__(self, message='Not provided credentials for ssh connection '
-                               'in connect() method (ssh_username, ssh_password)'):
+    def __init__(self, message: str = 'Not provided credentials for ssh connection '
+                                      'in connect() method (ssh_username, ssh_password)'):
         super().__init__(message)
         self.message = message
 
@@ -33,18 +37,17 @@ class Terminal:
     Allows you to perform adb actions using the appium server. Useful for remote connections
     Required ssh
     """
-    base: "Shadowstep" = None
-    transport: "Transport" = None
-    driver: WebDriver = None
+    base: Shadowstep
+    transport: Transport
+    driver: WebDriver
 
-    def __init__(self, base: "Shadowstep"):
-        self.base: "Shadowstep" = base
-        self.transport: "Transport" = base.transport
+    def __init__(self, base: Shadowstep):
+        self.base: Shadowstep = base
+        self.transport: Transport = base.transport
         self.driver: WebDriver = base.driver
 
     def __del__(self):
-        if self.transport is not None:
-            self.transport.ssh.close()
+        self.transport.ssh.close()
 
     def adb_shell(self, command: str, args: str = "", tries: int = 3) -> Any:
         """
@@ -78,14 +81,12 @@ class Terminal:
         :param udid: The unique device identifier of the mobile device.
         :return: True if the file was successfully pushed, False otherwise.
         """
-        if self.transport is None:
-            raise NotProvideCredentials
         try:
             source_file_path = os.path.join(source_path, filename)
             remote_file_path = os.path.join(remote_server_path, filename)
             destination_file_path = f"{destination}/{filename}"
             self.transport.scp.put(files=source_file_path, remote_path=remote_file_path)
-            stdin, stdout, stderr = self.transport.ssh.exec_command(
+            _, stdout, _ = self.transport.ssh.exec_command(
                 f'adb -s {udid} push {remote_file_path} {destination_file_path}')
             stdout_exit_status = stdout.channel.recv_exit_status()
             lines = stdout.readlines()
@@ -97,9 +98,11 @@ class Terminal:
             return True
         except NoSuchDriverException:
             self.base.reconnect()
+            return False
         except InvalidSessionIdException:
             self.base.reconnect()
-        except IOError as e:
+            return False
+        except OSError as e:
             logger.error("push()")
             logger.error(e)
             traceback_info = "".join(traceback.format_tb(sys.exc_info()[2]))
@@ -132,9 +135,11 @@ class Terminal:
             return True
         except NoSuchDriverException:
             self.base.reconnect()
+            return False
         except InvalidSessionIdException:
             self.base.reconnect()
-        except IOError as e:
+            return False
+        except OSError as e:
             logger.error("appium_extended_terminal.pull")
             logger.error(e)
             traceback_info = "".join(traceback.format_tb(sys.exc_info()[2]))
@@ -160,7 +165,7 @@ class Terminal:
             logger.error(traceback_info)
             return False
 
-    def get_current_app_package(self) -> Union[str, None]:
+    def get_current_app_package(self) -> str:
         """
         Retrieves the package name of the currently focused application on the device.
 
@@ -174,13 +179,13 @@ class Terminal:
                     matches = re.search(r'(([A-Za-z]{1}[A-Za-z\d_]*\.)+([A-Za-z][A-Za-z\d_]*)/)', line)
                     if matches:
                         return matches.group(1)[:-1]  # removing trailing slash
-            return None
+            return ""
         except KeyError as e:
             logger.error("appium_extended_terminal.get_current_app_package()")
             logger.error(e)
             traceback_info = "".join(traceback.format_tb(sys.exc_info()[2]))
             logger.error(traceback_info)
-            return None
+            return ""
 
     def close_app(self, package: str) -> bool:
         """
@@ -210,9 +215,7 @@ class Terminal:
         """
         if not self.close_app(package=package):
             return False
-        if not self.start_activity(package=package, activity=activity):
-            return False
-        return True
+        return self.start_activity(package=package, activity=activity)
 
     def install_app(self, source: str, remote_server_path: str, filename: str, udid: str) -> bool:
         """
@@ -225,13 +228,11 @@ class Terminal:
         :return: True if the application was successfully installed, False otherwise.
         :raises NotProvideCredentials: If the transport credentials are not provided.
         """
-        if self.transport is None:
-            raise NotProvideCredentials
         try:
             source_filepath = os.path.join(source, filename)
             destination_filepath = os.path.join(remote_server_path, filename)
             self.transport.scp.put(files=source_filepath, remote_path=destination_filepath)
-            stdin, stdout, stderr = self.transport.ssh.exec_command(
+            _, stdout, _ = self.transport.ssh.exec_command(
                 f'adb -s {udid} install -r {destination_filepath}')
             stdout_exit_status = stdout.channel.recv_exit_status()
             lines = stdout.readlines()
@@ -241,14 +242,14 @@ class Terminal:
                 return False
             logger.debug(f"{get_current_func_name()} {output=}")
             return True
-        except IOError as e:
+        except OSError as e:
             logger.error("appium_extended_terminal.push()")
             logger.error(e)
             traceback_info = "".join(traceback.format_tb(sys.exc_info()[2]))
             logger.error(traceback_info)
             return False
 
-    def is_app_installed(self, package) -> bool:
+    def is_app_installed(self, package: str) -> bool:
         """
         Checks if the specified application package is installed on the device.
 
@@ -259,7 +260,7 @@ class Terminal:
 
         try:
             result = self.adb_shell(command="pm", args="list packages")
-            if any([line.strip().endswith(package) for line in result.splitlines()]):
+            if any(line.strip().endswith(package) for line in result.splitlines()):
                 logger.debug("is_app_installed() > True")
                 return True
             logger.debug("is_app_installed() > False")
@@ -283,8 +284,10 @@ class Terminal:
             return True
         except NoSuchDriverException:
             self.base.reconnect()
+            return False
         except InvalidSessionIdException:
             self.base.reconnect()
+            return False
         except KeyError as e:
             logger.error("appium_extended_terminal.uninstall_app()")
             logger.error(e)
@@ -412,8 +415,8 @@ class Terminal:
             logger.error(traceback_info)
             return False
 
-    def swipe(self, start_x: Union[str, int], start_y: Union[str, int],
-              end_x: Union[str, int], end_y: Union[str, int], duration: int = 300) -> bool:
+    def swipe(self, start_x: str | int, start_y: str | int,
+              end_x: str | int, end_y: str | int, duration: int = 300) -> bool:
         """
         Simulates a swipe gesture from one point to another on the device's screen.
 
@@ -555,7 +558,7 @@ class Terminal:
                     return False
         return True
 
-    def know_pid(self, name: str) -> Union[int, None]:
+    def know_pid(self, name: str) -> int | None:
         """
         Retrieves the process ID (PID) of the specified process name.
 
@@ -675,7 +678,7 @@ class Terminal:
             return False
         return True
 
-    def delete_files_from_internal_storage(self, path) -> bool:
+    def delete_files_from_internal_storage(self, path: str) -> bool:
         """
         Deletes files from the internal storage of the device.
 
@@ -733,7 +736,7 @@ class Terminal:
             return False
         return True
 
-    def stop_video(self, **options: Any) -> Union[bytes, None]:
+    def stop_video(self, **options: Any) -> bytes | None:
         """
         Stops the video recording of the device screen and returns the recorded video data (Base64 bytes).
 
@@ -800,7 +803,7 @@ class Terminal:
             except InvalidSessionIdException:
                 self.base.reconnect()
 
-    def get_prop(self) -> dict:
+    def get_prop(self) -> dict[str, str]:
         """
         Retrieves system properties from the device.
 
@@ -817,7 +820,6 @@ class Terminal:
                 result_dict[key] = value
             except ValueError:
                 continue
-
         return result_dict
 
     def get_prop_hardware(self) -> str:
@@ -868,7 +870,7 @@ class Terminal:
         """
         return self.get_prop()['sys.atol.uin']
 
-    def get_packages(self) -> list:
+    def get_packages(self) -> list[str]:
         """
         Retrieves the list of installed packages on the device.
 
@@ -904,7 +906,7 @@ class Terminal:
             filename = f"{filename}.apk"
         self.pull(source=package_path, destination=os.path.join(path, filename))
 
-    def get_package_manifest(self, package: str) -> dict:
+    def get_package_manifest(self, package: str) -> dict[str, str]:
         """
         Retrieves the manifest of the specified package from the device.
 
@@ -920,7 +922,7 @@ class Terminal:
         command = ["aapt", "dump", "badging", os.path.join("test", "temp.apk")]
         try:
             output: str = str(subprocess.check_output(command)).strip()
-        except subprocess.CalledProcessError as error:
+        except subprocess.CalledProcessError:
             return {}
         output = output.replace('\\r\\n', ' ').replace('b"', '').replace('"', '').replace(":'", ": '")
         list_of_elements = output.split()

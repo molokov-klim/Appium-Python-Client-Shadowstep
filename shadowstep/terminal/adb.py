@@ -1,21 +1,23 @@
 # shadowstep/terminal/adb.py
+from __future__ import annotations
 
-import inspect
-
-from appium.webdriver.webdriver import WebDriver
 import logging
-
-from shadowstep.utils.utils import grep_pattern, get_current_func_name
-
-logger = logging.getLogger(__name__)
 import os
 import re
 import subprocess
 import sys
 import time
 import traceback
-from typing import Dict, Union, Tuple, Optional, Any, List
+from typing import TYPE_CHECKING
 
+from appium.webdriver.webdriver import WebDriver
+
+from shadowstep.utils.utils import get_current_func_name, grep_pattern
+
+if TYPE_CHECKING:
+    from shadowstep.shadowstep import Shadowstep
+
+logger = logging.getLogger(__name__)
 
 
 class Adb:
@@ -24,16 +26,15 @@ class Adb:
     Use only if Appium server is running locally where the test is being performed
     """
 
-    base = None
-    driver = None
+    base: Shadowstep
+    driver: WebDriver
 
-    def __init__(self, base: "Shadowstep"):
-        self.base: "Shadowstep" = base
+    def __init__(self, base: Shadowstep):
+        self.base: Shadowstep = base
         self.driver: WebDriver = base.driver
 
-        
     @staticmethod
-    def get_devices() -> Union[List[str], None]:
+    def get_devices() -> list[str]:
         """
         Retrieve a list of connected devices via ADB.
 
@@ -60,15 +61,15 @@ class Adb:
             except IndexError:
                 logger.error(f"{get_current_func_name()} > None")
                 logger.error("No connected devices")
-                return None
-        except subprocess.CalledProcessError as e:
+                return []
+        except subprocess.CalledProcessError:
             logger.error(f"{get_current_func_name()} > None")
             traceback_info = "".join(traceback.format_tb(sys.exc_info()[2]))
             logger.error(f"{sys.exc_info()[0]}\n{traceback_info}{sys.exc_info()[1]}")
-            return None
+            return []
 
     @staticmethod
-    def get_device_model(udid: str = None) -> Union[str, None]:
+    def get_device_model(udid: str) -> str:
         """
         Retrieve the model of the connected device using ADB.
 
@@ -91,11 +92,11 @@ class Adb:
             model = model.decode().strip()
             logger.info(f"{get_current_func_name()} > {model}")
             return model
-        except subprocess.CalledProcessError as e:
+        except subprocess.CalledProcessError:
             logger.error(f"{get_current_func_name()} > None")
             traceback_info = "".join(traceback.format_tb(sys.exc_info()[2]))
             logger.error(f"{sys.exc_info()[0]}\n{traceback_info}{sys.exc_info()[1]}")
-            return None
+            return ""
 
     @staticmethod
     def push(source: str, destination: str, udid: str) -> bool:
@@ -125,14 +126,14 @@ class Adb:
             subprocess.run(command, check=True)
             logger.info(f"{get_current_func_name()} > True")
             return True
-        except subprocess.CalledProcessError as e:
+        except subprocess.CalledProcessError:
             logger.error(f"{get_current_func_name()} > None")
             traceback_info = "".join(traceback.format_tb(sys.exc_info()[2]))
             logger.error(f"{sys.exc_info()[0]}\n{traceback_info}{sys.exc_info()[1]}")
             return False
 
     @staticmethod
-    def pull(source: str, destination: str, udid: str = None) -> bool:
+    def pull(source: str, destination: str, udid: str) -> bool:
         """
         Pull a file from the connected device to the local machine using ADB.
 
@@ -155,7 +156,7 @@ class Adb:
             subprocess.run(command, check=True)
             logger.info(f"{get_current_func_name()} > True")
             return True
-        except subprocess.CalledProcessError as e:
+        except subprocess.CalledProcessError:
             logger.error(f"{get_current_func_name()} > None")
             traceback_info = "".join(traceback.format_tb(sys.exc_info()[2]))
             logger.error(f"{sys.exc_info()[0]}\n{traceback_info}{sys.exc_info()[1]}")
@@ -183,14 +184,14 @@ class Adb:
             subprocess.run(command, check=True)
             logger.info("install() > True")
             return True
-        except subprocess.CalledProcessError as e:
+        except subprocess.CalledProcessError:
             logger.error(f"{get_current_func_name()} > None")
             traceback_info = "".join(traceback.format_tb(sys.exc_info()[2]))
             logger.error(f"{sys.exc_info()[0]}\n{traceback_info}{sys.exc_info()[1]}")
             return False
 
     @staticmethod
-    def is_app_installed(package) -> bool:
+    def is_app_installed(package: str) -> bool:
         """
         Check if the specified package is installed on the connected device.
 
@@ -208,12 +209,12 @@ class Adb:
         try:
             result = subprocess.check_output(command, shell=True).decode().strip()
             # Фильтруем пакеты
-            if any([line.strip().endswith(package) for line in result.splitlines()]):
+            if any(line.strip().endswith(package) for line in result.splitlines()):
                 logger.info("install() > True")
                 return True
             logger.info("install() > False")
             return False
-        except subprocess.CalledProcessError as e:
+        except subprocess.CalledProcessError:
             logger.error(f"{get_current_func_name()} > None")
             traceback_info = "".join(traceback.format_tb(sys.exc_info()[2]))
             logger.error(f"{sys.exc_info()[0]}\n{traceback_info}{sys.exc_info()[1]}")
@@ -239,7 +240,7 @@ class Adb:
             subprocess.run(command, check=True)
             logger.info("uninstall_app() > True")
             return True
-        except subprocess.CalledProcessError as e:
+        except subprocess.CalledProcessError:
             logger.error(f"{get_current_func_name()} > None")
             traceback_info = "".join(traceback.format_tb(sys.exc_info()[2]))
             logger.error(f"{sys.exc_info()[0]}\n{traceback_info}{sys.exc_info()[1]}")
@@ -267,14 +268,14 @@ class Adb:
             subprocess.check_output(command)
             logger.info("start_activity() > True")
             return True
-        except subprocess.CalledProcessError as e:
+        except subprocess.CalledProcessError:
             logger.error(f"{get_current_func_name()} > None")
             traceback_info = "".join(traceback.format_tb(sys.exc_info()[2]))
             logger.error(f"{sys.exc_info()[0]}\n{traceback_info}{sys.exc_info()[1]}")
             return False
 
     @staticmethod
-    def get_current_activity() -> Union[str, None]:
+    def get_current_activity() -> str:
         """
         Retrieve the name of the current activity running on the device.
 
@@ -311,15 +312,15 @@ class Adb:
 
             # Если не удалось найти активити, возвращаем None
             logger.error("get_current_activity() > None")
-            return None
-        except subprocess.CalledProcessError as e:
+            return ""
+        except subprocess.CalledProcessError:
             logger.error(f"{get_current_func_name()} > None")
             traceback_info = "".join(traceback.format_tb(sys.exc_info()[2]))
             logger.error(f"{sys.exc_info()[0]}\n{traceback_info}{sys.exc_info()[1]}")
-            return None
+            return ""
 
     @staticmethod
-    def get_current_package() -> Union[str, None]:
+    def get_current_package() -> str:
         """
         Retrieve the name of the current application package running on the device.
 
@@ -356,12 +357,12 @@ class Adb:
 
             # Если не удалось найти имя пакета, возвращаем None
             logger.error("get_current_app_package() > None")
-            return None
-        except subprocess.CalledProcessError as e:
+            return ""
+        except subprocess.CalledProcessError:
             logger.error(f"{get_current_func_name()} > None")
             traceback_info = "".join(traceback.format_tb(sys.exc_info()[2]))
             logger.error(f"{sys.exc_info()[0]}\n{traceback_info}{sys.exc_info()[1]}")
-            return None
+            return ""
 
     @staticmethod
     def close_app(package: str) -> bool:
@@ -383,7 +384,7 @@ class Adb:
             subprocess.run(command, check=True)
             logger.info("close_app() > True")
             return True
-        except subprocess.CalledProcessError as e:
+        except subprocess.CalledProcessError:
             logger.error(f"{get_current_func_name()} > None")
             traceback_info = "".join(traceback.format_tb(sys.exc_info()[2]))
             logger.error(f"{sys.exc_info()[0]}\n{traceback_info}{sys.exc_info()[1]}")
@@ -434,7 +435,7 @@ class Adb:
             subprocess.run(command, check=True)
             logger.info("press_home() > True")
             return True
-        except subprocess.CalledProcessError as e:
+        except subprocess.CalledProcessError:
             logger.error(f"{get_current_func_name()} > None")
             traceback_info = "".join(traceback.format_tb(sys.exc_info()[2]))
             logger.error(f"{sys.exc_info()[0]}\n{traceback_info}{sys.exc_info()[1]}")
@@ -456,7 +457,7 @@ class Adb:
             subprocess.run(command, check=True)
             logger.info("press_back() > True")
             return True
-        except subprocess.CalledProcessError as e:
+        except subprocess.CalledProcessError:
             logger.error(f"{get_current_func_name()} > None")
             traceback_info = "".join(traceback.format_tb(sys.exc_info()[2]))
             logger.error(f"{sys.exc_info()[0]}\n{traceback_info}{sys.exc_info()[1]}")
@@ -478,7 +479,7 @@ class Adb:
             subprocess.run(command, check=True)
             logger.info("press_menu() > True")
             return True
-        except subprocess.CalledProcessError as e:
+        except subprocess.CalledProcessError:
             logger.error(f"{get_current_func_name()} > None")
             traceback_info = "".join(traceback.format_tb(sys.exc_info()[2]))
             logger.error(f"{sys.exc_info()[0]}\n{traceback_info}{sys.exc_info()[1]}")
@@ -504,7 +505,7 @@ class Adb:
             subprocess.run(command, check=True)
             logger.info("input_keycode_num_() > True")
             return True
-        except subprocess.CalledProcessError as e:
+        except subprocess.CalledProcessError:
             logger.error(f"{get_current_func_name()} > None")
             traceback_info = "".join(traceback.format_tb(sys.exc_info()[2]))
             logger.error(f"{sys.exc_info()[0]}\n{traceback_info}{sys.exc_info()[1]}")
@@ -530,35 +531,7 @@ class Adb:
             subprocess.run(command, check=True)
             logger.info("input_keycode() > True")
             return True
-        except subprocess.CalledProcessError as e:
-            logger.error(f"{get_current_func_name()} > None")
-            traceback_info = "".join(traceback.format_tb(sys.exc_info()[2]))
-            logger.error(f"{sys.exc_info()[0]}\n{traceback_info}{sys.exc_info()[1]}")
-            return False
-
-    @staticmethod
-    def input_by_virtual_keyboard(text: str, keyboard: Dict[str, tuple]) -> bool:
-        """
-        Input text using a virtual keyboard by tapping on the corresponding coordinates for each character.
-
-        Args:
-            text : str
-                The text to be inputted.
-            keyboard : Dict[str, tuple]
-                A dictionary mapping each character to its corresponding coordinates on the virtual keyboard.
-
-        Returns:
-            bool
-                True if the input was successfully executed, False otherwise.
-        """
-        logger.info(f"input_by_virtual_keyboard() < {text=}, {keyboard=}")
-        try:
-            for char in text:
-                # Вызываем функцию tap с координатами, соответствующими символу char
-                Adb.tap(*keyboard[char])
-            logger.info("input_by_virtual_keyboard() > True")
-            return True
-        except subprocess.CalledProcessError as e:
+        except subprocess.CalledProcessError:
             logger.error(f"{get_current_func_name()} > None")
             traceback_info = "".join(traceback.format_tb(sys.exc_info()[2]))
             logger.error(f"{sys.exc_info()[0]}\n{traceback_info}{sys.exc_info()[1]}")
@@ -586,14 +559,14 @@ class Adb:
             subprocess.run(command, check=True)
             logger.info("input_text() > True")
             return True
-        except subprocess.CalledProcessError as e:
+        except subprocess.CalledProcessError:
             logger.error(f"{get_current_func_name()} > None")
             traceback_info = "".join(traceback.format_tb(sys.exc_info()[2]))
             logger.error(f"{sys.exc_info()[0]}\n{traceback_info}{sys.exc_info()[1]}")
             return False
 
     @staticmethod
-    def tap(x: Union[str, int], y: Union[str, int]) -> bool:
+    def tap(x: str | int, y: str | int) -> bool:
         """
         Simulate a tap at the specified screen coordinates on the device using ADB.
 
@@ -615,15 +588,15 @@ class Adb:
             subprocess.run(command, check=True)
             logger.info("tap() > True")
             return True
-        except subprocess.CalledProcessError as e:
+        except subprocess.CalledProcessError:
             logger.error(f"{get_current_func_name()} > None")
             traceback_info = "".join(traceback.format_tb(sys.exc_info()[2]))
             logger.error(f"{sys.exc_info()[0]}\n{traceback_info}{sys.exc_info()[1]}")
             return False
 
     @staticmethod
-    def swipe(start_x: Union[str, int], start_y: Union[str, int],
-              end_x: Union[str, int], end_y: Union[str, int],
+    def swipe(start_x: str | int, start_y: str | int,
+              end_x: str | int, end_y: str | int,
               duration: int = 300) -> bool:
         """
         Simulate a swipe gesture from the starting coordinates to the ending coordinates on the device using ADB.
@@ -653,7 +626,7 @@ class Adb:
             subprocess.run(command, check=True)
             logger.info("swipe() > True")
             return True
-        except subprocess.CalledProcessError as e:
+        except subprocess.CalledProcessError:
             logger.error(f"{get_current_func_name()} > None")
             traceback_info = "".join(traceback.format_tb(sys.exc_info()[2]))
             logger.error(f"{sys.exc_info()[0]}\n{traceback_info}{sys.exc_info()[1]}")
@@ -688,7 +661,7 @@ class Adb:
                     return True
             logger.info("check_vpn() False")
             return False
-        except subprocess.CalledProcessError as e:
+        except subprocess.CalledProcessError:
             logger.error(f"{get_current_func_name()} > None")
             traceback_info = "".join(traceback.format_tb(sys.exc_info()[2]))
             logger.error(f"{sys.exc_info()[0]}\n{traceback_info}{sys.exc_info()[1]}")
@@ -704,16 +677,15 @@ class Adb:
                 True if the logcat process was successfully stopped, False otherwise.
         """
         logger.info("stop_logcat()")
-        if Adb.is_process_exist(name='logcat'):
-            if Adb.kill_all(name='logcat'):
-                logger.info("stop_logcat() > True")
-                return True
+        if Adb.is_process_exist(name='logcat') and Adb.kill_all(name='logcat'):
+            logger.info("stop_logcat() > True")
+            return True
         logger.error("stop_logcat() > False")
         logger.info("stop_logcat() [Запущенного процесса logcat не обнаружено]")
         return False
 
     @staticmethod
-    def is_process_exist(name) -> bool:
+    def is_process_exist(name: str) -> bool:
         """
         Check if a process with the specified name is currently running on the device.
 
@@ -729,7 +701,7 @@ class Adb:
         command = ['adb', 'shell', 'ps']
         try:
             processes = subprocess.check_output(command, shell=True).decode().strip()
-        except subprocess.CalledProcessError as e:
+        except subprocess.CalledProcessError:
             logger.error(f"{get_current_func_name()} > None")
             traceback_info = "".join(traceback.format_tb(sys.exc_info()[2]))
             logger.error(f"{sys.exc_info()[0]}\n{traceback_info}{sys.exc_info()[1]}")
@@ -778,7 +750,7 @@ class Adb:
                     return False
             logger.info("run_background_process() > True")
             return True
-        except subprocess.CalledProcessError as e:
+        except subprocess.CalledProcessError:
             logger.error(f"{get_current_func_name()} > None")
             traceback_info = "".join(traceback.format_tb(sys.exc_info()[2]))
             logger.error(f"{sys.exc_info()[0]}\n{traceback_info}{sys.exc_info()[1]}")
@@ -798,7 +770,7 @@ class Adb:
         try:
             command = ['adb', 'kill-server']
             subprocess.run(command, check=True)
-        except subprocess.CalledProcessError as e:
+        except subprocess.CalledProcessError:
             logger.error(f"{get_current_func_name()} > None")
             traceback_info = "".join(traceback.format_tb(sys.exc_info()[2]))
             logger.error(f"{sys.exc_info()[0]}\n{traceback_info}{sys.exc_info()[1]}")
@@ -808,7 +780,7 @@ class Adb:
         try:
             command = ['adb', 'start-server']
             subprocess.run(command, check=True)
-        except subprocess.CalledProcessError as e:
+        except subprocess.CalledProcessError:
             logger.error(f"{get_current_func_name()} > None")
             traceback_info = "".join(traceback.format_tb(sys.exc_info()[2]))
             logger.error(f"{sys.exc_info()[0]}\n{traceback_info}{sys.exc_info()[1]}")
@@ -817,7 +789,7 @@ class Adb:
         return True
 
     @staticmethod
-    def know_pid(name: str) -> Union[int, None]:
+    def know_pid(name: str) -> int | None:
         """
         Retrieve the process ID (PID) of a running process with the specified name.
 
@@ -833,7 +805,7 @@ class Adb:
         command = ['adb', 'shell', 'ps']
         try:
             processes = subprocess.check_output(command, shell=True).decode().strip()
-        except subprocess.CalledProcessError as e:
+        except subprocess.CalledProcessError:
             logger.error(f"{get_current_func_name()} > None")
             traceback_info = "".join(traceback.format_tb(sys.exc_info()[2]))
             logger.error(f"{sys.exc_info()[0]}\n{traceback_info}{sys.exc_info()[1]}")
@@ -858,7 +830,7 @@ class Adb:
         return None
 
     @staticmethod
-    def kill_by_pid(pid: Union[str, int]) -> bool:
+    def kill_by_pid(pid: str | int) -> bool:
         """
         Terminate a process with the specified PID using ADB.
 
@@ -875,7 +847,7 @@ class Adb:
         command = ['adb', 'shell', 'kill', '-s', 'SIGINT', str(pid)]
         try:
             subprocess.call(command)
-        except subprocess.CalledProcessError as e:
+        except subprocess.CalledProcessError:
             logger.error(f"{get_current_func_name()} > None")
             traceback_info = "".join(traceback.format_tb(sys.exc_info()[2]))
             logger.error(f"{sys.exc_info()[0]}\n{traceback_info}{sys.exc_info()[1]}")
@@ -901,7 +873,7 @@ class Adb:
         command = ['adb', 'shell', 'pkill', '-l', 'SIGINT', str(name)]
         try:
             subprocess.call(command)
-        except subprocess.CalledProcessError as e:
+        except subprocess.CalledProcessError:
             logger.error(f"{get_current_func_name()} > None")
             traceback_info = "".join(traceback.format_tb(sys.exc_info()[2]))
             logger.error(f"{sys.exc_info()[0]}\n{traceback_info}{sys.exc_info()[1]}")
@@ -927,7 +899,7 @@ class Adb:
         command = ['adb', 'shell', 'pkill', '-f', str(name)]
         try:
             subprocess.run(command, check=True)
-        except subprocess.CalledProcessError as e:
+        except subprocess.CalledProcessError:
             logger.error(f"{get_current_func_name()} > None")
             traceback_info = "".join(traceback.format_tb(sys.exc_info()[2]))
             logger.error(f"{sys.exc_info()[0]}\n{traceback_info}{sys.exc_info()[1]}")
@@ -953,7 +925,7 @@ class Adb:
         command = ['adb', 'shell', 'rm', '-rf', f'{path}*']
         try:
             subprocess.run(command, check=True)
-        except subprocess.CalledProcessError as e:
+        except subprocess.CalledProcessError:
             logger.error(f"{get_current_func_name()} > None")
             traceback_info = "".join(traceback.format_tb(sys.exc_info()[2]))
             logger.error(f"{sys.exc_info()[0]}\n{traceback_info}{sys.exc_info()[1]}")
@@ -962,7 +934,7 @@ class Adb:
         return True
 
     @staticmethod
-    def pull_video(source: str = None, destination: str = ".", delete: bool = True) -> bool:
+    def pull_video(source: str, destination: str = ".", delete: bool = True) -> bool:
         """
         Pull videos from the specified source directory on the device to the destination directory on the local machine.
 
@@ -991,7 +963,7 @@ class Adb:
         command = ['adb', 'pull', f'{source}', f'{destination}']
         try:
             subprocess.run(command, check=True)
-        except subprocess.CalledProcessError as e:
+        except subprocess.CalledProcessError:
             logger.error(f"{get_current_func_name()} > None")
             traceback_info = "".join(traceback.format_tb(sys.exc_info()[2]))
             logger.error(f"{sys.exc_info()[0]}\n{traceback_info}{sys.exc_info()[1]}")
@@ -1001,7 +973,7 @@ class Adb:
             command = ['adb', 'shell', 'rm', '-rf', f'{source}*']
             try:
                 subprocess.run(command, check=True)
-            except subprocess.CalledProcessError as e:
+            except subprocess.CalledProcessError:
                 logger.error(f"{get_current_func_name()} > None")
                 traceback_info = "".join(traceback.format_tb(sys.exc_info()[2]))
                 logger.error(f"{sys.exc_info()[0]}\n{traceback_info}{sys.exc_info()[1]}")
@@ -1024,7 +996,7 @@ class Adb:
         command = ['adb', 'shell', 'pkill', '-l', 'SIGINT', 'screenrecord']
         try:
             subprocess.call(command)
-        except subprocess.CalledProcessError as e:
+        except subprocess.CalledProcessError:
             logger.error(f"{get_current_func_name()} > None")
             traceback_info = "".join(traceback.format_tb(sys.exc_info()[2]))
             logger.error(f"{sys.exc_info()[0]}\n{traceback_info}{sys.exc_info()[1]}")
@@ -1033,8 +1005,8 @@ class Adb:
         return True
 
     @staticmethod
-    def record_video(path: str = "sdcard/Movies/", filename: str = "screenrecord.mp4") -> \
-            Union[subprocess.Popen[bytes], subprocess.Popen[Union[Union[str, bytes], Any]]]:
+    def record_video(path: str = "sdcard/Movies/", filename: str = "screenrecord.mp4") -> subprocess.Popen[
+                                                                                              bytes] | None:
         """
         Start recording a video on the device using ADB.
 
@@ -1058,7 +1030,7 @@ class Adb:
         try:
             # Запускаем команду adb shell screenrecord для начала записи видео
             return subprocess.Popen(command)
-        except subprocess.CalledProcessError as e:
+        except subprocess.CalledProcessError:
             logger.error(f"{get_current_func_name()} > None")
             traceback_info = "".join(traceback.format_tb(sys.exc_info()[2]))
             logger.error(f"{sys.exc_info()[0]}\n{traceback_info}{sys.exc_info()[1]}")
@@ -1109,7 +1081,7 @@ class Adb:
         command = ['adb', 'shell', 'reboot']
         try:
             subprocess.call(command)
-        except subprocess.CalledProcessError as e:
+        except subprocess.CalledProcessError:
             logger.error(f"{get_current_func_name()} > None")
             traceback_info = "".join(traceback.format_tb(sys.exc_info()[2]))
             logger.error(f"{sys.exc_info()[0]}\n{traceback_info}{sys.exc_info()[1]}")
@@ -1118,7 +1090,7 @@ class Adb:
         return True
 
     @staticmethod
-    def get_screen_resolution() -> Union[Tuple[int, int], None]:
+    def get_screen_resolution() -> tuple[int, int] | None:
         """
         Retrieve the screen resolution of the connected device.
 
@@ -1137,13 +1109,13 @@ class Adb:
                 logger.info(f"get_screen_resolution() > {width=}, {height=}")
                 return int(width), int(height)
             logger.error(f"Unexpected output from adb: {output}")
-        except (subprocess.CalledProcessError, ValueError) as e:
+        except (subprocess.CalledProcessError, ValueError):
             logger.error(f"{get_current_func_name()} > None")
             traceback_info = "".join(traceback.format_tb(sys.exc_info()[2]))
             logger.error(f"{sys.exc_info()[0]}\n{traceback_info}{sys.exc_info()[1]}")
         return None
 
-    def get_packages_list(self) -> list:
+    def get_packages_list(self) -> list[str]:
         """
         Retrieve a list of all installed packages on the device.
 

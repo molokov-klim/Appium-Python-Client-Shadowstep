@@ -1,6 +1,7 @@
 # shadowstep/terminal/transport.py
 
 import logging
+from typing import cast
 
 import paramiko
 from scp import SCPClient
@@ -20,12 +21,12 @@ class Transport:
     app.transport.ssh.some_paramiko_method
     app.transport.scp.some_scp_method
     """
-    def __init__(self, server, port, user, password):
+    def __init__(self, server: str, port: int, user: str, password: str):
         self.ssh = self._createSSHClient(server=server, port=port, user=user, password=password)
-        self.scp = SCPClient(self.ssh.get_transport())
+        self.scp = SCPClient(cast(Transport, self.ssh.get_transport()))
 
     @staticmethod
-    def _createSSHClient(server, port, user, password):
+    def _createSSHClient(server: str, port: int, user: str, password: str):
         client = paramiko.SSHClient()
         client.load_system_host_keys()
         client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
