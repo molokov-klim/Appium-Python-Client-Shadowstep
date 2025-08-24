@@ -1,22 +1,35 @@
-# shadowstep/page_object/#page_object_parser.py
+# shadowstep/page_object/page_object_parser.py
+"""Page Object Parser for Android UI XML parsing and tree building.
 
-import inspect
+This module provides functionality to parse Android UI XML (uiautomator2 output)
+and build a tree structure of UI elements for Page Object generation.
+"""
+
+from __future__ import annotations
+
 import logging
-from typing import Dict, List, Set, Optional, Tuple, Any, Union
-from collections import Counter
+from typing import Any, cast
+
 from lxml import etree as ET
 
 from shadowstep.page_object.page_object_element_node import UiElementNode
+from shadowstep.utils.utils import get_current_func_name
 
-DEFAULT_WHITE_LIST_CLASSES: Set[str] = {
+# Type aliases for better readability
+ElementAttributes = dict[str, str]
+ScrollStack = list[str]
+
+# Default configuration constants
+DEFAULT_WHITE_LIST_CLASSES: tuple[str, ...] = (
     'android.widget.EditText',
     'android.widget.Switch',
     'android.widget.SeekBar',
     'android.widget.ProgressBar',
     'androidx.recyclerview.widget.RecyclerView',
     'android.widget.ScrollView'
-}
-DEFAULT_BLACK_LIST_CLASSES: Set[str] = {
+)
+
+DEFAULT_BLACK_LIST_CLASSES: tuple[str, ...] = (
     'hierarchy',
     'android.widget.LinearLayout',
     'android.widget.FrameLayout',
@@ -25,50 +38,80 @@ DEFAULT_BLACK_LIST_CLASSES: Set[str] = {
     'android.widget.TableLayout',
     'android.widget.ImageView',
     'android.widget.RelativeLayout'
-}
-DEFAULT_WHITE_LIST_RESOURCE_ID: Set[str] = {
+)
+
+DEFAULT_WHITE_LIST_RESOURCE_ID: tuple[str, ...] = (
     'button', 'btn', 'edit', 'input',
     'search', 'list', 'recycler', 'nav',
     'menu', 'scrollable', 'checkbox', 'switch', 'toggle'
-}
-DEFAULT_BLACK_LIST_RESOURCE_ID: Set[str] = {
+)
+
+DEFAULT_BLACK_LIST_RESOURCE_ID: tuple[str, ...] = (
     'decor', 'divider', 'wrapper'
-}
-# «важные» контейнеры, которые отдаем даже при наличии 'container'
-DEFAULT_CONTAINER_WHITELIST: Set[str] = {
+)
+
+# Important containers that are allowed even if they contain 'container'
+DEFAULT_CONTAINER_WHITELIST: tuple[str, ...] = (
     'main', 'dialog', 'scrollable'
-}
+)
 
 
 class PageObjectParser:
-    def __init__(self,
-                 white_list_classes: Set[str] = None,
-                 black_list_classes: Set[str] = None,
-                 white_list_resource_id: Set[str] = None,
-                 black_list_resource_id: Set[str] = None,
-                 filter_system: bool = True, ):
+    """Parser for Android UI XML that builds element trees for Page Object generation.
+    
+    This class parses XML output from uiautomator2 and builds a tree structure
+    of UI elements, filtering them based on configurable white/black lists.
+    
+    Attributes:
+        WHITE_LIST_CLASSES: Classes that are always allowed
+        BLACK_LIST_CLASSES: Classes that are always filtered out
+        WHITE_LIST_RESOURCE_ID: Resource IDs that are always allowed
+        BLACK_LIST_RESOURCE_ID: Resource IDs that are always filtered out
+        CONTAINER_WHITELIST: Container IDs that are always allowed
+    """
+
+    def __init__(
+        self,
+        white_list_classes: tuple[str, ...] = DEFAULT_WHITE_LIST_CLASSES,
+        black_list_classes: tuple[str, ...] = DEFAULT_BLACK_LIST_CLASSES,
+        white_list_resource_id: tuple[str, ...] = DEFAULT_WHITE_LIST_RESOURCE_ID,
+        black_list_resource_id: tuple[str, ...] = DEFAULT_BLACK_LIST_RESOURCE_ID,
+        container_whitelist: tuple[str, ...] = DEFAULT_CONTAINER_WHITELIST,
+    ) -> None:
+        """Initialize the PageObjectParser with filtering configuration.
+        
+        Args:
+            white_list_classes: Classes that are always allowed through filtering
+            black_list_classes: Classes that are always filtered out
+            white_list_resource_id: Resource IDs that are always allowed
+            black_list_resource_id: Resource IDs that are always filtered out
+            container_whitelist: Container IDs that are always allowed
+        """
         self.logger = logging.getLogger(__name__)
 
-        self.WHITE_LIST_CLASSES: Set[str] = (
-            DEFAULT_WHITE_LIST_CLASSES if white_list_classes is None else white_list_classes
-        )
-        self.BLACK_LIST_CLASSES: Set[str] = (
-            DEFAULT_BLACK_LIST_CLASSES if black_list_classes is None else black_list_classes
-        )
-        self.WHITE_LIST_RESOURCE_ID: Set[str] = (
-            DEFAULT_WHITE_LIST_RESOURCE_ID if white_list_resource_id is None else white_list_resource_id
-        )
-        self.BLACK_LIST_RESOURCE_ID: Set[str] = (
-            DEFAULT_BLACK_LIST_RESOURCE_ID if black_list_resource_id is None else black_list_resource_id
-        )
-        self.CONTAINER_WHITELIST: Set[str] = DEFAULT_CONTAINER_WHITELIST
+        self.WHITE_LIST_CLASSES: tuple[str, ...] = white_list_classes
+        self.BLACK_LIST_CLASSES: tuple[str, ...] = black_list_classes
+        self.WHITE_LIST_RESOURCE_ID: tuple[str, ...] = white_list_resource_id
+        self.BLACK_LIST_RESOURCE_ID: tuple[str, ...] = black_list_resource_id
+        self.CONTAINER_WHITELIST: tuple[str, ...] = container_whitelist
 
-        self._tree: Optional[ET.Element] = None
-        self.ui_element_tree = None
+        self._tree: ET.Element | None = None
+        self.ui_element_tree: UiElementNode | None = None
 
     def parse(self, xml: str) -> UiElementNode:
-        """Parses and walks the XML, populating elements and tree."""
-        self.logger.info(f"{inspect.currentframe().f_code.co_name}")
+        """Parse XML string and build element tree.
+        
+        Args:
+            xml: XML string to parse (typically from uiautomator2 page_source)
+            
+        Returns:
+            Root node of the parsed element tree
+            
+        Raises:
+            ET.XMLSyntaxError: If XML parsing fails
+            ValueError: If root node is filtered out and has no valid children
+        """
+        self.logger.info(f"{get_current_func_name()}")
         try:
             self._tree = ET.fromstring(xml.encode('utf-8'))
             self.ui_element_tree = self._build_tree(self._tree)
@@ -77,13 +120,39 @@ class PageObjectParser:
             self.logger.exception("Failed to parse XML")
             raise
 
-    def _build_tree(self, root_et: ET.Element) -> UiElementNode:
+    def _build_tree(self, root_et: ET._Element) -> UiElementNode:
+        """Build element tree from XML element.
+        
+        Args:
+            root_et: Root XML element to build tree from
+            
+        Returns:
+            Root node of the built tree
+            
+        Raises:
+            ValueError: If root node is filtered out and has no valid children
+        """
         id_counter = 0
 
-        def _recurse(el: ET.Element, parent: Optional[UiElementNode], scroll_stack: List[str], depth: int) -> Optional[
-            UiElementNode]:
+        def _recurse(
+            el: ET._Element,
+            parent: UiElementNode | None,
+            scroll_stack: ScrollStack,
+            depth: int
+        ) -> UiElementNode | None:
+            """Recursively build tree nodes from XML elements.
+            
+            Args:
+                el: Current XML element to process
+                parent: Parent node in the tree
+                scroll_stack: Stack of scrollable parent IDs
+                depth: Current depth in the tree
+                
+            Returns:
+                Built node or None if filtered out
+            """
             nonlocal id_counter
-            attrib = dict(el.attrib)
+            attrib = dict(cast(Any, el.attrib))
             el_id = f'el_{id_counter}'
             id_counter += 1
 
@@ -91,16 +160,16 @@ class PageObjectParser:
             if attrib.get("scrollable") == "true":
                 new_scroll_stack.insert(0, el_id)
 
-            children_nodes: List[UiElementNode] = []
+            children_nodes: list[UiElementNode] = []
             for child_et in el:
-                child_node = _recurse(child_et, None, new_scroll_stack, depth + 1)
+                child_node = _recurse(cast(Any, child_et), None, new_scroll_stack, depth + 1)
                 if child_node:
                     children_nodes.append(child_node)
-
+                    
             if self._is_element_allowed(attrib):
                 node = UiElementNode(
                     id=el_id,
-                    tag=el.tag,
+                    tag=cast(Any, el.tag),
                     attrs=attrib,
                     parent=parent,
                     depth=depth,
@@ -112,12 +181,12 @@ class PageObjectParser:
                     node.children.append(child)
                 return node
             else:
-                # Если родитель отфильтрован — создаём виртуального контейнера
+                # If parent is filtered out, create virtual container
                 if not children_nodes:
                     return None
                 virtual = UiElementNode(
                     id=el_id,
-                    tag=el.tag,
+                    tag=cast(Any, el.tag),
                     attrs=attrib,
                     parent=parent,
                     depth=depth,
@@ -130,34 +199,37 @@ class PageObjectParser:
                 return virtual
 
         if root_et.tag == "hierarchy":
-            root_et = next(iter(root_et))
+            root_et = next(iter(cast(Any, root_et)))
 
-        root_node = _recurse(root_et, None, [], 0)
+        root_node = _recurse(cast(Any, root_et), None, [], 0)
         if not root_node:
             raise ValueError("Root node was filtered out and has no valid children.")
         return root_node
 
-    def _is_element_allowed(self, attrib: Dict[str, str]) -> bool:
+    def _is_element_allowed(self, attrib: ElementAttributes) -> bool:
+        """Check if element should be allowed based on its attributes.
+        
+        Args:
+            attrib: Element attributes dictionary
+            
+        Returns:
+            True if element should be allowed, False otherwise
+        """
         cls = attrib.get("class")
         rid = attrib.get("resource-id")
         text = attrib.get("text")
         desc = attrib.get("content-desc")
 
-        # ❌ Абсолютный бан
+        # Absolute ban
         if cls in self.BLACK_LIST_CLASSES:
             return False
         if rid in self.BLACK_LIST_RESOURCE_ID:
             return False
 
-        # ✅ Абсолютный проход
+        # Absolute pass
         if cls in self.WHITE_LIST_CLASSES:
             return True
         if rid in self.WHITE_LIST_RESOURCE_ID:
             return True
 
-        # 🟡 Условный проход — текстовая интерактивность
-        if text or desc:
-            return True
-
-        # ❌ Всё остальное — в мусор
-        return False
+        return bool(text) or bool(desc)

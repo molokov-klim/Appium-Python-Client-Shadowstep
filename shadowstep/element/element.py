@@ -54,7 +54,7 @@ class GeneralElementException(WebDriverException):
     """
 class Element(ElementBase):
     def __init__(self,
-                 locator: tuple | dict[str, str] | Element = None,
+                 locator: tuple[str, str] | dict[str, str] | Element = None,
                  base: "Shadowstep" = None,
                  timeout: float = 30,
                  poll_frequency: float = 0.5,
@@ -3202,7 +3202,7 @@ class Element(ElementBase):
         for attr, pattern in patterns.items():
             value = re.sub(pattern, lambda m: f"contains(@{attr}, '{m.group(1)}')", value)
         return strategy, value
-    
+
     def _clean_xpath_expr(self, expr: str) -> str:
         # убираем все атрибуты, где значение 'null'
         expr = re.sub(r"\s*and\s*@[\w:-]+='null'", "", expr)
