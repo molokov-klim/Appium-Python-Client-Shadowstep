@@ -110,9 +110,9 @@ def android_settings_recycler(app: Shadowstep, android_settings_open_close):
 
 @pytest.fixture()
 def connected_devices_image_path():
-    yield "tests/test_data/connected_devices.png"
+    yield "test_data/connected_devices.png"
 
 
 @pytest.fixture()
 def system_image_path():
-    yield "tests/test_data/system.png"
+    yield "test_data/system.png"

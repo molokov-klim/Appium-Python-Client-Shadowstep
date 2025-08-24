@@ -35,7 +35,7 @@ Java-style строка, созданная через new UiSelector():
 
 ✅ Typing
 Shadowstep-xpath locator : Tuple[str, str]
-Shadowstep-dict locator  : Dict[str, str] 
+Shadowstep-dict locator  : Dict[str, str]
 UiSelector locator : str
 
 ✅ UiSelector

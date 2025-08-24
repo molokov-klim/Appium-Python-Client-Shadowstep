@@ -47,7 +47,7 @@ class TestAdb:
         Asserts:
             Asserts that the file was successfully pushed to the specified directory on the device.
         """
-        app.adb.push(source=os.path.join('tests', 'test_data', 'test_file'),
+        app.adb.push(source=os.path.join('test_data', 'test_file'),
                      destination=os.path.join('sdcard/Download/test_file'),
                      udid=udid)
         response = str(subprocess.check_output(f'adb -s {udid} shell "ls sdcard/Download"'))
@@ -65,7 +65,7 @@ class TestAdb:
         Asserts:
             Asserts that the file was successfully pulled from the device to the local machine.
         """
-        app.adb.push(source=os.path.join('tests', 'test_data', 'test_file'),
+        app.adb.push(source=os.path.join('test_data', 'test_file'),
                      destination='sdcard/Download/test_file',
                      udid=udid)
         assert not os.path.exists('test_file')
@@ -88,7 +88,7 @@ class TestAdb:
             Asserts that the application was installed and can be found in the list of installed packages.
             And not in the list after uninstall.
         """
-        app.adb.install_app(source=os.path.join('tests', 'apk', 'notepad.apk'),
+        app.adb.install_app(source=os.path.join('apk', 'notepad.apk'),
                             udid=udid)
         package = "com.farmerbb.notepad"
         result = subprocess.check_output(f"adb -s {udid} shell pm list packages").decode().strip()

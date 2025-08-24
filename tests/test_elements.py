@@ -1,19 +1,14 @@
-import os
-import subprocess
-import time
-from datetime import datetime
-
 import pytest
 
 from shadowstep.element.element import Element
 from shadowstep.shadowstep import Shadowstep
-from tests.decorators import time_it
 
 
 @pytest.fixture
 def sample_elements(app: Shadowstep):
     app.terminal.start_activity(package="com.android.settings", activity=".Settings")
-    return app.get_element({'resource-id': 'com.android.settings:id/main_content_scrollable_container'}).get_elements({'resource-id': 'android:id/title'})
+    return app.get_element({'resource-id': 'com.android.settings:id/main_content_scrollable_container'}).get_elements(
+        {'resource-id': 'android:id/title'})
 
 
 class TestElements:
@@ -21,44 +16,62 @@ class TestElements:
     A class to test element interactions within the Shadowstep application.
     """
 
-    def test_elements_debug(self, sample_elements):
-        start = datetime.now()
-        attrs = [element.get_attribute('text') for element in sample_elements]
-        print("+++")
-        for attr in attrs:
-            print(attr)
-        print("+++")
-        print(f"⏱ Duration test_elements_debug: {datetime.now() - start}")
-
-    def test_elements_disconnected(self, app: Shadowstep, sample_elements):
-        start = datetime.now()
-        attrs = [element.get_attribute('text') for element in sample_elements]
-        print("+++")
-        for attr in attrs:
-            print(attr)
-            app.disconnect()
-        print("+++")
-        print(f"⏱ Duration test_elements_disconnected: {datetime.now() - start}")
-
-    def test_elements_first(self, sample_elements):
-        """Verify that the first() method returns a valid Element or None."""
-        first = sample_elements.first()
-        assert isinstance(first, Element) or first is None
-
-    def test_elements_to_list(self, sample_elements):
-        """Ensure to_list() returns all elements as a list."""
-        elements_list = sample_elements.to_list()
-        assert isinstance(elements_list, list)
-        assert all(isinstance(el, Element) for el in elements_list)
-
-    def test_elements_filter(self, sample_elements):
-        """Test filtering elements by text presence."""
-        filtered = sample_elements.filter(lambda el: "Battery" in (el.text or ""))
-        assert isinstance(filtered, type(sample_elements))
-        assert any("Battery" in (el.text or "") for el in filtered.to_list())
-
-    def test_elements_should_have_count(self, sample_elements):
-        """Assert the number of elements using the should().have.count API."""
-        sample_elements.should.have.count(minimum=3)
-
-
+    def test_elements_unique(self, sample_elements: list[Element]):
+        attrs: list[dict[str, str]] = []
+        expected_attrs = [{'index': '0', 'package': 'com.android.settings', 'class': 'android.widget.TextView',
+                           'text': 'Network & internet', 'resource-id': 'android:id/title', 'checkable': 'false',
+                           'checked': 'false', 'clickable': 'false', 'enabled': 'true', 'focusable': 'false',
+                           'focused': 'false', 'long-clickable': 'false', 'password': 'false', 'scrollable': 'false',
+                           'selected': 'false', 'bounds': '[189,608][625,679]', 'displayed': 'true',
+                           'a11y-important': 'true', 'screen-reader-focusable': 'false', 'drawing-order': '1',
+                           'showing-hint': 'false', 'text-entry-key': 'false', 'dismissable': 'false',
+                           'a11y-focused': 'false', 'heading': 'false', 'live-region': '0',
+                           'context-clickable': 'false', 'content-invalid': 'false'},
+                          {'index': '0', 'package': 'com.android.settings', 'class': 'android.widget.TextView',
+                           'text': 'Connected devices', 'resource-id': 'android:id/title', 'checkable': 'false',
+                           'checked': 'false', 'clickable': 'false', 'enabled': 'true', 'focusable': 'false',
+                           'focused': 'false', 'long-clickable': 'false', 'password': 'false', 'scrollable': 'false',
+                           'selected': 'false', 'bounds': '[189,839][636,910]', 'displayed': 'true',
+                           'a11y-important': 'true', 'screen-reader-focusable': 'false', 'drawing-order': '1',
+                           'showing-hint': 'false', 'text-entry-key': 'false', 'dismissable': 'false',
+                           'a11y-focused': 'false', 'heading': 'false', 'live-region': '0',
+                           'context-clickable': 'false', 'content-invalid': 'false'},
+                          {'index': '0', 'package': 'com.android.settings', 'class': 'android.widget.TextView',
+                           'text': 'Apps', 'resource-id': 'android:id/title', 'checkable': 'false', 'checked': 'false',
+                           'clickable': 'false', 'enabled': 'true', 'focusable': 'false', 'focused': 'false',
+                           'long-clickable': 'false', 'password': 'false', 'scrollable': 'false', 'selected': 'false',
+                           'bounds': '[189,1070][311,1141]', 'displayed': 'true', 'a11y-important': 'true',
+                           'screen-reader-focusable': 'false', 'drawing-order': '1', 'showing-hint': 'false',
+                           'text-entry-key': 'false', 'dismissable': 'false', 'a11y-focused': 'false',
+                           'heading': 'false', 'live-region': '0', 'context-clickable': 'false',
+                           'content-invalid': 'false'},
+                          {'index': '0', 'package': 'com.android.settings', 'class': 'android.widget.TextView',
+                           'text': 'Notifications', 'resource-id': 'android:id/title', 'checkable': 'false',
+                           'checked': 'false', 'clickable': 'false', 'enabled': 'true', 'focusable': 'false',
+                           'focused': 'false', 'long-clickable': 'false', 'password': 'false', 'scrollable': 'false',
+                           'selected': 'false', 'bounds': '[189,1301][489,1372]', 'displayed': 'true',
+                           'a11y-important': 'true', 'screen-reader-focusable': 'false', 'drawing-order': '1',
+                           'showing-hint': 'false', 'text-entry-key': 'false', 'dismissable': 'false',
+                           'a11y-focused': 'false', 'heading': 'false', 'live-region': '0',
+                           'context-clickable': 'false', 'content-invalid': 'false'},
+                          {'index': '0', 'package': 'com.android.settings', 'class': 'android.widget.TextView',
+                           'text': 'Battery', 'resource-id': 'android:id/title', 'checkable': 'false',
+                           'checked': 'false', 'clickable': 'false', 'enabled': 'true', 'focusable': 'false',
+                           'focused': 'false', 'long-clickable': 'false', 'password': 'false', 'scrollable': 'false',
+                           'selected': 'false', 'bounds': '[189,1532][357,1603]', 'displayed': 'true',
+                           'a11y-important': 'true', 'screen-reader-focusable': 'false', 'drawing-order': '1',
+                           'showing-hint': 'false', 'text-entry-key': 'false', 'dismissable': 'false',
+                           'a11y-focused': 'false', 'heading': 'false', 'live-region': '0',
+                           'context-clickable': 'false', 'content-invalid': 'false'},
+                          {'index': '0', 'package': 'com.android.settings', 'class': 'android.widget.TextView',
+                           'text': 'Storage', 'resource-id': 'android:id/title', 'checkable': 'false',
+                           'checked': 'false', 'clickable': 'false', 'enabled': 'true', 'focusable': 'false',
+                           'focused': 'false', 'long-clickable': 'false', 'password': 'false', 'scrollable': 'false',
+                           'selected': 'false', 'bounds': '[189,1763][371,1794]', 'displayed': 'true',
+                           'a11y-important': 'true', 'screen-reader-focusable': 'false', 'drawing-order': '1',
+                           'showing-hint': 'false', 'text-entry-key': 'false', 'dismissable': 'false',
+                           'a11y-focused': 'false', 'heading': 'false', 'live-region': '0',
+                           'context-clickable': 'false', 'content-invalid': 'false'}]
+        for el in sample_elements:
+            attrs.append(el.get_attributes())
+        assert attrs == expected_attrs

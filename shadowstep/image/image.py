@@ -1,16 +1,18 @@
 from __future__ import annotations
 
-import inspect
 import io
 import logging
 import time
-import typing
-from typing import Union, Tuple, Optional
+from typing import TYPE_CHECKING
 
 import cv2
 import numpy as np
 from PIL import Image as PILImage
 
+from shadowstep.utils.utils import get_current_func_name
+
+if TYPE_CHECKING:
+    from shadowstep.shadowstep import Shadowstep
 
 class ShadowstepImage:
     """
@@ -19,22 +21,22 @@ class ShadowstepImage:
 
     def __init__(
         self,
-        image: Union[bytes, np.ndarray, PILImage, str],
-        base: 'Shadowstep' = None,
+        image: bytes | np.ndarray | PILImage | str,
+        base: Shadowstep,
         threshold: float = 0.5,
         timeout: float = 5.0
     ):
         self._image = image
-        self._base: 'Shadowstep' = base
+        self._base: Shadowstep = base
         self.threshold = threshold
         self.timeout = timeout
-        self._coords: Optional[Tuple[int, int, int, int]] = None
-        self._center: Optional[Tuple[int, int]] = None
+        self._coords: tuple[int, int, int, int] | None = None
+        self._center: tuple[int, int] | None = None
         self.logger = logging.getLogger(__name__)
 
     def _ensure_visible(self) -> None:
         """Check visibility and cache coordinates/center if found."""
-        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
+        self.logger.debug(f"{get_current_func_name()}")
         if not self._base:
             raise RuntimeError("Shadowstep instance is not set.")
         screen = self.to_ndarray(self._base.get_screenshot())
@@ -67,16 +69,15 @@ class ShadowstepImage:
 
         raise ValueError(f"Image not found on screen (max_val={max_val:.3f}, fallback_val={fallback_val:.3f}, threshold={self.threshold})")
 
-    def tap(self, duration: typing.Optional[float] = None,
-            timeout: float = 5.0) -> 'ShadowstepImage':
-        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
+    def tap(self, duration: int | None = None) -> 'ShadowstepImage':
+        self.logger.debug(f"{get_current_func_name()}")
         self._ensure_visible()
         x, y = self.center
-        self._base.tap(x, y, duration=duration, timeout=timeout)
+        self._base.tap(x, y, duration=duration)
         return self
 
-    def drag(self, to: Union[Tuple[int, int], ShadowstepImage], duration: float = 1.0) -> 'ShadowstepImage':
-        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
+    def drag(self, to: tuple[int, int] | ShadowstepImage, duration: float = 1.0) -> 'ShadowstepImage':
+        self.logger.debug(f"{get_current_func_name()}")
         self._ensure_visible()
         x1, y1 = self.center
         if isinstance(to, tuple):
@@ -90,21 +91,21 @@ class ShadowstepImage:
         return self
 
     def zoom(self, percent: float = 1.5, steps: int = 10) -> 'ShadowstepImage':
-        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
+        self.logger.debug(f"{get_current_func_name()}")
         self._ensure_visible()
         x, y = self.center
         self._base.zoom(x, y, percent=percent, steps=steps)
         return self
 
     def unzoom(self, percent: float = 0.5, steps: int = 10) -> 'ShadowstepImage':
-        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
+        self.logger.debug(f"{get_current_func_name()}")
         self._ensure_visible()
         x, y = self.center
         self._base.pinch(x, y, percent=percent, steps=steps)
         return self
 
     def wait(self) -> bool:
-        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
+        self.logger.debug(f"{get_current_func_name()}")
         end_time = time.monotonic() + self.timeout
         while time.monotonic() < end_time:
             try:
@@ -115,7 +116,7 @@ class ShadowstepImage:
         return False
 
     def wait_not(self) -> bool:
-        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
+        self.logger.debug(f"{get_current_func_name()}")
         end_time = time.monotonic() + self.timeout
         while time.monotonic() < end_time:
             try:
@@ -126,7 +127,7 @@ class ShadowstepImage:
         return False
 
     def is_visible(self) -> bool:
-        self.logger.debug(f"{inspect.currentframe().f_code.co_name} {self.threshold=}")
+        self.logger.debug(f"{get_current_func_name()} {self.threshold=}")
         try:
             self._ensure_visible()
             return True
@@ -135,15 +136,15 @@ class ShadowstepImage:
             return False
 
     @property
-    def coordinates(self) -> Tuple[int, int, int, int]:
-        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
+    def coordinates(self) -> tuple[int, int, int, int]:
+        self.logger.debug(f"{get_current_func_name()}")
         if self._coords is None:
             self._ensure_visible()
         return self._coords
 
     @property
-    def center(self) -> Tuple[int, int]:
-        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
+    def center(self) -> tuple[int, int]:
+        self.logger.debug(f"{get_current_func_name()}")
         if self._center is None:
             self._ensure_visible()
         return self._center
@@ -166,7 +167,7 @@ class ShadowstepImage:
         Returns:
             ShadowstepImage: Self (scrollable container).
         """
-        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
+        self.logger.debug(f"{get_current_func_name()}")
 
         if not self._base:
             raise RuntimeError("Shadowstep instance is not set.")
@@ -177,7 +178,7 @@ class ShadowstepImage:
             try:
                 x1, y1, x2, y2 = self.coordinates
             except Exception as e:
-                raise ValueError(f"Cannot scroll container: {e}")
+                raise ValueError(f"Cannot scroll container: {e}") from e
 
             width = x2 - x1
             height = y2 - y1
@@ -186,13 +187,13 @@ class ShadowstepImage:
             end_y = int(y1 + height * to_percent)
 
             self.logger.debug(f"Scroll swipe from ({center_x}, {start_y}) to ({center_x}, {end_y})")
-            self._base.swipe(center_x, start_y, center_x, end_y, duration=0.3)
+            self._base.swipe(center_x, start_y, center_x, end_y)
             time.sleep(step_delay)
 
         return self
 
     def scroll_up(self, max_attempts: int = 10, step_delay: float = 0.5) -> ShadowstepImage:
-        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
+        self.logger.debug(f"{get_current_func_name()}")
         if not self._base:
             raise RuntimeError("Shadowstep instance is not set.")
         width, height = self._base.get_screen_resolution()
@@ -209,7 +210,7 @@ class ShadowstepImage:
         raise ValueError("Image not found after scrolling up.")
 
     def scroll_left(self, max_attempts: int = 10, step_delay: float = 0.5) -> ShadowstepImage:
-        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
+        self.logger.debug(f"{get_current_func_name()}")
         if not self._base:
             raise RuntimeError("Shadowstep instance is not set.")
         width, height = self._base.get_screen_resolution()
@@ -226,7 +227,7 @@ class ShadowstepImage:
         raise ValueError("Image not found after scrolling left.")
 
     def scroll_right(self, max_attempts: int = 10, step_delay: float = 0.5) -> ShadowstepImage:
-        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
+        self.logger.debug(f"{get_current_func_name()}")
         if not self._base:
             raise RuntimeError("Shadowstep instance is not set.")
         width, height = self._base.get_screen_resolution()
@@ -243,7 +244,7 @@ class ShadowstepImage:
         raise ValueError("Image not found after scrolling right.")
 
     def scroll_to(self, max_attempts: int = 10, step_delay: float = 0.5) -> ShadowstepImage:
-        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
+        self.logger.debug(f"{get_current_func_name()}")
         if not self._base:
             raise RuntimeError("Shadowstep instance is not set.")
         screen_w, screen_h = self._base.get_screen_resolution()
@@ -264,8 +265,8 @@ class ShadowstepImage:
                 time.sleep(step_delay)
         raise ValueError("Image not found after scroll_to().")
 
-    def is_contains(self, image: Union[bytes, np.ndarray, PILImage, str]) -> bool:
-        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
+    def is_contains(self, image: bytes | np.ndarray | PILImage | str) -> bool:
+        self.logger.debug(f"{get_current_func_name()}")
         try:
             haystack = self.to_ndarray(self._image)
             needle = self.to_ndarray(image)
@@ -279,11 +280,11 @@ class ShadowstepImage:
 
     @property
     def should(self) -> 'ImageShould':
-        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
+        self.logger.debug(f"{get_current_func_name()}")
         raise NotImplementedError
 
-    def to_ndarray(self, image: Union[bytes, np.ndarray, PILImage, str]) -> np.ndarray:
-        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
+    def to_ndarray(self, image: bytes | np.ndarray | PILImage | str) -> np.ndarray:
+        self.logger.debug(f"{get_current_func_name()}")
         if isinstance(image, np.ndarray):
             return image
         if isinstance(image, bytes):
@@ -295,14 +296,14 @@ class ShadowstepImage:
         raise ValueError("Unsupported image format")
 
     def _preprocess(self, image: np.ndarray) -> np.ndarray:
-        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
+        self.logger.debug(f"{get_current_func_name()}")
         gray = cv2.cvtColor(image, cv2.COLOR_RGB2GRAY)
         blurred = cv2.GaussianBlur(gray, (3, 3), 0)
         clahe = cv2.createCLAHE(clipLimit=2.0, tileGridSize=(8, 8))
         return clahe.apply(blurred)
 
     def _enhance_image(self, image: np.ndarray) -> np.ndarray:
-        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
+        self.logger.debug(f"{get_current_func_name()}")
         if len(image.shape) == 3 and image.shape[2] == 3:
             gray = cv2.cvtColor(image, cv2.COLOR_RGB2GRAY)
         else:
@@ -313,7 +314,7 @@ class ShadowstepImage:
 
     def multi_scale_matching(self, full_image: np.ndarray,
                              template_image: np.ndarray) -> tuple[float, tuple[int, int]]:
-        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
+        self.logger.debug(f"{get_current_func_name()}")
         full_image = self._enhance_image(full_image)
         template_image = self._enhance_image(template_image)
         origin_w, origin_h = template_image.shape[::-1]

@@ -2,7 +2,6 @@
 from __future__ import annotations
 
 import datetime
-import inspect
 import logging
 import re
 import typing
@@ -21,7 +20,7 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.wait import WebDriverWait
 
 from shadowstep.base import WebDriverSingleton
-from shadowstep.utils.locator_converter import LocatorConverter
+from shadowstep.locator_converter.locator_converter import LocatorConverter
 from shadowstep.utils.utils import get_current_func_name
 
 logger = logging.getLogger(__name__)

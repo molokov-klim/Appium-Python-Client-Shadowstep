@@ -1,13 +1,9 @@
 # shadowstep/page_base.py
-
-import inspect
 from abc import ABC, abstractmethod
-from typing import Any, Dict, TYPE_CHECKING, TypeVar, Type, Callable
+from collections.abc import Callable
+from typing import Any, TypeVar
 
-if TYPE_CHECKING:
-    from shadowstep.shadowstep import Shadowstep
-
-T = TypeVar("T", bound="PageBase")
+T = TypeVar("T", bound="PageBase")      # type: ignore  # noqa: F821
 
 class PageBaseShadowstep(ABC):
     """Abstract base class for all pages in the Shadowstep framework.
@@ -15,7 +11,7 @@ class PageBaseShadowstep(ABC):
     Implements singleton behavior and lazy initialization of the shadowstep context.
     """
 
-    _instances: Dict[type, "PageBaseShadowstep"] = {}
+    _instances: dict[type, "PageBaseShadowstep"] = {}
 
     def __new__(cls, *args: Any, **kwargs: Any) -> "PageBaseShadowstep":
         if cls not in cls._instances:
@@ -23,12 +19,12 @@ class PageBaseShadowstep(ABC):
 
             # 💡 Lazy import to avoid circular dependencies
             from shadowstep.shadowstep import Shadowstep
-            instance.shadowstep: "Shadowstep" = Shadowstep.get_instance()
+            instance.shadowstep = Shadowstep.get_instance()
             cls._instances[cls] = instance
         return cls._instances[cls]
 
     @classmethod
-    def get_instance(cls: Type[T]) -> T:
+    def get_instance(cls: type[T]) -> T:
         """Get or create the singleton instance of the page.
         Returns:
             PageBaseShadowstep: The singleton instance of the page class.
@@ -42,7 +38,7 @@ class PageBaseShadowstep(ABC):
 
     @property
     @abstractmethod
-    def edges(self) -> Dict[str, Callable[[], "PageBaseShadowstep"]]:
+    def edges(self) -> dict[str, Callable[[], "PageBaseShadowstep"]]:
         """Each page must declare its navigation edges.
 
         Returns:

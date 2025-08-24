@@ -1,15 +1,15 @@
 # shadowstep/utils/command_line_parser.py
-
-import inspect
+import logging
 import os
 import sys
 
-import logging
+from shadowstep.utils.utils import get_current_func_name
+
 logger = logging.getLogger(__name__)
 
 
 def udid():
-    logger.debug(f"{inspect.currentframe().f_code.co_name}")
+    logger.debug(f"{get_current_func_name()}")
     var = ''
     for i in sys.argv[1:]:
         if '--udid' in i:
@@ -19,7 +19,7 @@ def udid():
 
 
 def model():
-    logger.debug(f"{inspect.currentframe().f_code.co_name}")
+    logger.debug(f"{get_current_func_name()}")
     var = ''
     for i in sys.argv[1:]:
         if '--model' in i:
@@ -29,7 +29,7 @@ def model():
 
 
 def detailed():
-    logger.debug(f"{inspect.currentframe().f_code.co_name}")
+    logger.debug(f"{get_current_func_name()}")
     var = ''
     for i in sys.argv[1:]:
         if '--detailed' in i:
@@ -39,7 +39,7 @@ def detailed():
 
 
 def chat_id():
-    logger.debug(f"{inspect.currentframe().f_code.co_name}")
+    logger.debug(f"{get_current_func_name()}")
     var = ''
     for i in sys.argv[1:]:
         if '--chat_id' in i:
@@ -49,7 +49,7 @@ def chat_id():
 
 
 def env():
-    logger.debug(f"{inspect.currentframe().f_code.co_name}")
+    logger.debug(f"{get_current_func_name()}")
     var = ''
     for i in sys.argv[1:]:
         if '--env' in i:
@@ -59,13 +59,7 @@ def env():
 
 
 def root_dir():
-    """
-    Получает корневую директорию из командной строки.
-    Формат: --rootdir=${ROOT_DIR}
-    Возвращает:
-        os.path.join(path)
-    """
-    logger.debug(f"{inspect.currentframe().f_code.co_name}")
+    logger.debug(f"{get_current_func_name()}")
     root_dir_path = ''
     for i in sys.argv[1:]:
         if '--rootdir' in i:

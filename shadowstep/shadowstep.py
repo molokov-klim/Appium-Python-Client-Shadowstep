@@ -63,9 +63,9 @@ class Shadowstep(ShadowstepBase):
             return
         super().__init__()
 
-        self._logcat = ShadowstepLogcat(driver_getter=WebDriverSingleton.get_driver)
-        self.navigator = PageNavigator(self)
-        self.mobile_commands = MobileCommands(self)
+        self._logcat: ShadowstepLogcat = ShadowstepLogcat(driver_getter=WebDriverSingleton.get_driver)
+        self.navigator: PageNavigator = PageNavigator(self)
+        self.mobile_commands: MobileCommands = MobileCommands(self)
         self.logger = logging.getLogger(f"{__name__}.{self.__class__.__name__}")
         self._auto_discover_pages()
         self._initialized = True

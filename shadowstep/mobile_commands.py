@@ -1,6 +1,6 @@
+# shadowstep/mobile_commands.py
 from __future__ import annotations
 
-import inspect
 import logging
 
 from selenium.common.exceptions import (
@@ -12,14 +12,16 @@ from selenium.common.exceptions import (
 from shadowstep.base import WebDriverSingleton
 from shadowstep.decorators.decorators import fail_safe
 from shadowstep.exceptions.shadowstep_exceptions import ShadowstepException
+from shadowstep.utils.utils import get_current_func_name
 
 
 class MobileCommands:
 
     def __init__(self, shadowstep: 'Shadowstep'):
+        self.shadowstep = shadowstep
         self.driver = None
         self.logger = logging.getLogger(f"{__name__}.{self.__class__.__name__}")
-        self.shadowstep = shadowstep
+        
 
     @fail_safe(
         retries=3,
@@ -27,7 +29,7 @@ class MobileCommands:
         raise_exception=ShadowstepException,
         exceptions=(NoSuchDriverException, InvalidSessionIdException, StaleElementReferenceException)
     )
-    def activate_app(self, params: dict | list = None) -> 'Shadowstep':
+    def activate_app(self, params: dict | list) -> 'Shadowstep':
         """
         https://github.com/appium/appium-uiautomator2-driver/blob/master/docs/android-mobile-gestures.md#mobile activateapp
         Execute mobile: activateApp command.
@@ -38,7 +40,7 @@ class MobileCommands:
         Returns:
             Shadowstep: Self for method chaining.
         """
-        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
+        self.logger.debug(f"{get_current_func_name()}")
         self._execute('mobile: activateApp', params or {})
         return self
 
@@ -60,7 +62,7 @@ class MobileCommands:
         Returns:
             Shadowstep: Self for method chaining.
         """
-        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
+        self.logger.debug(f"{get_current_func_name()}")
         self._execute('mobile: batteryInfo', params or {})
         return self
 
@@ -82,7 +84,7 @@ class MobileCommands:
         Returns:
             Shadowstep: Self for method chaining.
         """
-        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
+        self.logger.debug(f"{get_current_func_name()}")
         self._execute('mobile: clearElement', params or {})
         return self
 
@@ -104,7 +106,7 @@ class MobileCommands:
         Returns:
             Shadowstep: Self for method chaining.
         """
-        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
+        self.logger.debug(f"{get_current_func_name()}")
         self._execute('mobile: deviceInfo', params or {})
         return self
 
@@ -126,7 +128,7 @@ class MobileCommands:
         Returns:
             Shadowstep: Self for method chaining.
         """
-        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
+        self.logger.debug(f"{get_current_func_name()}")
         self._execute('mobile: fingerprint', params or {})
         return self
 
@@ -148,7 +150,7 @@ class MobileCommands:
         Returns:
             Shadowstep: Self for method chaining.
         """
-        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
+        self.logger.debug(f"{get_current_func_name()}")
         self._execute('mobile: getClipboard', params or {})
         return self
 
@@ -170,7 +172,7 @@ class MobileCommands:
         Returns:
             Shadowstep: Self for method chaining.
         """
-        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
+        self.logger.debug(f"{get_current_func_name()}")
         self._execute('mobile: getCurrentActivity', params or {})
         return self
 
@@ -192,7 +194,7 @@ class MobileCommands:
         Returns:
             Shadowstep: Self for method chaining.
         """
-        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
+        self.logger.debug(f"{get_current_func_name()}")
         self._execute('mobile: getCurrentPackage', params or {})
         return self
 
@@ -214,7 +216,7 @@ class MobileCommands:
         Returns:
             Shadowstep: Self for method chaining.
         """
-        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
+        self.logger.debug(f"{get_current_func_name()}")
         self._execute('mobile: getDeviceTime', params or {})
         return self
 
@@ -236,7 +238,7 @@ class MobileCommands:
         Returns:
             Shadowstep: Self for method chaining.
         """
-        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
+        self.logger.debug(f"{get_current_func_name()}")
         self._execute('mobile: getPerformanceData', params or {})
         return self
 
@@ -258,7 +260,7 @@ class MobileCommands:
         Returns:
             Shadowstep: Self for method chaining.
         """
-        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
+        self.logger.debug(f"{get_current_func_name()}")
         self._execute('mobile: getPerformanceDataTypes', params or {})
         return self
 
@@ -280,7 +282,7 @@ class MobileCommands:
         Returns:
             Shadowstep: Self for method chaining.
         """
-        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
+        self.logger.debug(f"{get_current_func_name()}")
         self._execute('mobile: getSettings', params or {})
         return self
 
@@ -302,7 +304,7 @@ class MobileCommands:
         Returns:
             Shadowstep: Self for method chaining.
         """
-        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
+        self.logger.debug(f"{get_current_func_name()}")
         self._execute('mobile: hideKeyboard', params or {})
         return self
 
@@ -324,7 +326,7 @@ class MobileCommands:
         Returns:
             Shadowstep: Self for method chaining.
         """
-        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
+        self.logger.debug(f"{get_current_func_name()}")
         self._execute('mobile: installApp', params or {})
         return self
 
@@ -346,7 +348,7 @@ class MobileCommands:
         Returns:
             Shadowstep: Self for method chaining.
         """
-        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
+        self.logger.debug(f"{get_current_func_name()}")
         self._execute('mobile: isAppInstalled', params or {})
         return self
 
@@ -368,7 +370,7 @@ class MobileCommands:
         Returns:
             Shadowstep: Self for method chaining.
         """
-        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
+        self.logger.debug(f"{get_current_func_name()}")
         self._execute('mobile: longPressKey', params or {})
         return self
 
@@ -390,7 +392,7 @@ class MobileCommands:
         Returns:
             Shadowstep: Self for method chaining.
         """
-        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
+        self.logger.debug(f"{get_current_func_name()}")
         self._execute('mobile: openNotifications', params or {})
         return self
 
@@ -412,7 +414,7 @@ class MobileCommands:
         Returns:
             Shadowstep: Self for method chaining.
         """
-        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
+        self.logger.debug(f"{get_current_func_name()}")
         self._execute('mobile: openSettings', params or {})
         return self
 
@@ -434,7 +436,7 @@ class MobileCommands:
         Returns:
             Shadowstep: Self for method chaining.
         """
-        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
+        self.logger.debug(f"{get_current_func_name()}")
         self._execute('mobile: pressKey', params or {})
         return self
 
@@ -456,7 +458,7 @@ class MobileCommands:
         Returns:
             Shadowstep: Self for method chaining.
         """
-        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
+        self.logger.debug(f"{get_current_func_name()}")
         self._execute('mobile: queryAppState', params or {})
         return self
 
@@ -478,7 +480,7 @@ class MobileCommands:
         Returns:
             Shadowstep: Self for method chaining.
         """
-        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
+        self.logger.debug(f"{get_current_func_name()}")
         self._execute('mobile: removeApp', params or {})
         return self
 
@@ -500,7 +502,7 @@ class MobileCommands:
         Returns:
             Shadowstep: Self for method chaining.
         """
-        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
+        self.logger.debug(f"{get_current_func_name()}")
         self._execute('mobile: replaceElementValue', params or {})
         return self
 
@@ -522,7 +524,7 @@ class MobileCommands:
         Returns:
             Shadowstep: Self for method chaining.
         """
-        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
+        self.logger.debug(f"{get_current_func_name()}")
         self._execute('mobile: scrollBackTo', params or {})
         return self
 
@@ -544,7 +546,7 @@ class MobileCommands:
         Returns:
             Shadowstep: Self for method chaining.
         """
-        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
+        self.logger.debug(f"{get_current_func_name()}")
         self._execute('mobile: sendSMS', params or {})
         return self
 
@@ -566,7 +568,7 @@ class MobileCommands:
         Returns:
             Shadowstep: Self for method chaining.
         """
-        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
+        self.logger.debug(f"{get_current_func_name()}")
         self._execute('mobile: setClipboard', params or {})
         return self
 
@@ -588,7 +590,7 @@ class MobileCommands:
         Returns:
             Shadowstep: Self for method chaining.
         """
-        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
+        self.logger.debug(f"{get_current_func_name()}")
         self._execute('mobile: setText', params or {})
         return self
 
@@ -610,7 +612,7 @@ class MobileCommands:
         Returns:
             Shadowstep: Self for method chaining.
         """
-        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
+        self.logger.debug(f"{get_current_func_name()}")
         self._execute('mobile: shell', params or {})
         return self
 
@@ -632,7 +634,7 @@ class MobileCommands:
         Returns:
             Shadowstep: Self for method chaining.
         """
-        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
+        self.logger.debug(f"{get_current_func_name()}")
         self._execute('mobile: startActivity', params or {})
         return self
 
@@ -654,7 +656,7 @@ class MobileCommands:
         Returns:
             Shadowstep: Self for method chaining.
         """
-        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
+        self.logger.debug(f"{get_current_func_name()}")
         self._execute('mobile: startLogsBroadcast', params or {})
         return self
 
@@ -676,7 +678,7 @@ class MobileCommands:
         Returns:
             Shadowstep: Self for method chaining.
         """
-        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
+        self.logger.debug(f"{get_current_func_name()}")
         self._execute('mobile: stopLogsBroadcast', params or {})
         return self
 
@@ -698,7 +700,7 @@ class MobileCommands:
         Returns:
             Shadowstep: Self for method chaining.
         """
-        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
+        self.logger.debug(f"{get_current_func_name()}")
         self._execute('mobile: terminateApp', params or {})
         return self
 
@@ -720,7 +722,7 @@ class MobileCommands:
         Returns:
             Shadowstep: Self for method chaining.
         """
-        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
+        self.logger.debug(f"{get_current_func_name()}")
         self._execute('mobile: toggleLocationServices', params or {})
         return self
 
@@ -742,7 +744,7 @@ class MobileCommands:
         Returns:
             Shadowstep: Self for method chaining.
         """
-        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
+        self.logger.debug(f"{get_current_func_name()}")
         self._execute('mobile: updateSettings', params or {})
         return self
 
@@ -764,7 +766,7 @@ class MobileCommands:
         Returns:
             Shadowstep: Self for method chaining.
         """
-        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
+        self.logger.debug(f"{get_current_func_name()}")
         self._execute('mobile: getText', params or {})
         return self
 
@@ -786,7 +788,7 @@ class MobileCommands:
         Returns:
             Shadowstep: Self for method chaining.
         """
-        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
+        self.logger.debug(f"{get_current_func_name()}")
         self._execute('mobile: performEditorAction', params or {})
         return self
 

@@ -3,7 +3,7 @@ import logging
 
 import pytest
 
-from shadowstep.utils.locator_converter import LocatorConverter
+from shadowstep.locator_converter.locator_converter import LocatorConverter
 from shadowstep.utils.utils import get_current_func_name
 
 logger = logging.getLogger(__name__)

@@ -28,8 +28,8 @@ from selenium.webdriver.remote.shadowroot import ShadowRoot
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.wait import WebDriverWait
 
-from shadowstep.element.base import ElementBase
 from shadowstep.element import conditions
+from shadowstep.element.base import ElementBase
 from shadowstep.utils.utils import find_coordinates_by_vector, get_current_func_name
 
 # Configure the root logger (basic configuration)
@@ -206,11 +206,11 @@ class Element(ElementBase):
             xpath_expr = self.locator_converter.to_xpath(self.locator)[1]
             if not xpath_expr:
                 self.logger.error(f"Failed to resolve XPath from locator: {self.locator}")
-                return None
+                return {"": ""}     # FIXME ???
             self.logger.debug(f"Resolved XPath: {xpath_expr}")
         except Exception as e:
             self.logger.error(f"Exception in to_xpath: {e}")
-            return None
+            return {"": ""}     # FIXME ???
 
         while time.time() - start_time < self.timeout:
             try:
@@ -219,14 +219,16 @@ class Element(ElementBase):
                 parser = ET.XMLParser(recover=True)
                 root = ET.fromstring(page_source.encode("utf-8"), parser=parser)
 
-                matches = root.xpath(xpath_expr)
+                matches = root.xpath(self._clean_xpath_expr(xpath_expr))
                 if matches:
                     element = matches[0]
                     attrib = {k: str(v) for k, v in element.attrib.items()}
                     self.logger.debug(f"Matched attributes: {attrib}")
                     return attrib
                 else:
-                    self.logger.warning("No matches found for given XPath.")
+                    self.logger.warning(f"{xpath_expr=}")
+                    self.logger.warning(type(xpath_expr))
+                    self.logger.warning(f"No matches found for given XPath. {matches}")
             except NoSuchDriverException as error:
                 self._handle_driver_error(error)
             except InvalidSessionIdException as error:
@@ -240,20 +242,18 @@ class Element(ElementBase):
             except ET.XPathEvalError as e:
                 self.logger.error(f"XPathEvalError: {e}")
                 self.logger.error(f"XPath: {xpath_expr}")
-                return None
+                return {"": ""}     # FIXME ???
             except ET.XMLSyntaxError as e:
                 self.logger.error(f"XMLSyntaxError: {e}")
-                self.logger.debug(f"Raw page_source (first 500 chars):\n{page_source[:500]}")
-                return None
+                return {"": ""}     # FIXME ???
             except UnicodeEncodeError as e:
                 self.logger.error(f"UnicodeEncodeError in page_source: {e}")
-                return None
+                return {"": ""}     # FIXME ???
             except Exception as e:
                 self.logger.error(f"Unexpected error in get_attributes: {e}")
-                self.logger.debug(f"page_source[:500]: {page_source[:500]}")
                 continue
         self.logger.warning(f"Timeout exceeded ({self.timeout}s) without matching element.")
-        return None
+        return {"": ""}     # FIXME ???
 
     def get_parent(self) -> Element:
         self.logger.debug(f"{get_current_func_name()}")
@@ -2980,6 +2980,14 @@ class Element(ElementBase):
         for attr, pattern in patterns.items():
             value = re.sub(pattern, lambda m: f"contains(@{attr}, '{m.group(1)}')", value)
         return strategy, value
+    
+    def _clean_xpath_expr(self, expr: str) -> str:
+        # убираем все атрибуты, где значение 'null'
+        expr = re.sub(r"\s*and\s*@[\w:-]+='null'", "", expr)
+        # если вдруг атрибут стоит первым (без "and")
+        expr = re.sub(r"\[@[\w:-]+='null'\s*and\s*", "[", expr)
+        expr = re.sub(r"\[@[\w:-]+='null'\s*\]", "", expr)
+        return expr
 
 """
 Предлагаемое логическое разделение на сегменты
@@ -3050,3 +3058,6 @@ class Element(ElementBase):
         self.waiting = ElementWaiting(self)
         self.utilities = ElementUtilities(self)
 """
+
+
+

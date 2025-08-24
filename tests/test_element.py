@@ -12,7 +12,8 @@ from shadowstep.shadowstep import Shadowstep
 
 class TestElement:
 
-    def test_get_element_positive(self, app: Shadowstep, stability: None, android_settings_open_close,
+    def test_get_element_positive(self, app: Shadowstep, stability: None,
+                                  android_settings_open_close: None,
                                   android_settings_recycler: Element):
         inner_element = android_settings_recycler.get_element(locator={'text': 'Network & internet'})
         assert isinstance(inner_element, Element)
@@ -20,7 +21,7 @@ class TestElement:
         assert inner_element.class_ == 'android.widget.TextView'
         assert inner_element.resource_id == 'android:id/title'
 
-    def test_get_element_contains(self, app: Shadowstep, stability: None, android_settings_open_close,
+    def test_get_element_contains(self, app: Shadowstep, stability: None, android_settings_open_close: None,
                                   android_settings_recycler: Element):
         inner_element = android_settings_recycler.get_element(locator={'text': 'ork & int'},
                                                               contains=True)
