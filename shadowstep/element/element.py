@@ -185,6 +185,11 @@ class Element(ElementBase):
                 self.native = None
                 self._get_native()
                 continue
+            except WebDriverException as error:
+                if 'instrumentation process is not running' in str(error).lower():
+                    self._handle_driver_error(error)
+                    continue
+                raise
 
             except TimeoutException as error:
                 self.logger.warning(f"Timeout while waiting for presence of element | {error}")
@@ -239,6 +244,11 @@ class Element(ElementBase):
                 self.native = None
                 self._get_native()
                 continue
+            except WebDriverException as error:
+                if 'instrumentation process is not running' in str(error).lower():
+                    self._handle_driver_error(error)
+                    continue
+                raise
             except ET.XPathEvalError as e:
                 self.logger.error(f"XPathEvalError: {e}")
                 self.logger.error(f"XPath: {xpath_expr}")
@@ -481,6 +491,11 @@ class Element(ElementBase):
                 self.native = None
                 self._get_native()
                 continue
+            except WebDriverException as error:
+                if 'instrumentation process is not running' in str(error).lower():
+                    self._handle_driver_error(error)
+                    continue
+                raise
 
         raise GeneralElementException(
             msg=f"Failed to {inspect.currentframe().f_code.co_name} within {self.timeout=}",
@@ -520,6 +535,11 @@ class Element(ElementBase):
                 self.native = None
                 self._get_native()
                 continue
+            except WebDriverException as error:
+                if 'instrumentation process is not running' in str(error).lower():
+                    self._handle_driver_error(error)
+                    continue
+                raise
 
         raise GeneralElementException(
             msg=f"Failed to {inspect.currentframe().f_code.co_name} within {self.timeout=}",
@@ -555,6 +575,11 @@ class Element(ElementBase):
                 self.native = None
                 self._get_native()
                 continue
+            except WebDriverException as error:
+                if 'instrumentation process is not running' in str(error).lower():
+                    self._handle_driver_error(error)
+                    continue
+                raise
 
         raise GeneralElementException(
             msg=f"Failed to {inspect.currentframe().f_code.co_name}('{name}') within {self.timeout=}",
@@ -591,6 +616,11 @@ class Element(ElementBase):
                 self.native = None
                 self._get_native()
                 continue
+            except WebDriverException as error:
+                if 'instrumentation process is not running' in str(error).lower():
+                    self._handle_driver_error(error)
+                    continue
+                raise
 
         raise GeneralElementException(
             msg=f"Failed to {inspect.currentframe().f_code.co_name} within {self.timeout=}",
@@ -629,6 +659,11 @@ class Element(ElementBase):
                 self.native = None
                 self._get_native()
                 continue
+            except WebDriverException as error:
+                if 'instrumentation process is not running' in str(error).lower():
+                    self._handle_driver_error(error)
+                    continue
+                raise
 
         raise GeneralElementException(
             msg=f"Failed to {inspect.currentframe().f_code.co_name} within {self.timeout=}",
@@ -663,6 +698,11 @@ class Element(ElementBase):
                 self.native = None
                 self._get_native()
                 continue
+            except WebDriverException as error:
+                if 'instrumentation process is not running' in str(error).lower():
+                    self._handle_driver_error(error)
+                    continue
+                raise
 
         raise GeneralElementException(
             msg=f"Failed to {inspect.currentframe().f_code.co_name} within {self.timeout=}",
@@ -709,6 +749,11 @@ class Element(ElementBase):
                 self.native = None
                 self._get_native()
                 continue
+            except WebDriverException as error:
+                if 'instrumentation process is not running' in str(error).lower():
+                    self._handle_driver_error(error)
+                    continue
+                raise
         raise GeneralElementException(
             msg=f"Failed to {inspect.currentframe().f_code.co_name} within {self.timeout=}",
             stacktrace=traceback.format_stack()
@@ -743,6 +788,11 @@ class Element(ElementBase):
                 self.native = None
                 self._get_native()
                 continue
+            except WebDriverException as error:
+                if 'instrumentation process is not running' in str(error).lower():
+                    self._handle_driver_error(error)
+                    continue
+                raise
 
         raise GeneralElementException(
             msg=f"Failed to {inspect.currentframe().f_code.co_name} within {self.timeout=}",
@@ -776,6 +826,11 @@ class Element(ElementBase):
                 self.native = None
                 self._get_native()
                 continue
+            except WebDriverException as error:
+                if 'instrumentation process is not running' in str(error).lower():
+                    self._handle_driver_error(error)
+                    continue
+                raise
 
         raise GeneralElementException(
             msg=f"Failed to {inspect.currentframe().f_code.co_name} within {self.timeout=}",
@@ -811,6 +866,11 @@ class Element(ElementBase):
                 self.native = None
                 self._get_native()
                 continue
+            except WebDriverException as error:
+                if 'instrumentation process is not running' in str(error).lower():
+                    self._handle_driver_error(error)
+                    continue
+                raise
         raise GeneralElementException(
             msg=f"Failed to {inspect.currentframe().f_code.co_name} within {self.timeout=}",
             stacktrace=traceback.format_stack()
@@ -839,6 +899,11 @@ class Element(ElementBase):
                 self.native = None
                 self._get_native()
                 continue
+            except WebDriverException as error:
+                if 'instrumentation process is not running' in str(error).lower():
+                    self._handle_driver_error(error)
+                    continue
+                raise
         raise GeneralElementException(
             msg=f"Failed to {inspect.currentframe().f_code.co_name} within {self.timeout=}\n{duration}",
             stacktrace=traceback.format_stack()
@@ -905,6 +970,11 @@ class Element(ElementBase):
                 self.native = None
                 self._get_native()
                 continue
+            except WebDriverException as error:
+                if 'instrumentation process is not running' in str(error).lower():
+                    self._handle_driver_error(error)
+                    continue
+                raise
         # === Недостаточно данных для действия ===
         raise GeneralElementException(
             msg=f"Failed to {inspect.currentframe().f_code.co_name} within {self.timeout=}\n{locator=}\n{x=}\n{y=}\n{direction}\n{distance}\n",
@@ -937,6 +1007,11 @@ class Element(ElementBase):
                 self.native = None
                 self._get_native()
                 continue
+            except WebDriverException as error:
+                if 'instrumentation process is not running' in str(error).lower():
+                    self._handle_driver_error(error)
+                    continue
+                raise
         raise GeneralElementException(
             msg=f"Failed to {inspect.currentframe().f_code.co_name} within {self.timeout=}\n{duration}",
             stacktrace=traceback.format_stack()
@@ -964,6 +1039,11 @@ class Element(ElementBase):
                 self.native = None
                 self._get_native()
                 continue
+            except WebDriverException as error:
+                if 'instrumentation process is not running' in str(error).lower():
+                    self._handle_driver_error(error)
+                    continue
+                raise
         raise GeneralElementException(
             msg=f"Failed to {inspect.currentframe().f_code.co_name} within {self.timeout=}",
             stacktrace=traceback.format_stack()
@@ -994,6 +1074,11 @@ class Element(ElementBase):
                 self.native = None
                 self._get_native()
                 continue
+            except WebDriverException as error:
+                if 'instrumentation process is not running' in str(error).lower():
+                    self._handle_driver_error(error)
+                    continue
+                raise
         raise GeneralElementException(
             msg=f"Failed to {inspect.currentframe().f_code.co_name} within {self.timeout=}",
             stacktrace=traceback.format_stack()
@@ -1040,6 +1125,11 @@ class Element(ElementBase):
                 self.native = None
                 self._get_native()
                 continue
+            except WebDriverException as error:
+                if 'instrumentation process is not running' in str(error).lower():
+                    self._handle_driver_error(error)
+                    continue
+                raise
         raise GeneralElementException(
             msg=f"Failed to {inspect.currentframe().f_code.co_name} within {self.timeout=}",
             stacktrace=traceback.format_stack()
@@ -1095,6 +1185,11 @@ class Element(ElementBase):
                 self.native = None
                 self._get_native()
                 continue
+            except WebDriverException as error:
+                if 'instrumentation process is not running' in str(error).lower():
+                    self._handle_driver_error(error)
+                    continue
+                raise
         raise GeneralElementException(
             msg=f"Failed to {inspect.currentframe().f_code.co_name} within {self.timeout=}",
             stacktrace=traceback.format_stack()
@@ -1120,7 +1215,11 @@ class Element(ElementBase):
                 self.native = None
                 self._get_native()
                 continue
-
+            except WebDriverException as error:
+                if 'instrumentation process is not running' in str(error).lower():
+                    self._handle_driver_error(error)
+                    continue
+                raise
         raise GeneralElementException(
             msg=f"Failed to scroll to bottom within {self.timeout=}",
             stacktrace=traceback.format_stack()
@@ -1145,7 +1244,11 @@ class Element(ElementBase):
                 self.native = None
                 self._get_native()
                 continue
-
+            except WebDriverException as error:
+                if 'instrumentation process is not running' in str(error).lower():
+                    self._handle_driver_error(error)
+                    continue
+                raise
         raise GeneralElementException(
             msg=f"Failed to scroll to top within {self.timeout=}",
             stacktrace=traceback.format_stack()
@@ -1184,6 +1287,11 @@ class Element(ElementBase):
                 self.native = None
                 self._get_native()
                 continue
+            except WebDriverException as error:
+                if 'instrumentation process is not running' in str(error).lower():
+                    self._handle_driver_error(error)
+                    continue
+                raise
             except Exception as error:
                 # Some instability detected, information gathering required
                 self.logger.error(error)
@@ -1240,6 +1348,11 @@ class Element(ElementBase):
                 self.native = None
                 self._get_native()
                 continue
+            except WebDriverException as error:
+                if 'instrumentation process is not running' in str(error).lower():
+                    self._handle_driver_error(error)
+                    continue
+                raise
             except Exception as error:
                 # Some instability detected, information gathering required
                 self.logger.error(error)
@@ -1291,7 +1404,11 @@ class Element(ElementBase):
                 self.native = None
                 self._get_native()
                 continue
-
+            except WebDriverException as error:
+                if 'instrumentation process is not running' in str(error).lower():
+                    self._handle_driver_error(error)
+                    continue
+                raise
         raise GeneralElementException(
             msg=f"Failed to {inspect.currentframe().f_code.co_name} within {self.timeout=}",
             stacktrace=traceback.format_stack()
@@ -1335,7 +1452,11 @@ class Element(ElementBase):
                 self.native = None
                 self._get_native()
                 continue
-
+            except WebDriverException as error:
+                if 'instrumentation process is not running' in str(error).lower():
+                    self._handle_driver_error(error)
+                    continue
+                raise
         raise GeneralElementException(
             msg=f"Failed to {inspect.currentframe().f_code.co_name} within {self.timeout=}",
             stacktrace=traceback.format_stack()
@@ -1396,7 +1517,11 @@ class Element(ElementBase):
                 self.native = None
                 self._get_native()
                 continue
-
+            except WebDriverException as error:
+                if 'instrumentation process is not running' in str(error).lower():
+                    self._handle_driver_error(error)
+                    continue
+                raise
         raise GeneralElementException(
             msg=f"Failed to {inspect.currentframe().f_code.co_name} within {self.timeout=} {direction=} {percent=}",
             stacktrace=traceback.format_stack()
@@ -1432,7 +1557,11 @@ class Element(ElementBase):
                 self.native = None
                 self._get_native()
                 continue
-
+            except WebDriverException as error:
+                if 'instrumentation process is not running' in str(error).lower():
+                    self._handle_driver_error(error)
+                    continue
+                raise
         raise GeneralElementException(
             msg=f"Failed to clear element within {self.timeout=}",
             stacktrace=traceback.format_stack()
@@ -1468,7 +1597,11 @@ class Element(ElementBase):
                 self.native = None
                 self._get_native()
                 continue
-
+            except WebDriverException as error:
+                if 'instrumentation process is not running' in str(error).lower():
+                    self._handle_driver_error(error)
+                    continue
+                raise
         raise GeneralElementException(
             msg=f"Failed to get location_in_view within {self.timeout=}",
             stacktrace=traceback.format_stack()
@@ -1511,7 +1644,11 @@ class Element(ElementBase):
                 self.native = None
                 self._get_native()
                 continue
-
+            except WebDriverException as error:
+                if 'instrumentation process is not running' in str(error).lower():
+                    self._handle_driver_error(error)
+                    continue
+                raise
         raise GeneralElementException(
             msg=f"Failed to set_value({value}) within {self.timeout=}",
             stacktrace=traceback.format_stack()
@@ -1553,7 +1690,11 @@ class Element(ElementBase):
                 self.native = None
                 self._get_native()
                 continue
-
+            except WebDriverException as error:
+                if 'instrumentation process is not running' in str(error).lower():
+                    self._handle_driver_error(error)
+                    continue
+                raise
         raise GeneralElementException(
             msg=f"Failed to send_keys({text}) within {self.timeout=}",
             stacktrace=traceback.format_stack()
@@ -1589,7 +1730,11 @@ class Element(ElementBase):
                 self.native = None
                 self._get_native()
                 continue
-
+            except WebDriverException as error:
+                if 'instrumentation process is not running' in str(error).lower():
+                    self._handle_driver_error(error)
+                    continue
+                raise
         raise GeneralElementException(
             msg=f"Failed to retrieve tag_name within {self.timeout=}",
             stacktrace=traceback.format_stack()
@@ -1624,7 +1769,11 @@ class Element(ElementBase):
                 self.native = None
                 self._get_native()
                 continue
-
+            except WebDriverException as error:
+                if 'instrumentation process is not running' in str(error).lower():
+                    self._handle_driver_error(error)
+                    continue
+                raise
         raise GeneralElementException(
             msg=f"Failed to retrieve text within {self.timeout=}",
             stacktrace=traceback.format_stack()
@@ -1653,7 +1802,11 @@ class Element(ElementBase):
                 self.native = None
                 self._get_native()
                 continue
-
+            except WebDriverException as error:
+                if 'instrumentation process is not running' in str(error).lower():
+                    self._handle_driver_error(error)
+                    continue
+                raise
         raise GeneralElementException(
             msg=f"Failed to retrieve attr within {self.timeout=}",
             stacktrace=traceback.format_stack()
@@ -1682,7 +1835,11 @@ class Element(ElementBase):
                 self.native = None
                 self._get_native()
                 continue
-
+            except WebDriverException as error:
+                if 'instrumentation process is not running' in str(error).lower():
+                    self._handle_driver_error(error)
+                    continue
+                raise
         raise GeneralElementException(
             msg=f"Failed to retrieve attr within {self.timeout=}",
             stacktrace=traceback.format_stack()
@@ -1706,7 +1863,11 @@ class Element(ElementBase):
                 self.native = None
                 self._get_native()
                 continue
-
+            except WebDriverException as error:
+                if 'instrumentation process is not running' in str(error).lower():
+                    self._handle_driver_error(error)
+                    continue
+                raise
         raise GeneralElementException(
             msg=f"Failed to retrieve attr within {self.timeout=}",
             stacktrace=traceback.format_stack()
@@ -1730,7 +1891,11 @@ class Element(ElementBase):
                 self.native = None
                 self._get_native()
                 continue
-
+            except WebDriverException as error:
+                if 'instrumentation process is not running' in str(error).lower():
+                    self._handle_driver_error(error)
+                    continue
+                raise
         raise GeneralElementException(
             msg=f"Failed to retrieve attr within {self.timeout=}",
             stacktrace=traceback.format_stack()
@@ -1754,7 +1919,11 @@ class Element(ElementBase):
                 self.native = None
                 self._get_native()
                 continue
-
+            except WebDriverException as error:
+                if 'instrumentation process is not running' in str(error).lower():
+                    self._handle_driver_error(error)
+                    continue
+                raise
         raise GeneralElementException(
             msg=f"Failed to retrieve attr within {self.timeout=}",
             stacktrace=traceback.format_stack()
@@ -1778,7 +1947,11 @@ class Element(ElementBase):
                 self.native = None
                 self._get_native()
                 continue
-
+            except WebDriverException as error:
+                if 'instrumentation process is not running' in str(error).lower():
+                    self._handle_driver_error(error)
+                    continue
+                raise
         raise GeneralElementException(
             msg=f"Failed to retrieve attr within {self.timeout=}",
             stacktrace=traceback.format_stack()
@@ -1806,7 +1979,11 @@ class Element(ElementBase):
                 self.native = None
                 self._get_native()
                 continue
-
+            except WebDriverException as error:
+                if 'instrumentation process is not running' in str(error).lower():
+                    self._handle_driver_error(error)
+                    continue
+                raise
         raise GeneralElementException(
             msg=f"Failed to retrieve attr within {self.timeout=}",
             stacktrace=traceback.format_stack()
@@ -1834,7 +2011,11 @@ class Element(ElementBase):
                 self.native = None
                 self._get_native()
                 continue
-
+            except WebDriverException as error:
+                if 'instrumentation process is not running' in str(error).lower():
+                    self._handle_driver_error(error)
+                    continue
+                raise
         raise GeneralElementException(
             msg=f"Failed to retrieve attr within {self.timeout=}",
             stacktrace=traceback.format_stack()
@@ -1862,7 +2043,11 @@ class Element(ElementBase):
                 self.native = None
                 self._get_native()
                 continue
-
+            except WebDriverException as error:
+                if 'instrumentation process is not running' in str(error).lower():
+                    self._handle_driver_error(error)
+                    continue
+                raise
         raise GeneralElementException(
             msg=f"Failed to retrieve attr within {self.timeout=}",
             stacktrace=traceback.format_stack()
@@ -1890,7 +2075,11 @@ class Element(ElementBase):
                 self.native = None
                 self._get_native()
                 continue
-
+            except WebDriverException as error:
+                if 'instrumentation process is not running' in str(error).lower():
+                    self._handle_driver_error(error)
+                    continue
+                raise
         raise GeneralElementException(
             msg=f"Failed to retrieve attr within {self.timeout=}",
             stacktrace=traceback.format_stack()
@@ -1918,7 +2107,11 @@ class Element(ElementBase):
                 self.native = None
                 self._get_native()
                 continue
-
+            except WebDriverException as error:
+                if 'instrumentation process is not running' in str(error).lower():
+                    self._handle_driver_error(error)
+                    continue
+                raise
         raise GeneralElementException(
             msg=f"Failed to retrieve attr within {self.timeout=}",
             stacktrace=traceback.format_stack()
@@ -1946,7 +2139,11 @@ class Element(ElementBase):
                 self.native = None
                 self._get_native()
                 continue
-
+            except WebDriverException as error:
+                if 'instrumentation process is not running' in str(error).lower():
+                    self._handle_driver_error(error)
+                    continue
+                raise
         raise GeneralElementException(
             msg=f"Failed to retrieve attr within {self.timeout=}",
             stacktrace=traceback.format_stack()
@@ -1974,7 +2171,11 @@ class Element(ElementBase):
                 self.native = None
                 self._get_native()
                 continue
-
+            except WebDriverException as error:
+                if 'instrumentation process is not running' in str(error).lower():
+                    self._handle_driver_error(error)
+                    continue
+                raise
         raise GeneralElementException(
             msg=f"Failed to retrieve attr within {self.timeout=}",
             stacktrace=traceback.format_stack()
@@ -2002,7 +2203,11 @@ class Element(ElementBase):
                 self.native = None
                 self._get_native()
                 continue
-
+            except WebDriverException as error:
+                if 'instrumentation process is not running' in str(error).lower():
+                    self._handle_driver_error(error)
+                    continue
+                raise
         raise GeneralElementException(
             msg=f"Failed to retrieve attr within {self.timeout=}",
             stacktrace=traceback.format_stack()
@@ -2030,7 +2235,11 @@ class Element(ElementBase):
                 self.native = None
                 self._get_native()
                 continue
-
+            except WebDriverException as error:
+                if 'instrumentation process is not running' in str(error).lower():
+                    self._handle_driver_error(error)
+                    continue
+                raise
         raise GeneralElementException(
             msg=f"Failed to retrieve attr within {self.timeout=}",
             stacktrace=traceback.format_stack()
@@ -2058,7 +2267,11 @@ class Element(ElementBase):
                 self.native = None
                 self._get_native()
                 continue
-
+            except WebDriverException as error:
+                if 'instrumentation process is not running' in str(error).lower():
+                    self._handle_driver_error(error)
+                    continue
+                raise
         raise GeneralElementException(
             msg=f"Failed to retrieve attr within {self.timeout=}",
             stacktrace=traceback.format_stack()
@@ -2094,7 +2307,11 @@ class Element(ElementBase):
                 self.native = None
                 self._get_native()
                 continue
-
+            except WebDriverException as error:
+                if 'instrumentation process is not running' in str(error).lower():
+                    self._handle_driver_error(error)
+                    continue
+                raise
         raise GeneralElementException(
             msg=f"Failed to submit element within {self.timeout=}",
             stacktrace=traceback.format_stack()
@@ -2578,6 +2795,11 @@ class Element(ElementBase):
                 self.native = None
                 self._get_native()
                 continue
+            except WebDriverException as error:
+                if 'instrumentation process is not running' in str(error).lower():
+                    self._handle_driver_error(error)
+                    continue
+                raise
 
     def _get_xpath(self) -> str:
         self.logger.debug(f"{get_current_func_name()}")

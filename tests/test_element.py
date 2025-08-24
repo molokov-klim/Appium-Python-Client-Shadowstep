@@ -44,7 +44,7 @@ class TestElement:
         assert isinstance(element, Element)
         assert element.locator == {'content-desc': 'Phone'}
 
-    def test_get_elements(self, app: Shadowstep, stability: None, android_settings_open_close,
+    def test_get_elements(self, app: Shadowstep, stability: None, android_settings_open_close: None,
                           android_settings_recycler: Element):
         inner_elements = android_settings_recycler.get_elements(locator={'resource-id': 'android:id/title'})
         assert isinstance(inner_elements, list)
@@ -93,7 +93,7 @@ class TestElement:
         assert isinstance(sibling, Element)
         assert 'WebView Browser Tester' in sibling.get_attribute('text')
 
-    def test_get_siblings(self, app: Shadowstep, stability: None, android_settings_open_close,
+    def test_get_siblings(self, app: Shadowstep, stability: None, android_settings_open_close: None,
                           android_settings_recycler: Element):
         el = android_settings_recycler.get_element(
             {'resource-id': 'com.android.settings:id/recycler_view'}).get_element(
@@ -101,14 +101,14 @@ class TestElement:
         siblings = el.get_siblings()
         assert isinstance(siblings, Generator)
         count = 0
-        bounds = []
+        bounds: list[str] = []
         for sibling in siblings:
             assert isinstance(sibling, Element)
             assert sibling.get_attribute('bounds') is not None
             bounds.append(sibling.get_attribute('bounds'))
             count += 1
-        bounds = set(bounds)
-        assert len(bounds) > 3
+        bounds_unique = set(bounds)
+        assert len(bounds_unique) > 3
         assert count > 0
 
     def test_tap(self, app: Shadowstep, stability: None):
@@ -263,7 +263,7 @@ class TestElement:
         assert 'About phone' in settings_about_phone.get_attribute('text')
         app.terminal.close_app(package='com.android.settings')
 
-    def test_scroll_to_bottom(self, app: Shadowstep, stability: None, android_settings_open_close):
+    def test_scroll_to_bottom(self, app: Shadowstep, stability: None, android_settings_open_close: None):
         settings_recycler = app.get_element(
             locator={'resource-id': 'com.android.settings:id/main_content_scrollable_container'})
         settings_network = app.get_element(locator={'text': 'Network & internet',
@@ -281,7 +281,7 @@ class TestElement:
         app.logger.info(f"{settings_about_phone.get_attributes()=}")
         app.terminal.close_app(package='com.android.settings')
 
-    def test_scroll_to_top(self, app: Shadowstep, stability: None, android_settings_open_close):
+    def test_scroll_to_top(self, app: Shadowstep, stability: None, android_settings_open_close: None):
         settings_recycler = app.get_element(
             locator={'resource-id': 'com.android.settings:id/main_content_scrollable_container'})
         settings_network = app.get_element(locator={'text': 'Network & internet',
@@ -299,7 +299,7 @@ class TestElement:
         assert 'Network & internet' in settings_network.get_attribute('text')
         app.terminal.close_app(package='com.android.settings')
 
-    def test_scroll_to_element(self, app: Shadowstep, stability: None, android_settings_open_close):
+    def test_scroll_to_element(self, app: Shadowstep, stability: None, android_settings_open_close: None):
         settings_recycler = app.get_element(
             locator={'resource-id': 'com.android.settings:id/main_content_scrollable_container'})
         settings_network = app.get_element(locator={'text': 'Network & internet',
@@ -325,7 +325,7 @@ class TestElement:
         y = int((top + bottom) / 2)
         assert isinstance(center, tuple) and len(center) == 2
         assert center == (x, y)
-        
+
     def test_get_coordinates(self, app: Shadowstep, stability: None):
         el = app.get_element({'content-desc': 'Phone'})
         coords = el.get_coordinates()
@@ -379,6 +379,7 @@ class TestElement:
     def test_clear(self, app: Shadowstep, stability: None):
         el = app.get_element({'resource-id': 'com.android.quicksearchbox:id/search_widget_text'})
         el.tap()
+        time.sleep(3)
         app.terminal.past_text('some_text')
         time.sleep(3)
         el = app.get_element({'resource-id': 'com.android.quicksearchbox:id/search_src_text'})
@@ -469,15 +470,15 @@ class TestElement:
     def test_scroll_to_element_not_found(self, app: Shadowstep, stability: None):
         app.terminal.start_activity(package="com.android.settings", activity=".Settings")
         container = app.get_element({'resource-id': 'com.android.settings:id/main_content_scrollable_container'})
-        with pytest.raises(GeneralElementException):
+        with pytest.raises(NoSuchElementException):
             container.scroll_to_element(locator={'text': 'Element That Does Not Exist'})
 
-    def test_get_cousin(self, app: Shadowstep, stability: None, android_settings_open_close):
+    def test_get_cousin(self, app: Shadowstep, stability: None, android_settings_open_close: None):
         app.get_element({'text': 'Network & internet'}).tap()
         switcher = app.get_element({'text': 'Airplane mode'}).get_cousin({'resource-id': 'android:id/switch_widget'})
         assert switcher.get_attribute('class') == 'android.widget.Switch'
 
-    def test_get_cousin_depth(self, app: Shadowstep, stability: None, android_settings_open_close):
+    def test_get_cousin_depth(self, app: Shadowstep, stability: None, android_settings_open_close: None):
         app.get_element({'text': 'Network & internet'}).tap()
         switcher = app.get_element({'text': 'Airplane mode'}).get_cousin({'resource-id': 'android:id/switch_widget'}, 5)
         assert switcher.get_attribute('class') == 'android.widget.Switch'

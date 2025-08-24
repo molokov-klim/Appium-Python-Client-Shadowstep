@@ -105,9 +105,9 @@ class ShadowstepBase:
         self._ignored_base_path_parts = self._get_ignored_dirs()
 
     def connect(self,
+                capabilities: dict[str, Any],
                 server_ip: str = '127.0.0.1',
                 server_port: int = 4723,
-                capabilities: dict[str, Any] = None,
                 options: AppiumOptions | list[AppiumOptions] | None = None,
                 extensions: list[WebDriver] | None = None,
                 ssh_user: str = None,
@@ -151,12 +151,13 @@ class ShadowstepBase:
         self._capabilities_to_options()
         self.command_executor = f'http://{server_ip}:{str(server_port)}/wd/hub' if self.command_executor is None else self.command_executor
 
-        self.logger.info(f"Подключение к серверу: {self.command_executor}")
+        self.logger.info(f"Connecting to server: {self.command_executor}")
+        WebDriverSingleton.clear_instance()
         self.driver = WebDriverSingleton(command_executor=self.command_executor,
                                          options=self.options,
                                          extensions=self.extensions)
         self._wait_for_session_id()
-        self.logger.info("Подключение установлено")
+        self.logger.info("Connection established")
         self.driver.update_settings(settings={"enforceXPath1": True})  # support for others is currently not provided
 
         # init here because need server ip, port and credentials, refactor it later
@@ -182,6 +183,7 @@ class ShadowstepBase:
                 self.logger.info(f"{response=}")
                 self.driver.quit()
                 self.driver = None
+                WebDriverSingleton.clear_instance()
         except InvalidSessionIdException:
             self.logger.debug(f"{get_current_func_name()} InvalidSessionIdException")
             pass

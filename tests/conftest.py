@@ -1,5 +1,7 @@
 import logging
+import shutil
 import time
+from pathlib import Path
 
 import pytest
 
@@ -32,11 +34,8 @@ CAPABILITIES = {
 
 
 @pytest.fixture(scope='session')
-def app(request):
+def app():
     """Session-scoped fixture for initializing and connecting Shadowstep to a virtual Android device.
-
-    Args:
-        request: Pytest built-in request object for registering finalizers.
 
     Yields:
         Shadowstep: Connected Shadowstep instance for tests.
@@ -53,7 +52,7 @@ def app(request):
 
 
 @pytest.fixture()
-def udid() -> str:
+def udid():
     """Provides the UDID of the virtual device used in tests.
 
     Yields:
@@ -89,7 +88,7 @@ def stability(press_home: None):
 
 
 @pytest.fixture(scope="function")
-def touch_sounds(app: Shadowstep, android_settings_open_close):
+def touch_sounds(app: Shadowstep, android_settings_open_close: None):
     sounds_and_vibrations_element = app.find_and_get_element({'text': 'Sound & vibration'})
     # sounds_and_vibrations_element = app.find_and_get_element({'text': 'Звук и вибрация'})
     assert sounds_and_vibrations_element.is_visible()
@@ -102,7 +101,7 @@ def touch_sounds(app: Shadowstep, android_settings_open_close):
 
 
 @pytest.fixture()
-def android_settings_recycler(app: Shadowstep, android_settings_open_close):
+def android_settings_recycler(app: Shadowstep, android_settings_open_close: None):
     yield app.get_element(
         locator={'resource-id': 'com.android.settings:id/main_content_scrollable_container',
                  })
@@ -116,3 +115,18 @@ def connected_devices_image_path():
 @pytest.fixture()
 def system_image_path():
     yield "test_data/system.png"
+
+@pytest.fixture
+def cleanup_pages():
+    yield
+    for folder in ("pages", "mergedpages"):
+        path = Path(folder)
+        if path.exists() and path.is_dir():
+            shutil.rmtree(path)
+            
+@pytest.fixture
+def cleanup_log():
+    yield
+    path = Path("/logcat_test.log")
+    if path.exists() and path.is_dir():
+        shutil.rmtree(path)

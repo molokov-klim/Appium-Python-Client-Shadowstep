@@ -1,11 +1,15 @@
 # shadowstep/logging/shadowstep_logcat.py
+from __future__ import annotations
 
+import contextlib
+import logging
 import threading
 import time
-import logging
-from typing import Callable, Optional
-from websocket import create_connection, WebSocketConnectionClosedException, WebSocket
+from collections.abc import Callable
+
+from appium.webdriver.webdriver import WebDriver
 from selenium.common import WebDriverException
+from websocket import WebSocket, WebSocketConnectionClosedException, create_connection
 
 logger = logging.getLogger(__name__)
 
@@ -13,17 +17,17 @@ logger = logging.getLogger(__name__)
 class ShadowstepLogcat:
 
     def __init__(
-        self,
-        driver_getter: Callable[[], 'WebDriver'],  # функция, возвращающая актуальный driver
-        poll_interval: float = 1.0
+            self,
+            driver_getter: Callable[[], 'WebDriver'],  # функция, возвращающая актуальный driver
+            poll_interval: float = 1.0
     ):
         self._driver_getter = driver_getter
         self._poll_interval = poll_interval
 
-        self._thread: Optional[threading.Thread] = None
+        self._thread: threading.Thread | None = None
         self._stop_evt = threading.Event()
-        self._filename: Optional[str] = None
-        self._ws: Optional[WebSocket] = None  # <-- храним текущее соединение
+        self._filename: str | None = None
+        self._ws: WebSocket | None = None  # <-- храним текущее соединение
 
     def __del__(self):
         self.stop()
@@ -49,10 +53,8 @@ class ShadowstepLogcat:
 
         # 2) закрываем WebSocket, чтобы прервать blocking recv()
         if self._ws:
-            try:
+            with contextlib.suppress(Exception):
                 self._ws.close()
-            except Exception:
-                pass
 
         # 3) отправляем команду остановить broadcast
         try:
@@ -69,7 +71,7 @@ class ShadowstepLogcat:
 
         logger.info("Logcat thread terminated, file closed")
 
-    def _run(self):
+    def _run(self):  # noqa: C901
         if not self._filename:
             logger.error("No filename specified for logcat")
             return
@@ -89,7 +91,8 @@ class ShadowstepLogcat:
 
                     # 2) Формируем базовый ws:// URL
                     session_id = driver.session_id
-                    http_url = driver.command_executor._url
+                    
+                    http_url = self._get_http_url(driver)
                     scheme, rest = http_url.split("://", 1)
                     ws_scheme = "ws" if scheme == "http" else "wss"
                     base_ws = f"{ws_scheme}://{rest}".rstrip("/wd/hub")
@@ -140,8 +143,16 @@ class ShadowstepLogcat:
                     time.sleep(self._poll_interval)
 
         finally:
-            try:
+            with contextlib.suppress(Exception):
                 f.close()
-            except Exception:
-                pass
             logger.info("Logcat thread terminated, file closed")
+
+    def _get_http_url(self, driver: WebDriver) -> str:
+        http_url = getattr(driver.command_executor, "_url", None)
+        if not http_url:
+            http_url = getattr(driver.command_executor, "_client_config", None)
+            if http_url:
+                http_url = getattr(driver.command_executor._client_config, "remote_server_addr", "")
+            else:
+                http_url = ""
+        return http_url

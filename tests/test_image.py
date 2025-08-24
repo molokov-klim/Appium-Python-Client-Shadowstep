@@ -5,7 +5,7 @@ import pytest
 from shadowstep.shadowstep import Shadowstep, ShadowstepImage
 
 
-@pytest.mark.skip(reason="Нужно основательно переработать Image")
+@pytest.mark.skip(reason="Нужно основательно переработать ShadowstepImage")
 class TestImage:
 
     def test_image_is_visible(self, app: Shadowstep, android_settings_open_close: None,

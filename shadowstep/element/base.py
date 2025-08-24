@@ -5,7 +5,7 @@ import datetime
 import logging
 import re
 import typing
-from typing import Dict, Optional, Tuple, Union
+from typing import TYPE_CHECKING, Dict, Optional, Tuple, Union
 
 from appium.webdriver.webdriver import WebDriver
 from appium.webdriver.webelement import WebElement
@@ -25,6 +25,9 @@ from shadowstep.utils.utils import get_current_func_name
 
 logger = logging.getLogger(__name__)
 
+if TYPE_CHECKING:
+    from shadowstep.element.element import Element
+    from shadowstep.shadowstep import Shadowstep
 
 class ShadowstepNoSuchElementError(NoSuchElementException):
     def __init__(self, msg: str, screen: str, stacktrace: list,
@@ -65,7 +68,7 @@ class ElementBase:
 
     def __init__(self,
                  locator: tuple[str, str] | dict[str, str] | str | WebElement,
-                 base: "Shadowstep",
+                 base: Shadowstep,
                  timeout: float = 30,
                  poll_frequency: float = 0.5,
                  ignored_exceptions: typing.Optional[WaitExcTypes] = None,
@@ -73,7 +76,7 @@ class ElementBase:
                  native: WebElement = None):
         self.logger = logger
         self.driver: WebDriver = None
-        self.locator: Union[Tuple, Dict[str, str], 'Element'] = locator
+        self.locator: tuple[str, str] | dict[str, str] | Element = locator
         self.base = base  # Shadowstep instance
         self.timeout: float = timeout
         self.poll_frequency: float = poll_frequency
@@ -84,7 +87,7 @@ class ElementBase:
         self.locator_converter = LocatorConverter()
 
     def _get_element(self,
-                     locator: Union[Tuple, Dict[str, str], WebElement],
+                     locator: tuple[str, str] | dict[str, str] | WebElement,
                      timeout: float = 3,
                      poll_frequency: float = 0.5,
                      ignored_exceptions: Optional[WaitExcTypes] = None,

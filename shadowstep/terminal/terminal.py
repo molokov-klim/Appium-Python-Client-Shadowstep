@@ -14,6 +14,8 @@ from typing import Any, Union, Tuple
 from appium.webdriver.webdriver import WebDriver
 from selenium.common import NoSuchDriverException, InvalidSessionIdException
 
+from shadowstep.utils.utils import get_current_func_name
+
 # Configure the root logger (basic configuration)
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
@@ -89,9 +91,9 @@ class Terminal:
             lines = stdout.readlines()
             output = ''.join(lines)
             if stdout_exit_status != 0:
-                logger.error(f"{inspect.currentframe().f_code.co_name} {output=}")
+                logger.error(f"{get_current_func_name()} {output=}")
                 return False
-            logger.debug(f"{inspect.currentframe().f_code.co_name} {output=}")
+            logger.debug(f"{get_current_func_name()} {output=}")
             return True
         except NoSuchDriverException:
             self.base.reconnect()
@@ -235,9 +237,9 @@ class Terminal:
             lines = stdout.readlines()
             output = ''.join(lines)
             if stdout_exit_status != 0:
-                logger.error(f"{inspect.currentframe().f_code.co_name} {output=}")
+                logger.error(f"{get_current_func_name()} {output=}")
                 return False
-            logger.debug(f"{inspect.currentframe().f_code.co_name} {output=}")
+            logger.debug(f"{get_current_func_name()} {output=}")
             return True
         except IOError as e:
             logger.error("appium_extended_terminal.push()")
@@ -763,7 +765,7 @@ class Terminal:
             logger.warning(f"Reboot likely initiated. Caught exception: {e}")
             return True
 
-    def get_screen_resolution(self) -> Union[Tuple[int, int], None]:
+    def get_screen_resolution(self) -> tuple[int, int]:
         """
         Retrieves the screen resolution of the device.
 
@@ -776,11 +778,13 @@ class Terminal:
                 resolution_str = output.split(":")[1].strip()
                 width, height = resolution_str.split("x")
                 return int(width), int(height)
-        except KeyError as e:
-            logger.error("appium_extended_terminal.get_screen_resolution")
+            logger.warning(f"{get_current_func_name()}: Physical size not in output")
+            return 0, 0
+        except Exception as e:
             logger.error(e)
             traceback_info = "".join(traceback.format_tb(sys.exc_info()[2]))
             logger.error(traceback_info)
+            raise
 
     def past_text(self, text: str, tries: int = 3) -> None:
         """
