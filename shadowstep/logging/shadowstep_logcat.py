@@ -120,6 +120,8 @@ class ShadowstepLogcat:
                     while not self._stop_evt.is_set():
                         try:
                             line = ws.recv()
+                            if isinstance(line, bytes):
+                                line = line.decode(errors="ignore", encoding='utf-8')
                             f.write(line + "\n")
                         except WebSocketConnectionClosedException:
                             break  # переподключимся
