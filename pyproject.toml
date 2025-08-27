@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "appium-python-client-shadowstep"
-version = "0.32.124"
+version = "0.32.125"
 description = "UI Testing Framework powered by Appium Python Client"
 authors = [{ name = "Klim Molokov", email = "klim.molokov@yandex.ru" }]
 license = "MIT"
@@ -53,6 +53,120 @@ docs = [
 
 [project.urls]
 Repository = "https://github.com/molokov-klim/Appium-Python-Client-Shadowstep"
+
+# ---------- UV ----------
+[tool.uv]
+environments = [
+    "sys_platform == 'win32'",
+    "sys_platform == 'windows'",
+    "sys_platform == 'linux'"
+]
+
+dev-dependencies = [
+    "pre-commit>=4.3.0",
+    "pyright>=1.1.403",
+    "ruff>=0.12.9",
+]
+
+[tool.uv.sources]
+pytest-zephyr = { index = "pytest-zephyr" }
+
+[[tool.uv.index]]
+name = "pytest-zephyr"
+url = "https://pypi:eixahsh6shai4Ais5Cha@nexus.atol.tech/repository/pypi-group/simple"
+explicit = true
+
+
+#url = "https://nexus.atol.tech/repository/pypi-group/simple"
+#username = "pypi"
+#password = "eixahsh6shai4Ais5Cha"
+#trusted-host = "nexus.atol.tech"
+#default = false  # если true — uv будет искать сначала здесь
+
+# ---------- RUFF ----------
+[tool.ruff]
+# Общие настройки
+target-version = "py313"
+line-length = 100
+
+[tool.ruff.lint]
+# "Строгий" режим Ruff: берем все доступные проверки (включая модули flake8/pylint/pyupgrade и т.п.)
+# select = ["ALL"]
+select = [
+    "E", # Ошибки синтаксиса и базовые ошибки Python (flake8 E*). Например, E302 — отсутствует пустая строка после функции/класса.
+    "F", # Ошибки импорта и несуществующих переменных (flake8 F*). Например, F401 — импортирован модуль, но не используется.
+    "UP", # Правила для обновления кода под новые версии Python (pyupgrade). Например, UP001 — устаревший синтаксис, который можно заменить.
+    "W", # Ворнинги и потенциально проблемный код (flake8 W*). Например, W291 — лишние пробелы в конце строки.
+    "B", # Правила безопасности из flake8-bugbear. Например, B001 — assert используется вне тестов.
+    "C", # Статические проверки кода, производительность, оптимизации (flake8-comprehensions и др.).
+    "SIM", # Простейшие стилистические проверки. Например, дублирование кода, простые паттерны.
+    "I", # Правила для импорта и организации импорта (isort/flake8-import-order). Например, порядок стандартных и сторонних библиотек.
+    "N", # Naming conventions (naming). Именование переменных, функций, классов.
+    "S", # Security (bandit). Потенциально небезопасный код.
+    "R", # Refactoring suggestions. Возможные улучшения и упрощения кода.
+    "PT", # Performance tweaks. Проверка кода на производительность.
+    "Q", # Complexity (radon, cognitive complexity). Сложность функций/методов.
+]
+# "D",   - Docstring и документация (pydocstyle). Проверка стиля docstring.
+# "T",   - Type-checking (pyright/mypy). Проверка аннотаций типов.
+# "ANN", - Type annotations. Проверка наличия и корректности аннотаций типов.
+
+ignore = [
+    "E203", # пробел перед ":" в срезах
+    "D203", # пустые строки вокруг docstring
+    "D212", # пустые строки в блоках docstring
+    "E501", # строка слишком длинная
+    "W293", # пустые строки содержат пробелы
+]
+
+exclude = [
+    "**/__pycache__",
+    ".venv",
+    "build",
+    "dist",
+    "debug*.py"
+]
+
+# Опционально авто-правки:
+[tool.ruff.format]
+preview = true
+
+# ---------- PYRIGHT ----------
+
+[tool.pyright]
+include = ["."]
+exclude = [
+    "**/__pycache__",
+    ".venv",
+    "build",
+    "dist",
+]
+typeCheckingMode = "strict"
+
+# Диагностики
+reportMissingFunctionReturnType = true
+reportMissingTypeArgument = true
+reportUnknownArgumentType = true
+reportUnknownMemberType = false
+reportUnknownVariableType = false
+reportUnknownParameterType = false
+reportMissingTypeStubs = false
+reportAttributeAccessIssue = false
+reportPrivateUsage = false
+reportMissingImports = false
+
+# Виртуальное окружение
+venvPath = "."
+venv = ".venv"
+
+# ---------- PYTEST ----------
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-v --tb=short"
+#-v (или --verbose) — включает подробный вывод, показывая названия тестов и их статус (PASSED, FAILED и т. д.).
+#--tb=short — настраивает формат трассировки ошибок (traceback):
+#short — выводит укороченный traceback, только ключевые строки с ошибкой (меньше "шума" по сравнению с полным выводом).
+#Другие варианты: --tb=auto (по умолчанию), --tb=long, --tb=line, --tb=native, --tb=no (вообще не показывать).
 
 # ВАЖНО: Эта секция включает все Python пакеты
 [tool.setuptools.packages.find]
