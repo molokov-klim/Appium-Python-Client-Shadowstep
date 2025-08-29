@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "appium-python-client-shadowstep"
-version = "0.32.124"
+version = "0.32.128"
 description = "UI Testing Framework powered by Appium Python Client"
 authors = [{ name = "Klim Molokov", email = "klim.molokov@yandex.ru" }]
 license = "MIT"
@@ -54,18 +54,39 @@ docs = [
 [project.urls]
 Repository = "https://github.com/molokov-klim/Appium-Python-Client-Shadowstep"
 
-# ВАЖНО: Эта секция включает все Python пакеты
-[tool.setuptools.packages.find]
-include = ["shadowstep*"]
+# ---------- UV ----------
+[tool.uv]
+environments = [
+    "sys_platform == 'win32'",
+    "sys_platform == 'windows'",
+    "sys_platform == 'linux'"
+]
 
-[tool.setuptools.package-data]
-"shadowstep.page_object.templates" = ["*.j2"]
+dev-dependencies = [
+    "pre-commit>=4.3.0",
+    "pyright>=1.1.403",
+    "ruff>=0.12.9",
+]
 
+[tool.uv.sources]
+pytest-zephyr = { index = "pytest-zephyr" }
+
+[[tool.uv.index]]
+name = "pytest-zephyr"
+url = "https://pypi:eixahsh6shai4Ais5Cha@nexus.atol.tech/repository/pypi-group/simple"
+explicit = true
+
+
+#url = "https://nexus.atol.tech/repository/pypi-group/simple"
+#username = "pypi"
+#password = "eixahsh6shai4Ais5Cha"
+#trusted-host = "nexus.atol.tech"
+#default = false  # если true — uv будет искать сначала здесь
 
 # ---------- RUFF ----------
 [tool.ruff]
 # Общие настройки
-target-version = "py39"
+target-version = "py313"
 line-length = 100
 
 [tool.ruff.lint]
@@ -133,7 +154,6 @@ reportMissingTypeStubs = false
 reportAttributeAccessIssue = false
 reportPrivateUsage = false
 reportMissingImports = false
-reportOptionalMemberAccess = false
 
 # Виртуальное окружение
 venvPath = "."
@@ -142,8 +162,15 @@ venv = ".venv"
 # ---------- PYTEST ----------
 [tool.pytest.ini_options]
 testpaths = ["tests"]
-addopts = "-v -svl --tb=short --setup-show"
+addopts = "-v --tb=short"
 #-v (или --verbose) — включает подробный вывод, показывая названия тестов и их статус (PASSED, FAILED и т. д.).
 #--tb=short — настраивает формат трассировки ошибок (traceback):
 #short — выводит укороченный traceback, только ключевые строки с ошибкой (меньше "шума" по сравнению с полным выводом).
 #Другие варианты: --tb=auto (по умолчанию), --tb=long, --tb=line, --tb=native, --tb=no (вообще не показывать).
+
+# ВАЖНО: Эта секция включает все Python пакеты
+[tool.setuptools.packages.find]
+include = ["shadowstep*"]
+
+[tool.setuptools.package-data]
+"shadowstep.page_object.templates" = ["*.j2"]
