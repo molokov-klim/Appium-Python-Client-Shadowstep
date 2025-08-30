@@ -64,6 +64,7 @@ UI_TO_XPATH: dict[UiMethod, Callable[[Any], str]] = {
     UiMethod.LONG_CLICKABLE: lambda v: f'[@long-clickable="{str(v).lower()}"]',
     UiMethod.SCROLLABLE: lambda v: f'[@scrollable="{str(v).lower()}"]',
     UiMethod.SELECTED: lambda v: f'[@selected="{str(v).lower()}"]',
+    UiMethod.PASSWORD: lambda v: f'[@password="{str(v).lower()}"]',
 
     # --- numeric ---
     UiMethod.INDEX: lambda v: f'[position()={int(v) + 1}]',
@@ -108,6 +109,8 @@ def is_hierarchical_method(method: UiMethod) -> bool:
     """
     return method in (UiMethod.CHILD_SELECTOR, UiMethod.FROM_PARENT)
 
+def is_logic_method(method: UiMethod) -> bool:
+    return method in (UiMethod.OR, UiMethod.AND)
 
 def get_supported_methods() -> list[UiMethod]:
     """

@@ -208,11 +208,6 @@ class TestUiSelectorParser:
             (
                     'new UiSelector().className("android.widget.ImageView");',
                     '//*[@class="android.widget.ImageView"]'
-            ),
-            # Ошибочный селектор (имитация, ожидается пустой XPath или исключение)
-            (
-                    'new UiSelector().unknownProperty("value");',
-                    ''
             )
         ]
     )

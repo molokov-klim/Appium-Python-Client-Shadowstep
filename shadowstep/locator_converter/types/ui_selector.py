@@ -25,6 +25,9 @@ class UiMethod(str, Enum):
     CLASS_NAME = "className"
     CLASS_NAME_MATCHES = "classNameMatches"
 
+    # --- password ---
+    PASSWORD = "password"
+
     # --- bool props ---
     CHECKABLE = "checkable"
     CHECKED = "checked"
@@ -43,3 +46,8 @@ class UiMethod(str, Enum):
     # --- hierarchy ---
     CHILD_SELECTOR = "childSelector"
     FROM_PARENT = "fromParent"
+    
+    # --- logic ---
+    OR = "or"
+    AND = "and"
+    

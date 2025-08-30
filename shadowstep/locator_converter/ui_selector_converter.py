@@ -5,7 +5,7 @@ from typing import Any, cast
 from shadowstep.locator_converter.map.ui_to_xpath import (
     UI_TO_XPATH,
     get_xpath_for_method,
-    is_hierarchical_method,
+    is_hierarchical_method, is_logic_method,
 )
 from shadowstep.locator_converter.types.ui_selector import UiMethod
 from shadowstep.locator_converter.ui_selector_converter_core.ast import Selector
@@ -84,6 +84,15 @@ class UiSelectorConverter:
                             xpath = f'{xpath}/..{parent_xpath}'
                         else:
                             xpath = f'{xpath}/..//{parent_xpath}'
+                elif is_logic_method(method):
+                    if method == UiMethod.OR:
+                        other_xpath = self._convert_nested_selector(args[0])
+                        # if other_xpath.startswith("//"):
+                        #     other_xpath = "*" + other_xpath[2:]
+                        xpath = f"{xpath}|//{other_xpath}"
+                    elif method == UiMethod.AND:
+                        other_xpath = self._convert_nested_selector(args[0])
+                        xpath = f"{xpath}[{other_xpath.lstrip('*')}]"
                 else:
                     # Handle regular methods
                     if method in UI_TO_XPATH:
