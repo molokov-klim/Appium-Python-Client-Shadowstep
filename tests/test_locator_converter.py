@@ -3,11 +3,11 @@ import logging
 
 import pytest
 
-from shadowstep.locator_converter.locator_converter import LocatorConverter
+from shadowstep.locator_converter.deprecated_locator_converter import DeprecatedLocatorConverter
 from shadowstep.utils.utils import get_current_func_name
 
 logger = logging.getLogger(__name__)
-converter = LocatorConverter()
+converter = DeprecatedLocatorConverter()
 
 
 @pytest.mark.skip(reason="Нужно основательно переработать LocatorConverter")

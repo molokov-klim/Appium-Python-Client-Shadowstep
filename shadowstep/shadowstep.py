@@ -28,7 +28,6 @@ from shadowstep.decorators.decorators import fail_safe
 from shadowstep.element.element import Element
 from shadowstep.exceptions.shadowstep_exceptions import ShadowstepException
 from shadowstep.image.image import ShadowstepImage
-from shadowstep.images.images import ShadowstepImages
 from shadowstep.logging.shadowstep_logcat import ShadowstepLogcat
 from shadowstep.mobile_commands import MobileCommands
 from shadowstep.navigator.navigator import PageNavigator

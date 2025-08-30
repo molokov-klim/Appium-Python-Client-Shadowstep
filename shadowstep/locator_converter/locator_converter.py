@@ -1,417 +1,386 @@
-# shadowstep/utils/locator_converter.py
-from __future__ import annotations
+# /shadowstep/locator_converter/locator_converter.py
+# created by AI
+
+"""
+Unified locator converter that provides a single interface for all locator conversions.
+This module combines all the functionality of the locator converter system.
+"""
 
 import logging
-import re
-from typing import Any, cast
+from typing import Any, Dict, List
 
-logger = logging.getLogger(__name__)
-
-# TODO A thorough reworking of the module is needed
-
-"""
-Sorry, I'm too dumb to solve this module's problem correctly. So I did it primitively.
-If someone who wants to solve this problem is reading this - I'm looking forward to your PR.
-
-✅ locator exmaples:
-
-1. dict (Shadowstep-style)
-Только атрибуты из XML (text, resource-id, class, content-desc, и т.п.):
-{"text": "Экран"}  # элемент с text="Экран"
-{"resource-id": "android:id/title", "class": "android.widget.TextView"}
-{"enabled": True, "scrollable": False}
-{"package": "com.android.settings", "class": "android.widget.FrameLayout"}
-Смотри UISELECTOR_TO_SHADOWSTEP и SHADOWSTEP_TO_UISELECTOR
-
-2. tuple (XPath-локатор)
-("xpath", "//*[@text='Экран']")  # XPath локатор по атрибуту
-("xpath", "//*[@resource-id='android:id/title' and @text='Экран']")  # два атрибута
-("xpath", "//*[@text='Экран']/following-sibling::*[@class='android.widget.TextView'][2]")  # сложный путь
-("xpath", "//android.widget.TextView[contains(@text,'Упрощённая (доход)')]")
-Смотри UISELECTOR_TO_SHADOWSTEP и SHADOWSTEP_TO_UISELECTOR
-
-3. str (Java UiSelector)
-Java-style строка, созданная через new UiSelector():
-'new UiSelector().text("Экран").className("android.widget.TextView")'
-'new UiSelector().resourceId("android:id/title").instance(0)'
-'new UiSelector().text("Экран").fromParent(new UiSelector().text("Яркость"))'
-Это Java-цепочка.
-
-✅ Typing
-Shadowstep-xpath locator : Tuple[str, str]
-Shadowstep-dict locator  : Dict[str, str]
-UiSelector locator : str
-
-✅ UiSelector
-ui_selector_methods = {
-    "checkable": "",
-    "checked": "",
-    "childSelector": "",
-    "className": "",
-    "classNameMatches": "",
-    "clickable": "",
-    "description": "",
-    "descriptionContains": "",
-    "descriptionMatches": "",
-    "descriptionStartsWith": "",
-    "enabled": "",
-    "focusable": "",
-    "focused": "",
-    "fromParent": "",
-    "index": "",
-    "instance": "",
-    "longClickable": "",
-    "packageName": "",
-    "packageNameMatches": "",
-    "resourceId": "",
-    "resourceIdMatches": "",
-    "scrollable": "",
-    "selected": "",
-    "text": "",
-    "textContains": "",
-    "textMatches": "",
-    "textStartsWith": ""
-}
-
-✅ Dict
-{
-    "elementId": "00000000-0000-07ad-7fff-ffff0000185a",
-    "index": 1,
-    "package": "ru.sigma.app.debug",
-    "class": "android.view.View",
-    "text": "",
-    "resource-id": "android:id/statusBarBackground",
-    "checkable": False,
-    "checked": False,
-    "clickable": False,
-    "enabled": True,
-    "focusable": False,
-    "focused": False,
-    "long-clickable": False,
-    "password": False,
-    "scrollable": False,
-    "selected": False,
-    "bounds": "[0,0][720,48]",
-    "displayed": True
-}
-
-✅ XPATH
-???
-
-
-Вот **полный список публичных методов класса `UiSelector`** из [официальной документации AndroidX Test UiAutomator](https://developer.android.com/reference/androidx/test/uiautomator/UiSelector):
-
----
-
-### 📘 **Public methods `UiSelector`**
-
-| Метод | Описание |
-|-------|----------|
-| `UiSelector checkable(boolean val)` | Matches elements that are checkable. |
-| `UiSelector checked(boolean val)` | Matches elements that are checked. |
-| `UiSelector className(String className)` | Matches elements with the given class name. |
-| `UiSelector className(Pattern classNameRegex)` | Matches elements with class names that match a regex. |
-| `UiSelector clickable(boolean val)` | Matches elements that are clickable. |
-| `UiSelector description(String desc)` | Matches elements with the given content description. |
-| `UiSelector description(Pattern descRegex)` | Matches elements with content descriptions matching a regex. |
-| `UiSelector descriptionContains(String desc)` | Matches elements whose content description contains a substring. |
-| `UiSelector descriptionMatches(String regex)` | Matches elements whose content description matches a regex. |
-| `UiSelector descriptionStartsWith(String desc)` | Matches elements whose content description starts with a string. |
-| `UiSelector enabled(boolean val)` | Matches elements that are enabled. |
-| `UiSelector focusable(boolean val)` | Matches elements that are focusable. |
-| `UiSelector focused(boolean val)` | Matches elements that are currently focused. |
-| `UiSelector fromParent(UiSelector selector)` | Returns a `UiSelector` for a sibling by going up to the parent and finding another child. |
-| `UiSelector index(int index)` | Matches the element at a specific index among siblings. |
-| `UiSelector instance(int instance)` | Matches the `n`-th instance of elements matching the selector. |
-| `UiSelector packageName(String name)` | Matches elements in the given package. |
-| `UiSelector packageName(Pattern nameRegex)` | Matches elements whose package name matches a regex. |
-| `UiSelector resourceId(String id)` | Matches elements by resource ID. |
-| `UiSelector resourceIdMatches(String regex)` | Matches elements whose resource ID matches a regex. |
-| `UiSelector scrollable(boolean val)` | Matches elements that are scrollable. |
-| `UiSelector selected(boolean val)` | Matches elements that are selected. |
-| `UiSelector text(String text)` | Matches elements with the given text. |
-| `UiSelector text(Pattern textRegex)` | Matches elements whose text matches a regex. |
-| `UiSelector textContains(String text)` | Matches elements whose text contains a substring. |
-| `UiSelector textMatches(String regex)` | Matches elements whose text matches a regex. |
-| `UiSelector textStartsWith(String text)` | Matches elements whose text starts with a string. |
-| `UiSelector childSelector(UiSelector selector)` | Returns a `UiSelector` for a child of the currently matched element. |
-| `UiSelector longClickable(boolean val)` | Matches elements that support long-click. |
-| `UiSelector resourceId(String resId)` | (повторяется в документации) Matches the resource ID of the view. |
-| `UiSelector count` | (поле, доступное в связке с `UiCollection`) Returns the number of matched elements (используется через `UiCollection`). |
-
-"""
+from shadowstep.locator_converter.locator_factory import LocatorFactory
+from shadowstep.locator_converter.locator_validator import LocatorValidator
+from shadowstep.locator_converter.ui_selector_converter import UiSelectorConverter, InvalidUiSelectorError, \
+    ConversionError
 
 
 class LocatorConverter:
-    logger = logger
+    """
+    Unified interface for all locator conversions.
+    
+    This class provides a comprehensive set of methods to convert between
+    different locator formats with validation and error handling.
+    """
 
-    DICT_TO_XPATH: dict[str, str] = {
-        "checkable": "checkable",
-        "checked": "checked",
-        "childSelector": "/",
-        "parentSelector": "..",
-        "class": "class",
-        "classNameMatches": "classNameMatches",
-        "clickable": "clickable",
-        "content-desc": "content-desc",
-        "description": "content-desc",  # alias
-        "descriptionContains": "content-desc",  # для contains()
-        "descriptionMatches": "content-desc",  # для matches()
-        "descriptionStartsWith": "content-desc",
-        "enabled": "enabled",
-        "focusable": "focusable",
-        "focused": "focused",
-        "fromParent": "following-sibling",
-        # https://developer.android.com/reference/androidx/test/uiautomator/UiSelector#fromParent(androidx.test.uiautomator.UiSelector)
-        "index": "index",  # не используется в xpath
-        "instance": "instance",  # в xpath как [n+1]
-        "long-clickable": "long-clickable",
-        "package": "package",
-        "packageNameMatches": "package",  # можно считать псевдонимом
-        "resource-id": "resource-id",
-        "resourceIdMatches": "resource-id",
-        "scrollable": "scrollable",
-        "selected": "selected",
-        "text": "text",
-        "textContains": "text",
-        "textMatches": "text",
-        "textStartsWith": "text"
-    }
-
-    UISELECTOR_TO_DICT: dict[str, str] = {
-        "checkable": "checkable",
-        "checked": "checked",
-        "childSelector": "childSelector",
-        "className": "class",
-        "classNameMatches": "classNameMatches",
-        "clickable": "clickable",
-        "description": "content-desc",
-        "descriptionContains": "descriptionContains",
-        "descriptionMatches": "descriptionMatches",
-        "descriptionStartsWith": "descriptionStartsWith",
-        "enabled": "enabled",
-        "focusable": "focusable",
-        "focused": "focused",
-        "fromParent": "following-sibling::",
-        "index": "index",
-        "instance": "instance",
-        "longClickable": "long-clickable",
-        "packageName": "package",
-        "packageNameMatches": "packageNameMatches",
-        "resourceId": "resource-id",
-        "resourceIdMatches": "resourceIdMatches",
-        "scrollable": "scrollable",
-        "selected": "selected",
-        "text": "text",
-        "textContains": "textContains",
-        "textMatches": "textMatches",
-        "textStartsWith": "textStartsWith"
-    }
-
-    # UISELECTOR_TO_XPATH: dict[str, str] = {
-    #     ...
-    # }
-
-    DICT_TO_UISELECTOR: dict[str, str] = {
-        v: k for k, v in UISELECTOR_TO_DICT.items()
-    }
-
-    def to_dict(self, selector: dict[str, Any] | tuple[str, str] | str) -> dict[str, Any]:
-        if isinstance(selector, dict):
-            return selector
-        elif isinstance(selector, tuple):
-            return self._xpath_to_dict(selector)
-        return self._uiselector_to_dict(selector)
-
-    def to_xpath(self, selector: dict[str, Any] | tuple[str, str] | str) -> tuple[str, str]:
-        if isinstance(selector, dict):
-            return self._dict_to_xpath(selector)
-        elif isinstance(selector, tuple) and selector[0] == "xpath":
-            return selector
-        elif isinstance(selector, str) and selector.strip().startswith("new UiSelector()"):
-            return self._dict_to_xpath(self._uiselector_to_dict(selector))
+    def __init__(self, enable_logging: bool = True):
+        """
+        Initialize the unified converter.
+        
+        Args:
+            enable_logging: Whether to enable logging (default: True)
+        """
+        self.ui_converter = UiSelectorConverter()
+        self.validator = LocatorValidator()
+        self.factory = LocatorFactory()
+        
+        if enable_logging:
+            self.logger = logging.getLogger(__name__)
         else:
-            raise ValueError(f"Unsupported selector format: {type(selector)}")
+            self.logger = logging.getLogger(__name__)
+            self.logger.disabled = True
 
-    def to_uiselector(self, selector: dict[str, Any] | tuple[str, str] | str) -> str:
-        if isinstance(selector, dict):
-            return self._dict_to_uiselector(selector)
-        elif isinstance(selector, tuple):
-            return self._dict_to_uiselector(self._xpath_to_dict(selector))
-        return selector
+    # --- UiSelector conversions ---
 
-    def _dict_to_xpath(self, selector: dict[str, Any], root: str = ".//*") -> tuple[str, str]:
-        return self._handle_dict_locator(selector, root=root)
+    def ui_selector_to_xpath(self, selector: str) -> str:
+        """
+        Convert UiSelector string to XPath.
+        
+        Args:
+            selector: UiSelector string
+            
+        Returns:
+            XPath string
+            
+        Raises:
+            InvalidUiSelectorError: If selector is invalid
+            ConversionError: If conversion fails
+        """
+        # Validate input
+        is_valid, errors = self.validator.validate_ui_selector(selector)
+        if not is_valid:
+            raise InvalidUiSelectorError(f"Invalid UiSelector: {'; '.join(errors)}")
+        
+        try:
+            return self.ui_converter.ui_selector_to_xpath(selector)
+        except Exception as e:
+            raise ConversionError(f"Failed to convert UiSelector to XPath: {e}") from e
 
-    def _handle_dict_locator(
-            self,
-            locator: dict[str, Any],
-            root: str = ".//*",
-            contains: bool = False,
-            parent_xpath: str | None = None
-    ) -> tuple[str, str]:
-        conditions: list[str] = []
-        tag = "*"
-        child_xpath = None
-        from_parent_xpath = None
+    def ui_selector_to_dict(self, selector: str) -> Dict[str, Any]:
+        """
+        Convert UiSelector string to dictionary format.
+        
+        Args:
+            selector: UiSelector string
+            
+        Returns:
+            Dictionary representation
+            
+        Raises:
+            InvalidUiSelectorError: If selector is invalid
+        """
+        # Validate input
+        is_valid, errors = self.validator.validate_ui_selector(selector)
+        if not is_valid:
+            raise InvalidUiSelectorError(f"Invalid UiSelector: {'; '.join(errors)}")
+        
+        return self.ui_converter.ui_selector_to_dict(selector)
 
-        for key, value in locator.items():
-            if key == "parentSelector" and isinstance(value, dict):
-                parent_xpath_expr = \
-                self._handle_dict_locator(locator=cast(dict[str, Any], value), root=root, contains=contains)[1]
-                parent_xpath = parent_xpath_expr
-                continue
+    # --- Dictionary conversions ---
 
-            if key == "childSelector" and isinstance(value, dict):
-                child_xpath = self._handle_dict_locator(cast(dict[str, Any], value), root=root, contains=contains)[1]
-                continue
+    def dict_to_xpath(self, locator: Dict[str, Any]) -> str:
+        """
+        Convert dictionary locator to XPath.
+        
+        Args:
+            locator: Dictionary locator
+            
+        Returns:
+            XPath string
+            
+        Raises:
+            ValueError: If locator is invalid
+        """
+        # Validate input
+        is_valid, errors = self.validator.validate_dict_locator(locator)
+        if not is_valid:
+            raise ValueError(f"Invalid dictionary locator: {'; '.join(errors)}")
+        
+        return self.factory.create_xpath(**locator)
 
-            if key == "fromParent" and isinstance(value, dict):
-                sibling_xpath_expr = \
-                self._handle_dict_locator(cast(dict[str, Any], value), root=root, contains=contains)[1]
-                from_parent_xpath = f"following-sibling::*[{sibling_xpath_expr.split('[')[-1]}"
-                continue
+    def dict_to_ui_selector(self, locator: Dict[str, Any]) -> str:
+        """
+        Convert dictionary locator to UiSelector string.
+        
+        Args:
+            locator: Dictionary locator
+            
+        Returns:
+            UiSelector string
+            
+        Raises:
+            ValueError: If locator is invalid
+        """
+        # Validate input
+        is_valid, errors = self.validator.validate_dict_locator(locator)
+        if not is_valid:
+            raise ValueError(f"Invalid dictionary locator: {'; '.join(errors)}")
+        
+        return self.factory.create_ui_selector(**locator)
 
-            actual_key = self.DICT_TO_XPATH.get(key, key)
+    # --- XPath conversions ---
 
-            if key.endswith("Contains"):
-                base_key = key.replace("Contains", "")
-                attr = self.DICT_TO_XPATH.get(base_key, base_key)
-                conditions.append(f"contains(@{attr}, '{value}')")
-            elif key.endswith("StartsWith"):
-                base_key = key.replace("StartsWith", "")
-                attr = self.DICT_TO_XPATH.get(base_key, base_key)
-                conditions.append(f"starts-with(@{attr}, '{value}')")
-            elif isinstance(value, bool):
-                conditions.append(f"@{actual_key}={'true' if value else 'false'}")
-            elif isinstance(value, int):
-                conditions.append(f"@{actual_key}={value}")
-            else:
-                conditions.append(f"@{actual_key}='{value}'")
+    def xpath_to_dict(self, xpath: str) -> Dict[str, Any]:
+        """
+        Convert XPath to dictionary format (basic conversion).
+        
+        Args:
+            xpath: XPath string
+            
+        Returns:
+            Dictionary representation (limited)
+            
+        Raises:
+            ValueError: If XPath is invalid
+        """
+        # Validate input
+        is_valid, errors = self.validator.validate_xpath(xpath)
+        if not is_valid:
+            raise ValueError(f"Invalid XPath: {'; '.join(errors)}")
+        
+        # Basic XPath to dict conversion
+        # This is a simplified conversion - full parsing would require more complex logic
+        result = {}
+        
+        # Extract basic attributes
+        if '@text=' in xpath:
+            text_match = xpath.split('@text=')[1].split('"')[1]
+            result['text'] = text_match
+        
+        if '@resource-id=' in xpath:
+            id_match = xpath.split('@resource-id=')[1].split('"')[1]
+            result['resource-id'] = id_match
+        
+        if '@class=' in xpath:
+            class_match = xpath.split('@class=')[1].split('"')[1]
+            result['class'] = class_match
+        
+        return result
 
-            if key == "class":
-                tag = value
+    def xpath_to_ui_selector(self, xpath: str) -> str:
+        """
+        Convert XPath to UiSelector string (basic conversion).
+        
+        Args:
+            xpath: XPath string
+            
+        Returns:
+            UiSelector string
+            
+        Raises:
+            ValueError: If XPath is invalid
+        """
+        # Convert to dict first, then to UiSelector
+        locator_dict = self.xpath_to_dict(xpath)
+        return self.dict_to_ui_selector(locator_dict)
 
-        full_xpath = f"//{tag}[{' and '.join(conditions)}]" if conditions else f"//{tag}"
+    # --- Factory methods ---
 
-        if parent_xpath:
-            full_xpath = f"{parent_xpath}/{full_xpath.lstrip('./')}"
-        if from_parent_xpath:
-            full_xpath = f"{full_xpath}/{from_parent_xpath}"
-        if child_xpath:
-            full_xpath = f"{full_xpath}/{child_xpath.lstrip('./')}"
+    def create_ui_selector(self, **kwargs) -> str:
+        """
+        Create UiSelector string using factory.
+        
+        Args:
+            **kwargs: UiSelector method names and values
+            
+        Returns:
+            UiSelector string
+        """
+        return self.factory.create_ui_selector(**kwargs)
 
-        return "xpath", full_xpath
+    def create_xpath(self, **kwargs) -> str:
+        """
+        Create XPath expression using factory.
+        
+        Args:
+            **kwargs: XPath attributes and values
+            
+        Returns:
+            XPath string
+        """
+        return self.factory.create_xpath(**kwargs)
 
-    def _xpath_to_dict(self, xpath: tuple[str, str]) -> dict[str, str | int | bool]:
-        return self._parse_xpath_recursive(xpath)
+    def create_dict(self, **kwargs) -> Dict[str, Any]:
+        """
+        Create dictionary locator using factory.
+        
+        Args:
+            **kwargs: Locator attributes and values
+            
+        Returns:
+            Dictionary locator
+        """
+        return self.factory.create_dict(**kwargs)
 
-    def _dict_to_uiselector(self, selector: dict[str, str | int | bool]) -> str:
-        if "parentSelector" in selector:
-            parent = selector["parentSelector"]
-            child = selector.copy()
-            del child["parentSelector"]
-            return (
-                    self._dict_to_uiselector(parent)  # type: ignore
-                    + f".childSelector({self._dict_to_uiselector(child)})"
-            )
+    # --- Validation methods ---
 
-        parts = ["new UiSelector()"]
-        for key, value in selector.items():
-            if key == "scrollable":
-                if value == "true":
-                    parts.append(f".scrollable(true)")
-                    continue
-                elif value == "false":
-                    parts.append(f".scrollable(false)")
-                    continue
-            if key == "childSelector" and isinstance(value, dict):
-                nested = self._dict_to_uiselector(value)
-                parts.append(f".childSelector({nested})")
-                continue
-            if key == "fromParent" and isinstance(value, dict):
-                nested = self._dict_to_uiselector(value)
-                parts.append(f".fromParent({nested})")
-                continue
-            method = self.DICT_TO_UISELECTOR.get(key)
-            if not method:
-                continue
-            if isinstance(value, bool):
-                parts.append(f".{method}({'true' if value else 'false'})")
-            elif isinstance(value, int):
-                parts.append(f".{method}({value})")
-            else:
-                parts.append(f'.{method}("{value}")')
-        return "".join(parts)
+    def validate_locator(self, locator: Any, format_type: str) -> bool:
+        """
+        Validate a locator in the specified format.
+        
+        Args:
+            locator: Locator to validate
+            format_type: Expected format
+            
+        Returns:
+            True if valid, False otherwise
+        """
+        return self.validator.is_valid_locator(locator, format_type)
 
-    def _uiselector_to_dict(self, uiselector: str) -> dict[str, str | int | bool | dict[Any, Any]]:
-        def parse_chain(chain: str) -> dict[str, str | int | bool]:
-            parsed = {}
-            for method, raw_value in re.findall(r'\.(\w+)\(([^()]+)\)', chain):
-                value = raw_value.strip("\"'")
-                if value in ("true", "false"):
-                    value = value == "true"
-                elif value.isdigit():
-                    value = int(value)
-                for k, v in self.UISELECTOR_TO_DICT.items():
-                    if v == method:
-                        parsed[k] = value
-                        break
-            return parsed
+    def get_validation_errors(self, locator: Any, format_type: str) -> List[str]:
+        """
+        Get validation errors for a locator.
+        
+        Args:
+            locator: Locator to validate
+            format_type: Expected format
+            
+        Returns:
+            List of validation errors
+        """
+        _, errors = self.validator.validate_locator_format(locator, format_type)
+        return errors
 
-        def parse_nested(chain: str) -> dict[str, str | int | bool | dict[Any, Any]]:
-            if ".fromParent(" not in chain:
-                return parse_chain(chain)  # type: ignore
-            outer, inner = re.match(r"(.+)\.fromParent\((new UiSelector\(\).+)\)$", chain).groups()  # type: ignore
-            return {
-                **parse_chain(outer),
-                "parentSelector": parse_nested(inner)
-            }
+    def suggest_fixes(self, locator: Any, format_type: str) -> List[str]:
+        """
+        Get suggestions for fixing validation errors.
+        
+        Args:
+            locator: Locator that failed validation
+            format_type: Format of the locator
+            
+        Returns:
+            List of suggested fixes
+        """
+        return self.validator.suggest_fixes(locator, format_type)
 
-        return parse_nested(uiselector)
+    # --- Utility methods ---
 
-    def _parse_xpath_recursive(self, xpath: tuple[str, str] | str) -> dict[str, Any]:
-        if isinstance(xpath, tuple):
-            xpath = xpath[1]
-        segments = xpath.strip("/").split("/")
-        if not segments:
-            return {}
+    def get_supported_formats(self) -> List[str]:
+        """
+        Get list of supported locator formats.
+        
+        Returns:
+            List of supported formats
+        """
+        return ["ui_selector", "xpath", "dict"]
 
-        def parse_segment(segment: str) -> dict[str, Any]:
-            result = {}
-            reverse_map = {v: k for k, v in self.UISELECTOR_TO_DICT.items()}
+    def get_supported_methods(self) -> List[str]:
+        """
+        Get list of supported UiSelector methods.
+        
+        Returns:
+            List of supported method names
+        """
+        return self.factory.get_supported_methods()
 
-            tag_match = re.match(r"^([\w.]+)(\[.*)?", segment)
-            if tag_match:
-                tag = tag_match.group(1)
-                result["class"] = tag
+    def get_conversion_stats(self) -> Dict[str, Any]:
+        """
+        Get conversion statistics.
+        
+        Returns:
+            Dictionary with conversion statistics
+        """
+        ui_stats = self.ui_converter.get_conversion_stats()
+        return {
+            'ui_selector_conversions': ui_stats,
+            'total_formats_supported': len(self.get_supported_formats()),
+            'total_methods_supported': len(self.get_supported_methods())
+        }
 
-            attr_matches = re.findall(r"\[@([\w:-]+)='([^']+)'\]", segment)
-            for attr, value in attr_matches:
-                key = reverse_map.get(attr, attr)
-                result[key] = value
+    def reset_stats(self) -> None:
+        """Reset all conversion statistics."""
+        self.ui_converter.reset_stats()
 
-            contains_matches = re.findall(r"contains\(@([\w:-]+),\s*'([^']+)'\)", segment)
-            for attr, value in contains_matches:
-                key = reverse_map.get(attr, attr)
-                result[f"{key}Contains"] = value
+    # --- Batch conversion methods ---
 
-            startswith_matches = re.findall(r"starts-with\(@([\w:-]+),\s*'([^']+)'\)", segment)
-            for attr, value in startswith_matches:
-                key = reverse_map.get(attr, attr)
-                result[f"{key}StartsWith"] = value
+    def convert_batch(self, locators: List[Any], from_format: str, to_format: str) -> List[Any]:
+        """
+        Convert multiple locators in batch.
+        
+        Args:
+            locators: List of locators to convert
+            from_format: Source format
+            to_format: Target format
+            
+        Returns:
+            List of converted locators
+            
+        Raises:
+            ValueError: If formats are not supported
+        """
+        if from_format not in self.get_supported_formats():
+            raise ValueError(f"Unsupported source format: {from_format}")
+        
+        if to_format not in self.get_supported_formats():
+            raise ValueError(f"Unsupported target format: {to_format}")
+        
+        converted = []
+        errors = []
+        
+        for i, locator in enumerate(locators):
+            try:
+                if from_format == "ui_selector" and to_format == "xpath":
+                    converted.append(self.ui_selector_to_xpath(locator))
+                elif from_format == "ui_selector" and to_format == "dict":
+                    converted.append(self.ui_selector_to_dict(locator))
+                elif from_format == "dict" and to_format == "xpath":
+                    converted.append(self.dict_to_xpath(locator))
+                elif from_format == "dict" and to_format == "ui_selector":
+                    converted.append(self.dict_to_ui_selector(locator))
+                elif from_format == "xpath" and to_format == "dict":
+                    converted.append(self.xpath_to_dict(locator))
+                elif from_format == "xpath" and to_format == "ui_selector":
+                    converted.append(self.xpath_to_ui_selector(locator))
+                else:
+                    raise ValueError(f"Conversion from {from_format} to {to_format} not implemented")
+            except Exception as e:
+                errors.append(f"Locator {i}: {e}")
+                converted.append(None)  # Keep indices aligned
+        
+        if errors:
+            self.logger.warning(f"Batch conversion completed with {len(errors)} errors: {errors}")
+        
+        return converted
 
-            index_match = re.search(r"\[(\d+)\]$", segment)
-            if index_match:
-                result["instance"] = int(index_match.group(1)) - 1
+    def validate_batch(self, locators: List[Any], formats: List[str]) -> Dict[str, Any]:
+        """
+        Validate multiple locators in batch.
+        
+        Args:
+            locators: List of locators to validate
+            formats: List of expected formats
+            
+        Returns:
+            Validation summary
+        """
+        return self.validator.get_validation_summary(locators, formats)
 
-            return result
 
-        current = parse_segment(segments[0])
-        cursor = current
-        for segment in segments[1:]:
-            child = parse_segment(segment)
-            cursor["childSelector"] = child
-            cursor = child
+# Convenience functions for backward compatibility
+def convert_ui_selector_to_xpath(selector: str) -> str:
+    """Convert UiSelector to XPath (backward compatibility)."""
+    converter = LocatorConverter()
+    return converter.ui_selector_to_xpath(selector)
 
-        return current
+
+def convert_dict_to_xpath(locator: Dict[str, Any]) -> str:
+    """Convert dictionary to XPath (backward compatibility)."""
+    converter = LocatorConverter()
+    return converter.dict_to_xpath(locator)
+
+
+def validate_locator(locator: Any, format_type: str) -> bool:
+    """Validate locator (backward compatibility)."""
+    converter = LocatorConverter()
+    return converter.validate_locator(locator, format_type)
