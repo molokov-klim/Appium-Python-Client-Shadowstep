@@ -71,7 +71,6 @@ UI_TO_XPATH: dict[UiMethod, Callable[[Any], str]] = {
     UiMethod.INSTANCE: lambda v: f'[{int(v) + 1}]',
 
     # --- hierarchy ---
-    # These are handled specially in the converter logic
     UiMethod.CHILD_SELECTOR: lambda v: _handle_child_selector(v),
     UiMethod.FROM_PARENT: lambda v: _handle_from_parent(v),
 }

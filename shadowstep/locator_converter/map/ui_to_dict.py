@@ -36,6 +36,7 @@ UI_TO_SHADOWSTEP_DICT: dict[UiMethod, Callable[[Any], dict[str, Any]]] = {
     UiMethod.FOCUSED: lambda v: {"focused": v},
     UiMethod.SCROLLABLE: lambda v: {"scrollable": v},
     UiMethod.SELECTED: lambda v: {"selected": v},
+    UiMethod.PASSWORD: lambda v: {"password": v},
 
     # --- numeric ---
     UiMethod.INDEX: lambda v: {"index": v},

@@ -46,7 +46,7 @@ class UiSelectorConverter:
         }
 
 
-    def selector_to_xpath(self, sel: dict[str, Any], base_xpath: str = "//*") -> str:
+    def selector_to_xpath(self, sel: dict[str, Any], base_xpath: str = "//*") -> str:  # noqa: C901
         """
         Convert a parsed selector dictionary to XPath.
 
