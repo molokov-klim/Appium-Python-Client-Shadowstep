@@ -2,10 +2,12 @@
 import logging
 from typing import Any, cast
 
+from shadowstep.locator_converter.map.ui_to_dict import UI_TO_SHADOWSTEP_DICT
 from shadowstep.locator_converter.map.ui_to_xpath import (
     UI_TO_XPATH,
     get_xpath_for_method,
-    is_hierarchical_method, is_logic_method,
+    is_hierarchical_method,
+    is_logic_method,
 )
 from shadowstep.locator_converter.types.ui_selector import UiMethod
 from shadowstep.locator_converter.ui_selector_converter_core.ast import Selector
@@ -45,8 +47,76 @@ class UiSelectorConverter:
             'failed_conversions': 0
         }
 
+    def selector_to_xpath(self, selector_str: str) -> str:
+        """
+        Convert UiSelector string directly to XPath.
 
-    def selector_to_xpath(self, sel: dict[str, Any], base_xpath: str = "//*") -> str:  # noqa: C901
+        Args:
+            selector_str: UiSelector string
+
+        Returns:
+            XPath string
+
+        Raises:
+            InvalidUiSelectorError: If selector string is invalid
+            ConversionError: If conversion fails
+        """
+        try:
+            parsed_dict = self.parse_selector_string(selector_str)
+            return self._selector_to_xpath(parsed_dict)  # type: ignore
+        except InvalidUiSelectorError:
+            raise
+        except Exception as e:
+            raise ConversionError(f"Failed to convert UiSelector to XPath: {e}") from e
+
+    def selector_to_dict(self, selector_str: str) -> dict[str, Any]:
+        """
+        Convert UiSelector string to dictionary format.
+
+        Args:
+            selector_str: UiSelector string
+
+        Returns:
+            Dictionary representation of the selector
+        """
+        try:
+            parsed_dict = self.parse_selector_string(selector_str)
+            return self._selector_to_dict(parsed_dict)  # type: ignore
+        except InvalidUiSelectorError:
+            raise
+        except Exception as e:
+            raise ConversionError(f"Failed to convert UiSelector to XPath: {e}") from e
+
+    def parse_selector_string(self, selector_str: str) -> dict[str, Any]:
+        """
+        Parse UiSelector string into dictionary format.
+
+        Args:
+            selector_str: UiSelector string to parse
+
+        Returns:
+            Parsed selector dictionary
+
+        Raises:
+            InvalidUiSelectorError: If parsing fails
+        """
+        try:
+            # Clean the input string
+            cleaned_str = selector_str.strip()
+            if cleaned_str.startswith("'") and cleaned_str.endswith("'"):
+                cleaned_str = cleaned_str[1:-1]
+
+            # Tokenize and parse
+            tokens = Lexer(cleaned_str).tokens()
+            selector = Parser(tokens).parse()
+
+            return self._selector_to_parsed_dict(selector)
+
+        except Exception as e:
+            self.logger.error(f"Failed to parse UiSelector string: {e}")
+            raise InvalidUiSelectorError(f"Invalid UiSelector string: {e}") from e
+
+    def _selector_to_xpath(self, sel: dict[str, Any], base_xpath: str = "//*") -> str:  # noqa: C901
         """
         Convert a parsed selector dictionary to XPath.
 
@@ -108,8 +178,33 @@ class UiSelectorConverter:
             return xpath
 
         except Exception as e:
-            self._log_failed_conversion("dict", "xpath", str(e))
+            self._log_failed_conversion("parsed_dict", "xpath", str(e))
             raise ConversionError(f"Failed to convert selector to XPath: {e}") from e
+
+    def _selector_to_dict(self, sel: dict[str, Any]) -> dict[str, Any]:
+        """
+        Convert one UiSelector method into a Shadowstep dict representation.
+        """
+        for method_data in sel.get("methods", []):
+            name = method_data["name"]
+            args = method_data.get("args", [])
+
+            try:
+                method = UiMethod(name)
+            except ValueError as e:
+                self.logger.warning(f"Unknown UiSelector method '{name}', skipping: {e}")
+                continue
+            if method not in UI_TO_SHADOWSTEP_DICT:
+                raise NotImplementedError(f"UiSelector method {method} is not supported for dict conversion")
+    
+            converter = UI_TO_SHADOWSTEP_DICT[method]
+    
+            if not args:
+                raise ValueError(f"UiSelector method {method} requires an argument, but none was provided")
+    
+            value = args[0]
+            return converter(value)
+        raise ValueError(f"Unknown")
 
     def _convert_nested_selector(self, nested_sel: Any) -> str:
         """
@@ -122,11 +217,11 @@ class UiSelectorConverter:
             XPath string for the nested selector
         """
         if isinstance(nested_sel, dict):
-            return self.selector_to_xpath(nested_sel, base_xpath="*")   # type: ignore
+            return self._selector_to_xpath(nested_sel, base_xpath="*")  # type: ignore
         elif hasattr(nested_sel, 'methods'):
             # Handle Selector AST object
             parsed_dict = self._selector_to_parsed_dict(nested_sel)
-            return self.selector_to_xpath(parsed_dict, base_xpath="*")   # type: ignore
+            return self._selector_to_xpath(parsed_dict, base_xpath="*")  # type: ignore
         else:
             raise ConversionError(f"Unsupported nested selector type: {type(nested_sel)}")
 
@@ -152,69 +247,6 @@ class UiSelectorConverter:
                 for method in sel.methods
             ]
         }
-
-    def parse_selector_string(self, selector_str: str) -> dict[str, Any]:
-        """
-        Parse UiSelector string into dictionary format.
-
-        Args:
-            selector_str: UiSelector string to parse
-
-        Returns:
-            Parsed selector dictionary
-
-        Raises:
-            InvalidUiSelectorError: If parsing fails
-        """
-        try:
-            # Clean the input string
-            cleaned_str = selector_str.strip()
-            if cleaned_str.startswith("'") and cleaned_str.endswith("'"):
-                cleaned_str = cleaned_str[1:-1]
-
-            # Tokenize and parse
-            tokens = Lexer(cleaned_str).tokens()
-            selector = Parser(tokens).parse()
-
-            return self._selector_to_parsed_dict(selector)
-
-        except Exception as e:
-            self.logger.error(f"Failed to parse UiSelector string: {e}")
-            raise InvalidUiSelectorError(f"Invalid UiSelector string: {e}") from e
-
-    def ui_selector_to_xpath(self, selector_str: str) -> str:
-        """
-        Convert UiSelector string directly to XPath.
-
-        Args:
-            selector_str: UiSelector string
-
-        Returns:
-            XPath string
-
-        Raises:
-            InvalidUiSelectorError: If selector string is invalid
-            ConversionError: If conversion fails
-        """
-        try:
-            parsed_dict = self.parse_selector_string(selector_str)
-            return self.selector_to_xpath(parsed_dict)   # type: ignore
-        except InvalidUiSelectorError:
-            raise
-        except Exception as e:
-            raise ConversionError(f"Failed to convert UiSelector to XPath: {e}") from e
-
-    def ui_selector_to_dict(self, selector_str: str) -> dict[str, Any]:
-        """
-        Convert UiSelector string to dictionary format.
-
-        Args:
-            selector_str: UiSelector string
-
-        Returns:
-            Dictionary representation of the selector
-        """
-        return self.parse_selector_string(selector_str)
 
     def _parsed_dict_to_selector(self, selector_dict: dict[str, Any], top_level: bool = True) -> str:
         """
@@ -256,27 +288,6 @@ class UiSelectorConverter:
         result = "".join(parts)
         return result + ";" if top_level else result
 
-    def dict_to_ui_selector(self, selector_dict: dict[str, Any]) -> str:
-        """
-        Convert selector dictionary to UiSelector string.
-
-        Args:
-            selector_dict: Selector dictionary
-
-        Returns:
-            UiSelector string
-        """
-        return self._parsed_dict_to_selector(selector_dict)
-
-    def get_conversion_stats(self) -> dict[str, int]:
-        """
-        Get conversion statistics.
-
-        Returns:
-            Dictionary with conversion statistics
-        """
-        return self.conversion_stats.copy()
-
     def _log_successful_conversion(self, from_format: str, to_format: str) -> None:
         """Log successful conversion."""
         self.conversion_stats['total_conversions'] += 1
@@ -288,25 +299,3 @@ class UiSelectorConverter:
         self.conversion_stats['total_conversions'] += 1
         self.conversion_stats['failed_conversions'] += 1
         self.logger.error(f"Failed to convert {from_format} -> {to_format}: {error}")
-
-    def reset_stats(self) -> None:
-        """Reset conversion statistics."""
-        self.conversion_stats = {
-            'total_conversions': 0,
-            'successful_conversions': 0,
-            'failed_conversions': 0
-        }
-
-
-# Convenience functions for backward compatibility
-def selector_to_xpath(sel: dict[str, Any], base_xpath: str = "//*") -> str:
-    """Convert selector dictionary to XPath (backward compatibility)."""
-    converter = UiSelectorConverter()
-    return converter.selector_to_xpath(sel, base_xpath)
-
-
-def parse_selector_string(s: str) -> dict[str, Any]:
-    """Parse UiSelector string (backward compatibility)."""
-    converter = UiSelectorConverter()
-    return converter.parse_selector_string(s)
-

@@ -43,6 +43,6 @@ UI_TO_SHADOWSTEP_DICT: dict[UiMethod, Callable[[Any], dict[str, Any]]] = {
     UiMethod.INSTANCE: lambda v: {"instance": v},
 
     # --- hierarchy ---
-    UiMethod.CHILD_SELECTOR: lambda v: {"instance": v},
-    UiMethod.FROM_PARENT: lambda v: {"instance": v},
+    UiMethod.CHILD_SELECTOR: lambda v: {"childSelector": v},
+    UiMethod.FROM_PARENT: lambda v: {"fromParent": v},
 }

@@ -4,6 +4,8 @@ from typing import Any
 
 import pytest
 
+from shadowstep.locator_converter.map.ui_to_dict import UI_TO_SHADOWSTEP_DICT
+from shadowstep.locator_converter.types.ui_selector import UiMethod
 from shadowstep.locator_converter.ui_selector_converter import UiSelectorConverter
 
 logger = logging.getLogger(__name__)
@@ -213,9 +215,7 @@ class TestUiSelectorParser:
     )
     def test_ui_selector_parsing_and_xpath(self, selector_str: str, expected_xpath: str):
         converter = UiSelectorConverter()
-        parsed = converter.parse_selector_string(selector_str)
-        logger.info(parsed)
-        xpath = converter.selector_to_xpath(parsed)
+        xpath = converter.selector_to_xpath(selector_str)
         # logger.info(f"{selector_str=}")
         # logger.info(f"{expected_xpath=}")
         # logger.info(f"{parsed=}")
@@ -236,9 +236,7 @@ class TestUiSelectorParser:
     )
     def test_ui_selector_parsing_and_xpath_negative(self, selector_str: str, expected_xpath: str):
         converter = UiSelectorConverter()
-        parsed = converter.parse_selector_string(selector_str)
-        logger.info(parsed)
-        xpath = converter.selector_to_xpath(parsed)
+        xpath = converter.selector_to_xpath(selector_str)
         # logger.info(f"{selector_str=}")
         # logger.info(f"{expected_xpath=}")
         # logger.info(f"{parsed=}")
@@ -289,7 +287,7 @@ class TestUiSelectorParser:
         converter = UiSelectorConverter()
         selector_str = f'new UiSelector().{method_name}({repr(arg)});'
         parsed = converter.parse_selector_string(selector_str)
-        xpath = converter.selector_to_xpath(parsed)
+        xpath = converter._selector_to_xpath(parsed)
 
         logger.info(f"{method_name=}")
         logger.info(f"{arg=}")
@@ -304,3 +302,65 @@ class TestUiSelectorParser:
 
         # Проверяем, что XPath содержит ожидаемый фрагмент
         assert expected_xpath_part in xpath
+
+    @pytest.mark.parametrize(
+        "method, value, expected",
+        [
+            # --- text-based ---
+            (UiMethod.TEXT, "OK", {"text": "OK"}),
+            (UiMethod.TEXT_CONTAINS, "abc", {"textContains": "abc"}),
+            (UiMethod.TEXT_STARTS_WITH, "Op", {"textStartsWith": "Op"}),
+            (UiMethod.TEXT_MATCHES, r"\d+", {"textMatches": r"\d+"}),
+
+            # --- description ---
+            (UiMethod.DESCRIPTION, "Next", {"content-desc": "Next"}),
+            (UiMethod.DESCRIPTION_CONTAINS, "Btn", {"content-descContains": "Btn"}),
+            (UiMethod.DESCRIPTION_STARTS_WITH, "Pre", {"content-descStartsWith": "Pre"}),
+            (UiMethod.DESCRIPTION_MATCHES, ".*", {"content-descMatches": ".*"}),
+
+            # --- resource id / package ---
+            (UiMethod.RESOURCE_ID, "my.id", {"resource-id": "my.id"}),
+            (UiMethod.RESOURCE_ID_MATCHES, ".*id", {"resource-idMatches": ".*id"}),
+            (UiMethod.PACKAGE_NAME, "com.app", {"package": "com.app"}),
+            (UiMethod.PACKAGE_NAME_MATCHES, ".*app", {"packageMatches": ".*app"}),
+
+            # --- class ---
+            (UiMethod.CLASS_NAME, "android.widget.TextView", {"class": "android.widget.TextView"}),
+            (UiMethod.CLASS_NAME_MATCHES, ".*View", {"classNameMatches": ".*View"}),
+
+            # --- bool props ---
+            (UiMethod.CHECKABLE, True, {"checkable": True}),
+            (UiMethod.CHECKED, False, {"checked": False}),
+            (UiMethod.CLICKABLE, True, {"clickable": True}),
+            (UiMethod.LONG_CLICKABLE, False, {"long-clickable": False}),
+            (UiMethod.ENABLED, True, {"enabled": True}),
+            (UiMethod.FOCUSABLE, True, {"focusable": True}),
+            (UiMethod.FOCUSED, False, {"focused": False}),
+            (UiMethod.SCROLLABLE, True, {"scrollable": True}),
+            (UiMethod.SELECTED, False, {"selected": False}),
+            (UiMethod.PASSWORD, True, {"password": True}),
+
+            # --- numeric ---
+            (UiMethod.INDEX, 3, {"index": 3}),
+            (UiMethod.INSTANCE, 1, {"instance": 1}),
+
+            # --- hierarchy ---
+            (UiMethod.CHILD_SELECTOR, "child", {"instance": "child"}),
+            (UiMethod.FROM_PARENT, "parent", {"instance": "parent"}),
+        ]
+    )
+    def test_ui_to_shadowstep_dict(self, method: UiMethod, value: Any, expected: dict[str, Any]):
+        converter = UiSelectorConverter()
+        # собираем строку вида new UiSelector().text("OK");
+        # repr() нужен, чтобы для строк были кавычки, для bool — True/False, для int — число
+        selector_str = f'new UiSelector().{method.value}({repr(value)});'
+
+        shadowstep_dict = converter.selector_to_dict(selector_str)
+
+        logger.info(f"method={method}")
+        logger.info(f"value={value}")
+        logger.info(f"expected={expected}")
+        logger.info(f"shadowstep_dict={shadowstep_dict}")
+
+        assert shadowstep_dict == expected
+
