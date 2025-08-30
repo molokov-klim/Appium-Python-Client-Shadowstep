@@ -4,7 +4,6 @@ from typing import Any
 
 import pytest
 
-from shadowstep.locator_converter.map.ui_to_dict import UI_TO_SHADOWSTEP_DICT
 from shadowstep.locator_converter.types.ui_selector import UiMethod
 from shadowstep.locator_converter.ui_selector_converter import UiSelectorConverter
 
@@ -345,8 +344,8 @@ class TestUiSelectorParser:
             (UiMethod.INSTANCE, 1, {"instance": 1}),
 
             # --- hierarchy ---
-            (UiMethod.CHILD_SELECTOR, "child", {"instance": "child"}),
-            (UiMethod.FROM_PARENT, "parent", {"instance": "parent"}),
+            (UiMethod.CHILD_SELECTOR, "child", {'childSelector': 'child'}),
+            (UiMethod.FROM_PARENT, "parent", {'fromParent': 'parent'}),
         ]
     )
     def test_ui_to_shadowstep_dict(self, method: UiMethod, value: Any, expected: dict[str, Any]):
@@ -364,3 +363,70 @@ class TestUiSelectorParser:
 
         assert shadowstep_dict == expected
 
+    @pytest.mark.parametrize(
+        "selector_str, expected_dict",
+        [
+            (
+                    'new UiSelector().text("OK").clickable(true);',
+                    {"text": "OK", "clickable": True}
+            ),
+            (
+                    'new UiSelector().className("android.widget.Button").enabled(false).instance(1);',
+                    {"class": "android.widget.Button", "enabled": False, "instance": 1}
+            ),
+            (
+                    'new UiSelector().descriptionContains("Карта").scrollable(true);',
+                    {"content-descContains": "Карта", "scrollable": True}
+            ),
+            (
+                    'new UiSelector().packageName("com.example.app").resourceIdMatches(".*btn.*");',
+                    {"package": "com.example.app", "resource-idMatches": ".*btn.*"}
+            ),
+            (
+                    'new UiSelector().className("android.widget.LinearLayout")'
+                    '.childSelector(new UiSelector().text("Item"));',
+                    {'class': 'android.widget.LinearLayout', 'childSelector': {'text': 'Item'}}
+            ),
+            (
+                    'new UiSelector().fromParent(new UiSelector().className("Container").enabled(true));',
+                    {'fromParent': {'class': 'Container', 'enabled': True}}
+            ),
+            (
+                    'new UiSelector().textMatches("\\d{3}-\\d{2}-\\d{4}");',
+                    {"textMatches": "\\d{3}-\\d{2}-\\d{4}"}
+            ),
+            (
+                    'new UiSelector().scrollable(false).clickable(false).instance(2);',
+                    {"scrollable": False, "clickable": False, "instance": 2}
+            ),
+        ]
+    )
+    def test_ui_selector_parsing_and_dict(self, selector_str: str, expected_dict: dict[str, Any]):
+        converter = UiSelectorConverter()
+        shadowstep_dict = converter.selector_to_dict(selector_str)
+
+        logger.info(f"{selector_str=}")
+        logger.info(f"{expected_dict=}")
+        logger.info(f"{shadowstep_dict=}")
+
+        assert shadowstep_dict == expected_dict, f"Expected {expected_dict} got: {shadowstep_dict}"
+
+    @pytest.mark.xfail
+    @pytest.mark.parametrize(
+        "selector_str, expected_dict",
+        [
+            (
+                    'new UiSelector().textStartsWith("Оплат").textContains("Карт").enabled(true);',
+                    {"textStartsWith": "Оплат", "textContains": "Карт", "enabled": True}
+            ),
+        ]
+    )
+    def test_ui_selector_parsing_and_dict_negative(self, selector_str: str, expected_dict: dict[str, Any]):
+        converter = UiSelectorConverter()
+        shadowstep_dict = converter.selector_to_dict(selector_str)
+
+        logger.info(f"{selector_str=}")
+        logger.info(f"{expected_dict=}")
+        logger.info(f"{shadowstep_dict=}")
+
+        assert shadowstep_dict == expected_dict, f"Expected {expected_dict} got: {shadowstep_dict}"

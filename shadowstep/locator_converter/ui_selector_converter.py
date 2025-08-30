@@ -41,11 +41,7 @@ class UiSelectorConverter:
     def __init__(self):
         """Initialize the converter with logging."""
         self.logger = logging.getLogger(__name__)
-        self.conversion_stats = {
-            'total_conversions': 0,
-            'successful_conversions': 0,
-            'failed_conversions': 0
-        }
+        self._compatible_groups = self._build_compatibility_groups()
 
     def selector_to_xpath(self, selector_str: str) -> str:
         """
@@ -157,54 +153,102 @@ class UiSelectorConverter:
                 elif is_logic_method(method):
                     if method == UiMethod.OR:
                         other_xpath = self._convert_nested_selector(args[0])
-                        # if other_xpath.startswith("//"):
-                        #     other_xpath = "*" + other_xpath[2:]
                         xpath = f"{xpath}|//{other_xpath}"
                     elif method == UiMethod.AND:
                         other_xpath = self._convert_nested_selector(args[0])
                         xpath = f"{xpath}[{other_xpath.lstrip('*')}]"
                 else:
-                    # Handle regular methods
                     if method in UI_TO_XPATH:
                         if args:
                             xpath += get_xpath_for_method(method, args[0])
                         else:
-                            # Boolean methods without args (e.g., .enabled())
                             xpath += get_xpath_for_method(method, True)
                     else:
                         self.logger.warning(f"Method '{method}' not supported in XPath conversion")
 
-            self._log_successful_conversion("dict", "xpath")
             return xpath
 
         except Exception as e:
-            self._log_failed_conversion("parsed_dict", "xpath", str(e))
             raise ConversionError(f"Failed to convert selector to XPath: {e}") from e
 
     def _selector_to_dict(self, sel: dict[str, Any]) -> dict[str, Any]:
         """
-        Convert one UiSelector method into a Shadowstep dict representation.
+        Convert parsed selector dictionary to Shadowstep dict format.
+        
+        Args:
+            sel: Parsed selector dictionary
+            
+        Returns:
+            Shadowstep dict representation
         """
-        for method_data in sel.get("methods", []):
-            name = method_data["name"]
+        result: dict[str, Any] = {}
+        methods = sel.get("methods", [])
+        
+        if not methods:
+            raise ValueError("No methods found in selector")
+        
+        for method_data in methods:
+            method_name = method_data["name"]
             args = method_data.get("args", [])
+            
+            if method_name not in UI_TO_SHADOWSTEP_DICT:
+                raise NotImplementedError(f"Method '{method_name}' is not supported")
+            
+            self._validate_method_compatibility(method_name, result.keys())     # type: ignore
+            
+            if method_name in [UiMethod.CHILD_SELECTOR, UiMethod.FROM_PARENT]:
+                if args and isinstance(args[0], dict):
+                    nested_result = self._selector_to_dict(args[0])
+                    result[method_name] = nested_result
+                else:
+                    result[method_name] = args[0] if args else None
+            else:
+                converter = UI_TO_SHADOWSTEP_DICT[method_name]
+                if not args:
+                    raise ValueError(f"Method '{method_name}' requires an argument")
+                
+                converted = converter(args[0])
+                result.update(converted)
+        
+        return result
 
-            try:
-                method = UiMethod(name)
-            except ValueError as e:
-                self.logger.warning(f"Unknown UiSelector method '{name}', skipping: {e}")
-                continue
-            if method not in UI_TO_SHADOWSTEP_DICT:
-                raise NotImplementedError(f"UiSelector method {method} is not supported for dict conversion")
+    def _validate_method_compatibility(self, new_method: str, existing_methods: list[str]) -> None:
+        """
+        Validate that new method is compatible with existing methods.
+
+        Args:
+            new_method: New method to add
+            existing_methods: List of already added methods
+
+        Raises:
+            ValueError: If methods are incompatible
+        """
+        if not existing_methods:
+            return
+
+        for group_name, group_methods in self._compatible_groups.items():
+            if new_method in group_methods:
+                for existing in existing_methods:
+                    if (existing in group_methods and existing != new_method and 
+                            group_name in ["text", "description", "resource", "class"]):
+                            raise ValueError(
+                                f"Conflicting methods: '{existing}' and '{new_method}' "
+                                f"belong to the same group '{group_name}'. "
+                                f"Only one method per group is allowed."
+                            )
+                break
     
-            converter = UI_TO_SHADOWSTEP_DICT[method]
-    
-            if not args:
-                raise ValueError(f"UiSelector method {method} requires an argument, but none was provided")
-    
-            value = args[0]
-            return converter(value)
-        raise ValueError(f"Unknown")
+    def _build_compatibility_groups(self) -> dict[str, list[str]]:
+        return {
+            "text": [UiMethod.TEXT, UiMethod.TEXT_CONTAINS, UiMethod.TEXT_STARTS_WITH, UiMethod.TEXT_MATCHES],
+            "description": [UiMethod.DESCRIPTION, UiMethod.DESCRIPTION_CONTAINS, UiMethod.DESCRIPTION_STARTS_WITH, UiMethod.DESCRIPTION_STARTS_WITH],
+            "resource": [UiMethod.RESOURCE_ID, UiMethod.RESOURCE_ID_MATCHES, UiMethod.PACKAGE_NAME, UiMethod.PACKAGE_NAME_MATCHES],
+            "class": [UiMethod.CLASS_NAME, UiMethod.CLASS_NAME_MATCHES],
+            "boolean": [UiMethod.CHECKABLE, UiMethod.CHECKED, UiMethod.CLICKABLE, UiMethod.LONG_CLICKABLE, UiMethod.ENABLED,
+                       UiMethod.FOCUSABLE, UiMethod.FOCUSED, UiMethod.SCROLLABLE, UiMethod.SELECTED, UiMethod.PASSWORD],
+            "numeric": [UiMethod.INDEX, UiMethod.INSTANCE],
+            "hierarchy": [UiMethod.CHILD_SELECTOR, UiMethod.FROM_PARENT]
+        }
 
     def _convert_nested_selector(self, nested_sel: Any) -> str:
         """
@@ -287,15 +331,3 @@ class UiSelectorConverter:
 
         result = "".join(parts)
         return result + ";" if top_level else result
-
-    def _log_successful_conversion(self, from_format: str, to_format: str) -> None:
-        """Log successful conversion."""
-        self.conversion_stats['total_conversions'] += 1
-        self.conversion_stats['successful_conversions'] += 1
-        self.logger.debug(f"Successfully converted {from_format} -> {to_format}")
-
-    def _log_failed_conversion(self, from_format: str, to_format: str, error: str) -> None:
-        """Log failed conversion."""
-        self.conversion_stats['total_conversions'] += 1
-        self.conversion_stats['failed_conversions'] += 1
-        self.logger.error(f"Failed to convert {from_format} -> {to_format}: {error}")
