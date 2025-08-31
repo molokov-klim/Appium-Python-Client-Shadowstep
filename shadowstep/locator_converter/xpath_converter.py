@@ -1,20 +1,13 @@
 # shadowstep/locator_converter/xpath_converter.py
-
-"""
-XPath to UiSelector and Dictionary converter module.
-
-This module provides functionality to convert XPath expressions to:
-1. UiSelector strings (Java-style)
-2. Shadowstep Dictionary format
-
-Supports various XPath predicates and complex expressions.
-"""
 from __future__ import annotations
 
 import logging
 import re
 from dataclasses import dataclass
 from typing import Any, Dict, List, Optional
+
+from shadowstep.locator_converter.map.xpath_to_dict import XPATH_TO_SHADOWSTEP_DICT
+from shadowstep.locator_converter.types.xpath import XPathAttribute
 
 
 @dataclass
@@ -67,25 +60,6 @@ class XPathConverter:
             '@focusable': 'focusable',
             '@focused': 'focused',
             '@long-clickable': 'longClickable',
-            '@scrollable': 'scrollable',
-            '@selected': 'selected'
-        }
-        
-        # XPath attribute to Shadowstep dict key mapping
-        self.xpath_to_dict_mapping = {
-            '@text': 'text',
-            '@content-desc': 'content-desc',
-            '@resource-id': 'resource-id',
-            '@package': 'package',
-            '@class': 'class',
-            '@password': 'password',
-            '@checkable': 'checkable',
-            '@checked': 'checked',
-            '@clickable': 'clickable',
-            '@enabled': 'enabled',
-            '@focusable': 'focusable',
-            '@focused': 'focused',
-            '@long-clickable': 'long-clickable',
             '@scrollable': 'scrollable',
             '@selected': 'selected'
         }
@@ -249,11 +223,11 @@ class XPathConverter:
         # Handle function-based predicates
         if pred_str.startswith('contains('):
             return self._parse_contains_predicate(pred_str)
-        elif pred_str.startswith('starts-with('):
+        if pred_str.startswith('starts-with('):
             return self._parse_starts_with_predicate(pred_str)
-        elif pred_str.startswith('matches('):
+        if pred_str.startswith('matches('):
             return self._parse_matches_predicate(pred_str)
-        elif pred_str.startswith('position()'):
+        if pred_str.startswith('position()'):
             return self._parse_position_predicate(pred_str)
         
         # Handle simple attribute predicates
@@ -482,76 +456,110 @@ class XPathConverter:
         # Handle string values
         return f'.{ui_method}("{predicate.value}")'
 
-    def _build_dict(self, parsed: XPathExpression) -> Dict[str, Any]:
+    def _build_dict(self, parsed: XPathExpression) -> dict[str, Any]:
         """
-        Build Dictionary representation from parsed XPath.
-        
-        Args:
-            parsed: Parsed XPath expression
-            
-        Returns:
-            Dictionary representation
+        Собирает словарь Shadowstep через XPATH_TO_SHADOWSTEP_DICT.
         """
-        result = {}
-        
-        # Add element class if specified
-        if parsed.element != '*':
-            result['class'] = parsed.element
-        
-        # Add predicates
+        result: dict[str, Any] = {}
+
+        # Класс элемента (если он не "*")
+        if parsed.element != "*":
+            result.update(XPATH_TO_SHADOWSTEP_DICT[XPathAttribute.CLASS_NAME](parsed.element))
+
+        # Предикаты
         for predicate in parsed.predicates:
-            dict_key = self._predicate_to_dict_key(predicate)
-            if dict_key:
-                result[dict_key] = self._extract_dict_value(predicate)
-        
-        # Add position if specified
+            entry = self._predicate_to_dict_entry(predicate)
+            if entry:
+                result.update(entry)
+
+        # Индекс (instance)
         if parsed.position is not None:
-            result['index'] = parsed.position
-        
+            result.update(XPATH_TO_SHADOWSTEP_DICT[XPathAttribute.INSTANCE](parsed.position))
+
         return result
 
-    def _predicate_to_dict_key(self, predicate: XPathPredicate) -> Optional[str]:
-        """Convert predicate to dictionary key."""
-        dict_key = self.xpath_to_dict_mapping.get(predicate.attribute)
-        if not dict_key:
+
+    def _predicate_to_dict_entry(self, predicate: XPathPredicate) -> dict[str, Any] | None:
+        """
+        Конвертирует предикат в Shadowstep dict через XPATH_TO_SHADOWSTEP_DICT.
+        """
+        try:
+            # Определяем тип предиката → находим нужный XPathAttribute
+            if predicate.function == "contains":
+                if predicate.attribute == "@text":
+                    attr = XPathAttribute.TEXT_CONTAINS
+                elif predicate.attribute == "@content-desc":
+                    attr = XPathAttribute.DESCRIPTION_CONTAINS
+                elif predicate.attribute == "@resource-id":
+                    attr = XPathAttribute.RESOURCE_ID_MATCHES
+                elif predicate.attribute == "@package":
+                    attr = XPathAttribute.PACKAGE_NAME_MATCHES
+                elif predicate.attribute == "@class":
+                    attr = XPathAttribute.CLASS_NAME_MATCHES
+                else:
+                    return None
+
+            elif predicate.function == "starts-with":
+                if predicate.attribute == "@text":
+                    attr = XPathAttribute.TEXT_STARTS_WITH
+                elif predicate.attribute == "@content-desc":
+                    attr = XPathAttribute.DESCRIPTION_STARTS_WITH
+                elif predicate.attribute == "@resource-id":
+                    attr = XPathAttribute.RESOURCE_ID_MATCHES
+                elif predicate.attribute == "@package":
+                    attr = XPathAttribute.PACKAGE_NAME_MATCHES
+                elif predicate.attribute == "@class":
+                    attr = XPathAttribute.CLASS_NAME_MATCHES
+                else:
+                    return None
+
+            elif predicate.function == "matches":
+                if predicate.attribute == "@text":
+                    attr = XPathAttribute.TEXT_MATCHES
+                elif predicate.attribute == "@content-desc":
+                    attr = XPathAttribute.DESCRIPTION_MATCHES
+                elif predicate.attribute == "@resource-id":
+                    attr = XPathAttribute.RESOURCE_ID_MATCHES
+                elif predicate.attribute == "@package":
+                    attr = XPathAttribute.PACKAGE_NAME_MATCHES
+                elif predicate.attribute == "@class":
+                    attr = XPathAttribute.CLASS_NAME_MATCHES
+                else:
+                    return None
+
+            elif predicate.function == "position":
+                attr = XPathAttribute.INDEX
+
+            else:
+                # Обычное равенство
+                mapping = {
+                    "@text": XPathAttribute.TEXT,
+                    "@content-desc": XPathAttribute.DESCRIPTION,
+                    "@resource-id": XPathAttribute.RESOURCE_ID,
+                    "@package": XPathAttribute.PACKAGE_NAME,
+                    "@class": XPathAttribute.CLASS_NAME,
+                    "@checkable": XPathAttribute.CHECKABLE,
+                    "@checked": XPathAttribute.CHECKED,
+                    "@clickable": XPathAttribute.CLICKABLE,
+                    "@enabled": XPathAttribute.ENABLED,
+                    "@focusable": XPathAttribute.FOCUSABLE,
+                    "@focused": XPathAttribute.FOCUSED,
+                    "@long-clickable": XPathAttribute.LONG_CLICKABLE,
+                    "@scrollable": XPathAttribute.SCROLLABLE,
+                    "@selected": XPathAttribute.SELECTED,
+                    "@password": XPathAttribute.PASSWORD,
+                }
+                attr = mapping.get(predicate.attribute)
+                if not attr:
+                    return None
+
+            # Вызываем готовый маппинг
+            factory = XPATH_TO_SHADOWSTEP_DICT[attr]
+            return factory(self._extract_dict_value(predicate))
+
+        except Exception as e:
+            self.logger.warning(f"Не удалось преобразовать предикат {predicate}: {e}")
             return None
-        
-        # Handle special cases for function-based predicates
-        if predicate.function == 'contains':
-            if predicate.attribute == '@text':
-                return 'textContains'
-            elif predicate.attribute == '@content-desc':
-                return 'content-descContains'
-            elif predicate.attribute == '@resource-id':
-                return 'resource-idMatches'
-            elif predicate.attribute == '@package':
-                return 'packageMatches'
-            elif predicate.attribute == '@class':
-                return 'classNameMatches'
-        elif predicate.function == 'starts-with':
-            if predicate.attribute == '@text':
-                return 'textStartsWith'
-            elif predicate.attribute == '@content-desc':
-                return 'content-descStartsWith'
-            elif predicate.attribute == '@resource-id':
-                return 'resource-idMatches'
-            elif predicate.attribute == '@package':
-                return 'packageMatches'
-            elif predicate.attribute == '@class':
-                return 'classNameMatches'
-        elif predicate.function == 'matches':
-            if predicate.attribute == '@text':
-                return 'textMatches'
-            elif predicate.attribute == '@content-desc':
-                return 'content-descMatches'
-            elif predicate.attribute == '@resource-id':
-                return 'resource-idMatches'
-            elif predicate.attribute == '@package':
-                return 'packageMatches'
-            elif predicate.attribute == '@class':
-                return 'classNameMatches'
-        
-        return dict_key
 
     def _extract_dict_value(self, predicate: XPathPredicate) -> Any:
         """Extract value for dictionary from predicate."""

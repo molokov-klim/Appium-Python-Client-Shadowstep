@@ -5,6 +5,7 @@ from typing import Any
 import pytest
 
 from shadowstep.locator_converter.types.xpath import XPathAttribute
+from shadowstep.locator_converter.xpath_converter import XPathConverter
 
 logger = logging.getLogger(__name__)
 
@@ -34,7 +35,7 @@ class TestXpathConverter:
 
             # --- class ---
             (XPathAttribute.CLASS_NAME, "android.widget.Button", {"class": "android.widget.Button"}),
-            (XPathAttribute.CLASS_NAME_MATCHES, ".*Button", {"classNameMatches": ".*Button"}),
+            (XPathAttribute.CLASS_NAME_MATCHES, ".*Button", {"classMatches": ".*Button"}),
 
             # --- bool props ---
             (XPathAttribute.CHECKABLE, True, {"checkable": True}),
@@ -43,7 +44,7 @@ class TestXpathConverter:
             (XPathAttribute.ENABLED, False, {"enabled": False}),
             (XPathAttribute.FOCUSABLE, True, {"focusable": True}),
             (XPathAttribute.FOCUSED, False, {"focused": False}),
-            (XPathAttribute.LONG_CLICKABLE, True, {"longClickable": True}),
+            (XPathAttribute.LONG_CLICKABLE, True, {"long-clickable": True}),
             (XPathAttribute.SCROLLABLE, False, {"scrollable": False}),
             (XPathAttribute.SELECTED, True, {"selected": True}),
 
@@ -53,7 +54,15 @@ class TestXpathConverter:
         ]
     )
     def test_xpath_to_dict_attributes(self, method_name: str, arg: Any, expected: dict[str, Any]):
-        ...
+        converter = XPathConverter()
+        xpath = f"//*[{method_name.value}'{arg}']" if "(" not in method_name.value else f"//*[{method_name.value}'{arg}')]"
+        logger.info(f"{xpath=}")
+        shadowstep_dict = converter.xpath_to_dict(xpath)
+        logger.info(f"{shadowstep_dict=}")
+        logger.info(f"{method_name=}")
+        logger.info(f"{arg=}")
+        logger.info(f"{expected=}")
+        assert expected == shadowstep_dict  # noqa: S101
 
     @pytest.mark.parametrize(
         "xpath, expected",  # noqa: PT006
