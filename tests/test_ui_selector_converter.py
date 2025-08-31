@@ -13,7 +13,7 @@ logger = logging.getLogger(__name__)
 class TestUiSelectorConverter:
 
     @pytest.mark.parametrize(
-        "method_name, arg, expected_xpath_part",
+        "method_name, arg, expected_xpath_part",  # noqa: PT006
         [
             # --- text-based ---
             (UiAttribute.TEXT, "Привет", '@text="Привет"'),
@@ -49,13 +49,13 @@ class TestUiSelectorConverter:
             (UiAttribute.SELECTED, True, '@selected="true"'),
 
             # --- numeric ---
-            (UiAttribute.INDEX, 2, 'position()=3'),
-            (UiAttribute.INSTANCE, 0, '//*[1]'),
+            (UiAttribute.INDEX, 2, "position()=3"),
+            (UiAttribute.INSTANCE, 0, "//*[1]"),
         ]
     )
     def test_ui_to_xpath_attributes(self, method_name: str, arg: Any, expected_xpath_part: str):
         converter = UiSelectorConverter()
-        selector_str = f'new UiSelector().{method_name}({repr(arg)});'
+        selector_str = f"new UiSelector().{method_name}({repr(arg)});"
         parsed = converter.parse_selector_string(selector_str)
         xpath = converter._selector_to_xpath(parsed)
 
@@ -65,13 +65,13 @@ class TestUiSelectorConverter:
         logger.info(f"{parsed=}")
         logger.info(f"{xpath=}")
 
-        method_in_dict = parsed['methods'][0]
-        assert method_in_dict['name'] == method_name
-        assert method_in_dict['args'][0] == arg
-        assert expected_xpath_part in xpath
+        method_in_dict = parsed["methods"][0]
+        assert method_in_dict["name"] == method_name  # noqa: S101
+        assert method_in_dict["args"][0] == arg  # noqa: S101
+        assert expected_xpath_part in xpath  # noqa: S101
 
     @pytest.mark.parametrize(
-        "selector_str, expected_xpath",
+        "selector_str, expected_xpath",  # noqa: PT006
         [
             (
                     'new UiSelector().textStartsWith("Оплат").className("android.widget.Button")'
@@ -139,49 +139,8 @@ class TestUiSelectorConverter:
                     '//*[@class="android.widget.TextView"]/..//*[@class="android.widget.LinearLayout"][@enabled="true"][position()=1]'
             ),
             (
-                    'new UiSelector().scrollable(false).clickable(false).instance(2);',
+                    "new UiSelector().scrollable(false).clickable(false).instance(2);",
                     '//*[@scrollable="false"][@clickable="false"][3]'
-            ),
-            (
-                    'new UiSelector().textStartsWith("Оплат").className("android.widget.Button")'
-                    '.childSelector(new UiSelector().className("android.widget.ImageView"));',
-                    '//*[starts-with(@text, "Оплат")][@class="android.widget.Button"]/*[@class="android.widget.ImageView"]'
-            ),
-            (
-                    'new UiSelector().className("android.widget.EditText").focused(true).instance(0);',
-                    '//*[@class="android.widget.EditText"][@focused="true"][1]'
-            ),
-            (
-                    'new UiSelector().packageName("ru.sigma.app.debug").resourceIdMatches(".*:id/btn.*");',
-                    '//*[@package="ru.sigma.app.debug"][matches(@resource-id, ".*:id/btn.*")]'
-            ),
-            (
-                    'new UiSelector().descriptionContains("Карта").clickable(true);',
-                    '//*[contains(@content-desc,"Карта")][@clickable="true"]'
-            ),
-            (
-                    'new UiSelector().className("androidx.appcompat.app.ActionBar$Tab").index(2);',
-                    '//*[@class="androidx.appcompat.app.ActionBar$Tab"][position()=3]'
-            ),
-            (
-                    'new UiSelector().className("android.widget.RadioButton").fromParent(new UiSelector().resourceId("ru.sigma.app.debug:id/paymentMethods"));',
-                    '//*[@class="android.widget.RadioButton"]/..//*[@resource-id="ru.sigma.app.debug:id/paymentMethods"]'
-            ),
-            (
-                    'new UiSelector().className("android.widget.EditText").textStartsWith("+7").enabled(true);',
-                    '//*[@class="android.widget.EditText"][starts-with(@text,"+7")][@enabled="true"]'
-            ),
-            (
-                    'new UiSelector().descriptionMatches("[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}");',
-                    '//*[matches(@content-desc,"[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}")]'
-            ),
-            (
-                    'new UiSelector().scrollable(true).childSelector(new UiSelector().text("История"));',
-                    '//*[@scrollable="true"]/*[@text="История"]'
-            ),
-            (
-                    'new UiSelector().className("android.widget.CheckBox").checkable(true).checked(false).instance(2);',
-                    '//*[@class="android.widget.CheckBox"][@checkable="true"][@checked="false"][3]'
             ),
             (
                     'new UiSelector().textContains("карт").resourceId("ru.sigma.app.debug:id/card_number");',
@@ -220,15 +179,15 @@ class TestUiSelectorConverter:
                     '//*[@resource-id=""]'
             ),
             (
-                    'new UiSelector().index(0);',
-                    '//*[position()=1]'
+                    "new UiSelector().index(0);",
+                    "//*[position()=1]"
             ),
             (
-                    'new UiSelector().instance(5);',
-                    '//*[6]'
+                    "new UiSelector().instance(5);",
+                    "//*[6]"
             ),
             (
-                    'new UiSelector().focusable(true).password(true);',
+                    "new UiSelector().focusable(true).password(true);",
                     '//*[@focusable="true"][@password="true"]'
             ),
             (
@@ -262,15 +221,15 @@ class TestUiSelectorConverter:
         # logger.info(f"{expected_xpath=}")
         # logger.info(f"{parsed=}")
         # logger.info(f"{xpath=}")
-        assert expected_xpath.replace(" ", "") == xpath.replace(" ", ""), f"Expected '{expected_xpath}' got: {xpath}"
+        assert expected_xpath.replace(" ", "") == xpath.replace(" ", ""), f"Expected '{expected_xpath}' got: {xpath}"  # noqa: S101
 
     @pytest.mark.xfail
     @pytest.mark.parametrize(
-        "selector_str, expected_xpath",
+        "selector_str, expected_xpath",  # noqa: PT006
         [
             (
                     'new UiSelector().unknownProperty("value");',
-                    ''
+                    ""
             )
 
         ]
@@ -282,10 +241,10 @@ class TestUiSelectorConverter:
         # logger.info(f"{expected_xpath=}")
         # logger.info(f"{parsed=}")
         # logger.info(f"{xpath=}")
-        assert expected_xpath.replace(" ", "") == xpath.replace(" ", ""), f"Expected '{expected_xpath}' got: {xpath}"
+        assert expected_xpath.replace(" ", "") == xpath.replace(" ", ""), f"Expected '{expected_xpath}' got: {xpath}"  # noqa: S101
 
     @pytest.mark.parametrize(
-        "method, value, expected",
+        "method, value, expected",  # noqa: PT006
         [
             # --- text-based ---
             (UiAttribute.TEXT, "OK", {"text": "OK"}),
@@ -326,13 +285,13 @@ class TestUiSelectorConverter:
             (UiAttribute.INSTANCE, 1, {"instance": 1}),
 
             # --- hierarchy ---
-            (UiAttribute.CHILD_SELECTOR, "child", {'childSelector': 'child'}),
-            (UiAttribute.FROM_PARENT, "parent", {'fromParent': 'parent'}),
+            (UiAttribute.CHILD_SELECTOR, "child", {"childSelector": "child"}),
+            (UiAttribute.FROM_PARENT, "parent", {"fromParent": "parent"}),
         ]
     )
     def test_ui_to_dict_attributes(self, method: UiAttribute, value: Any, expected: dict[str, Any]):
         converter = UiSelectorConverter()
-        selector_str = f'new UiSelector().{method.value}({repr(value)});'
+        selector_str = f"new UiSelector().{method.value}({repr(value)});"
 
         shadowstep_dict = converter.selector_to_dict(selector_str)
 
@@ -341,10 +300,10 @@ class TestUiSelectorConverter:
         logger.info(f"expected={expected}")
         logger.info(f"shadowstep_dict={shadowstep_dict}")
 
-        assert shadowstep_dict == expected
+        assert shadowstep_dict == expected  # noqa: S101
 
     @pytest.mark.parametrize(
-        "selector_str, expected_dict",
+        "selector_str, expected_dict",  # noqa: PT006
         [
             (
                     'new UiSelector().text("OK").clickable(true);',
@@ -365,18 +324,18 @@ class TestUiSelectorConverter:
             (
                     'new UiSelector().className("android.widget.LinearLayout")'
                     '.childSelector(new UiSelector().text("Item"));',
-                    {'class': 'android.widget.LinearLayout', 'childSelector': {'text': 'Item'}}
+                    {"class": "android.widget.LinearLayout", "childSelector": {"text": "Item"}}
             ),
             (
                     'new UiSelector().fromParent(new UiSelector().className("Container").enabled(true));',
-                    {'fromParent': {'class': 'Container', 'enabled': True}}
+                    {"fromParent": {"class": "Container", "enabled": True}}
             ),
             (
                     'new UiSelector().textMatches("\\d{3}-\\d{2}-\\d{4}");',
                     {"textMatches": "\\d{3}-\\d{2}-\\d{4}"}
             ),
             (
-                    'new UiSelector().scrollable(false).clickable(false).instance(2);',
+                    "new UiSelector().scrollable(false).clickable(false).instance(2);",
                     {"scrollable": False, "clickable": False, "instance": 2}
             ),
         ]
@@ -389,11 +348,11 @@ class TestUiSelectorConverter:
         logger.info(f"{expected_dict=}")
         logger.info(f"{shadowstep_dict=}")
 
-        assert shadowstep_dict == expected_dict, f"Expected {expected_dict} got: {shadowstep_dict}"
+        assert shadowstep_dict == expected_dict, f"Expected {expected_dict} got: {shadowstep_dict}"  # noqa: S101
 
     @pytest.mark.xfail
     @pytest.mark.parametrize(
-        "selector_str, expected_dict",
+        "selector_str, expected_dict",  # noqa: PT006
         [
             (
                     'new UiSelector().textStartsWith("Оплат").textContains("Карт").enabled(true);',
@@ -409,4 +368,4 @@ class TestUiSelectorConverter:
         logger.info(f"{expected_dict=}")
         logger.info(f"{shadowstep_dict=}")
 
-        assert shadowstep_dict == expected_dict, f"Expected {expected_dict} got: {shadowstep_dict}"
+        assert shadowstep_dict == expected_dict, f"Expected {expected_dict} got: {shadowstep_dict}"  # noqa: S101

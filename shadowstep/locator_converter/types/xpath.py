@@ -5,7 +5,7 @@ class XPathAttribute(Enum):
     # --- text-based ---
     TEXT = '@text='
     TEXT_CONTAINS = 'contains(@text, '
-    TEXT_STARTS_WITH = 'starts-with(@text, '
+    TEXT_STARTS_WITH = "starts-with(@text, "
     TEXT_MATCHES = 'matches(@text, '  # Appium >= 2
 
     # --- description ---
