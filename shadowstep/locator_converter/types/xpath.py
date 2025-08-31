@@ -1,36 +1,49 @@
 from enum import Enum
 
 
-class XPathMethod(str, Enum):
-    # --- Tree navigation operators ---
-    CHILD = "child"  # direct child node (e.g., /child::div)
-    DESCENDANT = "descendant"  # any descendant at any level (//div)
-    PARENT = "parent"  # parent node
-    ANCESTOR = "ancestor"  # any ancestor at any level
-    FOLLOWING_SIBLING = "following-sibling"  # next sibling node at the same level
-    PRECEDING_SIBLING = "preceding-sibling"  # previous sibling node at the same level
-    SELF = "self"  # current node
-    DESCENDANT_OR_SELF = "descendant-or-self"  # current node + all descendants
-    ANCESTOR_OR_SELF = "ancestor-or-self"  # current node + all ancestors
+class XPathAttribute(str, Enum):
+    # --- text-based ---
+    TEXT = '@text="{value}"'
+    TEXT_CONTAINS = 'contains(@text, "{value}")'
+    TEXT_STARTS_WITH = 'starts-with(@text, "{value}")'
+    TEXT_MATCHES = 'matches(@text, "{value}")'  # Appium >= 2
 
-    # --- Node/element selection ---
-    NODE_NAME = "nodeName"  # filter by node/tag name
+    # --- description ---
+    DESCRIPTION = '@content-desc="{value}"'
+    DESCRIPTION_CONTAINS = 'contains(@content-desc, "{value}")'
+    DESCRIPTION_STARTS_WITH = 'starts-with(@content-desc, "{value}")'
+    DESCRIPTION_MATCHES = 'matches(@content-desc, "{value}")'
 
-    # --- Attribute handling ---
-    ATTRIBUTE = "attribute"  # access a node's attribute
-    ATTRIBUTE_EQUALS = "attributeEquals"  # attribute equals a given value
-    ATTRIBUTE_CONTAINS = "attributeContains"  # attribute contains a substring
-    ATTRIBUTE_STARTS_WITH = "attributeStartsWith"  # attribute starts with a substring
+    # --- resource id / package ---
+    RESOURCE_ID = '@resource-id="{value}"'
+    RESOURCE_ID_MATCHES = 'matches(@resource-id, "{value}")'
+    PACKAGE_NAME = '@package="{value}"'
+    PACKAGE_NAME_MATCHES = 'matches(@package, "{value}")'
 
-    # --- Text handling ---
-    TEXT_EQUALS = "textEquals"  # node text exactly matches
-    TEXT_CONTAINS = "textContains"  # node text contains a substring
-    TEXT_STARTS_WITH = "textStartsWith"  # node text starts with a substring
+    # --- class ---
+    CLASS_NAME = '@class="{value}"'
+    CLASS_NAME_MATCHES = 'matches(@class, "{value}")'
 
-    # --- Positional filters ---
-    POSITION = "position"  # position of the node among siblings
-    LAST = "last"  # last node among siblings
+    # --- bool props ---
+    CHECKABLE = '@checkable="{value}"'
+    CHECKED = '@checked="{value}"'
+    CLICKABLE = '@clickable="{value}"'
+    ENABLED = '@enabled="{value}"'
+    FOCUSABLE = '@focusable="{value}"'
+    FOCUSED = '@focused="{value}"'
+    LONG_CLICKABLE = '@long-clickable="{value}"'
+    SCROLLABLE = '@scrollable="{value}"'
+    SELECTED = '@selected="{value}"'
+    PASSWORD = '@password="{value}"'
 
-    # --- XPath path types ---
-    ABSOLUTE_PATH = "absolutePath"  # absolute path from the document root
-    RELATIVE_PATH = "relativePath"  # relative path from the current node
+    # --- numeric ---
+    INDEX = 'position()={value}'        # NB: тут +1 можно обрабатывать отдельно
+    INSTANCE = '{value}'                # NB: требует доп. логики
+
+    # --- hierarchy ---
+    CHILD_SELECTOR = '{value}'          # подставляется отдельным конвертером
+    FROM_PARENT = '{value}'
+
+    # --- logic ---
+    OR = '{left} | {right}'
+    AND = '{left} and {right}'

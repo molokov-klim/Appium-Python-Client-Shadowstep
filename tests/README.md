@@ -22,6 +22,3 @@ pytest -svl --log-cli-level INFO --tb=short --setup-show tests/test_shadowstep.p
 
 pytest -svl --log-cli-level INFO --tb=short --setup-show tests/test_element.py
 ```
-
-
-

@@ -9,25 +9,14 @@ from shadowstep.locator_converter.map.ui_to_xpath import (
     is_hierarchical_method,
     is_logic_method,
 )
-from shadowstep.locator_converter.types.ui_selector import UiMethod
+from shadowstep.locator_converter.types.ui_selector import UiAttribute
 from shadowstep.locator_converter.ui_selector_converter_core.ast import Selector
+from shadowstep.locator_converter.ui_selector_converter_core.exception import (
+    ConversionError,
+    InvalidUiSelectorError,
+)
 from shadowstep.locator_converter.ui_selector_converter_core.lexer import Lexer
 from shadowstep.locator_converter.ui_selector_converter_core.parser import Parser
-
-
-class LocatorConverterError(Exception):
-    """Base exception for locator conversion errors."""
-    pass
-
-
-class InvalidUiSelectorError(LocatorConverterError):
-    """Raised when UiSelector string is malformed."""
-    pass
-
-
-class ConversionError(LocatorConverterError):
-    """Raised when conversion between formats fails."""
-    pass
 
 
 class UiSelectorConverter:
@@ -134,27 +123,27 @@ class UiSelectorConverter:
                 args = method_data.get("args", [])
 
                 try:
-                    method = UiMethod(name)
+                    method = UiAttribute(name)
                 except ValueError as e:
                     self.logger.warning(f"Unknown UiSelector method '{name}', skipping: {e}")
                     continue
 
                 if is_hierarchical_method(method):
                     # Handle hierarchical methods specially
-                    if method == UiMethod.CHILD_SELECTOR:
+                    if method == UiAttribute.CHILD_SELECTOR:
                         child_xpath = self._convert_nested_selector(args[0])
                         xpath += f'/{child_xpath}'
-                    elif method == UiMethod.FROM_PARENT:
+                    elif method == UiAttribute.FROM_PARENT:
                         parent_xpath = self._convert_nested_selector(args[0])
                         if parent_xpath.startswith("//"):
                             xpath = f'{xpath}/..{parent_xpath}'
                         else:
                             xpath = f'{xpath}/..//{parent_xpath}'
                 elif is_logic_method(method):
-                    if method == UiMethod.OR:
+                    if method == UiAttribute.OR:
                         other_xpath = self._convert_nested_selector(args[0])
                         xpath = f"{xpath}|//{other_xpath}"
-                    elif method == UiMethod.AND:
+                    elif method == UiAttribute.AND:
                         other_xpath = self._convert_nested_selector(args[0])
                         xpath = f"{xpath}[{other_xpath.lstrip('*')}]"
                 else:
@@ -196,7 +185,7 @@ class UiSelectorConverter:
             
             self._validate_method_compatibility(method_name, result.keys())     # type: ignore
             
-            if method_name in [UiMethod.CHILD_SELECTOR, UiMethod.FROM_PARENT]:
+            if method_name in [UiAttribute.CHILD_SELECTOR, UiAttribute.FROM_PARENT]:
                 if args and isinstance(args[0], dict):
                     nested_result = self._selector_to_dict(args[0])
                     result[method_name] = nested_result
@@ -240,14 +229,14 @@ class UiSelectorConverter:
     
     def _build_compatibility_groups(self) -> dict[str, list[str]]:
         return {
-            "text": [UiMethod.TEXT, UiMethod.TEXT_CONTAINS, UiMethod.TEXT_STARTS_WITH, UiMethod.TEXT_MATCHES],
-            "description": [UiMethod.DESCRIPTION, UiMethod.DESCRIPTION_CONTAINS, UiMethod.DESCRIPTION_STARTS_WITH, UiMethod.DESCRIPTION_STARTS_WITH],
-            "resource": [UiMethod.RESOURCE_ID, UiMethod.RESOURCE_ID_MATCHES, UiMethod.PACKAGE_NAME, UiMethod.PACKAGE_NAME_MATCHES],
-            "class": [UiMethod.CLASS_NAME, UiMethod.CLASS_NAME_MATCHES],
-            "boolean": [UiMethod.CHECKABLE, UiMethod.CHECKED, UiMethod.CLICKABLE, UiMethod.LONG_CLICKABLE, UiMethod.ENABLED,
-                       UiMethod.FOCUSABLE, UiMethod.FOCUSED, UiMethod.SCROLLABLE, UiMethod.SELECTED, UiMethod.PASSWORD],
-            "numeric": [UiMethod.INDEX, UiMethod.INSTANCE],
-            "hierarchy": [UiMethod.CHILD_SELECTOR, UiMethod.FROM_PARENT]
+            "text": [UiAttribute.TEXT, UiAttribute.TEXT_CONTAINS, UiAttribute.TEXT_STARTS_WITH, UiAttribute.TEXT_MATCHES],
+            "description": [UiAttribute.DESCRIPTION, UiAttribute.DESCRIPTION_CONTAINS, UiAttribute.DESCRIPTION_STARTS_WITH, UiAttribute.DESCRIPTION_STARTS_WITH],
+            "resource": [UiAttribute.RESOURCE_ID, UiAttribute.RESOURCE_ID_MATCHES, UiAttribute.PACKAGE_NAME, UiAttribute.PACKAGE_NAME_MATCHES],
+            "class": [UiAttribute.CLASS_NAME, UiAttribute.CLASS_NAME_MATCHES],
+            "boolean": [UiAttribute.CHECKABLE, UiAttribute.CHECKED, UiAttribute.CLICKABLE, UiAttribute.LONG_CLICKABLE, UiAttribute.ENABLED,
+                        UiAttribute.FOCUSABLE, UiAttribute.FOCUSED, UiAttribute.SCROLLABLE, UiAttribute.SELECTED, UiAttribute.PASSWORD],
+            "numeric": [UiAttribute.INDEX, UiAttribute.INSTANCE],
+            "hierarchy": [UiAttribute.CHILD_SELECTOR, UiAttribute.FROM_PARENT]
         }
 
     def _convert_nested_selector(self, nested_sel: Any) -> str:

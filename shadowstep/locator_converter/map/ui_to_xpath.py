@@ -2,7 +2,7 @@
 from collections.abc import Callable
 from typing import Any
 
-from shadowstep.locator_converter.types.ui_selector import UiMethod
+from shadowstep.locator_converter.types.ui_selector import UiAttribute
 
 
 def _handle_child_selector(child_xpath: str) -> str:
@@ -31,52 +31,52 @@ def _handle_from_parent(parent_xpath: str) -> str:
     return f'/..{parent_xpath}'
 
 
-UI_TO_XPATH: dict[UiMethod, Callable[[Any], str]] = {
+UI_TO_XPATH: dict[UiAttribute, Callable[[Any], str]] = {
     # --- text-based ---
-    UiMethod.TEXT: lambda v: f'[@text="{v}"]',
-    UiMethod.TEXT_CONTAINS: lambda v: f'[contains(@text, "{v}")]',
-    UiMethod.TEXT_STARTS_WITH: lambda v: f'[starts-with(@text, "{v}")]',
-    UiMethod.TEXT_MATCHES: lambda v: f'[matches(@text, "{v}")]',  # Appium >= 2
+    UiAttribute.TEXT: lambda v: f'[@text="{v}"]',
+    UiAttribute.TEXT_CONTAINS: lambda v: f'[contains(@text, "{v}")]',
+    UiAttribute.TEXT_STARTS_WITH: lambda v: f'[starts-with(@text, "{v}")]',
+    UiAttribute.TEXT_MATCHES: lambda v: f'[matches(@text, "{v}")]',  # Appium >= 2
 
     # --- description ---
-    UiMethod.DESCRIPTION: lambda v: f'[@content-desc="{v}"]',
-    UiMethod.DESCRIPTION_CONTAINS: lambda v: f'[contains(@content-desc, "{v}")]',
-    UiMethod.DESCRIPTION_STARTS_WITH: lambda v: f'[starts-with(@content-desc, "{v}")]',
-    UiMethod.DESCRIPTION_MATCHES: lambda v: f'[matches(@content-desc, "{v}")]',
+    UiAttribute.DESCRIPTION: lambda v: f'[@content-desc="{v}"]',
+    UiAttribute.DESCRIPTION_CONTAINS: lambda v: f'[contains(@content-desc, "{v}")]',
+    UiAttribute.DESCRIPTION_STARTS_WITH: lambda v: f'[starts-with(@content-desc, "{v}")]',
+    UiAttribute.DESCRIPTION_MATCHES: lambda v: f'[matches(@content-desc, "{v}")]',
 
     # --- resource id / package ---
-    UiMethod.RESOURCE_ID: lambda v: f'[@resource-id="{v}"]',
-    UiMethod.RESOURCE_ID_MATCHES: lambda v: f'[matches(@resource-id, "{v}")]',
-    UiMethod.PACKAGE_NAME: lambda v: f'[@package="{v}"]',
-    UiMethod.PACKAGE_NAME_MATCHES: lambda v: f'[matches(@package, "{v}")]',
+    UiAttribute.RESOURCE_ID: lambda v: f'[@resource-id="{v}"]',
+    UiAttribute.RESOURCE_ID_MATCHES: lambda v: f'[matches(@resource-id, "{v}")]',
+    UiAttribute.PACKAGE_NAME: lambda v: f'[@package="{v}"]',
+    UiAttribute.PACKAGE_NAME_MATCHES: lambda v: f'[matches(@package, "{v}")]',
 
     # --- class ---
-    UiMethod.CLASS_NAME: lambda v: f'[@class="{v}"]',
-    UiMethod.CLASS_NAME_MATCHES: lambda v: f'[matches(@class, "{v}")]',
+    UiAttribute.CLASS_NAME: lambda v: f'[@class="{v}"]',
+    UiAttribute.CLASS_NAME_MATCHES: lambda v: f'[matches(@class, "{v}")]',
 
     # --- bool props ---
-    UiMethod.CHECKABLE: lambda v: f'[@checkable="{str(v).lower()}"]',
-    UiMethod.CHECKED: lambda v: f'[@checked="{str(v).lower()}"]',
-    UiMethod.CLICKABLE: lambda v: f'[@clickable="{str(v).lower()}"]',
-    UiMethod.ENABLED: lambda v: f'[@enabled="{str(v).lower()}"]',
-    UiMethod.FOCUSABLE: lambda v: f'[@focusable="{str(v).lower()}"]',
-    UiMethod.FOCUSED: lambda v: f'[@focused="{str(v).lower()}"]',
-    UiMethod.LONG_CLICKABLE: lambda v: f'[@long-clickable="{str(v).lower()}"]',
-    UiMethod.SCROLLABLE: lambda v: f'[@scrollable="{str(v).lower()}"]',
-    UiMethod.SELECTED: lambda v: f'[@selected="{str(v).lower()}"]',
-    UiMethod.PASSWORD: lambda v: f'[@password="{str(v).lower()}"]',
+    UiAttribute.CHECKABLE: lambda v: f'[@checkable="{str(v).lower()}"]',
+    UiAttribute.CHECKED: lambda v: f'[@checked="{str(v).lower()}"]',
+    UiAttribute.CLICKABLE: lambda v: f'[@clickable="{str(v).lower()}"]',
+    UiAttribute.ENABLED: lambda v: f'[@enabled="{str(v).lower()}"]',
+    UiAttribute.FOCUSABLE: lambda v: f'[@focusable="{str(v).lower()}"]',
+    UiAttribute.FOCUSED: lambda v: f'[@focused="{str(v).lower()}"]',
+    UiAttribute.LONG_CLICKABLE: lambda v: f'[@long-clickable="{str(v).lower()}"]',
+    UiAttribute.SCROLLABLE: lambda v: f'[@scrollable="{str(v).lower()}"]',
+    UiAttribute.SELECTED: lambda v: f'[@selected="{str(v).lower()}"]',
+    UiAttribute.PASSWORD: lambda v: f'[@password="{str(v).lower()}"]',
 
     # --- numeric ---
-    UiMethod.INDEX: lambda v: f'[position()={int(v) + 1}]',
-    UiMethod.INSTANCE: lambda v: f'[{int(v) + 1}]',
+    UiAttribute.INDEX: lambda v: f'[position()={int(v) + 1}]',
+    UiAttribute.INSTANCE: lambda v: f'[{int(v) + 1}]',
 
     # --- hierarchy ---
-    UiMethod.CHILD_SELECTOR: lambda v: _handle_child_selector(v),
-    UiMethod.FROM_PARENT: lambda v: _handle_from_parent(v),
+    UiAttribute.CHILD_SELECTOR: lambda v: _handle_child_selector(v),
+    UiAttribute.FROM_PARENT: lambda v: _handle_from_parent(v),
 }
 
 
-def get_xpath_for_method(method: UiMethod, value: Any) -> str:
+def get_xpath_for_method(method: UiAttribute, value: Any) -> str:
     """
     Get XPath predicate for a specific UiSelector method and value.
 
@@ -96,7 +96,7 @@ def get_xpath_for_method(method: UiMethod, value: Any) -> str:
     return UI_TO_XPATH[method](value)
 
 
-def is_hierarchical_method(method: UiMethod) -> bool:
+def is_hierarchical_method(method: UiAttribute) -> bool:
     """
     Check if a method requires special hierarchical handling.
 
@@ -106,12 +106,12 @@ def is_hierarchical_method(method: UiMethod) -> bool:
     Returns:
         True if method is hierarchical (childSelector, fromParent)
     """
-    return method in (UiMethod.CHILD_SELECTOR, UiMethod.FROM_PARENT)
+    return method in (UiAttribute.CHILD_SELECTOR, UiAttribute.FROM_PARENT)
 
-def is_logic_method(method: UiMethod) -> bool:
-    return method in (UiMethod.OR, UiMethod.AND)
+def is_logic_method(method: UiAttribute) -> bool:
+    return method in (UiAttribute.OR, UiAttribute.AND)
 
-def get_supported_methods() -> list[UiMethod]:
+def get_supported_methods() -> list[UiAttribute]:
     """
     Get list of all supported UiSelector methods.
 

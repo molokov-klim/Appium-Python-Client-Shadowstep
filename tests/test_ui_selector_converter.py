@@ -4,7 +4,7 @@ from typing import Any
 
 import pytest
 
-from shadowstep.locator_converter.types.ui_selector import UiMethod
+from shadowstep.locator_converter.types.ui_selector import UiAttribute
 from shadowstep.locator_converter.ui_selector_converter import UiSelectorConverter
 
 logger = logging.getLogger(__name__)
@@ -306,49 +306,49 @@ class TestUiSelectorParser:
         "method, value, expected",
         [
             # --- text-based ---
-            (UiMethod.TEXT, "OK", {"text": "OK"}),
-            (UiMethod.TEXT_CONTAINS, "abc", {"textContains": "abc"}),
-            (UiMethod.TEXT_STARTS_WITH, "Op", {"textStartsWith": "Op"}),
-            (UiMethod.TEXT_MATCHES, r"\d+", {"textMatches": r"\d+"}),
+            (UiAttribute.TEXT, "OK", {"text": "OK"}),
+            (UiAttribute.TEXT_CONTAINS, "abc", {"textContains": "abc"}),
+            (UiAttribute.TEXT_STARTS_WITH, "Op", {"textStartsWith": "Op"}),
+            (UiAttribute.TEXT_MATCHES, r"\d+", {"textMatches": r"\d+"}),
 
             # --- description ---
-            (UiMethod.DESCRIPTION, "Next", {"content-desc": "Next"}),
-            (UiMethod.DESCRIPTION_CONTAINS, "Btn", {"content-descContains": "Btn"}),
-            (UiMethod.DESCRIPTION_STARTS_WITH, "Pre", {"content-descStartsWith": "Pre"}),
-            (UiMethod.DESCRIPTION_MATCHES, ".*", {"content-descMatches": ".*"}),
+            (UiAttribute.DESCRIPTION, "Next", {"content-desc": "Next"}),
+            (UiAttribute.DESCRIPTION_CONTAINS, "Btn", {"content-descContains": "Btn"}),
+            (UiAttribute.DESCRIPTION_STARTS_WITH, "Pre", {"content-descStartsWith": "Pre"}),
+            (UiAttribute.DESCRIPTION_MATCHES, ".*", {"content-descMatches": ".*"}),
 
             # --- resource id / package ---
-            (UiMethod.RESOURCE_ID, "my.id", {"resource-id": "my.id"}),
-            (UiMethod.RESOURCE_ID_MATCHES, ".*id", {"resource-idMatches": ".*id"}),
-            (UiMethod.PACKAGE_NAME, "com.app", {"package": "com.app"}),
-            (UiMethod.PACKAGE_NAME_MATCHES, ".*app", {"packageMatches": ".*app"}),
+            (UiAttribute.RESOURCE_ID, "my.id", {"resource-id": "my.id"}),
+            (UiAttribute.RESOURCE_ID_MATCHES, ".*id", {"resource-idMatches": ".*id"}),
+            (UiAttribute.PACKAGE_NAME, "com.app", {"package": "com.app"}),
+            (UiAttribute.PACKAGE_NAME_MATCHES, ".*app", {"packageMatches": ".*app"}),
 
             # --- class ---
-            (UiMethod.CLASS_NAME, "android.widget.TextView", {"class": "android.widget.TextView"}),
-            (UiMethod.CLASS_NAME_MATCHES, ".*View", {"classNameMatches": ".*View"}),
+            (UiAttribute.CLASS_NAME, "android.widget.TextView", {"class": "android.widget.TextView"}),
+            (UiAttribute.CLASS_NAME_MATCHES, ".*View", {"classMatches": ".*View"}),
 
             # --- bool props ---
-            (UiMethod.CHECKABLE, True, {"checkable": True}),
-            (UiMethod.CHECKED, False, {"checked": False}),
-            (UiMethod.CLICKABLE, True, {"clickable": True}),
-            (UiMethod.LONG_CLICKABLE, False, {"long-clickable": False}),
-            (UiMethod.ENABLED, True, {"enabled": True}),
-            (UiMethod.FOCUSABLE, True, {"focusable": True}),
-            (UiMethod.FOCUSED, False, {"focused": False}),
-            (UiMethod.SCROLLABLE, True, {"scrollable": True}),
-            (UiMethod.SELECTED, False, {"selected": False}),
-            (UiMethod.PASSWORD, True, {"password": True}),
+            (UiAttribute.CHECKABLE, True, {"checkable": True}),
+            (UiAttribute.CHECKED, False, {"checked": False}),
+            (UiAttribute.CLICKABLE, True, {"clickable": True}),
+            (UiAttribute.LONG_CLICKABLE, False, {"long-clickable": False}),
+            (UiAttribute.ENABLED, True, {"enabled": True}),
+            (UiAttribute.FOCUSABLE, True, {"focusable": True}),
+            (UiAttribute.FOCUSED, False, {"focused": False}),
+            (UiAttribute.SCROLLABLE, True, {"scrollable": True}),
+            (UiAttribute.SELECTED, False, {"selected": False}),
+            (UiAttribute.PASSWORD, True, {"password": True}),
 
             # --- numeric ---
-            (UiMethod.INDEX, 3, {"index": 3}),
-            (UiMethod.INSTANCE, 1, {"instance": 1}),
+            (UiAttribute.INDEX, 3, {"index": 3}),
+            (UiAttribute.INSTANCE, 1, {"instance": 1}),
 
             # --- hierarchy ---
-            (UiMethod.CHILD_SELECTOR, "child", {'childSelector': 'child'}),
-            (UiMethod.FROM_PARENT, "parent", {'fromParent': 'parent'}),
+            (UiAttribute.CHILD_SELECTOR, "child", {'childSelector': 'child'}),
+            (UiAttribute.FROM_PARENT, "parent", {'fromParent': 'parent'}),
         ]
     )
-    def test_ui_to_shadowstep_dict(self, method: UiMethod, value: Any, expected: dict[str, Any]):
+    def test_ui_to_shadowstep_dict(self, method: UiAttribute, value: Any, expected: dict[str, Any]):
         converter = UiSelectorConverter()
         # собираем строку вида new UiSelector().text("OK");
         # repr() нужен, чтобы для строк были кавычки, для bool — True/False, для int — число
