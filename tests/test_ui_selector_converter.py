@@ -145,10 +145,6 @@ class TestUiSelectorParser:
                     '//*[@class="android.widget.Button"][@selected="true"]'
             ),
             (
-                    'new UiSelector().text("OK").or(new UiSelector().text("Confirm"));',
-                    '//*[@text="OK"] | //*[@text="Confirm"]'
-            ),
-            (
                     'new UiSelector().className("Button").longClickable(true).packageName("com.example.app");',
                     '//*[@class="Button"][@long-clickable="true"][@package="com.example.app"]'
             ),

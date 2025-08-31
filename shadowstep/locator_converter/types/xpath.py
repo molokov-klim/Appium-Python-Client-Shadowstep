@@ -1,49 +1,45 @@
 from enum import Enum
 
 
-class XPathAttribute(str, Enum):
+class XPathAttribute(Enum):
     # --- text-based ---
-    TEXT = '@text="{value}"'
-    TEXT_CONTAINS = 'contains(@text, "{value}")'
-    TEXT_STARTS_WITH = 'starts-with(@text, "{value}")'
-    TEXT_MATCHES = 'matches(@text, "{value}")'  # Appium >= 2
+    TEXT = '@text='
+    TEXT_CONTAINS = 'contains(@text, '
+    TEXT_STARTS_WITH = 'starts-with(@text, '
+    TEXT_MATCHES = 'matches(@text, '  # Appium >= 2
 
     # --- description ---
-    DESCRIPTION = '@content-desc="{value}"'
-    DESCRIPTION_CONTAINS = 'contains(@content-desc, "{value}")'
-    DESCRIPTION_STARTS_WITH = 'starts-with(@content-desc, "{value}")'
-    DESCRIPTION_MATCHES = 'matches(@content-desc, "{value}")'
+    DESCRIPTION = '@content-desc='
+    DESCRIPTION_CONTAINS = 'contains(@content-desc, '
+    DESCRIPTION_STARTS_WITH = 'starts-with(@content-desc, '
+    DESCRIPTION_MATCHES = 'matches(@content-desc, '
 
     # --- resource id / package ---
-    RESOURCE_ID = '@resource-id="{value}"'
-    RESOURCE_ID_MATCHES = 'matches(@resource-id, "{value}")'
-    PACKAGE_NAME = '@package="{value}"'
-    PACKAGE_NAME_MATCHES = 'matches(@package, "{value}")'
+    RESOURCE_ID = '@resource-id='
+    RESOURCE_ID_MATCHES = 'matches(@resource-id, '
+    PACKAGE_NAME = '@package='
+    PACKAGE_NAME_MATCHES = 'matches(@package, '
 
     # --- class ---
-    CLASS_NAME = '@class="{value}"'
-    CLASS_NAME_MATCHES = 'matches(@class, "{value}")'
+    CLASS_NAME = '@class='
+    CLASS_NAME_MATCHES = 'matches(@class, '
 
     # --- bool props ---
-    CHECKABLE = '@checkable="{value}"'
-    CHECKED = '@checked="{value}"'
-    CLICKABLE = '@clickable="{value}"'
-    ENABLED = '@enabled="{value}"'
-    FOCUSABLE = '@focusable="{value}"'
-    FOCUSED = '@focused="{value}"'
-    LONG_CLICKABLE = '@long-clickable="{value}"'
-    SCROLLABLE = '@scrollable="{value}"'
-    SELECTED = '@selected="{value}"'
-    PASSWORD = '@password="{value}"'
+    CHECKABLE = '@checkable='
+    CHECKED = '@checked='
+    CLICKABLE = '@clickable='
+    ENABLED = '@enabled='
+    FOCUSABLE = '@focusable='
+    FOCUSED = '@focused='
+    LONG_CLICKABLE = '@long-clickable='
+    SCROLLABLE = '@scrollable='
+    SELECTED = '@selected='
+    PASSWORD = '@password='
 
     # --- numeric ---
-    INDEX = 'position()={value}'        # NB: тут +1 можно обрабатывать отдельно
-    INSTANCE = '{value}'                # NB: требует доп. логики
+    INDEX = 'position()='
+    INSTANCE = ''                # use logic
 
     # --- hierarchy ---
-    CHILD_SELECTOR = '{value}'          # подставляется отдельным конвертером
-    FROM_PARENT = '{value}'
-
-    # --- logic ---
-    OR = '{left} | {right}'
-    AND = '{left} and {right}'
+    CHILD_SELECTOR = ''          # use logic
+    FROM_PARENT = ''             # use logic
