@@ -286,19 +286,6 @@ class XPathConverter:
             )
         raise ValueError(f"Invalid matches predicate: {pred_str}")
 
-    def _parse_position_predicate(self, pred_str: str) -> XPathPredicate:
-        """Parse position() function predicate."""
-        match = re.match(r'position\(\)\s*=\s*(\d+)', pred_str)
-        if match:
-            value = int(match.group(1))
-            return XPathPredicate(
-                attribute='position',
-                operator='=',
-                value=str(value - 1),  # Convert to 0-based index
-                function='position'
-            )
-        raise ValueError(f"Invalid position predicate: {pred_str}")
-
     def _parse_simple_predicate(self, pred_str: str) -> XPathPredicate:
         """Parse simple attribute=value predicate."""
         parts = pred_str.split('=', 1)
@@ -314,12 +301,26 @@ class XPathConverter:
             value=value
         )
 
+    def _parse_position_predicate(self, pred_str: str) -> XPathPredicate:
+        """Parse position() function predicate."""
+        pred_str = pred_str.strip().rstrip(")")
+        match = re.match(r"position\(\)\s*=\s*['\"]?(\d+)['\"]?$", pred_str)
+        if match:
+            value = int(match.group(1))
+            return XPathPredicate(
+                attribute="position",
+                operator="=",
+                value=str(value),  # храним 1-based!
+                function="position",
+            )
+        raise ValueError(f"Invalid position predicate: {pred_str}")
+
     def _extract_position(self, predicates_str: str) -> Optional[int]:
         """Extract position from predicates string."""
-        # Look for [n] pattern
-        position_match = re.search(r'\[(\d+)\]', predicates_str)
+        position_match = re.search(r"\[(\d+)\]", predicates_str)
         if position_match:
-            return int(position_match.group(1)) - 1  # Convert to 0-based
+            pos = int(position_match.group(1)) - 1  # XPath → 0-based
+            return pos if pos >= 0 else None
         return None
 
     def _build_uiselector(self, parsed: XPathExpression) -> str:
@@ -441,7 +442,10 @@ class XPathConverter:
 
     def _build_instance_method(self, predicate: XPathPredicate) -> str:
         """Build instance method for UiSelector."""
-        return f'.instance({predicate.value})'
+        pos = int(predicate.value)
+        if pos < 1:
+            raise ValueError(f"Invalid position() value: {pos}. Must be >= 1.")
+        return f".instance({pos - 1})"
 
     def _build_simple_method(self, predicate: XPathPredicate) -> str:
         """Build simple method for UiSelector."""
@@ -457,27 +461,28 @@ class XPathConverter:
         return f'.{ui_method}("{predicate.value}")'
 
     def _build_dict(self, parsed: XPathExpression) -> dict[str, Any]:
-        """
-        Собирает словарь Shadowstep через XPATH_TO_SHADOWSTEP_DICT.
-        """
         result: dict[str, Any] = {}
 
-        # Класс элемента (если он не "*")
         if parsed.element != "*":
             result.update(XPATH_TO_SHADOWSTEP_DICT[XPathAttribute.CLASS_NAME](parsed.element))
 
-        # Предикаты
         for predicate in parsed.predicates:
             entry = self._predicate_to_dict_entry(predicate)
             if entry:
                 result.update(entry)
 
-        # Индекс (instance)
         if parsed.position is not None:
             result.update(XPATH_TO_SHADOWSTEP_DICT[XPathAttribute.INSTANCE](parsed.position))
 
-        return result
+        if parsed.child_path is not None:
+            result.update(
+                XPATH_TO_SHADOWSTEP_DICT[XPathAttribute.CHILD_SELECTOR](parsed.child_path)
+            )
 
+        if parsed.parent_path is not None:
+            result.update(XPATH_TO_SHADOWSTEP_DICT[XPathAttribute.FROM_PARENT](parsed.parent_path))
+
+        return result
 
     def _predicate_to_dict_entry(self, predicate: XPathPredicate) -> dict[str, Any] | None:
         """

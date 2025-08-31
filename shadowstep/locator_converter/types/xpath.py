@@ -39,8 +39,9 @@ class XPathAttribute(Enum):
 
     # --- numeric ---
     INDEX = 'position()='
-    INSTANCE = ''                # use logic
+    INSTANCE = "instance"                       # use special logic
 
     # --- hierarchy ---
-    CHILD_SELECTOR = ''          # use logic
-    FROM_PARENT = ''             # use logic
+    CHILD_SELECTOR = "childSelector"            # use special logic
+    FROM_PARENT = "fromParent"                  # use special logic
+
