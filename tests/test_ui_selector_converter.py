@@ -4,8 +4,6 @@ from typing import Any
 
 import pytest
 
-from shadowstep.locator_converter.map.ui_to_dict import UI_TO_SHADOWSTEP_DICT
-from shadowstep.locator_converter.types.shadowstep_dict import DictAttribute
 from shadowstep.locator_converter.types.ui_selector import UiAttribute
 from shadowstep.locator_converter.ui_selector_converter import UiSelectorConverter
 
