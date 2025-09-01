@@ -1,3 +1,4 @@
+# shadowstep/locator_converter/types/shadowstep_dict.py
 from enum import Enum
 
 

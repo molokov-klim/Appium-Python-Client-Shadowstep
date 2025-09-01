@@ -1,3 +1,4 @@
+# shadowstep/locator_converter/types/ui_selector.py
 from enum import Enum
 
 

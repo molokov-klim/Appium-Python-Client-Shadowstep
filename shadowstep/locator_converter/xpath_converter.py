@@ -3,600 +3,414 @@ from __future__ import annotations
 
 import logging
 import re
-from dataclasses import dataclass
 from typing import Any
 
+from shadowstep.exceptions.shadowstep_exceptions import ConversionError
 from shadowstep.locator_converter.map.xpath_to_dict import XPATH_TO_SHADOWSTEP_DICT
-from shadowstep.locator_converter.types.xpath import XPathAttribute
-
-
-@dataclass
-class XPathPredicate:
-    """Represents a single XPath predicate."""
-    attribute: str
-    operator: str
-    value: str
-    function: str | None = None
-
-
-@dataclass
-class XPathExpression:
-    """Represents parsed XPath expression."""
-    element: str
-    predicates: list[XPathPredicate]
-    position: int | None = None
-    child_path: str | None = None
-    parent_path: str | None = None
 
 
 class XPathConverter:
     """
-    Converts XPath expressions to UiSelector and Dictionary formats.
-    
-    Supports:
-    - Basic attribute predicates (@text, @resource-id, etc.)
-    - Function-based predicates (contains, starts-with, matches)
-    - Position predicates ([1], [position()=2])
-    - Hierarchical paths (//element1/element2)
-    - Complex expressions with multiple predicates
+    Enhanced XPath converter with improved error handling and caching.
+
+    This class provides methods to convert XPath strings to various formats
+    including UiSelector, dictionary locators, and back to XPath strings.
     """
 
     def __init__(self):
         """Initialize the converter with logging."""
         self.logger = logging.getLogger(__name__)
-        
-        # XPath attribute to UiSelector method mapping
-        self.xpath_to_ui_mapping = {
-            "@text": "text",
-            "@content-desc": "description",
-            "@resource-id": "resourceId",
-            "@package": "packageName",
-            "@class": "className",
-            "@password": "password",
-            "@checkable": "checkable",
-            "@checked": "checked",
-            "@clickable": "clickable",
-            "@enabled": "enabled",
-            "@focusable": "focusable",
-            "@focused": "focused",
-            "@long-clickable": "longClickable",
-            "@scrollable": "scrollable",
-            "@selected": "selected"
-        }
+        self._compatible_groups = self._build_compatibility_groups()
 
-    def xpath_to_uiselector(self, xpath: str) -> str:
+    def xpath_to_ui(self, xpath_str: str) -> str:
         """
-        Convert XPath expression to UiSelector string.
-        
+        Convert XPath string directly to UiSelector.
+
         Args:
-            xpath: XPath expression string
-            
-        Returns:
-            UiSelector string in Java format
-            
-        Raises:
-            ValueError: If XPath cannot be converted
-        """
-        try:
-            parsed = self._parse_xpath(xpath)
-            return self._build_uiselector(parsed)
-        except Exception as e:
-            raise ValueError(f"Failed to convert XPath to UiSelector: {e}") from e
+            xpath_str: XPath string
 
-    def xpath_to_dict(self, xpath: str) -> dict[str, Any]:
-        """
-        Convert XPath expression to Shadowstep Dictionary format.
-        
-        Args:
-            xpath: XPath expression string
-            
-        Returns:
-            Dictionary representation of the XPath
-            
-        Raises:
-            ValueError: If XPath cannot be converted
-        """
-        try:
-            parsed = self._parse_xpath(xpath)
-            return self._build_dict(parsed)
-        except Exception as e:
-            raise ValueError(f"Failed to convert XPath to Dictionary: {e}") from e
-
-    def _parse_xpath(self, xpath: str) -> XPathExpression:
-        """
-        Parse XPath expression into structured format.
-        
-        Args:
-            xpath: XPath expression string
-            
-        Returns:
-            Parsed XPath expression
-        """
-        # Clean and normalize XPath
-        xpath = xpath.strip()
-        
-        # Handle hierarchical paths
-        if "//" in xpath:
-            parts = xpath.split("//")
-            if len(parts) > 2:
-                # Complex hierarchical path
-                return self._parse_hierarchical_xpath(xpath)
-            # Simple //element path
-            element = parts[-1]
-        else:
-            element = xpath.lstrip("/")
-        
-        # Extract element name and predicates
-        element_match = re.match(r"^([a-zA-Z0-9_*]+)(.*)$", element)
-        if not element_match:
-            raise ValueError(f"Invalid XPath element: {element}")
-        
-        element_name = element_match.group(1)
-        predicates_str = element_match.group(2)
-        
-        # Parse predicates
-        predicates = self._parse_predicates(predicates_str)
-        
-        # Extract position if present
-        position = self._extract_position(predicates_str)
-        
-        return XPathExpression(
-            element=element_name,
-            predicates=predicates,
-            position=position
-        )
-
-    def _parse_hierarchical_xpath(self, xpath: str) -> XPathExpression:
-        """
-        Parse complex hierarchical XPath expressions.
-        
-        Args:
-            xpath: Hierarchical XPath expression
-            
-        Returns:
-            Parsed XPath expression with hierarchy info
-        """
-        # Split by // and get the target element
-        parts = xpath.split("//")
-        target_element = parts[-1]
-        
-        # Check for parent navigation
-        if "/.." in xpath:
-            parent_path = xpath.split("/..")[0]
-            return XPathExpression(
-                element=target_element,
-                predicates=[],
-                parent_path=parent_path
-            )
-        
-        # Check for child navigation
-        if "/" in xpath and "//" in xpath:
-            child_path = xpath.split("//")[-2] if len(parts) > 2 else None
-            return XPathExpression(
-                element=target_element,
-                predicates=[],
-                child_path=child_path
-            )
-        
-        # Simple hierarchical path
-        return XPathExpression(
-            element=target_element,
-            predicates=[]
-        )
-
-    def _parse_predicates(self, predicates_str: str) -> list[XPathPredicate]:
-        """
-        Parse XPath predicates into structured format.
-        
-        Args:
-            predicates_str: String containing predicates
-            
-        Returns:
-            List of parsed predicates
-        """
-        predicates = []
-        
-        # Extract all predicate expressions
-        predicate_pattern = r"\[([^\]]+)\]"
-        predicate_matches = re.findall(predicate_pattern, predicates_str)
-        
-        for pred_str in predicate_matches:
-            predicate = self._parse_single_predicate(pred_str)
-            if predicate:
-                predicates.append(predicate)
-        
-        return predicates
-
-    def _parse_single_predicate(self, pred_str: str) -> XPathPredicate | None:
-        """
-        Parse a single XPath predicate.
-        
-        Args:
-            pred_str: Single predicate string
-            
-        Returns:
-            Parsed predicate or None if invalid
-        """
-        pred_str = pred_str.strip()
-        
-        # Handle function-based predicates
-        if pred_str.startswith("contains("):
-            return self._parse_contains_predicate(pred_str)
-        if pred_str.startswith("starts-with("):
-            return self._parse_starts_with_predicate(pred_str)
-        if pred_str.startswith("matches("):
-            return self._parse_matches_predicate(pred_str)
-        if pred_str.startswith("position()"):
-            return self._parse_position_predicate(pred_str)
-        
-        # Handle simple attribute predicates
-        if "=" in pred_str:
-            return self._parse_simple_predicate(pred_str)
-        
-        # Handle boolean predicates
-        if pred_str in ["@enabled", "@clickable", "@focusable"]:
-            return XPathPredicate(
-                attribute=pred_str,
-                operator="=",
-                value="true"
-            )
-        
-        return None
-
-    def _parse_contains_predicate(self, pred_str: str) -> XPathPredicate:
-        """Parse contains() function predicate."""
-        match = re.match(r'contains\(([^,]+),\s*["\']([^"\']+)["\']\)', pred_str)
-        if match:
-            attribute = match.group(1).strip()
-            value = match.group(2)
-            return XPathPredicate(
-                attribute=attribute,
-                operator="contains",
-                value=value,
-                function="contains"
-            )
-        raise ValueError(f"Invalid contains predicate: {pred_str}")
-
-    def _parse_starts_with_predicate(self, pred_str: str) -> XPathPredicate:
-        """Parse starts-with() function predicate."""
-        match = re.match(r'starts-with\(([^,]+),\s*["\']([^"\']+)["\']\)', pred_str)
-        if match:
-            attribute = match.group(1).strip()
-            value = match.group(2)
-            return XPathPredicate(
-                attribute=attribute,
-                operator="starts-with",
-                value=value,
-                function="starts-with"
-            )
-        raise ValueError(f"Invalid starts-with predicate: {pred_str}")
-
-    def _parse_matches_predicate(self, pred_str: str) -> XPathPredicate:
-        """Parse matches() function predicate."""
-        match = re.match(r'matches\(([^,]+),\s*["\']([^"\']+)["\']\)', pred_str)
-        if match:
-            attribute = match.group(1).strip()
-            value = match.group(2)
-            return XPathPredicate(
-                attribute=attribute,
-                operator="matches",
-                value=value,
-                function="matches"
-            )
-        raise ValueError(f"Invalid matches predicate: {pred_str}")
-
-    def _parse_simple_predicate(self, pred_str: str) -> XPathPredicate:
-        """Parse simple attribute=value predicate."""
-        parts = pred_str.split("=", 1)
-        if len(parts) != 2:
-            raise ValueError(f"Invalid simple predicate: {pred_str}")
-        
-        attribute = parts[0].strip()
-        value = parts[1].strip().strip('"\'')
-        
-        return XPathPredicate(
-            attribute=attribute,
-            operator="=",
-            value=value
-        )
-
-    def _parse_position_predicate(self, pred_str: str) -> XPathPredicate:
-        """Parse position() function predicate."""
-        pred_str = pred_str.strip().rstrip(")")
-        match = re.match(r"position\(\)\s*=\s*['\"]?(\d+)['\"]?$", pred_str)
-        if match:
-            value = int(match.group(1))
-            return XPathPredicate(
-                attribute="position",
-                operator="=",
-                value=str(value),  # храним 1-based!
-                function="position",
-            )
-        raise ValueError(f"Invalid position predicate: {pred_str}")
-
-    def _extract_position(self, predicates_str: str) -> int | None:
-        """Extract position from predicates string."""
-        position_match = re.search(r"\[(\d+)\]", predicates_str)
-        if position_match:
-            pos = int(position_match.group(1)) - 1  # XPath → 0-based
-            return pos if pos >= 0 else None
-        return None
-
-    def _build_uiselector(self, parsed: XPathExpression) -> str:
-        """
-        Build UiSelector string from parsed XPath.
-        
-        Args:
-            parsed: Parsed XPath expression
-            
         Returns:
             UiSelector string
-        """
-        selector_parts = ["new UiSelector()"]
-        
-        # Handle parent navigation
-        if parsed.parent_path:
-            parent_selector = self._build_uiselector_from_path(parsed.parent_path)
-            selector_parts.append(f".fromParent({parent_selector})")
-        
-        # Handle child navigation
-        if parsed.child_path:
-            child_selector = self._build_uiselector_from_path(parsed.child_path)
-            selector_parts.append(f".childSelector({child_selector})")
-        
-        # Add predicates
-        for predicate in parsed.predicates:
-            ui_method = self._predicate_to_uiselector_method(predicate)
-            if ui_method:
-                selector_parts.append(ui_method)
-        
-        # Add position if specified
-        if parsed.position is not None:
-            selector_parts.append(f".instance({parsed.position})")
-        
-        return "".join(selector_parts)
 
-    def _build_uiselector_from_path(self, path: str) -> str:
-        """Build UiSelector for hierarchical paths."""
-        # Simple implementation - can be enhanced
-        return f'new UiSelector().className("{path}")'
-
-    def _predicate_to_uiselector_method(self, predicate: XPathPredicate) -> str | None:
+        Raises:
+            ConversionError: If conversion fails
         """
-        Convert XPath predicate to UiSelector method.
-        
+        try:
+            parsed_dict = self.parse_xpath_string(xpath_str)
+            return self._xpath_to_ui(parsed_dict)
+        except Exception as e:
+            raise ConversionError(f"Failed to convert XPath to UiSelector: {e}") from e
+
+    def xpath_to_dict(self, xpath_str: str) -> dict[str, Any]:
+        """
+        Convert XPath string to dictionary format.
+
         Args:
-            predicate: Parsed XPath predicate
-            
+            xpath_str: XPath string
+
         Returns:
-            UiSelector method string or None
+            Dictionary representation of the XPath
         """
-        if predicate.function == "contains":
-            return self._build_contains_method(predicate)
-        if predicate.function == "starts-with":
-            return self._build_starts_with_method(predicate)
-        if predicate.function == "matches":
-            return self._build_matches_method(predicate)
-        if predicate.function == "position":
-            return self._build_instance_method(predicate)
-        return self._build_simple_method(predicate)
+        try:
+            parsed_dict = self.parse_xpath_string(xpath_str)
+            return self._xpath_to_dict(parsed_dict)
+        except Exception as e:
+            raise ConversionError(f"Failed to convert XPath to dictionary: {e}") from e
 
-    def _build_contains_method(self, predicate: XPathPredicate) -> str:
-        """Build contains method for UiSelector."""
-        ui_method = self.xpath_to_ui_mapping.get(predicate.attribute)
-        if not ui_method:
-            return ""
-        
-        if predicate.attribute == "@text":
-            return f'.textContains("{predicate.value}")'
-        if predicate.attribute == "@content-desc":
-            return f'.descriptionContains("{predicate.value}")'
-        if predicate.attribute == "@resource-id":
-            return f'.resourceIdMatches("{predicate.value}")'
-        if predicate.attribute == "@package":
-            return f'.packageNameMatches("{predicate.value}")'
-        if predicate.attribute == "@class":
-            return f'.classNameMatches("{predicate.value}")'
-        
-        return ""
+    def parse_xpath_string(self, xpath_str: str) -> dict[str, Any]:
+        """
+        Parse XPath string into dictionary format.
 
-    def _build_starts_with_method(self, predicate: XPathPredicate) -> str:
-        """Build starts-with method for UiSelector."""
-        ui_method = self.xpath_to_ui_mapping.get(predicate.attribute)
-        if not ui_method:
-            return ""
-        
-        if predicate.attribute == "@text":
-            return f'.textStartsWith("{predicate.value}")'
-        if predicate.attribute == "@content-desc":
-            return f'.descriptionStartsWith("{predicate.value}")'
-        if predicate.attribute == "@resource-id":
-            return f'.resourceIdMatches("^{predicate.value}.*")'
-        if predicate.attribute == "@package":
-            return f'.packageNameMatches("^{predicate.value}.*")'
-        if predicate.attribute == "@class":
-            return f'.classNameMatches("^{predicate.value}.*")'
-        
-        return ""
+        Args:
+            xpath_str: XPath string to parse
 
-    def _build_matches_method(self, predicate: XPathPredicate) -> str:
-        """Build matches method for UiSelector."""
-        ui_method = self.xpath_to_ui_mapping.get(predicate.attribute)
-        if not ui_method:
-            return ""
-        
-        if predicate.attribute == "@text":
-            return f'.textMatches("{predicate.value}")'
-        if predicate.attribute == "@content-desc":
-            return f'.descriptionMatches("{predicate.value}")'
-        if predicate.attribute == "@resource-id":
-            return f'.resourceIdMatches("{predicate.value}")'
-        if predicate.attribute == "@package":
-            return f'.packageNameMatches("{predicate.value}")'
-        if predicate.attribute == "@class":
-            return f'.classNameMatches("{predicate.value}")'
-        
-        return ""
+        Returns:
+            Parsed XPath dictionary
 
-    def _build_instance_method(self, predicate: XPathPredicate) -> str:
-        """Build instance method for UiSelector."""
-        pos = int(predicate.value)
-        if pos < 1:
-            raise ValueError(f"Invalid position() value: {pos}. Must be >= 1.")
-        return f".instance({pos - 1})"
+        Raises:
+            ConversionError: If parsing fails
+        """
+        try:
+            # Clean the input string
+            cleaned_str = xpath_str.strip()
 
-    def _build_simple_method(self, predicate: XPathPredicate) -> str:
-        """Build simple method for UiSelector."""
-        ui_method = self.xpath_to_ui_mapping.get(predicate.attribute)
-        if not ui_method:
-            return ""
-        
-        # Handle boolean values
-        if predicate.value.lower() in ["true", "false"]:
-            return f".{ui_method}({predicate.value.lower()})"
-        
-        # Handle string values
-        return f'.{ui_method}("{predicate.value}")'
+            # Parse XPath structure
+            return self._parse_xpath_structure(cleaned_str)
 
-    def _build_dict(self, parsed: XPathExpression) -> dict[str, Any]:
-        result: dict[str, Any] = {}
+        except Exception as e:
+            self.logger.error(f"Failed to parse XPath string: {e}")
+            raise ConversionError(f"Invalid XPath string: {e}") from e
 
-        if parsed.element != "*":
-            result.update(XPATH_TO_SHADOWSTEP_DICT[XPathAttribute.CLASS_NAME](parsed.element))
+    def _parse_xpath_structure(self, xpath: str) -> dict[str, Any]:
+        """
+        Parse XPath structure into dictionary format.
 
-        for predicate in parsed.predicates:
-            entry = self._predicate_to_dict_entry(predicate)
-            if entry:
-                result.update(entry)
+        Args:
+            xpath: XPath string to parse
 
-        if parsed.position is not None:
-            result.update(XPATH_TO_SHADOWSTEP_DICT[XPathAttribute.INSTANCE](parsed.position))
+        Returns:
+            Parsed XPath dictionary
+        """
+        result: dict[str, Any] = {"methods": []}
 
-        if parsed.child_path is not None:
-            result.update(
-                XPATH_TO_SHADOWSTEP_DICT[XPathAttribute.CHILD_SELECTOR](parsed.child_path)
-            )
+        # Handle hierarchical structure
+        if "/.." in xpath:
+            parts = xpath.split("/..")
+            if len(parts) == 2:
+                # Handle fromParent case
+                parent_part = parts[0]
+                child_part = parts[1]
 
-        if parsed.parent_path is not None:
-            result.update(XPATH_TO_SHADOWSTEP_DICT[XPathAttribute.FROM_PARENT](parsed.parent_path))
+                # Parse parent part
+                parent_methods = self._parse_xpath_predicates(parent_part)
+                result["methods"].extend(parent_methods)
+
+                # Parse child part with fromParent
+                if child_part.startswith("//"):
+                    child_part = child_part[2:]  # Remove //
+                child_methods = self._parse_xpath_predicates(child_part)
+                result["methods"].append({
+                    "name": "fromParent",
+                    "args": [{"methods": child_methods}]
+                })
+                return result
+
+        # Handle child selector
+        if "/*[" in xpath:
+            parts = xpath.split("/*[")
+            if len(parts) == 2:
+                # Handle childSelector case
+                parent_part = parts[0]
+                child_part = "[" + parts[1]
+
+                # Parse parent part
+                parent_methods = self._parse_xpath_predicates(parent_part)
+                result["methods"].extend(parent_methods)
+
+                # Parse child part
+                child_methods = self._parse_xpath_predicates(child_part)
+                result["methods"].append({
+                    "name": "childSelector",
+                    "args": [{"methods": child_methods}]
+                })
+                return result
+
+        # Parse simple XPath
+        methods = self._parse_xpath_predicates(xpath)
+        result["methods"] = methods
 
         return result
 
-    def _predicate_to_dict_entry(self, predicate: XPathPredicate) -> dict[str, Any] | None:
+    def _parse_xpath_predicates(self, xpath: str) -> list[dict[str, Any]]:
         """
-        Конвертирует предикат в Shadowstep dict через XPATH_TO_SHADOWSTEP_DICT.
+        Parse XPath predicates into method list.
+
+        Args:
+            xpath: XPath string to parse
+
+        Returns:
+            List of parsed methods
+        """
+        methods = []
+
+        # Extract predicates from XPath
+        # Pattern: //*[predicate1][predicate2]...
+        predicate_pattern = r"\[([^\]]+)\]"
+        predicates = re.findall(predicate_pattern, xpath)
+
+        for predicate in predicates:
+            method = self._parse_predicate(predicate)
+            if method:
+                methods.append(method)
+
+        return methods
+
+    def _parse_predicate(self, predicate: str) -> dict[str, Any] | None:
+        """
+        Parse single XPath predicate into method.
+
+        Args:
+            predicate: Single predicate string
+
+        Returns:
+            Parsed method dictionary or None if not supported
+        """
+        # Handle position() function
+        if predicate.startswith("position()="):
+            value = int(predicate.split("=")[1])
+            return {"name": "index", "args": [value - 1]}  # Convert to 0-based
+
+        # Handle instance (position without position() function)
+        if predicate.isdigit():
+            value = int(predicate)
+            return {"name": "instance", "args": [value - 1]}  # Convert to 0-based
+
+        # Handle attribute predicates
+        # Pattern: @attr="value" or contains(@attr,"value") or starts-with(@attr,"value") or matches(@attr,"value")
+
+        # Exact match: @attr="value"
+        exact_match = re.match(r'@(\w+)=["\']([^"\']*)["\']', predicate)
+        if exact_match:
+            attr_name = exact_match.group(1)
+            value = exact_match.group(2)
+            return self._map_attribute_to_method(attr_name, "exact", value)
+
+        # Contains: contains(@attr,"value")
+        contains_match = re.match(r'contains\(@(\w+),["\']([^"\']*)["\']\)', predicate)
+        if contains_match:
+            attr_name = contains_match.group(1)
+            value = contains_match.group(2)
+            return self._map_attribute_to_method(attr_name, "contains", value)
+
+        # Starts-with: starts-with(@attr,"value")
+        starts_with_match = re.match(r'starts-with\(@(\w+),["\']([^"\']*)["\']\)', predicate)
+        if starts_with_match:
+            attr_name = starts_with_match.group(1)
+            value = starts_with_match.group(2)
+            return self._map_attribute_to_method(attr_name, "starts_with", value)
+
+        # Matches: matches(@attr,"value")
+        matches_match = re.match(r'matches\(@(\w+),["\']([^"\']*)["\']\)', predicate)
+        if matches_match:
+            attr_name = matches_match.group(1)
+            value = matches_match.group(2)
+            return self._map_attribute_to_method(attr_name, "matches", value)
+
+        return None
+
+    def _map_attribute_to_method(self, attr_name: str, match_type: str, value: str | bool) -> dict[str, Any]:
+        """
+        Map XPath attribute to UiSelector method.
+
+        Args:
+            attr_name: XPath attribute name
+            match_type: Type of match (exact, contains, starts_with, matches)
+            value: Attribute value
+
+        Returns:
+            Method dictionary
+        """
+        # Map XPath attributes to UiSelector methods
+        attr_mapping = {
+            "text": {
+                "exact": "text",
+                "contains": "textContains",
+                "starts_with": "textStartsWith",
+                "matches": "textMatches"
+            },
+            "content-desc": {
+                "exact": "description",
+                "contains": "descriptionContains",
+                "starts_with": "descriptionStartsWith",
+                "matches": "descriptionMatches"
+            },
+            "resource-id": {
+                "exact": "resourceId",
+                "matches": "resourceIdMatches"
+            },
+            "package": {
+                "exact": "packageName",
+                "matches": "packageNameMatches"
+            },
+            "class": {
+                "exact": "className",
+                "matches": "classNameMatches"
+            },
+            "checkable": {"exact": "checkable"},
+            "checked": {"exact": "checked"},
+            "clickable": {"exact": "clickable"},
+            "enabled": {"exact": "enabled"},
+            "focusable": {"exact": "focusable"},
+            "focused": {"exact": "focused"},
+            "long-clickable": {"exact": "longClickable"},
+            "scrollable": {"exact": "scrollable"},
+            "selected": {"exact": "selected"},
+            "password": {"exact": "password"}
+        }
+
+        if attr_name in attr_mapping and match_type in attr_mapping[attr_name]:
+            method_name = attr_mapping[attr_name][match_type]
+
+            # Convert boolean values
+            if attr_name in ["checkable", "checked", "clickable", "enabled", "focusable",
+                           "focused", "long-clickable", "scrollable", "selected", "password"]:
+                value = value.lower() == "true"
+
+            return {"name": method_name, "args": [value]}
+
+        raise ValueError("XPATH mapping error")
+
+    def _xpath_to_ui(self, xpath_dict: dict[str, Any]) -> str:
+        """
+        Convert parsed XPath dictionary to UiSelector string.
+
+        Args:
+            xpath_dict: Parsed XPath dictionary
+
+        Returns:
+            UiSelector string
         """
         try:
-            # Определяем тип предиката → находим нужный XPathAttribute
-            if predicate.function == "contains":
-                if predicate.attribute == "@text":
-                    attr = XPathAttribute.TEXT_CONTAINS
-                elif predicate.attribute == "@content-desc":
-                    attr = XPathAttribute.DESCRIPTION_CONTAINS
-                elif predicate.attribute == "@resource-id":
-                    attr = XPathAttribute.RESOURCE_ID_MATCHES
-                elif predicate.attribute == "@package":
-                    attr = XPathAttribute.PACKAGE_NAME_MATCHES
-                elif predicate.attribute == "@class":
-                    attr = XPathAttribute.CLASS_NAME_MATCHES
+            parts = ["new UiSelector()"]
+
+            for method_data in xpath_dict.get("methods", []):
+                name = method_data["name"]
+                args = method_data.get("args", [])
+
+                if name in ["childSelector", "fromParent"]:
+                    # Handle hierarchical methods
+                    if args and isinstance(args[0], dict):
+                        nested_ui = self._xpath_to_ui(args[0])
+                        parts.append(f".{name}({nested_ui})")
+                    else:
+                        parts.append(f".{name}({args[0] if args else ''})")
                 else:
-                    return None
+                    # Handle regular methods
+                    arg_str = self._format_ui_arg(args[0]) if args else ""
+                    parts.append(f".{name}({arg_str})")
 
-            elif predicate.function == "starts-with":
-                if predicate.attribute == "@text":
-                    attr = XPathAttribute.TEXT_STARTS_WITH
-                elif predicate.attribute == "@content-desc":
-                    attr = XPathAttribute.DESCRIPTION_STARTS_WITH
-                elif predicate.attribute == "@resource-id":
-                    attr = XPathAttribute.RESOURCE_ID_MATCHES
-                elif predicate.attribute == "@package":
-                    attr = XPathAttribute.PACKAGE_NAME_MATCHES
-                elif predicate.attribute == "@class":
-                    attr = XPathAttribute.CLASS_NAME_MATCHES
-                else:
-                    return None
-
-            elif predicate.function == "matches":
-                if predicate.attribute == "@text":
-                    attr = XPathAttribute.TEXT_MATCHES
-                elif predicate.attribute == "@content-desc":
-                    attr = XPathAttribute.DESCRIPTION_MATCHES
-                elif predicate.attribute == "@resource-id":
-                    attr = XPathAttribute.RESOURCE_ID_MATCHES
-                elif predicate.attribute == "@package":
-                    attr = XPathAttribute.PACKAGE_NAME_MATCHES
-                elif predicate.attribute == "@class":
-                    attr = XPathAttribute.CLASS_NAME_MATCHES
-                else:
-                    return None
-
-            elif predicate.function == "position":
-                attr = XPathAttribute.INDEX
-
-            else:
-                # Обычное равенство
-                mapping = {
-                    "@text": XPathAttribute.TEXT,
-                    "@content-desc": XPathAttribute.DESCRIPTION,
-                    "@resource-id": XPathAttribute.RESOURCE_ID,
-                    "@package": XPathAttribute.PACKAGE_NAME,
-                    "@class": XPathAttribute.CLASS_NAME,
-                    "@checkable": XPathAttribute.CHECKABLE,
-                    "@checked": XPathAttribute.CHECKED,
-                    "@clickable": XPathAttribute.CLICKABLE,
-                    "@enabled": XPathAttribute.ENABLED,
-                    "@focusable": XPathAttribute.FOCUSABLE,
-                    "@focused": XPathAttribute.FOCUSED,
-                    "@long-clickable": XPathAttribute.LONG_CLICKABLE,
-                    "@scrollable": XPathAttribute.SCROLLABLE,
-                    "@selected": XPathAttribute.SELECTED,
-                    "@password": XPathAttribute.PASSWORD,
-                }
-                attr = mapping.get(predicate.attribute)
-                if not attr:
-                    return None
-
-            # Вызываем готовый маппинг
-            factory = XPATH_TO_SHADOWSTEP_DICT[attr]
-            return factory(self._extract_dict_value(predicate))
+            result = "".join(parts)
+            return result + ";"
 
         except Exception as e:
-            self.logger.warning(f"Не удалось преобразовать предикат {predicate}: {e}")
-            return None
+            raise ConversionError(f"Failed to convert XPath to UiSelector: {e}") from e
 
-    def _extract_dict_value(self, predicate: XPathPredicate) -> Any:
-        """Extract value for dictionary from predicate."""
-        if predicate.function == "position":
-            return int(predicate.value)
-        if predicate.value.lower() in ["true", "false"]:
-            return predicate.value.lower() == "true"
-        return predicate.value
+    def _xpath_to_dict(self, xpath_dict: dict[str, Any]) -> dict[str, Any]:
+        """
+        Convert parsed XPath dictionary to Shadowstep dict format.
 
+        Args:
+            xpath_dict: Parsed XPath dictionary
 
-# Convenience functions for easy usage
-def xpath_to_uiselector(xpath: str) -> str:
-    """
-    Convert XPath to UiSelector string.
-    
-    Args:
-        xpath: XPath expression
-        
-    Returns:
-        UiSelector string
-    """
-    converter = XPathConverter()
-    return converter.xpath_to_uiselector(xpath)
+        Returns:
+            Shadowstep dict representation
+        """
+        result: dict[str, Any] = {}
+        methods = xpath_dict.get("methods", [])
 
+        if not methods:
+            raise ValueError("No methods found in XPath")
 
-def xpath_to_dict(xpath: str) -> dict[str, Any]:
-    """
-    Convert XPath to Dictionary format.
-    
-    Args:
-        xpath: XPath expression
-        
-    Returns:
-        Dictionary representation
-    """
-    converter = XPathConverter()
-    return converter.xpath_to_dict(xpath)
+        for method_data in methods:
+            method_name = method_data["name"]
+            args = method_data.get("args", [])
+
+            if method_name not in XPATH_TO_SHADOWSTEP_DICT:
+                raise NotImplementedError(f"Method '{method_name}' is not supported")
+
+            self._validate_method_compatibility(method_name, result.keys())     # type: ignore
+
+            if method_name in ["childSelector", "fromParent"]:
+                if args and isinstance(args[0], dict):
+                    nested_result = self._xpath_to_dict(args[0])
+                    result[method_name] = nested_result
+                else:
+                    result[method_name] = args[0] if args else None
+            else:
+                converter = XPATH_TO_SHADOWSTEP_DICT[method_name]
+                if not args:
+                    raise ValueError(f"Method '{method_name}' requires an argument")
+
+                converted = converter(args[0])
+                result.update(converted)
+
+        return result
+
+    def _format_ui_arg(self, arg: Any) -> str:
+        """
+        Format argument for UiSelector string.
+
+        Args:
+            arg: Argument to format
+
+        Returns:
+            Formatted argument string
+        """
+        if isinstance(arg, bool):
+            return "true" if arg else "false"
+        if isinstance(arg, int):
+            return str(arg)
+        if isinstance(arg, str):
+            # Escape quotes and backslashes
+            escaped = arg.replace("\\", "\\\\").replace('"', '\\"')
+            return f'"{escaped}"'
+        return str(arg)
+
+    def _validate_method_compatibility(self, new_method: str, existing_methods: list[str]) -> None:
+        """
+        Validate that new method is compatible with existing methods.
+
+        Args:
+            new_method: New method to add
+            existing_methods: List of already added methods
+
+        Raises:
+            ValueError: If methods are incompatible
+        """
+        if not existing_methods:
+            return
+
+        for group_name, group_methods in self._compatible_groups.items():
+            if new_method in group_methods:
+                for existing in existing_methods:
+                    if (existing in group_methods and existing != new_method and
+                            group_name in ["text", "description", "resource", "class"]):
+                            raise ValueError(
+                                f"Conflicting methods: '{existing}' and '{new_method}' "
+                                f"belong to the same group '{group_name}'. "
+                                f"Only one method per group is allowed."
+                            )
+                break
+
+    def _build_compatibility_groups(self) -> dict[str, list[str]]:
+        """Build compatibility groups for methods."""
+        return {
+            "text": ["text", "textContains", "textStartsWith", "textMatches"],
+            "description": ["description", "descriptionContains", "descriptionStartsWith", "descriptionMatches"],
+            "resource": ["resourceId", "resourceIdMatches", "packageName", "packageNameMatches"],
+            "class": ["className", "classNameMatches"],
+            "boolean": ["checkable", "checked", "clickable", "longClickable", "enabled",
+                       "focusable", "focused", "scrollable", "selected", "password"],
+            "numeric": ["index", "instance"],
+            "hierarchy": ["childSelector", "fromParent"]
+        }

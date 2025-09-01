@@ -68,3 +68,18 @@ class ShadowstepTimeoutException(TimeoutException):
                 f"Locator: {self.locator}\n"
                 f"Current URL: {self.driver.current_url if self.driver else 'N/A'}\n"
                 f"Stacktrace:\n{''.join(self.stacktrace) if self.stacktrace else 'N/A'}")
+
+
+class LocatorConverterError(Exception):
+    """Base exception for locator conversion errors."""
+    pass
+
+
+class InvalidUiSelectorError(LocatorConverterError):
+    """Raised when UiSelector string is malformed."""
+    pass
+
+
+class ConversionError(LocatorConverterError):
+    """Raised when conversion between formats fails."""
+    pass

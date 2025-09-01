@@ -162,7 +162,7 @@ venv = ".venv"
 # ---------- PYTEST ----------
 [tool.pytest.ini_options]
 testpaths = ["tests"]
-addopts = "-v --tb=short"
+addopts = "-svl --log-cli-level INFO --tb=short --setup-show"
 #-v (или --verbose) — включает подробный вывод, показывая названия тестов и их статус (PASSED, FAILED и т. д.).
 #--tb=short — настраивает формат трассировки ошибок (traceback):
 #short — выводит укороченный traceback, только ключевые строки с ошибкой (меньше "шума" по сравнению с полным выводом).

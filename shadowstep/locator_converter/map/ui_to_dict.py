@@ -1,3 +1,4 @@
+# shadowstep/locator_converter/map/ui_to_dict.py
 from collections.abc import Callable
 from typing import Any
 
