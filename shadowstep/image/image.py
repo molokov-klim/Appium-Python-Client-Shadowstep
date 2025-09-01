@@ -38,25 +38,25 @@ class ShadowstepImage:
         #     raise RuntimeError("Shadowstep instance is not set.")
         # screen = self.to_ndarray(self._base.get_screenshot())
         # template = self.to_ndarray(self._image)
-        # 
+        #
         # screen = self._preprocess(screen)
         # template = self._preprocess(template)
-        # 
+        #
         # result = cv2.matchTemplate(screen, template, cv2.TM_CCOEFF_NORMED)
         # _, max_val, _, max_loc = cv2.minMaxLoc(result)
-        # 
+        #
         # self.logger.debug(f"[is_visible] direct match: max_val={max_val:.3f}, loc={max_loc}")
-        # 
+        #
         # if max_val >= self.threshold:
         #     x1, y1 = max_loc
         #     h, w = template.shape[:2]
         #     self._coords = (x1, y1, x1 + w, y1 + h)
         #     self._center = ((x1 + x1 + w) // 2, (y1 + y1 + h) // 2)
         #     return
-        # 
+        #
         # fallback_val, fallback_loc = self.multi_scale_matching(screen, template)
         # self.logger.debug(f"[is_visible] fallback multi-scale: max_val={fallback_val:.3f}, loc={fallback_loc}")
-        # 
+        #
         # if fallback_val >= self.threshold:
         #     x1, y1 = fallback_loc
         #     h, w = template.shape[:2]
@@ -164,28 +164,28 @@ class ShadowstepImage:
             step_delay: float = 0.5
     ) -> ShadowstepImage:
         # self.logger.debug(f"{get_current_func_name()}")
-        # 
+        #
         # if not self._base:
         #     raise RuntimeError("Shadowstep instance is not set.")
-        # 
+        #
         # self._ensure_visible()  # контейнер должен быть видим
-        # 
+        #
         # for _ in range(max_attempts):
         #     try:
         #         x1, y1, x2, y2 = self.coordinates
         #     except Exception as e:
         #         raise ValueError(f"Cannot scroll container: {e}") from e
-        # 
+        #
         #     width = x2 - x1
         #     height = y2 - y1
         #     center_x = x1 + width // 2
         #     start_y = int(y1 + height * from_percent)
         #     end_y = int(y1 + height * to_percent)
-        # 
+        #
         #     self.logger.debug(f"Scroll swipe from ({center_x}, {start_y}) to ({center_x}, {end_y})")
         #     self._base.swipe(center_x, start_y, center_x, end_y)
         #     time.sleep(step_delay)
-        # 
+        #
         # return self
         raise NotImplementedError
 
@@ -281,7 +281,7 @@ class ShadowstepImage:
         raise NotImplementedError
 
     @property
-    def should(self) -> 'ImageShould':  # type: ignore
+    def should(self) -> ImageShould:  # type: ignore
         self.logger.debug(f"{get_current_func_name()}")
         raise NotImplementedError
 

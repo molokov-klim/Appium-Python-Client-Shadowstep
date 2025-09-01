@@ -55,20 +55,20 @@ class Lexer:
             if ch in " \t\r\n":
                 self._advance()
                 continue
-            if ch == '.':
-                toks.append(Token(TokenType.DOT, '.', self.i))
+            if ch == ".":
+                toks.append(Token(TokenType.DOT, ".", self.i))
                 self._advance()
                 continue
-            if ch == '(':
-                toks.append(Token(TokenType.LPAREN, '(', self.i))
+            if ch == "(":
+                toks.append(Token(TokenType.LPAREN, "(", self.i))
                 self._advance()
                 continue
-            if ch == ')':
-                toks.append(Token(TokenType.RPAREN, ')', self.i))
+            if ch == ")":
+                toks.append(Token(TokenType.RPAREN, ")", self.i))
                 self._advance()
                 continue
-            if ch == ';':
-                toks.append(Token(TokenType.SEMI, ';', self.i))
+            if ch == ";":
+                toks.append(Token(TokenType.SEMI, ";", self.i))
                 self._advance()
                 continue
 
@@ -79,25 +79,25 @@ class Lexer:
                 buf = []
                 while True:
                     if self.i >= self.n:
-                        raise LexerError(f'Unterminated string at {start}')
+                        raise LexerError(f"Unterminated string at {start}")
                     c = self._advance()
-                    if c == '\\':
+                    if c == "\\":
                         if self.i >= self.n:
-                            raise LexerError(f'Bad escape at {self.i}')
+                            raise LexerError(f"Bad escape at {self.i}")
                         nxt = self._advance()
-                        if nxt in (quote_char, '\\'):
+                        if nxt in (quote_char, "\\"):
                             buf.append(nxt)
-                        elif nxt == 'n':
-                            buf.append('\n')
-                        elif nxt == 't':
-                            buf.append('\t')
+                        elif nxt == "n":
+                            buf.append("\n")
+                        elif nxt == "t":
+                            buf.append("\t")
                         else:
-                            buf.append('\\' + nxt)
+                            buf.append("\\" + nxt)
                         continue
                     if c == quote_char:
                         break
                     buf.append(c)
-                toks.append(Token(TokenType.STRING, ''.join(cast(list[str], buf)), start))
+                toks.append(Token(TokenType.STRING, "".join(cast(list[str], buf)), start))
                 continue
 
             if ch.isdigit():
@@ -107,25 +107,25 @@ class Lexer:
                 toks.append(Token(TokenType.NUMBER, self.text[start:self.i], start))
                 continue
 
-            if ch.isalpha() or ch == '_':
+            if ch.isalpha() or ch == "_":
                 start = self.i
                 while self.i < self.n and (self._peek().isalnum() or self._peek() in "_$"):
                     self._advance()
                 ident = self.text[start:self.i]
                 low = ident.lower()
-                if low == 'new':
+                if low == "new":
                     toks.append(Token(TokenType.NEW, ident, start))
-                elif ident == 'UiSelector':
+                elif ident == "UiSelector":
                     toks.append(Token(TokenType.UISELECTOR, ident, start))
-                elif low == 'true':
+                elif low == "true":
                     toks.append(Token(TokenType.TRUE, ident, start))
-                elif low == 'false':
+                elif low == "false":
                     toks.append(Token(TokenType.FALSE, ident, start))
                 else:
                     toks.append(Token(TokenType.IDENT, ident, start))
                 continue
 
-            raise LexerError(f'Unexpected char {ch!r} at {self.i}')
+            raise LexerError(f"Unexpected char {ch!r} at {self.i}")
 
         toks.append(Token(TokenType.EOF, None, self.i))
         return toks

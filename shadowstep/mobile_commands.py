@@ -17,7 +17,7 @@ from shadowstep.utils.utils import get_current_func_name
 
 class MobileCommands:
 
-    def __init__(self, shadowstep: 'Shadowstep'):
+    def __init__(self, shadowstep: Shadowstep):
         self.shadowstep = shadowstep
         self.driver = None
         self.logger = logging.getLogger(f"{__name__}.{self.__class__.__name__}")
@@ -29,7 +29,7 @@ class MobileCommands:
         raise_exception=ShadowstepException,
         exceptions=(NoSuchDriverException, InvalidSessionIdException, StaleElementReferenceException)
     )
-    def activate_app(self, params: dict | list) -> 'Shadowstep':
+    def activate_app(self, params: dict | list) -> Shadowstep:
         """
         https://github.com/appium/appium-uiautomator2-driver/blob/master/docs/android-mobile-gestures.md#mobile activateapp
         Execute mobile: activateApp command.
@@ -41,7 +41,7 @@ class MobileCommands:
             Shadowstep: Self for method chaining.
         """
         self.logger.debug(f"{get_current_func_name()}")
-        self._execute('mobile: activateApp', params or {})
+        self._execute("mobile: activateApp", params or {})
         return self
 
 
@@ -51,7 +51,7 @@ class MobileCommands:
         raise_exception=ShadowstepException,
         exceptions=(NoSuchDriverException, InvalidSessionIdException, StaleElementReferenceException)
     )
-    def batteryinfo(self, params: dict | list = None) -> 'Shadowstep':
+    def batteryinfo(self, params: dict | list = None) -> Shadowstep:
         """
         https://github.com/appium/appium-uiautomator2-driver/blob/master/docs/android-mobile-gestures.md#mobile batteryinfo
         Execute mobile: batteryInfo command.
@@ -63,7 +63,7 @@ class MobileCommands:
             Shadowstep: Self for method chaining.
         """
         self.logger.debug(f"{get_current_func_name()}")
-        self._execute('mobile: batteryInfo', params or {})
+        self._execute("mobile: batteryInfo", params or {})
         return self
 
 
@@ -73,7 +73,7 @@ class MobileCommands:
         raise_exception=ShadowstepException,
         exceptions=(NoSuchDriverException, InvalidSessionIdException, StaleElementReferenceException)
     )
-    def clearelement(self, params: dict | list = None) -> 'Shadowstep':
+    def clearelement(self, params: dict | list = None) -> Shadowstep:
         """
         https://github.com/appium/appium-uiautomator2-driver/blob/master/docs/android-mobile-gestures.md#mobile clearelement
         Execute mobile: clearElement command.
@@ -85,7 +85,7 @@ class MobileCommands:
             Shadowstep: Self for method chaining.
         """
         self.logger.debug(f"{get_current_func_name()}")
-        self._execute('mobile: clearElement', params or {})
+        self._execute("mobile: clearElement", params or {})
         return self
 
 
@@ -95,7 +95,7 @@ class MobileCommands:
         raise_exception=ShadowstepException,
         exceptions=(NoSuchDriverException, InvalidSessionIdException, StaleElementReferenceException)
     )
-    def deviceinfo(self, params: dict | list = None) -> 'Shadowstep':
+    def deviceinfo(self, params: dict | list = None) -> Shadowstep:
         """
         https://github.com/appium/appium-uiautomator2-driver/blob/master/docs/android-mobile-gestures.md#mobile deviceinfo
         Execute mobile: deviceInfo command.
@@ -107,7 +107,7 @@ class MobileCommands:
             Shadowstep: Self for method chaining.
         """
         self.logger.debug(f"{get_current_func_name()}")
-        self._execute('mobile: deviceInfo', params or {})
+        self._execute("mobile: deviceInfo", params or {})
         return self
 
 
@@ -117,7 +117,7 @@ class MobileCommands:
         raise_exception=ShadowstepException,
         exceptions=(NoSuchDriverException, InvalidSessionIdException, StaleElementReferenceException)
     )
-    def fingerprint(self, params: dict | list = None) -> 'Shadowstep':
+    def fingerprint(self, params: dict | list = None) -> Shadowstep:
         """
         https://github.com/appium/appium-uiautomator2-driver/blob/master/docs/android-mobile-gestures.md#mobile fingerprint
         Execute mobile: fingerprint command.
@@ -129,7 +129,7 @@ class MobileCommands:
             Shadowstep: Self for method chaining.
         """
         self.logger.debug(f"{get_current_func_name()}")
-        self._execute('mobile: fingerprint', params or {})
+        self._execute("mobile: fingerprint", params or {})
         return self
 
 
@@ -139,7 +139,7 @@ class MobileCommands:
         raise_exception=ShadowstepException,
         exceptions=(NoSuchDriverException, InvalidSessionIdException, StaleElementReferenceException)
     )
-    def get_clipboard(self, params: dict | list = None) -> 'Shadowstep':
+    def get_clipboard(self, params: dict | list = None) -> Shadowstep:
         """
         https://github.com/appium/appium-uiautomator2-driver/blob/master/docs/android-mobile-gestures.md#mobile getclipboard
         Execute mobile: getClipboard command.
@@ -151,7 +151,7 @@ class MobileCommands:
             Shadowstep: Self for method chaining.
         """
         self.logger.debug(f"{get_current_func_name()}")
-        self._execute('mobile: getClipboard', params or {})
+        self._execute("mobile: getClipboard", params or {})
         return self
 
 
@@ -161,7 +161,7 @@ class MobileCommands:
         raise_exception=ShadowstepException,
         exceptions=(NoSuchDriverException, InvalidSessionIdException, StaleElementReferenceException)
     )
-    def get_current_activity(self, params: dict | list = None) -> 'Shadowstep':
+    def get_current_activity(self, params: dict | list = None) -> Shadowstep:
         """
         https://github.com/appium/appium-uiautomator2-driver/blob/master/docs/android-mobile-gestures.md#mobile getcurrentactivity
         Execute mobile: getCurrentActivity command.
@@ -173,7 +173,7 @@ class MobileCommands:
             Shadowstep: Self for method chaining.
         """
         self.logger.debug(f"{get_current_func_name()}")
-        self._execute('mobile: getCurrentActivity', params or {})
+        self._execute("mobile: getCurrentActivity", params or {})
         return self
 
 
@@ -183,7 +183,7 @@ class MobileCommands:
         raise_exception=ShadowstepException,
         exceptions=(NoSuchDriverException, InvalidSessionIdException, StaleElementReferenceException)
     )
-    def get_currentpackage(self, params: dict | list = None) -> 'Shadowstep':
+    def get_currentpackage(self, params: dict | list = None) -> Shadowstep:
         """
         https://github.com/appium/appium-uiautomator2-driver/blob/master/docs/android-mobile-gestures.md#mobile getcurrentpackage
         Execute mobile: getCurrentPackage command.
@@ -195,7 +195,7 @@ class MobileCommands:
             Shadowstep: Self for method chaining.
         """
         self.logger.debug(f"{get_current_func_name()}")
-        self._execute('mobile: getCurrentPackage', params or {})
+        self._execute("mobile: getCurrentPackage", params or {})
         return self
 
 
@@ -205,7 +205,7 @@ class MobileCommands:
         raise_exception=ShadowstepException,
         exceptions=(NoSuchDriverException, InvalidSessionIdException, StaleElementReferenceException)
     )
-    def get_devicetime(self, params: dict | list = None) -> 'Shadowstep':
+    def get_devicetime(self, params: dict | list = None) -> Shadowstep:
         """
         https://github.com/appium/appium-uiautomator2-driver/blob/master/docs/android-mobile-gestures.md#mobile getdevicetime
         Execute mobile: getDeviceTime command.
@@ -217,7 +217,7 @@ class MobileCommands:
             Shadowstep: Self for method chaining.
         """
         self.logger.debug(f"{get_current_func_name()}")
-        self._execute('mobile: getDeviceTime', params or {})
+        self._execute("mobile: getDeviceTime", params or {})
         return self
 
 
@@ -227,7 +227,7 @@ class MobileCommands:
         raise_exception=ShadowstepException,
         exceptions=(NoSuchDriverException, InvalidSessionIdException, StaleElementReferenceException)
     )
-    def get_performancedata(self, params: dict | list = None) -> 'Shadowstep':
+    def get_performancedata(self, params: dict | list = None) -> Shadowstep:
         """
         https://github.com/appium/appium-uiautomator2-driver/blob/master/docs/android-mobile-gestures.md#mobile getperformancedata
         Execute mobile: getPerformanceData command.
@@ -239,7 +239,7 @@ class MobileCommands:
             Shadowstep: Self for method chaining.
         """
         self.logger.debug(f"{get_current_func_name()}")
-        self._execute('mobile: getPerformanceData', params or {})
+        self._execute("mobile: getPerformanceData", params or {})
         return self
 
 
@@ -249,7 +249,7 @@ class MobileCommands:
         raise_exception=ShadowstepException,
         exceptions=(NoSuchDriverException, InvalidSessionIdException, StaleElementReferenceException)
     )
-    def get_performancedatatypes(self, params: dict | list = None) -> 'Shadowstep':
+    def get_performancedatatypes(self, params: dict | list = None) -> Shadowstep:
         """
         https://github.com/appium/appium-uiautomator2-driver/blob/master/docs/android-mobile-gestures.md#mobile getperformancedatatypes
         Execute mobile: getPerformanceDataTypes command.
@@ -261,7 +261,7 @@ class MobileCommands:
             Shadowstep: Self for method chaining.
         """
         self.logger.debug(f"{get_current_func_name()}")
-        self._execute('mobile: getPerformanceDataTypes', params or {})
+        self._execute("mobile: getPerformanceDataTypes", params or {})
         return self
 
 
@@ -271,7 +271,7 @@ class MobileCommands:
         raise_exception=ShadowstepException,
         exceptions=(NoSuchDriverException, InvalidSessionIdException, StaleElementReferenceException)
     )
-    def get_settings(self, params: dict | list = None) -> 'Shadowstep':
+    def get_settings(self, params: dict | list = None) -> Shadowstep:
         """
         https://github.com/appium/appium-uiautomator2-driver/blob/master/docs/android-mobile-gestures.md#mobile getsettings
         Execute mobile: getSettings command.
@@ -283,7 +283,7 @@ class MobileCommands:
             Shadowstep: Self for method chaining.
         """
         self.logger.debug(f"{get_current_func_name()}")
-        self._execute('mobile: getSettings', params or {})
+        self._execute("mobile: getSettings", params or {})
         return self
 
 
@@ -293,7 +293,7 @@ class MobileCommands:
         raise_exception=ShadowstepException,
         exceptions=(NoSuchDriverException, InvalidSessionIdException, StaleElementReferenceException)
     )
-    def hide_keyboard(self, params: dict | list = None) -> 'Shadowstep':
+    def hide_keyboard(self, params: dict | list = None) -> Shadowstep:
         """
         https://github.com/appium/appium-uiautomator2-driver/blob/master/docs/android-mobile-gestures.md#mobile hidekeyboard
         Execute mobile: hideKeyboard command.
@@ -305,7 +305,7 @@ class MobileCommands:
             Shadowstep: Self for method chaining.
         """
         self.logger.debug(f"{get_current_func_name()}")
-        self._execute('mobile: hideKeyboard', params or {})
+        self._execute("mobile: hideKeyboard", params or {})
         return self
 
 
@@ -315,7 +315,7 @@ class MobileCommands:
         raise_exception=ShadowstepException,
         exceptions=(NoSuchDriverException, InvalidSessionIdException, StaleElementReferenceException)
     )
-    def install_app(self, params: dict | list = None) -> 'Shadowstep':
+    def install_app(self, params: dict | list = None) -> Shadowstep:
         """
         https://github.com/appium/appium-uiautomator2-driver/blob/master/docs/android-mobile-gestures.md#mobile installapp
         Execute mobile: installApp command.
@@ -327,7 +327,7 @@ class MobileCommands:
             Shadowstep: Self for method chaining.
         """
         self.logger.debug(f"{get_current_func_name()}")
-        self._execute('mobile: installApp', params or {})
+        self._execute("mobile: installApp", params or {})
         return self
 
 
@@ -337,7 +337,7 @@ class MobileCommands:
         raise_exception=ShadowstepException,
         exceptions=(NoSuchDriverException, InvalidSessionIdException, StaleElementReferenceException)
     )
-    def is_appinstalled(self, params: dict | list = None) -> 'Shadowstep':
+    def is_appinstalled(self, params: dict | list = None) -> Shadowstep:
         """
         https://github.com/appium/appium-uiautomator2-driver/blob/master/docs/android-mobile-gestures.md#mobile isappinstalled
         Execute mobile: isAppInstalled command.
@@ -349,7 +349,7 @@ class MobileCommands:
             Shadowstep: Self for method chaining.
         """
         self.logger.debug(f"{get_current_func_name()}")
-        self._execute('mobile: isAppInstalled', params or {})
+        self._execute("mobile: isAppInstalled", params or {})
         return self
 
 
@@ -359,7 +359,7 @@ class MobileCommands:
         raise_exception=ShadowstepException,
         exceptions=(NoSuchDriverException, InvalidSessionIdException, StaleElementReferenceException)
     )
-    def longpress_key(self, params: dict | list = None) -> 'Shadowstep':
+    def longpress_key(self, params: dict | list = None) -> Shadowstep:
         """
         https://github.com/appium/appium-uiautomator2-driver/blob/master/docs/android-mobile-gestures.md#mobile longpresskey
         Execute mobile: longPressKey command.
@@ -371,7 +371,7 @@ class MobileCommands:
             Shadowstep: Self for method chaining.
         """
         self.logger.debug(f"{get_current_func_name()}")
-        self._execute('mobile: longPressKey', params or {})
+        self._execute("mobile: longPressKey", params or {})
         return self
 
 
@@ -381,7 +381,7 @@ class MobileCommands:
         raise_exception=ShadowstepException,
         exceptions=(NoSuchDriverException, InvalidSessionIdException, StaleElementReferenceException)
     )
-    def open_notifications(self, params: dict | list = None) -> 'Shadowstep':
+    def open_notifications(self, params: dict | list = None) -> Shadowstep:
         """
         https://github.com/appium/appium-uiautomator2-driver/blob/master/docs/android-mobile-gestures.md#mobile opennotifications
         Execute mobile: openNotifications command.
@@ -393,7 +393,7 @@ class MobileCommands:
             Shadowstep: Self for method chaining.
         """
         self.logger.debug(f"{get_current_func_name()}")
-        self._execute('mobile: openNotifications', params or {})
+        self._execute("mobile: openNotifications", params or {})
         return self
 
 
@@ -403,7 +403,7 @@ class MobileCommands:
         raise_exception=ShadowstepException,
         exceptions=(NoSuchDriverException, InvalidSessionIdException, StaleElementReferenceException)
     )
-    def open_settings(self, params: dict | list = None) -> 'Shadowstep':
+    def open_settings(self, params: dict | list = None) -> Shadowstep:
         """
         https://github.com/appium/appium-uiautomator2-driver/blob/master/docs/android-mobile-gestures.md#mobile opensettings
         Execute mobile: openSettings command.
@@ -415,7 +415,7 @@ class MobileCommands:
             Shadowstep: Self for method chaining.
         """
         self.logger.debug(f"{get_current_func_name()}")
-        self._execute('mobile: openSettings', params or {})
+        self._execute("mobile: openSettings", params or {})
         return self
 
 
@@ -425,7 +425,7 @@ class MobileCommands:
         raise_exception=ShadowstepException,
         exceptions=(NoSuchDriverException, InvalidSessionIdException, StaleElementReferenceException)
     )
-    def press_key(self, params: dict | list = None) -> 'Shadowstep':
+    def press_key(self, params: dict | list = None) -> Shadowstep:
         """
         https://github.com/appium/appium-uiautomator2-driver/blob/master/docs/android-mobile-gestures.md#mobile presskey
         Execute mobile: pressKey command.
@@ -437,7 +437,7 @@ class MobileCommands:
             Shadowstep: Self for method chaining.
         """
         self.logger.debug(f"{get_current_func_name()}")
-        self._execute('mobile: pressKey', params or {})
+        self._execute("mobile: pressKey", params or {})
         return self
 
 
@@ -447,7 +447,7 @@ class MobileCommands:
         raise_exception=ShadowstepException,
         exceptions=(NoSuchDriverException, InvalidSessionIdException, StaleElementReferenceException)
     )
-    def query_appstate(self, params: dict | list = None) -> 'Shadowstep':
+    def query_appstate(self, params: dict | list = None) -> Shadowstep:
         """
         https://github.com/appium/appium-uiautomator2-driver/blob/master/docs/android-mobile-gestures.md#mobile queryappstate
         Execute mobile: queryAppState command.
@@ -459,7 +459,7 @@ class MobileCommands:
             Shadowstep: Self for method chaining.
         """
         self.logger.debug(f"{get_current_func_name()}")
-        self._execute('mobile: queryAppState', params or {})
+        self._execute("mobile: queryAppState", params or {})
         return self
 
 
@@ -469,7 +469,7 @@ class MobileCommands:
         raise_exception=ShadowstepException,
         exceptions=(NoSuchDriverException, InvalidSessionIdException, StaleElementReferenceException)
     )
-    def remove_app(self, params: dict | list = None) -> 'Shadowstep':
+    def remove_app(self, params: dict | list = None) -> Shadowstep:
         """
         https://github.com/appium/appium-uiautomator2-driver/blob/master/docs/android-mobile-gestures.md#mobile removeapp
         Execute mobile: removeApp command.
@@ -481,7 +481,7 @@ class MobileCommands:
             Shadowstep: Self for method chaining.
         """
         self.logger.debug(f"{get_current_func_name()}")
-        self._execute('mobile: removeApp', params or {})
+        self._execute("mobile: removeApp", params or {})
         return self
 
 
@@ -491,7 +491,7 @@ class MobileCommands:
         raise_exception=ShadowstepException,
         exceptions=(NoSuchDriverException, InvalidSessionIdException, StaleElementReferenceException)
     )
-    def replaceelementvalue(self, params: dict | list = None) -> 'Shadowstep':
+    def replaceelementvalue(self, params: dict | list = None) -> Shadowstep:
         """
         https://github.com/appium/appium-uiautomator2-driver/blob/master/docs/android-mobile-gestures.md#mobile replaceelementvalue
         Execute mobile: replaceElementValue command.
@@ -503,7 +503,7 @@ class MobileCommands:
             Shadowstep: Self for method chaining.
         """
         self.logger.debug(f"{get_current_func_name()}")
-        self._execute('mobile: replaceElementValue', params or {})
+        self._execute("mobile: replaceElementValue", params or {})
         return self
 
 
@@ -513,7 +513,7 @@ class MobileCommands:
         raise_exception=ShadowstepException,
         exceptions=(NoSuchDriverException, InvalidSessionIdException, StaleElementReferenceException)
     )
-    def scroll_back_to(self, params: dict | list = None) -> 'Shadowstep':
+    def scroll_back_to(self, params: dict | list = None) -> Shadowstep:
         """
         https://github.com/appium/appium-uiautomator2-driver/blob/master/docs/android-mobile-gestures.md#mobile scrollbackto
         Execute mobile: scrollBackTo command.
@@ -525,7 +525,7 @@ class MobileCommands:
             Shadowstep: Self for method chaining.
         """
         self.logger.debug(f"{get_current_func_name()}")
-        self._execute('mobile: scrollBackTo', params or {})
+        self._execute("mobile: scrollBackTo", params or {})
         return self
 
 
@@ -535,7 +535,7 @@ class MobileCommands:
         raise_exception=ShadowstepException,
         exceptions=(NoSuchDriverException, InvalidSessionIdException, StaleElementReferenceException)
     )
-    def send_sms(self, params: dict | list = None) -> 'Shadowstep':
+    def send_sms(self, params: dict | list = None) -> Shadowstep:
         """
         https://github.com/appium/appium-uiautomator2-driver/blob/master/docs/android-mobile-gestures.md#mobile sendsms
         Execute mobile: sendSMS command.
@@ -547,7 +547,7 @@ class MobileCommands:
             Shadowstep: Self for method chaining.
         """
         self.logger.debug(f"{get_current_func_name()}")
-        self._execute('mobile: sendSMS', params or {})
+        self._execute("mobile: sendSMS", params or {})
         return self
 
 
@@ -557,7 +557,7 @@ class MobileCommands:
         raise_exception=ShadowstepException,
         exceptions=(NoSuchDriverException, InvalidSessionIdException, StaleElementReferenceException)
     )
-    def set_clipboard(self, params: dict | list = None) -> 'Shadowstep':
+    def set_clipboard(self, params: dict | list = None) -> Shadowstep:
         """
         https://github.com/appium/appium-uiautomator2-driver/blob/master/docs/android-mobile-gestures.md#mobile setclipboard
         Execute mobile: setClipboard command.
@@ -569,7 +569,7 @@ class MobileCommands:
             Shadowstep: Self for method chaining.
         """
         self.logger.debug(f"{get_current_func_name()}")
-        self._execute('mobile: setClipboard', params or {})
+        self._execute("mobile: setClipboard", params or {})
         return self
 
 
@@ -579,7 +579,7 @@ class MobileCommands:
         raise_exception=ShadowstepException,
         exceptions=(NoSuchDriverException, InvalidSessionIdException, StaleElementReferenceException)
     )
-    def set_text(self, params: dict | list = None) -> 'Shadowstep':
+    def set_text(self, params: dict | list = None) -> Shadowstep:
         """
         https://github.com/appium/appium-uiautomator2-driver/blob/master/docs/android-mobile-gestures.md#mobile settext
         Execute mobile: setText command.
@@ -591,7 +591,7 @@ class MobileCommands:
             Shadowstep: Self for method chaining.
         """
         self.logger.debug(f"{get_current_func_name()}")
-        self._execute('mobile: setText', params or {})
+        self._execute("mobile: setText", params or {})
         return self
 
 
@@ -601,7 +601,7 @@ class MobileCommands:
         raise_exception=ShadowstepException,
         exceptions=(NoSuchDriverException, InvalidSessionIdException, StaleElementReferenceException)
     )
-    def shell(self, params: dict | list = None) -> 'Shadowstep':
+    def shell(self, params: dict | list = None) -> Shadowstep:
         """
         https://github.com/appium/appium-uiautomator2-driver/blob/master/docs/android-mobile-gestures.md#mobile shell
         Execute mobile: shell command.
@@ -613,7 +613,7 @@ class MobileCommands:
             Shadowstep: Self for method chaining.
         """
         self.logger.debug(f"{get_current_func_name()}")
-        self._execute('mobile: shell', params or {})
+        self._execute("mobile: shell", params or {})
         return self
 
 
@@ -623,7 +623,7 @@ class MobileCommands:
         raise_exception=ShadowstepException,
         exceptions=(NoSuchDriverException, InvalidSessionIdException, StaleElementReferenceException)
     )
-    def start_activity(self, params: dict | list = None) -> 'Shadowstep':
+    def start_activity(self, params: dict | list = None) -> Shadowstep:
         """
         https://github.com/appium/appium-uiautomator2-driver/blob/master/docs/android-mobile-gestures.md#mobile startactivity
         Execute mobile: startActivity command.
@@ -635,7 +635,7 @@ class MobileCommands:
             Shadowstep: Self for method chaining.
         """
         self.logger.debug(f"{get_current_func_name()}")
-        self._execute('mobile: startActivity', params or {})
+        self._execute("mobile: startActivity", params or {})
         return self
 
 
@@ -645,7 +645,7 @@ class MobileCommands:
         raise_exception=ShadowstepException,
         exceptions=(NoSuchDriverException, InvalidSessionIdException, StaleElementReferenceException)
     )
-    def start_logsbroadcast(self, params: dict | list = None) -> 'Shadowstep':
+    def start_logsbroadcast(self, params: dict | list = None) -> Shadowstep:
         """
         https://github.com/appium/appium-uiautomator2-driver/blob/master/docs/android-mobile-gestures.md#mobile startlogsbroadcast
         Execute mobile: startLogsBroadcast command.
@@ -657,7 +657,7 @@ class MobileCommands:
             Shadowstep: Self for method chaining.
         """
         self.logger.debug(f"{get_current_func_name()}")
-        self._execute('mobile: startLogsBroadcast', params or {})
+        self._execute("mobile: startLogsBroadcast", params or {})
         return self
 
 
@@ -667,7 +667,7 @@ class MobileCommands:
         raise_exception=ShadowstepException,
         exceptions=(NoSuchDriverException, InvalidSessionIdException, StaleElementReferenceException)
     )
-    def stop_logsbroadcast(self, params: dict | list = None) -> 'Shadowstep':
+    def stop_logsbroadcast(self, params: dict | list = None) -> Shadowstep:
         """
         https://github.com/appium/appium-uiautomator2-driver/blob/master/docs/android-mobile-gestures.md#mobile stoplogsbroadcast
         Execute mobile: stopLogsBroadcast command.
@@ -679,7 +679,7 @@ class MobileCommands:
             Shadowstep: Self for method chaining.
         """
         self.logger.debug(f"{get_current_func_name()}")
-        self._execute('mobile: stopLogsBroadcast', params or {})
+        self._execute("mobile: stopLogsBroadcast", params or {})
         return self
 
 
@@ -689,7 +689,7 @@ class MobileCommands:
         raise_exception=ShadowstepException,
         exceptions=(NoSuchDriverException, InvalidSessionIdException, StaleElementReferenceException)
     )
-    def terminate_app(self, params: dict | list = None) -> 'Shadowstep':
+    def terminate_app(self, params: dict | list = None) -> Shadowstep:
         """
         https://github.com/appium/appium-uiautomator2-driver/blob/master/docs/android-mobile-gestures.md#mobile terminateapp
         Execute mobile: terminateApp command.
@@ -701,7 +701,7 @@ class MobileCommands:
             Shadowstep: Self for method chaining.
         """
         self.logger.debug(f"{get_current_func_name()}")
-        self._execute('mobile: terminateApp', params or {})
+        self._execute("mobile: terminateApp", params or {})
         return self
 
 
@@ -711,7 +711,7 @@ class MobileCommands:
         raise_exception=ShadowstepException,
         exceptions=(NoSuchDriverException, InvalidSessionIdException, StaleElementReferenceException)
     )
-    def togglelocationservices(self, params: dict | list = None) -> 'Shadowstep':
+    def togglelocationservices(self, params: dict | list = None) -> Shadowstep:
         """
         https://github.com/appium/appium-uiautomator2-driver/blob/master/docs/android-mobile-gestures.md#mobile togglelocationservices
         Execute mobile: toggleLocationServices command.
@@ -723,7 +723,7 @@ class MobileCommands:
             Shadowstep: Self for method chaining.
         """
         self.logger.debug(f"{get_current_func_name()}")
-        self._execute('mobile: toggleLocationServices', params or {})
+        self._execute("mobile: toggleLocationServices", params or {})
         return self
 
 
@@ -733,7 +733,7 @@ class MobileCommands:
         raise_exception=ShadowstepException,
         exceptions=(NoSuchDriverException, InvalidSessionIdException, StaleElementReferenceException)
     )
-    def update_settings(self, params: dict | list = None) -> 'Shadowstep':
+    def update_settings(self, params: dict | list = None) -> Shadowstep:
         """
         https://github.com/appium/appium-uiautomator2-driver/blob/master/docs/android-mobile-gestures.md#mobile updatesettings
         Execute mobile: updateSettings command.
@@ -745,7 +745,7 @@ class MobileCommands:
             Shadowstep: Self for method chaining.
         """
         self.logger.debug(f"{get_current_func_name()}")
-        self._execute('mobile: updateSettings', params or {})
+        self._execute("mobile: updateSettings", params or {})
         return self
 
 
@@ -755,7 +755,7 @@ class MobileCommands:
         raise_exception=ShadowstepException,
         exceptions=(NoSuchDriverException, InvalidSessionIdException, StaleElementReferenceException)
     )
-    def get_text(self, params: dict | list = None) -> 'Shadowstep':
+    def get_text(self, params: dict | list = None) -> Shadowstep:
         """
         https://github.com/appium/appium-uiautomator2-driver/blob/master/docs/android-mobile-gestures.md#mobile gettext
         Execute mobile: getText command.
@@ -767,7 +767,7 @@ class MobileCommands:
             Shadowstep: Self for method chaining.
         """
         self.logger.debug(f"{get_current_func_name()}")
-        self._execute('mobile: getText', params or {})
+        self._execute("mobile: getText", params or {})
         return self
 
 
@@ -777,7 +777,7 @@ class MobileCommands:
         raise_exception=ShadowstepException,
         exceptions=(NoSuchDriverException, InvalidSessionIdException, StaleElementReferenceException)
     )
-    def performeditoraction(self, params: dict | list = None) -> 'Shadowstep':
+    def performeditoraction(self, params: dict | list = None) -> Shadowstep:
         """
         https://github.com/appium/appium-uiautomator2-driver/blob/master/docs/android-mobile-gestures.md#mobile performeditoraction
         Execute mobile: performEditorAction command.
@@ -789,7 +789,7 @@ class MobileCommands:
             Shadowstep: Self for method chaining.
         """
         self.logger.debug(f"{get_current_func_name()}")
-        self._execute('mobile: performEditorAction', params or {})
+        self._execute("mobile: performEditorAction", params or {})
         return self
 
     def _execute(self, name: str, params: dict | list) -> None:

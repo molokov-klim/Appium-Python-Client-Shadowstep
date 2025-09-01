@@ -5,7 +5,6 @@ import logging
 import re
 from typing import Any, cast
 
-
 logger = logging.getLogger(__name__)
 
 # Deprecated
@@ -222,7 +221,7 @@ class DeprecatedLocatorConverter:
         self.logger.warning(DeprecationWarning)
         if isinstance(selector, dict):
             return selector
-        elif isinstance(selector, tuple):
+        if isinstance(selector, tuple):
             return self._xpath_to_dict(selector)
         return self._uiselector_to_dict(selector)
 
@@ -230,18 +229,17 @@ class DeprecatedLocatorConverter:
         self.logger.warning(DeprecationWarning)
         if isinstance(selector, dict):
             return self._dict_to_xpath(selector)
-        elif isinstance(selector, tuple) and selector[0] == "xpath":
+        if isinstance(selector, tuple) and selector[0] == "xpath":
             return selector
-        elif isinstance(selector, str) and selector.strip().startswith("new UiSelector()"):
+        if isinstance(selector, str) and selector.strip().startswith("new UiSelector()"):
             return self._dict_to_xpath(self._uiselector_to_dict(selector))
-        else:
-            raise ValueError(f"Unsupported selector format: {type(selector)}")
+        raise ValueError(f"Unsupported selector format: {type(selector)}")
 
     def to_uiselector(self, selector: dict[str, Any] | tuple[str, str] | str) -> str:
         self.logger.warning(DeprecationWarning)
         if isinstance(selector, dict):
             return self._dict_to_uiselector(selector)
-        elif isinstance(selector, tuple):
+        if isinstance(selector, tuple):
             return self._dict_to_uiselector(self._xpath_to_dict(selector))
         return selector
 
@@ -325,10 +323,10 @@ class DeprecatedLocatorConverter:
         for key, value in selector.items():
             if key == "scrollable":
                 if value == "true":
-                    parts.append(f".scrollable(true)")
+                    parts.append(".scrollable(true)")
                     continue
-                elif value == "false":
-                    parts.append(f".scrollable(false)")
+                if value == "false":
+                    parts.append(".scrollable(false)")
                     continue
             if key == "childSelector" and isinstance(value, dict):
                 nested = self._dict_to_uiselector(value)
@@ -352,7 +350,7 @@ class DeprecatedLocatorConverter:
     def _uiselector_to_dict(self, uiselector: str) -> dict[str, str | int | bool | dict[Any, Any]]:
         def parse_chain(chain: str) -> dict[str, str | int | bool]:
             parsed = {}
-            for method, raw_value in re.findall(r'\.(\w+)\(([^()]+)\)', chain):
+            for method, raw_value in re.findall(r"\.(\w+)\(([^()]+)\)", chain):
                 value = raw_value.strip("\"'")
                 if value in ("true", "false"):
                     value = value == "true"

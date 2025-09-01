@@ -54,7 +54,7 @@ class PageNavigator:
         )
 
         try:
-            self.perform_navigation(cast(list['PageBaseShadowstep'], path), timeout)
+            self.perform_navigation(cast(list["PageBaseShadowstep"], path), timeout)
             self.logger.info(f"✅ Successfully navigated to {to_page}")
             return True
         except WebDriverException as error:
@@ -91,7 +91,7 @@ class PageNavigator:
                     queue.append((next_page, path + [current_page]))
         return None
 
-    def perform_navigation(self, path: list['PageBaseShadowstep'], timeout: int = 55) -> None:
+    def perform_navigation(self, path: list[PageBaseShadowstep], timeout: int = 55) -> None:
         """Perform navigation through a given path of PageBase instances.
 
         Args:

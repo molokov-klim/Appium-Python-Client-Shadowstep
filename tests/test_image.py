@@ -30,7 +30,7 @@ class TestImage:
         result = image.tap()
         assert isinstance(result, ShadowstepImage)
         assert app.get_element(
-            {'content-desc': 'Connected devices', 'resource-id': 'com.android.settings:id/collapsing_toolbar'}).wait()
+            {"content-desc": "Connected devices", "resource-id": "com.android.settings:id/collapsing_toolbar"}).wait()
 
     def test_image_tap_duration(self, app: Shadowstep, android_settings_open_close: None,
                                 connected_devices_image_path: str):
@@ -38,7 +38,7 @@ class TestImage:
         result = image.tap(duration=2)
         assert isinstance(result, ShadowstepImage)
         assert app.get_element(
-            {'content-desc': 'Connected devices', 'resource-id': 'com.android.settings:id/collapsing_toolbar'}).wait()
+            {"content-desc": "Connected devices", "resource-id": "com.android.settings:id/collapsing_toolbar"}).wait()
 
     def test_image_scroll_down(self, app: Shadowstep, android_settings_open_close: None, system_image_path: str):
         image = app.get_image(image=system_image_path, timeout=2.0)

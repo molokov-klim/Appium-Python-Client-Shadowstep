@@ -1,10 +1,12 @@
 # shadowstep/utils/conditions.py
+from __future__ import annotations
 
-from selenium.webdriver.support import expected_conditions as EC
+from collections.abc import Callable
+
 from selenium.webdriver.remote.webelement import WebElement
-from typing import Tuple, Union, Callable
+from selenium.webdriver.support import expected_conditions as EC
 
-Locator = Tuple[str, str]
+Locator = tuple[str, str]
 
 
 def visible(locator: Locator) -> Callable:
@@ -17,12 +19,12 @@ def not_visible(locator: Locator) -> Callable:
     return EC.invisibility_of_element_located(locator)
 
 
-def clickable(locator: Union[Locator, WebElement]) -> Callable:
+def clickable(locator: Locator | WebElement) -> Callable:
     """Wraps EC.element_to_be_clickable."""
     return EC.element_to_be_clickable(locator)
 
 
-def not_clickable(locator: Union[Locator, WebElement]) -> Callable:
+def not_clickable(locator: Locator | WebElement) -> Callable:
     """Returns negation of EC.element_to_be_clickable."""
     def _predicate(driver):
         result = EC.element_to_be_clickable(locator)(driver)

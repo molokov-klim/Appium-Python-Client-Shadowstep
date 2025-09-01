@@ -45,14 +45,14 @@ class Adb:
         logger.info(f"{get_current_func_name()}")
 
         # Определение команды для выполнения с помощью adb для получения списка устройств
-        command = ['adb', 'devices']
+        command = ["adb", "devices"]
 
         try:
             # Выполнение команды и получение вывода
             response = str(subprocess.check_output(command))
 
             # Извлечение списка устройств из полученного вывода с использованием регулярных выражений
-            devices_list = re.findall(r'(\d+\.\d+\.\d+\.\d+:\d+|\d+)', response)
+            devices_list = re.findall(r"(\d+\.\d+\.\d+\.\d+:\d+|\d+)", response)
 
             try:
                 # Возвращение первого устройства из списка (UUID подключенного устройства Android)
@@ -235,7 +235,7 @@ class Adb:
         """
         logger.info(f"uninstall_app() < {package=}")
 
-        command = ['adb', 'uninstall', package]
+        command = ["adb", "uninstall", package]
         try:
             subprocess.run(command, check=True)
             logger.info("uninstall_app() > True")
@@ -263,7 +263,7 @@ class Adb:
         """
         logger.info(f"start_activity() < {package=}, {activity=}")
 
-        command = ['adb', 'shell', 'am', 'start', '-n', f'{package}/{activity}']
+        command = ["adb", "shell", "am", "start", "-n", f"{package}/{activity}"]
         try:
             subprocess.check_output(command)
             logger.info("start_activity() > True")
@@ -287,14 +287,14 @@ class Adb:
         logger.info("get_current_activity()")
 
         # Команда для ADB для получения информации о текущих окнах
-        command = ['adb', 'shell', 'dumpsys', 'window', 'windows']
+        command = ["adb", "shell", "dumpsys", "window", "windows"]
 
         try:
             # Выполнение команды и декодирование результата
             result = subprocess.check_output(command, shell=True).decode().strip()
 
             # Определение паттерна для поиска нужной информации в результатах
-            pattern = r'mCurrentFocus|mFocusedApp'
+            pattern = r"mCurrentFocus|mFocusedApp"
 
             # Вызов функции grep_pattern для поиска соответствия паттерну
             matched_lines = grep_pattern(input_string=result, pattern=pattern)
@@ -303,7 +303,7 @@ class Adb:
             if matched_lines:
                 for line in matched_lines:
                     # Поиск имени активити в строке
-                    match = re.search(r'\/([^\/}]*)', line)
+                    match = re.search(r"\/([^\/}]*)", line)
                     if match:
                         # Возвращаем найденное значение, исключая '/'
                         activity_name = match.group(1)
@@ -332,14 +332,14 @@ class Adb:
         logger.info("get_current_app_package()")
 
         # Команда для ADB для получения информации о текущих окнах
-        command = ['adb', 'shell', 'dumpsys', 'window', 'windows']
+        command = ["adb", "shell", "dumpsys", "window", "windows"]
 
         try:
             # Выполнение команды и декодирование результата
             result = subprocess.check_output(command, shell=True).decode().strip()
 
             # Определение паттерна для поиска нужной информации в результатах
-            pattern = r'mCurrentFocus|mFocusedApp'
+            pattern = r"mCurrentFocus|mFocusedApp"
 
             # Вызов функции grep_pattern для поиска соответствия паттерну
             matched_lines = grep_pattern(input_string=result, pattern=pattern)
@@ -348,7 +348,7 @@ class Adb:
             if matched_lines:
                 for line in matched_lines:
                     # Поиск имени пакета в строке
-                    match = re.search(r'u0\s(.+?)/', line)
+                    match = re.search(r"u0\s(.+?)/", line)
                     if match:
                         # Возвращаем найденное значение
                         package_name = match.group(1)
@@ -379,7 +379,7 @@ class Adb:
         """
         logger.info(f"close_app() < {package=}")
 
-        command = ['adb', 'shell', 'am', 'force-stop', package]
+        command = ["adb", "shell", "am", "force-stop", package]
         try:
             subprocess.run(command, check=True)
             logger.info("close_app() > True")
@@ -430,7 +430,7 @@ class Adb:
         """
         logger.info("press_home()")
 
-        command = ['adb', 'shell', 'input', 'keyevent', 'KEYCODE_HOME']
+        command = ["adb", "shell", "input", "keyevent", "KEYCODE_HOME"]
         try:
             subprocess.run(command, check=True)
             logger.info("press_home() > True")
@@ -452,7 +452,7 @@ class Adb:
         """
         logger.info("press_back()")
 
-        command = ['adb', 'shell', 'input', 'keyevent', 'KEYCODE_BACK']
+        command = ["adb", "shell", "input", "keyevent", "KEYCODE_BACK"]
         try:
             subprocess.run(command, check=True)
             logger.info("press_back() > True")
@@ -474,7 +474,7 @@ class Adb:
         """
         logger.info("press_menu()")
 
-        command = ['adb', 'shell', 'input', 'keyevent', 'KEYCODE_MENU']
+        command = ["adb", "shell", "input", "keyevent", "KEYCODE_MENU"]
         try:
             subprocess.run(command, check=True)
             logger.info("press_menu() > True")
@@ -500,7 +500,7 @@ class Adb:
         """
         logger.info(f"input_keycode_num_() < {num=}")
 
-        command = ['adb', 'shell', 'input', 'keyevent', f'KEYCODE_NUMPAD_{num}']
+        command = ["adb", "shell", "input", "keyevent", f"KEYCODE_NUMPAD_{num}"]
         try:
             subprocess.run(command, check=True)
             logger.info("input_keycode_num_() > True")
@@ -526,7 +526,7 @@ class Adb:
         """
         logger.info(f"input_keycode() < {keycode=}")
 
-        command = ['adb', 'shell', 'input', 'keyevent', f'{keycode}']
+        command = ["adb", "shell", "input", "keyevent", f"{keycode}"]
         try:
             subprocess.run(command, check=True)
             logger.info("input_keycode() > True")
@@ -553,7 +553,7 @@ class Adb:
         logger.info(f"input_text() < {text=}")
 
         # Формируем команду для ввода текста с использованием ADB
-        command = ['adb', 'shell', 'input', 'text', text]
+        command = ["adb", "shell", "input", "text", text]
         try:
             # Выполняем команду
             subprocess.run(command, check=True)
@@ -583,7 +583,7 @@ class Adb:
         logger.info(f"tap() < {x=}, {y=}")
 
         # Формируем команду для выполнения нажатия по указанным координатам с использованием ADB
-        command = ['adb', 'shell', 'input', 'tap', str(x), str(y)]
+        command = ["adb", "shell", "input", "tap", str(x), str(y)]
         try:
             subprocess.run(command, check=True)
             logger.info("tap() > True")
@@ -620,7 +620,7 @@ class Adb:
         logger.info(f"swipe() < {start_x=}, {start_y=}, {end_x=}, {end_y=}, {duration=}")
 
         # Формируем команду для выполнения свайпа с использованием ADB
-        command = ['adb', 'shell', 'input', 'swipe', str(start_x), str(start_y), str(end_x), str(end_y), str(duration)]
+        command = ["adb", "shell", "input", "swipe", str(start_x), str(start_y), str(end_x), str(end_y), str(duration)]
         try:
             # Выполняем команду
             subprocess.run(command, check=True)
@@ -633,7 +633,7 @@ class Adb:
             return False
 
     @staticmethod
-    def check_vpn(ip_address: str = '') -> bool:
+    def check_vpn(ip_address: str = "") -> bool:
         """
         Check if a VPN connection is established with the specified IP address.
 
@@ -677,7 +677,7 @@ class Adb:
                 True if the logcat process was successfully stopped, False otherwise.
         """
         logger.info("stop_logcat()")
-        if Adb.is_process_exist(name='logcat') and Adb.kill_all(name='logcat'):
+        if Adb.is_process_exist(name="logcat") and Adb.kill_all(name="logcat"):
             logger.info("stop_logcat() > True")
             return True
         logger.error("stop_logcat() > False")
@@ -698,7 +698,7 @@ class Adb:
                 True if the process is running, False otherwise.
         """
         logger.info(f"is_process_exist() < {name=}")
-        command = ['adb', 'shell', 'ps']
+        command = ["adb", "shell", "ps"]
         try:
             processes = subprocess.check_output(command, shell=True).decode().strip()
         except subprocess.CalledProcessError:
@@ -707,7 +707,7 @@ class Adb:
             logger.error(f"{sys.exc_info()[0]}\n{traceback_info}{sys.exc_info()[1]}")
             return False
         # Разделение вывода на строки и удаление пустых строк
-        lines = processes.strip().split('\n')
+        lines = processes.strip().split("\n")
         # Проход по каждой строке вывода, начиная с 2-й строки, игнорируя заголовки
         for line in lines[1:]:
             # Разделение строки на столбцы по пробелам
@@ -768,7 +768,7 @@ class Adb:
         logger.info("reload_adb()")
 
         try:
-            command = ['adb', 'kill-server']
+            command = ["adb", "kill-server"]
             subprocess.run(command, check=True)
         except subprocess.CalledProcessError:
             logger.error(f"{get_current_func_name()} > None")
@@ -778,7 +778,7 @@ class Adb:
         # Ожидаем некоторое время перед запуском adb-сервера
         time.sleep(3)
         try:
-            command = ['adb', 'start-server']
+            command = ["adb", "start-server"]
             subprocess.run(command, check=True)
         except subprocess.CalledProcessError:
             logger.error(f"{get_current_func_name()} > None")
@@ -802,7 +802,7 @@ class Adb:
                 The PID of the process if found, None otherwise.
         """
         logger.info(f"know_pid() < {name=}")
-        command = ['adb', 'shell', 'ps']
+        command = ["adb", "shell", "ps"]
         try:
             processes = subprocess.check_output(command, shell=True).decode().strip()
         except subprocess.CalledProcessError:
@@ -811,7 +811,7 @@ class Adb:
             logger.error(f"{sys.exc_info()[0]}\n{traceback_info}{sys.exc_info()[1]}")
             return None
         # Разделение вывода на строки и удаление пустых строк
-        lines = processes.strip().split('\n')
+        lines = processes.strip().split("\n")
         # Проход по каждой строке вывода, начиная с 2-й строки, игнорируя заголовки
         for line in lines[1:]:
             # Разделение строки на столбцы по пробелам
@@ -844,7 +844,7 @@ class Adb:
         """
         logger.info(f"kill_by_pid() < {pid=}")
 
-        command = ['adb', 'shell', 'kill', '-s', 'SIGINT', str(pid)]
+        command = ["adb", "shell", "kill", "-s", "SIGINT", str(pid)]
         try:
             subprocess.call(command)
         except subprocess.CalledProcessError:
@@ -870,7 +870,7 @@ class Adb:
         """
         logger.info(f"kill_by_name() < {name=}")
 
-        command = ['adb', 'shell', 'pkill', '-l', 'SIGINT', str(name)]
+        command = ["adb", "shell", "pkill", "-l", "SIGINT", str(name)]
         try:
             subprocess.call(command)
         except subprocess.CalledProcessError:
@@ -896,7 +896,7 @@ class Adb:
         """
         logger.info(f"kill_all() < {name=}")
 
-        command = ['adb', 'shell', 'pkill', '-f', str(name)]
+        command = ["adb", "shell", "pkill", "-f", str(name)]
         try:
             subprocess.run(command, check=True)
         except subprocess.CalledProcessError:
@@ -922,7 +922,7 @@ class Adb:
         """
         logger.info(f"delete_files_from_internal_storage() < {path=}")
 
-        command = ['adb', 'shell', 'rm', '-rf', f'{path}*']
+        command = ["adb", "shell", "rm", "-rf", f"{path}*"]
         try:
             subprocess.run(command, check=True)
         except subprocess.CalledProcessError:
@@ -954,13 +954,13 @@ class Adb:
         logger.info(f"pull_video() < {destination=}")
 
         if not source:
-            source = '/sdcard/Movies/'
-        if source.endswith('/'):
+            source = "/sdcard/Movies/"
+        if source.endswith("/"):
             source = source + "/"
-        if destination.endswith('/'):
+        if destination.endswith("/"):
             destination = destination + "/"
 
-        command = ['adb', 'pull', f'{source}', f'{destination}']
+        command = ["adb", "pull", f"{source}", f"{destination}"]
         try:
             subprocess.run(command, check=True)
         except subprocess.CalledProcessError:
@@ -970,7 +970,7 @@ class Adb:
             return False
 
         if delete:
-            command = ['adb', 'shell', 'rm', '-rf', f'{source}*']
+            command = ["adb", "shell", "rm", "-rf", f"{source}*"]
             try:
                 subprocess.run(command, check=True)
             except subprocess.CalledProcessError:
@@ -993,7 +993,7 @@ class Adb:
         """
         logger.info("stop_video()")
 
-        command = ['adb', 'shell', 'pkill', '-l', 'SIGINT', 'screenrecord']
+        command = ["adb", "shell", "pkill", "-l", "SIGINT", "screenrecord"]
         try:
             subprocess.call(command)
         except subprocess.CalledProcessError:
@@ -1021,12 +1021,12 @@ class Adb:
                 The Popen object representing the running video recording process if successful, None otherwise.
         """
         logger.info(f"record_video() < {filename}")
-        if path.endswith('/'):
+        if path.endswith("/"):
             path = path[:-1]
-        if filename.endswith('.mp4'):
+        if filename.endswith(".mp4"):
             filename = filename + ".mp4"
 
-        command = ['adb', 'shell', 'screenrecord', f'{path}/{filename}']
+        command = ["adb", "shell", "screenrecord", f"{path}/{filename}"]
         try:
             # Запускаем команду adb shell screenrecord для начала записи видео
             return subprocess.Popen(command)
@@ -1051,12 +1051,12 @@ class Adb:
             bool
                 True if the video recording was successfully started, False otherwise.
         """
-        if path.endswith('/'):
+        if path.endswith("/"):
             path = path[:-1]
-        if not filename.endswith('.mp4'):
+        if not filename.endswith(".mp4"):
             filename = filename + ".mp4"
 
-        command = ['adb', 'shell', 'screenrecord', f'{path}/{filename}']
+        command = ["adb", "shell", "screenrecord", f"{path}/{filename}"]
         try:
             # Запускаем команду adb shell screenrecord для начала записи видео
             subprocess.Popen(command)  # не добавлять with
@@ -1078,7 +1078,7 @@ class Adb:
         """
         logger.info("reboot()")
 
-        command = ['adb', 'shell', 'reboot']
+        command = ["adb", "shell", "reboot"]
         try:
             subprocess.call(command)
         except subprocess.CalledProcessError:
@@ -1100,7 +1100,7 @@ class Adb:
         """
         logger.info("get_screen_resolution()")
 
-        command = ['adb', 'shell', 'wm', 'size']
+        command = ["adb", "shell", "wm", "size"]
         try:
             output = subprocess.check_output(command).decode()
             if "Physical size" in output:
@@ -1125,9 +1125,9 @@ class Adb:
         """
         packages_raw = self.execute(command="shell pm list packages")
         # Используем регулярное выражение для удаления "package:" из каждой строки
-        packages_raw = re.sub(r'package:', '', packages_raw)
+        packages_raw = re.sub(r"package:", "", packages_raw)
         # Разбиваем строки на список и удаляем пустые элементы
-        packages_list = [package.strip() for package in packages_raw.split('\n') if package.strip()]
+        packages_list = [package.strip() for package in packages_raw.split("\n") if package.strip()]
         return packages_list
 
     @staticmethod
@@ -1144,5 +1144,5 @@ class Adb:
                 The output of the executed command as a string.
         """
         logger.info(f"execute() < {command}")
-        execute_command = ['adb', *command.split()]
+        execute_command = ["adb", *command.split()]
         return subprocess.check_output(execute_command).decode()

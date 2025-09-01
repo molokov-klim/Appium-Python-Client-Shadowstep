@@ -26,7 +26,7 @@ class UiElementNode:
     # Fields to identify uniqueness (depth REMOVED)
     _signature_fields: tuple[str, ...] = field(default=("resource-id", "text", "class"), repr=False)
 
-    def walk(self) -> Generator[UiElementNode, None, None]:
+    def walk(self) -> Generator[UiElementNode]:
         """DFS traversal of all nodes in the tree"""
         yield self
         for child in self.children:
@@ -37,13 +37,13 @@ class UiElementNode:
         return [el for el in self.walk() if all(el.attrs.get(k) == v for k, v in kwargs.items())]
 
     def get_attr(self, key: str) -> str:
-        return self.attrs.get(key, '') if self.attrs else ''
+        return self.attrs.get(key, "") if self.attrs else ""
 
     def __repr__(self) -> str:
         return self._repr_tree()
 
     def _repr_tree(self, indent: int = 0) -> str:
-        pad = '  ' * indent
+        pad = "  " * indent
         parent_id = self.parent.id if self.parent else None
         line = (
             f"{pad}- id={self.id}"
@@ -57,7 +57,7 @@ class UiElementNode:
         )
         if not self.children:
             return line
-        return '\n'.join([line] + [child._repr_tree(indent + 1) for child in self.children])
+        return "\n".join([line] + [child._repr_tree(indent + 1) for child in self.children])
 
 
 @dataclass
@@ -104,7 +104,7 @@ class Jinja2Renderer(TemplateRenderer):
             trim_blocks=True,
             lstrip_blocks=True
         )
-        self.env.filters['pretty_dict'] = self._pretty_dict
+        self.env.filters["pretty_dict"] = self._pretty_dict
 
     def render(self, model: PageObjectModel, template_name: str) -> str:
         self.logger.debug(f"{get_current_func_name()}")
@@ -125,7 +125,7 @@ class Jinja2Renderer(TemplateRenderer):
     def save(self, content: str, path: str) -> None:
         self.logger.debug(f"{get_current_func_name()}")
         os.makedirs(os.path.dirname(os.path.abspath(path)), exist_ok=True)
-        with open(path, 'w', encoding='utf-8') as f:
+        with open(path, "w", encoding="utf-8") as f:
             f.write(content)
 
     @staticmethod
@@ -146,10 +146,9 @@ class PageObjectRendererFactory:
     @staticmethod
     def create_renderer(renderer_type: str) -> TemplateRenderer:
         if renderer_type.lower() == "jinja2":
-            templates_dir = os.path.join(os.path.dirname(__file__), 'templates')
+            templates_dir = os.path.join(os.path.dirname(__file__), "templates")
             return Jinja2Renderer(templates_dir)
-        else:
-            raise ValueError(f"Unsupported renderer type: {renderer_type}")
+        raise ValueError(f"Unsupported renderer type: {renderer_type}")
 
 
 class ModelBuilder:

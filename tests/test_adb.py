@@ -47,11 +47,11 @@ class TestAdb:
         Asserts:
             Asserts that the file was successfully pushed to the specified directory on the device.
         """
-        app.adb.push(source=os.path.join('test_data', 'test_file'),
-                     destination=os.path.join('sdcard/Download/test_file'),
+        app.adb.push(source=os.path.join("test_data", "test_file"),
+                     destination=os.path.join("sdcard/Download/test_file"),
                      udid=udid)
         response = str(subprocess.check_output(f'adb -s {udid} shell "ls sdcard/Download"'))
-        assert 'test_file' in response
+        assert "test_file" in response
         subprocess.run(f"adb -s {udid} shell rm /sdcard/Download/test_file")
 
     def test_pull(self, app: Shadowstep, udid: str) -> None:
@@ -65,15 +65,15 @@ class TestAdb:
         Asserts:
             Asserts that the file was successfully pulled from the device to the local machine.
         """
-        app.adb.push(source=os.path.join('test_data', 'test_file'),
-                     destination='sdcard/Download/test_file',
+        app.adb.push(source=os.path.join("test_data", "test_file"),
+                     destination="sdcard/Download/test_file",
                      udid=udid)
-        assert not os.path.exists('test_file')
-        app.adb.pull(source='sdcard/Download/test_file',
-                     destination='test_file',
+        assert not os.path.exists("test_file")
+        app.adb.pull(source="sdcard/Download/test_file",
+                     destination="test_file",
                      udid=udid)
-        assert os.path.exists('test_file')
-        os.remove('test_file')
+        assert os.path.exists("test_file")
+        os.remove("test_file")
         subprocess.run(f"adb -s {udid} shell rm /sdcard/Download/test_file")
 
     def test_install_app(self, app: Shadowstep, udid: str) -> None:
@@ -88,7 +88,7 @@ class TestAdb:
             Asserts that the application was installed and can be found in the list of installed packages.
             And not in the list after uninstall.
         """
-        app.adb.install_app(source=os.path.join('apk', 'notepad.apk'),
+        app.adb.install_app(source=os.path.join("apk", "notepad.apk"),
                             udid=udid)
         package = "com.farmerbb.notepad"
         result = subprocess.check_output(f"adb -s {udid} shell pm list packages").decode().strip()

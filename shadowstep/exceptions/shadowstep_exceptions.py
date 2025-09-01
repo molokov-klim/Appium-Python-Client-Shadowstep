@@ -59,7 +59,7 @@ class ShadowstepTimeoutException(TimeoutException):
         super().__init__(msg, screen, stacktrace)
         self.locator = locator
         self.driver = driver
-        self.timestamp = datetime.datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
+        self.timestamp = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
 
     def __str__(self):
         return (f"ShadowstepTimeoutException\n"

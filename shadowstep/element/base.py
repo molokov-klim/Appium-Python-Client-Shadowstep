@@ -104,7 +104,7 @@ class ElementBase:
         except TimeoutException as error:
             self.logger.debug(f"{get_current_func_name()} {locator=} {error}")
             for stack in error.stacktrace:
-                if 'NoSuchElementError' in stack:
+                if "NoSuchElementError" in stack:
                     raise ShadowstepNoSuchElementError(
                         msg=error.msg,
                         screen=error.screen,
@@ -134,9 +134,9 @@ class ElementBase:
             # Удаляем части типа [@attr='null']
             value = re.sub(r"\[@[\w\-]+='null'\]", "", value)
             return by, value
-        elif isinstance(locator, dict):
+        if isinstance(locator, dict):
             # Удаляем ключи, у которых значение == 'null'
-            locator = {k: v for k, v in locator.items() if v != 'null'}
+            locator = {k: v for k, v in locator.items() if v != "null"}
             locator = self.handle_dict_locator(locator, contains)
         return locator
 
@@ -155,10 +155,10 @@ class ElementBase:
                 The XPath locator as a tuple, or None if there was an error.
         """
         self.logger.debug(f"{get_current_func_name()}")
-        if 'class' not in locator:
+        if "class" not in locator:
             xpath = "//*"
         else:
-            xpath = "//" + locator['class']
+            xpath = "//" + locator["class"]
         try:
             if contains:
                 for attr, value in locator.items():

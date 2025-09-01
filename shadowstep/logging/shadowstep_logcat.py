@@ -18,7 +18,7 @@ class ShadowstepLogcat:
 
     def __init__(
             self,
-            driver_getter: Callable[[], 'WebDriver'],  # функция, возвращающая актуальный driver
+            driver_getter: Callable[[], WebDriver],  # функция, возвращающая актуальный driver
             poll_interval: float = 1.0
     ):
         self._driver_getter = driver_getter
@@ -121,7 +121,7 @@ class ShadowstepLogcat:
                         try:
                             line = ws.recv()
                             if isinstance(line, bytes):
-                                line = line.decode(errors="ignore", encoding='utf-8')
+                                line = line.decode(errors="ignore", encoding="utf-8")
                             f.write(line + "\n")
                         except WebSocketConnectionClosedException:
                             break  # переподключимся

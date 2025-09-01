@@ -131,13 +131,13 @@ class UiSelectorConverter:
                     # Handle hierarchical methods specially
                     if method == UiAttribute.CHILD_SELECTOR:
                         child_xpath = self._convert_nested_selector(args[0])
-                        xpath += f'/{child_xpath}'
+                        xpath += f"/{child_xpath}"
                     elif method == UiAttribute.FROM_PARENT:
                         parent_xpath = self._convert_nested_selector(args[0])
                         if parent_xpath.startswith("//"):
-                            xpath = f'{xpath}/..{parent_xpath}'
+                            xpath = f"{xpath}/..{parent_xpath}"
                         else:
-                            xpath = f'{xpath}/..//{parent_xpath}'
+                            xpath = f"{xpath}/..//{parent_xpath}"
                 else:
                     if method in UI_TO_XPATH:
                         if args:
@@ -210,7 +210,7 @@ class UiSelectorConverter:
         for group_name, group_methods in self._compatible_groups.items():
             if new_method in group_methods:
                 for existing in existing_methods:
-                    if (existing in group_methods and existing != new_method and 
+                    if (existing in group_methods and existing != new_method and
                             group_name in ["text", "description", "resource", "class"]):
                             raise ValueError(
                                 f"Conflicting methods: '{existing}' and '{new_method}' "
@@ -243,12 +243,11 @@ class UiSelectorConverter:
         """
         if isinstance(nested_sel, dict):
             return self._selector_to_xpath(nested_sel, base_xpath="*")  # type: ignore
-        elif hasattr(nested_sel, 'methods'):
+        if hasattr(nested_sel, "methods"):
             # Handle Selector AST object
             parsed_dict = self._selector_to_parsed_dict(nested_sel)
             return self._selector_to_xpath(parsed_dict, base_xpath="*")  # type: ignore
-        else:
-            raise ConversionError(f"Unsupported nested selector type: {type(nested_sel)}")
+        raise ConversionError(f"Unsupported nested selector type: {type(nested_sel)}")
 
     def _selector_to_parsed_dict(self, sel: Selector) -> dict[str, Any]:
         """
@@ -262,7 +261,7 @@ class UiSelectorConverter:
         """
 
         def convert_arg(arg: Any) -> Any:
-            if hasattr(arg, 'methods'):  # Nested Selector
+            if hasattr(arg, "methods"):  # Nested Selector
                 return self._selector_to_parsed_dict(arg)
             return arg
 
@@ -289,14 +288,13 @@ class UiSelectorConverter:
             if isinstance(arg, dict):
                 # Nested selector - without final semicolon
                 return self._parsed_dict_to_selector(cast(dict[str, Any], arg), top_level=False)
-            elif isinstance(arg, bool):
+            if isinstance(arg, bool):
                 return "true" if arg else "false"
-            elif isinstance(arg, int):
+            if isinstance(arg, int):
                 return str(arg)
-            else:
-                # Escape quotes and backslashes
-                escaped = str(arg).replace('\\', '\\\\').replace('"', '\\"')
-                return f'"{escaped}"'
+            # Escape quotes and backslashes
+            escaped = str(arg).replace("\\", "\\\\").replace('"', '\\"')
+            return f'"{escaped}"'
 
         parts = ["new UiSelector()"]
 
@@ -308,7 +306,7 @@ class UiSelectorConverter:
                 raise ConversionError(f"UiSelector methods typically take 0-1 arguments, got {len(args)}")
 
             arg_str = format_arg(args[0]) if args else ""
-            parts.append(f'.{method_name}({arg_str})')
+            parts.append(f".{method_name}({arg_str})")
 
         result = "".join(parts)
         return result + ";" if top_level else result

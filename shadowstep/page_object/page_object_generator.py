@@ -19,17 +19,17 @@ class PageObjectGenerator:
         self.logger = logging.getLogger(__name__)
         self.translator = translator
         self.BLACKLIST_NO_TEXT_CLASSES = {
-            'android.widget.SeekBar',
-            'android.widget.ProgressBar',
-            'android.widget.Switch',
-            'android.widget.CheckBox',
-            'android.widget.ToggleButton',
-            'android.view.View',
-            'android.widget.ImageView',
-            'android.widget.ImageButton',
-            'android.widget.RatingBar',
-            'androidx.recyclerview.widget.RecyclerView',
-            'androidx.viewpager.widget.ViewPager',
+            "android.widget.SeekBar",
+            "android.widget.ProgressBar",
+            "android.widget.Switch",
+            "android.widget.CheckBox",
+            "android.widget.ToggleButton",
+            "android.view.View",
+            "android.widget.ImageView",
+            "android.widget.ImageButton",
+            "android.widget.RatingBar",
+            "androidx.recyclerview.widget.RecyclerView",
+            "androidx.viewpager.widget.ViewPager",
         }
         self.STRUCTURAL_CLASSES = {
             "android.widget.FrameLayout",
@@ -52,7 +52,7 @@ class PageObjectGenerator:
         # Инициализируем Jinja2
         templates_dir = os.path.join(
             os.path.dirname(__file__),
-            'templates'
+            "templates"
         )
         self.env = Environment(
             loader=FileSystemLoader(templates_dir),  # откуда загружать шаблоны (директория с .j2-файлами)
@@ -64,7 +64,7 @@ class PageObjectGenerator:
             # удаляет ведущие пробелы перед {% block %} (избавляет от случайных отступов и пустых строк)
         )
         # добавляем фильтр repr
-        self.env.filters['pretty_dict'] = _pretty_dict
+        self.env.filters["pretty_dict"] = _pretty_dict
 
     def generate(
             self,
@@ -160,7 +160,7 @@ class PageObjectGenerator:
 
         step = "Рендеринг"
         self.logger.debug(step)
-        template = self.env.get_template('page_object.py.j2')
+        template = self.env.get_template("page_object.py.j2")
         rendered = template.render(**template_data)
 
         step = "Формирование названия файла"
@@ -177,7 +177,7 @@ class PageObjectGenerator:
         self.logger.debug(step)
         path = os.path.join(output_dir, file_name)
         os.makedirs(os.path.dirname(path), exist_ok=True)
-        with open(path, 'w', encoding='utf-8') as f:
+        with open(path, "w", encoding="utf-8") as f:
             f.write(rendered)
 
         self.logger.debug(f"Generated PageObject → {path}")
@@ -195,13 +195,13 @@ class PageObjectGenerator:
         self.logger.debug(f"{get_current_func_name()}")
 
         def is_potential_title(ui_node: UiElementNode) -> bool:
-            if ui_node.tag not in {'android.widget.TextView', 'android.widget.FrameLayout'}:
+            if ui_node.tag not in {"android.widget.TextView", "android.widget.FrameLayout"}:
                 return False
-            if ui_node.attrs.get('displayed', 'false') != 'true':
+            if ui_node.attrs.get("displayed", "false") != "true":
                 return False
-            if ui_node.attrs.get('content-desc'):
+            if ui_node.attrs.get("content-desc"):
                 return True
-            return bool(ui_node.attrs.get('text'))
+            return bool(ui_node.attrs.get("text"))
 
         # Use BFS to prioritize topmost title
         queue = [ui_element_tree]
@@ -232,7 +232,7 @@ class PageObjectGenerator:
         if not raw_name:
             raise ValueError("Title node does not contain usable name")
         if raw_name in keyword.kwlist:
-            raw_name = raw_name + '_'
+            raw_name = raw_name + "_"
         return raw_name
 
     def _get_recycler_property(self, ui_element_tree: UiElementNode) -> UiElementNode | None:
@@ -379,7 +379,7 @@ class PageObjectGenerator:
         # Находим все элементы, у которых в атрибутах есть "summary"
         summary_elements = []
         for element in ui_element_tree.walk():
-            if any(re.search(r'\bsummary\b', str(value).lower()) for value in element.attrs.values()):
+            if any(re.search(r"\bsummary\b", str(value).lower()) for value in element.attrs.values()):
                 summary_elements.append(element)
                 self.logger.debug(f"Found summary element: {element.id}, attrs={element.attrs}")
 
@@ -434,7 +434,7 @@ class PageObjectGenerator:
             if locator_frozen in used_locators:
                 continue
 
-            if element.tag == 'androidx.recyclerview.widget.RecyclerView' and recycler.id and element.id != recycler.id:  # type: ignore
+            if element.tag == "androidx.recyclerview.widget.RecyclerView" and recycler.id and element.id != recycler.id:  # type: ignore
                 self.logger.debug(f"Skipping redundant recycler view: id={recycler.id}")  # type: ignore
                 continue
 
@@ -454,8 +454,8 @@ class PageObjectGenerator:
 
         if not camel_case:
             raise ValueError(f"Failed to normalize screen name from '{text}'")
-        if not camel_case.startswith('Page'):
-            camel_case = 'Page' + camel_case
+        if not camel_case.startswith("Page"):
+            camel_case = "Page" + camel_case
         return camel_case
 
     def _translate(self, text: str) -> str:
@@ -474,9 +474,9 @@ class PageObjectGenerator:
         self.logger.debug(f"{get_current_func_name()}")
 
         for element in elements:
-            if element.tag in self.BLACKLIST_NO_TEXT_CLASSES and 'text' in element.attrs:
+            if element.tag in self.BLACKLIST_NO_TEXT_CLASSES and "text" in element.attrs:
                 self.logger.debug(f"Removing text attribute from {element.tag} element: {element.attrs.get('text')}")
-                del element.attrs['text']
+                del element.attrs["text"]
 
     def _prepare_template_data(self,
                                ui_element_tree: UiElementNode,
@@ -513,16 +513,16 @@ class PageObjectGenerator:
             Dict[str, str]: Locator dictionary
         """
         self.logger.debug(f"{get_current_func_name()}")
-        if only_id and node.attrs.get('resource-id'):
-            return {'resource-id': node.attrs['resource-id']}
+        if only_id and node.attrs.get("resource-id"):
+            return {"resource-id": node.attrs["resource-id"]}
 
         locator = {}
-        for attr in ['text', 'content-desc', 'resource-id']:
+        for attr in ["text", "content-desc", "resource-id"]:
             if value := node.attrs.get(attr):
                 locator[attr] = value
 
-        if node.tag and 'class' not in locator:
-            locator['class'] = node.tag
+        if node.tag and "class" not in locator:
+            locator["class"] = node.tag
 
         return locator
 
@@ -748,7 +748,7 @@ class PageObjectGenerator:
             # Prefer text → content-desc → stripped resource-id
             text = node.attrs.get("text") or node.attrs.get("content-desc") or ""
             if not text and node.attrs.get("resource-id"):
-                text = self._strip_package_prefix(node.attrs['resource-id'])
+                text = self._strip_package_prefix(node.attrs["resource-id"])
             if self.translator is not None:
                 text = self._translate(text)
             words = self._slug_words(text)[:5]
@@ -761,7 +761,7 @@ class PageObjectGenerator:
             name = f"{original}_{i}"
             i += 1
         if name in keyword.kwlist:
-            name = name + '_'
+            name = name + "_"
         return name
 
     def _slug_words(self, s: str) -> list[str]:
@@ -775,7 +775,7 @@ class PageObjectGenerator:
             List[str]: List of slug words
         """
         self.logger.debug(f"{get_current_func_name()}")
-        parts = re.split(r'[^\w]+', unidecode(s))
+        parts = re.split(r"[^\w]+", unidecode(s))
         return [p.lower() for p in parts if p]
 
     def _strip_package_prefix(self, resource_id: str) -> str:
@@ -789,7 +789,7 @@ class PageObjectGenerator:
             str: Resource ID without package prefix
         """
         self.logger.debug(f"{get_current_func_name()}")
-        return resource_id.split('/', 1)[-1] if '/' in resource_id else resource_id
+        return resource_id.split("/", 1)[-1] if "/" in resource_id else resource_id
 
     def _sanitize_name(self, raw_name: str) -> str:
         """
@@ -802,9 +802,9 @@ class PageObjectGenerator:
             str: Sanitized property name
         """
         self.logger.debug(f"{get_current_func_name()}")
-        name = re.sub(r'[^\w]', '_', raw_name)
+        name = re.sub(r"[^\w]", "_", raw_name)
         if name and name[0].isdigit():
-            name = 'num_' + name
+            name = "num_" + name
         return name
 
     def _class_name_to_file_name(self, class_name: str) -> str:
@@ -821,7 +821,7 @@ class PageObjectGenerator:
 
         step = "Convert CamelCase to snake_case"
         self.logger.debug(f"[{step}] started")
-        file_name = re.sub(r'(?<!^)(?=[A-Z])', '_', class_name).lower()
+        file_name = re.sub(r"(?<!^)(?=[A-Z])", "_", class_name).lower()
         return f"{file_name}.py"
 
     def _is_need_recycler(self, recycler: UiElementNode | None, regular_properties: list[UiElementNode]) -> bool:

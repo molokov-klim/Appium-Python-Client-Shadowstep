@@ -89,7 +89,7 @@ def fail_safe(  # noqa: C901
                             if arg is self:
                                 return f"<{self.__class__.__name__} id={id(self)}>"
                             arg_repr = repr(arg)
-                            return (arg_repr[:197] + '...') if len(arg_repr) > 200 else arg_repr
+                            return (arg_repr[:197] + "...") if len(arg_repr) > 200 else arg_repr
 
                         formatted_args = [format_arg(self)] + [format_arg(a) for a in args]
                         formatted_args += [f"{k}={format_arg(v)}" for k, v in kwargs.items()]

@@ -30,7 +30,7 @@ class PageObjectRecyclerExplorer:
         for _ in range(9):
             self.base.swipe(left=100, top=100,
                             width=width, height=height,
-                            direction='down', percent=1.0,
+                            direction="down", percent=1.0,
                             speed=10000)  # скроллим вверх
             self.base.terminal.adb_shell(
                 command="input",
@@ -73,7 +73,7 @@ class PageObjectRecyclerExplorer:
         for _ in range(9):
             self.base.swipe(left=100, top=100,
                             width=width, height=height,
-                            direction='up', percent=1.0,
+                            direction="up", percent=1.0,
                             speed=10000)  # скроллим вверх
             self.base.terminal.adb_shell(
                 command="input",
@@ -94,7 +94,7 @@ class PageObjectRecyclerExplorer:
         for _ in range(5):
             self.base.swipe(left=100, top=100,
                             width=width, height=height,
-                            direction='up', percent=1.0,
+                            direction="up", percent=1.0,
                             speed=10000)  # скроллим вниз
 
         return output_path

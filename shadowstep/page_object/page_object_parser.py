@@ -21,38 +21,38 @@ ScrollStack = list[str]
 
 # Default configuration constants
 DEFAULT_WHITE_LIST_CLASSES: tuple[str, ...] = (
-    'android.widget.EditText',
-    'android.widget.Switch',
-    'android.widget.SeekBar',
-    'android.widget.ProgressBar',
-    'androidx.recyclerview.widget.RecyclerView',
-    'android.widget.ScrollView'
+    "android.widget.EditText",
+    "android.widget.Switch",
+    "android.widget.SeekBar",
+    "android.widget.ProgressBar",
+    "androidx.recyclerview.widget.RecyclerView",
+    "android.widget.ScrollView"
 )
 
 DEFAULT_BLACK_LIST_CLASSES: tuple[str, ...] = (
-    'hierarchy',
-    'android.widget.LinearLayout',
-    'android.widget.FrameLayout',
-    'android.view.ViewGroup',
-    'android.widget.GridLayout',
-    'android.widget.TableLayout',
-    'android.widget.ImageView',
-    'android.widget.RelativeLayout'
+    "hierarchy",
+    "android.widget.LinearLayout",
+    "android.widget.FrameLayout",
+    "android.view.ViewGroup",
+    "android.widget.GridLayout",
+    "android.widget.TableLayout",
+    "android.widget.ImageView",
+    "android.widget.RelativeLayout"
 )
 
 DEFAULT_WHITE_LIST_RESOURCE_ID: tuple[str, ...] = (
-    'button', 'btn', 'edit', 'input',
-    'search', 'list', 'recycler', 'nav',
-    'menu', 'scrollable', 'checkbox', 'switch', 'toggle'
+    "button", "btn", "edit", "input",
+    "search", "list", "recycler", "nav",
+    "menu", "scrollable", "checkbox", "switch", "toggle"
 )
 
 DEFAULT_BLACK_LIST_RESOURCE_ID: tuple[str, ...] = (
-    'decor', 'divider', 'wrapper'
+    "decor", "divider", "wrapper"
 )
 
 # Important containers that are allowed even if they contain 'container'
 DEFAULT_CONTAINER_WHITELIST: tuple[str, ...] = (
-    'main', 'dialog', 'scrollable'
+    "main", "dialog", "scrollable"
 )
 
 
@@ -113,7 +113,7 @@ class PageObjectParser:
         """
         self.logger.info(f"{get_current_func_name()}")
         try:
-            self._tree = ET.fromstring(xml.encode('utf-8'))
+            self._tree = ET.fromstring(xml.encode("utf-8"))
             self.ui_element_tree = self._build_tree(self._tree)
             return self.ui_element_tree
         except ET.XMLSyntaxError:
@@ -153,7 +153,7 @@ class PageObjectParser:
             """
             nonlocal id_counter
             attrib = dict(cast(Any, el.attrib))
-            el_id = f'el_{id_counter}'
+            el_id = f"el_{id_counter}"
             id_counter += 1
 
             new_scroll_stack = scroll_stack.copy()
@@ -180,23 +180,22 @@ class PageObjectParser:
                     child.parent = node
                     node.children.append(child)
                 return node
-            else:
-                # If parent is filtered out, create virtual container
-                if not children_nodes:
-                    return None
-                virtual = UiElementNode(
-                    id=el_id,
-                    tag=cast(Any, el.tag),
-                    attrs=attrib,
-                    parent=parent,
-                    depth=depth,
-                    scrollable_parents=new_scroll_stack,
-                    children=[],
-                )
-                for child in children_nodes:
-                    child.parent = virtual
-                    virtual.children.append(child)
-                return virtual
+            # If parent is filtered out, create virtual container
+            if not children_nodes:
+                return None
+            virtual = UiElementNode(
+                id=el_id,
+                tag=cast(Any, el.tag),
+                attrs=attrib,
+                parent=parent,
+                depth=depth,
+                scrollable_parents=new_scroll_stack,
+                children=[],
+            )
+            for child in children_nodes:
+                child.parent = virtual
+                virtual.children.append(child)
+            return virtual
 
         if root_et.tag == "hierarchy":
             root_et = next(iter(cast(Any, root_et)))

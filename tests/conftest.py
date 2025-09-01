@@ -17,11 +17,11 @@ logging.getLogger("httpcore").setLevel(logging.CRITICAL)
 logging.getLogger("websockets").setLevel(logging.CRITICAL)
 logging.getLogger("charset_normalizer").setLevel(logging.CRITICAL)
 
-UDID = '192.168.30.101:5555'  # GooglePixel
-APPIUM_IP = '127.0.0.1'
+UDID = "127.0.0.1:6555"  # GooglePixel
+APPIUM_IP = "127.0.0.1"
 APPIUM_PORT = 4723
 
-APPIUM_COMMAND_EXECUTOR = f'http://{APPIUM_IP}:{APPIUM_PORT}/wd/hub'
+APPIUM_COMMAND_EXECUTOR = f"http://{APPIUM_IP}:{APPIUM_PORT}/wd/hub"
 
 CAPABILITIES = {
     "platformName": "android",
@@ -33,7 +33,7 @@ CAPABILITIES = {
 }
 
 
-@pytest.fixture(scope='session')
+@pytest.fixture(scope="session")
 def app():
     """Session-scoped fixture for initializing and connecting Shadowstep to a virtual Android device.
 
@@ -51,14 +51,14 @@ def app():
     application.disconnect()
 
 
-@pytest.fixture()
+@pytest.fixture
 def udid():
     """Provides the UDID of the virtual device used in tests.
 
     Yields:
         str: Device UDID.
     """
-    yield UDID
+    return UDID
 
 
 @pytest.fixture(scope="function", autouse=False)
@@ -72,49 +72,49 @@ def press_home(app: Shadowstep):
 def android_settings_open_close(app: Shadowstep):
     app.terminal.press_back()
     app.terminal.press_back()
-    app.terminal.close_app('com.android.settings')
-    app.terminal.start_activity(package='com.android.settings', activity='com.android.settings.Settings')
+    app.terminal.close_app("com.android.settings")
+    app.terminal.start_activity(package="com.android.settings", activity="com.android.settings.Settings")
     time.sleep(3)
     yield
     app.terminal.press_back()
     app.terminal.press_back()
-    app.terminal.close_app('com.android.settings')
+    app.terminal.close_app("com.android.settings")
 
 
 @pytest.fixture
 def stability(press_home: None):
     time.sleep(1)
-    yield
+    return
 
 
 @pytest.fixture(scope="function")
 def touch_sounds(app: Shadowstep, android_settings_open_close: None):
-    sounds_and_vibrations_element = app.find_and_get_element({'text': 'Sound & vibration'})
+    sounds_and_vibrations_element = app.find_and_get_element({"text": "Sound & vibration"})
     # sounds_and_vibrations_element = app.find_and_get_element({'text': 'Звук и вибрация'})
     assert sounds_and_vibrations_element.is_visible()
     sounds_and_vibrations_element.tap(duration=3)
     time.sleep(5)
-    touch_sounds_element = app.find_and_get_element({'text': 'Touch sounds'})
+    touch_sounds_element = app.find_and_get_element({"text": "Touch sounds"})
     # touch_sounds_element = app.find_and_get_element({'text': 'Улучшение звука'})
     assert touch_sounds_element.is_visible()
     time.sleep(5)
 
 
-@pytest.fixture()
+@pytest.fixture
 def android_settings_recycler(app: Shadowstep, android_settings_open_close: None):
-    yield app.get_element(
-        locator={'resource-id': 'com.android.settings:id/main_content_scrollable_container',
+    return app.get_element(
+        locator={"resource-id": "com.android.settings:id/main_content_scrollable_container",
                  })
 
 
-@pytest.fixture()
+@pytest.fixture
 def connected_devices_image_path():
-    yield "test_data/connected_devices.png"
+    return "test_data/connected_devices.png"
 
 
-@pytest.fixture()
+@pytest.fixture
 def system_image_path():
-    yield "test_data/system.png"
+    return "test_data/system.png"
 
 @pytest.fixture
 def cleanup_pages():

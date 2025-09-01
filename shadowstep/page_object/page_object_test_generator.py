@@ -112,4 +112,4 @@ class PageObjectTestGenerator:
         ]
 
     def _camel_to_snake(self, name: str) -> str:
-        return re.sub(r'(?<!^)(?=[A-Z])', '_', name).lower()
+        return re.sub(r"(?<!^)(?=[A-Z])", "_", name).lower()

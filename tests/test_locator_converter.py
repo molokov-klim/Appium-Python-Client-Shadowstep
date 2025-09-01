@@ -15,21 +15,21 @@ class TestLocatorConverter:
 
     @pytest.mark.parametrize("test_data", [
         {"data": {"text": "Экран"},
-         "expected_result": ('xpath', ".//*[@text='Экран']"), },
+         "expected_result": ("xpath", ".//*[@text='Экран']"), },
 
         {"data": {"textContains": "Экра"},
-         "expected_result": ('xpath', ".//*[@textContains='Экра']")},
+         "expected_result": ("xpath", ".//*[@textContains='Экра']")},
 
         {"data": {"resource-id": "android:id/title", "class": "android.widget.TextView"},
-         "expected_result": ('xpath',
+         "expected_result": ("xpath",
                              ".//*[@resource-id='android:id/title' and "
                              "@class='android.widget.TextView']")},
 
         {"data": {"enabled": True, "scrollable": False},
-         "expected_result": ('xpath', './/*[@enabled=true and @scrollable=false]')},
+         "expected_result": ("xpath", ".//*[@enabled=true and @scrollable=false]")},
 
         {"data": {"package": "com.android.settings", "class": "android.widget.FrameLayout"},
-         "expected_result": ('xpath',
+         "expected_result": ("xpath",
                              ".//*[@package='com.android.settings' and "
                              "@class='android.widget.FrameLayout']")},
     ])
@@ -146,13 +146,13 @@ class TestLocatorConverter:
 
     @pytest.mark.parametrize("test_data", [
         {"data": {"text": "Экран"},
-         "expected_result": ('xpath', ".//*[@text='Экран']")},
+         "expected_result": ("xpath", ".//*[@text='Экран']")},
 
         {"data": 'new UiSelector().text("Экран")',
-         "expected_result": ('xpath', ".//*[@text='Экран']")},
+         "expected_result": ("xpath", ".//*[@text='Экран']")},
 
         {"data": ("xpath", "//*[@text='Экран']"),
-         "expected_result": ('xpath', "//*[@text='Экран']")},
+         "expected_result": ("xpath", "//*[@text='Экран']")},
     ])
     def test_to_xpath(self, test_data: dict[str, str]):
         logger.info(f"{get_current_func_name()}")
@@ -237,60 +237,60 @@ class TestLocatorConverter:
 
     @pytest.mark.parametrize("test_data", [
         {
-            'name': 'sibling_from_parent_xpath',
-            'dict': {
-                'text': 'Настройки Wi-Fi',
-                'fromParent': {
-                    'text': 'Яркость экрана',
-                    'class': 'android.widget.TextView',
-                    'resource-id': 'android:id/title'
+            "name": "sibling_from_parent_xpath",
+            "dict": {
+                "text": "Настройки Wi-Fi",
+                "fromParent": {
+                    "text": "Яркость экрана",
+                    "class": "android.widget.TextView",
+                    "resource-id": "android:id/title"
                 }
             },
-            'expected_xpath': "//*[@text='Настройки Wi-Fi']/following-sibling::*[@text='Яркость экрана' and @class='android.widget.TextView' and @resource-id='android:id/title']",
-            'expected_uiselector': 'new UiSelector().text("Настройки Wi-Fi").fromParent(new UiSelector().text("Яркость экрана").className("android.widget.TextView").resourceId("android:id/title"))'
+            "expected_xpath": "//*[@text='Настройки Wi-Fi']/following-sibling::*[@text='Яркость экрана' and @class='android.widget.TextView' and @resource-id='android:id/title']",
+            "expected_uiselector": 'new UiSelector().text("Настройки Wi-Fi").fromParent(new UiSelector().text("Яркость экрана").className("android.widget.TextView").resourceId("android:id/title"))'
         },
         {
-            'name': 'deep_sibling_inside_parent',
-            'dict': {
-                'text': 'Bluetooth',
-                'parentSelector': {
-                    'class': 'androidx.recyclerview.widget.RecyclerView',
-                    'childSelector': {
-                        'text': 'Wi-Fi',
-                        'fromParent': {
-                            'class': 'android.widget.TextView',
-                            'textContains': 'Дополнительно'
+            "name": "deep_sibling_inside_parent",
+            "dict": {
+                "text": "Bluetooth",
+                "parentSelector": {
+                    "class": "androidx.recyclerview.widget.RecyclerView",
+                    "childSelector": {
+                        "text": "Wi-Fi",
+                        "fromParent": {
+                            "class": "android.widget.TextView",
+                            "textContains": "Дополнительно"
                         }
                     }
                 }
             },
-            'expected_xpath': "//*[@class='androidx.recyclerview.widget.RecyclerView']/*[@text='Wi-Fi']/following-sibling::*[contains(@text, 'Дополнительно') and @class='android.widget.TextView']/*[@text='Bluetooth']",
-            'expected_uiselector': 'new UiSelector().className("androidx.recyclerview.widget.RecyclerView").childSelector(new UiSelector().text("Wi-Fi").fromParent(new UiSelector().className("android.widget.TextView").textContains("Дополнительно"))).childSelector(new UiSelector().text("Bluetooth"))'
+            "expected_xpath": "//*[@class='androidx.recyclerview.widget.RecyclerView']/*[@text='Wi-Fi']/following-sibling::*[contains(@text, 'Дополнительно') and @class='android.widget.TextView']/*[@text='Bluetooth']",
+            "expected_uiselector": 'new UiSelector().className("androidx.recyclerview.widget.RecyclerView").childSelector(new UiSelector().text("Wi-Fi").fromParent(new UiSelector().className("android.widget.TextView").textContains("Дополнительно"))).childSelector(new UiSelector().text("Bluetooth"))'
         },
         {
-            'name': 'complex_nested_all_selectors',
-            'dict': {
-                'text': 'Настройки',
-                'instance': 0,
-                'childSelector': {
-                    'textStartsWith': 'Wi-',
-                    'fromParent': {
-                        'text': 'Дополнительно',
-                        'class': 'android.widget.TextView',
-                        'childSelector': {
-                            'text': 'Bluetooth',
-                            'enabled': True
+            "name": "complex_nested_all_selectors",
+            "dict": {
+                "text": "Настройки",
+                "instance": 0,
+                "childSelector": {
+                    "textStartsWith": "Wi-",
+                    "fromParent": {
+                        "text": "Дополнительно",
+                        "class": "android.widget.TextView",
+                        "childSelector": {
+                            "text": "Bluetooth",
+                            "enabled": True
                         }
                     }
                 }
             },
-            'expected_xpath': (
+            "expected_xpath": (
                     "//*[@text='Настройки' and @instance=0]"
                     "/following-sibling::*[starts-with(@text, 'Wi-')]"
                     "/following-sibling::*[@text='Дополнительно' and @class='android.widget.TextView']"
                     "/*[@text='Bluetooth' and @enabled=true]"
             ),
-            'expected_uiselector': (
+            "expected_uiselector": (
                     'new UiSelector().text("Настройки").instance(0).childSelector('
                     'new UiSelector().textStartsWith("Wi-").fromParent('
                     'new UiSelector().text("Дополнительно").className("android.widget.TextView").childSelector('
@@ -299,23 +299,23 @@ class TestLocatorConverter:
             )
         },
         {
-            'name': 'contains_in_deep_branch',
-            'dict': {
-                'class': 'android.view.ViewGroup',
-                'childSelector': {
-                    'textContains': 'Батарея',
-                    'fromParent': {
-                        'text': 'Экран',
-                        'resource-id': 'android:id/title'
+            "name": "contains_in_deep_branch",
+            "dict": {
+                "class": "android.view.ViewGroup",
+                "childSelector": {
+                    "textContains": "Батарея",
+                    "fromParent": {
+                        "text": "Экран",
+                        "resource-id": "android:id/title"
                     }
                 }
             },
-            'expected_xpath': (
+            "expected_xpath": (
                     "//*[@class='android.view.ViewGroup']"
                     "/*[contains(@text, 'Батарея')]"
                     "/following-sibling::*[@text='Экран' and @resource-id='android:id/title']"
             ),
-            'expected_uiselector': (
+            "expected_uiselector": (
                     'new UiSelector().className("android.view.ViewGroup").childSelector('
                     'new UiSelector().textContains("Батарея").fromParent('
                     'new UiSelector().text("Экран").resourceId("android:id/title")'
@@ -323,23 +323,23 @@ class TestLocatorConverter:
             )
         },
         {
-            'name': 'multi_level_parent_chain',
-            'dict': {
-                'text': 'Bluetooth',
-                'parentSelector': {
-                    'text': 'Wi-Fi',
-                    'parentSelector': {
-                        'text': 'Подключения',
-                        'class': 'android.view.ViewGroup'
+            "name": "multi_level_parent_chain",
+            "dict": {
+                "text": "Bluetooth",
+                "parentSelector": {
+                    "text": "Wi-Fi",
+                    "parentSelector": {
+                        "text": "Подключения",
+                        "class": "android.view.ViewGroup"
                     }
                 }
             },
-            'expected_xpath': (
+            "expected_xpath": (
                     "//*[@text='Подключения' and @class='android.view.ViewGroup']"
                     "/*[@text='Wi-Fi']"
                     "/*[@text='Bluetooth']"
             ),
-            'expected_uiselector': (
+            "expected_uiselector": (
                     'new UiSelector().text("Подключения").className("android.view.ViewGroup").childSelector('
                     'new UiSelector().text("Wi-Fi").childSelector('
                     'new UiSelector().text("Bluetooth"))'
@@ -347,46 +347,46 @@ class TestLocatorConverter:
             )
         },
         {
-            'name': 'from_parent_with_boolean_and_index',
-            'dict': {
-                'text': 'Сеть',
-                'fromParent': {
-                    'text': 'Мобильные данные',
-                    'checked': False,
-                    'index': 3
+            "name": "from_parent_with_boolean_and_index",
+            "dict": {
+                "text": "Сеть",
+                "fromParent": {
+                    "text": "Мобильные данные",
+                    "checked": False,
+                    "index": 3
                 }
             },
-            'expected_xpath': (
+            "expected_xpath": (
                     "//*[@text='Сеть']"
                     "/following-sibling::*[@text='Мобильные данные' and @checked=false and @index=3]"
             ),
-            'expected_uiselector': (
+            "expected_uiselector": (
                     'new UiSelector().text("Сеть").fromParent('
                     'new UiSelector().text("Мобильные данные").checked(false).index(3))'
             )
         },
         {
-            'name': 'full_xpath_branch_with_all_types',
-            'dict': {
-                'class': 'android.widget.FrameLayout',
-                'childSelector': {
-                    'resource-id': 'com.example:id/container',
-                    'childSelector': {
-                        'text': 'Активация',
-                        'scrollable': False,
-                        'fromParent': {
-                            'textStartsWith': 'Безопасность'
+            "name": "full_xpath_branch_with_all_types",
+            "dict": {
+                "class": "android.widget.FrameLayout",
+                "childSelector": {
+                    "resource-id": "com.example:id/container",
+                    "childSelector": {
+                        "text": "Активация",
+                        "scrollable": False,
+                        "fromParent": {
+                            "textStartsWith": "Безопасность"
                         }
                     }
                 }
             },
-            'expected_xpath': (
+            "expected_xpath": (
                     "//*[@class='android.widget.FrameLayout']"
                     "/*[@resource-id='com.example:id/container']"
                     "/*[@text='Активация' and @scrollable=false]"
                     "/following-sibling::*[starts-with(@text, 'Безопасность')]"
             ),
-            'expected_uiselector': (
+            "expected_uiselector": (
                     'new UiSelector().className("android.widget.FrameLayout").childSelector('
                     'new UiSelector().resourceId("com.example:id/container").childSelector('
                     'new UiSelector().text("Активация").scrollable(false).fromParent('

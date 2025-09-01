@@ -29,17 +29,17 @@ class TestPageObjectextractor:
         tree = parser.parse(app.driver.page_source)
         page_path, page_class_name = generator.generate(tree, output_dir="pages")
 
-        assert page_path == 'pages\page_settings.py'    # type: ignore  # noqa: W605
-        assert page_class_name == 'PageSettings'
+        assert page_path == "pages\page_settings.py"    # type: ignore  # noqa: W605
+        assert page_class_name == "PageSettings"
         file_path = Path(page_path)
         assert file_path.exists(), f"Файл {file_path} не найден"
 
     def test_explorer(self, app: Shadowstep, android_settings_open_close: None, cleanup_pages: None):
         translator = YandexTranslate(folder_id="b1ghf7n3imfg7foodstv")
         recycler_explorer = PageObjectRecyclerExplorer(app, translator)
-        page_path = recycler_explorer.explore('pages')
+        page_path = recycler_explorer.explore("pages")
         
-        assert page_path == 'mergedpages\page_settings.py'    # type: ignore  # noqa: W605
+        assert page_path == "mergedpages\page_settings.py"    # type: ignore  # noqa: W605
 
         file_path = Path(page_path)
         assert file_path.exists(), f"Файл {file_path} не найден"

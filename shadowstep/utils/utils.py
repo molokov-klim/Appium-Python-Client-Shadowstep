@@ -51,7 +51,7 @@ def grep_pattern(input_string: str, pattern: str) -> list[str]:
         List[str]
             A list of lines that contain matches for the specified pattern.
     """
-    lines = input_string.split('\n')  # Split the input string into lines
+    lines = input_string.split("\n")  # Split the input string into lines
     regex = re.compile(pattern)  # Compile the regex pattern
     matched_lines = [line for line in lines if regex.search(line)]  # Filter lines matching the pattern
     return matched_lines

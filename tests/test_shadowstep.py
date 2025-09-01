@@ -17,12 +17,12 @@ class TestShadowstep:
         Asserts:
             Asserts that the locator of the retrieved element matches the expected locator.
         """
-        element = app.get_element(locator={'content-desc': 'Phone'},
+        element = app.get_element(locator={"content-desc": "Phone"},
                                   timeout=29,
                                   poll_frequency=0.7,
                                   ignored_exceptions=[TimeoutError],
                                   contains=True)
-        assert element.locator == {'content-desc': 'Phone'}
+        assert element.locator == {"content-desc": "Phone"}
         assert isinstance(element, Element)
         assert element.driver is None
         assert element.base is not None
@@ -34,5 +34,5 @@ class TestShadowstep:
         assert element.driver is not None
 
     def test_find_and_get_element(self, app: Shadowstep, android_settings_open_close: None):
-        el = app.find_and_get_element({'text': 'System'})
-        assert el.get_attribute('text') == 'System'
+        el = app.find_and_get_element({"text": "System"})
+        assert el.get_attribute("text") == "System"

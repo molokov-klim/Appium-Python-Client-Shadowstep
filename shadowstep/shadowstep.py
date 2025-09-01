@@ -37,7 +37,7 @@ from shadowstep.scheduled_actions.action_step import ActionStep
 from shadowstep.utils.utils import get_current_func_name
 
 # Configure the root logger (basic configuration)
-logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s")
 logger = logging.getLogger(__name__)
 
 
@@ -91,7 +91,7 @@ class Shadowstep(ShadowstepBase):
                     if file.startswith("page") and file.endswith(".py"):
                         try:
                             file_path = Path(dirpath) / file
-                            rel_path = file_path.relative_to(base_path).with_suffix('')
+                            rel_path = file_path.relative_to(base_path).with_suffix("")
                             module_name = ".".join(rel_path.parts)
                             module = importlib.import_module(module_name)
                             self._register_pages_from_module(module)
@@ -293,7 +293,7 @@ class Shadowstep(ShadowstepBase):
         self.logger.debug(f"{get_current_func_name()}")
         try:
             scrollables = self.get_elements(
-                locator={'scrollable': 'true'},
+                locator={"scrollable": "true"},
                 timeout=timeout,
                 poll_frequency=poll_frequency,
                 ignored_exceptions=ignored_exceptions,
@@ -323,7 +323,7 @@ class Shadowstep(ShadowstepBase):
         """
         self.logger.debug(f"{get_current_func_name()}")
         try:
-            element = Element(locator={'text': text}, base=self, contains=True)
+            element = Element(locator={"text": text}, base=self, contains=True)
             return element.is_visible()
         except Exception as e:
             self.logger.warning(f"Failed to check visibility for text='{text}': {e}")
@@ -376,7 +376,7 @@ class Shadowstep(ShadowstepBase):
         self.driver: WebDriver = WebDriverSingleton.get_driver()
 
         # Defensive validation (optional, to fail early on bad input)
-        if direction.lower() not in {'up', 'down', 'left', 'right'}:
+        if direction.lower() not in {"up", "down", "left", "right"}:
             raise ValueError(f"Invalid direction '{direction}', must be one of: up, down, left, right")
 
         if not (0.0 < percent <= 1.0):
@@ -386,15 +386,15 @@ class Shadowstep(ShadowstepBase):
             raise ValueError(f"Speed must be non-negative, got {speed}")
 
         self._execute(
-            'mobile: scrollGesture',
+            "mobile: scrollGesture",
             {
-                'left': left,
-                'top': top,
-                'width': width,
-                'height': height,
-                'direction': direction.lower(),
-                'percent': percent,
-                'speed': speed
+                "left": left,
+                "top": top,
+                "width": width,
+                "height": height,
+                "direction": direction.lower(),
+                "percent": percent,
+                "speed": speed
             }
         )
         return self
@@ -433,8 +433,8 @@ class Shadowstep(ShadowstepBase):
 
         self.driver = WebDriverSingleton.get_driver()
         self._execute(
-            'mobile: longClickGesture',
-            {'x': x, 'y': y, 'duration': duration}
+            "mobile: longClickGesture",
+            {"x": x, "y": y, "duration": duration}
         )
         return self
 
@@ -467,8 +467,8 @@ class Shadowstep(ShadowstepBase):
 
         self.driver = WebDriverSingleton.get_driver()
         self._execute(
-            'mobile: doubleClickGesture',
-            {'x': x, 'y': y}
+            "mobile: doubleClickGesture",
+            {"x": x, "y": y}
         )
         return self
 
@@ -501,8 +501,8 @@ class Shadowstep(ShadowstepBase):
 
         self.driver = WebDriverSingleton.get_driver()
         self._execute(
-            'mobile: clickGesture',
-            {'x': x, 'y': y}
+            "mobile: clickGesture",
+            {"x": x, "y": y}
         )
         return self
 
@@ -550,13 +550,13 @@ class Shadowstep(ShadowstepBase):
 
         self.driver = WebDriverSingleton.get_driver()
         self._execute(
-            'mobile: dragGesture',
+            "mobile: dragGesture",
             {
-                'startX': start_x,
-                'startY': start_y,
-                'endX': end_x,
-                'endY': end_y,
-                'speed': speed
+                "startX": start_x,
+                "startY": start_y,
+                "endX": end_x,
+                "endY": end_y,
+                "speed": speed
             }
         )
         return self
@@ -610,14 +610,14 @@ class Shadowstep(ShadowstepBase):
 
         self.driver = WebDriverSingleton.get_driver()
         self._execute(
-            'mobile: flingGesture',
+            "mobile: flingGesture",
             {
-                'left': left,
-                'top': top,
-                'width': width,
-                'height': height,
-                'direction': direction.lower(),
-                'speed': speed
+                "left": left,
+                "top": top,
+                "width": width,
+                "height": height,
+                "direction": direction.lower(),
+                "speed": speed
             }
         )
         return self
@@ -671,14 +671,14 @@ class Shadowstep(ShadowstepBase):
 
         self.driver = WebDriverSingleton.get_driver()
         self._execute(
-            'mobile: pinchOpenGesture',
+            "mobile: pinchOpenGesture",
             {
-                'left': left,
-                'top': top,
-                'width': width,
-                'height': height,
-                'percent': percent,
-                'speed': speed
+                "left": left,
+                "top": top,
+                "width": width,
+                "height": height,
+                "percent": percent,
+                "speed": speed
             }
         )
         return self
@@ -731,14 +731,14 @@ class Shadowstep(ShadowstepBase):
 
         self.driver = WebDriverSingleton.get_driver()
         self._execute(
-            'mobile: pinchCloseGesture',
+            "mobile: pinchCloseGesture",
             {
-                'left': left,
-                'top': top,
-                'width': width,
-                'height': height,
-                'percent': percent,
-                'speed': speed
+                "left": left,
+                "top": top,
+                "width": width,
+                "height": height,
+                "percent": percent,
+                "speed": speed
             }
         )
         return self
@@ -797,15 +797,15 @@ class Shadowstep(ShadowstepBase):
 
         self.driver = WebDriverSingleton.get_driver()
         self._execute(
-            'mobile: swipeGesture',
+            "mobile: swipeGesture",
             {
-                'left': left,
-                'top': top,
-                'width': width,
-                'height': height,
-                'direction': direction.lower(),
-                'percent': percent,
-                'speed': speed
+                "left": left,
+                "top": top,
+                "width": width,
+                "height": height,
+                "direction": direction.lower(),
+                "percent": percent,
+                "speed": speed
             }
         )
         return self
@@ -932,7 +932,7 @@ class Shadowstep(ShadowstepBase):
                            InvalidSessionIdException,
                            WebDriverException,
                            StaleElementReferenceException))
-    def save_screenshot(self, path: str = '', filename: str = 'screenshot.png') -> bool:
+    def save_screenshot(self, path: str = "", filename: str = "screenshot.png") -> bool:
         self.logger.debug(f"{get_current_func_name()}")
         path_to_file = os.path.join(path, filename)
         with open(path_to_file, "wb") as f:
@@ -945,7 +945,7 @@ class Shadowstep(ShadowstepBase):
                            InvalidSessionIdException))
     def get_screenshot(self):
         self.logger.debug(f"{get_current_func_name()}")
-        screenshot = self.driver.get_screenshot_as_base64().encode('utf-8')
+        screenshot = self.driver.get_screenshot_as_base64().encode("utf-8")
         screenshot = base64.b64decode(screenshot)
         return screenshot
 
@@ -953,7 +953,7 @@ class Shadowstep(ShadowstepBase):
                raise_exception=ShadowstepException,
                exceptions=(NoSuchDriverException,
                            InvalidSessionIdException))
-    def save_source(self, path: str = '', filename: str = 'screenshot.png') -> bool:
+    def save_source(self, path: str = "", filename: str = "screenshot.png") -> bool:
         self.logger.debug(f"{get_current_func_name()}")
         path_to_file = os.path.join(path, filename)
         with open(path_to_file, "wb") as f:
@@ -999,9 +999,9 @@ class Shadowstep(ShadowstepBase):
                exceptions=(NoSuchDriverException,
                            InvalidSessionIdException))
     def push(self, source_file_path: str, destination_file_path: str) -> Shadowstep:
-        with open(os.path.join(source_file_path), 'rb') as file:
+        with open(os.path.join(source_file_path), "rb") as file:
             file_data = file.read()
-            base64data = base64.b64encode(file_data).decode('utf-8')
+            base64data = base64.b64encode(file_data).decode("utf-8")
         self.driver.push_file(
             destination_path=destination_file_path,
             base64data=base64data

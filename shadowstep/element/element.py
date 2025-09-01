@@ -33,7 +33,7 @@ from shadowstep.element.base import ElementBase
 from shadowstep.utils.utils import find_coordinates_by_vector, get_current_func_name
 
 # Configure the root logger (basic configuration)
-logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s")
 logger = logging.getLogger(__name__)
 
 
@@ -55,7 +55,7 @@ class GeneralElementException(WebDriverException):
 class Element(ElementBase):
     def __init__(self,
                  locator: tuple[str, str] | dict[str, str] | Element = None,
-                 base: "Shadowstep" = None,
+                 base: Shadowstep = None,
                  timeout: float = 30,
                  poll_frequency: float = 0.5,
 
@@ -85,13 +85,13 @@ class Element(ElementBase):
 
         # XPath for child (relative)
         pre_inner_locator = self.handle_locator(locator, contains)
-        inner_path = pre_inner_locator[1].lstrip('/')  # Remove accidental `/` in front
+        inner_path = pre_inner_locator[1].lstrip("/")  # Remove accidental `/` in front
 
         # Гарантированная вложенность: parent//child
         if not inner_path.startswith("//"):
             inner_path = f"//{inner_path}"
 
-        inner_locator = ('xpath', f"{parent_locator[1]}{inner_path}")
+        inner_locator = ("xpath", f"{parent_locator[1]}{inner_path}")
 
         return Element(locator=inner_locator,
                        base=self.base,
@@ -156,10 +156,10 @@ class Element(ElementBase):
                     # [Extract attributes]
                     attributes = {
                         attr: native_element.get_attribute(attr) for attr in [
-                            'resource-id', 'bounds',
-                            'class', 'text', 'content-desc', 'checkable', 'checked',
-                            'clickable', 'enabled', 'focusable', 'focused',
-                            'long-clickable', 'scrollable', 'selected', 'displayed'
+                            "resource-id", "bounds",
+                            "class", "text", "content-desc", "checkable", "checked",
+                            "clickable", "enabled", "focusable", "focused",
+                            "long-clickable", "scrollable", "selected", "displayed"
                         ]
                     }
                     element = Element(
@@ -186,7 +186,7 @@ class Element(ElementBase):
                 self._get_native()
                 continue
             except WebDriverException as error:
-                if 'instrumentation process is not running' in str(error).lower():
+                if "instrumentation process is not running" in str(error).lower():
                     self._handle_driver_error(error)
                     continue
                 raise
@@ -230,10 +230,9 @@ class Element(ElementBase):
                     attrib = {k: str(v) for k, v in element.attrib.items()}
                     self.logger.debug(f"Matched attributes: {attrib}")
                     return attrib
-                else:
-                    self.logger.warning(f"{xpath_expr=}")
-                    self.logger.warning(type(xpath_expr))
-                    self.logger.warning(f"No matches found for given XPath. {matches}")
+                self.logger.warning(f"{xpath_expr=}")
+                self.logger.warning(type(xpath_expr))
+                self.logger.warning(f"No matches found for given XPath. {matches}")
             except NoSuchDriverException as error:
                 self._handle_driver_error(error)
             except InvalidSessionIdException as error:
@@ -245,7 +244,7 @@ class Element(ElementBase):
                 self._get_native()
                 continue
             except WebDriverException as error:
-                if 'instrumentation process is not running' in str(error).lower():
+                if "instrumentation process is not running" in str(error).lower():
                     self._handle_driver_error(error)
                     continue
                 raise
@@ -272,7 +271,7 @@ class Element(ElementBase):
             if xpath is None:
                 raise GeneralElementException("Unable to retrieve XPath of the element")
             xpath = xpath + "/.."
-            return Element(locator=('xpath', xpath), base=self.base)
+            return Element(locator=("xpath", xpath), base=self.base)
         except NoSuchDriverException:
             self.logger.error(f"{inspect.currentframe().f_code.co_name} NoSuchDriverException")
             self.base.reconnect()
@@ -282,7 +281,7 @@ class Element(ElementBase):
             self.base.reconnect()
             return None
 
-    def get_parents(self) -> Generator[Element, None, None]:
+    def get_parents(self) -> Generator[Element]:
         """Yields all parent elements lazily using XPath `ancestor::*`.
 
         # FIXME must be greedy (bcs generator is wrong desicion)
@@ -303,7 +302,7 @@ class Element(ElementBase):
         for index in range(1, 100):  # ограничим разумным пределом
             ancestor_xpath = f"{base_ancestor_xpath}[{index}]"
             element = Element(
-                locator=('xpath', ancestor_xpath),
+                locator=("xpath", ancestor_xpath),
                 base=self.base,
                 timeout=self.timeout,
                 poll_frequency=self.poll_frequency,
@@ -330,13 +329,13 @@ class Element(ElementBase):
             raise GeneralElementException("Unable to resolve current XPath")
 
         sibling_locator = self.handle_locator(locator, contains=self.contains)
-        sibling_path = sibling_locator[1].lstrip('/')
+        sibling_path = sibling_locator[1].lstrip("/")
 
         # Пытаемся найти первого совпадающего "соседа" справа
         xpath = f"{base_xpath}/following-sibling::{sibling_path}[1]"
 
         return Element(
-            locator=('xpath', xpath),
+            locator=("xpath", xpath),
             base=self.base,
             timeout=self.timeout,
             poll_frequency=self.poll_frequency,
@@ -344,7 +343,7 @@ class Element(ElementBase):
             contains=self.contains
         )
 
-    def get_siblings(self) -> Generator[Element, None, None]:
+    def get_siblings(self) -> Generator[Element]:
         """Yields all sibling elements of the current element.
 
         # FIXME must be greedy
@@ -362,7 +361,7 @@ class Element(ElementBase):
         for index in range(1, 50):
             xpath = f"{base_xpath}/preceding-sibling::*[{index}]"
             sibling = Element(
-                locator=('xpath', xpath),
+                locator=("xpath", xpath),
                 base=self.base,
                 timeout=self.timeout,
                 poll_frequency=self.poll_frequency,
@@ -382,7 +381,7 @@ class Element(ElementBase):
         for index in range(1, 50):
             xpath = f"{base_xpath}/following-sibling::*[{index}]"
             sibling = Element(
-                locator=('xpath', xpath),
+                locator=("xpath", xpath),
                 base=self.base,
                 timeout=self.timeout,
                 poll_frequency=self.poll_frequency,
@@ -434,7 +433,7 @@ class Element(ElementBase):
             base_xpath = f"{current_xpath}/{up_xpath}" if up_xpath else current_xpath
 
             # Resolve cousin locator to relative XPath
-            cousin_relative = self.handle_locator(cousin_locator, contains=self.contains)[1].lstrip('/')
+            cousin_relative = self.handle_locator(cousin_locator, contains=self.contains)[1].lstrip("/")
 
             self.logger.debug(f"[Cousin Locator] relative_xpath: {cousin_relative}")
 
@@ -444,7 +443,7 @@ class Element(ElementBase):
             self.logger.debug(f"[Final XPath] cousin_xpath: {cousin_xpath}")
 
             return Element(
-                locator=('xpath', cousin_xpath),
+                locator=("xpath", cousin_xpath),
                 base=self.base,
                 timeout=self.timeout,
                 poll_frequency=self.poll_frequency,
@@ -492,7 +491,7 @@ class Element(ElementBase):
                 self._get_native()
                 continue
             except WebDriverException as error:
-                if 'instrumentation process is not running' in str(error).lower():
+                if "instrumentation process is not running" in str(error).lower():
                     self._handle_driver_error(error)
                     continue
                 raise
@@ -518,7 +517,7 @@ class Element(ElementBase):
                 self._get_driver()
                 if element is None:
                     element = self._get_native()
-                bounds = element.get_attribute('bounds')
+                bounds = element.get_attribute("bounds")
                 if not bounds:
                     continue
                 left, top, right, bottom = map(int, bounds.strip("[]").replace("][", ",").split(","))
@@ -536,7 +535,7 @@ class Element(ElementBase):
                 self._get_native()
                 continue
             except WebDriverException as error:
-                if 'instrumentation process is not running' in str(error).lower():
+                if "instrumentation process is not running" in str(error).lower():
                     self._handle_driver_error(error)
                     continue
                 raise
@@ -576,7 +575,7 @@ class Element(ElementBase):
                 self._get_native()
                 continue
             except WebDriverException as error:
-                if 'instrumentation process is not running' in str(error).lower():
+                if "instrumentation process is not running" in str(error).lower():
                     self._handle_driver_error(error)
                     continue
                 raise
@@ -617,7 +616,7 @@ class Element(ElementBase):
                 self._get_native()
                 continue
             except WebDriverException as error:
-                if 'instrumentation process is not running' in str(error).lower():
+                if "instrumentation process is not running" in str(error).lower():
                     self._handle_driver_error(error)
                     continue
                 raise
@@ -660,7 +659,7 @@ class Element(ElementBase):
                 self._get_native()
                 continue
             except WebDriverException as error:
-                if 'instrumentation process is not running' in str(error).lower():
+                if "instrumentation process is not running" in str(error).lower():
                     self._handle_driver_error(error)
                     continue
                 raise
@@ -699,7 +698,7 @@ class Element(ElementBase):
                 self._get_native()
                 continue
             except WebDriverException as error:
-                if 'instrumentation process is not running' in str(error).lower():
+                if "instrumentation process is not running" in str(error).lower():
                     self._handle_driver_error(error)
                     continue
                 raise
@@ -720,16 +719,16 @@ class Element(ElementBase):
                 current_element = self._get_native()
                 if current_element is None:
                     return False
-                if not current_element.get_attribute('displayed') == 'true':
+                if not current_element.get_attribute("displayed") == "true":
                     # Если элемент не отображается на экране
                     return False
                 element_location = current_element.location  # Получаем координаты элемента
                 element_size = current_element.size  # Получаем размеры элемента
                 if (
-                        element_location['y'] + element_size['height'] > screen_height or
-                        element_location['x'] + element_size['width'] > screen_width or
-                        element_location['y'] < 0 or
-                        element_location['x'] < 0
+                        element_location["y"] + element_size["height"] > screen_height or
+                        element_location["x"] + element_size["width"] > screen_width or
+                        element_location["y"] < 0 or
+                        element_location["x"] < 0
                 ):
                     # Если элемент находится за пределами экрана
                     return False
@@ -750,7 +749,7 @@ class Element(ElementBase):
                 self._get_native()
                 continue
             except WebDriverException as error:
-                if 'instrumentation process is not running' in str(error).lower():
+                if "instrumentation process is not running" in str(error).lower():
                     self._handle_driver_error(error)
                     continue
                 raise
@@ -789,7 +788,7 @@ class Element(ElementBase):
                 self._get_native()
                 continue
             except WebDriverException as error:
-                if 'instrumentation process is not running' in str(error).lower():
+                if "instrumentation process is not running" in str(error).lower():
                     self._handle_driver_error(error)
                     continue
                 raise
@@ -827,7 +826,7 @@ class Element(ElementBase):
                 self._get_native()
                 continue
             except WebDriverException as error:
-                if 'instrumentation process is not running' in str(error).lower():
+                if "instrumentation process is not running" in str(error).lower():
                     self._handle_driver_error(error)
                     continue
                 raise
@@ -867,7 +866,7 @@ class Element(ElementBase):
                 self._get_native()
                 continue
             except WebDriverException as error:
-                if 'instrumentation process is not running' in str(error).lower():
+                if "instrumentation process is not running" in str(error).lower():
                     self._handle_driver_error(error)
                     continue
                 raise
@@ -886,7 +885,7 @@ class Element(ElementBase):
                 if x is None or y is None:
                     continue
                 self.driver.tap(positions=[(x, y)], duration=duration)
-                return cast('Element', self)
+                return cast("Element", self)
             except NoSuchDriverException as error:
                 self._handle_driver_error(error)
             except InvalidSessionIdException as error:
@@ -900,7 +899,7 @@ class Element(ElementBase):
                 self._get_native()
                 continue
             except WebDriverException as error:
-                if 'instrumentation process is not running' in str(error).lower():
+                if "instrumentation process is not running" in str(error).lower():
                     self._handle_driver_error(error)
                     continue
                 raise
@@ -938,7 +937,7 @@ class Element(ElementBase):
                     actions.w3c_actions.pointer_action.move_to_location(x, y)
                     actions.w3c_actions.pointer_action.pointer_up()
                     actions.perform()
-                    return cast('Element', self)
+                    return cast("Element", self)
 
                 # === Перемещение к другому элементу ===
                 if locator is not None:
@@ -947,7 +946,7 @@ class Element(ElementBase):
                     actions.w3c_actions.pointer_action.move_to_location(x, y)
                     actions.w3c_actions.pointer_action.pointer_up()
                     actions.perform()
-                    return cast('Element', self)
+                    return cast("Element", self)
                 # === Перемещение по вектору направления ===
                 if direction is not None and distance is not None:
                     width, height = self.base.terminal.get_screen_resolution()
@@ -957,7 +956,7 @@ class Element(ElementBase):
                     actions.w3c_actions.pointer_action.move_to_location(x2, y2)
                     actions.w3c_actions.pointer_action.pointer_up()
                     actions.perform()
-                    return cast('Element', self)
+                    return cast("Element", self)
             except NoSuchDriverException as error:
                 self._handle_driver_error(error)
             except InvalidSessionIdException as error:
@@ -971,7 +970,7 @@ class Element(ElementBase):
                 self._get_native()
                 continue
             except WebDriverException as error:
-                if 'instrumentation process is not running' in str(error).lower():
+                if "instrumentation process is not running" in str(error).lower():
                     self._handle_driver_error(error)
                     continue
                 raise
@@ -989,12 +988,12 @@ class Element(ElementBase):
                 self._get_driver()
                 self._get_element(locator=self.locator)
                 if duration is None:
-                    self._mobile_gesture('mobile: clickGesture',
-                                         {'elementId': self.id})
+                    self._mobile_gesture("mobile: clickGesture",
+                                         {"elementId": self.id})
                 else:
-                    self._mobile_gesture('mobile: longClickGesture',
-                                         {'elementId': self.id, 'duration': duration})
-                return cast('Element', self)
+                    self._mobile_gesture("mobile: longClickGesture",
+                                         {"elementId": self.id, "duration": duration})
+                return cast("Element", self)
             except NoSuchDriverException as error:
                 self._handle_driver_error(error)
             except InvalidSessionIdException as error:
@@ -1008,7 +1007,7 @@ class Element(ElementBase):
                 self._get_native()
                 continue
             except WebDriverException as error:
-                if 'instrumentation process is not running' in str(error).lower():
+                if "instrumentation process is not running" in str(error).lower():
                     self._handle_driver_error(error)
                     continue
                 raise
@@ -1024,9 +1023,9 @@ class Element(ElementBase):
             try:
                 self._get_driver()
                 self._get_element(locator=self.locator)
-                self._mobile_gesture('mobile: doubleClickGesture',
-                                     {'elementId': self.id})
-                return cast('Element', self)
+                self._mobile_gesture("mobile: doubleClickGesture",
+                                     {"elementId": self.id})
+                return cast("Element", self)
             except NoSuchDriverException as error:
                 self._handle_driver_error(error)
             except InvalidSessionIdException as error:
@@ -1040,7 +1039,7 @@ class Element(ElementBase):
                 self._get_native()
                 continue
             except WebDriverException as error:
-                if 'instrumentation process is not running' in str(error).lower():
+                if "instrumentation process is not running" in str(error).lower():
                     self._handle_driver_error(error)
                     continue
                 raise
@@ -1056,12 +1055,12 @@ class Element(ElementBase):
             try:
                 self._get_driver()
                 self._get_element(locator=self.locator)
-                self._mobile_gesture('mobile: dragGesture',
-                                     {'elementId': self.id,
-                                      'endX': end_x,
-                                      'endY': end_y,
-                                      'speed': speed})
-                return cast('Element', self)
+                self._mobile_gesture("mobile: dragGesture",
+                                     {"elementId": self.id,
+                                      "endX": end_x,
+                                      "endY": end_y,
+                                      "speed": speed})
+                return cast("Element", self)
             except NoSuchDriverException as error:
                 self._handle_driver_error(error)
             except InvalidSessionIdException as error:
@@ -1075,7 +1074,7 @@ class Element(ElementBase):
                 self._get_native()
                 continue
             except WebDriverException as error:
-                if 'instrumentation process is not running' in str(error).lower():
+                if "instrumentation process is not running" in str(error).lower():
                     self._handle_driver_error(error)
                     continue
                 raise
@@ -1085,16 +1084,16 @@ class Element(ElementBase):
         )
 
     def fling_up(self, speed: int = 2500) -> Element:
-        return self._fling(speed=speed, direction='up')
+        return self._fling(speed=speed, direction="up")
 
     def fling_down(self, speed: int = 2500) -> Element:
-        return self._fling(speed=speed, direction='down')
+        return self._fling(speed=speed, direction="down")
 
     def fling_left(self, speed: int = 2500) -> Element:
-        return self._fling(speed=speed, direction='left')
+        return self._fling(speed=speed, direction="left")
 
     def fling_right(self, speed: int = 2500) -> Element:
-        return self._fling(speed=speed, direction='right')
+        return self._fling(speed=speed, direction="right")
 
     def _fling(self, speed: int, direction: str) -> Element:
         """
@@ -1108,11 +1107,11 @@ class Element(ElementBase):
             try:
                 self._get_driver()
                 self._get_element(locator=self.locator)
-                self._mobile_gesture('mobile: flingGesture',
-                                     {'elementId': self.id,
-                                      'direction': direction,
-                                      'speed': speed})
-                return cast('Element', self)
+                self._mobile_gesture("mobile: flingGesture",
+                                     {"elementId": self.id,
+                                      "direction": direction,
+                                      "speed": speed})
+                return cast("Element", self)
             except NoSuchDriverException as error:
                 self._handle_driver_error(error)
             except InvalidSessionIdException as error:
@@ -1126,7 +1125,7 @@ class Element(ElementBase):
                 self._get_native()
                 continue
             except WebDriverException as error:
-                if 'instrumentation process is not running' in str(error).lower():
+                if "instrumentation process is not running" in str(error).lower():
                     self._handle_driver_error(error)
                     continue
                 raise
@@ -1137,19 +1136,19 @@ class Element(ElementBase):
 
     def scroll_down(self, percent: float = 0.7, speed: int = 2000, return_bool: bool = False) -> Element:
         self.logger.debug(f"{get_current_func_name()}")
-        return self._scroll(direction='down', percent=percent, speed=speed, return_bool=return_bool)
+        return self._scroll(direction="down", percent=percent, speed=speed, return_bool=return_bool)
 
     def scroll_up(self, percent: float = 0.7, speed: int = 2000, return_bool: bool = False) -> Element:
         self.logger.debug(f"{get_current_func_name()}")
-        return self._scroll(direction='up', percent=percent, speed=speed, return_bool=return_bool)
+        return self._scroll(direction="up", percent=percent, speed=speed, return_bool=return_bool)
 
     def scroll_left(self, percent: float = 0.7, speed: int = 2000, return_bool: bool = False) -> Element:
         self.logger.debug(f"{get_current_func_name()}")
-        return self._scroll(direction='left', percent=percent, speed=speed, return_bool=return_bool)
+        return self._scroll(direction="left", percent=percent, speed=speed, return_bool=return_bool)
 
     def scroll_right(self, percent: float = 0.7, speed: int = 2000, return_bool: bool = False) -> Element:
         self.logger.debug(f"{get_current_func_name()}")
-        return self._scroll(direction='right', percent=percent, speed=speed, return_bool=return_bool)
+        return self._scroll(direction="right", percent=percent, speed=speed, return_bool=return_bool)
 
     def _scroll(self, direction: str, percent: float, speed: int, return_bool: bool) -> Element:
         """
@@ -1165,14 +1164,14 @@ class Element(ElementBase):
             try:
                 self._get_driver()
                 self._get_element(locator=self.locator)
-                can_scroll = self._mobile_gesture('mobile: scrollGesture',
-                                                  {'elementId': self.id,
-                                                   'percent': percent,
-                                                   'direction': direction,
-                                                   'speed': speed})
+                can_scroll = self._mobile_gesture("mobile: scrollGesture",
+                                                  {"elementId": self.id,
+                                                   "percent": percent,
+                                                   "direction": direction,
+                                                   "speed": speed})
                 if return_bool:
                     return can_scroll
-                return cast('Element', self)
+                return cast("Element", self)
             except NoSuchDriverException as error:
                 self._handle_driver_error(error)
             except InvalidSessionIdException as error:
@@ -1186,7 +1185,7 @@ class Element(ElementBase):
                 self._get_native()
                 continue
             except WebDriverException as error:
-                if 'instrumentation process is not running' in str(error).lower():
+                if "instrumentation process is not running" in str(error).lower():
                     self._handle_driver_error(error)
                     continue
                 raise
@@ -1203,7 +1202,7 @@ class Element(ElementBase):
         while time.time() - start_time < self.timeout:
             try:
                 if not self.scroll_down(percent=percent, speed=speed, return_bool=True):
-                    return cast('Element', self)
+                    return cast("Element", self)
                 self.scroll_down(percent=percent, speed=speed, return_bool=True)
             except (
                     NoSuchDriverException, InvalidSessionIdException, AttributeError
@@ -1216,7 +1215,7 @@ class Element(ElementBase):
                 self._get_native()
                 continue
             except WebDriverException as error:
-                if 'instrumentation process is not running' in str(error).lower():
+                if "instrumentation process is not running" in str(error).lower():
                     self._handle_driver_error(error)
                     continue
                 raise
@@ -1233,7 +1232,7 @@ class Element(ElementBase):
         while time.time() - start_time < self.timeout:
             try:
                 if not self.scroll_up(percent, speed, return_bool=True):
-                    return cast('Element', self)
+                    return cast("Element", self)
                 self.scroll_up(percent=percent, speed=speed, return_bool=True)
             except (
                     NoSuchDriverException, InvalidSessionIdException, AttributeError) as error:
@@ -1245,7 +1244,7 @@ class Element(ElementBase):
                 self._get_native()
                 continue
             except WebDriverException as error:
-                if 'instrumentation process is not running' in str(error).lower():
+                if "instrumentation process is not running" in str(error).lower():
                     self._handle_driver_error(error)
                     continue
                 raise
@@ -1288,7 +1287,7 @@ class Element(ElementBase):
                 self._get_native()
                 continue
             except WebDriverException as error:
-                if 'instrumentation process is not running' in str(error).lower():
+                if "instrumentation process is not running" in str(error).lower():
                     self._handle_driver_error(error)
                     continue
                 raise
@@ -1325,17 +1324,17 @@ class Element(ElementBase):
                 found = self.base.get_element(locator)
                 found.timeout = waiting_element_timeout
                 if found.is_visible():
-                    return cast('Element', found)
+                    return cast("Element", found)
                 while self.scroll_down(return_bool=True, percent=percent, speed=speed):
                     found = self.base.get_element(locator)
                     found.timeout = waiting_element_timeout
                     if found.is_visible():
-                        return cast('Element', found)
+                        return cast("Element", found)
                 self.scroll_down(return_bool=True, percent=percent, speed=speed)
                 found = self.base.get_element(locator)
                 found.timeout = waiting_element_timeout
                 if found.is_visible():
-                    return cast('Element', found)
+                    return cast("Element", found)
             except NoSuchDriverException as error:
                 self._handle_driver_error(error)
             except InvalidSessionIdException as error:
@@ -1349,7 +1348,7 @@ class Element(ElementBase):
                 self._get_native()
                 continue
             except WebDriverException as error:
-                if 'instrumentation process is not running' in str(error).lower():
+                if "instrumentation process is not running" in str(error).lower():
                     self._handle_driver_error(error)
                     continue
                 raise
@@ -1385,13 +1384,13 @@ class Element(ElementBase):
                 self._get_driver()
                 self._get_element(locator=self.locator)
 
-                self._mobile_gesture('mobile: pinchOpenGesture', {
-                    'elementId': self.id,
-                    'percent': percent,
-                    'speed': speed
+                self._mobile_gesture("mobile: pinchOpenGesture", {
+                    "elementId": self.id,
+                    "percent": percent,
+                    "speed": speed
                 })
 
-                return cast('Element', self)
+                return cast("Element", self)
             except NoSuchDriverException as error:
                 self._handle_driver_error(error)
             except InvalidSessionIdException as error:
@@ -1405,7 +1404,7 @@ class Element(ElementBase):
                 self._get_native()
                 continue
             except WebDriverException as error:
-                if 'instrumentation process is not running' in str(error).lower():
+                if "instrumentation process is not running" in str(error).lower():
                     self._handle_driver_error(error)
                     continue
                 raise
@@ -1433,13 +1432,13 @@ class Element(ElementBase):
                 self._get_driver()
                 self._get_element(locator=self.locator)
 
-                self._mobile_gesture('mobile: pinchCloseGesture', {
-                    'elementId': self.id,
-                    'percent': percent,
-                    'speed': speed
+                self._mobile_gesture("mobile: pinchCloseGesture", {
+                    "elementId": self.id,
+                    "percent": percent,
+                    "speed": speed
                 })
 
-                return cast('Element', self)
+                return cast("Element", self)
             except NoSuchDriverException as error:
                 self._handle_driver_error(error)
             except InvalidSessionIdException as error:
@@ -1453,7 +1452,7 @@ class Element(ElementBase):
                 self._get_native()
                 continue
             except WebDriverException as error:
-                if 'instrumentation process is not running' in str(error).lower():
+                if "instrumentation process is not running" in str(error).lower():
                     self._handle_driver_error(error)
                     continue
                 raise
@@ -1464,19 +1463,19 @@ class Element(ElementBase):
 
     def swipe_up(self, percent: float = 0.75, speed: int = 5000) -> Element:
         """Performs a swipe up gesture on the current element."""
-        return self.swipe(direction='up', percent=percent, speed=speed)
+        return self.swipe(direction="up", percent=percent, speed=speed)
 
     def swipe_down(self, percent: float = 0.75, speed: int = 5000) -> Element:
         """Performs a swipe down gesture on the current element."""
-        return self.swipe(direction='down', percent=percent, speed=speed)
+        return self.swipe(direction="down", percent=percent, speed=speed)
 
     def swipe_left(self, percent: float = 0.75, speed: int = 5000) -> Element:
         """Performs a swipe left gesture on the current element."""
-        return self.swipe(direction='left', percent=percent, speed=speed)
+        return self.swipe(direction="left", percent=percent, speed=speed)
 
     def swipe_right(self, percent: float = 0.75, speed: int = 5000) -> Element:
         """Performs a swipe right gesture on the current element."""
-        return self.swipe(direction='right', percent=percent, speed=speed)
+        return self.swipe(direction="right", percent=percent, speed=speed)
 
     def swipe(self, direction: str, percent: float = 0.75, speed: int = 5000) -> Element:
         """
@@ -1498,13 +1497,13 @@ class Element(ElementBase):
                 self._get_driver()
 
                 self._mobile_gesture("mobile: swipeGesture", {
-                    'elementId': self.id,
+                    "elementId": self.id,
                     "direction": direction.lower(),
                     "percent": percent,
                     "speed": speed
                 })
 
-                return cast('Element', self)
+                return cast("Element", self)
             except NoSuchDriverException as error:
                 self._handle_driver_error(error)
             except InvalidSessionIdException as error:
@@ -1518,7 +1517,7 @@ class Element(ElementBase):
                 self._get_native()
                 continue
             except WebDriverException as error:
-                if 'instrumentation process is not running' in str(error).lower():
+                if "instrumentation process is not running" in str(error).lower():
                     self._handle_driver_error(error)
                     continue
                 raise
@@ -1544,7 +1543,7 @@ class Element(ElementBase):
                 current_element = self._get_native()
 
                 current_element.clear()
-                return cast('Element', self)
+                return cast("Element", self)
             except NoSuchDriverException as error:
                 self._handle_driver_error(error)
             except InvalidSessionIdException as error:
@@ -1558,7 +1557,7 @@ class Element(ElementBase):
                 self._get_native()
                 continue
             except WebDriverException as error:
-                if 'instrumentation process is not running' in str(error).lower():
+                if "instrumentation process is not running" in str(error).lower():
                     self._handle_driver_error(error)
                     continue
                 raise
@@ -1598,7 +1597,7 @@ class Element(ElementBase):
                 self._get_native()
                 continue
             except WebDriverException as error:
-                if 'instrumentation process is not running' in str(error).lower():
+                if "instrumentation process is not running" in str(error).lower():
                     self._handle_driver_error(error)
                     continue
                 raise
@@ -1630,7 +1629,7 @@ class Element(ElementBase):
                 element = self._get_native()
 
                 element.set_value(value)
-                return cast('Element', self)
+                return cast("Element", self)
 
             except NoSuchDriverException as error:
                 self._handle_driver_error(error)
@@ -1645,7 +1644,7 @@ class Element(ElementBase):
                 self._get_native()
                 continue
             except WebDriverException as error:
-                if 'instrumentation process is not running' in str(error).lower():
+                if "instrumentation process is not running" in str(error).lower():
                     self._handle_driver_error(error)
                     continue
                 raise
@@ -1676,7 +1675,7 @@ class Element(ElementBase):
                 element = self._get_native()
 
                 element.send_keys(text)
-                return cast('Element', self)
+                return cast("Element", self)
 
             except NoSuchDriverException as error:
                 self._handle_driver_error(error)
@@ -1691,7 +1690,7 @@ class Element(ElementBase):
                 self._get_native()
                 continue
             except WebDriverException as error:
-                if 'instrumentation process is not running' in str(error).lower():
+                if "instrumentation process is not running" in str(error).lower():
                     self._handle_driver_error(error)
                     continue
                 raise
@@ -1731,7 +1730,7 @@ class Element(ElementBase):
                 self._get_native()
                 continue
             except WebDriverException as error:
-                if 'instrumentation process is not running' in str(error).lower():
+                if "instrumentation process is not running" in str(error).lower():
                     self._handle_driver_error(error)
                     continue
                 raise
@@ -1770,7 +1769,7 @@ class Element(ElementBase):
                 self._get_native()
                 continue
             except WebDriverException as error:
-                if 'instrumentation process is not running' in str(error).lower():
+                if "instrumentation process is not running" in str(error).lower():
                     self._handle_driver_error(error)
                     continue
                 raise
@@ -1788,7 +1787,7 @@ class Element(ElementBase):
             try:
                 self._get_driver()
 
-                return self.get_attribute('resource-id')
+                return self.get_attribute("resource-id")
 
             except NoSuchDriverException as error:
                 self._handle_driver_error(error)
@@ -1803,7 +1802,7 @@ class Element(ElementBase):
                 self._get_native()
                 continue
             except WebDriverException as error:
-                if 'instrumentation process is not running' in str(error).lower():
+                if "instrumentation process is not running" in str(error).lower():
                     self._handle_driver_error(error)
                     continue
                 raise
@@ -1821,7 +1820,7 @@ class Element(ElementBase):
             try:
                 self._get_driver()
 
-                return self.get_attribute('class')
+                return self.get_attribute("class")
 
             except NoSuchDriverException as error:
                 self._handle_driver_error(error)
@@ -1836,7 +1835,7 @@ class Element(ElementBase):
                 self._get_native()
                 continue
             except WebDriverException as error:
-                if 'instrumentation process is not running' in str(error).lower():
+                if "instrumentation process is not running" in str(error).lower():
                     self._handle_driver_error(error)
                     continue
                 raise
@@ -1853,7 +1852,7 @@ class Element(ElementBase):
         while time.time() - start_time < self.timeout:
             try:
                 self._get_driver()
-                return self.get_attribute('index')
+                return self.get_attribute("index")
 
             except (NoSuchDriverException, InvalidSessionIdException, AttributeError) as error:
                 self._handle_driver_error(error)
@@ -1864,7 +1863,7 @@ class Element(ElementBase):
                 self._get_native()
                 continue
             except WebDriverException as error:
-                if 'instrumentation process is not running' in str(error).lower():
+                if "instrumentation process is not running" in str(error).lower():
                     self._handle_driver_error(error)
                     continue
                 raise
@@ -1881,7 +1880,7 @@ class Element(ElementBase):
         while time.time() - start_time < self.timeout:
             try:
                 self._get_driver()
-                return self.get_attribute('package')
+                return self.get_attribute("package")
 
             except (NoSuchDriverException, InvalidSessionIdException, AttributeError) as error:
                 self._handle_driver_error(error)
@@ -1892,7 +1891,7 @@ class Element(ElementBase):
                 self._get_native()
                 continue
             except WebDriverException as error:
-                if 'instrumentation process is not running' in str(error).lower():
+                if "instrumentation process is not running" in str(error).lower():
                     self._handle_driver_error(error)
                     continue
                 raise
@@ -1909,7 +1908,7 @@ class Element(ElementBase):
         while time.time() - start_time < self.timeout:
             try:
                 self._get_driver()
-                return self.get_attribute('class')
+                return self.get_attribute("class")
 
             except (NoSuchDriverException, InvalidSessionIdException, AttributeError) as error:
                 self._handle_driver_error(error)
@@ -1920,7 +1919,7 @@ class Element(ElementBase):
                 self._get_native()
                 continue
             except WebDriverException as error:
-                if 'instrumentation process is not running' in str(error).lower():
+                if "instrumentation process is not running" in str(error).lower():
                     self._handle_driver_error(error)
                     continue
                 raise
@@ -1937,7 +1936,7 @@ class Element(ElementBase):
         while time.time() - start_time < self.timeout:
             try:
                 self._get_driver()
-                return self.get_attribute('bounds')
+                return self.get_attribute("bounds")
 
             except (NoSuchDriverException, InvalidSessionIdException, AttributeError) as error:
                 self._handle_driver_error(error)
@@ -1948,7 +1947,7 @@ class Element(ElementBase):
                 self._get_native()
                 continue
             except WebDriverException as error:
-                if 'instrumentation process is not running' in str(error).lower():
+                if "instrumentation process is not running" in str(error).lower():
                     self._handle_driver_error(error)
                     continue
                 raise
@@ -1965,7 +1964,7 @@ class Element(ElementBase):
         while time.time() - start_time < self.timeout:
             try:
                 self._get_driver()
-                return self.get_attribute('checked')
+                return self.get_attribute("checked")
 
             except NoSuchDriverException as error:
                 self._handle_driver_error(error)
@@ -1980,7 +1979,7 @@ class Element(ElementBase):
                 self._get_native()
                 continue
             except WebDriverException as error:
-                if 'instrumentation process is not running' in str(error).lower():
+                if "instrumentation process is not running" in str(error).lower():
                     self._handle_driver_error(error)
                     continue
                 raise
@@ -1997,7 +1996,7 @@ class Element(ElementBase):
         while time.time() - start_time < self.timeout:
             try:
                 self._get_driver()
-                return self.get_attribute('checkable')
+                return self.get_attribute("checkable")
 
             except NoSuchDriverException as error:
                 self._handle_driver_error(error)
@@ -2012,7 +2011,7 @@ class Element(ElementBase):
                 self._get_native()
                 continue
             except WebDriverException as error:
-                if 'instrumentation process is not running' in str(error).lower():
+                if "instrumentation process is not running" in str(error).lower():
                     self._handle_driver_error(error)
                     continue
                 raise
@@ -2029,7 +2028,7 @@ class Element(ElementBase):
         while time.time() - start_time < self.timeout:
             try:
                 self._get_driver()
-                return self.get_attribute('enabled')
+                return self.get_attribute("enabled")
 
             except NoSuchDriverException as error:
                 self._handle_driver_error(error)
@@ -2044,7 +2043,7 @@ class Element(ElementBase):
                 self._get_native()
                 continue
             except WebDriverException as error:
-                if 'instrumentation process is not running' in str(error).lower():
+                if "instrumentation process is not running" in str(error).lower():
                     self._handle_driver_error(error)
                     continue
                 raise
@@ -2061,7 +2060,7 @@ class Element(ElementBase):
         while time.time() - start_time < self.timeout:
             try:
                 self._get_driver()
-                return self.get_attribute('focusable')
+                return self.get_attribute("focusable")
 
             except NoSuchDriverException as error:
                 self._handle_driver_error(error)
@@ -2076,7 +2075,7 @@ class Element(ElementBase):
                 self._get_native()
                 continue
             except WebDriverException as error:
-                if 'instrumentation process is not running' in str(error).lower():
+                if "instrumentation process is not running" in str(error).lower():
                     self._handle_driver_error(error)
                     continue
                 raise
@@ -2093,7 +2092,7 @@ class Element(ElementBase):
         while time.time() - start_time < self.timeout:
             try:
                 self._get_driver()
-                return self.get_attribute('focused')
+                return self.get_attribute("focused")
 
             except NoSuchDriverException as error:
                 self._handle_driver_error(error)
@@ -2108,7 +2107,7 @@ class Element(ElementBase):
                 self._get_native()
                 continue
             except WebDriverException as error:
-                if 'instrumentation process is not running' in str(error).lower():
+                if "instrumentation process is not running" in str(error).lower():
                     self._handle_driver_error(error)
                     continue
                 raise
@@ -2125,7 +2124,7 @@ class Element(ElementBase):
         while time.time() - start_time < self.timeout:
             try:
                 self._get_driver()
-                return self.get_attribute('long-clickable')
+                return self.get_attribute("long-clickable")
 
             except NoSuchDriverException as error:
                 self._handle_driver_error(error)
@@ -2140,7 +2139,7 @@ class Element(ElementBase):
                 self._get_native()
                 continue
             except WebDriverException as error:
-                if 'instrumentation process is not running' in str(error).lower():
+                if "instrumentation process is not running" in str(error).lower():
                     self._handle_driver_error(error)
                     continue
                 raise
@@ -2157,7 +2156,7 @@ class Element(ElementBase):
         while time.time() - start_time < self.timeout:
             try:
                 self._get_driver()
-                return self.get_attribute('password')
+                return self.get_attribute("password")
 
             except NoSuchDriverException as error:
                 self._handle_driver_error(error)
@@ -2172,7 +2171,7 @@ class Element(ElementBase):
                 self._get_native()
                 continue
             except WebDriverException as error:
-                if 'instrumentation process is not running' in str(error).lower():
+                if "instrumentation process is not running" in str(error).lower():
                     self._handle_driver_error(error)
                     continue
                 raise
@@ -2189,7 +2188,7 @@ class Element(ElementBase):
         while time.time() - start_time < self.timeout:
             try:
                 self._get_driver()
-                return self.get_attribute('scrollable')
+                return self.get_attribute("scrollable")
 
             except NoSuchDriverException as error:
                 self._handle_driver_error(error)
@@ -2204,7 +2203,7 @@ class Element(ElementBase):
                 self._get_native()
                 continue
             except WebDriverException as error:
-                if 'instrumentation process is not running' in str(error).lower():
+                if "instrumentation process is not running" in str(error).lower():
                     self._handle_driver_error(error)
                     continue
                 raise
@@ -2221,7 +2220,7 @@ class Element(ElementBase):
         while time.time() - start_time < self.timeout:
             try:
                 self._get_driver()
-                return self.get_attribute('selected')
+                return self.get_attribute("selected")
 
             except NoSuchDriverException as error:
                 self._handle_driver_error(error)
@@ -2236,7 +2235,7 @@ class Element(ElementBase):
                 self._get_native()
                 continue
             except WebDriverException as error:
-                if 'instrumentation process is not running' in str(error).lower():
+                if "instrumentation process is not running" in str(error).lower():
                     self._handle_driver_error(error)
                     continue
                 raise
@@ -2253,7 +2252,7 @@ class Element(ElementBase):
         while time.time() - start_time < self.timeout:
             try:
                 self._get_driver()
-                return self.get_attribute('displayed')
+                return self.get_attribute("displayed")
 
             except NoSuchDriverException as error:
                 self._handle_driver_error(error)
@@ -2268,7 +2267,7 @@ class Element(ElementBase):
                 self._get_native()
                 continue
             except WebDriverException as error:
-                if 'instrumentation process is not running' in str(error).lower():
+                if "instrumentation process is not running" in str(error).lower():
                     self._handle_driver_error(error)
                     continue
                 raise
@@ -2293,7 +2292,7 @@ class Element(ElementBase):
                 self._get_driver()
                 element = self._get_native()
                 element.submit()
-                return cast('Element', self)
+                return cast("Element", self)
 
             except NoSuchDriverException as error:
                 self._handle_driver_error(error)
@@ -2308,7 +2307,7 @@ class Element(ElementBase):
                 self._get_native()
                 continue
             except WebDriverException as error:
-                if 'instrumentation process is not running' in str(error).lower():
+                if "instrumentation process is not running" in str(error).lower():
                     self._handle_driver_error(error)
                     continue
                 raise
@@ -2783,10 +2782,10 @@ class Element(ElementBase):
         for _ in range(tries):
             try:
                 parent_element = self
-                parent_class = parent_element.get_attribute('class')
+                parent_class = parent_element.get_attribute("class")
                 child_elements = parent_element.get_elements(("xpath", "//*[1]"))
                 for i, child_element in enumerate(child_elements):
-                    child_class = child_element.get_attribute('class')
+                    child_class = child_element.get_attribute("class")
                     if parent_class != child_class:
                         return str(child_class)
             except StaleElementReferenceException as error:
@@ -2796,7 +2795,7 @@ class Element(ElementBase):
                 self._get_native()
                 continue
             except WebDriverException as error:
-                if 'instrumentation process is not running' in str(error).lower():
+                if "instrumentation process is not running" in str(error).lower():
                     self._handle_driver_error(error)
                     continue
                 raise
@@ -2804,7 +2803,7 @@ class Element(ElementBase):
     def _get_xpath(self) -> str:
         self.logger.debug(f"{get_current_func_name()}")
         locator = self.handle_locator(self.locator, self.contains)
-        if locator[0] == 'xpath':
+        if locator[0] == "xpath":
             return locator[1]
         return self._get_xpath_by_driver()
 
@@ -2816,8 +2815,8 @@ class Element(ElementBase):
             if not attrs:
                 raise GeneralElementException("Failed to retrieve attributes for XPath construction.")
 
-            element_type = attrs.get('class')
-            except_attrs = ['hint', 'selection-start', 'selection-end', 'extras']
+            element_type = attrs.get("class")
+            except_attrs = ["hint", "selection-start", "selection-end", "extras"]
 
             # Start XPath with element class or wildcard
             if element_type:
@@ -2835,8 +2834,8 @@ class Element(ElementBase):
                     xpath += f"[@{key}='{value}']"
                 elif "'" in value and '"' in value:
                     parts = value.split('"')
-                    escaped = 'concat(' + ', '.join(
-                        f'"{part}"' if i % 2 == 0 else "'\"'" for i, part in enumerate(parts)) + ')'
+                    escaped = "concat(" + ", ".join(
+                        f'"{part}"' if i % 2 == 0 else "'\"'" for i, part in enumerate(parts)) + ")"
                     xpath += f"[@{key}={escaped}]"
                 else:
                     xpath += f"[@{key}='{value}']"
@@ -2885,17 +2884,17 @@ class Element(ElementBase):
                     self.logger.error("Resolved locator is None or invalid")
                     if return_bool:
                         return False
-                    return cast('Element', self)
+                    return cast("Element", self)
                 WebDriverWait(self.base.driver, timeout, poll_frequency).until(
                     conditions.present(resolved_locator)
                 )
                 if return_bool:
                     return True
-                return cast('Element', self)
+                return cast("Element", self)
             except TimeoutException:
                 if return_bool:
                     return False
-                return cast('Element', self)
+                return cast("Element", self)
             except NoSuchDriverException as error:
                 self._handle_driver_error(error)
             except InvalidSessionIdException as error:
@@ -2933,18 +2932,18 @@ class Element(ElementBase):
                     self.logger.error("Resolved locator is None or invalid")
                     if return_bool:
                         return False
-                    return cast('Element', self)
+                    return cast("Element", self)
 
                 WebDriverWait(self.base.driver, timeout, poll_frequency).until(
                     conditions.visible(resolved_locator)
                 )
                 if return_bool:
                     return True
-                return cast('Element', self)
+                return cast("Element", self)
             except TimeoutException:
                 if return_bool:
                     return False
-                return cast('Element', self)
+                return cast("Element", self)
             except NoSuchDriverException as error:
                 self._handle_driver_error(error)
             except InvalidSessionIdException as error:
@@ -2982,18 +2981,18 @@ class Element(ElementBase):
                     self.logger.error("Resolved locator is None or invalid")
                     if return_bool:
                         return False
-                    return cast('Element', self)
+                    return cast("Element", self)
 
                 WebDriverWait(self.base.driver, timeout, poll_frequency).until(
                     conditions.clickable(resolved_locator)
                 )
                 if return_bool:
                     return True
-                return cast('Element', self)
+                return cast("Element", self)
             except TimeoutException:
                 if return_bool:
                     return False
-                return cast('Element', self)
+                return cast("Element", self)
             except NoSuchDriverException as error:
                 self._handle_driver_error(error)
             except InvalidSessionIdException as error:
@@ -3030,17 +3029,17 @@ class Element(ElementBase):
                 if not resolved_locator:
                     if return_bool:
                         return False
-                    return cast('Element', self)
+                    return cast("Element", self)
                 WebDriverWait(self.base.driver, timeout, poll_frequency).until(
                     conditions.not_present(resolved_locator)
                 )
                 if return_bool:
                     return True
-                return cast('Element', self)
+                return cast("Element", self)
             except TimeoutException:
                 if return_bool:
                     return False
-                return cast('Element', self)
+                return cast("Element", self)
             except NoSuchDriverException as error:
                 self._handle_driver_error(error)
             except InvalidSessionIdException as error:
@@ -3077,17 +3076,17 @@ class Element(ElementBase):
                 if not resolved_locator:
                     if return_bool:
                         return False
-                    return cast('Element', self)
+                    return cast("Element", self)
                 WebDriverWait(self.base.driver, timeout, poll_frequency).until(
                     conditions.not_visible(resolved_locator)
                 )
                 if return_bool:
                     return True
-                return cast('Element', self)
+                return cast("Element", self)
             except TimeoutException:
                 if return_bool:
                     return False
-                return cast('Element', self)
+                return cast("Element", self)
             except NoSuchDriverException as error:
                 self._handle_driver_error(error)
             except InvalidSessionIdException as error:
@@ -3125,17 +3124,17 @@ class Element(ElementBase):
                     self.logger.error("Resolved locator is None or invalid")
                     if return_bool:
                         return False
-                    return cast('Element', self)
+                    return cast("Element", self)
                 WebDriverWait(self.base.driver, timeout, poll_frequency).until(
                     conditions.not_clickable(resolved_locator)
                 )
                 if return_bool:
                     return True
-                return cast('Element', self)
+                return cast("Element", self)
             except TimeoutException:
                 if return_bool:
                     return False
-                return cast('Element', self)
+                return cast("Element", self)
             except NoSuchDriverException as error:
                 self._handle_driver_error(error)
             except InvalidSessionIdException as error:
@@ -3190,13 +3189,13 @@ class Element(ElementBase):
 
         # Бьём конкретно по целевым атрибутам, которые нужно оборачивать в contains()
         patterns = {
-            'text': r"@text='([^']*)'",
-            'content-desc': r"@content-desc='([^']*)'",
-            'contentDescription': r"@contentDescription='([^']*)'",
-            'label': r"@label='([^']*)'",
-            'title': r"@title='([^']*)'",
-            'name': r"@name='([^']*)'",
-            'hint': r"@hint='([^']*)'"
+            "text": r"@text='([^']*)'",
+            "content-desc": r"@content-desc='([^']*)'",
+            "contentDescription": r"@contentDescription='([^']*)'",
+            "label": r"@label='([^']*)'",
+            "title": r"@title='([^']*)'",
+            "name": r"@name='([^']*)'",
+            "hint": r"@hint='([^']*)'"
         }
 
         for attr, pattern in patterns.items():

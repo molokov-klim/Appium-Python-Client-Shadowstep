@@ -16,7 +16,7 @@ def _handle_child_selector(child_xpath: str) -> str:
     Returns:
         XPath string with child appended
     """
-    return f'/{child_xpath}'
+    return f"/{child_xpath}"
 
 
 def _handle_from_parent(parent_xpath: str) -> str:
@@ -29,7 +29,7 @@ def _handle_from_parent(parent_xpath: str) -> str:
     Returns:
         XPath string with parent navigation
     """
-    return f'/..{parent_xpath}'
+    return f"/..{parent_xpath}"
 
 
 UI_TO_XPATH: dict[UiAttribute, Callable[[Any], str]] = {
@@ -68,8 +68,8 @@ UI_TO_XPATH: dict[UiAttribute, Callable[[Any], str]] = {
     UiAttribute.PASSWORD: lambda v: f'[{XPathAttribute.PASSWORD.value}"{str(v).lower()}"]',
 
     # --- numeric ---
-    UiAttribute.INDEX: lambda v: f'[{XPathAttribute.INDEX.value}{int(v) + 1}]',
-    UiAttribute.INSTANCE: lambda v: f'[{int(v) + 1}]',
+    UiAttribute.INDEX: lambda v: f"[{XPathAttribute.INDEX.value}{int(v) + 1}]",
+    UiAttribute.INSTANCE: lambda v: f"[{int(v) + 1}]",
 
     # --- hierarchy ---
     UiAttribute.CHILD_SELECTOR: lambda v: _handle_child_selector(v),

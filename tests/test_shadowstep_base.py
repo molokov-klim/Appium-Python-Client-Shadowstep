@@ -77,10 +77,10 @@ class TestBase:
         app.disconnect()  # Завершаем текущую сессию для проверки новых настроек
         new_caps = CAPABILITIES.copy()
         new_caps["appium:autoGrantPermissions"] = False  # Изменяем capabilities
-        app.connect(server_ip='127.0.0.1', server_port=4723, capabilities=new_caps)
+        app.connect(server_ip="127.0.0.1", server_port=4723, capabilities=new_caps)
         assert app.driver is not None, "Сессия не была создана с новыми параметрами capabilities"
         assert app.options.auto_grant_permissions is False, "Параметр autoGrantPermissions не применился"
-        app.connect(server_ip='127.0.0.1', server_port=4723, capabilities=CAPABILITIES)
+        app.connect(server_ip="127.0.0.1", server_port=4723, capabilities=CAPABILITIES)
 
     def test_is_connected_when_connected(self, app: Shadowstep):
         app.reconnect()

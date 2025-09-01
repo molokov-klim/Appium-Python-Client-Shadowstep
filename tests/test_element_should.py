@@ -11,9 +11,9 @@ from shadowstep.shadowstep import Shadowstep
 def sample_element(app: Shadowstep):
     app.terminal.start_activity(package="com.android.settings", activity=".Settings")
     time.sleep(3)
-    container = app.get_element({'resource-id': 'com.android.settings:id/main_content_scrollable_container'})
+    container = app.get_element({"resource-id": "com.android.settings:id/main_content_scrollable_container"})
     sample_element = container.scroll_to_element(locator={
-        'text': 'Network & internet'
+        "text": "Network & internet"
     })
     attrs = sample_element.get_attributes()
     for k, v in attrs.items():

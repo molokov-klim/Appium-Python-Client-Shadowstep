@@ -17,7 +17,7 @@ from selenium.common import InvalidSessionIdException, NoSuchDriverException
 from shadowstep.utils.utils import get_current_func_name
 
 # Configure the root logger (basic configuration)
-logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s")
 logger = logging.getLogger(__name__)
 
 if TYPE_CHECKING:
@@ -26,8 +26,8 @@ if TYPE_CHECKING:
 
 
 class NotProvideCredentials(Exception):
-    def __init__(self, message: str = 'Not provided credentials for ssh connection '
-                                      'in connect() method (ssh_username, ssh_password)'):
+    def __init__(self, message: str = "Not provided credentials for ssh connection "
+                                      "in connect() method (ssh_username, ssh_password)"):
         super().__init__(message)
         self.message = message
 
@@ -60,7 +60,7 @@ class Terminal:
         """
         for _ in range(tries):
             try:
-                return self.driver.execute_script("mobile: shell", {'command': command, 'args': [args]})
+                return self.driver.execute_script("mobile: shell", {"command": command, "args": [args]})
             except NoSuchDriverException:
                 self.base.reconnect()
             except InvalidSessionIdException:
@@ -87,10 +87,10 @@ class Terminal:
             destination_file_path = f"{destination}/{filename}"
             self.transport.scp.put(files=source_file_path, remote_path=remote_file_path)
             _, stdout, _ = self.transport.ssh.exec_command(
-                f'adb -s {udid} push {remote_file_path} {destination_file_path}')
+                f"adb -s {udid} push {remote_file_path} {destination_file_path}")
             stdout_exit_status = stdout.channel.recv_exit_status()
             lines = stdout.readlines()
-            output = ''.join(lines)
+            output = "".join(lines)
             if stdout_exit_status != 0:
                 logger.error(f"{get_current_func_name()} {output=}")
                 return False
@@ -125,12 +125,12 @@ class Terminal:
                 # Если путь не указан, сохраняем в текущей директории
                 destination = os.path.join(os.getcwd(), os.path.basename(source))
 
-            file_contents_base64 = self.driver.assert_extension_exists('mobile: pullFile'). \
-                execute_script('mobile: pullFile', {'remotePath': source})
+            file_contents_base64 = self.driver.assert_extension_exists("mobile: pullFile"). \
+                execute_script("mobile: pullFile", {"remotePath": source})
             if not file_contents_base64:
                 return False
             decoded_contents = base64.b64decode(file_contents_base64)
-            with open(destination, 'wb') as file:
+            with open(destination, "wb") as file:
                 file.write(decoded_contents)
             return True
         except NoSuchDriverException:
@@ -173,10 +173,10 @@ class Terminal:
         """
         try:
             result = self.adb_shell(command="dumpsys", args="window windows")
-            lines = result.split('\n')
+            lines = result.split("\n")
             for line in lines:
-                if 'mCurrentFocus' in line or 'mFocusedApp' in line:
-                    matches = re.search(r'(([A-Za-z]{1}[A-Za-z\d_]*\.)+([A-Za-z][A-Za-z\d_]*)/)', line)
+                if "mCurrentFocus" in line or "mFocusedApp" in line:
+                    matches = re.search(r"(([A-Za-z]{1}[A-Za-z\d_]*\.)+([A-Za-z][A-Za-z\d_]*)/)", line)
                     if matches:
                         return matches.group(1)[:-1]  # removing trailing slash
             return ""
@@ -233,10 +233,10 @@ class Terminal:
             destination_filepath = os.path.join(remote_server_path, filename)
             self.transport.scp.put(files=source_filepath, remote_path=destination_filepath)
             _, stdout, _ = self.transport.ssh.exec_command(
-                f'adb -s {udid} install -r {destination_filepath}')
+                f"adb -s {udid} install -r {destination_filepath}")
             stdout_exit_status = stdout.channel.recv_exit_status()
             lines = stdout.readlines()
-            output = ''.join(lines)
+            output = "".join(lines)
             if stdout_exit_status != 0:
                 logger.error(f"{get_current_func_name()} {output=}")
                 return False
@@ -508,7 +508,7 @@ class Terminal:
                           end_y=height // 2,
                           duration=duration)
 
-    def check_vpn(self, ip_address: str = '') -> bool:
+    def check_vpn(self, ip_address: str = "") -> bool:
         """
         Checks if a VPN connection is established on the device.
 
@@ -517,7 +517,7 @@ class Terminal:
         """
         try:
             output = self.adb_shell(command="netstat", args="")
-            lines = output.split('\n')
+            lines = output.split("\n")
             for line in lines:
                 if ip_address in line and "ESTABLISHED" in line:
                     logger.debug("check_VPN() True")
@@ -569,7 +569,7 @@ class Terminal:
         if name not in processes:
             logger.error("know_pid() [Процесс не обнаружен]")
             return None
-        lines = processes.strip().split('\n')
+        lines = processes.strip().split("\n")
         for line in lines[1:]:
             columns = line.split()
             if len(columns) >= 9:
@@ -591,7 +591,7 @@ class Terminal:
         if name not in processes:
             logger.debug("is_process_exist() > False")
             return False
-        lines = processes.strip().split('\n')
+        lines = processes.strip().split("\n")
         for line in lines[1:]:
             columns = line.split()
             if len(columns) >= 9:
@@ -704,7 +704,7 @@ class Terminal:
         :return: True if the file was successfully deleted, False otherwise.
         """
         try:
-            if path.endswith('/'):
+            if path.endswith("/"):
                 path = path[:-1]
             self.adb_shell(command="rm", args=f"-rf {path}/{filename}")
         except KeyError as e:
@@ -762,7 +762,7 @@ class Terminal:
         Reboots the device safely. If adb connection drops, ignores the error.
         """
         try:
-            self.adb_shell(command='reboot')
+            self.adb_shell(command="reboot")
             return True
         except Exception as e:
             logger.warning(f"Reboot likely initiated. Caught exception: {e}")
@@ -776,7 +776,7 @@ class Terminal:
                  or None if the resolution couldn't be retrieved.
         """
         try:
-            output = self.adb_shell(command='wm', args='size')
+            output = self.adb_shell(command="wm", args="size")
             if "Physical size" in output:
                 resolution_str = output.split(":")[1].strip()
                 width, height = resolution_str.split("x")
@@ -796,7 +796,7 @@ class Terminal:
         for _ in range(tries):
             try:
                 self.driver.set_clipboard_text(text=text)
-                self.input_keycode('279')
+                self.input_keycode("279")
                 return
             except NoSuchDriverException:
                 self.base.reconnect()
@@ -828,7 +828,7 @@ class Terminal:
 
         :return: A string representing the hardware information.
         """
-        return self.get_prop()['ro.boot.hardware']
+        return self.get_prop()["ro.boot.hardware"]
 
     def get_prop_model(self) -> str:
         """
@@ -836,7 +836,7 @@ class Terminal:
 
         :return: A string representing the model name of the device.
         """
-        return self.get_prop()['ro.product.model']
+        return self.get_prop()["ro.product.model"]
 
     def get_prop_serial(self) -> str:
         """
@@ -844,7 +844,7 @@ class Terminal:
 
         :return: A string representing the serial number of the device.
         """
-        return self.get_prop()['ro.serialno']
+        return self.get_prop()["ro.serialno"]
 
     def get_prop_build(self) -> str:
         """
@@ -852,7 +852,7 @@ class Terminal:
 
         :return: A string representing the build description of the device.
         """
-        return self.get_prop()['ro.build.description']
+        return self.get_prop()["ro.build.description"]
 
     def get_prop_device(self) -> str:
         """
@@ -860,7 +860,7 @@ class Terminal:
 
         :return: A string representing the device name.
         """
-        return self.get_prop()['ro.product.device']
+        return self.get_prop()["ro.product.device"]
 
     def get_prop_uin(self) -> str:
         """
@@ -868,7 +868,7 @@ class Terminal:
 
         :return: A string representing the unique identification number.
         """
-        return self.get_prop()['sys.atol.uin']
+        return self.get_prop()["sys.atol.uin"]
 
     def get_packages(self) -> list[str]:
         """
@@ -876,9 +876,9 @@ class Terminal:
 
         :return: A list of package names.
         """
-        output = self.adb_shell(command='pm', args='list packages')
-        lines = output.strip().split('\n')
-        packages = [line.split(':')[-1].replace('\r', '') for line in lines]
+        output = self.adb_shell(command="pm", args="list packages")
+        lines = output.strip().split("\n")
+        packages = [line.split(":")[-1].replace("\r", "") for line in lines]
         return packages
 
     def get_package_path(self, package: str) -> str:
@@ -888,12 +888,12 @@ class Terminal:
         :param package: The name of the package.
         :return: The path to the APK file.
         """
-        return self.adb_shell(command='pm', args=f'path {package}'). \
-            replace('package:', ''). \
-            replace('\r', ''). \
-            replace('\n', '')
+        return self.adb_shell(command="pm", args=f"path {package}"). \
+            replace("package:", ""). \
+            replace("\r", ""). \
+            replace("\n", "")
 
-    def pull_package(self, package: str, path: str = '', filename: str = 'temp.apk'):
+    def pull_package(self, package: str, path: str = "", filename: str = "temp.apk"):
         """
         Pulls the APK file of the specified package from the device to the local machine.
 
@@ -902,7 +902,7 @@ class Terminal:
         :param filename: The name of the APK file. If not provided, a default name 'temp.apk' will be used.
         """
         package_path = self.get_package_path(package=package)
-        if not filename.endswith('.apk'):
+        if not filename.endswith(".apk"):
             filename = f"{filename}.apk"
         self.pull(source=package_path, destination=os.path.join(path, filename))
 
@@ -914,7 +914,7 @@ class Terminal:
         :return: A dictionary representing the package manifest.
         """
         if not os.path.exists("test"):
-            os.makedirs(name='test')
+            os.makedirs(name="test")
 
         self.pull_package(package=package, path="test",
                           filename="temp.apk")
@@ -924,18 +924,18 @@ class Terminal:
             output: str = str(subprocess.check_output(command)).strip()
         except subprocess.CalledProcessError:
             return {}
-        output = output.replace('\\r\\n', ' ').replace('b"', '').replace('"', '').replace(":'", ": '")
+        output = output.replace("\\r\\n", " ").replace('b"', "").replace('"', "").replace(":'", ": '")
         list_of_elements = output.split()
         result = {}
         current_key = None
 
         for element in list_of_elements:
-            if element.endswith(':'):
+            if element.endswith(":"):
                 result[element] = []
                 current_key = element
                 continue
             result[current_key].append(element.replace("'", ""))
 
-        os.remove(os.path.join('test', 'temp.apk'))
+        os.remove(os.path.join("test", "temp.apk"))
 
         return result

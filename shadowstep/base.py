@@ -46,13 +46,13 @@ class WebDriverSingleton(WebDriver):
         if cls._instance is None:
             cls._instance = super().__new__(cls)
             cls._driver = WebDriver(*args, **kwargs)
-            cls._command_executor = kwargs['command_executor']
+            cls._command_executor = kwargs["command_executor"]
         return cls._driver
 
     @classmethod
     def _get_session_id(cls, kwargs: Any) -> str:
         logger.debug(f"{get_current_func_name()}")
-        res = requests.get(kwargs['command_executor'] + '/sessions')
+        res = requests.get(kwargs["command_executor"] + "/sessions")
         res_json = json.loads(res.text)
         sessions = res_json.get("value", [])
         if sessions:
@@ -106,7 +106,7 @@ class ShadowstepBase:
 
     def connect(self,
                 capabilities: dict[str, Any],
-                server_ip: str = '127.0.0.1',
+                server_ip: str = "127.0.0.1",
                 server_port: int = 4723,
                 options: AppiumOptions | list[AppiumOptions] | None = None,
                 extensions: list[WebDriver] | None = None,
@@ -149,7 +149,7 @@ class ShadowstepBase:
         self.command_executor = command_executor
 
         self._capabilities_to_options()
-        self.command_executor = f'http://{server_ip}:{str(server_port)}/wd/hub' if self.command_executor is None else self.command_executor
+        self.command_executor = f"http://{server_ip}:{str(server_port)}/wd/hub" if self.command_executor is None else self.command_executor
 
         self.logger.info(f"Connecting to server: {self.command_executor}")
         WebDriverSingleton.clear_instance()

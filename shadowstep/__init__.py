@@ -2,19 +2,20 @@
 import logging
 import sys
 
+
 class LoguruStyleFormatter(logging.Formatter):
     COLORS = {
-        'DEBUG': '\033[38;5;81m',      # Светло-голубой (как loguru DEBUG)
-        'INFO': '\033[38;5;34m',       # Зелёный (как loguru INFO)
-        'WARNING': '\033[38;5;220m',   # Жёлтый
-        'ERROR': '\033[38;5;196m',     # Красный
-        'CRITICAL': '\033[1;41m',      # Белый на красном фоне
+        "DEBUG": "\033[38;5;81m",      # Светло-голубой (как loguru DEBUG)
+        "INFO": "\033[38;5;34m",       # Зелёный (как loguru INFO)
+        "WARNING": "\033[38;5;220m",   # Жёлтый
+        "ERROR": "\033[38;5;196m",     # Красный
+        "CRITICAL": "\033[1;41m",      # Белый на красном фоне
     }
-    RESET = '\033[0m'
+    RESET = "\033[0m"
 
     def format(self, record: logging.LogRecord) -> str:
         # Цвет для уровня логирования
-        level_color = self.COLORS.get(record.levelname, '')
+        level_color = self.COLORS.get(record.levelname, "")
         levelname = f"{level_color}{record.levelname:<8}{self.RESET}"
 
         # Серый таймстемп
