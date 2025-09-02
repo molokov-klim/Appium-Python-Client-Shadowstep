@@ -44,4 +44,4 @@ class XPathAttribute(str, Enum):
     # --- hierarchy ---
     CHILD_SELECTOR = "childSelector"            # use special logic
     FROM_PARENT = "fromParent"                  # use special logic
-
+    SIBLING = "following-sibling"               # use special logic

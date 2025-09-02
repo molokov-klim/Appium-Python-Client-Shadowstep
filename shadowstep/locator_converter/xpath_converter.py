@@ -118,33 +118,24 @@ class XPathConverter:
 
     def xpath_to_dict(self, xpath_str: str) -> dict[str, Any]:
         self._validate_xpath(xpath_str)
-        ast = parse(xpath_str)
-        result = self._ast_to_dict(ast)
-        if not result:
-            raise ConversionError("XPath has no predicates to convert")
+        node = parse(xpath_str)
+        node_list = self._ast_to_list(node.relative)
+        result = self._ast_to_dict(node_list)
         return result
 
     def xpath_to_ui_selector(self, xpath_str: str) -> str:
         self._validate_xpath(xpath_str)
-        ast = parse(xpath_str)
-
-        predicates = list(self._collect_predicates(ast))
-        if not predicates:
-            raise ConversionError("XPath has no predicates to convert")
-
-        parts: List[str] = []
-        for pr in predicates:
-            parts.append(self._predicate_to_ui(pr))
-
-        return "new UiSelector()" + "".join(parts)
+        node = parse(xpath_str)
+        node_list = self._ast_to_list(node.relative)
+        result = self._ast_to_ui_selector(node_list)
+        return "new UiSelector()" + "".join(result)
 
     # ========== AST traversal ==========
+    
+    def _ast_to_list(self, node: Any) -> str:
+        ...
 
-    def _ast_to_dict(self, node) -> dict[str, Any]:
-        # Если узел является абсолютным путём — обрабатываем его "relative"-часть
-        if isinstance(node, AbsolutePath):
-            return self._ast_to_dict(node.relative)
-        node_list = self._ast_to_list(node)
+    def _ast_to_dict(self, node_list) -> dict[str, Any]:
         shadowstep_dict: dict[str, Any] = {}
         shadowstep_dict = self._build_shadowstep_dict(node_list, shadowstep_dict)
         return shadowstep_dict

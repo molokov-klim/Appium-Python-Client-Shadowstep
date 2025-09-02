@@ -45,3 +45,4 @@ class UiAttribute(str, Enum):
     # --- hierarchy ---
     CHILD_SELECTOR = "childSelector"
     FROM_PARENT = "fromParent"
+    SIBLING = "sibling"
