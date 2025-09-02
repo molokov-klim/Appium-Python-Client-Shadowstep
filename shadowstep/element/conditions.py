@@ -1,4 +1,8 @@
 # shadowstep/utils/conditions.py
+"""
+this module doesn't do anything right now, but it's a reminder of the idea of introducing different conditions 
+(based on attributes) besides the existing ones
+"""
 from __future__ import annotations
 
 from collections.abc import Callable
