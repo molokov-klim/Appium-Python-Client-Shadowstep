@@ -3,414 +3,426 @@ from __future__ import annotations
 
 import logging
 import re
-from typing import Any
+from typing import Any, Iterable, List
+
+from eulxml.xpath import parse
+from eulxml.xpath.ast import (
+    AbsolutePath,
+    BinaryExpression,
+    FunctionCall,
+    NameTest,
+    NodeType,
+    PredicatedExpression,
+    Step, AbbreviatedStep,
+)
+from icecream import ic
 
 from shadowstep.exceptions.shadowstep_exceptions import ConversionError
-from shadowstep.locator_converter.map.xpath_to_dict import XPATH_TO_SHADOWSTEP_DICT
+from shadowstep.locator_converter.types.shadowstep_dict import DictAttribute
+from shadowstep.locator_converter.types.ui_selector import UiAttribute
+from utils.utils import get_current_func_name
+
+_BOOL_ATTRS = {
+    "checkable": (DictAttribute.CHECKABLE, UiAttribute.CHECKABLE),
+    "checked": (DictAttribute.CHECKED, UiAttribute.CHECKED),
+    "clickable": (DictAttribute.CLICKABLE, UiAttribute.CLICKABLE),
+    "enabled": (DictAttribute.ENABLED, UiAttribute.ENABLED),
+    "focusable": (DictAttribute.FOCUSABLE, UiAttribute.FOCUSABLE),
+    "focused": (DictAttribute.FOCUSED, UiAttribute.FOCUSED),
+    "long-clickable": (DictAttribute.LONG_CLICKABLE, UiAttribute.LONG_CLICKABLE),
+    "scrollable": (DictAttribute.SCROLLABLE, UiAttribute.SCROLLABLE),
+    "selected": (DictAttribute.SELECTED, UiAttribute.SELECTED),
+    "password": (DictAttribute.PASSWORD, UiAttribute.PASSWORD),
+}
+
+_NUM_ATTRS = {
+    "index": (DictAttribute.INDEX, UiAttribute.INDEX),
+    "instance": (DictAttribute.INSTANCE, UiAttribute.INSTANCE),
+}
+
+_EQ_ATTRS = {
+    # text / description (content-desc)
+    "text": (DictAttribute.TEXT, UiAttribute.TEXT),
+    "content-desc": (DictAttribute.DESCRIPTION, UiAttribute.DESCRIPTION),
+    # resource id / package / class
+    "resource-id": (DictAttribute.RESOURCE_ID, UiAttribute.RESOURCE_ID),
+    "package": (DictAttribute.PACKAGE_NAME, UiAttribute.PACKAGE_NAME),
+    "class": (DictAttribute.CLASS_NAME, UiAttribute.CLASS_NAME),
+}
+
+# where contains / starts-with are allowed
+_CONTAINS_ATTRS = {
+    "text": (DictAttribute.TEXT_CONTAINS, UiAttribute.TEXT_CONTAINS),
+    "content-desc": (DictAttribute.DESCRIPTION_CONTAINS, UiAttribute.DESCRIPTION_CONTAINS),
+}
+_STARTS_ATTRS = {
+    "text": (DictAttribute.TEXT_STARTS_WITH, UiAttribute.TEXT_STARTS_WITH),
+    "content-desc": (DictAttribute.DESCRIPTION_STARTS_WITH, UiAttribute.DESCRIPTION_STARTS_WITH),
+}
+# where matches() is allowed
+_MATCHES_ATTRS = {
+    "text": (DictAttribute.TEXT_MATCHES, UiAttribute.TEXT_MATCHES),
+    "content-desc": (DictAttribute.DESCRIPTION_MATCHES, UiAttribute.DESCRIPTION_MATCHES),
+    "resource-id": (DictAttribute.RESOURCE_ID_MATCHES, UiAttribute.RESOURCE_ID_MATCHES),
+    "package": (DictAttribute.PACKAGE_NAME_MATCHES, UiAttribute.PACKAGE_NAME_MATCHES),
+    "class": (DictAttribute.CLASS_NAME_MATCHES, UiAttribute.CLASS_NAME_MATCHES),
+}
+
+
+def _escape_java_string(s: str) -> str:
+    # достаточно экранировать обратный слеш и двойную кавычку
+    return s.replace("\\", "\\\\").replace('"', '\\"')
+
+
+def _to_bool(val: Any) -> bool:
+    if isinstance(val, bool):
+        return val
+    if isinstance(val, str):
+        v = val.strip().lower()
+        if v in ("true", "1"):
+            return True
+        if v in ("false", "0"):
+            return False
+    raise ConversionError(f"Expected boolean literal, got: {val!r}")
+
+
+def _to_number(val: Any) -> int:
+    if isinstance(val, (int, float)):
+        return int(val)
+    if isinstance(val, str) and val.isdigit():
+        return int(val)
+    raise ConversionError(f"Expected numeric literal, got: {val!r}")
 
 
 class XPathConverter:
     """
-    Enhanced XPath converter with improved error handling and caching.
-
-    This class provides methods to convert XPath strings to various formats
-    including UiSelector, dictionary locators, and back to XPath strings.
+    Convert xpath expression to UiSelector expression or Shadowstep Dict locator
     """
 
     def __init__(self):
-        """Initialize the converter with logging."""
         self.logger = logging.getLogger(__name__)
-        self._compatible_groups = self._build_compatibility_groups()
 
-    def xpath_to_ui(self, xpath_str: str) -> str:
-        """
-        Convert XPath string directly to UiSelector.
+    # ========== validation ==========
 
-        Args:
-            xpath_str: XPath string
-
-        Returns:
-            UiSelector string
-
-        Raises:
-            ConversionError: If conversion fails
-        """
+    def _validate_xpath(self, xpath_str: str) -> None:
+        # запрет логических операторов
+        # простая текстовая проверка, затем — парсинг
+        if re.search(r"\band\b|\bor\b", xpath_str):
+            raise ConversionError("Logical operators (and/or) are not supported")
         try:
-            parsed_dict = self.parse_xpath_string(xpath_str)
-            return self._xpath_to_ui(parsed_dict)
+            parse(xpath_str)
         except Exception as e:
-            raise ConversionError(f"Failed to convert XPath to UiSelector: {e}") from e
+            raise ConversionError(f"Invalid XPath: {e}")
+
+    # ========== public API ==========
 
     def xpath_to_dict(self, xpath_str: str) -> dict[str, Any]:
-        """
-        Convert XPath string to dictionary format.
+        self._validate_xpath(xpath_str)
+        ast = parse(xpath_str)
+        result = self._ast_to_dict(ast)
+        if not result:
+            raise ConversionError("XPath has no predicates to convert")
+        return result
 
-        Args:
-            xpath_str: XPath string
+    def xpath_to_ui_selector(self, xpath_str: str) -> str:
+        self._validate_xpath(xpath_str)
+        ast = parse(xpath_str)
 
-        Returns:
-            Dictionary representation of the XPath
-        """
-        try:
-            parsed_dict = self.parse_xpath_string(xpath_str)
-            return self._xpath_to_dict(parsed_dict)
-        except Exception as e:
-            raise ConversionError(f"Failed to convert XPath to dictionary: {e}") from e
+        predicates = list(self._collect_predicates(ast))
+        if not predicates:
+            raise ConversionError("XPath has no predicates to convert")
 
-    def parse_xpath_string(self, xpath_str: str) -> dict[str, Any]:
-        """
-        Parse XPath string into dictionary format.
+        parts: List[str] = []
+        for pr in predicates:
+            parts.append(self._predicate_to_ui(pr))
 
-        Args:
-            xpath_str: XPath string to parse
+        return "new UiSelector()" + "".join(parts)
 
-        Returns:
-            Parsed XPath dictionary
+    # ========== AST traversal ==========
 
-        Raises:
-            ConversionError: If parsing fails
-        """
-        try:
-            # Clean the input string
-            cleaned_str = xpath_str.strip()
+    def _ast_to_dict(self, node) -> dict[str, Any]:
+        # Если узел является абсолютным путём — обрабатываем его "relative"-часть
+        if isinstance(node, AbsolutePath):
+            return self._ast_to_dict(node.relative)
+        node_list = self._ast_to_list(node)
+        shadowstep_dict: dict[str, Any] = {}
+        shadowstep_dict = self._build_shadowstep_dict(node_list, shadowstep_dict)
+        return shadowstep_dict
 
-            # Parse XPath structure
-            return self._parse_xpath_structure(cleaned_str)
+    def _build_shadowstep_dict(
+            self,
+            node_list: list[AbbreviatedStep | Step],
+            shadowstep_dict: dict[str, Any],
+    ) -> dict[str, Any]:
+        if not node_list:
+            return shadowstep_dict
 
-        except Exception as e:
-            self.logger.error(f"Failed to parse XPath string: {e}")
-            raise ConversionError(f"Invalid XPath string: {e}") from e
+        node = node_list[0]
 
-    def _parse_xpath_structure(self, xpath: str) -> dict[str, Any]:
-        """
-        Parse XPath structure into dictionary format.
+        if isinstance(node, Step):
+            # применяем предикаты на текущем шаге
+            ic(node)
+            for predicate in node.predicates:
+                ic(predicate)
+                self._apply_predicate_to_dict(predicate, shadowstep_dict)
 
-        Args:
-            xpath: XPath string to parse
+            i = 1
+            # если следующий шаг — ".."
+            if i < len(node_list) and isinstance(node_list[i], AbbreviatedStep) and node_list[i].abbr == "..":
+                # создаём fromParent
+                shadowstep_dict[DictAttribute.FROM_PARENT.value] = self._build_shadowstep_dict(node_list[i + 1:], {})
+                return shadowstep_dict
 
-        Returns:
-            Parsed XPath dictionary
-        """
-        result: dict[str, Any] = {"methods": []}
+            # иначе это просто childSelector
+            if i < len(node_list):
+                shadowstep_dict[DictAttribute.CHILD_SELECTOR.value] = self._build_shadowstep_dict(node_list[i:], {})
+            return shadowstep_dict
 
-        # Handle hierarchical structure
-        if "/.." in xpath:
-            parts = xpath.split("/..")
-            if len(parts) == 2:
-                # Handle fromParent case
-                parent_part = parts[0]
-                child_part = parts[1]
+        if isinstance(node, AbbreviatedStep) and node.abbr == "..":
+            # считаем подряд идущие ".."
+            depth = 1
+            while depth < len(node_list) and isinstance(node_list[depth], AbbreviatedStep) and node_list[
+                depth].abbr == "..":
+                depth += 1
 
-                # Parse parent part
-                parent_methods = self._parse_xpath_predicates(parent_part)
-                result["methods"].extend(parent_methods)
+            # разбираем остаток после всех ".."
+            rest_dict = self._build_shadowstep_dict(node_list[depth:], {})
 
-                # Parse child part with fromParent
-                if child_part.startswith("//"):
-                    child_part = child_part[2:]  # Remove //
-                child_methods = self._parse_xpath_predicates(child_part)
-                result["methods"].append({
-                    "name": "fromParent",
-                    "args": [{"methods": child_methods}]
-                })
-                return result
+            # оборачиваем в fromParent столько раз, сколько ".."
+            for _ in range(depth):
+                rest_dict = {DictAttribute.FROM_PARENT.value: rest_dict}
 
-        # Handle child selector
-        if "/*[" in xpath:
-            parts = xpath.split("/*[")
-            if len(parts) == 2:
-                # Handle childSelector case
-                parent_part = parts[0]
-                child_part = "[" + parts[1]
+            shadowstep_dict.update(rest_dict)
+            return shadowstep_dict
 
-                # Parse parent part
-                parent_methods = self._parse_xpath_predicates(parent_part)
-                result["methods"].extend(parent_methods)
+        raise ConversionError(f"Unsupported AST node in build: {node!r}")
 
-                # Parse child part
-                child_methods = self._parse_xpath_predicates(child_part)
-                result["methods"].append({
-                    "name": "childSelector",
-                    "args": [{"methods": child_methods}]
-                })
-                return result
+    def _ast_to_list(self, node) -> list[AbbreviatedStep | Step]:
+        result = []
 
-        # Parse simple XPath
-        methods = self._parse_xpath_predicates(xpath)
-        result["methods"] = methods
+        if isinstance(node, (Step, AbbreviatedStep)):
+            result.append(node)
+
+        elif isinstance(node, BinaryExpression):
+            # собираем рекурсивно из левой и правой части
+            result.extend(self._ast_to_list(node.left))
+            result.extend(self._ast_to_list(node.right))
+
+        else:
+            raise ConversionError(f"Unsupported AST node: {node!r}")
 
         return result
 
-    def _parse_xpath_predicates(self, xpath: str) -> list[dict[str, Any]]:
+    def _collect_predicates(self, node) -> Iterable[Any]:
+        """Собрать все выражения-предикаты из дерева.
+        Поддерживаем:
+          - Step(..., predicates=[...])
+          - PredicatedExpression(base, predicates=[...])
+          - Рекурсивно обходим бинарные выражения (/, //, |, и т.п.).
         """
-        Parse XPath predicates into method list.
-
-        Args:
-            xpath: XPath string to parse
-
-        Returns:
-            List of parsed methods
-        """
-        methods = []
-
-        # Extract predicates from XPath
-        # Pattern: //*[predicate1][predicate2]...
-        predicate_pattern = r"\[([^\]]+)\]"
-        predicates = re.findall(predicate_pattern, xpath)
-
-        for predicate in predicates:
-            method = self._parse_predicate(predicate)
-            if method:
-                methods.append(method)
-
-        return methods
-
-    def _parse_predicate(self, predicate: str) -> dict[str, Any] | None:
-        """
-        Parse single XPath predicate into method.
-
-        Args:
-            predicate: Single predicate string
-
-        Returns:
-            Parsed method dictionary or None if not supported
-        """
-        # Handle position() function
-        if predicate.startswith("position()="):
-            value = int(predicate.split("=")[1])
-            return {"name": "index", "args": [value - 1]}  # Convert to 0-based
-
-        # Handle instance (position without position() function)
-        if predicate.isdigit():
-            value = int(predicate)
-            return {"name": "instance", "args": [value - 1]}  # Convert to 0-based
-
-        # Handle attribute predicates
-        # Pattern: @attr="value" or contains(@attr,"value") or starts-with(@attr,"value") or matches(@attr,"value")
-
-        # Exact match: @attr="value"
-        exact_match = re.match(r'@(\w+)=["\']([^"\']*)["\']', predicate)
-        if exact_match:
-            attr_name = exact_match.group(1)
-            value = exact_match.group(2)
-            return self._map_attribute_to_method(attr_name, "exact", value)
-
-        # Contains: contains(@attr,"value")
-        contains_match = re.match(r'contains\(@(\w+),["\']([^"\']*)["\']\)', predicate)
-        if contains_match:
-            attr_name = contains_match.group(1)
-            value = contains_match.group(2)
-            return self._map_attribute_to_method(attr_name, "contains", value)
-
-        # Starts-with: starts-with(@attr,"value")
-        starts_with_match = re.match(r'starts-with\(@(\w+),["\']([^"\']*)["\']\)', predicate)
-        if starts_with_match:
-            attr_name = starts_with_match.group(1)
-            value = starts_with_match.group(2)
-            return self._map_attribute_to_method(attr_name, "starts_with", value)
-
-        # Matches: matches(@attr,"value")
-        matches_match = re.match(r'matches\(@(\w+),["\']([^"\']*)["\']\)', predicate)
-        if matches_match:
-            attr_name = matches_match.group(1)
-            value = matches_match.group(2)
-            return self._map_attribute_to_method(attr_name, "matches", value)
-
-        return None
-
-    def _map_attribute_to_method(self, attr_name: str, match_type: str, value: str | bool) -> dict[str, Any]:
-        """
-        Map XPath attribute to UiSelector method.
-
-        Args:
-            attr_name: XPath attribute name
-            match_type: Type of match (exact, contains, starts_with, matches)
-            value: Attribute value
-
-        Returns:
-            Method dictionary
-        """
-        # Map XPath attributes to UiSelector methods
-        attr_mapping = {
-            "text": {
-                "exact": "text",
-                "contains": "textContains",
-                "starts_with": "textStartsWith",
-                "matches": "textMatches"
-            },
-            "content-desc": {
-                "exact": "description",
-                "contains": "descriptionContains",
-                "starts_with": "descriptionStartsWith",
-                "matches": "descriptionMatches"
-            },
-            "resource-id": {
-                "exact": "resourceId",
-                "matches": "resourceIdMatches"
-            },
-            "package": {
-                "exact": "packageName",
-                "matches": "packageNameMatches"
-            },
-            "class": {
-                "exact": "className",
-                "matches": "classNameMatches"
-            },
-            "checkable": {"exact": "checkable"},
-            "checked": {"exact": "checked"},
-            "clickable": {"exact": "clickable"},
-            "enabled": {"exact": "enabled"},
-            "focusable": {"exact": "focusable"},
-            "focused": {"exact": "focused"},
-            "long-clickable": {"exact": "longClickable"},
-            "scrollable": {"exact": "scrollable"},
-            "selected": {"exact": "selected"},
-            "password": {"exact": "password"}
-        }
-
-        if attr_name in attr_mapping and match_type in attr_mapping[attr_name]:
-            method_name = attr_mapping[attr_name][match_type]
-
-            # Convert boolean values
-            if attr_name in ["checkable", "checked", "clickable", "enabled", "focusable",
-                           "focused", "long-clickable", "scrollable", "selected", "password"]:
-                value = value.lower() == "true"
-
-            return {"name": method_name, "args": [value]}
-
-        raise ValueError("XPATH mapping error")
-
-    def _xpath_to_ui(self, xpath_dict: dict[str, Any]) -> str:
-        """
-        Convert parsed XPath dictionary to UiSelector string.
-
-        Args:
-            xpath_dict: Parsed XPath dictionary
-
-        Returns:
-            UiSelector string
-        """
-        try:
-            parts = ["new UiSelector()"]
-
-            for method_data in xpath_dict.get("methods", []):
-                name = method_data["name"]
-                args = method_data.get("args", [])
-
-                if name in ["childSelector", "fromParent"]:
-                    # Handle hierarchical methods
-                    if args and isinstance(args[0], dict):
-                        nested_ui = self._xpath_to_ui(args[0])
-                        parts.append(f".{name}({nested_ui})")
-                    else:
-                        parts.append(f".{name}({args[0] if args else ''})")
-                else:
-                    # Handle regular methods
-                    arg_str = self._format_ui_arg(args[0]) if args else ""
-                    parts.append(f".{name}({arg_str})")
-
-            result = "".join(parts)
-            return result + ";"
-
-        except Exception as e:
-            raise ConversionError(f"Failed to convert XPath to UiSelector: {e}") from e
-
-    def _xpath_to_dict(self, xpath_dict: dict[str, Any]) -> dict[str, Any]:
-        """
-        Convert parsed XPath dictionary to Shadowstep dict format.
-
-        Args:
-            xpath_dict: Parsed XPath dictionary
-
-        Returns:
-            Shadowstep dict representation
-        """
-        result: dict[str, Any] = {}
-        methods = xpath_dict.get("methods", [])
-
-        if not methods:
-            raise ValueError("No methods found in XPath")
-
-        for method_data in methods:
-            method_name = method_data["name"]
-            args = method_data.get("args", [])
-
-            if method_name not in XPATH_TO_SHADOWSTEP_DICT:
-                raise NotImplementedError(f"Method '{method_name}' is not supported")
-
-            self._validate_method_compatibility(method_name, result.keys())     # type: ignore
-
-            if method_name in ["childSelector", "fromParent"]:
-                if args and isinstance(args[0], dict):
-                    nested_result = self._xpath_to_dict(args[0])
-                    result[method_name] = nested_result
-                else:
-                    result[method_name] = args[0] if args else None
-            else:
-                converter = XPATH_TO_SHADOWSTEP_DICT[method_name]
-                if not args:
-                    raise ValueError(f"Method '{method_name}' requires an argument")
-
-                converted = converter(args[0])
-                result.update(converted)
-
-        return result
-
-    def _format_ui_arg(self, arg: Any) -> str:
-        """
-        Format argument for UiSelector string.
-
-        Args:
-            arg: Argument to format
-
-        Returns:
-            Formatted argument string
-        """
-        if isinstance(arg, bool):
-            return "true" if arg else "false"
-        if isinstance(arg, int):
-            return str(arg)
-        if isinstance(arg, str):
-            # Escape quotes and backslashes
-            escaped = arg.replace("\\", "\\\\").replace('"', '\\"')
-            return f'"{escaped}"'
-        return str(arg)
-
-    def _validate_method_compatibility(self, new_method: str, existing_methods: list[str]) -> None:
-        """
-        Validate that new method is compatible with existing methods.
-
-        Args:
-            new_method: New method to add
-            existing_methods: List of already added methods
-
-        Raises:
-            ValueError: If methods are incompatible
-        """
-        if not existing_methods:
+        if isinstance(node, AbsolutePath):
+            if node.relative is not None:
+                yield from self._collect_predicates(node.relative)
             return
 
-        for group_name, group_methods in self._compatible_groups.items():
-            if new_method in group_methods:
-                for existing in existing_methods:
-                    if (existing in group_methods and existing != new_method and
-                            group_name in ["text", "description", "resource", "class"]):
-                            raise ValueError(
-                                f"Conflicting methods: '{existing}' and '{new_method}' "
-                                f"belong to the same group '{group_name}'. "
-                                f"Only one method per group is allowed."
-                            )
-                break
+        if isinstance(node, PredicatedExpression):
+            for p in node.predicates:
+                yield p
+            # и базу тоже обходим
+            yield from self._collect_predicates(node.base)
+            return
 
-    def _build_compatibility_groups(self) -> dict[str, list[str]]:
-        """Build compatibility groups for methods."""
-        return {
-            "text": ["text", "textContains", "textStartsWith", "textMatches"],
-            "description": ["description", "descriptionContains", "descriptionStartsWith", "descriptionMatches"],
-            "resource": ["resourceId", "resourceIdMatches", "packageName", "packageNameMatches"],
-            "class": ["className", "classNameMatches"],
-            "boolean": ["checkable", "checked", "clickable", "longClickable", "enabled",
-                       "focusable", "focused", "scrollable", "selected", "password"],
-            "numeric": ["index", "instance"],
-            "hierarchy": ["childSelector", "fromParent"]
-        }
+        if isinstance(node, Step):
+            for p in node.predicates:
+                yield p
+            # node_test предикаты не содержит, но могут быть вложенности справа/слева — нет
+            return
+
+        if isinstance(node, BinaryExpression):
+            # обходим обе стороны (для / и пр. операторов пути/объединения)
+            yield from self._collect_predicates(node.left)
+            yield from self._collect_predicates(node.right)
+            return
+
+        # прочие узлы (FunctionCall, NameTest, NodeType, ...) предикатов не имеют
+
+    # ========== predicate handlers (DICT) ==========
+
+    def _apply_predicate_to_dict(self, pred_expr, out: dict[str, Any]) -> None:
+        if isinstance(pred_expr, Step):
+            # конвертируем его так же, как обычный шаг
+            nested = self._build_shadowstep_dict([pred_expr], {})
+            # приклеиваем результат к target_dict
+            for k, v in nested.items():
+                # если ключ уже есть, надо вложить через childSelector
+                if k in out:
+                    target_dict = {"childSelector": out}
+                out[k] = v
+            return
+        
+        # функция contains/starts-with/matches(...)
+        if isinstance(pred_expr, FunctionCall):
+            attr, kind, value = self._parse_function_predicate(pred_expr)
+            if kind == "contains":
+                d_attr = _CONTAINS_ATTRS.get(attr)
+                if not d_attr:
+                    raise ConversionError(f"contains() is not supported for @{attr}")
+                out[d_attr[0].value] = value
+                return
+            if kind == "starts-with":
+                d_attr = _STARTS_ATTRS.get(attr)
+                if not d_attr:
+                    raise ConversionError(f"starts-with() is not supported for @{attr}")
+                out[d_attr[0].value] = value
+                return
+            if kind == "matches":
+                d_attr = _MATCHES_ATTRS.get(attr)
+                if not d_attr:
+                    raise ConversionError(f"matches() is not supported for @{attr}")
+                out[d_attr[0].value] = value
+                return
+            raise ConversionError(f"Unsupported function: {pred_expr.name}")
+
+        # позиционный номер напрямую: [3], [6] и т.п.
+        if isinstance(pred_expr, (int, float)):
+            out[DictAttribute.INSTANCE.value] = int(pred_expr) - 1
+            return
+
+        # сравнение (например, @text = 'Hi')
+        if isinstance(pred_expr, BinaryExpression):
+            if (
+                    pred_expr.op == "="
+                    and isinstance(pred_expr.left, FunctionCall)
+                    and pred_expr.left.name == "position"
+                    and not pred_expr.left.args
+                    and isinstance(pred_expr.right, (int, float))
+            ):
+                out[DictAttribute.INDEX.value] = int(pred_expr.right) - 1
+                return
+
+            if pred_expr.op not in ("=",):
+                raise ConversionError(f"Unsupported comparison operator: {pred_expr.op}")
+            attr, value = self._parse_equality_comparison(pred_expr)
+            if attr in _EQ_ATTRS:
+                out[_EQ_ATTRS[attr][0].value] = value
+                return
+            if attr in _BOOL_ATTRS:
+                out[_BOOL_ATTRS[attr][0].value] = _to_bool(value)
+                return
+            if attr in _NUM_ATTRS:
+                out[_NUM_ATTRS[attr][0].value] = _to_number(value)
+                return
+            raise ConversionError(f"Unsupported attribute: @{attr}")
+
+        # наличие атрибута: [@enabled]
+        if isinstance(pred_expr, Step) and pred_expr.axis == "@" and isinstance(pred_expr.node_test, NameTest):
+            attr = pred_expr.node_test.name
+            if attr in _BOOL_ATTRS:
+                out[_BOOL_ATTRS[attr][0].value] = True
+                return
+            raise ConversionError(f"Attribute presence predicate not supported for @{attr}")
+
+        # позиционный номер [3] или что-то ещё
+        raise ConversionError(f"Unsupported predicate: {pred_expr!r}")
+
+    # ========== predicate handlers (UI SELECTOR) ==========
+
+    def _predicate_to_ui(self, pred_expr) -> str:
+        # функции
+        if isinstance(pred_expr, FunctionCall):
+            attr, kind, value = self._parse_function_predicate(pred_expr)
+            if kind == "contains":
+                u = _CONTAINS_ATTRS.get(attr)
+                if not u:
+                    raise ConversionError(f"contains() is not supported for @{attr}")
+                return f'.{u[1].value}("{_escape_java_string(str(value))}")'
+            if kind == "starts-with":
+                u = _STARTS_ATTRS.get(attr)
+                if not u:
+                    raise ConversionError(f"starts-with() is not supported for @{attr}")
+                return f'.{u[1].value}("{_escape_java_string(str(value))}")'
+            if kind == "matches":
+                u = _MATCHES_ATTRS.get(attr)
+                if not u:
+                    raise ConversionError(f"matches() is not supported for @{attr}")
+                return f'.{u[1].value}("{_escape_java_string(str(value))}")'
+            raise ConversionError(f"Unsupported function: {kind}")
+
+        # позиционный номер напрямую: [3], [6]
+        if isinstance(pred_expr, (int, float)):
+            return f".{UiAttribute.INSTANCE.value}({int(pred_expr) - 1})"
+
+        # сравнение (например, position() = 3)
+        if isinstance(pred_expr, BinaryExpression):
+            if (
+                    pred_expr.op == "="
+                    and isinstance(pred_expr.left, FunctionCall)
+                    and pred_expr.left.name == "position"
+                    and not pred_expr.left.args
+                    and isinstance(pred_expr.right, (int, float))
+            ):
+                return f".{UiAttribute.INDEX.value}({int(pred_expr.right) - 1})"
+
+            attr, value = self._parse_equality_comparison(pred_expr)
+            if attr in _EQ_ATTRS:
+                return f'.{_EQ_ATTRS[attr][1].value}("{_escape_java_string(str(value))}")'
+            if attr in _BOOL_ATTRS:
+                return f".{_BOOL_ATTRS[attr][1].value}({_to_bool(value)})"
+            if attr in _NUM_ATTRS:
+                return f".{_NUM_ATTRS[attr][1].value}({_to_number(value)})"
+            raise ConversionError(f"Unsupported attribute: @{attr}")
+
+        # наличие атрибута [@enabled]
+        if isinstance(pred_expr, Step) and pred_expr.axis == "@" and isinstance(pred_expr.node_test, NameTest):
+            attr = pred_expr.node_test.name
+            if attr in _BOOL_ATTRS:
+                return f".{_BOOL_ATTRS[attr][1].value}(true)"
+            raise ConversionError(f"Attribute presence predicate not supported for @{attr}")
+
+        raise ConversionError(f"Unsupported predicate: {pred_expr!r}")
+
+    def _parse_function_predicate(self, func: FunctionCall) -> tuple[str, str, Any]:
+        name = func.name
+        if name not in ("contains", "starts-with", "matches"):
+            raise ConversionError(f"Unsupported function: {name}")
+        if len(func.args) != 2:
+            raise ConversionError(f"{name}() must have 2 arguments")
+        lhs, rhs = func.args
+        attr = self._extract_attr_name(lhs)
+        value = self._extract_literal(rhs)
+        return (attr, name, value)
+
+    def _parse_equality_comparison(self, bexpr: BinaryExpression) -> tuple[str, Any]:
+        left_attr = self._maybe_attr(bexpr.left)
+        right_attr = self._maybe_attr(bexpr.right)
+        if left_attr is not None:
+            return left_attr, self._extract_literal(bexpr.right)
+        if right_attr is not None:
+            return right_attr, self._extract_literal(bexpr.left)
+        if isinstance(bexpr.left, FunctionCall) and bexpr.left.name == "text":
+            return "text", self._extract_literal(bexpr.right)
+        if isinstance(bexpr.right, FunctionCall) and bexpr.right.name == "text":
+            return "text", self._extract_literal(bexpr.left)
+        raise ConversionError("Equality must compare @attribute or text() with a literal")
+
+    def _maybe_attr(self, node) -> str | None:
+        try:
+            return self._extract_attr_name(node)
+        except ConversionError:
+            return None
+
+    def _extract_attr_name(self, node) -> str:
+        if isinstance(node, Step) and node.axis == "@" and isinstance(node.node_test, NameTest):
+            return node.node_test.name
+        if isinstance(node, FunctionCall) and node.name == "text":
+            return "text"
+        if isinstance(node, NodeType) and node.name == "text":
+            return "text"
+        raise ConversionError(f"Unsupported attribute expression: {node!r}")
+
+    def _extract_literal(self, node) -> Any:
+        if isinstance(node, (str, int, float, bool)):
+            return node
+        if isinstance(node, FunctionCall) and node.name in ("true", "false") and not node.args:
+            return node.name == "true"
+        raise ConversionError(f"Unsupported literal: {node!r}")

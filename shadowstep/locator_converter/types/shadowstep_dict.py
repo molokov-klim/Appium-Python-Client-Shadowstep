@@ -2,7 +2,7 @@
 from enum import Enum
 
 
-class DictAttribute(Enum):
+class DictAttribute(str, Enum):
     # --- text-based ---
     TEXT = "text"
     TEXT_CONTAINS = "textContains"

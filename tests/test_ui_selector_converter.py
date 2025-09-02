@@ -83,8 +83,8 @@ class TestUiSelectorConverter:
                     '//*[@class="android.widget.EditText"][@focused="true"][1]'
             ),
             (
-                    'new UiSelector().packageName("ru.sigma.app.debug").resourceIdMatches(".*:id/btn.*");',
-                    '//*[@package="ru.sigma.app.debug"][matches(@resource-id, ".*:id/btn.*")]'
+                    'new UiSelector().packageName("ru.figma.app.debug").resourceIdMatches(".*:id/btn.*");',
+                    '//*[@package="ru.figma.app.debug"][matches(@resource-id, ".*:id/btn.*")]'
             ),
             (
                     'new UiSelector().descriptionContains("Карта").clickable(true);',
@@ -95,8 +95,8 @@ class TestUiSelectorConverter:
                     '//*[@class="androidx.appcompat.app.ActionBar$Tab"][position()=3]'
             ),
             (
-                    'new UiSelector().className("android.widget.RadioButton").fromParent(new UiSelector().resourceId("ru.sigma.app.debug:id/paymentMethods"));',
-                    '//*[@class="android.widget.RadioButton"]/..//*[@resource-id="ru.sigma.app.debug:id/paymentMethods"]'
+                    'new UiSelector().className("android.widget.RadioButton").fromParent(new UiSelector().resourceId("ru.figma.app.debug:id/paymentMethods"));',
+                    '//*[@class="android.widget.RadioButton"]/..//*[@resource-id="ru.figma.app.debug:id/paymentMethods"]'
             ),
             (
                     'new UiSelector().className("android.widget.EditText").textStartsWith("+7").enabled(true);',
@@ -143,8 +143,8 @@ class TestUiSelectorConverter:
                     '//*[@scrollable="false"][@clickable="false"][3]'
             ),
             (
-                    'new UiSelector().textContains("карт").resourceId("ru.sigma.app.debug:id/card_number");',
-                    '//*[contains(@text,"карт")][@resource-id="ru.sigma.app.debug:id/card_number"]'
+                    'new UiSelector().textContains("карт").resourceId("ru.figma.app.debug:id/card_number");',
+                    '//*[contains(@text,"карт")][@resource-id="ru.figma.app.debug:id/card_number"]'
             ),
             (
                     'new UiSelector().text("Оплатить").longClickable(false);',

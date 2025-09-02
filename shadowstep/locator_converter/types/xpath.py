@@ -2,12 +2,12 @@
 from enum import Enum
 
 
-class XPathAttribute(Enum):
+class XPathAttribute(str, Enum):
     # --- text-based ---
     TEXT = "@text="
     TEXT_CONTAINS = "contains(@text, "
     TEXT_STARTS_WITH = "starts-with(@text, "
-    TEXT_MATCHES = "matches(@text, "  # Appium >= 2
+    TEXT_MATCHES = "matches(@text, "
 
     # --- description ---
     DESCRIPTION = "@content-desc="

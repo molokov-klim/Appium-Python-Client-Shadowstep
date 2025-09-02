@@ -77,7 +77,7 @@ ui_selector_methods = {
 {
     "elementId": "00000000-0000-07ad-7fff-ffff0000185a",
     "index": 1,
-    "package": "ru.sigma.app.debug",
+    "package": "ru.figma.app.debug",
     "class": "android.view.View",
     "text": "",
     "resource-id": "android:id/statusBarBackground",
