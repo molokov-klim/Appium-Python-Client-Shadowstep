@@ -233,8 +233,7 @@ class DictConverter:
             raise ValueError("Selector must be a dictionary")
         
         if not selector_dict:
-            # Empty selector is valid (matches any element)
-            return
+            raise ValueError("Selector dictionary cannot be empty")
         
         # Check for conflicting attributes
         text_attrs = [DictAttribute.TEXT, DictAttribute.TEXT_CONTAINS,
