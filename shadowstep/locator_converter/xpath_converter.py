@@ -132,7 +132,7 @@ class XPathConverter:
 
     # ========== AST traversal ==========
     
-    def _ast_to_list(self, node: Any) -> str:
+    def _ast_to_ui_selector(self, node: Any) -> str:
         ...
 
     def _ast_to_dict(self, node_list) -> dict[str, Any]:
