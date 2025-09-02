@@ -4,7 +4,7 @@ from typing import Any
 
 import pytest
 
-from shadowstep.locator.dict_converter import DictConverter
+from shadowstep.locator.converter.dict_converter import DictConverter
 from shadowstep.locator.types.shadowstep_dict import DictAttribute
 
 logger = logging.getLogger(__name__)

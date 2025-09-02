@@ -21,7 +21,7 @@ class TestPageObjectextractor:
         ui_element_tree = parser.parse(source)
         assert isinstance(ui_element_tree, UiElementNode)
 
-    def test_pog(self, app: Shadowstep, android_settings_open_close: None, cleanup_pages: None):
+    def      test_pog(self, app: Shadowstep, android_settings_open_close: None, cleanup_pages: None):
         parser = PageObjectParser()
         translator = YandexTranslate(folder_id="b1ghf7n3imfg7foodstv")
         generator = PageObjectGenerator(translator)

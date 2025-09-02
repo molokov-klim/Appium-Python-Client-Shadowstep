@@ -22,7 +22,7 @@ from shadowstep.exceptions.shadowstep_exceptions import (
     ShadowstepNoSuchElementError,
     ShadowstepTimeoutException,
 )
-from shadowstep.locator.locator_converter import LocatorConverter
+from shadowstep.locator.converter.locator_converter import LocatorConverter
 from shadowstep.utils.utils import get_current_func_name
 
 logger = logging.getLogger(__name__)

@@ -5,7 +5,7 @@ from typing import Any
 import pytest
 
 from shadowstep.locator.types.ui_selector import UiAttribute
-from shadowstep.locator.ui_selector_converter import UiSelectorConverter
+from shadowstep.locator.converter.ui_selector_converter import UiSelectorConverter
 
 logger = logging.getLogger(__name__)
 

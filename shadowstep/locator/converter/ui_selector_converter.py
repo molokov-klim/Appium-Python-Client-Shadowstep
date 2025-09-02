@@ -10,9 +10,9 @@ from shadowstep.locator.map.ui_to_xpath import (
     is_hierarchical_method,
 )
 from shadowstep.locator.types.ui_selector import UiAttribute
-from shadowstep.locator.ui_selector_converter_core.ast import Selector
-from shadowstep.locator.ui_selector_converter_core.lexer import Lexer
-from shadowstep.locator.ui_selector_converter_core.parser import Parser
+from shadowstep.locator.converter.ui_selector_converter_core.ast import Selector
+from shadowstep.locator.converter.ui_selector_converter_core.lexer import Lexer
+from shadowstep.locator.converter.ui_selector_converter_core.parser import Parser
 
 
 class UiSelectorConverter:

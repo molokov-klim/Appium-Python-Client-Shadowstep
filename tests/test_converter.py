@@ -7,12 +7,11 @@ DeprecatedLocatorConverter with a modern, well-architected solution.
 """
 
 import logging
-from typing import Any
 
 import pytest
 
 from shadowstep.exceptions.shadowstep_exceptions import ConversionError
-from shadowstep.locator.locator_converter import LocatorConverter
+from shadowstep.locator.converter.locator_converter import LocatorConverter
 from shadowstep.locator.types.shadowstep_dict import DictAttribute
 
 logger = logging.getLogger(__name__)

@@ -14,13 +14,13 @@ well-architected solution.
 from __future__ import annotations
 
 import logging
-from typing import Any, Union
+from typing import Any
 
 from shadowstep.exceptions.shadowstep_exceptions import ConversionError
-from shadowstep.locator.dict_converter import DictConverter
-from shadowstep.locator.ui_selector_converter import UiSelectorConverter
-from shadowstep.locator.ui_selector_dsl import UiSelector
-from shadowstep.locator.xpath_converter import XPathConverter
+from shadowstep.locator.converter.dict_converter import DictConverter
+from shadowstep.locator.converter.ui_selector_converter import UiSelectorConverter
+from shadowstep.locator.ui_selector import UiSelector
+from shadowstep.locator.converter.xpath_converter import XPathConverter
 
 logger = logging.getLogger(__name__)
 

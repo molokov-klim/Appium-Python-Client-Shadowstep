@@ -11,7 +11,7 @@ import logging
 
 import pytest
 
-from shadowstep.locator.ui_selector_dsl import UiSelector
+from shadowstep.locator.ui_selector import UiSelector
 
 logger = logging.getLogger(__name__)
 

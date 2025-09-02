@@ -1,4 +1,4 @@
-# shadowstep/locator/ui_selector_dsl.py
+# shadowstep/locator/ui_selector.py
 """
 UiSelector DSL for fluent API locator building.
 

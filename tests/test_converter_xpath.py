@@ -3,10 +3,10 @@ import logging
 from typing import Any
 
 import pytest
-from locator.types.shadowstep_dict import DictAttribute
+from shadowstep.locator.types.shadowstep_dict import DictAttribute
 
 from shadowstep.exceptions.shadowstep_exceptions import ConversionError
-from shadowstep.locator.xpath_converter import XPathConverter
+from shadowstep.locator.converter.xpath_converter import XPathConverter
 
 logger = logging.getLogger(__name__)
 

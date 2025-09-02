@@ -9,8 +9,8 @@ unified LocatorConverter to ensure seamless conversion between all formats.
 
 import logging
 
-from shadowstep.locator.locator_converter import LocatorConverter
-from shadowstep.locator.ui_selector_dsl import UiSelector
+from shadowstep.locator.converter.locator_converter import LocatorConverter
+from shadowstep.locator.ui_selector import UiSelector
 
 logger = logging.getLogger(__name__)
 

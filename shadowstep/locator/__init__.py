@@ -15,11 +15,12 @@ Supported conversions:
 - Dict → UiSelector (new)
 """
 
-from shadowstep.locator.dict_converter import DictConverter
-from shadowstep.locator.locator_converter import LocatorConverter
-from shadowstep.locator.ui_selector_converter import UiSelectorConverter
-from shadowstep.locator.ui_selector_dsl import UiSelector
-from shadowstep.locator.xpath_converter import XPathConverter
+from shadowstep.locator.converter.dict_converter import DictConverter
+from shadowstep.locator.converter.locator_converter import LocatorConverter
+from shadowstep.locator.converter.ui_selector_converter import UiSelectorConverter
+from shadowstep.locator.converter.xpath_converter import XPathConverter
+
+from shadowstep.locator.ui_selector import UiSelector
 
 __all__ = [
     "DictConverter",

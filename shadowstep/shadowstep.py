@@ -13,16 +13,6 @@ from typing import Any, cast
 
 import numpy as np
 from appium.webdriver.webdriver import WebDriver
-from numpy._typing import NDArray
-from PIL import Image
-from selenium.common import (
-    InvalidSessionIdException,
-    NoSuchDriverException,
-    StaleElementReferenceException,
-    WebDriverException,
-)
-from selenium.types import WaitExcTypes
-
 from shadowstep.base import ShadowstepBase, WebDriverSingleton
 from shadowstep.decorators.decorators import fail_safe
 from shadowstep.element.element import Element
@@ -31,9 +21,18 @@ from shadowstep.image.image import ShadowstepImage
 from shadowstep.logcat.shadowstep_logcat import ShadowstepLogcat
 from shadowstep.mobile_commands import MobileCommands
 from shadowstep.navigator.navigator import PageNavigator
+from numpy._typing import NDArray
 from shadowstep.page_base import PageBaseShadowstep
+from PIL import Image
 from shadowstep.scheduled_actions.action_history import ActionHistory
 from shadowstep.scheduled_actions.action_step import ActionStep
+from selenium.common import (
+    InvalidSessionIdException,
+    NoSuchDriverException,
+    StaleElementReferenceException,
+    WebDriverException,
+)
+from selenium.types import WaitExcTypes
 from shadowstep.utils.utils import get_current_func_name
 
 # Configure the root logger (basic configuration)
