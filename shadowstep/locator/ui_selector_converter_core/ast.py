@@ -1,4 +1,4 @@
-# shadowstep/locator_converter/ui_selector_converter_core/ast.py
+# shadowstep/locator/ui_selector_converter_core/ast.py
 from __future__ import annotations
 
 from dataclasses import dataclass, field

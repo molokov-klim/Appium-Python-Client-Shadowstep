@@ -61,14 +61,14 @@ def udid():
     return UDID
 
 
-@pytest.fixture(scope="function", autouse=False)
+@pytest.fixture(autouse=False)
 def press_home(app: Shadowstep):
     app.terminal.press_home()
     yield
     app.terminal.press_home()
 
 
-@pytest.fixture(scope="function")
+@pytest.fixture
 def android_settings_open_close(app: Shadowstep):
     app.terminal.press_back()
     app.terminal.press_back()
@@ -83,11 +83,11 @@ def android_settings_open_close(app: Shadowstep):
 
 @pytest.fixture
 def stability(press_home: None):
-    time.sleep(1)
+    time.sleep(3)
     return
 
 
-@pytest.fixture(scope="function")
+@pytest.fixture
 def touch_sounds(app: Shadowstep, android_settings_open_close: None):
     sounds_and_vibrations_element = app.find_and_get_element({"text": "Sound & vibration"})
     # sounds_and_vibrations_element = app.find_and_get_element({'text': 'Звук и вибрация'})

@@ -1,4 +1,4 @@
-# shadowstep/locator_converter/map/dict_to_ui.py
+# shadowstep/locator/map/dict_to_ui.py
 """
 Mapping from Shadowstep Dict format to UiSelector expressions.
 
@@ -8,8 +8,8 @@ to UiSelector method calls with proper attribute mapping and hierarchy handling.
 
 from typing import Any, Union
 
-from shadowstep.locator_converter.types.shadowstep_dict import DictAttribute
-from shadowstep.locator_converter.types.ui_selector import UiAttribute
+from shadowstep.locator.types.shadowstep_dict import DictAttribute
+from shadowstep.locator.types.ui_selector import UiAttribute
 
 
 def dict_to_ui_attribute(attr: DictAttribute, value: Any) -> str:

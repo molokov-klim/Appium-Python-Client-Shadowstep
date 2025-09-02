@@ -1,10 +1,10 @@
-# shadowstep/locator_converter/ui_selector_converter_core/parser.py
+# shadowstep/locator/ui_selector_converter_core/parser.py
 from __future__ import annotations
 
 from typing import Any, cast
 
-from shadowstep.locator_converter.ui_selector_converter_core.ast import MethodCall, Selector
-from shadowstep.locator_converter.ui_selector_converter_core.lexer import (
+from shadowstep.locator.ui_selector_converter_core.ast import MethodCall, Selector
+from shadowstep.locator.ui_selector_converter_core.lexer import (
     ParserError,
     Token,
     TokenType,

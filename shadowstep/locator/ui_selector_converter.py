@@ -3,16 +3,16 @@ import logging
 from typing import Any, cast
 
 from shadowstep.exceptions.shadowstep_exceptions import ConversionError, InvalidUiSelectorError
-from shadowstep.locator_converter.map.ui_to_dict import UI_TO_SHADOWSTEP_DICT
-from shadowstep.locator_converter.map.ui_to_xpath import (
+from shadowstep.locator.map.ui_to_dict import UI_TO_SHADOWSTEP_DICT
+from shadowstep.locator.map.ui_to_xpath import (
     UI_TO_XPATH,
     get_xpath_for_method,
     is_hierarchical_method,
 )
-from shadowstep.locator_converter.types.ui_selector import UiAttribute
-from shadowstep.locator_converter.ui_selector_converter_core.ast import Selector
-from shadowstep.locator_converter.ui_selector_converter_core.lexer import Lexer
-from shadowstep.locator_converter.ui_selector_converter_core.parser import Parser
+from shadowstep.locator.types.ui_selector import UiAttribute
+from shadowstep.locator.ui_selector_converter_core.ast import Selector
+from shadowstep.locator.ui_selector_converter_core.lexer import Lexer
+from shadowstep.locator.ui_selector_converter_core.parser import Parser
 
 
 class UiSelectorConverter:

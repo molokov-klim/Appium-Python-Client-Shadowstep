@@ -50,9 +50,9 @@ class TestAdb:
         app.adb.push(source=os.path.join("test_data", "test_file"),
                      destination=os.path.join("sdcard/Download/test_file"),
                      udid=udid)
-        response = str(subprocess.check_output(f'adb -s {udid} shell "ls sdcard/Download"'))
+        response = str(subprocess.check_output(["adb", "-s", f"{udid}", "shell", "ls", "sdcard/Download"]))
         assert "test_file" in response
-        subprocess.run(f"adb -s {udid} shell rm /sdcard/Download/test_file")
+        subprocess.run(["adb", "-s", f"{udid}", "shell", "rm", "/sdcard/Download/test_file"])
 
     def test_pull(self, app: Shadowstep, udid: str) -> None:
         """
@@ -74,7 +74,7 @@ class TestAdb:
                      udid=udid)
         assert os.path.exists("test_file")
         os.remove("test_file")
-        subprocess.run(f"adb -s {udid} shell rm /sdcard/Download/test_file")
+        subprocess.run(["adb", "-s", f"{udid}", "shell", "rm", f"/sdcard/Download/test_file"])
 
     def test_install_app(self, app: Shadowstep, udid: str) -> None:
         """
@@ -91,10 +91,9 @@ class TestAdb:
         app.adb.install_app(source=os.path.join("apk", "notepad.apk"),
                             udid=udid)
         package = "com.farmerbb.notepad"
-        result = subprocess.check_output(f"adb -s {udid} shell pm list packages").decode().strip()
+        result = subprocess.check_output(["adb", "-s", f"{udid}", "shell", "pm", "list", "packages"]).decode().strip()
         assert any([line.strip().endswith(package) for line in result.splitlines()])
-        subprocess.run(f"adb -s {udid} uninstall com.farmerbb.notepad")
+        subprocess.run(["adb", "-s", f"{udid}", "uninstall", "com.farmerbb.notepad"])
         time.sleep(55)
-        result = subprocess.check_output(f"adb -s {udid} shell pm list packages").decode().strip()
+        result = subprocess.check_output(["adb", "-s", f"{udid}", "shell", "pm", "list", "packages"]).decode().strip()
         assert not any([line.strip().endswith(package) for line in result.splitlines()])
-

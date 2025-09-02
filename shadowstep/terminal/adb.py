@@ -11,6 +11,7 @@ import traceback
 from typing import TYPE_CHECKING
 
 from appium.webdriver.webdriver import WebDriver
+from icecream import ic
 
 from shadowstep.utils.utils import get_current_func_name, grep_pattern
 
@@ -83,11 +84,12 @@ class Adb:
                 The model of the device as a string, or None if an error occurs or the model cannot be retrieved.
         """
         logger.info(f"{get_current_func_name()} < {udid}")
-        s_udid = f"-s {udid}" if udid else ""
-        command = [f"adb {s_udid}", "shell", "getprop", "ro.product.model"]
+        command = ["adb", "-s", f"{udid}", "shell", "getprop", "ro.product.model"] if udid else ["adb", "shell", "getprop", "ro.product.model"]
+        ic(command)
         try:
             # Выполнение команды и получение вывода
             model = subprocess.check_output(command)
+            ic(model)
             # Преобразование байтовой строки в обычную строку и удаление пробельных символов и символов перевода строки
             model = model.decode().strip()
             logger.info(f"{get_current_func_name()} > {model}")
@@ -120,8 +122,7 @@ class Adb:
         if not os.path.exists(source):
             logger.error(f"Source path does not exist: {source=}")
             return False
-        s_udid = f"-s {udid} " if udid else ""
-        command = f"adb {s_udid}push {source} {destination}"
+        command = ["adb", "-s", f"{udid}", "push", f"{source}", f"{destination}"] if udid else ["adb", "push", f"{source}", f"{destination}"]
         try:
             subprocess.run(command, check=True)
             logger.info(f"{get_current_func_name()} > True")
@@ -150,8 +151,7 @@ class Adb:
                 True if the file was successfully pulled, False otherwise.
         """
         logger.info(f"{get_current_func_name()} < {source=}, {destination=}")
-        s_udid = f"-s {udid}" if udid else ""
-        command = f"adb {s_udid} pull {source} {destination}"
+        command = ["adb", "-s", f"{udid}", "pull", f"{source}", f"{destination}"] if udid else ["adb", "pull", f"{source}", f"{destination}"]
         try:
             subprocess.run(command, check=True)
             logger.info(f"{get_current_func_name()} > True")
@@ -178,8 +178,7 @@ class Adb:
                 True if the application was successfully installed, False otherwise.
         """
         logger.info(f"install() < {source=}")
-        s_udid = f"-s {udid}" if udid else ""
-        command = f"adb {s_udid} install -r {source}"
+        command = ["adb", "-s", f"{udid}", "install", "-r", f"{source}"] if udid else ["adb", "install", f"{source}"]
         try:
             subprocess.run(command, check=True)
             logger.info("install() > True")

@@ -1,11 +1,11 @@
-# shadowstep/utils/tests/test_ui_selector_converter.py
+# shadowstep/utils/tests/test_converter_ui_selector.py
 import logging
 from typing import Any
 
 import pytest
 
-from shadowstep.locator_converter.types.ui_selector import UiAttribute
-from shadowstep.locator_converter.ui_selector_converter import UiSelectorConverter
+from shadowstep.locator.types.ui_selector import UiAttribute
+from shadowstep.locator.ui_selector_converter import UiSelectorConverter
 
 logger = logging.getLogger(__name__)
 

@@ -1,4 +1,4 @@
-# shadowstep/locator_converter/map/dict_to_xpath.py
+# shadowstep/locator/map/dict_to_xpath.py
 """
 Mapping from Shadowstep Dict format to XPath expressions.
 
@@ -8,7 +8,7 @@ to XPath expressions with proper attribute mapping and hierarchy handling.
 
 from typing import Any, Union
 
-from shadowstep.locator_converter.types.shadowstep_dict import DictAttribute
+from shadowstep.locator.types.shadowstep_dict import DictAttribute
 
 
 def dict_to_xpath_attribute(attr: DictAttribute, value: Any) -> str:

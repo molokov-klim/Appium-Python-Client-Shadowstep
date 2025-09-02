@@ -22,7 +22,7 @@ from shadowstep.exceptions.shadowstep_exceptions import (
     ShadowstepNoSuchElementError,
     ShadowstepTimeoutException,
 )
-from shadowstep.locator_converter.deprecated_locator_converter import DeprecatedLocatorConverter
+from shadowstep.locator.locator_converter import LocatorConverter
 from shadowstep.utils.utils import get_current_func_name
 
 logger = logging.getLogger(__name__)
@@ -55,7 +55,7 @@ class ElementBase:
         self.contains: bool = contains
         self.native: WebElement = native
         self.id = None
-        self.locator_converter = DeprecatedLocatorConverter()
+        self.locator_converter = LocatorConverter()
 
     def _get_element(self,
                      locator: tuple[str, str] | dict[str, str] | str | WebElement,

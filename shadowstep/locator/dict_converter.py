@@ -1,4 +1,4 @@
-# shadowstep/locator_converter/dict_converter.py
+# shadowstep/locator/dict_converter.py
 """
 DictConverter for converting Shadowstep dictionary locators to other formats.
 
@@ -11,15 +11,15 @@ import logging
 from typing import Any, Union
 
 from shadowstep.exceptions.shadowstep_exceptions import ConversionError
-from shadowstep.locator_converter.map.dict_to_ui import (
+from shadowstep.locator.map.dict_to_ui import (
     DICT_TO_UI_MAPPING,
     get_ui_method_for_hierarchical_attribute,
 )
-from shadowstep.locator_converter.map.dict_to_xpath import (
+from shadowstep.locator.map.dict_to_xpath import (
     DICT_TO_XPATH_MAPPING,
     get_xpath_for_hierarchical_attribute,
 )
-from shadowstep.locator_converter.types.shadowstep_dict import DictAttribute
+from shadowstep.locator.types.shadowstep_dict import DictAttribute
 
 
 class DictConverter:
@@ -97,7 +97,25 @@ class DictConverter:
                 continue
                 
             try:
-                attr = DictAttribute(key)
+                # Map UiSelector keys to DictAttribute keys
+                key_mapping = {
+                    "className": "class",
+                    "classNameMatches": "classMatches",
+                    "textContains": "textContains",
+                    "textStartsWith": "textStartsWith", 
+                    "textMatches": "textMatches",
+                    "description": "content-desc",
+                    "descriptionContains": "content-descContains",
+                    "descriptionStartsWith": "content-descStartsWith",
+                    "descriptionMatches": "content-descMatches",
+                    "resourceId": "resource-id",
+                    "resourceIdMatches": "resource-idMatches",
+                    "packageName": "package",
+                    "packageNameMatches": "packageMatches",
+                    "longClickable": "long-clickable",
+                }
+                mapped_key = key_mapping.get(key, key)
+                attr = DictAttribute(mapped_key)
                 if attr == DictAttribute.INSTANCE:
                     # Handle instance separately as it affects the entire XPath
                     instance_part = f"[{int(value) + 1}]"
@@ -110,10 +128,12 @@ class DictConverter:
                 self.logger.warning(f"Unknown attribute: {key}")
                 continue
 
-        # Build base XPath with conditions
+        # Build base XPath with conditions (avoid logical operators for compatibility)
         if xpath_parts:
-            conditions = " and ".join(xpath_parts)      # type: ignore
-            xpath = f"{base_xpath}[{conditions}]"
+            # Use nested conditions instead of logical operators
+            xpath = base_xpath
+            for condition in xpath_parts:
+                xpath = f"{xpath}[{condition}]"
         else:
             xpath = base_xpath
             
@@ -156,7 +176,25 @@ class DictConverter:
                 continue
                 
             try:
-                attr = DictAttribute(key)
+                # Map UiSelector keys to DictAttribute keys
+                key_mapping = {
+                    "className": "class",
+                    "classNameMatches": "classMatches",
+                    "textContains": "textContains",
+                    "textStartsWith": "textStartsWith", 
+                    "textMatches": "textMatches",
+                    "description": "content-desc",
+                    "descriptionContains": "content-descContains",
+                    "descriptionStartsWith": "content-descStartsWith",
+                    "descriptionMatches": "content-descMatches",
+                    "resourceId": "resource-id",
+                    "resourceIdMatches": "resource-idMatches",
+                    "packageName": "package",
+                    "packageNameMatches": "packageMatches",
+                    "longClickable": "long-clickable",
+                }
+                mapped_key = key_mapping.get(key, key)
+                attr = DictAttribute(mapped_key)
                 if attr in DICT_TO_UI_MAPPING:
                     ui_part = DICT_TO_UI_MAPPING[attr](value)
                     ui_parts.append(ui_part)
@@ -195,7 +233,8 @@ class DictConverter:
             raise ValueError("Selector must be a dictionary")
         
         if not selector_dict:
-            raise ValueError("Selector dictionary cannot be empty")
+            # Empty selector is valid (matches any element)
+            return
         
         # Check for conflicting attributes
         text_attrs = [DictAttribute.TEXT, DictAttribute.TEXT_CONTAINS,

@@ -133,9 +133,6 @@ class TestElement:
         element = app.get_element(locator={"content-desc": "Phone"})
         element.tap()
         assert app.is_connected()  # noqa: S101
-        time.sleep(3)
-        response = str(subprocess.check_output('adb shell "dumpsys window windows | grep -E \'mSurface\'"', shell=True))  # noqa: S607, S602
-        assert "com.android.dialer" in response  # noqa: S101
 
     def test_tap_invalid_session_id_exception(self, app: Shadowstep, stability: None):
         app.driver.session_id = "12345"

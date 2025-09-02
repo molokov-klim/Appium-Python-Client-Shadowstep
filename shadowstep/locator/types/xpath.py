@@ -1,4 +1,4 @@
-# shadowstep/locator_converter/types/xpath.py
+# shadowstep/locator/types/xpath.py
 from enum import Enum
 from typing import Any
 

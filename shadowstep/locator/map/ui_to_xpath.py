@@ -1,9 +1,9 @@
-# shadowstep/locator_converter/map/ui_to_xpath.py
+# shadowstep/locator/map/ui_to_xpath.py
 from collections.abc import Callable
 from typing import Any
 
-from shadowstep.locator_converter.types.ui_selector import UiAttribute
-from shadowstep.locator_converter.types.xpath import XPathAttribute
+from shadowstep.locator.types.ui_selector import UiAttribute
+from shadowstep.locator.types.xpath import XPathAttribute
 
 
 def _handle_child_selector(child_xpath: str) -> str:

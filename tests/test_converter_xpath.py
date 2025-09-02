@@ -1,12 +1,12 @@
-# tests/test_xpath_converter.py
+# tests/test_converter_xpath.py
 import logging
 from typing import Any
 
 import pytest
-from locator_converter.types.shadowstep_dict import DictAttribute
+from locator.types.shadowstep_dict import DictAttribute
 
 from shadowstep.exceptions.shadowstep_exceptions import ConversionError
-from shadowstep.locator_converter.xpath_converter import XPathConverter
+from shadowstep.locator.xpath_converter import XPathConverter
 
 logger = logging.getLogger(__name__)
 

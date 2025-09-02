@@ -1,9 +1,9 @@
-# shadowstep/locator_converter/map/ui_to_dict.py
+# shadowstep/locator/map/ui_to_dict.py
 from collections.abc import Callable
 from typing import Any
 
-from shadowstep.locator_converter.types.shadowstep_dict import DictAttribute
-from shadowstep.locator_converter.types.ui_selector import UiAttribute
+from shadowstep.locator.types.shadowstep_dict import DictAttribute
+from shadowstep.locator.types.ui_selector import UiAttribute
 
 UI_TO_SHADOWSTEP_DICT: dict[UiAttribute, Callable[[Any], dict[str, Any]]] = {
     # --- text-based ---

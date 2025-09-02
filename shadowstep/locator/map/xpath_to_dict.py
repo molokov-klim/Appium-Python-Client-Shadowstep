@@ -1,9 +1,9 @@
-# shadowstep/locator_converter/map/xpath_to_dict.py
+# shadowstep/locator/map/xpath_to_dict.py
 from collections.abc import Callable
 from typing import Any
 
-from shadowstep.locator_converter.types.shadowstep_dict import DictAttribute
-from shadowstep.locator_converter.types.xpath import XPathAttribute
+from shadowstep.locator.types.shadowstep_dict import DictAttribute
+from shadowstep.locator.types.xpath import XPathAttribute
 
 XPATH_TO_SHADOWSTEP_DICT: dict[XPathAttribute, Callable[[Any], dict[str, Any]]] = {
     # --- text-based ---

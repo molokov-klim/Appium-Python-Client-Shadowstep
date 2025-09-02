@@ -1,4 +1,4 @@
-# shadowstep/locator_converter/xpath_converter.py
+# shadowstep/locator/xpath_converter.py
 from __future__ import annotations
 
 import logging
@@ -19,8 +19,8 @@ from eulxml.xpath.ast import (
 )
 
 from shadowstep.exceptions.shadowstep_exceptions import ConversionError
-from shadowstep.locator_converter.types.shadowstep_dict import DictAttribute
-from shadowstep.locator_converter.types.ui_selector import UiAttribute
+from shadowstep.locator.types.shadowstep_dict import DictAttribute
+from shadowstep.locator.types.ui_selector import UiAttribute
 
 _BOOL_ATTRS = {
     "checkable": (DictAttribute.CHECKABLE, UiAttribute.CHECKABLE),

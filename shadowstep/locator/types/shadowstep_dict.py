@@ -1,10 +1,9 @@
-# shadowstep/locator_converter/types/ui_selector.py
+# shadowstep/locator/types/shadowstep_dict.py
 from enum import Enum
 from typing import Any
 
 
-class UiAttribute(str, Enum):
-    # https://developer.android.com/reference/androidx/test/uiautomator/UiSelector
+class DictAttribute(str, Enum):
     # --- text-based ---
     TEXT = "text"
     TEXT_CONTAINS = "textContains"
@@ -12,20 +11,20 @@ class UiAttribute(str, Enum):
     TEXT_MATCHES = "textMatches"
 
     # --- description ---
-    DESCRIPTION = "description"
-    DESCRIPTION_CONTAINS = "descriptionContains"
-    DESCRIPTION_STARTS_WITH = "descriptionStartsWith"
-    DESCRIPTION_MATCHES = "descriptionMatches"
+    DESCRIPTION = "content-desc"
+    DESCRIPTION_CONTAINS = "content-descContains"
+    DESCRIPTION_STARTS_WITH = "content-descStartsWith"
+    DESCRIPTION_MATCHES = "content-descMatches"
 
     # --- resource id / package ---
-    RESOURCE_ID = "resourceId"
-    RESOURCE_ID_MATCHES = "resourceIdMatches"
-    PACKAGE_NAME = "packageName"
-    PACKAGE_NAME_MATCHES = "packageNameMatches"
+    RESOURCE_ID = "resource-id"
+    RESOURCE_ID_MATCHES = "resource-idMatches"
+    PACKAGE_NAME = "package"
+    PACKAGE_NAME_MATCHES = "packageMatches"
 
     # --- class ---
-    CLASS_NAME = "className"
-    CLASS_NAME_MATCHES = "classNameMatches"
+    CLASS_NAME = "class"
+    CLASS_NAME_MATCHES = "classMatches"
 
     # --- bool props ---
     CHECKABLE = "checkable"
@@ -34,10 +33,10 @@ class UiAttribute(str, Enum):
     ENABLED = "enabled"
     FOCUSABLE = "focusable"
     FOCUSED = "focused"
-    LONG_CLICKABLE = "longClickable"
+    LONG_CLICKABLE = "long-clickable"
     SCROLLABLE = "scrollable"
     SELECTED = "selected"
-    PASSWORD = "password"
+    PASSWORD = "password"  # noqa: S105
 
     # --- numeric ---
     INDEX = "index"
