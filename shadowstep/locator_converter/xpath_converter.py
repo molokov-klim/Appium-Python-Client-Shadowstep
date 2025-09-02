@@ -137,28 +137,32 @@ class XPathConverter:
             # add predicates (e.g. @class, @resource-id)
             for predicate in node.predicates:
                 parts.append(self._predicate_to_ui(predicate))
+
             if len(node_list) > 1:
                 next_node = node_list[1]
                 child_str = self._ast_to_ui_selector(node_list[1:])  # recurse on next node(s)
                 if child_str:
                     if isinstance(next_node, AbbreviatedStep) and next_node.abbr == "..":
-                        # flatten multiple consecutive '..' into single fromParent chain
-                        # count how many consecutive '..' abbreviations
+                        # consecutive ..
                         parent_count = 1
                         i = 2
                         while i < len(node_list) and isinstance(node_list[i], AbbreviatedStep) and node_list[
                             i].abbr == "..":
                             parent_count += 1
                             i += 1
-                        # get the UI selector string for the rest after consecutive '..'
                         rest_str = self._ast_to_ui_selector(node_list[i:]) if i < len(node_list) else ""
-                        # wrap rest_str into nested fromParent calls equal to parent_count
                         for _ in range(parent_count):
                             rest_str = f".fromParent(new UiSelector(){rest_str})"
                         parts.append(rest_str)
                         return "".join(parts)
-                    # default: child
-                    parts.append(f".childSelector(new UiSelector(){child_str})")
+
+                    if isinstance(next_node, Step) and next_node.axis in ("following-sibling", "preceding-sibling"):
+                        # sibling → реализуем через fromParent + childSelector
+                        parts.append(f".fromParent(new UiSelector(){child_str})")
+                    else:
+                        # default: child
+                        parts.append(f".childSelector(new UiSelector(){child_str})")
+
         elif isinstance(node, AbbreviatedStep):
             if node.abbr == "..":
                 if len(node_list) > 1:
@@ -201,6 +205,14 @@ class XPathConverter:
                 # создаём fromParent
                 shadowstep_dict[DictAttribute.FROM_PARENT.value] = self._build_shadowstep_dict(node_list[i + 1:], {})
                 return shadowstep_dict
+            
+            # sibling
+            if i < len(node_list) and isinstance(node_list[i], Step) and node_list[i].axis in (
+                "following-sibling",
+                "preceding-sibling",
+            ):
+                shadowstep_dict[DictAttribute.SIBLING] = self._build_shadowstep_dict(node_list[i:], {})
+                return shadowstep_dict
 
             # иначе это просто childSelector
             if i < len(node_list):
@@ -228,7 +240,11 @@ class XPathConverter:
 
     def _ast_to_list(self, node) -> list[AbbreviatedStep | Step]:
         result = []
-
+        
+        ic()
+        ic(node)
+        ic(type(node))
+        
         if isinstance(node, (Step, AbbreviatedStep)):
             result.append(node)
 

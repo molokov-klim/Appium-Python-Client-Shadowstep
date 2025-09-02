@@ -1,5 +1,6 @@
 # shadowstep/locator_converter/types/xpath.py
 from enum import Enum
+from typing import Any
 
 
 class XPathAttribute(str, Enum):
@@ -45,3 +46,17 @@ class XPathAttribute(str, Enum):
     CHILD_SELECTOR = "childSelector"            # use special logic
     FROM_PARENT = "fromParent"                  # use special logic
     SIBLING = "following-sibling"               # use special logic
+    
+    def __str__(self) -> str:
+        return self.value
+
+    def __repr__(self) -> str:
+        return f"{self.__class__.__name__}.{self.name}"
+
+    def __eq__(self, other: Any) -> bool:
+        if isinstance(other, str):
+            return self.value == other
+        return super().__eq__(other)
+
+    def __hash__(self):
+        return hash(self.value)

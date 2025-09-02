@@ -1,5 +1,6 @@
 # shadowstep/locator_converter/types/shadowstep_dict.py
 from enum import Enum
+from typing import Any
 
 
 class DictAttribute(str, Enum):
@@ -45,3 +46,17 @@ class DictAttribute(str, Enum):
     CHILD_SELECTOR = "childSelector"
     FROM_PARENT = "fromParent"
     SIBLING = "sibling"
+
+    def __str__(self) -> str:
+        return self.value
+
+    def __repr__(self) -> str:
+        return f"{self.__class__.__name__}.{self.name}"
+
+    def __eq__(self, other: Any) -> bool:
+        if isinstance(other, str):
+            return self.value == other
+        return super().__eq__(other)
+
+    def __hash__(self):
+        return hash(self.value)
