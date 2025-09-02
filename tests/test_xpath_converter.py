@@ -303,7 +303,7 @@ class TestXPathConverter:
         assert expected == shadowstep_dict  # noqa: S101
 
     @pytest.mark.parametrize(
-        "xpath, expected",
+        "xpath, expected",  # noqa: PT006
         [  # pyright: ignore [reportUnknownArgumentType]
             # 1) Твой исходный пример (базовый sanity)
             (
@@ -416,7 +416,7 @@ class TestXPathConverter:
                     {
                         DictAttribute.TEXT: "Mixed",
                         DictAttribute.FROM_PARENT: {
-                            # после .. первый нисходящий шаг
+                            # После '..' первый нисходящий шаг
                             DictAttribute.CLASS_NAME: "C1",
                             DictAttribute.CHILD_SELECTOR: {
                                 DictAttribute.CLASS_NAME: "C2",
@@ -463,7 +463,7 @@ class TestXPathConverter:
             ),
         ],
     )
-    def test_xpath_to_dict_deep_nesting(self, xpath, expected):
+    def test_xpath_to_dict_deep_nesting(self, xpath: Any, expected: Any):
         converter = XPathConverter()
         shadowstep_dict = converter.xpath_to_dict(xpath)
         logger.info("+++++++++++++++++++++++++++++++++")
@@ -471,7 +471,7 @@ class TestXPathConverter:
         logger.info(f"\n {shadowstep_dict=}")
         logger.info(f"\n {expected=}")
         logger.info("+++++++++++++++++++++++++++++++++")
-        assert shadowstep_dict == expected
+        assert shadowstep_dict == expected  # noqa: S101
 
     @pytest.mark.parametrize(
         "xpath, expected",  # noqa: PT006
@@ -555,7 +555,7 @@ class TestXPathConverter:
             ),
         ],
     )
-    def test_xpath_to_dict_with_functions(self, xpath, expected):
+    def test_xpath_to_dict_with_functions(self, xpath: Any, expected: Any):
         converter = XPathConverter()
         shadowstep_dict = converter.xpath_to_dict(xpath)
         logger.info("+++++++++++++++++++++++++++++++++")
@@ -563,7 +563,7 @@ class TestXPathConverter:
         logger.info(f"\n {shadowstep_dict=}")
         logger.info(f"\n {expected=}")
         logger.info("+++++++++++++++++++++++++++++++++")
-        assert shadowstep_dict == expected
+        assert shadowstep_dict == expected  # noqa: S101
 
 
     @pytest.mark.parametrize(
@@ -646,10 +646,10 @@ class TestXPathConverter:
             ),
         ],
     )
-    def test_xpath_to_dict_with_following_sibling(self, xpath: str, expected: dict):
+    def test_xpath_to_dict_with_following_sibling(self, xpath: str, expected: dict[str, Any]):
         converter = XPathConverter()
         result = converter.xpath_to_dict(xpath)
-        assert result == expected
+        assert result == expected  # noqa: S101
 
     @pytest.mark.parametrize(
         "xpath, expected",  # noqa: PT006
@@ -898,7 +898,7 @@ class TestXPathConverter:
         logger.info(f"\n {ui_selector=}")
         logger.info(f"\n    {expected=}")
         logger.info("+++++++++++++++++++++++++++++++++")
-        assert expected == ui_selector
+        assert expected == ui_selector  # noqa: S101
     
     @pytest.mark.parametrize(
         "xpath, expected",  # noqa: PT006
@@ -934,7 +934,7 @@ class TestXPathConverter:
         logger.info(f"\n {ui_selector=}")
         logger.info(f"\n    {expected=}")
         logger.info("+++++++++++++++++++++++++++++++++")
-        assert expected == ui_selector
+        assert expected == ui_selector  # noqa: S101
     
     @pytest.mark.parametrize(
         "xpath, expected",  # noqa: PT006
@@ -979,5 +979,5 @@ class TestXPathConverter:
         logger.info(f"\n {ui_selector=}")
         logger.info(f"\n    {expected=}")
         logger.info("+++++++++++++++++++++++++++++++++")
-        assert expected == ui_selector
+        assert expected == ui_selector  # noqa: S101
 
