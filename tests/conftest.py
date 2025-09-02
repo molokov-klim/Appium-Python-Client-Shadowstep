@@ -128,5 +128,5 @@ def cleanup_pages():
 def cleanup_log():
     yield
     path = Path("logcat_test.log")
-    if path.exists() and path.is_dir():
-        shutil.rmtree(path)
+    if path.exists() and path.is_file():
+        path.unlink()
