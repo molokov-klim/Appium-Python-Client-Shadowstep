@@ -611,6 +611,11 @@ class TestXPathConverter:
         """Test conversion of XPath attributes to UiSelector format."""
         converter = XPathConverter()
         ui_selector = converter.xpath_to_ui_selector(xpath)
+        logger.info("+++++++++++++++++++++++++++++++++")
+        logger.info(f"\n {xpath=}")
+        logger.info(f"\n {ui_selector=}")
+        logger.info(f"\n {expected=}")
+        logger.info("+++++++++++++++++++++++++++++++++")
         assert expected == ui_selector  # noqa: S101
 
     @pytest.mark.parametrize(
@@ -734,7 +739,7 @@ class TestXPathConverter:
             ),
             (
                     '//*[matches(@text, "\\d{3}-\\d{2}-\\d{4}")]',
-                    'new UiSelector().textMatches("\\\\d{3}-\\\\d{2}-\\\\d{4}");',
+                    'new UiSelector().textMatches("\\d{3}-\\d{2}-\\d{4}");',
             ),
             (
                     '//*[@class="android.widget.LinearLayout"]/*[@class="android.widget.FrameLayout"]/*[@class="android.widget.TextView"]',
@@ -753,7 +758,12 @@ class TestXPathConverter:
     def test_xpath_to_ui(self, xpath: str, expected: str):
         """Test conversion of complex XPath expressions to UiSelector format."""
         converter = XPathConverter()
-        ui_selector = converter.xpath_to_ui(xpath)
+        ui_selector = converter.xpath_to_ui_selector(xpath)
+        logger.info("+++++++++++++++++++++++++++++++++")
+        logger.info(f"\n {xpath=}")
+        logger.info(f"\n {ui_selector=}")
+        logger.info(f"\n    {expected=}")
+        logger.info("+++++++++++++++++++++++++++++++++")
         assert expected == ui_selector  # noqa: S101
 
     @pytest.mark.parametrize(
@@ -769,9 +779,73 @@ class TestXPathConverter:
         """Test conversion of invalid XPath expressions."""
         converter = XPathConverter()
         try:
-            ui_selector = converter.xpath_to_ui(xpath)
+            ui_selector = converter.xpath_to_ui_selector(xpath)
             # If conversion succeeds, it should not match expected empty string
             assert ui_selector != expected  # noqa: S101
         except ConversionError:
             # Expected behavior for invalid XPath
             pass
+    
+    @pytest.mark.parametrize(
+        "xpath, expected",  # noqa: PT006
+        [
+            (
+                '//*[@text="Root"]/../../*[@class="L1"]/*[@class="L2"]/*[@resource-id="app:id/toggle"]',
+                'new UiSelector().text("Root").fromParent(new UiSelector().fromParent(new UiSelector().className("L1").childSelector(new UiSelector().className("L2").childSelector(new UiSelector().resourceId("app:id/toggle")))));'
+            ),
+            (
+                '//*[@text="Deep"]/../*[@class="A"]/*[@class="B"]/*[@class="C"]/*[@class="D"]/*[@resource-id="pkg:id/end"]',
+                'new UiSelector().text("Deep").fromParent(new UiSelector().className("A").childSelector(new UiSelector().className("B").childSelector(new UiSelector().className("C").childSelector(new UiSelector().className("D").childSelector(new UiSelector().resourceId("pkg:id/end"))))));'
+            ),
+            (
+                '//*[@text="T"]/../../../*[@class="P1"]/*[@class="P2"]/*[@resource-id="pkg:id/final"]',
+                'new UiSelector().text("T").fromParent(new UiSelector().fromParent(new UiSelector().fromParent(new UiSelector().className("P1").childSelector(new UiSelector().className("P2").childSelector(new UiSelector().resourceId("pkg:id/final"))))));'
+            ),
+            # Добавьте другие глубокие вложенные сценарии если нужно
+        ],
+    )
+    def test_xpath_to_ui_deep_nesting(self, xpath: str, expected: str):
+        converter = XPathConverter()
+        ui_selector = converter.xpath_to_ui_selector(xpath)
+        logger.info("+++++++++++++++++++++++++++++++++")
+        logger.info(f"\n {xpath=}")
+        logger.info(f"\n {ui_selector=}")
+        logger.info(f"\n    {expected=}")
+        logger.info("+++++++++++++++++++++++++++++++++")
+        assert expected == ui_selector
+    
+    @pytest.mark.parametrize(
+        "xpath, expected",  # noqa: PT006
+        [
+            (
+                '//*[contains(@text, "Hello")]/../*[@class="android.view.View"]/*[contains(@content-desc, "Btn")]',
+                'new UiSelector().textContains("Hello").fromParent(new UiSelector().className("android.view.View").childSelector(new UiSelector().descriptionContains("Btn")));'
+            ),
+            (
+                '//*[@text="Start"]/../*[starts-with(@content-desc, "prefix")]/child::*[@resource-id="pkg:id/target"]',
+                'new UiSelector().text("Start").fromParent(new UiSelector().descriptionStartsWith("prefix").childSelector(new UiSelector().resourceId("pkg:id/target")));'
+            ),
+            (
+                '//*[@class="android.widget.LinearLayout"]//node()[matches(@resource-id, ".*button.*")]',
+                'new UiSelector().className("android.widget.LinearLayout").childSelector(new UiSelector().resourceIdMatches(".*button.*"));'
+            ),
+            (
+                '//*[@text="Anchor"]/../*[contains(@text, "foo")]/child::*[starts-with(@content-desc, "bar")]/*[matches(@class, ".*Layout")]',
+                'new UiSelector().text("Anchor").fromParent(new UiSelector().textContains("foo").childSelector(new UiSelector().descriptionStartsWith("bar").childSelector(new UiSelector().classNameMatches(".*Layout"))));'
+            ),
+            (
+                '//*[@text="Mega"]/../../*[contains(@text, "deep")]/child::*[starts-with(@content-desc, "zzz")]/*[matches(@package, "com\\..*")]/*[@resource-id="pkg:id/the_end"]',
+                'new UiSelector().text("Mega").fromParent(new UiSelector().fromParent(new UiSelector().textContains("deep").childSelector(new UiSelector().descriptionStartsWith("zzz").childSelector(new UiSelector().packageNameMatches("com\\..*").childSelector(new UiSelector().resourceId("pkg:id/the_end"))))));'
+            ),
+            # Можно добавить другие варианты функций для покрытия
+        ],
+    )
+    def test_xpath_to_ui_with_functions(self, xpath: str, expected: str):
+        converter = XPathConverter()
+        ui_selector = converter.xpath_to_ui_selector(xpath)
+        logger.info("+++++++++++++++++++++++++++++++++")
+        logger.info(f"\n {xpath=}")
+        logger.info(f"\n {ui_selector=}")
+        logger.info(f"\n    {expected=}")
+        logger.info("+++++++++++++++++++++++++++++++++")
+        assert expected == ui_selector

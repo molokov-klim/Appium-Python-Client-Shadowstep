@@ -3,24 +3,25 @@ from __future__ import annotations
 
 import logging
 import re
-from typing import Any, Iterable, List
+from collections.abc import Iterable
+from typing import Any
 
 from eulxml.xpath import parse
 from eulxml.xpath.ast import (
+    AbbreviatedStep,
     AbsolutePath,
     BinaryExpression,
     FunctionCall,
     NameTest,
     NodeType,
     PredicatedExpression,
-    Step, AbbreviatedStep,
+    Step,
 )
 from icecream import ic
 
 from shadowstep.exceptions.shadowstep_exceptions import ConversionError
 from shadowstep.locator_converter.types.shadowstep_dict import DictAttribute
 from shadowstep.locator_converter.types.ui_selector import UiAttribute
-from utils.utils import get_current_func_name
 
 _BOOL_ATTRS = {
     "checkable": (DictAttribute.CHECKABLE, UiAttribute.CHECKABLE),
@@ -67,11 +68,6 @@ _MATCHES_ATTRS = {
     "package": (DictAttribute.PACKAGE_NAME_MATCHES, UiAttribute.PACKAGE_NAME_MATCHES),
     "class": (DictAttribute.CLASS_NAME_MATCHES, UiAttribute.CLASS_NAME_MATCHES),
 }
-
-
-def _escape_java_string(s: str) -> str:
-    # достаточно экранировать обратный слеш и двойную кавычку
-    return s.replace("\\", "\\\\").replace('"', '\\"')
 
 
 def _to_bool(val: Any) -> bool:
@@ -127,13 +123,55 @@ class XPathConverter:
         self._validate_xpath(xpath_str)
         node = parse(xpath_str)
         node_list = self._ast_to_list(node.relative)
-        result = self._ast_to_ui_selector(node_list)
-        return "new UiSelector()" + "".join(result)
+        result = self._balance_parentheses(self._ast_to_ui_selector(node_list))
+        return "new UiSelector()" + result + ";"
 
     # ========== AST traversal ==========
-    
-    def _ast_to_ui_selector(self, node: Any) -> str:
-        ...
+
+    def _ast_to_ui_selector(self, node_list: list[AbbreviatedStep | Step]) -> str:
+        if not node_list:
+            return ""
+        node = node_list[0]
+        parts: list[str] = []
+        if isinstance(node, Step):
+            # add predicates (e.g. @class, @resource-id)
+            for predicate in node.predicates:
+                parts.append(self._predicate_to_ui(predicate))
+            if len(node_list) > 1:
+                next_node = node_list[1]
+                child_str = self._ast_to_ui_selector(node_list[1:])  # recurse on next node(s)
+                if child_str:
+                    if isinstance(next_node, AbbreviatedStep) and next_node.abbr == "..":
+                        # flatten multiple consecutive '..' into single fromParent chain
+                        # count how many consecutive '..' abbreviations
+                        parent_count = 1
+                        i = 2
+                        while i < len(node_list) and isinstance(node_list[i], AbbreviatedStep) and node_list[
+                            i].abbr == "..":
+                            parent_count += 1
+                            i += 1
+                        # get the UI selector string for the rest after consecutive '..'
+                        rest_str = self._ast_to_ui_selector(node_list[i:]) if i < len(node_list) else ""
+                        # wrap rest_str into nested fromParent calls equal to parent_count
+                        for _ in range(parent_count):
+                            rest_str = f".fromParent(new UiSelector(){rest_str})"
+                        parts.append(rest_str)
+                        return "".join(parts)
+                    # default: child
+                    parts.append(f".childSelector(new UiSelector(){child_str})")
+        elif isinstance(node, AbbreviatedStep):
+            if node.abbr == "..":
+                if len(node_list) > 1:
+                    child_str = self._ast_to_ui_selector(node_list[1:])
+                    if child_str:
+                        return f".fromParent(new UiSelector(){child_str})"
+                return ""
+            if node.abbr == ".":
+                return self._ast_to_ui_selector(node_list[1:])
+            raise ConversionError(f"Unsupported abbreviated step in UiSelector: {node!r}")
+        else:
+            raise ConversionError(f"Unsupported AST node in UiSelector: {node!r}")
+        return "".join(parts)
 
     def _ast_to_dict(self, node_list) -> dict[str, Any]:
         shadowstep_dict: dict[str, Any] = {}
@@ -250,7 +288,7 @@ class XPathConverter:
                     target_dict = {"childSelector": out}
                 out[k] = v
             return
-        
+
         # функция contains/starts-with/matches(...)
         if isinstance(pred_expr, FunctionCall):
             attr, kind, value = self._parse_function_predicate(pred_expr)
@@ -320,29 +358,32 @@ class XPathConverter:
 
     def _predicate_to_ui(self, pred_expr) -> str:
         # функции
+        ic()
         if isinstance(pred_expr, FunctionCall):
             attr, kind, value = self._parse_function_predicate(pred_expr)
             if kind == "contains":
                 u = _CONTAINS_ATTRS.get(attr)
                 if not u:
                     raise ConversionError(f"contains() is not supported for @{attr}")
-                return f'.{u[1].value}("{_escape_java_string(str(value))}")'
+                return f'.{u[1].value}("{value}")'
             if kind == "starts-with":
                 u = _STARTS_ATTRS.get(attr)
                 if not u:
                     raise ConversionError(f"starts-with() is not supported for @{attr}")
-                return f'.{u[1].value}("{_escape_java_string(str(value))}")'
+                return f'.{u[1].value}("{value}")'
             if kind == "matches":
                 u = _MATCHES_ATTRS.get(attr)
                 if not u:
                     raise ConversionError(f"matches() is not supported for @{attr}")
-                return f'.{u[1].value}("{_escape_java_string(str(value))}")'
+                return f'.{u[1].value}("{value}")'
             raise ConversionError(f"Unsupported function: {kind}")
 
+        ic()
         # позиционный номер напрямую: [3], [6]
         if isinstance(pred_expr, (int, float)):
             return f".{UiAttribute.INSTANCE.value}({int(pred_expr) - 1})"
 
+        ic()
         # сравнение (например, position() = 3)
         if isinstance(pred_expr, BinaryExpression):
             if (
@@ -352,21 +393,27 @@ class XPathConverter:
                     and not pred_expr.left.args
                     and isinstance(pred_expr.right, (int, float))
             ):
+                ic()
                 return f".{UiAttribute.INDEX.value}({int(pred_expr.right) - 1})"
-
+            ic()
             attr, value = self._parse_equality_comparison(pred_expr)
             if attr in _EQ_ATTRS:
-                return f'.{_EQ_ATTRS[attr][1].value}("{_escape_java_string(str(value))}")'
+                return f'.{_EQ_ATTRS[attr][1].value}("{value}")'
             if attr in _BOOL_ATTRS:
-                return f".{_BOOL_ATTRS[attr][1].value}({_to_bool(value)})"
+                return f".{_BOOL_ATTRS[attr][1].value}({str(_to_bool(value)).lower()})"
             if attr in _NUM_ATTRS:
                 return f".{_NUM_ATTRS[attr][1].value}({_to_number(value)})"
             raise ConversionError(f"Unsupported attribute: @{attr}")
 
-        # наличие атрибута [@enabled]
+        # наличие атрибута
+        ic()
+        ic("its possible to go here???")
         if isinstance(pred_expr, Step) and pred_expr.axis == "@" and isinstance(pred_expr.node_test, NameTest):
+            ic()
             attr = pred_expr.node_test.name
             if attr in _BOOL_ATTRS:
+                ic()
+                ic(attr)
                 return f".{_BOOL_ATTRS[attr][1].value}(true)"
             raise ConversionError(f"Attribute presence predicate not supported for @{attr}")
 
@@ -417,3 +464,33 @@ class XPathConverter:
         if isinstance(node, FunctionCall) and node.name in ("true", "false") and not node.args:
             return node.name == "true"
         raise ConversionError(f"Unsupported literal: {node!r}")
+    
+    def _balance_parentheses(self, selector: str) -> str:
+        open_count = 0
+        close_count = 0
+    
+        for ch in selector:
+            if ch == "(":
+                open_count += 1
+            elif ch == ")":
+                close_count += 1
+    
+        if open_count == close_count:
+            return selector
+    
+        if close_count > open_count:
+            # убираем лишние ')' справа
+            diff = close_count - open_count
+            i = len(selector)
+            while diff > 0 and i > 0:
+                i -= 1
+                if selector[i] == ")":
+                    diff -= 1
+            return selector[:i] + selector[i+1:]
+    
+        if open_count > close_count:
+            raise ConversionError(
+                f"Unbalanced UiSelector string: too many '(' in {selector}"
+            )
+    
+        return selector
