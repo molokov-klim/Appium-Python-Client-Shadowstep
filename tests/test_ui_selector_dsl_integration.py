@@ -9,6 +9,8 @@ unified LocatorConverter to ensure seamless conversion between all formats.
 
 import logging
 
+import pytest
+
 from shadowstep.locator.converter.locator_converter import LocatorConverter
 from shadowstep.locator.ui_selector import UiSelector
 
@@ -80,7 +82,8 @@ class TestUiSelectorDSLIntegration:
         
         # Invalid selector (empty)
         empty_selector = UiSelector()
-        self.converter.validate_selector(empty_selector)  # Should not raise (empty is valid)
+        with pytest.raises(ValueError):
+            self.converter.validate_selector(empty_selector)
 
     def test_roundtrip_conversion_ui_selector_to_dict_and_back(self):
         """Test roundtrip conversion: UiSelector -> dict -> UiSelector."""

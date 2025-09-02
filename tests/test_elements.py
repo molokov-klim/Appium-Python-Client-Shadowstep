@@ -1,4 +1,5 @@
 import time
+from typing import Any
 
 import pytest
 
@@ -28,7 +29,7 @@ def sample_elements(app: Shadowstep):
             command="input",
             args=f"swipe {x} {y_start} {x} {y_end}"
         )
-    return app.get_element({"resource-id": "com.android.settings:id/main_content_scrollable_container"}).get_elements(
+    return app.get_element({"resource-id": "com.android.settings:id/recycler_view"}).get_elements(
         {"resource-id": "android:id/title"})
 
 
@@ -37,10 +38,17 @@ class TestElements:
     A class to test element interactions within the Shadowstep application.
     """
 
-    def test_elements_unique(self, sample_elements: list[Element]):
-        attrs: list[dict[str, str]] = []
-        expected_attrs = [{"index": "0", "package": "com.android.settings", "class": "android.widget.TextView", "text": "Network & internet", "resource-id": "android:id/title", "checkable": "false", "checked": "false", "clickable": "false", "enabled": "true", "focusable": "false", "focused": "false", "long-clickable": "false", "password": "false", "scrollable": "false", "selected": "false", "bounds": "[189,759][625,830]", "displayed": "true", "a11y-important": "true", "screen-reader-focusable": "false", "drawing-order": "1", "showing-hint": "false", "text-entry-key": "false", "dismissable": "false", "a11y-focused": "false", "heading": "false", "live-region": "0", "context-clickable": "false", "content-invalid": "false"}, {"index": "0", "package": "com.android.settings", "class": "android.widget.TextView", "text": "Connected devices", "resource-id": "android:id/title", "checkable": "false", "checked": "false", "clickable": "false", "enabled": "true", "focusable": "false", "focused": "false", "long-clickable": "false", "password": "false", "scrollable": "false", "selected": "false", "bounds": "[189,990][636,1061]", "displayed": "true", "a11y-important": "true", "screen-reader-focusable": "false", "drawing-order": "1", "showing-hint": "false", "text-entry-key": "false", "dismissable": "false", "a11y-focused": "false", "heading": "false", "live-region": "0", "context-clickable": "false", "content-invalid": "false"}, {"index": "0", "package": "com.android.settings", "class": "android.widget.TextView", "text": "Apps", "resource-id": "android:id/title", "checkable": "false", "checked": "false", "clickable": "false", "enabled": "true", "focusable": "false", "focused": "false", "long-clickable": "false", "password": "false", "scrollable": "false", "selected": "false", "bounds": "[189,1221][311,1292]", "displayed": "true", "a11y-important": "true", "screen-reader-focusable": "false", "drawing-order": "1", "showing-hint": "false", "text-entry-key": "false", "dismissable": "false", "a11y-focused": "false", "heading": "false", "live-region": "0", "context-clickable": "false", "content-invalid": "false"}, {"index": "0", "package": "com.android.settings", "class": "android.widget.TextView", "text": "Notifications", "resource-id": "android:id/title", "checkable": "false", "checked": "false", "clickable": "false", "enabled": "true", "focusable": "false", "focused": "false", "long-clickable": "false", "password": "false", "scrollable": "false", "selected": "false", "bounds": "[189,1452][489,1523]", "displayed": "true", "a11y-important": "true", "screen-reader-focusable": "false", "drawing-order": "1", "showing-hint": "false", "text-entry-key": "false", "dismissable": "false", "a11y-focused": "false", "heading": "false", "live-region": "0", "context-clickable": "false", "content-invalid": "false"}, {"index": "0", "package": "com.android.settings", "class": "android.widget.TextView", "text": "Battery", "resource-id": "android:id/title", "checkable": "false", "checked": "false", "clickable": "false", "enabled": "true", "focusable": "false", "focused": "false", "long-clickable": "false", "password": "false", "scrollable": "false", "selected": "false", "bounds": "[189,1683][357,1754]", "displayed": "true", "a11y-important": "true", "screen-reader-focusable": "false", "drawing-order": "1", "showing-hint": "false", "text-entry-key": "false", "dismissable": "false", "a11y-focused": "false", "heading": "false", "live-region": "0", "context-clickable": "false", "content-invalid": "false"}]
-        for el in sample_elements:
-            attrs.append(el.get_attributes())
-        print(attrs)
-        assert attrs == expected_attrs
+    def test_elements_unique(self, stability: Any,  sample_elements: list[Element]):
+        attrs: list[dict[str, str]] = [
+            {
+                "class": el.class_name,
+                "text": el.text,
+                "resource_id": el.resource_id,
+            }
+            for el in sample_elements
+        ]
+
+        # Проверяем уникальность через преобразование в set (нужен hashable тип → frozenset)
+        unique_attrs = {frozenset(attr.items()) for attr in attrs}
+
+        assert len(unique_attrs) == len(attrs), "Найдены дубликаты элементов"

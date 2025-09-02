@@ -1,5 +1,7 @@
 # tests/test_page_object.py
 import logging
+import os.path
+import pathlib
 from pathlib import Path
 
 from shadowstep.page_object.page_object_element_node import UiElementNode
@@ -29,7 +31,7 @@ class TestPageObjectextractor:
         tree = parser.parse(app.driver.page_source)
         page_path, page_class_name = generator.generate(tree, output_dir="pages")
 
-        assert page_path == "pages\page_settings.py"    # type: ignore  # noqa: W605
+        assert page_path == os.path.join("pages","page_settings.py")    # type: ignore  # noqa: W605
         assert page_class_name == "PageSettings"
         file_path = Path(page_path)
         assert file_path.exists(), f"Файл {file_path} не найден"
@@ -39,7 +41,7 @@ class TestPageObjectextractor:
         recycler_explorer = PageObjectRecyclerExplorer(app, translator)
         page_path = recycler_explorer.explore("pages")
         
-        assert page_path == "mergedpages\page_settings.py"    # type: ignore  # noqa: W605
+        assert page_path == os.path.join("mergedpages", "page_settings.py")    # type: ignore  # noqa: W605, S101
 
         file_path = Path(page_path)
-        assert file_path.exists(), f"Файл {file_path} не найден"
+        assert file_path.exists(), f"Файл {file_path} не найден"  # noqa: S101

@@ -91,12 +91,12 @@ def stability(press_home: None):
 def touch_sounds(app: Shadowstep, android_settings_open_close: None):
     sounds_and_vibrations_element = app.find_and_get_element({"text": "Sound & vibration"})
     # sounds_and_vibrations_element = app.find_and_get_element({'text': 'Звук и вибрация'})
-    assert sounds_and_vibrations_element.is_visible()
+    assert sounds_and_vibrations_element.is_visible()  # noqa: S101
     sounds_and_vibrations_element.tap(duration=3)
     time.sleep(5)
     touch_sounds_element = app.find_and_get_element({"text": "Touch sounds"})
     # touch_sounds_element = app.find_and_get_element({'text': 'Улучшение звука'})
-    assert touch_sounds_element.is_visible()
+    assert touch_sounds_element.is_visible()  # noqa: S101
     time.sleep(5)
 
 
@@ -128,5 +128,8 @@ def cleanup_pages():
 def cleanup_log():
     yield
     path = Path("logcat_test.log")
+    if path.exists() and path.is_file():
+        path.unlink()
+    path = Path("/tests/logcat_test.log")
     if path.exists() and path.is_file():
         path.unlink()
