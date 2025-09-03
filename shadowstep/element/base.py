@@ -7,7 +7,6 @@ from typing import TYPE_CHECKING, cast
 
 from appium.webdriver.webdriver import WebDriver
 from appium.webdriver.webelement import WebElement
-from locator import UiSelector
 from selenium.common.exceptions import (
     InvalidSessionIdException,
     NoSuchElementException,
@@ -23,6 +22,7 @@ from shadowstep.exceptions.shadowstep_exceptions import (
     ShadowstepNoSuchElementError,
     ShadowstepTimeoutException,
 )
+from shadowstep.locator import UiSelector
 from shadowstep.locator.converter.locator_converter import LocatorConverter
 from shadowstep.utils.utils import get_current_func_name
 

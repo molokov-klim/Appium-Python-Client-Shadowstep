@@ -14,18 +14,17 @@ from __future__ import annotations
 import logging
 from typing import TYPE_CHECKING, Any, cast
 
-from utils.utils import get_current_func_name
-
 from shadowstep.exceptions.shadowstep_exceptions import ConversionError
 from shadowstep.locator.converter.dict_converter import DictConverter
 from shadowstep.locator.converter.ui_selector_converter import UiSelectorConverter
 from shadowstep.locator.converter.xpath_converter import XPathConverter
 from shadowstep.locator.ui_selector import UiSelector
+from shadowstep.utils.utils import get_current_func_name
 
 logger = logging.getLogger(__name__)
 
 if TYPE_CHECKING:
-    from element.element import Element
+    from shadowstep.element.element import Element
 
 
 class LocatorConverter:
@@ -57,7 +56,7 @@ class LocatorConverter:
             ConversionError: If conversion fails
         """
         try:
-            from element.element import Element
+            from shadowstep.element.element import Element
             if isinstance(selector, Element):
                 selector = cast(Element, selector.locator)
             if isinstance(selector, dict):
@@ -88,7 +87,7 @@ class LocatorConverter:
             ConversionError: If conversion fails
         """
         try:
-            from element.element import Element
+            from shadowstep.element.element import Element
             if isinstance(selector, Element):
                 selector = cast(Element, selector.locator)
             if isinstance(selector, dict):
@@ -119,7 +118,7 @@ class LocatorConverter:
             ConversionError: If conversion fails
         """
         try:
-            from element.element import Element
+            from shadowstep.element.element import Element
             if isinstance(selector, Element):
                 selector = cast(Element, selector.locator)
             if isinstance(selector, dict):

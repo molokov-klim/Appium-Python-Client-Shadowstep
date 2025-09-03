@@ -10,8 +10,8 @@ from collections.abc import Generator
 from typing import TYPE_CHECKING, Any, cast
 
 from appium.webdriver.webelement import WebElement
-from exceptions.shadowstep_exceptions import GeneralElementException
-from locator import UiSelector
+from shadowstep.exceptions.shadowstep_exceptions import GeneralElementException
+from shadowstep.locator import UiSelector
 from lxml import etree  # type: ignore
 from selenium.common import (
     InvalidSessionIdException,

@@ -163,7 +163,7 @@ class UiSelectorConverter:
         methods = sel.get("methods", [])
         
         if not methods:
-            raise ValueError(f"No methods found in selector {sel}")
+            return {}
         
         for method_data in methods:
             method_name = method_data["name"]
