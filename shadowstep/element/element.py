@@ -6,11 +6,13 @@ import logging
 import re
 import time
 import traceback
-from collections.abc import Generator, Sequence
-from typing import Any, NoReturn, cast
+from collections.abc import Generator
+from typing import TYPE_CHECKING, Any, cast
 
 from appium.webdriver.webelement import WebElement
-from lxml import etree as ET
+from exceptions.shadowstep_exceptions import GeneralElementException
+from locator import UiSelector
+from lxml import etree as etree
 from selenium.common import (
     InvalidSessionIdException,
     NoSuchDriverException,
@@ -25,52 +27,45 @@ from selenium.webdriver.common.actions import interaction
 from selenium.webdriver.common.actions.action_builder import ActionBuilder
 from selenium.webdriver.common.actions.pointer_input import PointerInput
 from selenium.webdriver.remote.shadowroot import ShadowRoot
-from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.support import expected_conditions as expected_conditions
 from selenium.webdriver.support.wait import WebDriverWait
 
 from shadowstep.element import conditions
 from shadowstep.element.base import ElementBase
 from shadowstep.utils.utils import find_coordinates_by_vector, get_current_func_name
 
+if TYPE_CHECKING:
+    from shadowstep.element.should import Should
+    from shadowstep.shadowstep import Shadowstep
+
 # Configure the root logger (basic configuration)
 logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s")
 logger = logging.getLogger(__name__)
 
 
-class GeneralElementException(WebDriverException):
-    """Raised when driver is not specified and cannot be located."""
-
-    def __init__(
-            self, msg: str | None = None, screen: str | None = None,
-            stacktrace: Sequence[str] | None = None
-    ) -> None:
-        super().__init__(msg, screen, stacktrace)
-
-
-    """
-    A class to represent a UI element in the Shadowstep application.
-    !WARNING! TUPLE LOCATOR USE XPATH STRATEGY ONLY !WARNING!
-    Please use dict locator
-    """
 class Element(ElementBase):
     def __init__(self,
-                 locator: tuple[str, str] | dict[str, str] | Element = None,
-                 base: Shadowstep = None,
+                 locator: tuple[str, str] | dict[str, str] | Element | UiSelector,
+                 base: Shadowstep,
                  timeout: float = 30,
                  poll_frequency: float = 0.5,
-
                  ignored_exceptions: WaitExcTypes | None = None,
                  contains: bool = False,
-                 native: WebElement = None):
+                 native: WebElement | None = None):
+        # Convert Element to its locator if needed
+        if isinstance(locator, Element):
+            locator = locator.locator
+        elif isinstance(locator, UiSelector):
+            locator = locator.__str__()
         super().__init__(locator, base, timeout, poll_frequency, ignored_exceptions, contains, native)
         self.logger = logging.getLogger(f"{__name__}.{self.__class__.__name__}")
         self.logger.debug(f"Initialized Element with locator: {self.locator}")
 
     def __repr__(self):
-        return f"Element(locator={self.locator}"
+        return f"Element(locator={self.locator!r}"
 
     def get_element(self,
-                    locator: tuple | dict[str, str],
+                    locator: tuple[str, str] | dict[str, str],
                     timeout: int = 30,
                     poll_frequency: float = 0.5,
                     ignored_exceptions: WaitExcTypes | None = None,
@@ -82,12 +77,16 @@ class Element(ElementBase):
 
         # XPath for parent
         parent_locator = self.handle_locator(self.locator, self.contains)
+        if not parent_locator:
+            raise GeneralElementException("Failed to resolve parent locator")
 
         # XPath for child (relative)
         pre_inner_locator = self.handle_locator(locator, contains)
+        if not pre_inner_locator:
+            raise GeneralElementException("Failed to resolve child locator")
         inner_path = pre_inner_locator[1].lstrip("/")  # Remove accidental `/` in front
 
-        # Гарантированная вложенность: parent//child
+        # Guaranteed nesting: parent//child
         if not inner_path.startswith("//"):
             inner_path = f"//{inner_path}"
 
@@ -100,14 +99,14 @@ class Element(ElementBase):
                        ignored_exceptions=ignored_exceptions,
                        contains=contains)
 
-    def get_elements(
+    def get_elements(  # noqa: C901
             self,
-            locator: tuple | dict[str, str] | Element,
+            locator: tuple[str, str] | dict[str, str] | Element,
             timeout: float = 30,
             poll_frequency: float = 0.5,
             ignored_exceptions: WaitExcTypes | None = None,
             contains: bool = False
-    ) -> list[Element] | list:
+    ) -> list[Element]:
         """
         method is greedy
         """
@@ -147,7 +146,7 @@ class Element(ElementBase):
                     poll_frequency=poll_frequency,
                     ignored_exceptions=ignored_exceptions,
                 )
-                wait.until(EC.presence_of_element_located(locator))
+                wait.until(expected_conditions.presence_of_element_located(locator))
                 native_parent = self._get_native()
                 native_elements = native_parent.find_elements(*locator)
 
@@ -211,18 +210,18 @@ class Element(ElementBase):
             xpath_expr = self.locator_converter.to_xpath(self.locator)[1]
             if not xpath_expr:
                 self.logger.error(f"Failed to resolve XPath from locator: {self.locator}")
-                return {"": ""}     # FIXME ???
+                return {}  # Return empty dict on error
             self.logger.debug(f"Resolved XPath: {xpath_expr}")
         except Exception as e:
             self.logger.error(f"Exception in to_xpath: {e}")
-            return {"": ""}     # FIXME ???
+            return {}  # Return empty dict on error
 
         while time.time() - start_time < self.timeout:
             try:
                 self._get_driver()
                 page_source = self.driver.page_source
-                parser = ET.XMLParser(recover=True)
-                root = ET.fromstring(page_source.encode("utf-8"), parser=parser)
+                parser = etree.XMLParser(recover=True)
+                root = etree.fromstring(page_source.encode("utf-8"), parser=parser)
 
                 matches = root.xpath(self._clean_xpath_expr(xpath_expr))
                 if matches:
@@ -248,21 +247,21 @@ class Element(ElementBase):
                     self._handle_driver_error(error)
                     continue
                 raise
-            except ET.XPathEvalError as e:
+            except etree.XPathEvalError as e:
                 self.logger.error(f"XPathEvalError: {e}")
                 self.logger.error(f"XPath: {xpath_expr}")
-                return {"": ""}     # FIXME ???
-            except ET.XMLSyntaxError as e:
+                return {}  # Return empty dict on error
+            except etree.XMLSyntaxError as e:
                 self.logger.error(f"XMLSyntaxError: {e}")
-                return {"": ""}     # FIXME ???
+                return {}  # Return empty dict on error
             except UnicodeEncodeError as e:
                 self.logger.error(f"UnicodeEncodeError in page_source: {e}")
-                return {"": ""}     # FIXME ???
+                return {}  # Return empty dict on error
             except Exception as e:
                 self.logger.error(f"Unexpected error in get_attributes: {e}")
                 continue
         self.logger.warning(f"Timeout exceeded ({self.timeout}s) without matching element.")
-        return {"": ""}     # FIXME ???
+        return {}  # Return empty dict on error
 
     def get_parent(self) -> Element:
         self.logger.debug(f"{get_current_func_name()}")
@@ -273,11 +272,13 @@ class Element(ElementBase):
             xpath = xpath + "/.."
             return Element(locator=("xpath", xpath), base=self.base)
         except NoSuchDriverException:
-            self.logger.error(f"{inspect.currentframe().f_code.co_name} NoSuchDriverException")
+            self.logger.error(
+                f"{inspect.currentframe().f_code.co_name if inspect.currentframe() else 'unknown'} NoSuchDriverException")
             self.base.reconnect()
             return None
         except InvalidSessionIdException:
-            self.logger.error(f"{inspect.currentframe().f_code.co_name} InvalidSessionIdException")
+            self.logger.error(
+                f"{inspect.currentframe().f_code.co_name if inspect.currentframe() else 'unknown'} InvalidSessionIdException")
             self.base.reconnect()
             return None
 
@@ -295,11 +296,11 @@ class Element(ElementBase):
         if not current_xpath:
             raise GeneralElementException("Cannot resolve current XPath")
 
-        # Формируем базовый XPath, который захватывает всех родителей
+        # Form base XPath that captures all parents
         base_ancestor_xpath = f"{current_xpath}/ancestor::*"
 
-        # Вместо вызова `find_elements`, просто итерируем индексы и строим XPath
-        for index in range(1, 100):  # ограничим разумным пределом
+        # Instead of calling `find_elements`, just iterate indices and build XPath
+        for index in range(1, 100):  # limit to reasonable bound
             ancestor_xpath = f"{base_ancestor_xpath}[{index}]"
             element = Element(
                 locator=("xpath", ancestor_xpath),
@@ -309,7 +310,7 @@ class Element(ElementBase):
                 ignored_exceptions=self.ignored_exceptions,
                 contains=self.contains
             )
-            # Проверяем существование элемента по какому-нибудь безопасному признаку
+            # Check element existence by some safe attribute
             try:
                 if element.get_attribute("class") is None:
                     break
@@ -319,7 +320,7 @@ class Element(ElementBase):
             except WebDriverException:
                 break
 
-    def get_sibling(self, locator: tuple | dict[str, str] | Element) -> Element:
+    def get_sibling(self, locator: tuple[str, str] | dict[str, str] | Element) -> Element:
         self.logger.debug(f"{get_current_func_name()}")
         if isinstance(locator, Element):
             locator = locator.locator
@@ -331,7 +332,7 @@ class Element(ElementBase):
         sibling_locator = self.handle_locator(locator, contains=self.contains)
         sibling_path = sibling_locator[1].lstrip("/")
 
-        # Пытаемся найти первого совпадающего "соседа" справа
+        # Try to find first matching "sibling" on the right
         xpath = f"{base_xpath}/following-sibling::{sibling_path}[1]"
 
         return Element(
@@ -357,7 +358,7 @@ class Element(ElementBase):
         if not base_xpath:
             raise GeneralElementException("Unable to resolve current XPath")
 
-        # Сначала preceding-sibling (в обратном порядке)
+        # First preceding-sibling (in reverse order)
         for index in range(1, 50):
             xpath = f"{base_xpath}/preceding-sibling::*[{index}]"
             sibling = Element(
@@ -377,7 +378,7 @@ class Element(ElementBase):
             except WebDriverException:
                 break
 
-        # Затем following-sibling (в прямом порядке)
+        # Then following-sibling (in forward order)
         for index in range(1, 50):
             xpath = f"{base_xpath}/following-sibling::*[{index}]"
             sibling = Element(
@@ -497,7 +498,7 @@ class Element(ElementBase):
                 raise
 
         raise GeneralElementException(
-            msg=f"Failed to {inspect.currentframe().f_code.co_name} within {self.timeout=}",
+            msg=f"Failed to {inspect.currentframe().f_code.co_name if inspect.currentframe() else 'unknown'} within {self.timeout=}",
             stacktrace=traceback.format_stack()
         )
 
@@ -541,7 +542,7 @@ class Element(ElementBase):
                 raise
 
         raise GeneralElementException(
-            msg=f"Failed to {inspect.currentframe().f_code.co_name} within {self.timeout=}",
+            msg=f"Failed to {inspect.currentframe().f_code.co_name if inspect.currentframe() else 'unknown'} within {self.timeout=}",
             stacktrace=traceback.format_stack()
         )
 
@@ -581,11 +582,11 @@ class Element(ElementBase):
                 raise
 
         raise GeneralElementException(
-            msg=f"Failed to {inspect.currentframe().f_code.co_name}('{name}') within {self.timeout=}",
+            msg=f"Failed to {inspect.currentframe().f_code.co_name if inspect.currentframe() else 'unknown'}('{name}') within {self.timeout=}",
             stacktrace=traceback.format_stack()
         )
 
-    def get_property(self, name: str) -> NoReturn:
+    def get_property(self, name: str) -> Any:
         """NOT IMPLEMENTED!
         Gets the given property of the element.
 
@@ -596,7 +597,8 @@ class Element(ElementBase):
             Union[str, bool, dict, None]: Property value.
         """
         self.logger.debug(f"{get_current_func_name()}")
-        self.logger.warning(f"Method {inspect.currentframe().f_code.co_name} is not implemented in UiAutomator2")
+        self.logger.warning(
+            f"Method {inspect.currentframe().f_code.co_name if inspect.currentframe() else 'unknown'} is not implemented in UiAutomator2")
         start_time = time.time()
         while time.time() - start_time < self.timeout:
             try:
@@ -622,7 +624,7 @@ class Element(ElementBase):
                 raise
 
         raise GeneralElementException(
-            msg=f"Failed to {inspect.currentframe().f_code.co_name} within {self.timeout=}",
+            msg=f"Failed to {inspect.currentframe().f_code.co_name if inspect.currentframe() else 'unknown'} within {self.timeout=}",
             stacktrace=traceback.format_stack()
         )
 
@@ -665,7 +667,7 @@ class Element(ElementBase):
                 raise
 
         raise GeneralElementException(
-            msg=f"Failed to {inspect.currentframe().f_code.co_name} within {self.timeout=}",
+            msg=f"Failed to {inspect.currentframe().f_code.co_name if inspect.currentframe() else 'unknown'} within {self.timeout=}",
             stacktrace=traceback.format_stack()
         )
 
@@ -704,7 +706,7 @@ class Element(ElementBase):
                 raise
 
         raise GeneralElementException(
-            msg=f"Failed to {inspect.currentframe().f_code.co_name} within {self.timeout=}",
+            msg=f"Failed to {inspect.currentframe().f_code.co_name if inspect.currentframe() else 'unknown'} within {self.timeout=}",
             stacktrace=traceback.format_stack()
         )
 
@@ -713,27 +715,24 @@ class Element(ElementBase):
         start_time = time.time()
         while time.time() - start_time < self.timeout:
             try:
-                screen_size = self.base.terminal.get_screen_resolution()  # Получаем размеры экрана
-                screen_width = screen_size[0]  # Ширина экрана
-                screen_height = screen_size[1]  # Высота экрана
+                screen_size = self.base.terminal.get_screen_resolution()  # Get screen dimensions
+                screen_width = screen_size[0]  # Screen width
+                screen_height = screen_size[1]  # Screen height
                 current_element = self._get_native()
                 if current_element is None:
                     return False
-                if not current_element.get_attribute("displayed") == "true":
-                    # Если элемент не отображается на экране
+                if current_element.get_attribute("displayed") != "true":
+                    # If element is not displayed on screen
                     return False
-                element_location = current_element.location  # Получаем координаты элемента
-                element_size = current_element.size  # Получаем размеры элемента
-                if (
+                element_location = current_element.location  # Get element coordinates
+                element_size = current_element.size  # Get element dimensions
+                # If element is outside screen bounds
+                return not (
                         element_location["y"] + element_size["height"] > screen_height or
                         element_location["x"] + element_size["width"] > screen_width or
                         element_location["y"] < 0 or
                         element_location["x"] < 0
-                ):
-                    # Если элемент находится за пределами экрана
-                    return False
-                # Если элемент находится на экране
-                return True
+                )
             except NoSuchElementException:
                 return False
             except NoSuchDriverException as error:
@@ -754,7 +753,7 @@ class Element(ElementBase):
                     continue
                 raise
         raise GeneralElementException(
-            msg=f"Failed to {inspect.currentframe().f_code.co_name} within {self.timeout=}",
+            msg=f"Failed to {inspect.currentframe().f_code.co_name if inspect.currentframe() else 'unknown'} within {self.timeout=}",
             stacktrace=traceback.format_stack()
         )
 
@@ -794,7 +793,7 @@ class Element(ElementBase):
                 raise
 
         raise GeneralElementException(
-            msg=f"Failed to {inspect.currentframe().f_code.co_name} within {self.timeout=}",
+            msg=f"Failed to {inspect.currentframe().f_code.co_name if inspect.currentframe() else 'unknown'} within {self.timeout=}",
             stacktrace=traceback.format_stack()
         )
 
@@ -832,7 +831,7 @@ class Element(ElementBase):
                 raise
 
         raise GeneralElementException(
-            msg=f"Failed to {inspect.currentframe().f_code.co_name} within {self.timeout=}",
+            msg=f"Failed to {inspect.currentframe().f_code.co_name if inspect.currentframe() else 'unknown'} within {self.timeout=}",
             stacktrace=traceback.format_stack()
         )
 
@@ -847,10 +846,7 @@ class Element(ElementBase):
                 if isinstance(locator, Element):
                     locator = locator.locator
                 child_element = self._get_element(locator=locator, contains=contains)
-                if child_element is not None:
-                    return True
-                # Если элемент находится на экране
-                return False
+                return child_element is not None
             except NoSuchElementException:
                 return False
             except NoSuchDriverException as error:
@@ -871,7 +867,7 @@ class Element(ElementBase):
                     continue
                 raise
         raise GeneralElementException(
-            msg=f"Failed to {inspect.currentframe().f_code.co_name} within {self.timeout=}",
+            msg=f"Failed to {inspect.currentframe().f_code.co_name if inspect.currentframe() else 'unknown'} within {self.timeout=}",
             stacktrace=traceback.format_stack()
         )
 
@@ -885,7 +881,7 @@ class Element(ElementBase):
                 if x is None or y is None:
                     continue
                 self.driver.tap(positions=[(x, y)], duration=duration)
-                return cast("Element", self)
+                return self
             except NoSuchDriverException as error:
                 self._handle_driver_error(error)
             except InvalidSessionIdException as error:
@@ -904,13 +900,13 @@ class Element(ElementBase):
                     continue
                 raise
         raise GeneralElementException(
-            msg=f"Failed to {inspect.currentframe().f_code.co_name} within {self.timeout=}\n{duration}",
+            msg=f"Failed to {inspect.currentframe().f_code.co_name if inspect.currentframe() else 'unknown'} within {self.timeout=}\n{duration}",
             stacktrace=traceback.format_stack()
         )
 
     def tap_and_move(
             self,
-            locator: tuple | WebElement | Element | dict[str, str] | str = None,
+            locator: tuple[str, str] | WebElement | Element | dict[str, str] | str | None = None,
             x: int = None,
             y: int = None,
             direction: int = None,
@@ -923,31 +919,31 @@ class Element(ElementBase):
                 self._get_driver()
                 if isinstance(locator, Element):
                     locator = locator.locator
-                # Получение координат центра исходного элемента
+                # Get center coordinates of source element
                 x1, y1 = self.get_center()
 
-                # Настройка жеста
+                # Configure gesture
                 actions = ActionChains(self.driver)
                 actions.w3c_actions = ActionBuilder(self.driver, mouse=PointerInput(interaction.POINTER_TOUCH, "touch"))
                 actions.w3c_actions.pointer_action.move_to_location(x1, y1)
                 actions.w3c_actions.pointer_action.pointer_down()
 
-                # === Прямое указание координат ===
+                # === Direct coordinate specification ===
                 if x is not None and y is not None:
                     actions.w3c_actions.pointer_action.move_to_location(x, y)
                     actions.w3c_actions.pointer_action.pointer_up()
                     actions.perform()
-                    return cast("Element", self)
+                    return self
 
-                # === Перемещение к другому элементу ===
+                # === Move to another element ===
                 if locator is not None:
                     target_element = self._get_element(locator=locator)
                     x, y = self.get_center(target_element)
                     actions.w3c_actions.pointer_action.move_to_location(x, y)
                     actions.w3c_actions.pointer_action.pointer_up()
                     actions.perform()
-                    return cast("Element", self)
-                # === Перемещение по вектору направления ===
+                    return self
+                # === Move by direction vector ===
                 if direction is not None and distance is not None:
                     width, height = self.base.terminal.get_screen_resolution()
                     x2, y2 = find_coordinates_by_vector(width=width, height=height,
@@ -956,7 +952,7 @@ class Element(ElementBase):
                     actions.w3c_actions.pointer_action.move_to_location(x2, y2)
                     actions.w3c_actions.pointer_action.pointer_up()
                     actions.perform()
-                    return cast("Element", self)
+                    return self
             except NoSuchDriverException as error:
                 self._handle_driver_error(error)
             except InvalidSessionIdException as error:
@@ -974,9 +970,9 @@ class Element(ElementBase):
                     self._handle_driver_error(error)
                     continue
                 raise
-        # === Недостаточно данных для действия ===
+        # === Insufficient data for action ===
         raise GeneralElementException(
-            msg=f"Failed to {inspect.currentframe().f_code.co_name} within {self.timeout=}\n{locator=}\n{x=}\n{y=}\n{direction}\n{distance}\n",
+            msg=f"Failed to {inspect.currentframe().f_code.co_name if inspect.currentframe() else 'unknown'} within {self.timeout=}\n{locator=}\n{x=}\n{y=}\n{direction}\n{distance}\n",
             stacktrace=traceback.format_stack()
         )
 
@@ -993,7 +989,7 @@ class Element(ElementBase):
                 else:
                     self._mobile_gesture("mobile: longClickGesture",
                                          {"elementId": self.id, "duration": duration})
-                return cast("Element", self)
+                return self
             except NoSuchDriverException as error:
                 self._handle_driver_error(error)
             except InvalidSessionIdException as error:
@@ -1012,7 +1008,7 @@ class Element(ElementBase):
                     continue
                 raise
         raise GeneralElementException(
-            msg=f"Failed to {inspect.currentframe().f_code.co_name} within {self.timeout=}\n{duration}",
+            msg=f"Failed to {inspect.currentframe().f_code.co_name if inspect.currentframe() else 'unknown'} within {self.timeout=}\n{duration}",
             stacktrace=traceback.format_stack()
         )
 
@@ -1025,7 +1021,7 @@ class Element(ElementBase):
                 self._get_element(locator=self.locator)
                 self._mobile_gesture("mobile: doubleClickGesture",
                                      {"elementId": self.id})
-                return cast("Element", self)
+                return self
             except NoSuchDriverException as error:
                 self._handle_driver_error(error)
             except InvalidSessionIdException as error:
@@ -1044,7 +1040,7 @@ class Element(ElementBase):
                     continue
                 raise
         raise GeneralElementException(
-            msg=f"Failed to {inspect.currentframe().f_code.co_name} within {self.timeout=}",
+            msg=f"Failed to {inspect.currentframe().f_code.co_name if inspect.currentframe() else 'unknown'} within {self.timeout=}",
             stacktrace=traceback.format_stack()
         )
 
@@ -1060,7 +1056,7 @@ class Element(ElementBase):
                                       "endX": end_x,
                                       "endY": end_y,
                                       "speed": speed})
-                return cast("Element", self)
+                return self
             except NoSuchDriverException as error:
                 self._handle_driver_error(error)
             except InvalidSessionIdException as error:
@@ -1079,7 +1075,7 @@ class Element(ElementBase):
                     continue
                 raise
         raise GeneralElementException(
-            msg=f"Failed to {inspect.currentframe().f_code.co_name} within {self.timeout=}",
+            msg=f"Failed to {inspect.currentframe().f_code.co_name if inspect.currentframe() else 'unknown'} within {self.timeout=}",
             stacktrace=traceback.format_stack()
         )
 
@@ -1111,7 +1107,7 @@ class Element(ElementBase):
                                      {"elementId": self.id,
                                       "direction": direction,
                                       "speed": speed})
-                return cast("Element", self)
+                return self
             except NoSuchDriverException as error:
                 self._handle_driver_error(error)
             except InvalidSessionIdException as error:
@@ -1130,7 +1126,7 @@ class Element(ElementBase):
                     continue
                 raise
         raise GeneralElementException(
-            msg=f"Failed to {inspect.currentframe().f_code.co_name} within {self.timeout=}",
+            msg=f"Failed to {inspect.currentframe().f_code.co_name if inspect.currentframe() else 'unknown'} within {self.timeout=}",
             stacktrace=traceback.format_stack()
         )
 
@@ -1171,7 +1167,7 @@ class Element(ElementBase):
                                                    "speed": speed})
                 if return_bool:
                     return can_scroll
-                return cast("Element", self)
+                return self
             except NoSuchDriverException as error:
                 self._handle_driver_error(error)
             except InvalidSessionIdException as error:
@@ -1190,7 +1186,7 @@ class Element(ElementBase):
                     continue
                 raise
         raise GeneralElementException(
-            msg=f"Failed to {inspect.currentframe().f_code.co_name} within {self.timeout=}",
+            msg=f"Failed to {inspect.currentframe().f_code.co_name if inspect.currentframe() else 'unknown'} within {self.timeout=}",
             stacktrace=traceback.format_stack()
         )
 
@@ -1202,7 +1198,7 @@ class Element(ElementBase):
         while time.time() - start_time < self.timeout:
             try:
                 if not self.scroll_down(percent=percent, speed=speed, return_bool=True):
-                    return cast("Element", self)
+                    return self
                 self.scroll_down(percent=percent, speed=speed, return_bool=True)
             except (
                     NoSuchDriverException, InvalidSessionIdException, AttributeError
@@ -1232,7 +1228,7 @@ class Element(ElementBase):
         while time.time() - start_time < self.timeout:
             try:
                 if not self.scroll_up(percent, speed, return_bool=True):
-                    return cast("Element", self)
+                    return self
                 self.scroll_up(percent=percent, speed=speed, return_bool=True)
             except (
                     NoSuchDriverException, InvalidSessionIdException, AttributeError) as error:
@@ -1304,14 +1300,17 @@ class Element(ElementBase):
             stacktrace=traceback.format_stack()
         )
 
-    def scroll_to_element_optional(self, locator: Element | dict[str, str] | tuple[str, str], max_swipes: int = 30, percent: float = 0.7, speed: int = 2000, waiting_element_timeout: int = 1) -> Element:
+    def scroll_to_element_optional(self, locator: Element | dict[str, str] | tuple[str, str], max_swipes: int = 30,
+                                   percent: float = 0.7, speed: int = 2000,
+                                   waiting_element_timeout: int = 1) -> Element:
         self.logger.debug(f"{get_current_func_name()}")
         # FIXME refactor and optimise me please
         start_time = time.time()
         if isinstance(locator, Element):
             locator = locator.locator
-        if isinstance(locator, dict) or isinstance(locator, tuple):
-            selector = self.locator_converter.to_uiselector(locator)
+        if isinstance(locator, (dict, tuple)):
+            # selector = self.locator_converter.to_uiselector(locator)  # unused variable
+            pass
         else:
             raise GeneralElementException("Only dictionary locators are supported")
         locator = self.locator_converter.to_xpath(locator)
@@ -1324,17 +1323,17 @@ class Element(ElementBase):
                 found = self.base.get_element(locator)
                 found.timeout = waiting_element_timeout
                 if found.is_visible():
-                    return cast("Element", found)
+                    return found
                 while self.scroll_down(return_bool=True, percent=percent, speed=speed):
                     found = self.base.get_element(locator)
                     found.timeout = waiting_element_timeout
                     if found.is_visible():
-                        return cast("Element", found)
+                        return found
                 self.scroll_down(return_bool=True, percent=percent, speed=speed)
                 found = self.base.get_element(locator)
                 found.timeout = waiting_element_timeout
                 if found.is_visible():
-                    return cast("Element", found)
+                    return found
             except NoSuchDriverException as error:
                 self._handle_driver_error(error)
             except InvalidSessionIdException as error:
@@ -1390,7 +1389,7 @@ class Element(ElementBase):
                     "speed": speed
                 })
 
-                return cast("Element", self)
+                return self
             except NoSuchDriverException as error:
                 self._handle_driver_error(error)
             except InvalidSessionIdException as error:
@@ -1409,7 +1408,7 @@ class Element(ElementBase):
                     continue
                 raise
         raise GeneralElementException(
-            msg=f"Failed to {inspect.currentframe().f_code.co_name} within {self.timeout=}",
+            msg=f"Failed to {inspect.currentframe().f_code.co_name if inspect.currentframe() else 'unknown'} within {self.timeout=}",
             stacktrace=traceback.format_stack()
         )
 
@@ -1438,7 +1437,7 @@ class Element(ElementBase):
                     "speed": speed
                 })
 
-                return cast("Element", self)
+                return self
             except NoSuchDriverException as error:
                 self._handle_driver_error(error)
             except InvalidSessionIdException as error:
@@ -1457,7 +1456,7 @@ class Element(ElementBase):
                     continue
                 raise
         raise GeneralElementException(
-            msg=f"Failed to {inspect.currentframe().f_code.co_name} within {self.timeout=}",
+            msg=f"Failed to {inspect.currentframe().f_code.co_name if inspect.currentframe() else 'unknown'} within {self.timeout=}",
             stacktrace=traceback.format_stack()
         )
 
@@ -1503,7 +1502,7 @@ class Element(ElementBase):
                     "speed": speed
                 })
 
-                return cast("Element", self)
+                return self
             except NoSuchDriverException as error:
                 self._handle_driver_error(error)
             except InvalidSessionIdException as error:
@@ -1522,7 +1521,7 @@ class Element(ElementBase):
                     continue
                 raise
         raise GeneralElementException(
-            msg=f"Failed to {inspect.currentframe().f_code.co_name} within {self.timeout=} {direction=} {percent=}",
+            msg=f"Failed to {inspect.currentframe().f_code.co_name if inspect.currentframe() else 'unknown'} within {self.timeout=} {direction=} {percent=}",
             stacktrace=traceback.format_stack()
         )
 
@@ -1543,7 +1542,7 @@ class Element(ElementBase):
                 current_element = self._get_native()
 
                 current_element.clear()
-                return cast("Element", self)
+                return self
             except NoSuchDriverException as error:
                 self._handle_driver_error(error)
             except InvalidSessionIdException as error:
@@ -1618,7 +1617,8 @@ class Element(ElementBase):
             Element: Self instance on success.
         """
         self.logger.debug(f"{get_current_func_name()}")
-        self.logger.warning(f"Method {inspect.currentframe().f_code.co_name} is not implemented in UiAutomator2")
+        self.logger.warning(
+            f"Method {inspect.currentframe().f_code.co_name if inspect.currentframe() else 'unknown'} is not implemented in UiAutomator2")
 
         start_time = time.time()
 
@@ -1629,7 +1629,7 @@ class Element(ElementBase):
                 element = self._get_native()
 
                 element.set_value(value)
-                return cast("Element", self)
+                return self
 
             except NoSuchDriverException as error:
                 self._handle_driver_error(error)
@@ -1675,7 +1675,7 @@ class Element(ElementBase):
                 element = self._get_native()
 
                 element.send_keys(text)
-                return cast("Element", self)
+                return self
 
             except NoSuchDriverException as error:
                 self._handle_driver_error(error)
@@ -1738,7 +1738,7 @@ class Element(ElementBase):
             msg=f"Failed to retrieve tag_name within {self.timeout=}",
             stacktrace=traceback.format_stack()
         )
-    
+
     @property
     def attributes(self):
         return self.get_attributes()
@@ -1777,7 +1777,7 @@ class Element(ElementBase):
             msg=f"Failed to retrieve text within {self.timeout=}",
             stacktrace=traceback.format_stack()
         )
-    
+
     @property
     def resource_id(self) -> str:
         self.logger.debug(f"{get_current_func_name()}")
@@ -1901,7 +1901,7 @@ class Element(ElementBase):
         )
 
     @property
-    def class_name(self) -> str:  # 'class' — это зарезервированное слово, поэтому лучше class_name
+    def class_name(self) -> str:  # 'class' is a reserved word, so class_name is better
         self.logger.debug(f"{get_current_func_name()}")
         start_time = time.time()
 
@@ -2276,7 +2276,7 @@ class Element(ElementBase):
             stacktrace=traceback.format_stack()
         )
 
-    def submit(self) -> NoReturn:
+    def submit(self) -> Element:
         """NOT IMPLEMENTED!
         Submits a form element.
 
@@ -2284,7 +2284,8 @@ class Element(ElementBase):
             Element: Self instance on success.
         """
         self.logger.debug(f"{get_current_func_name()}")
-        self.logger.warning(f"Method {inspect.currentframe().f_code.co_name} is not implemented in UiAutomator2")
+        self.logger.warning(
+            f"Method {inspect.currentframe().f_code.co_name if inspect.currentframe() else 'unknown'} is not implemented in UiAutomator2")
         start_time = time.time()
 
         while time.time() - start_time < self.timeout:
@@ -2292,7 +2293,7 @@ class Element(ElementBase):
                 self._get_driver()
                 element = self._get_native()
                 element.submit()
-                return cast("Element", self)
+                return self
 
             except NoSuchDriverException as error:
                 self._handle_driver_error(error)
@@ -2328,7 +2329,8 @@ class Element(ElementBase):
             GeneralElementException: If shadow root is not available or an error occurs.
         """
         self.logger.debug(f"{get_current_func_name()}")
-        self.logger.warning(f"Method {inspect.currentframe().f_code.co_name} is not implemented in UiAutomator2")
+        self.logger.warning(
+            f"Method {inspect.currentframe().f_code.co_name if inspect.currentframe() else 'unknown'} is not implemented in UiAutomator2")
 
         start_time = time.time()
 
@@ -2353,7 +2355,7 @@ class Element(ElementBase):
         )
 
     @property
-    def location_once_scrolled_into_view(self) -> NoReturn:
+    def location_once_scrolled_into_view(self) -> dict[str, int]:
         """NOT IMPLEMENTED
         Gets the top-left corner location of the element after scrolling it into view.
 
@@ -2364,7 +2366,8 @@ class Element(ElementBase):
             GeneralElementException: If element could not be scrolled into view or location determined.
         """
         self.logger.debug(f"{get_current_func_name()}")
-        self.logger.warning(f"Method {inspect.currentframe().f_code.co_name} is not implemented in UiAutomator2")
+        self.logger.warning(
+            f"Method {inspect.currentframe().f_code.co_name if inspect.currentframe() else 'unknown'} is not implemented in UiAutomator2")
 
         start_time = time.time()
 
@@ -2445,7 +2448,8 @@ class Element(ElementBase):
             GeneralElementException: If value could not be retrieved within timeout.
         """
         self.logger.debug(f"{get_current_func_name()}")
-        self.logger.warning(f"Method {inspect.currentframe().f_code.co_name} is not implemented in UiAutomator2")
+        self.logger.warning(
+            f"Method {inspect.currentframe().f_code.co_name if inspect.currentframe() else 'unknown'} is not implemented in UiAutomator2")
 
         start_time = time.time()
 
@@ -2489,7 +2493,8 @@ class Element(ElementBase):
             GeneralElementException: If location could not be retrieved within timeout.
         """
         self.logger.debug(f"{get_current_func_name()}")
-        self.logger.warning(f"Method {inspect.currentframe().f_code.co_name} is not implemented in UiAutomator2")
+        self.logger.warning(
+            f"Method {inspect.currentframe().f_code.co_name if inspect.currentframe() else 'unknown'} is not implemented in UiAutomator2")
 
         start_time = time.time()
 
@@ -2758,11 +2763,11 @@ class Element(ElementBase):
         )
 
     def _handle_driver_error(self, error: Exception) -> None:
-        self.logger.warning(f"{inspect.currentframe().f_code.co_name} {error}")
+        self.logger.warning(f"{inspect.currentframe().f_code.co_name if inspect.currentframe() else 'unknown'} {error}")
         self.base.reconnect()
         time.sleep(0.3)
 
-    def _mobile_gesture(self, name: str, params: dict | list) -> Any:
+    def _mobile_gesture(self, name: str, params: dict[str, Any] | list[Any]) -> Any:
         # https://github.com/appium/appium-uiautomator2-driver/blob/master/docs/android-mobile-gestures.md
         return self.driver.execute_script(name, params)
 
@@ -2784,7 +2789,7 @@ class Element(ElementBase):
                 parent_element = self
                 parent_class = parent_element.get_attribute("class")
                 child_elements = parent_element.get_elements(("xpath", "//*[1]"))
-                for i, child_element in enumerate(child_elements):
+                for _i, child_element in enumerate(child_elements):
                     child_class = child_element.get_attribute("class")
                     if parent_class != child_class:
                         return str(child_class)
@@ -2799,11 +2804,12 @@ class Element(ElementBase):
                     self._handle_driver_error(error)
                     continue
                 raise
+        return ""  # Return empty string if no child class found
 
     def _get_xpath(self) -> str:
         self.logger.debug(f"{get_current_func_name()}")
         locator = self.handle_locator(self.locator, self.contains)
-        if locator[0] == "xpath":
+        if locator is not None and locator[0] == "xpath":
             return locator[1]
         return self._get_xpath_by_driver()
 
@@ -2826,7 +2832,7 @@ class Element(ElementBase):
             for key, value in attrs.items():
                 if key in except_attrs:
                     continue
-                if value is None:
+                if value is None or value == "null":
                     xpath += f"[@{key}]"
                 elif "'" in value and '"' not in value:
                     xpath += f'[@{key}="{value}"]'
@@ -2841,12 +2847,12 @@ class Element(ElementBase):
                     xpath += f"[@{key}='{value}']"
             return xpath
         except AttributeError as e:
-            self.logger.error(f"Ошибка при формировании XPath: {str(e)}")
+            self.logger.error(f"Error forming XPath: {str(e)}")
         except KeyError as e:
-            self.logger.error(f"Ошибка при формировании XPath: {str(e)}")
+            self.logger.error(f"Error forming XPath: {str(e)}")
         except WebDriverException as e:
-            self.logger.error(f"Неизвестная ошибка при формировании XPath: {str(e)}")
-        return None
+            self.logger.error(f"Unknown error forming XPath: {str(e)}")
+        return ""
 
     def _build_element_xpath(self, base_element: WebElement, index: int) -> str:
         """
@@ -2884,17 +2890,17 @@ class Element(ElementBase):
                     self.logger.error("Resolved locator is None or invalid")
                     if return_bool:
                         return False
-                    return cast("Element", self)
+                    return self
                 WebDriverWait(self.base.driver, timeout, poll_frequency).until(
                     conditions.present(resolved_locator)
                 )
                 if return_bool:
                     return True
-                return cast("Element", self)
+                return self
             except TimeoutException:
                 if return_bool:
                     return False
-                return cast("Element", self)
+                return self
             except NoSuchDriverException as error:
                 self._handle_driver_error(error)
             except InvalidSessionIdException as error:
@@ -2932,18 +2938,18 @@ class Element(ElementBase):
                     self.logger.error("Resolved locator is None or invalid")
                     if return_bool:
                         return False
-                    return cast("Element", self)
+                    return self
 
                 WebDriverWait(self.base.driver, timeout, poll_frequency).until(
                     conditions.visible(resolved_locator)
                 )
                 if return_bool:
                     return True
-                return cast("Element", self)
+                return self
             except TimeoutException:
                 if return_bool:
                     return False
-                return cast("Element", self)
+                return self
             except NoSuchDriverException as error:
                 self._handle_driver_error(error)
             except InvalidSessionIdException as error:
@@ -2959,9 +2965,12 @@ class Element(ElementBase):
             except Exception as error:
                 self.logger.error(f"{error}")
                 continue
-        return False
+        if return_bool:
+            return False
+        return self
 
-    def wait_clickable(self, timeout: int = 10, poll_frequency: float = 0.5, return_bool: bool = False) -> Element:
+    def wait_clickable(self, timeout: int = 10, poll_frequency: float = 0.5,
+                       return_bool: bool = False) -> Element | bool:
         """Waits until the element is clickable.
 
         Args:
@@ -2981,18 +2990,18 @@ class Element(ElementBase):
                     self.logger.error("Resolved locator is None or invalid")
                     if return_bool:
                         return False
-                    return cast("Element", self)
+                    return self
 
                 WebDriverWait(self.base.driver, timeout, poll_frequency).until(
                     conditions.clickable(resolved_locator)
                 )
                 if return_bool:
                     return True
-                return cast("Element", self)
+                return self
             except TimeoutException:
                 if return_bool:
                     return False
-                return cast("Element", self)
+                return self
             except NoSuchDriverException as error:
                 self._handle_driver_error(error)
             except InvalidSessionIdException as error:
@@ -3008,9 +3017,9 @@ class Element(ElementBase):
             except Exception as error:
                 self.logger.error(f"{error}")
                 continue
-        return False
+        return self
 
-    def wait_for_not(self, timeout: int = 10, poll_frequency: float = 0.5, return_bool: bool = False) -> bool:
+    def wait_for_not(self, timeout: int = 10, poll_frequency: float = 0.5, return_bool: bool = False) -> Element | bool:
         """Waits until the element is no longer present in the DOM.
 
         Args:
@@ -3029,17 +3038,17 @@ class Element(ElementBase):
                 if not resolved_locator:
                     if return_bool:
                         return False
-                    return cast("Element", self)
+                    return self
                 WebDriverWait(self.base.driver, timeout, poll_frequency).until(
                     conditions.not_present(resolved_locator)
                 )
                 if return_bool:
                     return True
-                return cast("Element", self)
+                return self
             except TimeoutException:
                 if return_bool:
                     return False
-                return cast("Element", self)
+                return self
             except NoSuchDriverException as error:
                 self._handle_driver_error(error)
             except InvalidSessionIdException as error:
@@ -3057,7 +3066,8 @@ class Element(ElementBase):
                 continue
         return False
 
-    def wait_for_not_visible(self, timeout: int = 10, poll_frequency: float = 0.5, return_bool: bool = False) -> Element:
+    def wait_for_not_visible(self, timeout: int = 10, poll_frequency: float = 0.5,
+                             return_bool: bool = False) -> Element | bool:
         """Waits until the element becomes invisible.
 
         Args:
@@ -3076,17 +3086,17 @@ class Element(ElementBase):
                 if not resolved_locator:
                     if return_bool:
                         return False
-                    return cast("Element", self)
+                    return self
                 WebDriverWait(self.base.driver, timeout, poll_frequency).until(
                     conditions.not_visible(resolved_locator)
                 )
                 if return_bool:
                     return True
-                return cast("Element", self)
+                return self
             except TimeoutException:
                 if return_bool:
                     return False
-                return cast("Element", self)
+                return self
             except NoSuchDriverException as error:
                 self._handle_driver_error(error)
             except InvalidSessionIdException as error:
@@ -3102,9 +3112,10 @@ class Element(ElementBase):
             except Exception as error:
                 self.logger.error(f"{error}")
                 continue
-        return False
+        return self
 
-    def wait_for_not_clickable(self, timeout: int = 10, poll_frequency: float = 0.5, return_bool: bool = False) -> Element:
+    def wait_for_not_clickable(self, timeout: int = 10, poll_frequency: float = 0.5,
+                               return_bool: bool = False) -> Element | bool:
         """Waits until the element becomes not clickable.
 
         Args:
@@ -3124,17 +3135,17 @@ class Element(ElementBase):
                     self.logger.error("Resolved locator is None or invalid")
                     if return_bool:
                         return False
-                    return cast("Element", self)
+                    return self
                 WebDriverWait(self.base.driver, timeout, poll_frequency).until(
                     conditions.not_clickable(resolved_locator)
                 )
                 if return_bool:
                     return True
-                return cast("Element", self)
+                return self
             except TimeoutException:
                 if return_bool:
                     return False
-                return cast("Element", self)
+                return self
             except NoSuchDriverException as error:
                 self._handle_driver_error(error)
             except InvalidSessionIdException as error:
@@ -3150,13 +3161,13 @@ class Element(ElementBase):
             except Exception as error:
                 self.logger.error(f"{error}")
                 continue
-        return False
+        return self
 
     @property
     def should(self) -> Should:
         """Provides DSL-like assertions: element.should.have.text(...), etc."""
         from shadowstep.element.should import (
-            Should,  # импорт внутри метода для избежания циклической зависимости
+            Should,  # import inside method to avoid circular dependency
         )
         return Should(self)
 
@@ -3167,8 +3178,13 @@ class Element(ElementBase):
         if self.native:
             return self.native
 
+        # Convert Element to its locator if needed
+        locator = self.locator
+        if isinstance(locator, Element):
+            locator = locator.locator
+
         return self._get_element(
-            locator=self.locator,
+            locator=locator,
             timeout=self.timeout,
             poll_frequency=self.poll_frequency,
             ignored_exceptions=self.ignored_exceptions,
@@ -3187,7 +3203,7 @@ class Element(ElementBase):
         """
         strategy, value = xpath
 
-        # Бьём конкретно по целевым атрибутам, которые нужно оборачивать в contains()
+        # Target specific attributes that need to be wrapped in contains()
         patterns = {
             "text": r"@text='([^']*)'",
             "content-desc": r"@content-desc='([^']*)'",
@@ -3199,16 +3215,22 @@ class Element(ElementBase):
         }
 
         for attr, pattern in patterns.items():
-            value = re.sub(pattern, lambda m: f"contains(@{attr}, '{m.group(1)}')", value)
+            def make_replacer(attribute: str):
+                def replacer(match: Any) -> str:
+                    return f"contains(@{attribute}, '{match.group(1)}')"
+
+                return replacer
+
+            value = re.sub(pattern, make_replacer(attr), value)
         return strategy, value
 
     def _clean_xpath_expr(self, expr: str) -> str:
-        # убираем все атрибуты, где значение 'null'
+        # Remove all attributes where value is 'null'
         expr = re.sub(r"\s*and\s*@[\w:-]+='null'", "", expr)
-        # если вдруг атрибут стоит первым (без "and")
+        # if attribute happens to be first (without "and")
         expr = re.sub(r"\[@[\w:-]+='null'\s*and\s*", "[", expr)
-        expr = re.sub(r"\[@[\w:-]+='null'\s*\]", "", expr)
-        return expr
+        return re.sub(r"\[@[\w:-]+='null'\s*\]", "", expr)
+
 
 """
 Предлагаемое логическое разделение на сегменты
@@ -3279,6 +3301,3 @@ class Element(ElementBase):
         self.waiting = ElementWaiting(self)
         self.utilities = ElementUtilities(self)
 """
-
-
-

@@ -69,6 +69,15 @@ class ShadowstepTimeoutException(TimeoutException):
                 f"Current URL: {self.driver.current_url if self.driver else 'N/A'}\n"
                 f"Stacktrace:\n{''.join(self.stacktrace) if self.stacktrace else 'N/A'}")
 
+class GeneralElementException(WebDriverException):
+    """Raised when driver is not specified and cannot be located."""
+
+    def __init__(
+            self, msg: str | None = None, screen: str | None = None,
+            stacktrace: Sequence[str] | None = None
+    ) -> None:
+        super().__init__(msg, screen, stacktrace)
+
 
 class LocatorConverterError(Exception):
     """Base exception for locator conversion errors."""

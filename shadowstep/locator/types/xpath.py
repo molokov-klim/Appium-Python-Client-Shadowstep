@@ -36,7 +36,7 @@ class XPathAttribute(str, Enum):
     LONG_CLICKABLE = "@long-clickable="
     SCROLLABLE = "@scrollable="
     SELECTED = "@selected="
-    PASSWORD = "@password="
+    PASSWORD = "@password="  # noqa: S105
 
     # --- numeric ---
     INDEX = "position()="

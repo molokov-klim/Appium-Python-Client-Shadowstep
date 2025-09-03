@@ -79,7 +79,6 @@ name = "pytest-zephyr"
 url = "https://pypi:eixahsh6shai4Ais5Cha@nexus.atol.tech/repository/pypi-group/simple"
 explicit = true
 
-
 #url = "https://nexus.atol.tech/repository/pypi-group/simple"
 #username = "pypi"
 #password = "eixahsh6shai4Ais5Cha"
@@ -127,40 +126,13 @@ exclude = [
     ".venv",
     "build",
     "dist",
-    "debug*.py"
+    "debug*.py",
+    "tests"
 ]
 
 # Опционально авто-правки:
 [tool.ruff.format]
 preview = true
-
-# ---------- PYRIGHT ----------
-
-[tool.pyright]
-include = ["."]
-exclude = [
-    "**/__pycache__",
-    ".venv",
-    "build",
-    "dist",
-]
-typeCheckingMode = "strict"
-
-# Диагностики
-reportMissingFunctionReturnType = true
-reportMissingTypeArgument = true
-reportUnknownArgumentType = true
-reportUnknownMemberType = false
-reportUnknownVariableType = false
-reportUnknownParameterType = false
-reportMissingTypeStubs = false
-reportAttributeAccessIssue = false
-reportPrivateUsage = false
-reportMissingImports = false
-
-# Виртуальное окружение
-venvPath = "."
-venv = ".venv"
 
 # ---------- PYTEST ----------
 [tool.pytest.ini_options]
@@ -171,7 +143,7 @@ addopts = "-svl --log-cli-level INFO --tb=short --setup-show"
 #short — выводит укороченный traceback, только ключевые строки с ошибкой (меньше "шума" по сравнению с полным выводом).
 #Другие варианты: --tb=auto (по умолчанию), --tb=long, --tb=line, --tb=native, --tb=no (вообще не показывать).
 
-# ВАЖНО: Эта секция включает все Python пакеты
+# ---------- DEPLOY ----------
 [tool.setuptools.packages.find]
 include = ["shadowstep*"]
 

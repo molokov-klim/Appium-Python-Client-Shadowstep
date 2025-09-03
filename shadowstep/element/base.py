@@ -14,7 +14,7 @@ from selenium.common.exceptions import (
     WebDriverException,
 )
 from selenium.types import WaitExcTypes
-from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.support import expected_conditions as expected_conditions
 from selenium.webdriver.support.wait import WebDriverWait
 
 from shadowstep.base import WebDriverSingleton
@@ -47,7 +47,7 @@ class ElementBase:
                  native: WebElement | None = None):
         self.logger = logger
         self.driver: WebDriver = None
-        self.locator: tuple[str, str] | dict[str, str] | Element = locator
+        self.locator: tuple[str, str] | dict[str, str] | Element | None = locator
         self.base = base  # Shadowstep instance
         self.timeout: float = timeout
         self.poll_frequency: float = poll_frequency
@@ -89,8 +89,15 @@ class ElementBase:
                              poll_frequency=poll_frequency,
                              ignored_exceptions=ignored_exceptions)
         locator = self.handle_locator(locator, contains)
+        if locator is None:
+            raise ShadowstepNoSuchElementError(
+                msg="Failed to resolve locator",
+                screen=None,
+                stacktrace=None,
+                locator=locator
+            )
         try:
-            element = wait.until(EC.presence_of_element_located(locator))
+            element = wait.until(expected_conditions.presence_of_element_located(locator))
             self.id = element.id
             return cast(WebElement, element)
         except NoSuchElementException as error:
@@ -98,9 +105,9 @@ class ElementBase:
             raise ShadowstepNoSuchElementError(
                 msg=error.msg,
                 screen=error.screen,
-                stacktrace=error.stacktrace,
+                stacktrace=list(error.stacktrace) if error.stacktrace else None,
                 locator=locator
-            )
+            ) from error
         except TimeoutException as error:
             self.logger.debug(f"{get_current_func_name()} {locator=} {error}")
             for stack in error.stacktrace:
@@ -108,16 +115,16 @@ class ElementBase:
                     raise ShadowstepNoSuchElementError(
                         msg=error.msg,
                         screen=error.screen,
-                        stacktrace=error.stacktrace,
+                        stacktrace=list(error.stacktrace) if error.stacktrace else None,
                         locator=locator
-                    )
+                    ) from error
             raise ShadowstepTimeoutException(
                 msg=f"Timeout waiting for element with locator: {locator}. Original: {error.msg}",
                 screen=error.screen,
-                stacktrace=error.stacktrace,
+                stacktrace=list(error.stacktrace) if error.stacktrace else None,
                 locator=locator,
                 driver=self.driver
-            )
+            ) from error
         except InvalidSessionIdException as error:
             self.logger.debug(f"{get_current_func_name()} {locator=} {error}")
             raise
@@ -155,22 +162,17 @@ class ElementBase:
                 The XPath locator as a tuple, or None if there was an error.
         """
         self.logger.debug(f"{get_current_func_name()}")
-        if "class" not in locator:
-            xpath = "//*"
-        else:
-            xpath = "//" + locator["class"]
+        xpath = "//*" if "class" not in locator else "//" + locator["class"]
         try:
             if contains:
                 for attr, value in locator.items():
                     xpath += f"[contains(@{attr}, '{value}')]"
-                new_locator = ("xpath", xpath)
-                return new_locator
+                return ("xpath", xpath)
             for attr, value in locator.items():
                 xpath += f"[@{attr}='{value}']"
-            new_locator = ("xpath", xpath)
-            return new_locator
+            return ("xpath", xpath)
         except KeyError as e:
-            self.logger.error(f"Ошибка dict: {locator}")
+            self.logger.error(f"Dict error: {locator}")
             self.logger.error(f"{str(e)}")
             return None
 

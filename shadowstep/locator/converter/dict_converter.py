@@ -8,7 +8,7 @@ from Shadowstep dictionary format to XPath and UiSelector expressions.
 from __future__ import annotations
 
 import logging
-from typing import Any, Union
+from typing import Any
 
 from shadowstep.exceptions.shadowstep_exceptions import ConversionError
 from shadowstep.locator.map.dict_to_ui import (
@@ -52,7 +52,7 @@ class DictConverter:
         except Exception as e:
             raise ConversionError(f"Failed to convert dict to XPath: {e}") from e
 
-    def dict_to_ui_selector(self, selector_dict: Union[dict[str, Any], dict[DictAttribute, Any]]) -> str:
+    def dict_to_ui_selector(self, selector_dict: dict[str, Any] | dict[DictAttribute, Any]) -> str:
         """
         Convert Shadowstep dictionary locator to UiSelector string.
         
@@ -102,7 +102,7 @@ class DictConverter:
                     "className": "class",
                     "classNameMatches": "classMatches",
                     "textContains": "textContains",
-                    "textStartsWith": "textStartsWith", 
+                    "textStartsWith": "textStartsWith",
                     "textMatches": "textMatches",
                     "description": "content-desc",
                     "descriptionContains": "content-descContains",
@@ -152,7 +152,7 @@ class DictConverter:
 
         return xpath
 
-    def _dict_to_ui_recursive(self, selector_dict: Union[dict[str, Any], dict[DictAttribute, Any]]) -> str:
+    def _dict_to_ui_recursive(self, selector_dict: dict[str, Any] | dict[DictAttribute, Any]) -> str:
         """
         Recursively convert dictionary to UiSelector method chain.
         
@@ -181,7 +181,7 @@ class DictConverter:
                     "className": "class",
                     "classNameMatches": "classMatches",
                     "textContains": "textContains",
-                    "textStartsWith": "textStartsWith", 
+                    "textStartsWith": "textStartsWith",
                     "textMatches": "textMatches",
                     "description": "content-desc",
                     "descriptionContains": "content-descContains",
@@ -219,7 +219,7 @@ class DictConverter:
 
         return ui_selector
 
-    def validate_dict_selector(self, selector_dict: Union[dict[str, Any], dict[DictAttribute, Any]]) -> None:
+    def validate_dict_selector(self, selector_dict: dict[str, Any] | dict[DictAttribute, Any]) -> None:
         """
         Validate dictionary selector for compatibility.
         

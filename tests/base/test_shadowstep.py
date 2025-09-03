@@ -7,7 +7,7 @@ class TestShadowstep:
     A class to test various functionalities of the Shadowstep application.
     """
 
-    def test_get_element(self, app: Shadowstep) -> None:
+    def test_get_element(self, app: Shadowstep, stability: None) -> None:
         """
         Test retrieving an element from the Shadowstep application.
 

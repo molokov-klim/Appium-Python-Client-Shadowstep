@@ -33,9 +33,11 @@ class _ShouldBase:
 
     def _assert(self, condition: bool, message: str) -> None:
         if self.negate:
-            assert not condition, "[should.not] " + message
+            if condition:
+                raise AssertionError("[should.not] " + message)
         else:
-            assert condition, "[should] " + message
+            if not condition:
+                raise AssertionError("[should] " + message)
 
 
 class _ShouldHave(_ShouldBase):

@@ -3,12 +3,12 @@
 This module contains comprehensive tests for the ShadowstepLogcat class,
 covering logcat capture functionality, WebSocket connections, and error handling.
 """
+from __future__ import annotations
 
 import tempfile
 import time
 from collections.abc import Callable
 from pathlib import Path
-from typing import Union
 from unittest.mock import Mock, patch
 
 import pytest
@@ -36,7 +36,8 @@ class MockWebDriver:
         self.command_executor._url = "http://localhost:4723/wd/hub"
         self.command_executor._client_config = None
     
-    def execute_script(self, script: str, *args: object) -> None:
+    @staticmethod
+    def execute_script(script: str,) -> None:
         """Mock execute_script method."""
         if script in ("mobile: startLogsBroadcast", "mobile: stopLogsBroadcast"):
             pass
@@ -77,14 +78,14 @@ class TestShadowstepLogcat:
     """Test cases for ShadowstepLogcat class."""
     
     @pytest.fixture
-    def mock_driver_getter(self) -> Callable[[], Union[MockWebDriver, None]]:
+    def mock_driver_getter(self) -> Callable[[], MockWebDriver | None]:
         """Create a mock driver getter function."""
-        def get_driver() -> Union[MockWebDriver, None]:
+        def get_driver() -> MockWebDriver | None:
             return MockWebDriver()
         return get_driver
     
     @pytest.fixture
-    def logcat(self, mock_driver_getter: Callable[[], Union[MockWebDriver, None]]) -> ShadowstepLogcat:
+    def logcat(self, mock_driver_getter: Callable[[], MockWebDriver | None]) -> ShadowstepLogcat:
         """Create a ShadowstepLogcat instance with mock driver getter."""
         return ShadowstepLogcat(mock_driver_getter)  # type: ignore
     
@@ -94,7 +95,7 @@ class TestShadowstepLogcat:
         with tempfile.NamedTemporaryFile(mode="w", delete=False, suffix=".log") as f:
             return f.name
     
-    def test_init_default_poll_interval(self, mock_driver_getter: Callable[[], Union[MockWebDriver, None]]) -> None:
+    def test_init_default_poll_interval(self, mock_driver_getter: Callable[[], MockWebDriver | None]) -> None:
         """Test initialization with default poll interval."""
         logcat = ShadowstepLogcat(mock_driver_getter)  # type: ignore
         
@@ -104,14 +105,14 @@ class TestShadowstepLogcat:
         assert logcat._filename is None  # noqa: S101
         assert logcat._ws is None  # noqa: S101
     
-    def test_init_custom_poll_interval(self, mock_driver_getter: Callable[[], Union[MockWebDriver, None]]) -> None:
+    def test_init_custom_poll_interval(self, mock_driver_getter: Callable[[], MockWebDriver | None]) -> None:
         """Test initialization with custom poll interval."""
         custom_interval = 2.5
         logcat = ShadowstepLogcat(mock_driver_getter, poll_interval=custom_interval)  # type: ignore
         
         assert logcat._poll_interval == custom_interval  # noqa: S101
     
-    def test_init_negative_poll_interval_raises_error(self, mock_driver_getter: Callable[[], Union[MockWebDriver, None]]) -> None:
+    def test_init_negative_poll_interval_raises_error(self, mock_driver_getter: Callable[[], MockWebDriver | None]) -> None:
         """Test that negative poll interval raises ValueError."""
         with pytest.raises(ValueError, match="poll_interval must be non-negative"):
             ShadowstepLogcat(mock_driver_getter, poll_interval=-1.0)  # type: ignore
@@ -157,7 +158,7 @@ class TestShadowstepLogcat:
         assert logcat._thread is None  # noqa: S101
         assert logcat._filename is None  # noqa: S101
     
-    def test_del_calls_stop(self, mock_driver_getter: Callable[[], Union[MockWebDriver, None]], temp_file: str) -> None:
+    def test_del_calls_stop(self, mock_driver_getter: Callable[[], MockWebDriver | None], temp_file: str) -> None:
         """Test that __del__ calls stop method."""
         logcat = ShadowstepLogcat(mock_driver_getter)  # type: ignore
         logcat.start(temp_file)
@@ -314,7 +315,7 @@ class TestShadowstepLogcat:
     
     def test_stop_webdriver_exception(self, logcat: ShadowstepLogcat, temp_file: str) -> None:
         """Test stop method when WebDriver raises exception."""
-        def failing_driver_getter() -> Union[MockWebDriver, None]:
+        def failing_driver_getter() -> MockWebDriver | None:
             raise WebDriverException("Driver error")
         
         logcat._driver_getter = failing_driver_getter  # type: ignore
@@ -327,7 +328,7 @@ class TestShadowstepLogcat:
     
     def test_stop_none_driver(self, logcat: ShadowstepLogcat, temp_file: str) -> None:
         """Test stop method when driver getter returns None."""
-        def none_driver_getter() -> Union[MockWebDriver, None]:
+        def none_driver_getter() -> MockWebDriver | None:
             return None
         
         logcat._driver_getter = none_driver_getter  # type: ignore

@@ -6,7 +6,7 @@ This module provides functions to convert Shadowstep dictionary locators
 to XPath expressions with proper attribute mapping and hierarchy handling.
 """
 
-from typing import Any, Union
+from typing import Any
 
 from shadowstep.locator.types.shadowstep_dict import DictAttribute
 
@@ -21,65 +21,12 @@ def dict_to_xpath_attribute(attr: DictAttribute, value: Any) -> str:
         
     Returns:
         XPath expression for the attribute
+        
+    Raises:
+        ValueError: If attribute is not supported
     """
-    if attr == DictAttribute.TEXT:
-        return f'@text="{value}"'
-    if attr == DictAttribute.TEXT_CONTAINS:
-        return f'contains(@text, "{value}")'
-    if attr == DictAttribute.TEXT_STARTS_WITH:
-        return f'starts-with(@text, "{value}")'
-    if attr == DictAttribute.TEXT_MATCHES:
-        return f'matches(@text, "{value}")'
-    
-    if attr == DictAttribute.DESCRIPTION:
-        return f'@content-desc="{value}"'
-    if attr == DictAttribute.DESCRIPTION_CONTAINS:
-        return f'contains(@content-desc, "{value}")'
-    if attr == DictAttribute.DESCRIPTION_STARTS_WITH:
-        return f'starts-with(@content-desc, "{value}")'
-    if attr == DictAttribute.DESCRIPTION_MATCHES:
-        return f'matches(@content-desc, "{value}")'
-    
-    if attr == DictAttribute.RESOURCE_ID:
-        return f'@resource-id="{value}"'
-    if attr == DictAttribute.RESOURCE_ID_MATCHES:
-        return f'matches(@resource-id, "{value}")'
-    if attr == DictAttribute.PACKAGE_NAME:
-        return f'@package="{value}"'
-    if attr == DictAttribute.PACKAGE_NAME_MATCHES:
-        return f'matches(@package, "{value}")'
-    
-    if attr == DictAttribute.CLASS_NAME:
-        return f'@class="{value}"'
-    if attr == DictAttribute.CLASS_NAME_MATCHES:
-        return f'matches(@class, "{value}")'
-    
-    if attr == DictAttribute.CHECKABLE:
-        return f'@checkable="{str(value).lower()}"'
-    if attr == DictAttribute.CHECKED:
-        return f'@checked="{str(value).lower()}"'
-    if attr == DictAttribute.CLICKABLE:
-        return f'@clickable="{str(value).lower()}"'
-    if attr == DictAttribute.ENABLED:
-        return f'@enabled="{str(value).lower()}"'
-    if attr == DictAttribute.FOCUSABLE:
-        return f'@focusable="{str(value).lower()}"'
-    if attr == DictAttribute.FOCUSED:
-        return f'@focused="{str(value).lower()}"'
-    if attr == DictAttribute.LONG_CLICKABLE:
-        return f'@long-clickable="{str(value).lower()}"'
-    if attr == DictAttribute.SCROLLABLE:
-        return f'@scrollable="{str(value).lower()}"'
-    if attr == DictAttribute.SELECTED:
-        return f'@selected="{str(value).lower()}"'
-    if attr == DictAttribute.PASSWORD:
-        return f'@password="{str(value).lower()}"'
-    
-    if attr == DictAttribute.INDEX:
-        return f"position()={int(value) + 1}"
-    if attr == DictAttribute.INSTANCE:
-        return f"[{int(value) + 1}]"
-    
+    if attr in DICT_TO_XPATH_MAPPING:
+        return DICT_TO_XPATH_MAPPING[attr](value)
     raise ValueError(f"Unsupported attribute for XPath conversion: {attr}")
 
 

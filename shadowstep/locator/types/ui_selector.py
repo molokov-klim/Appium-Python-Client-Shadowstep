@@ -37,7 +37,7 @@ class UiAttribute(str, Enum):
     LONG_CLICKABLE = "longClickable"
     SCROLLABLE = "scrollable"
     SELECTED = "selected"
-    PASSWORD = "password"
+    PASSWORD = "password"  # noqa: S105
 
     # --- numeric ---
     INDEX = "index"

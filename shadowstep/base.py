@@ -87,22 +87,22 @@ class ShadowstepBase:
 
     def __init__(self):
         self.logger = logger
-        self.driver: WebDriver | None = None
-        self.server_ip: str | None = None
-        self.server_port: int | None = None
-        self.capabilities: dict[str, Any] | None = None
-        self.options: UiAutomator2Options | None = None
-        self.extensions: list[WebDriver] | None = None
-        self.ssh_password: str | None = None
-        self.ssh_user: str | None = None
-        self.ssh_port = 22
-        self.command_executor: str | None = None
-        self.transport: Transport | None = None
-        self.terminal: Terminal | None = None
-        self.adb: Adb | None = None
-        self._ignored_auto_discover_dirs = {"__pycache__", ".venv", "venv", "site-packages", "dist-packages", ".git",
+        self.driver: WebDriver
+        self.server_ip: str = None
+        self.server_port: int = None
+        self.capabilities: dict[str, Any] = None
+        self.options: UiAutomator2Options = None
+        self.extensions: list[WebDriver] = None
+        self.ssh_password: str = None
+        self.ssh_user: str = None
+        self.ssh_port: int = 22
+        self.command_executor: str = None
+        self.transport: Transport = None
+        self.terminal: Terminal = None
+        self.adb: Adb = None
+        self._ignored_auto_discover_dirs: set[str] = {"__pycache__", ".venv", "venv", "site-packages", "dist-packages", ".git",
                                             "build", "dist", ".idea", ".pytest_cache", "results"}
-        self._ignored_base_path_parts = self._get_ignored_dirs()
+        self._ignored_base_path_parts: str = self._get_ignored_dirs()
 
     def connect(self,
                 capabilities: dict[str, Any],
@@ -583,7 +583,7 @@ class ShadowstepBase:
             if "appium:skipLogcatCapture" in self.capabilities:
                 self.options.skip_logcat_capture = self.capabilities["appium:skipLogcatCapture"]
 
-    def _get_ignored_dirs(self):
+    def _get_ignored_dirs(self) -> set[str]:
         self.logger.debug(get_current_func_name())
 
         # базовые пути, которые считаем "системными"

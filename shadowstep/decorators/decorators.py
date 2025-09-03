@@ -1,4 +1,10 @@
-# shadowstep/utils/decorators.py
+"""
+Decorators module for Shadowstep framework.
+
+This module provides various decorators for enhancing method functionality
+including retry logic, logging, timing, and Allure reporting integration.
+"""
+
 from __future__ import annotations
 
 import base64
@@ -164,7 +170,7 @@ def retry(max_retries: int = 3, delay: float = 1.0) -> Callable[[F], F]:
     return decorator
 
 
-def time_it(func: F) -> F:
+def time_it(func: F) -> F:  # noqa: UP047
     """
     Decorator that measures method execution time.
 
@@ -194,7 +200,24 @@ def step_info(
     Callable[Concatenate[SelfT, P], T],
 ]:
     """
-    Decorator for logging and allure reports
+    Decorator for logging and allure reports with screenshot and video capture.
+
+    This decorator provides comprehensive logging, screenshot capture, and video
+    recording for method execution. It automatically captures screenshots before
+    and after method execution, records screen activity, and attaches all data
+    to Allure reports.
+
+    Args:
+        my_str: Description string for the step in logs and reports.
+
+    Returns:
+        Decorator function that wraps the target method.
+
+    Example:
+        @step_info("Click on login button")
+        def click_login(self):
+            # Method implementation
+            pass
     """
 
     def func_decorator(
@@ -214,10 +237,10 @@ def step_info(
 
             try:
                 self.shadowstep.driver.start_recording_screen()
-                self.logger.debug(f"[{class_name}.{method_name}] Запись экрана начата")
+                self.logger.debug(f"[{class_name}.{method_name}] Screen recording started")
             except Exception as error:
                 self.logger.error(
-                    f"[{class_name}.{method_name}] Ошибка при запуске записи экрана: {error}"
+                    f"[{class_name}.{method_name}] Error starting screen recording: {error}"
                 )
 
             try:
@@ -225,7 +248,7 @@ def step_info(
             except Exception as error:
                 result = cast(T, False)
                 self.logger.error(error)
-                # Скриншоты
+                # Screenshots
                 allure.attach(
                     screenshot,
                     name=screenshot_name_begin,
@@ -240,7 +263,7 @@ def step_info(
                 )
                 text = f"after {class_name}.{method_name} \n < args={args}, kwargs={kwargs} \n[{my_str}]"
 
-                # Видео
+                # Video
                 try:
                     video_data = self.shadowstep.driver.stop_recording_screen()
                     allure.attach(
@@ -249,14 +272,14 @@ def step_info(
                         attachment_type=allure.attachment_type.MP4,
                     )
                 except Exception as error_video:
-                    self.logger.warning(f"⚠️ [{class_name}.{method_name}] Видео не прикреплено")
+                    self.logger.warning(f"⚠️ [{class_name}.{method_name}] Video not attached")
                     self.logger.error(error_video)
                     self.telegram.send_message(f"Telegram error with send video: {error_video}")
 
-                # Ошибка и трейсбек
+                # Error and traceback
                 traceback_info = traceback.format_exc()
                 error_details = (
-                    f"❌ Ошибка в методе {class_name}.{method_name}: \n"
+                    f"❌ Error in method {class_name}.{method_name}: \n"
                     f"  args={args} \n"
                     f"  kwargs={kwargs} \n"
                     f"  error={error} \n"
@@ -285,7 +308,19 @@ def current_page() -> Callable[
     Callable[Concatenate[SelfT, P], T],
 ]:
     """
-    Decorator for method is_current_page from PageObject (better logging)
+    Decorator for PageObject is_current_page method with enhanced logging.
+
+    This decorator provides detailed logging for page verification methods,
+    showing method entry and exit with the page object representation.
+
+    Returns:
+        Decorator function that wraps the target method.
+
+    Example:
+        @current_page()
+        def is_current_page(self):
+            # Page verification logic
+            return True
     """
 
     def func_decorator(
@@ -306,7 +341,21 @@ def current_page() -> Callable[
 
 
 def log_info() -> Callable[[Callable[P, T]], Callable[P, T]]:
-    """Decorator for logging method entry/exit with type hints preserved."""
+    """
+    Decorator for logging method entry/exit with type hints preserved.
+
+    This decorator automatically logs method entry with arguments and exit with
+    return value. It preserves type hints and works with any callable function.
+
+    Returns:
+        Decorator function that wraps the target method.
+
+    Example:
+        @log_info()
+        def my_function(arg1: str, arg2: int) -> bool:
+            # Function implementation
+            return True
+    """
 
     def decorator(func: Callable[P, T]) -> Callable[P, T]:
         @wraps(func)

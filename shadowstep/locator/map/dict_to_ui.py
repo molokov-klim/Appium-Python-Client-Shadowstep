@@ -6,7 +6,7 @@ This module provides functions to convert Shadowstep dictionary locators
 to UiSelector method calls with proper attribute mapping and hierarchy handling.
 """
 
-from typing import Any, Union
+from typing import Any
 
 from shadowstep.locator.types.shadowstep_dict import DictAttribute
 from shadowstep.locator.types.ui_selector import UiAttribute
@@ -22,65 +22,12 @@ def dict_to_ui_attribute(attr: DictAttribute, value: Any) -> str:
         
     Returns:
         UiSelector method call string
+        
+    Raises:
+        ValueError: If attribute is not supported
     """
-    if attr == DictAttribute.TEXT:
-        return f'.{UiAttribute.TEXT.value}("{value}")'
-    if attr == DictAttribute.TEXT_CONTAINS:
-        return f'.{UiAttribute.TEXT_CONTAINS.value}("{value}")'
-    if attr == DictAttribute.TEXT_STARTS_WITH:
-        return f'.{UiAttribute.TEXT_STARTS_WITH.value}("{value}")'
-    if attr == DictAttribute.TEXT_MATCHES:
-        return f'.{UiAttribute.TEXT_MATCHES.value}("{value}")'
-    
-    if attr == DictAttribute.DESCRIPTION:
-        return f'.{UiAttribute.DESCRIPTION.value}("{value}")'
-    if attr == DictAttribute.DESCRIPTION_CONTAINS:
-        return f'.{UiAttribute.DESCRIPTION_CONTAINS.value}("{value}")'
-    if attr == DictAttribute.DESCRIPTION_STARTS_WITH:
-        return f'.{UiAttribute.DESCRIPTION_STARTS_WITH.value}("{value}")'
-    if attr == DictAttribute.DESCRIPTION_MATCHES:
-        return f'.{UiAttribute.DESCRIPTION_MATCHES.value}("{value}")'
-    
-    if attr == DictAttribute.RESOURCE_ID:
-        return f'.{UiAttribute.RESOURCE_ID.value}("{value}")'
-    if attr == DictAttribute.RESOURCE_ID_MATCHES:
-        return f'.{UiAttribute.RESOURCE_ID_MATCHES.value}("{value}")'
-    if attr == DictAttribute.PACKAGE_NAME:
-        return f'.{UiAttribute.PACKAGE_NAME.value}("{value}")'
-    if attr == DictAttribute.PACKAGE_NAME_MATCHES:
-        return f'.{UiAttribute.PACKAGE_NAME_MATCHES.value}("{value}")'
-    
-    if attr == DictAttribute.CLASS_NAME:
-        return f'.{UiAttribute.CLASS_NAME.value}("{value}")'
-    if attr == DictAttribute.CLASS_NAME_MATCHES:
-        return f'.{UiAttribute.CLASS_NAME_MATCHES.value}("{value}")'
-    
-    if attr == DictAttribute.CHECKABLE:
-        return f".{UiAttribute.CHECKABLE.value}({str(value).lower()})"
-    if attr == DictAttribute.CHECKED:
-        return f".{UiAttribute.CHECKED.value}({str(value).lower()})"
-    if attr == DictAttribute.CLICKABLE:
-        return f".{UiAttribute.CLICKABLE.value}({str(value).lower()})"
-    if attr == DictAttribute.ENABLED:
-        return f".{UiAttribute.ENABLED.value}({str(value).lower()})"
-    if attr == DictAttribute.FOCUSABLE:
-        return f".{UiAttribute.FOCUSABLE.value}({str(value).lower()})"
-    if attr == DictAttribute.FOCUSED:
-        return f".{UiAttribute.FOCUSED.value}({str(value).lower()})"
-    if attr == DictAttribute.LONG_CLICKABLE:
-        return f".{UiAttribute.LONG_CLICKABLE.value}({str(value).lower()})"
-    if attr == DictAttribute.SCROLLABLE:
-        return f".{UiAttribute.SCROLLABLE.value}({str(value).lower()})"
-    if attr == DictAttribute.SELECTED:
-        return f".{UiAttribute.SELECTED.value}({str(value).lower()})"
-    if attr == DictAttribute.PASSWORD:
-        return f".{UiAttribute.PASSWORD.value}({str(value).lower()})"
-    
-    if attr == DictAttribute.INDEX:
-        return f".{UiAttribute.INDEX.value}({int(value)})"
-    if attr == DictAttribute.INSTANCE:
-        return f".{UiAttribute.INSTANCE.value}({int(value)})"
-    
+    if attr in DICT_TO_UI_MAPPING:
+        return DICT_TO_UI_MAPPING[attr](value)
     raise ValueError(f"Unsupported attribute for UiSelector conversion: {attr}")
 
 
