@@ -1,4 +1,10 @@
-# shadowstep/logging/shadowstep_logcat.py
+"""Logcat module for capturing Android device logs via WebSocket.
+
+This module provides functionality for streaming Android device logs through
+WebSocket connections to Appium server, with automatic reconnection and
+file output capabilities.
+"""
+
 from __future__ import annotations
 
 import contextlib
@@ -13,26 +19,68 @@ from websocket import WebSocket, WebSocketConnectionClosedException, create_conn
 
 logger = logging.getLogger(__name__)
 
+# Constants
+DEFAULT_POLL_INTERVAL = 1.0
+WEBSOCKET_TIMEOUT = 5
+
 
 class ShadowstepLogcat:
+    """Android device logcat capture via WebSocket connection.
+    
+    This class provides functionality to capture Android device logs through
+    WebSocket connections to Appium server. It supports automatic reconnection,
+    file output, and graceful shutdown.
+    
+    Attributes:
+        _driver_getter: Function that returns the current WebDriver instance.
+        _poll_interval: Interval between reconnection attempts in seconds.
+        _thread: Background thread for logcat capture.
+        _stop_evt: Event to signal thread termination.
+        _filename: Output file path for logcat data.
+        _ws: Current WebSocket connection.
+    """
 
     def __init__(
             self,
-            driver_getter: Callable[[], WebDriver | None],  # функция, возвращающая актуальный driver
-            poll_interval: float = 1.0
-    ):
+            driver_getter: Callable[[], WebDriver | None],
+            poll_interval: float = DEFAULT_POLL_INTERVAL
+    ) -> None:
+        """Initialize ShadowstepLogcat.
+        
+        Args:
+            driver_getter: Function that returns the current WebDriver instance.
+            poll_interval: Interval between reconnection attempts in seconds.
+            
+        Raises:
+            ValueError: If poll_interval is negative.
+        """
+        if poll_interval < 0:
+            raise ValueError("poll_interval must be non-negative")
+            
         self._driver_getter = driver_getter
         self._poll_interval = poll_interval
 
         self._thread: threading.Thread | None = None
         self._stop_evt = threading.Event()
         self._filename: str | None = None
-        self._ws: WebSocket | None = None  # <-- храним текущее соединение
+        self._ws: WebSocket | None = None
 
-    def __del__(self):
+    def __del__(self) -> None:
+        """Cleanup method to ensure logcat is stopped on object destruction."""
         self.stop()
 
     def start(self, filename: str) -> None:
+        """Start logcat capture to specified file.
+        
+        Args:
+            filename: Path to the output file for logcat data.
+            
+        Raises:
+            ValueError: If filename is empty.
+        """
+        if not filename:
+            raise ValueError("filename cannot be empty")
+            
         if self._thread and self._thread.is_alive():
             logger.info("Logcat already running")
             return
@@ -48,15 +96,23 @@ class ShadowstepLogcat:
         logger.info(f"Started logcat to '{filename}'")
 
     def stop(self) -> None:
-        # 1) даём флаг потоку, чтобы он корректно вышел из цикла
+        """Stop logcat capture and cleanup resources.
+        
+        This method performs graceful shutdown by:
+        1. Setting stop event to signal thread termination
+        2. Closing WebSocket connection to interrupt blocking recv()
+        3. Sending command to stop log broadcast
+        4. Waiting for background thread to complete
+        """
+        # Set flag for thread to exit gracefully
         self._stop_evt.set()
 
-        # 2) закрываем WebSocket, чтобы прервать blocking recv()
+        # Close WebSocket to interrupt blocking recv()
         if self._ws:
             with contextlib.suppress(Exception):
                 self._ws.close()
 
-        # 3) отправляем команду остановить broadcast
+        # Send command to stop broadcast
         try:
             driver = self._driver_getter()
             if driver is not None:
@@ -64,7 +120,7 @@ class ShadowstepLogcat:
         except WebDriverException as e:
             logger.warning(f"Failed to stop broadcast: {e!r}")
 
-        # 4) ждём, пока фоновый поток действительно завершится и файл закроется
+        # Wait for background thread to complete and file to close
         if self._thread:
             self._thread.join()
             self._thread = None
@@ -72,89 +128,102 @@ class ShadowstepLogcat:
 
         logger.info("Logcat thread terminated, file closed")
 
-    def _run(self):  # noqa: C901
+    def _run(self) -> None:  # noqa: C901
+        """Main logcat capture loop running in background thread.
+        
+        This method handles the complete logcat capture workflow:
+        1. Opens output file
+        2. Establishes WebSocket connection to Appium
+        3. Streams log data to file
+        4. Handles reconnection on connection loss
+        """
         if not self._filename:
             logger.error("No filename specified for logcat")
             return
 
         try:
-            f = open(self._filename, "a", buffering=1, encoding="utf-8")
+            with open(self._filename, "a", buffering=1, encoding="utf-8") as f:
+                while not self._stop_evt.is_set():
+                    try:
+                        # Start broadcast
+                        driver = self._driver_getter()
+                        if driver is None:
+                            logger.warning("Driver is None, skipping logcat iteration")
+                            time.sleep(self._poll_interval)
+                            continue
+                        driver.execute_script("mobile: startLogsBroadcast")
+
+                        # Build base WebSocket URL
+                        session_id = driver.session_id
+                        
+                        http_url = self._get_http_url(driver)
+                        scheme, rest = http_url.split("://", 1)
+                        ws_scheme = "ws" if scheme == "http" else "wss"
+                        base_ws = f"{ws_scheme}://{rest}"
+                        if base_ws.endswith("/wd/hub"):
+                            base_ws = base_ws[:-7]  # Remove "/wd/hub"
+
+                        # Try both endpoints
+                        endpoints = [
+                            f"{base_ws}/ws/session/{session_id}/appium/logcat",
+                            f"{base_ws}/ws/session/{session_id}/appium/device/logcat",
+                        ]
+                        ws = None
+                        for url in endpoints:
+                            try:
+                                ws = create_connection(url, timeout=WEBSOCKET_TIMEOUT)
+                                logger.info(f"Logcat WebSocket connected: {url}")
+                                break
+                            except Exception as ex:
+                                logger.debug(f"Cannot connect to {url}: {ex!r}")
+                        if not ws:
+                            raise RuntimeError("Cannot connect to any logcat WS endpoint")
+
+                        # Store ws reference so stop() can close it
+                        self._ws = ws
+
+                        # Read until stop event
+                        while not self._stop_evt.is_set():
+                            try:
+                                line = ws.recv()
+                                if isinstance(line, bytes):
+                                    line = line.decode(errors="ignore", encoding="utf-8")
+                                f.write(line + "\n")
+                            except WebSocketConnectionClosedException:
+                                break  # Reconnect
+                            except Exception as ex:
+                                logger.debug(f"Ignoring recv error: {ex!r}")
+                                continue
+
+                        # Clear reference and close socket
+                        try:
+                            ws.close()
+                        except Exception as ex:
+                            logger.debug(f"Error closing WebSocket: {ex!r}")
+                        finally:
+                            self._ws = None
+
+                        # Pause before reconnection
+                        time.sleep(self._poll_interval)
+
+                    except Exception as inner:
+                        logger.error(f"Logcat stream error, retry in {self._poll_interval}s: {inner!r}", exc_info=True)
+                        time.sleep(self._poll_interval)
+
         except Exception as e:
             logger.error(f"Cannot open logcat file '{self._filename}': {e!r}")
-            return
-
-        try:
-            while not self._stop_evt.is_set():
-                try:
-                    # 1) Запускаем broadcast
-                    driver = self._driver_getter()
-                    if driver is None:
-                        logger.warning("Driver is None, skipping logcat iteration")
-                        time.sleep(self._poll_interval)
-                        continue
-                    driver.execute_script("mobile: startLogsBroadcast")
-
-                    # 2) Формируем базовый ws:// URL
-                    session_id = driver.session_id
-                    
-                    http_url = self._get_http_url(driver)
-                    scheme, rest = http_url.split("://", 1)
-                    ws_scheme = "ws" if scheme == "http" else "wss"
-                    base_ws = f"{ws_scheme}://{rest}".rstrip("/wd/hub")
-
-                    # 3) Пробуем оба эндпоинта
-                    endpoints = [
-                        f"{base_ws}/ws/session/{session_id}/appium/logcat",
-                        f"{base_ws}/ws/session/{session_id}/appium/device/logcat",
-                    ]
-                    ws = None
-                    for url in endpoints:
-                        try:
-                            ws = create_connection(url, timeout=5)
-                            logger.info(f"Logcat WebSocket connected: {url}")
-                            break
-                        except Exception as ex:
-                            logger.debug(f"Cannot connect to {url}: {ex!r}")
-                    if not ws:
-                        raise RuntimeError("Cannot connect to any logcat WS endpoint")
-
-                    # сохраним ws, чтобы stop() мог его закрыть
-                    self._ws = ws
-
-                    # 4) Читаем до stop_evt
-                    while not self._stop_evt.is_set():
-                        try:
-                            line = ws.recv()
-                            if isinstance(line, bytes):
-                                line = line.decode(errors="ignore", encoding="utf-8")
-                            f.write(line + "\n")
-                        except WebSocketConnectionClosedException:
-                            break  # переподключимся
-                        except Exception as ex:
-                            logger.debug(f"Ignoring recv error: {ex!r}")
-                            continue
-
-                    # очистить ссылку и закрыть сокет
-                    try:
-                        ws.close()
-                    except Exception:
-                        pass
-                    finally:
-                        self._ws = None
-
-                    # пауза перед переподключением
-                    time.sleep(self._poll_interval)
-
-                except Exception as inner:
-                    logger.error(f"Logcat stream error, retry in {self._poll_interval}s: {inner!r}", exc_info=True)
-                    time.sleep(self._poll_interval)
-
         finally:
-            with contextlib.suppress(Exception):
-                f.close()
             logger.info("Logcat thread terminated, file closed")
 
     def _get_http_url(self, driver: WebDriver) -> str:
+        """Extract HTTP URL from WebDriver command executor.
+        
+        Args:
+            driver: WebDriver instance to extract URL from.
+            
+        Returns:
+            HTTP URL string for the WebDriver command executor.
+        """
         http_url = getattr(driver.command_executor, "_url", None)
         if not http_url:
             http_url = getattr(driver.command_executor, "_client_config", None)
