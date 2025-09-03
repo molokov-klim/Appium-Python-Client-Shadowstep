@@ -1,4 +1,3 @@
-import subprocess
 import time
 from collections.abc import Generator
 from typing import Any
@@ -110,8 +109,8 @@ class TestElement:
         element = app.get_element(locator={"content-desc": "Phone"})
         element.tap()
         time.sleep(3)
-        response = str(subprocess.check_output(["adb", "shell", "dumpsys window windows | grep -E 'mSurface'"], shell=True))  # noqa: S602, S607  # noqa: S602, S607
-        assert "com.android.dialer" in response  # noqa: S101  # noqa: S101
+        expect_element = app.get_element({"package": "com.android.dialer"})
+        assert expect_element.is_visible()  # noqa: S101  # noqa: S101
 
     def test_tap_duration(self, app: Shadowstep, stability: None):
         phone = app.get_element(locator={"content-desc": "Phone"})
@@ -140,8 +139,8 @@ class TestElement:
         element.tap()
         assert app.is_connected()  # noqa: S101  # noqa: S101
         time.sleep(3)
-        response = str(subprocess.check_output(["adb", "shell", "dumpsys window windows | grep -E 'mSurface'"], shell=True))  # noqa: S602, S607  # noqa: S602, S607
-        assert "com.android.dialer" in response  # noqa: S101  # noqa: S101
+        expect_element = app.get_element({"package": "com.android.dialer"})
+        assert expect_element.is_visible()  # noqa: S101  # noqa: S101
 
     def test_tap_no_such_element_exception(self, app: Shadowstep, stability: None):
         try:
@@ -175,8 +174,8 @@ class TestElement:
         element = app.get_element(locator={"content-desc": "Phone"})
         element.click()
         time.sleep(5)
-        response = str(subprocess.check_output(["adb", "shell", "dumpsys window windows | grep -E 'mSurface'"], shell=True))  # noqa: S602, S607
-        assert "com.android.dialer" in response  # noqa: S101  # noqa: S101
+        expect_element = app.get_element({"package": "com.android.dialer"})
+        assert expect_element.is_visible()  # noqa: S101  # noqa: S101
 
     def test_click_duration(self, app: Shadowstep, stability: None):
         phone = app.get_element(locator={"content-desc": "Phone"})
