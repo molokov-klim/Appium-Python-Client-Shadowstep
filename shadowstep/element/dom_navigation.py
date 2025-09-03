@@ -2,13 +2,25 @@
 from __future__ import annotations
 
 import logging
+import time
 from typing import TYPE_CHECKING
 
+from selenium.common.exceptions import (
+    InvalidSessionIdException,
+    NoSuchDriverException,
+    StaleElementReferenceException,
+    TimeoutException,
+    WebDriverException,
+)
 from selenium.types import WaitExcTypes
-from utils.utils import get_current_func_name
+from selenium.webdriver.support import expected_conditions
+from selenium.webdriver.support.wait import WebDriverWait
+
+from shadowstep.element.element import GeneralElementException
+from shadowstep.utils.utils import get_current_func_name
 
 if TYPE_CHECKING:
-    from element.element import Element
+    from shadowstep.element.element import Element
 
 
 class DomNavigation:
@@ -23,7 +35,7 @@ class DomNavigation:
                     contains: bool = False) -> Element:
         self.logger.debug(f"{get_current_func_name()}")
 
-        if isinstance(locator, 'Element'):
+        if isinstance(locator, "Element"):
             locator = locator.locator
 
         # XPath for parent

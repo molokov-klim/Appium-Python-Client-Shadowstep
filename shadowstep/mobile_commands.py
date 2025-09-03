@@ -2,15 +2,13 @@
 from __future__ import annotations
 
 import logging
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 from selenium.common.exceptions import (
     InvalidSessionIdException,
     NoSuchDriverException,
     StaleElementReferenceException,
 )
-
-from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from shadowstep.shadowstep import Shadowstep
@@ -22,7 +20,7 @@ from shadowstep.utils.utils import get_current_func_name
 
 class MobileCommands:
 
-    def __init__(self, shadowstep: "Shadowstep"):
+    def __init__(self, shadowstep: Shadowstep):
         self.shadowstep = shadowstep
         self.driver: Any = None
         self.logger = logging.getLogger(f"{__name__}.{self.__class__.__name__}")

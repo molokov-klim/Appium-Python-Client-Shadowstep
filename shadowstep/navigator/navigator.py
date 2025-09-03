@@ -226,7 +226,7 @@ class PageGraph:
 
         # Add vertex and edges to NetworkX graph
         self.nx_graph.add_node(page)
-        if isinstance(edges, (dict, list, tuple)):
+        if isinstance(edges, dict | list | tuple):
             for target_name in edges:
                 self.nx_graph.add_edge(page, target_name)
 

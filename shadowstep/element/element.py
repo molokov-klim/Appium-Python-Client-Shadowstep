@@ -1254,7 +1254,7 @@ class Element(ElementBase):
         start_time = time.time()
         if isinstance(locator, Element):
             locator = locator.locator
-        if isinstance(locator, (dict, tuple)):  # noqa: UP038
+        if isinstance(locator, dict | tuple):  # noqa: UP038
             selector = self.locator_converter.to_uiselector(locator)
         else:
             raise GeneralElementException("Only dictionary locators are supported")
@@ -1308,7 +1308,7 @@ class Element(ElementBase):
         start_time = time.time()
         if isinstance(locator, Element):
             locator = locator.locator
-        if isinstance(locator, (dict, tuple)):
+        if isinstance(locator, dict | tuple):
             # selector = self.locator_converter.to_uiselector(locator)  # unused variable
             pass
         else:
