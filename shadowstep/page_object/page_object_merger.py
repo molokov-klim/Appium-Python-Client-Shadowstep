@@ -42,9 +42,8 @@ class PageObjectMerger:
         self.logger.debug(f"{get_current_func_name()}")
         try:
             with open(file, encoding="utf-8") as f:
-                content = f.read()
                 # self.logger.info(f"{content=}")
-                return content
+                return f.read()
         except Exception as e:
             self.logger.error(f"Failed to read {file}: {e}")
             raise

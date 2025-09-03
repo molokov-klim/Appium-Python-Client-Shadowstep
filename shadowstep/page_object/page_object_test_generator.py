@@ -50,7 +50,7 @@ class PageObjectTestGenerator:
         templates_dir = os.path.join(os.path.dirname(__file__), "templates")
         self.env = Environment(
             loader=FileSystemLoader(templates_dir),
-            autoescape=False,
+            autoescape=True,  # noqa: S701
             keep_trailing_newline=True,
             trim_blocks=True,
             lstrip_blocks=True

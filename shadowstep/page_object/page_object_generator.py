@@ -56,7 +56,7 @@ class PageObjectGenerator:
         )
         self.env = Environment(
             loader=FileSystemLoader(templates_dir),  # откуда загружать шаблоны (директория с .j2-файлами)
-            autoescape=False,  # отключаем автоэкранирование HTML/JS (не нужно при генерации Python-кода)
+            autoescape=True,  # noqa: S701
             keep_trailing_newline=True,
             # сохраняем завершающий перевод строки в файле (важно для git-diff, PEP8 и т.д.)
             trim_blocks=True,  # удаляет новую строку сразу после {% block %} или {% endif %} (уменьшает пустые строки)
@@ -76,19 +76,22 @@ class PageObjectGenerator:
         step = "Формирование title property"
         self.logger.debug(step)
         title = self._get_title_property(ui_element_tree)
-        assert title is not None, "Can't find title"
+        if title is None:
+            raise ValueError("Can't find title")  # noqa: S101
         self.logger.debug(f"{title.attrs=}")
 
         step = "Формирование name property"
         self.logger.debug(step)
         name = self._get_name_property(title)
-        assert name != "", "Name cannot be empty"
+        if name == "":
+            raise ValueError("Name cannot be empty")  # noqa: S101
         self.logger.debug(f"{name=}")
 
         step = "Формирование имени класса"
         self.logger.debug(step)
         page_class_name = self._normilize_to_camel_case(name)
-        assert page_class_name != "", "page_class_name cannot be empty"
+        if page_class_name == "":
+            raise ValueError("page_class_name cannot be empty")  # noqa: S101
         self.logger.debug(f"{page_class_name=}")
 
         step = "Формирование recycler property"

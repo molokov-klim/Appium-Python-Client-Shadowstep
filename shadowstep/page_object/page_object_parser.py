@@ -10,7 +10,7 @@ from __future__ import annotations
 import logging
 from typing import Any, cast
 
-from lxml import etree as ET
+from lxml import etree  # noqa: N812
 
 from shadowstep.page_object.page_object_element_node import UiElementNode
 from shadowstep.utils.utils import get_current_func_name
@@ -95,7 +95,7 @@ class PageObjectParser:
         self.BLACK_LIST_RESOURCE_ID: tuple[str, ...] = black_list_resource_id
         self.CONTAINER_WHITELIST: tuple[str, ...] = container_whitelist
 
-        self._tree: ET.Element | None = None
+        self._tree: etree.Element | None = None
         self.ui_element_tree: UiElementNode | None = None
 
     def parse(self, xml: str) -> UiElementNode:
@@ -108,19 +108,19 @@ class PageObjectParser:
             Root node of the parsed element tree
             
         Raises:
-            ET.XMLSyntaxError: If XML parsing fails
+            etree.XMLSyntaxError: If XML parsing fails
             ValueError: If root node is filtered out and has no valid children
         """
         self.logger.info(f"{get_current_func_name()}")
         try:
-            self._tree = ET.fromstring(xml.encode("utf-8"))
+            self._tree = etree.fromstring(xml.encode("utf-8"))
             self.ui_element_tree = self._build_tree(self._tree)
             return self.ui_element_tree
-        except ET.XMLSyntaxError:
+        except etree.XMLSyntaxError:
             self.logger.exception("Failed to parse XML")
             raise
 
-    def _build_tree(self, root_et: ET._Element) -> UiElementNode:
+    def _build_tree(self, root_et: etree._Element) -> UiElementNode:  # noqa: C901
         """Build element tree from XML element.
         
         Args:
@@ -135,7 +135,7 @@ class PageObjectParser:
         id_counter = 0
 
         def _recurse(
-            el: ET._Element,
+            el: etree._Element,
             parent: UiElementNode | None,
             scroll_stack: ScrollStack,
             depth: int

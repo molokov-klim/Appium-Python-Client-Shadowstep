@@ -23,6 +23,8 @@ class PageObjectRecyclerExplorer:
 
     def explore(self, output_dir: str) -> str:
         self.logger.info(f"{get_current_func_name()}")
+        if self.base.terminal is None:
+            raise ValueError("Terminal is not initialized")
         width, height = self.base.terminal.get_screen_resolution()
         x = width // 2
         y_start = int(height * 0.2)

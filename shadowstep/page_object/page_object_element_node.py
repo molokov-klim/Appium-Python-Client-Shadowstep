@@ -18,7 +18,7 @@ class UiElementNode:
     id: str
     tag: str
     attrs: dict[str, Any]
-    parent: UiElementNode
+    parent: UiElementNode | None
     children: list[UiElementNode] = field(default_factory=list)
     depth: int = 0
     scrollable_parents: list[str] = field(default_factory=list)
@@ -99,7 +99,7 @@ class Jinja2Renderer(TemplateRenderer):
         self.logger = logging.getLogger(__name__)
         self.env = Environment(
             loader=FileSystemLoader(templates_dir),
-            autoescape=False,
+            autoescape=True,  # noqa: S701
             keep_trailing_newline=True,
             trim_blocks=True,
             lstrip_blocks=True
