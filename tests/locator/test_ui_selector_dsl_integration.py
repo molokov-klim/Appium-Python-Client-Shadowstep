@@ -51,7 +51,7 @@ class TestUiSelectorDSLIntegration:
         selector = UiSelector().className("android.widget.LinearLayout").childSelector(child)
         result = self.converter.to_dict(selector)
         expected = {
-            "className": "android.widget.LinearLayout",
+            "class": "android.widget.LinearLayout",
             "childSelector": {
                 "text": "Item"
             }
@@ -191,7 +191,7 @@ class TestUiSelectorDSLIntegration:
             "text", "textContains", "textStartsWith", "textMatches",
             "description", "descriptionContains", "descriptionStartsWith", "descriptionMatches",
             "resourceId", "resourceIdMatches", "packageName", "packageNameMatches",
-            "className", "classNameMatches",
+            "class", "classNameMatches",
             "checkable", "checked", "clickable", "enabled", "focusable", "focused",
             "longClickable", "scrollable", "selected", "password",
             "index", "instance"
@@ -215,7 +215,7 @@ class TestUiSelectorDSLIntegration:
         
         # Verify unicode is preserved
         assert selector_dict["text"] == "Привет мир! 🌍"  # noqa: S101
-        assert selector_dict["description"] == "Special chars: @#$%^&*()"  # noqa: S101
+        assert selector_dict["content-desc"] == "Special chars: @#$%^&*()"  # noqa: S101
         assert "Привет мир! 🌍" in uiselector_string  # noqa: S101
 
     def test_ui_selector_regex_patterns(self):
@@ -232,8 +232,8 @@ class TestUiSelectorDSLIntegration:
         
         # Verify regex patterns are preserved
         assert selector_dict["textMatches"] == "^[A-Z][a-z]+\\s+\\d{2,4}$"  # noqa: S101
-        assert selector_dict["resourceIdMatches"] == "com\\.example\\..*\\.id\\..*"  # noqa: S101
-        assert selector_dict["classNameMatches"] == ".*Button.*|.*TextView.*"  # noqa: S101
+        assert selector_dict["resource-idMatches"] == "com\\.example\\..*\\.id\\..*"  # noqa: S101
+        assert selector_dict["classMatches"] == ".*Button.*|.*TextView.*"  # noqa: S101
         
         # Verify other conversions work
         assert xpath_tuple[0] == "xpath"  # noqa: S101
@@ -267,7 +267,7 @@ class TestUiSelectorDSLIntegration:
         # Empty selector
         empty_selector = UiSelector()
         empty_dict = self.converter.to_dict(empty_selector)
-        assert empty_dict == {}  # noqa: S101
+        assert empty_dict == {}  # noqa: S101   # type: ignore
         
         # Selector with only boolean attributes
         bool_selector = UiSelector().clickable(True).enabled(False)

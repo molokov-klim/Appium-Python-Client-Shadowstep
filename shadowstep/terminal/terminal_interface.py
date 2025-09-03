@@ -84,17 +84,17 @@ from appium.webdriver.webdriver import WebDriver
 from selenium.common import NoSuchDriverException, InvalidSessionIdException
 
 class TerminalInterface:
-    def __init__(self, driver: WebDriver, base=None):
+    def __init__(self, driver: WebDriver, shadowstep=None):
         self.driver = driver
-        self.base = base
+        self.shadowstep = shadowstep
 
     def adb_shell(self, command: str, args: str = "", tries: int = 3):
         for _ in range(tries):
             try:
                 return self.driver.execute_script("mobile: shell", {"command": command, "args": [args]})
             except (NoSuchDriverException, InvalidSessionIdException):
-                if self.base:
-                    self.base.reconnect()
+                if self.shadowstep:
+                    self.shadowstep.reconnect()
 ```
 
 > Остальные методы (`tap`, `swipe`, `press_home`, `get_prop`, `record_video`, и т.д.) — добавляются сюда, без `transport`.
@@ -108,8 +108,8 @@ from .terminal_interface import TerminalInterface
 from .terminal import Transport  # или как у тебя определён transport
 
 class RemoteTerminal(TerminalInterface):
-    def __init__(self, driver, transport: Transport, base=None):
-        super().__init__(driver, base)
+    def __init__(self, driver, transport: Transport, shadowstep=None):
+        super().__init__(driver, shadowstep)
         self.transport = transport
 
     def push(self, source_path: str, remote_server_path: str, filename: str, destination: str, udid: str) -> bool:
@@ -122,11 +122,11 @@ class RemoteTerminal(TerminalInterface):
 ### 4. 🧠 Автовыбор реализации
 
 ```python
-def create_terminal(base) -> TerminalInterface:
-    if base.ssh_login and base.ssh_password:
-        return RemoteTerminal(driver=base.driver, transport=base.transport, base=base)
+def create_terminal(shadowstep) -> TerminalInterface:
+    if shadowstep.ssh_login and shadowstep.ssh_password:
+        return RemoteTerminal(driver=shadowstep.driver, transport=shadowstep.transport, shadowstep=shadowstep)
     else:
-        return TerminalInterface(driver=base.driver, base=base)
+        return TerminalInterface(driver=shadowstep.driver, shadowstep=shadowstep)
 ```
 
 ---

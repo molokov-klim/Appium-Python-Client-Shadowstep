@@ -128,7 +128,7 @@ class DictConverter:
                 self.logger.warning(f"Unknown attribute: {key}")
                 continue
 
-        # Build base XPath with conditions (avoid logical operators for compatibility)
+        # Build shadowstep XPath with conditions (avoid logical operators for compatibility)
         if xpath_parts:
             # Use nested conditions instead of logical operators
             xpath = base_xpath
@@ -204,7 +204,7 @@ class DictConverter:
                 self.logger.warning(f"Unknown attribute: {key}")
                 continue
 
-        # Build base UiSelector chain
+        # Build shadowstep UiSelector chain
         ui_selector = "".join(ui_parts)
 
         # Handle hierarchical relationships

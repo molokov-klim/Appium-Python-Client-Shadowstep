@@ -12,7 +12,7 @@ from typing import TYPE_CHECKING, Any, cast
 from appium.webdriver.webelement import WebElement
 from exceptions.shadowstep_exceptions import GeneralElementException
 from locator import UiSelector
-from lxml import etree as etree
+from lxml import etree  # type: ignore
 from selenium.common import (
     InvalidSessionIdException,
     NoSuchDriverException,
@@ -45,8 +45,8 @@ logger = logging.getLogger(__name__)
 
 class Element(ElementBase):
     def __init__(self,
-                 locator: tuple[str, str] | dict[str, str] | Element | UiSelector,
-                 base: Shadowstep,
+                 locator: tuple[str, str] | dict[str, str] | Element | UiSelector | WebElement,
+                 shadowstep: Shadowstep,
                  timeout: float = 30,
                  poll_frequency: float = 0.5,
                  ignored_exceptions: WaitExcTypes | None = None,
@@ -56,8 +56,8 @@ class Element(ElementBase):
         if isinstance(locator, Element):
             locator = locator.locator
         elif isinstance(locator, UiSelector):
-            locator = locator.__str__()
-        super().__init__(locator, base, timeout, poll_frequency, ignored_exceptions, contains, native)
+            locator = cast(UiSelector, locator.__str__())
+        super().__init__(locator, shadowstep, timeout, poll_frequency, ignored_exceptions, contains, native)
         self.logger = logging.getLogger(f"{__name__}.{self.__class__.__name__}")
         self.logger.debug(f"Initialized Element with locator: {self.locator}")
 
@@ -65,7 +65,7 @@ class Element(ElementBase):
         return f"Element(locator={self.locator!r}"
 
     def get_element(self,
-                    locator: tuple[str, str] | dict[str, str],
+                    locator: tuple[str, str] | dict[str, str] | Element | UiSelector | WebElement,
                     timeout: int = 30,
                     poll_frequency: float = 0.5,
                     ignored_exceptions: WaitExcTypes | None = None,
@@ -93,7 +93,7 @@ class Element(ElementBase):
         inner_locator = ("xpath", f"{parent_locator[1]}{inner_path}")
 
         return Element(locator=inner_locator,
-                       base=self.base,
+                       shadowstep=self.shadowstep,
                        timeout=timeout,
                        poll_frequency=poll_frequency,
                        ignored_exceptions=ignored_exceptions,
@@ -101,7 +101,7 @@ class Element(ElementBase):
 
     def get_elements(  # noqa: C901
             self,
-            locator: tuple[str, str] | dict[str, str] | Element,
+            locator: tuple[str, str] | dict[str, str] | Element | UiSelector | WebElement,
             timeout: float = 30,
             poll_frequency: float = 0.5,
             ignored_exceptions: WaitExcTypes | None = None,
@@ -113,30 +113,16 @@ class Element(ElementBase):
         self.logger.debug(f"{get_current_func_name()}")
         start_time = time.time()
 
-        # [Step] Normalize locator
-        step = "Normalizing locator"
-        self.logger.debug(f"[{step}] started")
         if isinstance(locator, Element):
             locator = locator.locator
-
-        # [Step] Resolve base XPath
-        step = "Resolving base XPath"
-        self.logger.debug(f"[{step}] started")
+            
         base_xpath = self._get_xpath()
         if not base_xpath:
-            raise GeneralElementException("Unable to resolve base xpath")
+            raise GeneralElementException("Unable to resolve shadowstep xpath")
 
-        # [Step] Convert locator to XPath
-        step = "Converting locator to XPath"
-        self.logger.debug(f"[{step}] started")
         locator = self.locator_converter.to_xpath(locator)
         locator = self._contains_to_xpath(locator)
 
-        # [Step] Iteratively collect elements
-        step = "Collecting elements"
-        self.logger.debug(f"[{step}] started")
-
-        self.logger.info(f"{locator=}")
         while time.time() - start_time < self.timeout:
             try:
                 self._get_driver()
@@ -152,7 +138,6 @@ class Element(ElementBase):
 
                 elements = []
                 for native_element in native_elements:
-                    # [Extract attributes]
                     attributes = {
                         attr: native_element.get_attribute(attr) for attr in [
                             "resource-id", "bounds",
@@ -162,8 +147,8 @@ class Element(ElementBase):
                         ]
                     }
                     element = Element(
-                        locator=attributes,
-                        base=self.base,
+                        locator=cast(dict[str, str], attributes),
+                        shadowstep=self.shadowstep,
                         timeout=timeout,
                         poll_frequency=poll_frequency,
                         ignored_exceptions=ignored_exceptions,
@@ -196,6 +181,60 @@ class Element(ElementBase):
         # if nothing found return empty list
         return []
 
+    def _resolve_xpath_for_attributes(self) -> str | None:
+        """Resolve XPath expression from locator for attributes fetching."""
+        try:
+            xpath_expr = self.locator_converter.to_xpath(self.locator)[1]
+            if not xpath_expr:
+                self.logger.error(f"Failed to resolve XPath from locator: {self.locator}")
+                return None
+            self.logger.debug(f"Resolved XPath: {xpath_expr}")
+            return xpath_expr
+        except Exception as e:
+            self.logger.error(f"Exception in to_xpath: {e}")
+            return None
+
+    def _parse_page_source_for_attributes(self, xpath_expr: str) -> dict[str, str] | None:
+        """Parse page source and extract attributes using XPath."""
+        try:
+            self._get_driver()
+            page_source = self.driver.page_source
+            parser = etree.XMLParser(recover=True)
+            root = etree.fromstring(page_source.encode("utf-8"), parser=parser)
+
+            matches = root.xpath(self._clean_xpath_expr(xpath_expr))
+            if matches:
+                element = matches[0]
+                attrib = {k: str(v) for k, v in element.attrib.items()}
+                self.logger.debug(f"Matched attributes: {attrib}")
+                return attrib
+            self.logger.warning(f"{xpath_expr=}")
+            self.logger.warning(type(xpath_expr))
+            self.logger.warning(f"No matches found for given XPath. {matches}")
+            return None
+        except (NoSuchDriverException, InvalidSessionIdException) as error:
+            self._handle_driver_error(error)
+            return None
+        except StaleElementReferenceException as error:
+            self.logger.debug(error)
+            self.logger.warning("StaleElementReferenceException\nRe-acquire element")
+            self.native = None
+            self._get_native()
+            return None
+        except WebDriverException as error:
+            if "instrumentation process is not running" in str(error).lower():
+                self._handle_driver_error(error)
+                return None
+            raise
+        except (etree.XPathEvalError, etree.XMLSyntaxError, UnicodeEncodeError) as e:
+            self.logger.error(f"Parsing error: {e}")
+            if isinstance(e, etree.XPathEvalError):
+                self.logger.error(f"XPath: {xpath_expr}")
+            return None
+        except Exception as e:
+            self.logger.error(f"Unexpected error in _parse_page_source_for_attributes: {e}")
+            return None
+
     def get_attributes(self) -> dict[str, str]:
         """Fetch all XML attributes of the element by matching locator against page source.
 
@@ -205,63 +244,18 @@ class Element(ElementBase):
         self.logger.debug(f"{get_current_func_name()}")
         start_time = time.time()
 
-        # Convert locator to XPath expression (supports dict, tuple, UiSelector string)
-        try:
-            xpath_expr = self.locator_converter.to_xpath(self.locator)[1]
-            if not xpath_expr:
-                self.logger.error(f"Failed to resolve XPath from locator: {self.locator}")
-                return {}  # Return empty dict on error
-            self.logger.debug(f"Resolved XPath: {xpath_expr}")
-        except Exception as e:
-            self.logger.error(f"Exception in to_xpath: {e}")
-            return {}  # Return empty dict on error
+        xpath_expr = self._resolve_xpath_for_attributes()
+        if not xpath_expr:
+            return {}
 
         while time.time() - start_time < self.timeout:
-            try:
-                self._get_driver()
-                page_source = self.driver.page_source
-                parser = etree.XMLParser(recover=True)
-                root = etree.fromstring(page_source.encode("utf-8"), parser=parser)
+            result = self._parse_page_source_for_attributes(xpath_expr)
+            if result is not None:
+                return result
+            time.sleep(0.1)  # Small delay before retry
 
-                matches = root.xpath(self._clean_xpath_expr(xpath_expr))
-                if matches:
-                    element = matches[0]
-                    attrib = {k: str(v) for k, v in element.attrib.items()}
-                    self.logger.debug(f"Matched attributes: {attrib}")
-                    return attrib
-                self.logger.warning(f"{xpath_expr=}")
-                self.logger.warning(type(xpath_expr))
-                self.logger.warning(f"No matches found for given XPath. {matches}")
-            except NoSuchDriverException as error:
-                self._handle_driver_error(error)
-            except InvalidSessionIdException as error:
-                self._handle_driver_error(error)
-            except StaleElementReferenceException as error:
-                self.logger.debug(error)
-                self.logger.warning("StaleElementReferenceException\nRe-acquire element")
-                self.native = None
-                self._get_native()
-                continue
-            except WebDriverException as error:
-                if "instrumentation process is not running" in str(error).lower():
-                    self._handle_driver_error(error)
-                    continue
-                raise
-            except etree.XPathEvalError as e:
-                self.logger.error(f"XPathEvalError: {e}")
-                self.logger.error(f"XPath: {xpath_expr}")
-                return {}  # Return empty dict on error
-            except etree.XMLSyntaxError as e:
-                self.logger.error(f"XMLSyntaxError: {e}")
-                return {}  # Return empty dict on error
-            except UnicodeEncodeError as e:
-                self.logger.error(f"UnicodeEncodeError in page_source: {e}")
-                return {}  # Return empty dict on error
-            except Exception as e:
-                self.logger.error(f"Unexpected error in get_attributes: {e}")
-                continue
         self.logger.warning(f"Timeout exceeded ({self.timeout}s) without matching element.")
-        return {}  # Return empty dict on error
+        return {}
 
     def get_parent(self) -> Element:
         self.logger.debug(f"{get_current_func_name()}")
@@ -270,16 +264,16 @@ class Element(ElementBase):
             if xpath is None:
                 raise GeneralElementException("Unable to retrieve XPath of the element")
             xpath = xpath + "/.."
-            return Element(locator=("xpath", xpath), base=self.base)
+            return Element(locator=("xpath", xpath), shadowstep=self.shadowstep)
         except NoSuchDriverException:
             self.logger.error(
                 f"{inspect.currentframe().f_code.co_name if inspect.currentframe() else 'unknown'} NoSuchDriverException")
-            self.base.reconnect()
+            self.shadowstep.reconnect()
             return None
         except InvalidSessionIdException:
             self.logger.error(
                 f"{inspect.currentframe().f_code.co_name if inspect.currentframe() else 'unknown'} InvalidSessionIdException")
-            self.base.reconnect()
+            self.shadowstep.reconnect()
             return None
 
     def get_parents(self) -> Generator[Element]:
@@ -296,7 +290,7 @@ class Element(ElementBase):
         if not current_xpath:
             raise GeneralElementException("Cannot resolve current XPath")
 
-        # Form base XPath that captures all parents
+        # Form shadowstep XPath that captures all parents
         base_ancestor_xpath = f"{current_xpath}/ancestor::*"
 
         # Instead of calling `find_elements`, just iterate indices and build XPath
@@ -304,7 +298,7 @@ class Element(ElementBase):
             ancestor_xpath = f"{base_ancestor_xpath}[{index}]"
             element = Element(
                 locator=("xpath", ancestor_xpath),
-                base=self.base,
+                shadowstep=self.shadowstep,
                 timeout=self.timeout,
                 poll_frequency=self.poll_frequency,
                 ignored_exceptions=self.ignored_exceptions,
@@ -337,7 +331,7 @@ class Element(ElementBase):
 
         return Element(
             locator=("xpath", xpath),
-            base=self.base,
+            shadowstep=self.shadowstep,
             timeout=self.timeout,
             poll_frequency=self.poll_frequency,
             ignored_exceptions=self.ignored_exceptions,
@@ -363,7 +357,7 @@ class Element(ElementBase):
             xpath = f"{base_xpath}/preceding-sibling::*[{index}]"
             sibling = Element(
                 locator=("xpath", xpath),
-                base=self.base,
+                shadowstep=self.shadowstep,
                 timeout=self.timeout,
                 poll_frequency=self.poll_frequency,
                 ignored_exceptions=self.ignored_exceptions,
@@ -383,7 +377,7 @@ class Element(ElementBase):
             xpath = f"{base_xpath}/following-sibling::*[{index}]"
             sibling = Element(
                 locator=("xpath", xpath),
-                base=self.base,
+                shadowstep=self.shadowstep,
                 timeout=self.timeout,
                 poll_frequency=self.poll_frequency,
                 ignored_exceptions=self.ignored_exceptions,
@@ -445,7 +439,7 @@ class Element(ElementBase):
 
             return Element(
                 locator=("xpath", cousin_xpath),
-                base=self.base,
+                shadowstep=self.shadowstep,
                 timeout=self.timeout,
                 poll_frequency=self.poll_frequency,
                 ignored_exceptions=self.ignored_exceptions,
@@ -710,48 +704,59 @@ class Element(ElementBase):
             stacktrace=traceback.format_stack()
         )
 
+    def _check_element_bounds(self, element_location: dict, element_size: dict, screen_width: int, screen_height: int) -> bool:
+        """Check if element is within screen bounds."""
+        return not (
+            element_location["y"] + element_size["height"] > screen_height or
+            element_location["x"] + element_size["width"] > screen_width or
+            element_location["y"] < 0 or
+            element_location["x"] < 0
+        )
+
+    def _check_element_visibility(self) -> bool | None:
+        """Check if element is visible, handling exceptions."""
+        try:
+            screen_size = self.shadowstep.terminal.get_screen_resolution()
+            screen_width = screen_size[0]
+            screen_height = screen_size[1]
+            current_element = self._get_native()
+            
+            if current_element is None:
+                return False
+            if current_element.get_attribute("displayed") != "true":
+                return False
+                
+            element_location = current_element.location
+            element_size = current_element.size
+            return self._check_element_bounds(element_location, element_size, screen_width, screen_height)
+            
+        except NoSuchElementException:
+            return False
+        except (NoSuchDriverException, InvalidSessionIdException, AttributeError) as error:
+            self._handle_driver_error(error)
+            return None
+        except StaleElementReferenceException as error:
+            self.logger.debug(error)
+            self.logger.warning("StaleElementReferenceException\nRe-acquire element")
+            self.native = None
+            self._get_native()
+            return None
+        except WebDriverException as error:
+            if "instrumentation process is not running" in str(error).lower():
+                self._handle_driver_error(error)
+                return None
+            raise
+
     def is_visible(self) -> bool:
         self.logger.debug(f"{get_current_func_name()}")
         start_time = time.time()
+        
         while time.time() - start_time < self.timeout:
-            try:
-                screen_size = self.base.terminal.get_screen_resolution()  # Get screen dimensions
-                screen_width = screen_size[0]  # Screen width
-                screen_height = screen_size[1]  # Screen height
-                current_element = self._get_native()
-                if current_element is None:
-                    return False
-                if current_element.get_attribute("displayed") != "true":
-                    # If element is not displayed on screen
-                    return False
-                element_location = current_element.location  # Get element coordinates
-                element_size = current_element.size  # Get element dimensions
-                # If element is outside screen bounds
-                return not (
-                        element_location["y"] + element_size["height"] > screen_height or
-                        element_location["x"] + element_size["width"] > screen_width or
-                        element_location["y"] < 0 or
-                        element_location["x"] < 0
-                )
-            except NoSuchElementException:
-                return False
-            except NoSuchDriverException as error:
-                self._handle_driver_error(error)
-            except InvalidSessionIdException as error:
-                self._handle_driver_error(error)
-            except AttributeError as error:
-                self._handle_driver_error(error)
-            except StaleElementReferenceException as error:
-                self.logger.debug(error)
-                self.logger.warning("StaleElementReferenceException\nRe-acquire element")
-                self.native = None
-                self._get_native()
-                continue
-            except WebDriverException as error:
-                if "instrumentation process is not running" in str(error).lower():
-                    self._handle_driver_error(error)
-                    continue
-                raise
+            result = self._check_element_visibility()
+            if result is not None:
+                return result
+            time.sleep(0.1)
+            
         raise GeneralElementException(
             msg=f"Failed to {inspect.currentframe().f_code.co_name if inspect.currentframe() else 'unknown'} within {self.timeout=}",
             stacktrace=traceback.format_stack()
@@ -904,6 +909,71 @@ class Element(ElementBase):
             stacktrace=traceback.format_stack()
         )
 
+    def _create_touch_actions(self, x1: int, y1: int) -> ActionChains:
+        """Create touch action chain starting at given coordinates."""
+        actions = ActionChains(self.driver)
+        actions.w3c_actions = ActionBuilder(self.driver, mouse=PointerInput(interaction.POINTER_TOUCH, "touch"))
+        actions.w3c_actions.pointer_action.move_to_location(x1, y1)
+        actions.w3c_actions.pointer_action.pointer_down()
+        return actions
+
+    def _execute_tap_and_move_to_coordinates(self, actions: ActionChains, x: int, y: int) -> Element:
+        """Execute tap and move to specific coordinates."""
+        actions.w3c_actions.pointer_action.move_to_location(x, y)
+        actions.w3c_actions.pointer_action.pointer_up()
+        actions.perform()
+        return self
+
+    def _execute_tap_and_move_to_element(self, actions: ActionChains, locator: tuple[str, str] | WebElement | dict[str, str] | str) -> Element:
+        """Execute tap and move to another element."""
+        target_element = self._get_element(locator=locator)
+        x, y = self.get_center(target_element)
+        return self._execute_tap_and_move_to_coordinates(actions, x, y)
+
+    def _execute_tap_and_move_by_direction(self, actions: ActionChains, x1: int, y1: int, direction: int, distance: int) -> Element:
+        """Execute tap and move by direction vector."""
+        width, height = self.shadowstep.terminal.get_screen_resolution()
+        x2, y2 = find_coordinates_by_vector(width=width, height=height, direction=direction, distance=distance, start_x=x1, start_y=y1)
+        return self._execute_tap_and_move_to_coordinates(actions, x2, y2)
+
+    def _perform_tap_and_move_action(self, locator: tuple[str, str] | WebElement | Element | dict[str, str] | str | None, x: int | None, y: int | None, direction: int | None, distance: int | None) -> Element | None:
+        """Perform tap and move action with error handling."""
+        try:
+            self._get_driver()
+            if isinstance(locator, Element):
+                locator = locator.locator
+                
+            x1, y1 = self.get_center()
+            actions = self._create_touch_actions(x1, y1)
+
+            # Direct coordinate specification
+            if x is not None and y is not None:
+                return self._execute_tap_and_move_to_coordinates(actions, x, y)
+
+            # Move to another element
+            if locator is not None:
+                return self._execute_tap_and_move_to_element(actions, locator)
+                
+            # Move by direction vector
+            if direction is not None and distance is not None:
+                return self._execute_tap_and_move_by_direction(actions, x1, y1, direction, distance)
+                
+            return None
+        except (NoSuchDriverException, InvalidSessionIdException, AttributeError) as error:
+            self._handle_driver_error(error)
+            return None
+        except StaleElementReferenceException as error:
+            self.logger.debug(error)
+            self.logger.warning("StaleElementReferenceException\nRe-acquire element")
+            self.native = None
+            self._get_native()
+            return None
+        except WebDriverException as error:
+            if "instrumentation process is not running" in str(error).lower():
+                self._handle_driver_error(error)
+                return None
+            raise
+
     def tap_and_move(
             self,
             locator: tuple[str, str] | WebElement | Element | dict[str, str] | str | None = None,
@@ -914,63 +984,13 @@ class Element(ElementBase):
     ) -> Element:
         self.logger.debug(f"{get_current_func_name()}")
         start_time = time.time()
+        
         while time.time() - start_time < self.timeout:
-            try:
-                self._get_driver()
-                if isinstance(locator, Element):
-                    locator = locator.locator
-                # Get center coordinates of source element
-                x1, y1 = self.get_center()
-
-                # Configure gesture
-                actions = ActionChains(self.driver)
-                actions.w3c_actions = ActionBuilder(self.driver, mouse=PointerInput(interaction.POINTER_TOUCH, "touch"))
-                actions.w3c_actions.pointer_action.move_to_location(x1, y1)
-                actions.w3c_actions.pointer_action.pointer_down()
-
-                # === Direct coordinate specification ===
-                if x is not None and y is not None:
-                    actions.w3c_actions.pointer_action.move_to_location(x, y)
-                    actions.w3c_actions.pointer_action.pointer_up()
-                    actions.perform()
-                    return self
-
-                # === Move to another element ===
-                if locator is not None:
-                    target_element = self._get_element(locator=locator)
-                    x, y = self.get_center(target_element)
-                    actions.w3c_actions.pointer_action.move_to_location(x, y)
-                    actions.w3c_actions.pointer_action.pointer_up()
-                    actions.perform()
-                    return self
-                # === Move by direction vector ===
-                if direction is not None and distance is not None:
-                    width, height = self.base.terminal.get_screen_resolution()
-                    x2, y2 = find_coordinates_by_vector(width=width, height=height,
-                                                        direction=direction, distance=distance,
-                                                        start_x=x1, start_y=y1)
-                    actions.w3c_actions.pointer_action.move_to_location(x2, y2)
-                    actions.w3c_actions.pointer_action.pointer_up()
-                    actions.perform()
-                    return self
-            except NoSuchDriverException as error:
-                self._handle_driver_error(error)
-            except InvalidSessionIdException as error:
-                self._handle_driver_error(error)
-            except AttributeError as error:
-                self._handle_driver_error(error)
-            except StaleElementReferenceException as error:
-                self.logger.debug(error)
-                self.logger.warning("StaleElementReferenceException\nRe-acquire element")
-                self.native = None
-                self._get_native()
-                continue
-            except WebDriverException as error:
-                if "instrumentation process is not running" in str(error).lower():
-                    self._handle_driver_error(error)
-                    continue
-                raise
-        # === Insufficient data for action ===
+            result = self._perform_tap_and_move_action(locator, x, y, direction, distance)
+            if result is not None:
+                return result
+            time.sleep(0.1)
+            
         raise GeneralElementException(
             msg=f"Failed to {inspect.currentframe().f_code.co_name if inspect.currentframe() else 'unknown'} within {self.timeout=}\n{locator=}\n{x=}\n{y=}\n{direction}\n{distance}\n",
             stacktrace=traceback.format_stack()
@@ -1249,115 +1269,150 @@ class Element(ElementBase):
             stacktrace=traceback.format_stack()
         )
 
-    def scroll_to_element(self, locator: Element | dict[str, str] | tuple[str, str], max_swipes: int = 30) -> Element:
-        self.logger.debug(f"{get_current_func_name()}")
-        start_time = time.time()
+    def _prepare_scroll_locator(self, locator: Element | dict[str, str] | tuple[str, str]) -> tuple[str, str]:
+        """Prepare locator for scrolling operation."""
         if isinstance(locator, Element):
             locator = locator.locator
-        if isinstance(locator, dict | tuple):  # noqa: UP038
+        if isinstance(locator, (dict, tuple)):
             selector = self.locator_converter.to_uiselector(locator)
         else:
             raise GeneralElementException("Only dictionary locators are supported")
-        locator = self.locator_converter.to_xpath(locator)
+        return self.locator_converter.to_xpath(locator), selector
+
+    def _execute_scroll_script(self, selector: str, max_swipes: int) -> None:
+        """Execute mobile scroll script."""
+        self._get_driver()
+        self.driver.execute_script("mobile: scroll", {
+            "elementId": self.id,
+            "strategy": "-android uiautomator",
+            "selector": selector,
+            "maxSwipes": max_swipes
+        })
+
+    def _perform_scroll_to_element(self, selector: str, max_swipes: int, locator: tuple[str, str]) -> Element | None:
+        """Perform scroll to element with error handling."""
+        try:
+            self._execute_scroll_script(selector, max_swipes)
+            return cast(Element, self.shadowstep.get_element(locator))
+        except (NoSuchDriverException, InvalidSessionIdException, AttributeError) as error:
+            self._handle_driver_error(error)
+            return None
+        except StaleElementReferenceException as error:
+            self.logger.debug(error)
+            self.logger.warning("StaleElementReferenceException\nRe-acquire element")
+            self.native = None
+            self._get_native()
+            return None
+        except WebDriverException as error:
+            if "instrumentation process is not running" in str(error).lower():
+                self._handle_driver_error(error)
+                return None
+            raise
+        except Exception as error:
+            self.logger.error(error)
+            self.logger.error(type(error))
+            self.logger.error(traceback.format_stack())
+            self._handle_driver_error(error)
+            self.scroll_to_top(percent=0.75, speed=8000)
+            return None
+
+    def scroll_to_element(self, locator: Element | dict[str, str] | tuple[str, str], max_swipes: int = 30) -> Element:
+        self.logger.debug(f"{get_current_func_name()}")
+        start_time = time.time()
+        
+        locator, selector = self._prepare_scroll_locator(locator)
 
         while time.time() - start_time < self.timeout:
-            try:
-                self._get_driver()
-                self.driver.execute_script("mobile: scroll", {
-                    "elementId": self.id,
-                    "strategy": "-android uiautomator",
-                    "selector": selector,
-                    "maxSwipes": max_swipes
-                })
-                return cast(Element, self.base.get_element(locator))
-            except NoSuchDriverException as error:
-                self._handle_driver_error(error)
-            except InvalidSessionIdException as error:
-                self._handle_driver_error(error)
-            except AttributeError as error:
-                self._handle_driver_error(error)
-            except StaleElementReferenceException as error:
-                self.logger.debug(error)
-                self.logger.warning("StaleElementReferenceException\nRe-acquire element")
-                self.native = None
-                self._get_native()
-                continue
-            except WebDriverException as error:
-                if "instrumentation process is not running" in str(error).lower():
-                    self._handle_driver_error(error)
-                    continue
-                raise
-            except Exception as error:
-                # Some instability detected, information gathering required
-                self.logger.error(error)
-                self.logger.error(type(error))
-                self.logger.error(traceback.format_stack())
-                self._handle_driver_error(error)
-                self.scroll_to_top(percent=0.75, speed=8000)
+            result = self._perform_scroll_to_element(selector, max_swipes, locator)
+            if result is not None:
+                return result
+            time.sleep(0.1)
 
         raise GeneralElementException(
             msg=f"Failed to scroll to element with locator: {locator}",
             stacktrace=traceback.format_stack()
         )
 
+    def _prepare_optional_scroll_locator(self, locator: Element | dict[str, str] | tuple[str, str]) -> tuple[str, str]:
+        """Prepare locator for optional scroll operation."""
+        if isinstance(locator, Element):
+            locator = locator.locator
+        if isinstance(locator, (dict, tuple)):
+            pass  # selector = self.locator_converter.to_uiselector(locator)  # unused variable
+        else:
+            raise GeneralElementException("Only dictionary locators are supported")
+        return self.locator_converter.to_xpath(locator), locator
+
+    def _check_element_visibility_after_scroll(self, locator: tuple[str, str], waiting_element_timeout: int) -> Element | None:
+        """Check if element is visible after scroll operation."""
+        found = self.shadowstep.get_element(locator)
+        found.timeout = waiting_element_timeout
+        if found.is_visible():
+            return found
+        return None
+
+    def _perform_optional_scroll_sequence(self, locator: tuple[str, str], percent: float, speed: int, waiting_element_timeout: int) -> Element | None:
+        """Perform scroll sequence to find element."""
+        self._get_driver()
+        self._get_native()
+        self.scroll_to_top()
+        
+        # Check if element is visible at top
+        result = self._check_element_visibility_after_scroll(locator, waiting_element_timeout)
+        if result is not None:
+            return result
+            
+        # Scroll down while element is not visible
+        while self.scroll_down(return_bool=True, percent=percent, speed=speed):
+            result = self._check_element_visibility_after_scroll(locator, waiting_element_timeout)
+            if result is not None:
+                return result
+                
+        # Final scroll and check
+        self.scroll_down(return_bool=True, percent=percent, speed=speed)
+        return self._check_element_visibility_after_scroll(locator, waiting_element_timeout)
+
+    def _handle_optional_scroll_errors(self, error: Exception) -> None:
+        """Handle errors during optional scroll operation."""
+        if isinstance(error, (NoSuchDriverException, InvalidSessionIdException, AttributeError)):
+            self._handle_driver_error(error)
+        elif isinstance(error, StaleElementReferenceException):
+            self.logger.debug(error)
+            self.logger.warning("StaleElementReferenceException\nRe-acquire element")
+            self.native = None
+            self._get_native()
+        elif isinstance(error, WebDriverException):
+            if "instrumentation process is not running" in str(error).lower():
+                self._handle_driver_error(error)
+            else:
+                raise
+        else:
+            self.logger.error(error)
+            self.logger.error(type(error))
+            self.logger.error(traceback.format_stack())
+            self._handle_driver_error(error)
+            self.scroll_to_top(percent=0.75, speed=8000)
+
     def scroll_to_element_optional(self, locator: Element | dict[str, str] | tuple[str, str], max_swipes: int = 30,
                                    percent: float = 0.7, speed: int = 2000,
                                    waiting_element_timeout: int = 1) -> Element:
         self.logger.debug(f"{get_current_func_name()}")
-        # FIXME refactor and optimise me please
         start_time = time.time()
-        if isinstance(locator, Element):
-            locator = locator.locator
-        if isinstance(locator, dict | tuple):
-            # selector = self.locator_converter.to_uiselector(locator)  # unused variable
-            pass
-        else:
-            raise GeneralElementException("Only dictionary locators are supported")
-        locator = self.locator_converter.to_xpath(locator)
+        
+        locator, _ = self._prepare_optional_scroll_locator(locator)
 
         while time.time() - start_time < self.timeout:
             try:
-                self._get_driver()
-                self._get_native()
-                self.scroll_to_top()
-                found = self.base.get_element(locator)
-                found.timeout = waiting_element_timeout
-                if found.is_visible():
-                    return found
-                while self.scroll_down(return_bool=True, percent=percent, speed=speed):
-                    found = self.base.get_element(locator)
-                    found.timeout = waiting_element_timeout
-                    if found.is_visible():
-                        return found
-                self.scroll_down(return_bool=True, percent=percent, speed=speed)
-                found = self.base.get_element(locator)
-                found.timeout = waiting_element_timeout
-                if found.is_visible():
-                    return found
-            except NoSuchDriverException as error:
-                self._handle_driver_error(error)
-            except InvalidSessionIdException as error:
-                self._handle_driver_error(error)
-            except AttributeError as error:
-                self._handle_driver_error(error)
-            except StaleElementReferenceException as error:
-                self.logger.debug(error)
-                self.logger.warning("StaleElementReferenceException\nRe-acquire element")
-                self.native = None
-                self._get_native()
-                continue
-            except WebDriverException as error:
-                if "instrumentation process is not running" in str(error).lower():
-                    self._handle_driver_error(error)
-                    continue
-                raise
+                result = self._perform_optional_scroll_sequence(locator, percent, speed, waiting_element_timeout)
+                if result is not None:
+                    return result
             except Exception as error:
-                # Some instability detected, information gathering required
-                self.logger.error(error)
-                self.logger.error(type(error))
-                self.logger.error(traceback.format_stack())
-                self._handle_driver_error(error)
-                self.scroll_to_top(percent=0.75, speed=8000)
+                self._handle_optional_scroll_errors(error)
+                if isinstance(error, StaleElementReferenceException) or isinstance(error, WebDriverException) and "instrumentation process is not running" in str(error).lower():
+                    continue
+                if not isinstance(error, (NoSuchDriverException, InvalidSessionIdException, AttributeError)):
+                    raise
+            time.sleep(0.1)
 
         raise GeneralElementException(
             msg=f"Failed to scroll to element with locator: {locator}",
@@ -2764,7 +2819,7 @@ class Element(ElementBase):
 
     def _handle_driver_error(self, error: Exception) -> None:
         self.logger.warning(f"{inspect.currentframe().f_code.co_name if inspect.currentframe() else 'unknown'} {error}")
-        self.base.reconnect()
+        self.shadowstep.reconnect()
         time.sleep(0.3)
 
     def _mobile_gesture(self, name: str, params: dict[str, Any] | list[Any]) -> Any:
@@ -2777,10 +2832,10 @@ class Element(ElementBase):
             self._get_driver()
         except NoSuchDriverException:
             self.logger.warning("Reconnecting driver due to session issue")
-            self.base.reconnect()
+            self.shadowstep.reconnect()
         except InvalidSessionIdException:
             self.logger.warning("Reconnecting driver due to session issue")
-            self.base.reconnect()
+            self.shadowstep.reconnect()
 
     def _get_first_child_class(self, tries: int = 3) -> str:
         self.logger.debug(f"{get_current_func_name()}")
@@ -2813,45 +2868,48 @@ class Element(ElementBase):
             return locator[1]
         return self._get_xpath_by_driver()
 
+    def _build_xpath_attribute_condition(self, key: str, value: str) -> str:
+        """Build XPath attribute condition based on value content."""
+        if value is None or value == "null":
+            return f"[@{key}]"
+        if "'" in value and '"' not in value:
+            return f'[@{key}="{value}"]'
+        if '"' in value and "'" not in value:
+            return f"[@{key}='{value}']"
+        if "'" in value and '"' in value:
+            parts = value.split('"')
+            escaped = "concat(" + ", ".join(
+                f'"{part}"' if i % 2 == 0 else "'\"'" for i, part in enumerate(parts)) + ")"
+            return f"[@{key}={escaped}]"
+        return f"[@{key}='{value}']"
+
+    def _build_xpath_from_attributes(self, attrs: dict[str, str]) -> str:
+        """Build XPath from element attributes."""
+        xpath = "//"
+        element_type = attrs.get("class")
+        except_attrs = ["hint", "selection-start", "selection-end", "extras"]
+
+        # Start XPath with element class or wildcard
+        if element_type:
+            xpath += element_type
+        else:
+            xpath += "*"
+            
+        for key, value in attrs.items():
+            if key in except_attrs:
+                continue
+            xpath += self._build_xpath_attribute_condition(key, value)
+        return xpath
+
     def _get_xpath_by_driver(self) -> str:
         self.logger.debug(f"{get_current_func_name()}")
         try:
-            xpath = "//"
             attrs = self.get_attributes()
             if not attrs:
                 raise GeneralElementException("Failed to retrieve attributes for XPath construction.")
-
-            element_type = attrs.get("class")
-            except_attrs = ["hint", "selection-start", "selection-end", "extras"]
-
-            # Start XPath with element class or wildcard
-            if element_type:
-                xpath += element_type
-            else:
-                xpath += "*"
-            for key, value in attrs.items():
-                if key in except_attrs:
-                    continue
-                if value is None or value == "null":
-                    xpath += f"[@{key}]"
-                elif "'" in value and '"' not in value:
-                    xpath += f'[@{key}="{value}"]'
-                elif '"' in value and "'" not in value:
-                    xpath += f"[@{key}='{value}']"
-                elif "'" in value and '"' in value:
-                    parts = value.split('"')
-                    escaped = "concat(" + ", ".join(
-                        f'"{part}"' if i % 2 == 0 else "'\"'" for i, part in enumerate(parts)) + ")"
-                    xpath += f"[@{key}={escaped}]"
-                else:
-                    xpath += f"[@{key}='{value}']"
-            return xpath
-        except AttributeError as e:
+            return self._build_xpath_from_attributes(attrs)
+        except (AttributeError, KeyError, WebDriverException) as e:
             self.logger.error(f"Error forming XPath: {str(e)}")
-        except KeyError as e:
-            self.logger.error(f"Error forming XPath: {str(e)}")
-        except WebDriverException as e:
-            self.logger.error(f"Unknown error forming XPath: {str(e)}")
         return ""
 
     def _build_element_xpath(self, base_element: WebElement, index: int) -> str:
@@ -2891,7 +2949,7 @@ class Element(ElementBase):
                     if return_bool:
                         return False
                     return self
-                WebDriverWait(self.base.driver, timeout, poll_frequency).until(
+                WebDriverWait(self.shadowstep.driver, timeout, poll_frequency).until(
                     conditions.present(resolved_locator)
                 )
                 if return_bool:
@@ -2918,6 +2976,28 @@ class Element(ElementBase):
                 continue
         return False
 
+    def _wait_for_visibility_with_locator(self, resolved_locator: tuple[str, str], timeout: int, poll_frequency: float) -> bool:
+        """Wait for element visibility using resolved locator."""
+        try:
+            WebDriverWait(self.shadowstep.driver, timeout, poll_frequency).until(
+                conditions.visible(resolved_locator)
+            )
+            return True
+        except TimeoutException:
+            return False
+
+    def _handle_wait_visibility_errors(self, error: Exception) -> None:
+        """Handle errors during wait visibility operation."""
+        if isinstance(error, (NoSuchDriverException, InvalidSessionIdException, WebDriverException)):
+            self._handle_driver_error(error)
+        elif isinstance(error, StaleElementReferenceException):
+            self.logger.debug(error)
+            self.logger.warning("StaleElementReferenceException\nRe-acquire element")
+            self.native = None
+            self._get_native()
+        else:
+            self.logger.error(f"{error}")
+
     def wait_visible(self, timeout: int = 10, poll_frequency: float = 0.5, return_bool: bool = False) -> Element | bool:
         """Waits until the element is visible.
 
@@ -2931,43 +3011,45 @@ class Element(ElementBase):
         """
         self.logger.debug(f"{get_current_func_name()}")
         start_time = time.time()
+        
         while time.time() - start_time < self.timeout:
             try:
                 resolved_locator = self.handle_locator(self.locator, self.contains)
                 if not resolved_locator:
                     self.logger.error("Resolved locator is None or invalid")
-                    if return_bool:
-                        return False
-                    return self
+                    return False if return_bool else self
 
-                WebDriverWait(self.base.driver, timeout, poll_frequency).until(
-                    conditions.visible(resolved_locator)
-                )
-                if return_bool:
-                    return True
-                return self
-            except TimeoutException:
-                if return_bool:
-                    return False
-                return self
-            except NoSuchDriverException as error:
-                self._handle_driver_error(error)
-            except InvalidSessionIdException as error:
-                self._handle_driver_error(error)
-            except StaleElementReferenceException as error:
-                self.logger.debug(error)
-                self.logger.warning("StaleElementReferenceException\nRe-acquire element")
-                self.native = None
-                self._get_native()
-                continue
-            except WebDriverException as error:
-                self._handle_driver_error(error)
+                if self._wait_for_visibility_with_locator(resolved_locator, timeout, poll_frequency):
+                    return True if return_bool else self
+                    
             except Exception as error:
-                self.logger.error(f"{error}")
-                continue
-        if return_bool:
+                self._handle_wait_visibility_errors(error)
+                if isinstance(error, StaleElementReferenceException):
+                    continue
+                    
+        return False if return_bool else self
+
+    def _wait_for_clickability_with_locator(self, resolved_locator: tuple[str, str], timeout: int, poll_frequency: float) -> bool:
+        """Wait for element clickability using resolved locator."""
+        try:
+            WebDriverWait(self.shadowstep.driver, timeout, poll_frequency).until(
+                conditions.clickable(resolved_locator)
+            )
+            return True
+        except TimeoutException:
             return False
-        return self
+
+    def _handle_wait_clickability_errors(self, error: Exception) -> None:
+        """Handle errors during wait clickability operation."""
+        if isinstance(error, (NoSuchDriverException, InvalidSessionIdException, WebDriverException)):
+            self._handle_driver_error(error)
+        elif isinstance(error, StaleElementReferenceException):
+            self.logger.debug(error)
+            self.logger.warning("StaleElementReferenceException\nRe-acquire element")
+            self.native = None
+            self._get_native()
+        else:
+            self.logger.error(f"{error}")
 
     def wait_clickable(self, timeout: int = 10, poll_frequency: float = 0.5,
                        return_bool: bool = False) -> Element | bool:
@@ -2983,41 +3065,45 @@ class Element(ElementBase):
         """
         self.logger.debug(f"{get_current_func_name()}")
         start_time = time.time()
+        
         while time.time() - start_time < self.timeout:
             try:
                 resolved_locator = self.handle_locator(self.locator, self.contains)
                 if not resolved_locator:
                     self.logger.error("Resolved locator is None or invalid")
-                    if return_bool:
-                        return False
-                    return self
+                    return False if return_bool else self
 
-                WebDriverWait(self.base.driver, timeout, poll_frequency).until(
-                    conditions.clickable(resolved_locator)
-                )
-                if return_bool:
-                    return True
-                return self
-            except TimeoutException:
-                if return_bool:
-                    return False
-                return self
-            except NoSuchDriverException as error:
-                self._handle_driver_error(error)
-            except InvalidSessionIdException as error:
-                self._handle_driver_error(error)
-            except StaleElementReferenceException as error:
-                self.logger.debug(error)
-                self.logger.warning("StaleElementReferenceException\nRe-acquire element")
-                self.native = None
-                self._get_native()
-                continue
-            except WebDriverException as error:
-                self._handle_driver_error(error)
+                if self._wait_for_clickability_with_locator(resolved_locator, timeout, poll_frequency):
+                    return True if return_bool else self
+                    
             except Exception as error:
-                self.logger.error(f"{error}")
-                continue
-        return self
+                self._handle_wait_clickability_errors(error)
+                if isinstance(error, StaleElementReferenceException):
+                    continue
+                    
+        return False if return_bool else self
+
+    def _wait_for_not_present_with_locator(self, resolved_locator: tuple[str, str], timeout: int, poll_frequency: float) -> bool:
+        """Wait for element to not be present using resolved locator."""
+        try:
+            WebDriverWait(self.shadowstep.driver, timeout, poll_frequency).until(
+                conditions.not_present(resolved_locator)
+            )
+            return True
+        except TimeoutException:
+            return False
+
+    def _handle_wait_for_not_errors(self, error: Exception) -> None:
+        """Handle errors during wait for not operation."""
+        if isinstance(error, (NoSuchDriverException, InvalidSessionIdException, WebDriverException)):
+            self._handle_driver_error(error)
+        elif isinstance(error, StaleElementReferenceException):
+            self.logger.debug(error)
+            self.logger.warning("StaleElementReferenceException\nRe-acquire element")
+            self.native = None
+            self._get_native()
+        else:
+            self.logger.error(f"{error}")
 
     def wait_for_not(self, timeout: int = 10, poll_frequency: float = 0.5, return_bool: bool = False) -> Element | bool:
         """Waits until the element is no longer present in the DOM.
@@ -3032,39 +3118,44 @@ class Element(ElementBase):
         """
         self.logger.debug(f"{get_current_func_name()}")
         start_time = time.time()
+        
         while time.time() - start_time < self.timeout:
             try:
                 resolved_locator = self.handle_locator(self.locator, self.contains)
                 if not resolved_locator:
-                    if return_bool:
-                        return False
-                    return self
-                WebDriverWait(self.base.driver, timeout, poll_frequency).until(
-                    conditions.not_present(resolved_locator)
-                )
-                if return_bool:
-                    return True
-                return self
-            except TimeoutException:
-                if return_bool:
-                    return False
-                return self
-            except NoSuchDriverException as error:
-                self._handle_driver_error(error)
-            except InvalidSessionIdException as error:
-                self._handle_driver_error(error)
-            except StaleElementReferenceException as error:
-                self.logger.debug(error)
-                self.logger.warning("StaleElementReferenceException\nRe-acquire element")
-                self.native = None
-                self._get_native()
-                continue
-            except WebDriverException as error:
-                self._handle_driver_error(error)
+                    return False if return_bool else self
+                    
+                if self._wait_for_not_present_with_locator(resolved_locator, timeout, poll_frequency):
+                    return True if return_bool else self
+                    
             except Exception as error:
-                self.logger.error(f"{error}")
-                continue
+                self._handle_wait_for_not_errors(error)
+                if isinstance(error, StaleElementReferenceException):
+                    continue
+                    
         return False
+
+    def _wait_for_not_visible_with_locator(self, resolved_locator: tuple[str, str], timeout: int, poll_frequency: float) -> bool:
+        """Wait for element to not be visible using resolved locator."""
+        try:
+            WebDriverWait(self.shadowstep.driver, timeout, poll_frequency).until(
+                conditions.not_visible(resolved_locator)
+            )
+            return True
+        except TimeoutException:
+            return False
+
+    def _handle_wait_for_not_visible_errors(self, error: Exception) -> None:
+        """Handle errors during wait for not visible operation."""
+        if isinstance(error, (NoSuchDriverException, InvalidSessionIdException, WebDriverException)):
+            self._handle_driver_error(error)
+        elif isinstance(error, StaleElementReferenceException):
+            self.logger.debug(error)
+            self.logger.warning("StaleElementReferenceException\nRe-acquire element")
+            self.native = None
+            self._get_native()
+        else:
+            self.logger.error(f"{error}")
 
     def wait_for_not_visible(self, timeout: int = 10, poll_frequency: float = 0.5,
                              return_bool: bool = False) -> Element | bool:
@@ -3080,39 +3171,44 @@ class Element(ElementBase):
         """
         self.logger.debug(f"{get_current_func_name()}")
         start_time = time.time()
+        
         while time.time() - start_time < self.timeout:
             try:
                 resolved_locator = self.handle_locator(self.locator, self.contains)
                 if not resolved_locator:
-                    if return_bool:
-                        return False
-                    return self
-                WebDriverWait(self.base.driver, timeout, poll_frequency).until(
-                    conditions.not_visible(resolved_locator)
-                )
-                if return_bool:
-                    return True
-                return self
-            except TimeoutException:
-                if return_bool:
-                    return False
-                return self
-            except NoSuchDriverException as error:
-                self._handle_driver_error(error)
-            except InvalidSessionIdException as error:
-                self._handle_driver_error(error)
-            except StaleElementReferenceException as error:
-                self.logger.debug(error)
-                self.logger.warning("StaleElementReferenceException\nRe-acquire element")
-                self.native = None
-                self._get_native()
-                continue
-            except WebDriverException as error:
-                self._handle_driver_error(error)
+                    return False if return_bool else self
+                    
+                if self._wait_for_not_visible_with_locator(resolved_locator, timeout, poll_frequency):
+                    return True if return_bool else self
+                    
             except Exception as error:
-                self.logger.error(f"{error}")
-                continue
-        return self
+                self._handle_wait_for_not_visible_errors(error)
+                if isinstance(error, StaleElementReferenceException):
+                    continue
+                    
+        return False if return_bool else self
+
+    def _wait_for_not_clickable_with_locator(self, resolved_locator: tuple[str, str], timeout: int, poll_frequency: float) -> bool:
+        """Wait for element to not be clickable using resolved locator."""
+        try:
+            WebDriverWait(self.shadowstep.driver, timeout, poll_frequency).until(
+                conditions.not_clickable(resolved_locator)
+            )
+            return True
+        except TimeoutException:
+            return False
+
+    def _handle_wait_for_not_clickable_errors(self, error: Exception) -> None:
+        """Handle errors during wait for not clickable operation."""
+        if isinstance(error, (NoSuchDriverException, InvalidSessionIdException, WebDriverException)):
+            self._handle_driver_error(error)
+        elif isinstance(error, StaleElementReferenceException):
+            self.logger.debug(error)
+            self.logger.warning("StaleElementReferenceException\nRe-acquire element")
+            self.native = None
+            self._get_native()
+        else:
+            self.logger.error(f"{error}")
 
     def wait_for_not_clickable(self, timeout: int = 10, poll_frequency: float = 0.5,
                                return_bool: bool = False) -> Element | bool:
@@ -3128,40 +3224,23 @@ class Element(ElementBase):
         """
         self.logger.debug(f"{get_current_func_name()}")
         start_time = time.time()
+        
         while time.time() - start_time < self.timeout:
             try:
                 resolved_locator = self.handle_locator(self.locator, self.contains)
                 if not resolved_locator:
                     self.logger.error("Resolved locator is None or invalid")
-                    if return_bool:
-                        return False
-                    return self
-                WebDriverWait(self.base.driver, timeout, poll_frequency).until(
-                    conditions.not_clickable(resolved_locator)
-                )
-                if return_bool:
-                    return True
-                return self
-            except TimeoutException:
-                if return_bool:
-                    return False
-                return self
-            except NoSuchDriverException as error:
-                self._handle_driver_error(error)
-            except InvalidSessionIdException as error:
-                self._handle_driver_error(error)
-            except StaleElementReferenceException as error:
-                self.logger.debug(error)
-                self.logger.warning("StaleElementReferenceException\nRe-acquire element")
-                self.native = None
-                self._get_native()
-                continue
-            except WebDriverException as error:
-                self._handle_driver_error(error)
+                    return False if return_bool else self
+                    
+                if self._wait_for_not_clickable_with_locator(resolved_locator, timeout, poll_frequency):
+                    return True if return_bool else self
+                    
             except Exception as error:
-                self.logger.error(f"{error}")
-                continue
-        return self
+                self._handle_wait_for_not_clickable_errors(error)
+                if isinstance(error, StaleElementReferenceException):
+                    continue
+                    
+        return False if return_bool else self
 
     @property
     def should(self) -> Should:

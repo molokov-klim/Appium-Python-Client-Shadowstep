@@ -12,7 +12,9 @@ well-architected solution.
 from __future__ import annotations
 
 import logging
-from typing import Any
+from typing import TYPE_CHECKING, Any, cast
+
+from utils.utils import get_current_func_name
 
 from shadowstep.exceptions.shadowstep_exceptions import ConversionError
 from shadowstep.locator.converter.dict_converter import DictConverter
@@ -21,6 +23,9 @@ from shadowstep.locator.converter.xpath_converter import XPathConverter
 from shadowstep.locator.ui_selector import UiSelector
 
 logger = logging.getLogger(__name__)
+
+if TYPE_CHECKING:
+    from element.element import Element
 
 
 class LocatorConverter:
@@ -38,7 +43,7 @@ class LocatorConverter:
         self.ui_selector_converter = UiSelectorConverter()
         self.xpath_converter = XPathConverter()
 
-    def to_dict(self, selector: dict[str, Any] | tuple[str, str] | str | UiSelector) -> dict[str, Any]:
+    def to_dict(self, selector: tuple[str, str] | dict[str, Any] | Element | UiSelector) -> dict[str, Any]:
         """
         Convert any selector format to dictionary format.
         
@@ -52,25 +57,24 @@ class LocatorConverter:
             ConversionError: If conversion fails
         """
         try:
+            from element.element import Element
+            if isinstance(selector, Element):
+                selector = cast(Element, selector.locator)
             if isinstance(selector, dict):
                 return selector
+            if isinstance(selector, tuple):
+                return self.xpath_to_dict(selector[1])
+            if isinstance(selector, str):
+                if selector.startswith("new UiSelector"):
+                    return self.uiselector_to_dict(selector)
+                return self.xpath_to_dict(selector)
             if isinstance(selector, UiSelector):
-                return selector.to_dict()
-            if isinstance(selector, tuple) and len(selector) == 2:
-                # XPath tuple format: ("xpath", "//*[@text='OK']")
-                if selector[0] == "xpath":
-                    return self.xpath_converter.xpath_to_dict(selector[1])
-                raise ValueError(f"Unsupported tuple format: {selector[0]}")
-            # selector is str at this point
-            if selector.strip().startswith("new UiSelector()"):
-                # UiSelector string
-                return self.ui_selector_converter.selector_to_dict(selector)
-            # Assume it's an XPath string
-            return self.xpath_converter.xpath_to_dict(selector)
+                return self.uiselector_to_dict(selector.__str__())
+            raise ConversionError(f"Unsupported selector format: {selector}")
         except Exception as e:
-            raise ConversionError(f"Failed to convert to dict: {e}") from e
+            raise ConversionError(f"{get_current_func_name()} failed to convert selector: {selector}. {e}") from e
 
-    def to_xpath(self, selector: dict[str, Any] | tuple[str, str] | str | UiSelector) -> tuple[str, str]:
+    def to_xpath(self, selector: tuple[str, str] | dict[str, Any] | Element | UiSelector) -> tuple[str, str]:
         """
         Convert any selector format to XPath tuple format.
         
@@ -84,30 +88,24 @@ class LocatorConverter:
             ConversionError: If conversion fails
         """
         try:
+            from element.element import Element
+            if isinstance(selector, Element):
+                selector = cast(Element, selector.locator)
             if isinstance(selector, dict):
-                xpath_str = self.dict_converter.dict_to_xpath(selector)
-                return ("xpath", xpath_str)
+                return "xpath", self.dict_to_xpath(selector)
+            if isinstance(selector, tuple):
+                return selector
+            if isinstance(selector, str):
+                if selector.startswith("new UiSelector"):
+                    return "xpath", self.ui_selector_converter.selector_to_xpath(selector)
+                return "xpath", selector
             if isinstance(selector, UiSelector):
-                # UiSelector DSL -> dict -> xpath
-                selector_dict = selector.to_dict()
-                xpath_str = self.dict_converter.dict_to_xpath(selector_dict)
-                return ("xpath", xpath_str)
-            if isinstance(selector, tuple) and len(selector) == 2:
-                if selector[0] == "xpath":
-                    return selector
-                raise ValueError(f"Unsupported tuple format: {selector[0]}")
-            # selector is str at this point
-            if selector.strip().startswith("new UiSelector()"):
-                # UiSelector string -> dict -> xpath
-                selector_dict = self.ui_selector_converter.selector_to_dict(selector)
-                xpath_str = self.dict_converter.dict_to_xpath(selector_dict)
-                return ("xpath", xpath_str)
-            # Assume it's already an XPath string
-            return ("xpath", selector)
+                return "xpath", self.uiselector_to_xpath(selector.__str__())
+            raise ConversionError(f"Unsupported selector format: {selector}")
         except Exception as e:
-            raise ConversionError(f"Failed to convert to xpath: {e}") from e
+            raise ConversionError(f"{get_current_func_name()} failed to convert selector: {selector}. {e}") from e
 
-    def to_uiselector(self, selector: dict[str, Any] | tuple[str, str] | str | UiSelector) -> str:
+    def to_uiselector(self, selector: tuple[str, str] | dict[str, Any] | Element | UiSelector) -> str:
         """
         Convert any selector format to UiSelector string.
         
@@ -121,25 +119,24 @@ class LocatorConverter:
             ConversionError: If conversion fails
         """
         try:
+            from element.element import Element
+            if isinstance(selector, Element):
+                selector = cast(Element, selector.locator)
             if isinstance(selector, dict):
-                return self.dict_converter.dict_to_ui_selector(selector)
+                return self.dict_to_uiselector(selector)
             if isinstance(selector, UiSelector):
-                # UiSelector DSL -> string
-                return str(selector)
-            if isinstance(selector, tuple) and len(selector) == 2:
-                if selector[0] == "xpath":
-                    # XPath tuple -> dict -> uiselector
-                    selector_dict = self.xpath_converter.xpath_to_dict(selector[1])
-                    return self.dict_converter.dict_to_ui_selector(selector_dict)
-                raise ValueError(f"Unsupported tuple format: {selector[0]}")
-            # selector is str at this point
-            if selector.strip().startswith("new UiSelector()"):
-                return selector
-            # XPath string -> dict -> uiselector
-            selector_dict = self.xpath_converter.xpath_to_dict(selector)
-            return self.dict_converter.dict_to_ui_selector(selector_dict)
+                return selector.__str__()
+            if isinstance(selector, tuple):
+                return self.xpath_to_uiselector(selector[1])
+            if isinstance(selector, str):
+                if selector.startswith("new UiSelector"):
+                    return selector
+                return self.xpath_to_uiselector(selector)
+            if isinstance(selector, UiSelector):
+                return selector.__str__()
+            raise ConversionError(f"Unsupported selector format: {selector}")
         except Exception as e:
-            raise ConversionError(f"Failed to convert to uiselector: {e}") from e
+            raise ConversionError(f"{get_current_func_name()} failed to convert selector: {selector}. {e}") from e
 
     # Convenience methods for direct conversion between specific formats
     def dict_to_xpath(self, selector_dict: dict[str, Any]) -> str:

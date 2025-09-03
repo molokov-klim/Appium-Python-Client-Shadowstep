@@ -12,6 +12,7 @@ from types import ModuleType
 from typing import Any, cast
 
 import numpy as np
+from appium.webdriver import WebElement
 from appium.webdriver.webdriver import WebDriver
 from numpy._typing import NDArray
 from PIL import Image
@@ -23,6 +24,7 @@ from selenium.common import (
 )
 from selenium.types import WaitExcTypes
 
+from locator import UiSelector
 from shadowstep.base import ShadowstepBase, WebDriverSingleton
 from shadowstep.decorators.decorators import fail_safe
 from shadowstep.element.element import Element
@@ -138,7 +140,7 @@ class Shadowstep(ShadowstepBase):
         raise ValueError(f"Page '{name}' not found.")
 
     def get_element(self,
-                    locator: tuple[str, str] | dict[str, str],
+                    locator: tuple[str, str] | dict[str, str] | Element | UiSelector | WebElement,
                     timeout: int = 30,
                     poll_frequency: float = 0.5,
                     ignored_exceptions: WaitExcTypes | None = None,
@@ -149,11 +151,11 @@ class Shadowstep(ShadowstepBase):
                        poll_frequency=poll_frequency,
                        ignored_exceptions=ignored_exceptions,
                        contains=contains,
-                       base=self)
+                       shadowstep=self)
 
     def get_elements(
             self,
-            locator: tuple[str, str] | dict[str, str],
+            locator: tuple[str, str] | dict[str, str] | Element | UiSelector | WebElement,
             timeout: int = 30,
             poll_frequency: float = 0.5,
             ignored_exceptions: WaitExcTypes | None = None,
@@ -176,7 +178,7 @@ class Shadowstep(ShadowstepBase):
         self.logger.debug(f"{get_current_func_name()}")
         root = Element(
             locator=("xpath", "//*"),
-            base=self,
+            shadowstep=self,
             timeout=timeout,
             poll_frequency=poll_frequency,
             ignored_exceptions=ignored_exceptions,
@@ -298,7 +300,7 @@ class Shadowstep(ShadowstepBase):
 
     def find_and_get_element(
             self,
-            locator: tuple[str, str] | dict[str, str],
+            locator: tuple[str, str] | dict[str, str] | Element | UiSelector | WebElement,
             timeout: int = 30,
             poll_frequency: float = 0.5,
             ignored_exceptions: WaitExcTypes | None = None,
@@ -338,7 +340,7 @@ class Shadowstep(ShadowstepBase):
         """
         self.logger.debug(f"{get_current_func_name()}")
         try:
-            element = Element(locator={"text": text}, base=self, contains=True)
+            element = Element(locator={"text": text}, shadowstep=self, contains=True)
             return element.is_visible()
         except Exception as e:
             self.logger.warning(f"Failed to check visibility for text='{text}': {e}")

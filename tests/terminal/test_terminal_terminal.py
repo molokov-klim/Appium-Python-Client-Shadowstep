@@ -492,7 +492,7 @@ class TestTerminal:
         """Test successful package path retrieval."""
         # Arrange
         package = "com.example.app"
-        expected_path = "/data/app/com.example.app/base.apk"
+        expected_path = "/data/app/com.example.app/shadowstep.apk"
 
         with patch.object(self.terminal, "adb_shell", return_value=expected_path):
             # Act

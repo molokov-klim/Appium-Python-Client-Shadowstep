@@ -153,7 +153,7 @@ class ShadowstepLogcat:
                             continue
                         driver.execute_script("mobile: startLogsBroadcast")
 
-                        # Build base WebSocket URL
+                        # Build shadowstep WebSocket URL
                         session_id = driver.session_id
                         
                         http_url = self._get_http_url(driver)

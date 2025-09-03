@@ -6,7 +6,7 @@ from typing import Any, TypeVar
 T = TypeVar("T", bound="PageBase")      # type: ignore  # noqa: F821
 
 class PageBaseShadowstep(ABC):
-    """Abstract base class for all pages in the Shadowstep framework.
+    """Abstract shadowstep class for all pages in the Shadowstep framework.
 
     Implements singleton behavior and lazy initialization of the shadowstep context.
     """

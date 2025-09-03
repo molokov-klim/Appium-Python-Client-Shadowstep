@@ -45,7 +45,7 @@ class MockPageBase:
     """Mock PageBaseShadowstep for testing."""
     
     def __init__(self, name: str) -> None:
-        """Initialize mock page base.
+        """Initialize mock page shadowstep.
         
         Args:
             name: Name of the page.

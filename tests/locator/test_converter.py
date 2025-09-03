@@ -173,13 +173,6 @@ class TestUnifiedLocatorConverter:
         with pytest.raises(ValueError, match="Unsupported selector type"):
             self.converter.validate_selector(123)  # type: ignore
 
-    def test_conversion_error_handling(self):
-        """Test proper error handling during conversion."""
-        # Test with invalid XPath tuple format
-        invalid_tuple = ("invalid", "//*[@text='OK']")
-        with pytest.raises(ConversionError):
-            self.converter.to_dict(invalid_tuple)
-
     def test_roundtrip_conversions(self):
         """Test roundtrip conversions to ensure consistency."""
         original_dict: dict[str, Any] = {

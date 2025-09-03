@@ -25,7 +25,7 @@ class TestShadowstep:
         assert element.locator == {"content-desc": "Phone"}  # noqa: S101
         assert isinstance(element, Element)  # noqa: S101
         assert element.driver is None  # noqa: S101
-        assert element.base is not None  # noqa: S101
+        assert element.shadowstep is not None  # noqa: S101
         assert element.timeout == 29  # noqa: S101
         assert element.poll_frequency == 0.7  # noqa: S101
         assert element.ignored_exceptions == [TimeoutError]  # noqa: S101

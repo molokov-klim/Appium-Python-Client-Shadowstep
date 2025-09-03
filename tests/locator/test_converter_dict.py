@@ -635,8 +635,8 @@ class TestDictConverterComplex:
         ui_result = self.converter.dict_to_ui_selector(problematic_selector)
 
         # The result should be empty or minimal since INSTANCE is treated as unknown
-        assert xpath_result == "//*"  # Just the base XPath  # noqa: S101
-        assert ui_result == "new UiSelector();"  # Just the base UiSelector  # noqa: S101
+        assert xpath_result == "//*"  # Just the shadowstep XPath  # noqa: S101
+        assert ui_result == "new UiSelector();"  # Just the shadowstep UiSelector  # noqa: S101
 
     def test_stress_test_deep_nesting(self):
         """Stress test with very deep nesting (10+ levels)."""

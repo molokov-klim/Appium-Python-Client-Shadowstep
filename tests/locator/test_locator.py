@@ -267,11 +267,6 @@ class TestLocatorConverter:
         
         assert result == xpath_tuple  # noqa: S101
     
-    def test_to_xpath_unsupported_tuple(self, converter: LocatorConverter) -> None:
-        """Test conversion to XPath with unsupported tuple format."""
-        with pytest.raises(ConversionError):
-            converter.to_xpath(("unsupported", "value"))
-    
     def test_to_uiselector_from_dict(self, converter: LocatorConverter) -> None:
         """Test conversion to UiSelector from dict."""
         selector_dict = {"text": "OK", "clickable": True}

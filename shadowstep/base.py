@@ -1,4 +1,4 @@
-# shadowstep/base.py
+# shadowstep/shadowstep.py
 from __future__ import annotations
 
 import gc

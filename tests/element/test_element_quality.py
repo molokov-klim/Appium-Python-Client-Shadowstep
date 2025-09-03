@@ -32,14 +32,14 @@ class TestElementQuality:
         
         element_base = ElementBase(
             locator=locator,
-            base=mock_base,
+            shadowstep=mock_base,
             timeout=30.0,
             poll_frequency=0.5,
             contains=False
         )
         
         assert element_base.locator == locator  # noqa: S101
-        assert element_base.base == mock_base  # noqa: S101, S101
+        assert element_base.shadowstep == mock_base  # noqa: S101, S101
         assert element_base.timeout == 30.0  # noqa: S101
         assert element_base.poll_frequency == 0.5  # noqa: S101
         assert element_base.contains is False  # noqa: S101
@@ -51,14 +51,14 @@ class TestElementQuality:
         
         element = Element(
             locator=locator,
-            base=mock_base,
+            shadowstep=mock_base,
             timeout=30.0,
             poll_frequency=0.5,
             contains=False
         )
         
         assert element.locator == locator  # noqa: S101
-        assert element.base == mock_base  # noqa: S101
+        assert element.shadowstep == mock_base  # noqa: S101
         assert element.timeout == 30.0  # noqa: S101
         assert element.poll_frequency == 0.5  # noqa: S101
         assert element.contains is False  # noqa: S101
@@ -68,7 +68,7 @@ class TestElementQuality:
         mock_base = Mock()
         element_base = ElementBase(
             locator=("xpath", "//test"),
-            base=mock_base
+            shadowstep=mock_base
         )
         
         locator = {"class": "Button", "text": "Click me"}
@@ -81,7 +81,7 @@ class TestElementQuality:
         mock_base = Mock()
         element_base = ElementBase(
             locator=("xpath", "//test"),
-            base=mock_base
+            shadowstep=mock_base
         )
         
         locator = {"text": "Click me", "resource-id": "button1"}
@@ -94,7 +94,7 @@ class TestElementQuality:
         mock_base = Mock()
         element_base = ElementBase(
             locator=("xpath", "//test"),
-            base=mock_base
+            shadowstep=mock_base
         )
         
         locator = {"class": "Button", "text": "Click me"}
@@ -107,7 +107,7 @@ class TestElementQuality:
         mock_base = Mock()
         element_base = ElementBase(
             locator=("xpath", "//test"),
-            base=mock_base
+            shadowstep=mock_base
         )
         
         # Test with invalid locator that should raise KeyError
@@ -289,7 +289,7 @@ class TestElementQuality:
         
         element = Element(
             locator=locator,
-            base=mock_base
+            shadowstep=mock_base
         )
         
         repr_str = repr(element)
@@ -340,7 +340,7 @@ class TestElementTypeAnnotations:
         annotations = Element.__init__.__annotations__
         
         assert "locator" in annotations  # noqa: S101
-        assert "base" in annotations  # noqa: S101
+        assert "shadowstep" in annotations  # noqa: S101
         assert "timeout" in annotations  # noqa: S101
         assert "poll_frequency" in annotations  # noqa: S101
         assert "ignored_exceptions" in annotations  # noqa: S101
@@ -353,7 +353,7 @@ class TestElementTypeAnnotations:
         annotations = ElementBase.__init__.__annotations__
         
         assert "locator" in annotations  # noqa: S101
-        assert "base" in annotations  # noqa: S101
+        assert "shadowstep" in annotations  # noqa: S101
         assert "timeout" in annotations  # noqa: S101
         assert "poll_frequency" in annotations  # noqa: S101
         assert "ignored_exceptions" in annotations  # noqa: S101

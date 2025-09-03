@@ -1,4 +1,4 @@
-# shadowstep/element/base.py
+# shadowstep/element/shadowstep.py
 from __future__ import annotations
 
 import logging
@@ -7,6 +7,7 @@ from typing import TYPE_CHECKING, cast
 
 from appium.webdriver.webdriver import WebDriver
 from appium.webdriver.webelement import WebElement
+from locator import UiSelector
 from selenium.common.exceptions import (
     InvalidSessionIdException,
     NoSuchElementException,
@@ -34,31 +35,31 @@ if TYPE_CHECKING:
 
 class ElementBase:
     """
-    A base class for interacting with web elements in the Shadowstep application.
+    A shadowstep class for interacting with web elements in the Shadowstep application.
     """
 
     def __init__(self,
-                 locator: tuple[str, str] | dict[str, str] | str | WebElement,
-                 base: Shadowstep,
+                 locator: tuple[str, str] | dict[str, str] | Element | UiSelector | WebElement,
+                 shadowstep: Shadowstep,
                  timeout: float = 30,
                  poll_frequency: float = 0.5,
                  ignored_exceptions: WaitExcTypes | None = None,
                  contains: bool = False,
                  native: WebElement | None = None):
         self.logger = logger
-        self.driver: WebDriver = None
-        self.locator: tuple[str, str] | dict[str, str] | Element | None = locator
-        self.base = base  # Shadowstep instance
+        self.driver: WebDriver = cast(WebDriver, None)
+        self.locator: tuple[str, str] | dict[str, str] | Element | UiSelector | WebElement = locator # type: ignore
+        self.shadowstep = shadowstep
         self.timeout: float = timeout
         self.poll_frequency: float = poll_frequency
         self.ignored_exceptions: WaitExcTypes | None = ignored_exceptions
         self.contains: bool = contains
-        self.native: WebElement = native
-        self.id = None
+        self.native: WebElement | None  = native
+        self.id: str = cast(str, None)
         self.locator_converter = LocatorConverter()
 
     def _get_element(self,
-                     locator: tuple[str, str] | dict[str, str] | str | WebElement,
+                     locator: tuple[str, str] | dict[str, str] | Element | UiSelector | WebElement,
                      timeout: float = 3,
                      poll_frequency: float = 0.5,
                      ignored_exceptions: WaitExcTypes | None = None,
@@ -133,13 +134,13 @@ class ElementBase:
             raise
 
     def handle_locator(self,
-                       locator: tuple[str, str] | dict[str, str] | str | WebElement,
+                       locator: tuple[str, str] | dict[str, str] | Element | UiSelector | WebElement,
                        contains: bool = False) -> tuple[str, str] | None:
         self.logger.debug(f"{get_current_func_name()}")
         if isinstance(locator, tuple):
             by, value = locator
             # Удаляем части типа [@attr='null']
-            value = re.sub(r"\[@[\w\-]+='null'\]", "", value)
+            value = re.sub(r"\[@[\w\-]+='null']", "", value)
             return by, value
         if isinstance(locator, dict):
             # Удаляем ключи, у которых значение == 'null'
@@ -147,7 +148,9 @@ class ElementBase:
             locator = self.handle_dict_locator(locator, contains)
         return locator
 
-    def handle_dict_locator(self, locator, contains: bool = False) -> tuple[str, str] | None:
+    def handle_dict_locator(self,
+                            locator: dict[str, str],
+                            contains: bool = False) -> tuple[str, str] | None:
         """
         Convert a dictionary locator to an XPath locator.
 
