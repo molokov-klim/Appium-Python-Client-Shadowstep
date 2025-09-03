@@ -21,7 +21,7 @@ class TestAdb:
         Asserts:
             Asserts that the specified UDID is in the list of connected devices.
         """
-        assert udid in app.adb.get_devices()
+        assert udid in app.adb.get_devices()  # noqa: S101
 
     def test_get_device_model(self, app: Shadowstep, udid: str) -> None:
         """
@@ -34,7 +34,7 @@ class TestAdb:
         Asserts:
             Asserts that 'Pixel' is part of the device model string.
         """
-        assert "Pixel" in app.adb.get_device_model(udid=udid)
+        assert "Pixel" in app.adb.get_device_model(udid=udid)  # noqa: S101
 
     def test_push(self, app: Shadowstep, udid: str) -> None:
         """
@@ -50,9 +50,9 @@ class TestAdb:
         app.adb.push(source=os.path.join("test_data", "test_file"),
                      destination=os.path.join("sdcard/Download/test_file"),
                      udid=udid)
-        response = str(subprocess.check_output(["adb", "-s", f"{udid}", "shell", "ls", "sdcard/Download"]))
-        assert "test_file" in response
-        subprocess.run(["adb", "-s", f"{udid}", "shell", "rm", "/sdcard/Download/test_file"])
+        response = str(subprocess.check_output(["adb", "-s", f"{udid}", "shell", "ls", "sdcard/Download"]))  # noqa: S603, S607
+        assert "test_file" in response  # noqa: S101
+        subprocess.run(["adb", "-s", f"{udid}", "shell", "rm", "/sdcard/Download/test_file"])  # noqa: S603, S607  # noqa: S603, S607
 
     def test_pull(self, app: Shadowstep, udid: str) -> None:
         """
@@ -68,13 +68,13 @@ class TestAdb:
         app.adb.push(source=os.path.join("test_data", "test_file"),
                      destination="sdcard/Download/test_file",
                      udid=udid)
-        assert not os.path.exists("test_file")
+        assert not os.path.exists("test_file")  # noqa: S101
         app.adb.pull(source="sdcard/Download/test_file",
                      destination="test_file",
                      udid=udid)
-        assert os.path.exists("test_file")
+        assert os.path.exists("test_file")  # noqa: S101
         os.remove("test_file")
-        subprocess.run(["adb", "-s", f"{udid}", "shell", "rm", f"/sdcard/Download/test_file"])
+        subprocess.run(["adb", "-s", f"{udid}", "shell", "rm", "/sdcard/Download/test_file"])  # noqa: S603, S607
 
     def test_install_app(self, app: Shadowstep, udid: str) -> None:
         """
@@ -91,9 +91,9 @@ class TestAdb:
         app.adb.install_app(source=os.path.join("apk", "notepad.apk"),
                             udid=udid)
         package = "com.farmerbb.notepad"
-        result = subprocess.check_output(["adb", "-s", f"{udid}", "shell", "pm", "list", "packages"]).decode().strip()
-        assert any([line.strip().endswith(package) for line in result.splitlines()])
-        subprocess.run(["adb", "-s", f"{udid}", "uninstall", "com.farmerbb.notepad"])
+        result = subprocess.check_output(["adb", "-s", f"{udid}", "shell", "pm", "list", "packages"]).decode().strip()  # noqa: S603, S607
+        assert any(line.strip().endswith(package) for line in result.splitlines())  # noqa: S101
+        subprocess.run(["adb", "-s", f"{udid}", "uninstall", "com.farmerbb.notepad"])  # noqa: S603, S607
         time.sleep(55)
-        result = subprocess.check_output(["adb", "-s", f"{udid}", "shell", "pm", "list", "packages"]).decode().strip()
-        assert not any([line.strip().endswith(package) for line in result.splitlines()])
+        result = subprocess.check_output(["adb", "-s", f"{udid}", "shell", "pm", "list", "packages"]).decode().strip()  # noqa: S603, S607
+        assert not any(line.strip().endswith(package) for line in result.splitlines())  # noqa: S101

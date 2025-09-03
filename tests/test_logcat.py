@@ -22,7 +22,7 @@ class TestShadowstepLogcat:
 
         # допускаем, что старт может занять до 100 мс,
         # но явно не больше секунды
-        assert delta < 0.1, f"start_logcat слишком долго блокирует main thread: {delta:.3f}s"
+        assert delta < 0.1, f"start_logcat слишком долго блокирует main thread: {delta:.3f}s"  # noqa: S101
 
         # а теперь проверим, что логи действительно пишутся в фоне,
         # не дожидаясь возвращения из start_logcat
@@ -53,9 +53,9 @@ class TestShadowstepLogcat:
             app.terminal.press_back()
         app.stop_logcat()
 
-        assert log_file.exists(), "Logcat file was not создан"
+        assert log_file.exists(), "Logcat file was not создан"  # noqa: S101
         content = log_file.read_text(encoding="utf-8")
-        assert (
+        assert (  # noqa: S101
                 "ActivityManager" in content
                 or "Displayed" in content
                 or len(content.strip()) > 0
@@ -70,11 +70,11 @@ class TestShadowstepLogcat:
         t0 = time.perf_counter()
         app.start_logcat(str(log_file))
         delta = time.perf_counter() - t0
-        assert delta < 1.0, f"start_logcat блокирует основной поток слишком долго: {delta:.3f}s"
+        assert delta < 1.0, f"start_logcat блокирует основной поток слишком долго: {delta:.3f}s"  # noqa: S101
 
         # 2) среди живых потоков должен быть ShadowstepLogcat
         names = [t.name for t in threading.enumerate()]
-        assert any("ShadowstepLogcat" in n for n in names), f"Не найден поток логката: {names}"
+        assert any("ShadowstepLogcat" in n for n in names), f"Не найден поток логката: {names}"  # noqa: S101
 
         # 3) проверяем, что действия в терминале не блокируются логкатом
         action_durations: list[float] = []
@@ -89,7 +89,7 @@ class TestShadowstepLogcat:
 
         for i, d in enumerate(action_durations, 1):
             # увеличиваем лимит до реалистичного (например, 10 с)
-            assert d < 10.0, f"Итерация #{i} заняла {d:.3f}s — блокировка!"
+            assert d < 10.0, f"Итерация #{i} заняла {d:.3f}s — блокировка!"  # noqa: S101
 
         # 4) дождаться первых байт в файле (≤10 s)
         deadline = time.time() + 10
@@ -106,4 +106,4 @@ class TestShadowstepLogcat:
         # 6) дать потоку пару секунд на завершение
         time.sleep(2.0)
         names_after = [t.name for t in threading.enumerate()]
-        assert not any("ShadowstepLogcat" in n for n in names_after), f"Поток не остановлен: {names_after}"
+        assert not any("ShadowstepLogcat" in n for n in names_after), f"Поток не остановлен: {names_after}"  # noqa: S101

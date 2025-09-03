@@ -98,11 +98,11 @@ class TestElementShould:
             sample_element.should.be.checked()
 
     def test_should_have_content_desc(self, sample_element: Element):
-        assert sample_element.get_attribute("content-desc") is not None  # sanity check
+        assert sample_element.get_attribute("content-desc") is not None  # sanity check  # noqa: S101
         sample_element.should.have.content_desc(sample_element.get_attribute("content-desc"))
 
     def test_should_have_bounds(self, sample_element: Element):
-        assert sample_element.get_attribute("bounds") is not None
+        assert sample_element.get_attribute("bounds") is not None  # noqa: S101
         sample_element.should.have.bounds(sample_element.get_attribute("bounds"))
 
     def test_should_be_disabled(self, sample_element: Element):

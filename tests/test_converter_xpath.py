@@ -3,10 +3,10 @@ import logging
 from typing import Any
 
 import pytest
-from shadowstep.locator.types.shadowstep_dict import DictAttribute
 
 from shadowstep.exceptions.shadowstep_exceptions import ConversionError
 from shadowstep.locator.converter.xpath_converter import XPathConverter
+from shadowstep.locator.types.shadowstep_dict import DictAttribute
 
 logger = logging.getLogger(__name__)
 
@@ -74,7 +74,7 @@ class TestXPathConverter:
         logger.info(f"\n {shadowstep_dict=}")
         logger.info(f"\n {expected=}")
         logger.info("+++++++++++++++++++++++++++++++++")
-        assert expected == shadowstep_dict  # noqa: S101
+        assert expected == shadowstep_dict  # noqa: S101  # noqa: S101
 
     @pytest.mark.parametrize(
         "xpath, expected",  # noqa: PT006
@@ -300,7 +300,7 @@ class TestXPathConverter:
         logger.info(f"\n {shadowstep_dict=}")
         logger.info(f"\n {expected=}")
         logger.info("+++++++++++++++++++++++++++++++++")
-        assert expected == shadowstep_dict  # noqa: S101
+        assert expected == shadowstep_dict  # noqa: S101  # noqa: S101
 
     @pytest.mark.parametrize(
         "xpath, expected",  # noqa: PT006
@@ -471,7 +471,7 @@ class TestXPathConverter:
         logger.info(f"\n {shadowstep_dict=}")
         logger.info(f"\n {expected=}")
         logger.info("+++++++++++++++++++++++++++++++++")
-        assert shadowstep_dict == expected  # noqa: S101
+        assert shadowstep_dict == expected  # noqa: S101  # noqa: S101
 
     @pytest.mark.parametrize(
         "xpath, expected",  # noqa: PT006
@@ -563,7 +563,7 @@ class TestXPathConverter:
         logger.info(f"\n {shadowstep_dict=}")
         logger.info(f"\n {expected=}")
         logger.info("+++++++++++++++++++++++++++++++++")
-        assert shadowstep_dict == expected  # noqa: S101
+        assert shadowstep_dict == expected  # noqa: S101  # noqa: S101
 
 
     @pytest.mark.parametrize(
@@ -649,7 +649,7 @@ class TestXPathConverter:
     def test_xpath_to_dict_with_following_sibling(self, xpath: str, expected: dict[str, Any]):
         converter = XPathConverter()
         result = converter.xpath_to_dict(xpath)
-        assert result == expected  # noqa: S101
+        assert result == expected  # noqa: S101  # noqa: S101
 
     @pytest.mark.parametrize(
         "xpath, expected",  # noqa: PT006
@@ -702,7 +702,7 @@ class TestXPathConverter:
         logger.info(f"\n {ui_selector=}")
         logger.info(f"\n {expected=}")
         logger.info("+++++++++++++++++++++++++++++++++")
-        assert expected == ui_selector  # noqa: S101
+        assert expected == ui_selector  # noqa: S101  # noqa: S101
 
     @pytest.mark.parametrize(
         "xpath, expected",  # noqa: PT006
@@ -850,7 +850,7 @@ class TestXPathConverter:
         logger.info(f"\n {ui_selector=}")
         logger.info(f"\n    {expected=}")
         logger.info("+++++++++++++++++++++++++++++++++")
-        assert expected == ui_selector  # noqa: S101
+        assert expected == ui_selector  # noqa: S101  # noqa: S101
 
     @pytest.mark.parametrize(
         "xpath, expected",  # noqa: PT006
@@ -867,7 +867,7 @@ class TestXPathConverter:
         try:
             ui_selector = converter.xpath_to_ui_selector(xpath)
             # If conversion succeeds, it should not match expected empty string
-            assert ui_selector != expected  # noqa: S101
+            assert ui_selector != expected  # noqa: S101  # noqa: S101
         except ConversionError:
             # Expected behavior for invalid XPath
             pass
@@ -898,7 +898,7 @@ class TestXPathConverter:
         logger.info(f"\n {ui_selector=}")
         logger.info(f"\n    {expected=}")
         logger.info("+++++++++++++++++++++++++++++++++")
-        assert expected == ui_selector  # noqa: S101
+        assert expected == ui_selector  # noqa: S101  # noqa: S101
     
     @pytest.mark.parametrize(
         "xpath, expected",  # noqa: PT006
@@ -934,7 +934,7 @@ class TestXPathConverter:
         logger.info(f"\n {ui_selector=}")
         logger.info(f"\n    {expected=}")
         logger.info("+++++++++++++++++++++++++++++++++")
-        assert expected == ui_selector  # noqa: S101
+        assert expected == ui_selector  # noqa: S101  # noqa: S101
     
     @pytest.mark.parametrize(
         "xpath, expected",  # noqa: PT006
@@ -979,5 +979,5 @@ class TestXPathConverter:
         logger.info(f"\n {ui_selector=}")
         logger.info(f"\n    {expected=}")
         logger.info("+++++++++++++++++++++++++++++++++")
-        assert expected == ui_selector  # noqa: S101
+        assert expected == ui_selector  # noqa: S101  # noqa: S101
 

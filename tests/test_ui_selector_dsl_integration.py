@@ -29,21 +29,21 @@ class TestUiSelectorDSLIntegration:
         selector = UiSelector().text("OK").clickable(True)
         result = self.converter.to_dict(selector)
         expected = {"text": "OK", "clickable": True}
-        assert result == expected
+        assert result == expected  # noqa: S101
 
     def test_ui_selector_to_xpath_conversion(self):
         """Test conversion from UiSelector DSL to XPath."""
         selector = UiSelector().text("OK").clickable(True)
         result = self.converter.to_xpath(selector)
         expected = ("xpath", '//*[@text="OK"][@clickable="true"]')
-        assert result == expected
+        assert result == expected  # noqa: S101
 
     def test_ui_selector_to_uiselector_conversion(self):
         """Test conversion from UiSelector DSL to UiSelector string."""
         selector = UiSelector().text("OK").clickable(True)
         result = self.converter.to_uiselector(selector)
         expected = 'new UiSelector().text("OK").clickable(true);'
-        assert result == expected
+        assert result == expected  # noqa: S101
 
     def test_ui_selector_hierarchical_to_dict(self):
         """Test conversion of hierarchical UiSelector to dictionary."""
@@ -56,7 +56,7 @@ class TestUiSelectorDSLIntegration:
                 "text": "Item"
             }
         }
-        assert result == expected
+        assert result == expected  # noqa: S101
 
     def test_ui_selector_hierarchical_to_xpath(self):
         """Test conversion of hierarchical UiSelector to XPath."""
@@ -64,7 +64,7 @@ class TestUiSelectorDSLIntegration:
         selector = UiSelector().className("android.widget.LinearLayout").childSelector(child)
         result = self.converter.to_xpath(selector)
         expected = ("xpath", '//*[@class="android.widget.LinearLayout"]/*[@text="Item"]')
-        assert result == expected
+        assert result == expected  # noqa: S101
 
     def test_ui_selector_hierarchical_to_uiselector(self):
         """Test conversion of hierarchical UiSelector to UiSelector string."""
@@ -72,7 +72,7 @@ class TestUiSelectorDSLIntegration:
         selector = UiSelector().className("android.widget.LinearLayout").childSelector(child)
         result = self.converter.to_uiselector(selector)
         expected = 'new UiSelector().className("android.widget.LinearLayout").childSelector(new UiSelector().text("Item"));'
-        assert result == expected
+        assert result == expected  # noqa: S101
 
     def test_ui_selector_validation(self):
         """Test validation of UiSelector DSL."""
@@ -82,7 +82,7 @@ class TestUiSelectorDSLIntegration:
         
         # Invalid selector (empty)
         empty_selector = UiSelector()
-        with pytest.raises(ValueError):
+        with pytest.raises(ValueError, match=".*"):  # noqa: PT011
             self.converter.validate_selector(empty_selector)
 
     def test_roundtrip_conversion_ui_selector_to_dict_and_back(self):
@@ -96,7 +96,7 @@ class TestUiSelectorDSLIntegration:
         restored = UiSelector.from_dict(selector_dict)
         
         # Should be equivalent
-        assert str(original) == str(restored)
+        assert str(original) == str(restored)  # noqa: S101
 
     def test_roundtrip_conversion_ui_selector_to_xpath_and_back(self):
         """Test roundtrip conversion: UiSelector -> XPath -> dict -> UiSelector."""
@@ -112,7 +112,7 @@ class TestUiSelectorDSLIntegration:
         restored = UiSelector.from_dict(selector_dict)
         
         # Should be equivalent
-        assert str(original) == str(restored)
+        assert str(original) == str(restored)  # noqa: S101
 
     def test_roundtrip_conversion_ui_selector_to_uiselector_string_and_back(self):
         """Test roundtrip conversion: UiSelector -> string -> dict -> UiSelector."""
@@ -128,7 +128,7 @@ class TestUiSelectorDSLIntegration:
         restored = UiSelector.from_dict(selector_dict)
         
         # Should be equivalent
-        assert str(original) == str(restored)
+        assert str(original) == str(restored)  # noqa: S101
 
     def test_complex_ui_selector_conversion(self):
         """Test conversion of complex UiSelector with multiple attributes."""
@@ -145,11 +145,11 @@ class TestUiSelectorDSLIntegration:
         uiselector_string = self.converter.to_uiselector(selector)
         
         # Verify conversions
-        assert "text" in selector_dict
-        assert "clickable" in selector_dict
-        assert "fromParent" in selector_dict
-        assert xpath_tuple[0] == "xpath"
-        assert uiselector_string.startswith("new UiSelector()")
+        assert "text" in selector_dict  # noqa: S101
+        assert "clickable" in selector_dict  # noqa: S101
+        assert "fromParent" in selector_dict  # noqa: S101
+        assert xpath_tuple[0] == "xpath"  # noqa: S101
+        assert uiselector_string.startswith("new UiSelector()")  # noqa: S101
 
     def test_ui_selector_with_all_attribute_types(self):
         """Test UiSelector with all types of attributes."""
@@ -198,11 +198,11 @@ class TestUiSelectorDSLIntegration:
         ]
         
         for attr in expected_attributes:
-            assert attr in selector_dict
+            assert attr in selector_dict  # noqa: S101
         
         # Verify other conversions work
-        assert xpath_tuple[0] == "xpath"
-        assert uiselector_string.startswith("new UiSelector()")
+        assert xpath_tuple[0] == "xpath"  # noqa: S101
+        assert uiselector_string.startswith("new UiSelector()")  # noqa: S101
 
     def test_ui_selector_unicode_support(self):
         """Test UiSelector with unicode characters."""
@@ -214,9 +214,9 @@ class TestUiSelectorDSLIntegration:
         uiselector_string = self.converter.to_uiselector(selector)
         
         # Verify unicode is preserved
-        assert selector_dict["text"] == "Привет мир! 🌍"
-        assert selector_dict["description"] == "Special chars: @#$%^&*()"
-        assert "Привет мир! 🌍" in uiselector_string
+        assert selector_dict["text"] == "Привет мир! 🌍"  # noqa: S101
+        assert selector_dict["description"] == "Special chars: @#$%^&*()"  # noqa: S101
+        assert "Привет мир! 🌍" in uiselector_string  # noqa: S101
 
     def test_ui_selector_regex_patterns(self):
         """Test UiSelector with regex patterns."""
@@ -231,13 +231,13 @@ class TestUiSelectorDSLIntegration:
         uiselector_string = self.converter.to_uiselector(selector)
         
         # Verify regex patterns are preserved
-        assert selector_dict["textMatches"] == "^[A-Z][a-z]+\\s+\\d{2,4}$"
-        assert selector_dict["resourceIdMatches"] == "com\\.example\\..*\\.id\\..*"
-        assert selector_dict["classNameMatches"] == ".*Button.*|.*TextView.*"
+        assert selector_dict["textMatches"] == "^[A-Z][a-z]+\\s+\\d{2,4}$"  # noqa: S101
+        assert selector_dict["resourceIdMatches"] == "com\\.example\\..*\\.id\\..*"  # noqa: S101
+        assert selector_dict["classNameMatches"] == ".*Button.*|.*TextView.*"  # noqa: S101
         
         # Verify other conversions work
-        assert xpath_tuple[0] == "xpath"
-        assert uiselector_string.startswith("new UiSelector()")
+        assert xpath_tuple[0] == "xpath"  # noqa: S101
+        assert uiselector_string.startswith("new UiSelector()")  # noqa: S101
 
     def test_ui_selector_performance(self):
         """Test performance of UiSelector conversions."""
@@ -260,21 +260,21 @@ class TestUiSelectorDSLIntegration:
         end_time = time.time()
         
         # Should complete in reasonable time (less than 1 second for 1000 iterations)
-        assert (end_time - start_time) < 1.0
+        assert (end_time - start_time) < 1.0  # noqa: S101
 
     def test_ui_selector_edge_cases(self):
         """Test UiSelector edge cases."""
         # Empty selector
         empty_selector = UiSelector()
         empty_dict = self.converter.to_dict(empty_selector)
-        assert empty_dict == {}
+        assert empty_dict == {}  # noqa: S101
         
         # Selector with only boolean attributes
         bool_selector = UiSelector().clickable(True).enabled(False)
         bool_dict = self.converter.to_dict(bool_selector)
-        assert bool_dict == {"clickable": True, "enabled": False}
+        assert bool_dict == {"clickable": True, "enabled": False}  # noqa: S101
         
         # Selector with only numeric attributes
         numeric_selector = UiSelector().index(1).instance(2)
         numeric_dict = self.converter.to_dict(numeric_selector)
-        assert numeric_dict == {"index": 1, "instance": 2}
+        assert numeric_dict == {"index": 1, "instance": 2}  # noqa: S101

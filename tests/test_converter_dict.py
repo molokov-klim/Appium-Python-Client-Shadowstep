@@ -5,7 +5,6 @@ from typing import Any
 import pytest
 
 from shadowstep.locator.converter.dict_converter import DictConverter
-from shadowstep.locator.types.shadowstep_dict import DictAttribute
 
 logger = logging.getLogger(__name__)
 
@@ -21,41 +20,41 @@ class TestDictConverter:
         "selector_dict, expected_xpath",  # noqa: PT006
         [
             # Basic attributes
-            ({DictAttribute.TEXT: "OK"}, '//*[@text="OK"]'),
-            ({DictAttribute.CLASS_NAME: "android.widget.Button"}, '//*[@class="android.widget.Button"]'),
-            ({DictAttribute.RESOURCE_ID: "com.example:id/button"}, '//*[@resource-id="com.example:id/button"]'),
-            ({DictAttribute.DESCRIPTION: "Submit"}, '//*[@content-desc="Submit"]'),
+            ({"text": "OK"}, '//*[@text="OK"]'),
+            ({"class": "android.widget.Button"}, '//*[@class="android.widget.Button"]'),
+            ({"resource-id": "com.example:id/button"}, '//*[@resource-id="com.example:id/button"]'),
+            ({"content-desc": "Submit"}, '//*[@content-desc="Submit"]'),
             
             # Boolean attributes
-            ({DictAttribute.CLICKABLE: True}, '//*[@clickable="true"]'),
-            ({DictAttribute.ENABLED: False}, '//*[@enabled="false"]'),
-            ({DictAttribute.CHECKED: True}, '//*[@checked="true"]'),
+            ({"clickable": True}, '//*[@clickable="true"]'),
+            ({"enabled": False}, '//*[@enabled="false"]'),
+            ({"checked": True}, '//*[@checked="true"]'),
             
             # Numeric attributes
-            ({DictAttribute.INDEX: 2}, "//*[position()=3]"),
-            ({DictAttribute.INSTANCE: 1}, "//*[2]"),
+            ({"index": 2}, "//*[position()=3]"),
+            ({"instance": 1}, "//*[2]"),
             
             # Text functions
-            ({DictAttribute.TEXT_CONTAINS: "Hello"}, '//*[contains(@text, "Hello")]'),
-            ({DictAttribute.TEXT_STARTS_WITH: "Start"}, '//*[starts-with(@text, "Start")]'),
-            ({DictAttribute.TEXT_MATCHES: ".*test.*"}, '//*[matches(@text, ".*test.*")]'),
+            ({"textContains": "Hello"}, '//*[contains(@text, "Hello")]'),
+            ({"textStartsWith": "Start"}, '//*[starts-with(@text, "Start")]'),
+            ({"textMatches": ".*test.*"}, '//*[matches(@text, ".*test.*")]'),
             
             # Description functions
-            ({DictAttribute.DESCRIPTION_CONTAINS: "icon"}, '//*[contains(@content-desc, "icon")]'),
-            ({DictAttribute.DESCRIPTION_STARTS_WITH: "prefix"}, '//*[starts-with(@content-desc, "prefix")]'),
-            ({DictAttribute.DESCRIPTION_MATCHES: ".*icon.*"}, '//*[matches(@content-desc, ".*icon.*")]'),
+            ({"content-descContains": "icon"}, '//*[contains(@content-desc, "icon")]'),
+            ({"content-descStartsWith": "prefix"}, '//*[starts-with(@content-desc, "prefix")]'),
+            ({"content-descMatches": ".*icon.*"}, '//*[matches(@content-desc, ".*icon.*")]'),
             
             # Resource ID and Package functions
-            ({DictAttribute.RESOURCE_ID_MATCHES: ".*button.*"}, '//*[matches(@resource-id, ".*button.*")]'),
-            ({DictAttribute.PACKAGE_NAME: "com.example.app"}, '//*[@package="com.example.app"]'),
-            ({DictAttribute.PACKAGE_NAME_MATCHES: "com.example.*"}, '//*[matches(@package, "com.example.*")]'),
+            ({"resource-idMatches": ".*button.*"}, '//*[matches(@resource-id, ".*button.*")]'),
+            ({"package": "com.example.app"}, '//*[@package="com.example.app"]'),
+            ({"packageMatches": "com.example.*"}, '//*[matches(@package, "com.example.*")]'),
             
             # Class functions
-            ({DictAttribute.CLASS_NAME_MATCHES: ".*Button"}, '//*[matches(@class, ".*Button")]'),
+            ({"classMatches": ".*Button"}, '//*[matches(@class, ".*Button")]'),
             
             # Multiple attributes
-            ({DictAttribute.TEXT: "OK", DictAttribute.CLICKABLE: True}, '//*[@text="OK"][@clickable="true"]'),
-            ({DictAttribute.CLASS_NAME: "Button", DictAttribute.ENABLED: False, DictAttribute.INDEX: 1},
+            ({"text": "OK", "clickable": True}, '//*[@text="OK"][@clickable="true"]'),
+            ({"class": "Button", "enabled": False, "index": 1},
              '//*[@class="Button"][@enabled="false"][position()=2]'),
         ]
     )
@@ -65,47 +64,47 @@ class TestDictConverter:
         logger.info(f"Input: {selector_dict}")
         logger.info(f"Expected: {expected_xpath}")
         logger.info(f"Result: {result}")
-        assert result == expected_xpath
+        assert result == expected_xpath  # noqa: S101
 
     @pytest.mark.parametrize(
         "selector_dict, expected_ui",  # noqa: PT006
         [
             # Basic attributes
-            ({DictAttribute.TEXT: "OK"}, 'new UiSelector().text("OK");'),
-            ({DictAttribute.CLASS_NAME: "android.widget.Button"}, 'new UiSelector().className("android.widget.Button");'),
-            ({DictAttribute.RESOURCE_ID: "com.example:id/button"}, 'new UiSelector().resourceId("com.example:id/button");'),
-            ({DictAttribute.DESCRIPTION: "Submit"}, 'new UiSelector().description("Submit");'),
+            ({"text": "OK"}, 'new UiSelector().text("OK");'),
+            ({"class": "android.widget.Button"}, 'new UiSelector().className("android.widget.Button");'),
+            ({"resource-id": "com.example:id/button"}, 'new UiSelector().resourceId("com.example:id/button");'),
+            ({"content-desc": "Submit"}, 'new UiSelector().description("Submit");'),
             
             # Boolean attributes
-            ({DictAttribute.CLICKABLE: True}, "new UiSelector().clickable(true);"),
-            ({DictAttribute.ENABLED: False}, "new UiSelector().enabled(false);"),
-            ({DictAttribute.CHECKED: True}, "new UiSelector().checked(true);"),
+            ({"clickable": True}, "new UiSelector().clickable(true);"),
+            ({"enabled": False}, "new UiSelector().enabled(false);"),
+            ({"checked": True}, "new UiSelector().checked(true);"),
             
             # Numeric attributes
-            ({DictAttribute.INDEX: 2}, "new UiSelector().index(2);"),
-            ({DictAttribute.INSTANCE: 1}, "new UiSelector().instance(1);"),
+            ({"index": 2}, "new UiSelector().index(2);"),
+            ({"instance": 1}, "new UiSelector().instance(1);"),
             
             # Text functions
-            ({DictAttribute.TEXT_CONTAINS: "Hello"}, 'new UiSelector().textContains("Hello");'),
-            ({DictAttribute.TEXT_STARTS_WITH: "Start"}, 'new UiSelector().textStartsWith("Start");'),
-            ({DictAttribute.TEXT_MATCHES: ".*test.*"}, 'new UiSelector().textMatches(".*test.*");'),
+            ({"textContains": "Hello"}, 'new UiSelector().textContains("Hello");'),
+            ({"textStartsWith": "Start"}, 'new UiSelector().textStartsWith("Start");'),
+            ({"textMatches": ".*test.*"}, 'new UiSelector().textMatches(".*test.*");'),
             
             # Description functions
-            ({DictAttribute.DESCRIPTION_CONTAINS: "icon"}, 'new UiSelector().descriptionContains("icon");'),
-            ({DictAttribute.DESCRIPTION_STARTS_WITH: "prefix"}, 'new UiSelector().descriptionStartsWith("prefix");'),
-            ({DictAttribute.DESCRIPTION_MATCHES: ".*icon.*"}, 'new UiSelector().descriptionMatches(".*icon.*");'),
+            ({"content-descContains": "icon"}, 'new UiSelector().descriptionContains("icon");'),
+            ({"content-descStartsWith": "prefix"}, 'new UiSelector().descriptionStartsWith("prefix");'),
+            ({"content-descMatches": ".*icon.*"}, 'new UiSelector().descriptionMatches(".*icon.*");'),
             
             # Resource ID and Package functions
-            ({DictAttribute.RESOURCE_ID_MATCHES: ".*button.*"}, 'new UiSelector().resourceIdMatches(".*button.*");'),
-            ({DictAttribute.PACKAGE_NAME: "com.example.app"}, 'new UiSelector().packageName("com.example.app");'),
-            ({DictAttribute.PACKAGE_NAME_MATCHES: "com.example.*"}, 'new UiSelector().packageNameMatches("com.example.*");'),
+            ({"resource-idMatches": ".*button.*"}, 'new UiSelector().resourceIdMatches(".*button.*");'),
+            ({"package": "com.example.app"}, 'new UiSelector().packageName("com.example.app");'),
+            ({"packageMatches": "com.example.*"}, 'new UiSelector().packageNameMatches("com.example.*");'),
             
             # Class functions
-            ({DictAttribute.CLASS_NAME_MATCHES: ".*Button"}, 'new UiSelector().classNameMatches(".*Button");'),
+            ({"classMatches": ".*Button"}, 'new UiSelector().classNameMatches(".*Button");'),
             
             # Multiple attributes
-            ({DictAttribute.TEXT: "OK", DictAttribute.CLICKABLE: True}, 'new UiSelector().text("OK").clickable(true);'),
-            ({DictAttribute.CLASS_NAME: "Button", DictAttribute.ENABLED: False, DictAttribute.INDEX: 1},
+            ({"text": "OK", "clickable": True}, 'new UiSelector().text("OK").clickable(true);'),
+            ({"class": "Button", "enabled": False, "index": 1},
              'new UiSelector().className("Button").enabled(false).index(1);'),
         ]
     )
@@ -115,55 +114,55 @@ class TestDictConverter:
         logger.info(f"Input: {selector_dict}")
         logger.info(f"Expected: {expected_ui}")
         logger.info(f"Result: {result}")
-        assert result == expected_ui
+        assert result == expected_ui  # noqa: S101
 
     @pytest.mark.parametrize(
         "selector_dict, expected_xpath",  # noqa: PT006
         [
             # Child selector
             ({
-                DictAttribute.CLASS_NAME: "android.widget.LinearLayout",
-                DictAttribute.CHILD_SELECTOR: {
-                    DictAttribute.TEXT: "Item"
+                "class": "android.widget.LinearLayout",
+                "childSelector": {
+                    "text": "Item"
                 }
             }, '//*[@class="android.widget.LinearLayout"]/*[@text="Item"]'),
             
             # From parent selector
             ({
-                DictAttribute.TEXT: "Child",
-                DictAttribute.FROM_PARENT: {
-                    DictAttribute.CLASS_NAME: "android.widget.FrameLayout"
+                "text": "Child",
+                "fromParent": {
+                    "class": "android.widget.FrameLayout"
                 }
             }, '//*[@text="Child"]/..//*[@class="android.widget.FrameLayout"]'),
             
             # Sibling selector
             ({
-                DictAttribute.TEXT: "First",
-                DictAttribute.SIBLING: {
-                    DictAttribute.TEXT: "Second"
+                "text": "First",
+                "sibling": {
+                    "text": "Second"
                 }
             }, '//*[@text="First"]/following-sibling::*[@text="Second"]'),
             
             # Nested hierarchy
             ({
-                DictAttribute.CLASS_NAME: "Container",
-                DictAttribute.CHILD_SELECTOR: {
-                    DictAttribute.CLASS_NAME: "Row",
-                    DictAttribute.CHILD_SELECTOR: {
-                        DictAttribute.TEXT: "Cell"
+                "class": "Container",
+                "childSelector": {
+                    "class": "Row",
+                    "childSelector": {
+                        "text": "Cell"
                     }
                 }
             }, '//*[@class="Container"]/*[@class="Row"]/*[@text="Cell"]'),
             
             # Complex hierarchy with multiple attributes
             ({
-                DictAttribute.TEXT: "Settings",
-                DictAttribute.CLICKABLE: True,
-                DictAttribute.FROM_PARENT: {
-                    DictAttribute.CLASS_NAME: "android.widget.LinearLayout",
-                    DictAttribute.ENABLED: True,
-                    DictAttribute.CHILD_SELECTOR: {
-                        DictAttribute.TEXT: "Menu"
+                "text": "Settings",
+                "clickable": True,
+                "fromParent": {
+                    "class": "android.widget.LinearLayout",
+                    "enabled": True,
+                    "childSelector": {
+                        "text": "Menu"
                     }
                 }
             }, '//*[@text="Settings"][@clickable="true"]/..//*[@class="android.widget.LinearLayout"][@enabled="true"]/*[@text="Menu"]'),
@@ -175,55 +174,55 @@ class TestDictConverter:
         logger.info(f"Input: {selector_dict}")
         logger.info(f"Expected: {expected_xpath}")
         logger.info(f"Result: {result}")
-        assert result == expected_xpath
+        assert result == expected_xpath  # noqa: S101
 
     @pytest.mark.parametrize(
         "selector_dict, expected_ui",  # noqa: PT006
         [
             # Child selector
             ({
-                DictAttribute.CLASS_NAME: "android.widget.LinearLayout",
-                DictAttribute.CHILD_SELECTOR: {
-                    DictAttribute.TEXT: "Item"
+                "class": "android.widget.LinearLayout",
+                "childSelector": {
+                    "text": "Item"
                 }
             }, 'new UiSelector().className("android.widget.LinearLayout").childSelector(new UiSelector().text("Item"));'),
             
             # From parent selector
             ({
-                DictAttribute.TEXT: "Child",
-                DictAttribute.FROM_PARENT: {
-                    DictAttribute.CLASS_NAME: "android.widget.FrameLayout"
+                "text": "Child",
+                "fromParent": {
+                    "class": "android.widget.FrameLayout"
                 }
             }, 'new UiSelector().text("Child").fromParent(new UiSelector().className("android.widget.FrameLayout"));'),
             
             # Sibling selector
             ({
-                DictAttribute.TEXT: "First",
-                DictAttribute.SIBLING: {
-                    DictAttribute.TEXT: "Second"
+                "text": "First",
+                "sibling": {
+                    "text": "Second"
                 }
             }, 'new UiSelector().text("First").sibling(new UiSelector().text("Second"));'),
             
             # Nested hierarchy
             ({
-                DictAttribute.CLASS_NAME: "Container",
-                DictAttribute.CHILD_SELECTOR: {
-                    DictAttribute.CLASS_NAME: "Row",
-                    DictAttribute.CHILD_SELECTOR: {
-                        DictAttribute.TEXT: "Cell"
+                "class": "Container",
+                "childSelector": {
+                    "class": "Row",
+                    "childSelector": {
+                        "text": "Cell"
                     }
                 }
             }, 'new UiSelector().className("Container").childSelector(new UiSelector().className("Row").childSelector(new UiSelector().text("Cell")));'),
             
             # Complex hierarchy with multiple attributes
             ({
-                DictAttribute.TEXT: "Settings",
-                DictAttribute.CLICKABLE: True,
-                DictAttribute.FROM_PARENT: {
-                    DictAttribute.CLASS_NAME: "android.widget.LinearLayout",
-                    DictAttribute.ENABLED: True,
-                    DictAttribute.CHILD_SELECTOR: {
-                        DictAttribute.TEXT: "Menu"
+                "text": "Settings",
+                "clickable": True,
+                "fromParent": {
+                    "class": "android.widget.LinearLayout",
+                    "enabled": True,
+                    "childSelector": {
+                        "text": "Menu"
                     }
                 }
             }, 'new UiSelector().text("Settings").clickable(true).fromParent(new UiSelector().className("android.widget.LinearLayout").enabled(true).childSelector(new UiSelector().text("Menu")));'),
@@ -235,17 +234,17 @@ class TestDictConverter:
         logger.info(f"Input: {selector_dict}")
         logger.info(f"Expected: {expected_ui}")
         logger.info(f"Result: {result}")
-        assert result == expected_ui
+        assert result == expected_ui  # noqa: S101
 
     def test_validate_dict_selector_valid(self):
         """Test validation of valid dictionary selectors."""
         valid_selectors = [
-            {DictAttribute.TEXT: "OK"},
-            {DictAttribute.CLASS_NAME: "Button", DictAttribute.CLICKABLE: True},
+            {"text": "OK"},
+            {"class": "Button", "clickable": True},
             {
-                DictAttribute.TEXT: "Parent",
-                DictAttribute.CHILD_SELECTOR: {
-                    DictAttribute.TEXT: "Child"
+                "text": "Parent",
+                "childSelector": {
+                    "text": "Child"
                 }
             }
         ]
@@ -262,26 +261,26 @@ class TestDictConverter:
         
         # Not a dictionary
         with pytest.raises(ValueError, match="Selector must be a dictionary"):
-            self.converter.validate_dict_selector("not a dict")
+            self.converter.validate_dict_selector("not a dict")  # type: ignore
         
         # Conflicting text attributes
         with pytest.raises(ValueError, match="Conflicting text attributes"):
             self.converter.validate_dict_selector({
-                DictAttribute.TEXT: "OK",
-                DictAttribute.TEXT_CONTAINS: "Hello"
+                "text": "OK",
+                "textContains": "Hello"
             })
         
         # Conflicting description attributes
         with pytest.raises(ValueError, match="Conflicting description attributes"):
             self.converter.validate_dict_selector({
-                DictAttribute.DESCRIPTION: "OK",
-                DictAttribute.DESCRIPTION_CONTAINS: "Hello"
+                "content-desc": "OK",
+                "content-descContains": "Hello"
             })
         
         # Invalid hierarchical attribute value
         with pytest.raises(ValueError, match="Hierarchical attribute.*must have dict value"):
             self.converter.validate_dict_selector({
-                DictAttribute.CHILD_SELECTOR: "not a dict"
+                "childSelector": "not a dict"
             })
 
     def test_roundtrip_conversion(self):
@@ -289,10 +288,10 @@ class TestDictConverter:
         # This test would require integration with existing XPathConverter
         # For now, we'll test that our converter produces valid output
         selector_dict = {
-            DictAttribute.TEXT: "Test",
-            DictAttribute.CLICKABLE: True,
-            DictAttribute.CHILD_SELECTOR: {
-                DictAttribute.CLASS_NAME: "Button"
+            "text": "Test",
+            "clickable": True,
+            "childSelector": {
+                "class": "Button"
             }
         }
         
@@ -300,12 +299,12 @@ class TestDictConverter:
         ui_selector = self.converter.dict_to_ui_selector(selector_dict)
         
         # Basic validation that output is not empty and contains expected elements
-        assert xpath
-        assert ui_selector
-        assert "Test" in xpath
-        assert "Test" in ui_selector
-        assert "Button" in xpath
-        assert "Button" in ui_selector
+        assert xpath  # noqa: S101
+        assert ui_selector  # noqa: S101
+        assert "Test" in xpath  # noqa: S101
+        assert "Test" in ui_selector  # noqa: S101
+        assert "Button" in xpath  # noqa: S101
+        assert "Button" in ui_selector  # noqa: S101
 
 
 class TestDictConverterComplex:
@@ -319,18 +318,18 @@ class TestDictConverterComplex:
         """Test XPath conversion with 5+ levels of nesting."""
         # Create a deeply nested structure: Container > Row > Cell > Button > Text
         deep_selector = {
-            DictAttribute.CLASS_NAME: "android.widget.FrameLayout",
-            DictAttribute.CHILD_SELECTOR: {
-                DictAttribute.CLASS_NAME: "android.widget.LinearLayout",
-                DictAttribute.INDEX: 0,
-                DictAttribute.CHILD_SELECTOR: {
-                    DictAttribute.CLASS_NAME: "android.widget.GridLayout",
-                    DictAttribute.CHILD_SELECTOR: {
-                        DictAttribute.CLASS_NAME: "android.widget.Button",
-                        DictAttribute.CLICKABLE: True,
-                        DictAttribute.CHILD_SELECTOR: {
-                            DictAttribute.CLASS_NAME: "android.widget.TextView",
-                            DictAttribute.TEXT: "Deep Text"
+            "class": "android.widget.FrameLayout",
+            "childSelector": {
+                "class": "android.widget.LinearLayout",
+                "index": 0,
+                "childSelector": {
+                    "class": "android.widget.GridLayout",
+                    "childSelector": {
+                        "class": "android.widget.Button",
+                        "clickable": True,
+                        "childSelector": {
+                            "class": "android.widget.TextView",
+                            "text": "Deep Text"
                         }
                     }
                 }
@@ -345,23 +344,23 @@ class TestDictConverterComplex:
                     '/*[@class="android.widget.TextView"][@text="Deep Text"]')
 
         logger.info(f"Deep nested XPath result: {result}")
-        assert result == expected
+        assert result == expected  # noqa: S101
 
     def test_deep_nested_hierarchy_ui_selector(self):
         """Test UiSelector conversion with 5+ levels of nesting."""
         deep_selector = {
-            DictAttribute.CLASS_NAME: "android.widget.FrameLayout",
-            DictAttribute.CHILD_SELECTOR: {
-                DictAttribute.CLASS_NAME: "android.widget.LinearLayout",
-                DictAttribute.INDEX: 0,
-                DictAttribute.CHILD_SELECTOR: {
-                    DictAttribute.CLASS_NAME: "android.widget.GridLayout",
-                    DictAttribute.CHILD_SELECTOR: {
-                        DictAttribute.CLASS_NAME: "android.widget.Button",
-                        DictAttribute.CLICKABLE: True,
-                        DictAttribute.CHILD_SELECTOR: {
-                            DictAttribute.CLASS_NAME: "android.widget.TextView",
-                            DictAttribute.TEXT: "Deep Text"
+            "class": "android.widget.FrameLayout",
+            "childSelector": {
+                "class": "android.widget.LinearLayout",
+                "index": 0,
+                "childSelector": {
+                    "class": "android.widget.GridLayout",
+                    "childSelector": {
+                        "class": "android.widget.Button",
+                        "clickable": True,
+                        "childSelector": {
+                            "class": "android.widget.TextView",
+                            "text": "Deep Text"
                         }
                     }
                 }
@@ -376,22 +375,22 @@ class TestDictConverterComplex:
                     '.childSelector(new UiSelector().className("android.widget.TextView").text("Deep Text")))));')
 
         logger.info(f"Deep nested UiSelector result: {result}")
-        assert result == expected
+        assert result == expected  # noqa: S101
 
     def test_mixed_hierarchical_relationships(self):
         """Test complex selector with mixed hierarchical relationships."""
         complex_selector = {
-            DictAttribute.TEXT: "Main Element",
-            DictAttribute.CLICKABLE: True,
-            DictAttribute.CHILD_SELECTOR: {
-                DictAttribute.CLASS_NAME: "android.widget.LinearLayout",
-                DictAttribute.FROM_PARENT: {
-                    DictAttribute.CLASS_NAME: "android.widget.FrameLayout",
-                    DictAttribute.ENABLED: True,
-                    DictAttribute.SIBLING: {
-                        DictAttribute.TEXT: "Sibling Element",
-                        DictAttribute.CHILD_SELECTOR: {
-                            DictAttribute.TEXT: "Nested Child"
+            "text": "Main Element",
+            "clickable": True,
+            "childSelector": {
+                "class": "android.widget.LinearLayout",
+                "fromParent": {
+                    "class": "android.widget.FrameLayout",
+                    "enabled": True,
+                    "sibling": {
+                        "text": "Sibling Element",
+                        "childSelector": {
+                            "text": "Nested Child"
                         }
                     }
                 }
@@ -407,21 +406,21 @@ class TestDictConverterComplex:
         logger.info(f"Mixed hierarchical UiSelector: {ui_result}")
 
         # Basic validation - should not be empty and contain expected elements
-        assert xpath_result
-        assert ui_result
-        assert "Main Element" in xpath_result
-        assert "Main Element" in ui_result
-        assert "Sibling Element" in xpath_result
-        assert "Sibling Element" in ui_result
+        assert xpath_result  # noqa: S101
+        assert ui_result  # noqa: S101
+        assert "Main Element" in xpath_result  # noqa: S101
+        assert "Main Element" in ui_result  # noqa: S101
+        assert "Sibling Element" in xpath_result  # noqa: S101  # noqa: S101
+        assert "Sibling Element" in ui_result  # noqa: S101  # noqa: S101
 
     def test_multiple_instances_and_indexes(self):
         """Test selector with multiple instance and index attributes."""
         multi_selector = {
-            DictAttribute.CLASS_NAME: "android.widget.Button",
-            DictAttribute.INSTANCE: 2,
-            DictAttribute.INDEX: 1,
-            DictAttribute.TEXT: "Button Text",
-            DictAttribute.CLICKABLE: True
+            "class": "android.widget.Button",
+            "instance": 2,
+            "index": 1,
+            "text": "Button Text",
+            "clickable": True
         }
 
         xpath_result = self.converter.dict_to_xpath(multi_selector)
@@ -431,19 +430,19 @@ class TestDictConverterComplex:
         logger.info(f"Multiple instances UiSelector: {ui_result}")
 
         # XPath should have both position() and [n] syntax
-        assert "position()=2" in xpath_result
-        assert "[3]" in xpath_result
+        assert "position()=2" in xpath_result  # noqa: S101
+        assert "[3]" in xpath_result  # noqa: S101
         # UiSelector should have both index and instance
-        assert ".index(1)" in ui_result
-        assert ".instance(2)" in ui_result
+        assert ".index(1)" in ui_result  # noqa: S101
+        assert ".instance(2)" in ui_result  # noqa: S101
 
     def test_all_text_functions_combined(self):
         """Test selector with all text function types."""
         text_functions_selector = {
-            DictAttribute.TEXT: "Exact Text",
-            DictAttribute.TEXT_CONTAINS: "Contains",
-            DictAttribute.TEXT_STARTS_WITH: "Starts",
-            DictAttribute.TEXT_MATCHES: ".*Pattern.*"
+            "text": "Exact Text",
+            "textContains": "Contains",
+            "textStartsWith": "Starts",
+            "textMatches": ".*Pattern.*"
         }
 
         # This should fail validation due to conflicting text attributes
@@ -453,10 +452,10 @@ class TestDictConverterComplex:
     def test_all_description_functions_combined(self):
         """Test selector with all description function types."""
         desc_functions_selector = {
-            DictAttribute.DESCRIPTION: "Exact Desc",
-            DictAttribute.DESCRIPTION_CONTAINS: "Contains",
-            DictAttribute.DESCRIPTION_STARTS_WITH: "Starts",
-            DictAttribute.DESCRIPTION_MATCHES: ".*Pattern.*"
+            "content-desc": "Exact Desc",
+            "content-descContains": "Contains",
+            "content-descStartsWith": "Starts",
+            "content-descMatches": ".*Pattern.*"
         }
 
         # This should fail validation due to conflicting description attributes
@@ -466,9 +465,9 @@ class TestDictConverterComplex:
     def test_complex_regex_patterns(self):
         """Test selector with complex regex patterns."""
         regex_selector = {
-            DictAttribute.TEXT_MATCHES: r"^[A-Z][a-z]+\s+\d{2,4}$",  # Name + Year pattern
-            DictAttribute.RESOURCE_ID_MATCHES: r"com\.example\..*\.id\..*",
-            DictAttribute.CLASS_NAME_MATCHES: r".*Button.*|.*TextView.*"
+            "textMatches": r"^[A-Z][a-z]+\s+\d{2,4}$",  # Name + Year pattern
+            "resource-idMatches": r"com\.example\..*\.id\..*",
+            "classMatches": r".*Button.*|.*TextView.*"
         }
 
         xpath_result = self.converter.dict_to_xpath(regex_selector)
@@ -477,26 +476,26 @@ class TestDictConverterComplex:
         logger.info(f"Complex regex XPath: {xpath_result}")
         logger.info(f"Complex regex UiSelector: {ui_result}")
 
-        assert "matches(@text" in xpath_result
-        assert "matches(@resource-id" in xpath_result
-        assert "matches(@class" in xpath_result
-        assert ".textMatches(" in ui_result
-        assert ".resourceIdMatches(" in ui_result
-        assert ".classNameMatches(" in ui_result
+        assert "matches(@text" in xpath_result  # noqa: S101
+        assert "matches(@resource-id" in xpath_result  # noqa: S101
+        assert "matches(@class" in xpath_result  # noqa: S101
+        assert ".textMatches(" in ui_result  # noqa: S101
+        assert ".resourceIdMatches(" in ui_result  # noqa: S101
+        assert ".classNameMatches(" in ui_result  # noqa: S101
 
     def test_boolean_attributes_combinations(self):
         """Test all possible boolean attribute combinations."""
         boolean_selector = {
-            DictAttribute.CHECKABLE: True,
-            DictAttribute.CHECKED: False,
-            DictAttribute.CLICKABLE: True,
-            DictAttribute.ENABLED: True,
-            DictAttribute.FOCUSABLE: False,
-            DictAttribute.FOCUSED: True,
-            DictAttribute.LONG_CLICKABLE: False,
-            DictAttribute.SCROLLABLE: True,
-            DictAttribute.SELECTED: False,
-            DictAttribute.PASSWORD: True
+            "checkable": True,
+            "checked": False,
+            "clickable": True,
+            "enabled": True,
+            "focusable": False,
+            "focused": True,
+            "long-clickable": False,
+            "scrollable": True,
+            "selected": False,
+            "password": True
         }
 
         xpath_result = self.converter.dict_to_xpath(boolean_selector)
@@ -512,9 +511,9 @@ class TestDictConverterComplex:
                             "focused", "longClickable", "scrollable", "selected", "password"]
 
         for attr in boolean_attrs_xpath:
-            assert f"@{attr}=" in xpath_result
+            assert f"@{attr}=" in xpath_result  # noqa: S101
         for attr in boolean_attrs_ui:
-            assert f".{attr}(" in ui_result
+            assert f".{attr}(" in ui_result  # noqa: S101
 
     def test_edge_case_empty_dict(self):
         """Test edge case with empty dictionary."""
@@ -524,7 +523,7 @@ class TestDictConverterComplex:
     def test_edge_case_invalid_hierarchical_value(self):
         """Test edge case with invalid hierarchical attribute value."""
         invalid_selector = {
-            DictAttribute.CHILD_SELECTOR: "not a dict"  # Should be dict
+            "childSelector": "not a dict"  # Should be dict
         }
 
         with pytest.raises(ValueError, match="Hierarchical attribute.*must have dict value"):
@@ -533,11 +532,11 @@ class TestDictConverterComplex:
     def test_edge_case_non_dict_input(self):
         """Test edge case with non-dictionary input."""
         with pytest.raises(ValueError, match="Selector must be a dictionary"):
-            self.converter.validate_dict_selector("not a dict")
+            self.converter.validate_dict_selector("not a dict")  # type: ignore
 
     def test_performance_large_selector(self):
         """Test performance with large selector containing many attributes."""
-        large_selector = {}
+        large_selector: dict[str, Any] = {}
 
         # Add many boolean attributes
         for i in range(10):
@@ -545,30 +544,30 @@ class TestDictConverterComplex:
 
         # Add some valid attributes
         large_selector.update({
-            DictAttribute.TEXT: "Performance Test",
-            DictAttribute.CLASS_NAME: "android.widget.Button",
-            DictAttribute.CLICKABLE: True,
-            DictAttribute.ENABLED: True,
-            DictAttribute.INDEX: 5,
-            DictAttribute.INSTANCE: 3
+            "text": "Performance Test",
+            "class": "android.widget.Button",
+            "clickable": True,
+            "enabled": True,
+            "index": 5,
+            "instance": 3
         })
 
         # Should work without errors (unknown attributes are ignored)
         xpath_result = self.converter.dict_to_xpath(large_selector)
         ui_result = self.converter.dict_to_ui_selector(large_selector)
 
-        assert xpath_result
-        assert ui_result
-        assert "Performance Test" in xpath_result
-        assert "Performance Test" in ui_result
+        assert xpath_result  # noqa: S101
+        assert ui_result  # noqa: S101
+        assert "Performance Test" in xpath_result  # noqa: S101
+        assert "Performance Test" in ui_result  # noqa: S101
 
     def test_unicode_and_special_characters(self):
         """Test selector with unicode and special characters."""
         unicode_selector = {
-            DictAttribute.TEXT: "Привет мир! 🌍",
-            DictAttribute.DESCRIPTION: "Special chars: @#$%^&*()",
-            DictAttribute.RESOURCE_ID: "com.example:id/button_with_underscore",
-            DictAttribute.CLASS_NAME: "android.widget.Button"
+            "text": "Привет мир! 🌍",
+            "content-desc": "Special chars: @#$%^&*()",
+            "resource-id": "com.example:id/button_with_underscore",
+            "class": "android.widget.Button"
         }
 
         xpath_result = self.converter.dict_to_xpath(unicode_selector)
@@ -577,18 +576,18 @@ class TestDictConverterComplex:
         logger.info(f"Unicode XPath: {xpath_result}")
         logger.info(f"Unicode UiSelector: {ui_result}")
 
-        assert "Привет мир! 🌍" in xpath_result
-        assert "Привет мир! 🌍" in ui_result
-        assert "Special chars: @#$%^&*()" in xpath_result
-        assert "Special chars: @#$%^&*()" in ui_result
+        assert "Привет мир! 🌍" in xpath_result  # noqa: S101
+        assert "Привет мир! 🌍" in ui_result  # noqa: S101
+        assert "Special chars: @#$%^&*()" in xpath_result  # noqa: S101
+        assert "Special chars: @#$%^&*()" in ui_result  # noqa: S101
 
     def test_nested_validation_errors(self):
         """Test validation errors in nested structures."""
         nested_invalid_selector = {
-            DictAttribute.TEXT: "Parent",
-            DictAttribute.CHILD_SELECTOR: {
-                DictAttribute.TEXT: "Child",
-                DictAttribute.TEXT_CONTAINS: "Conflict"  # Conflicting attributes
+            "text": "Parent",
+            "childSelector": {
+                "text": "Child",
+                "textContains": "Conflict"  # Conflicting attributes
             }
         }
 
@@ -599,15 +598,15 @@ class TestDictConverterComplex:
         """Test protection against potential circular references."""
         # Create a selector that could potentially cause issues
         complex_selector = {
-            DictAttribute.TEXT: "Root",
-            DictAttribute.CHILD_SELECTOR: {
-                DictAttribute.TEXT: "Child1",
-                DictAttribute.FROM_PARENT: {
-                    DictAttribute.TEXT: "Child2",
-                    DictAttribute.SIBLING: {
-                        DictAttribute.TEXT: "Child3",
-                        DictAttribute.CHILD_SELECTOR: {
-                            DictAttribute.TEXT: "Deep Child"
+            "text": "Root",
+            "childSelector": {
+                "text": "Child1",
+                "fromParent": {
+                    "text": "Child2",
+                    "sibling": {
+                        "text": "Child3",
+                        "childSelector": {
+                            "text": "Deep Child"
                         }
                     }
                 }
@@ -618,16 +617,16 @@ class TestDictConverterComplex:
         xpath_result = self.converter.dict_to_xpath(complex_selector)
         ui_result = self.converter.dict_to_ui_selector(complex_selector)
 
-        assert xpath_result
-        assert ui_result
-        assert "Root" in xpath_result
-        assert "Root" in ui_result
+        assert xpath_result  # noqa: S101
+        assert ui_result  # noqa: S101
+        assert "Root" in xpath_result  # noqa: S101
+        assert "Root" in ui_result  # noqa: S101
 
     def test_conversion_error_handling(self):
         """Test proper error handling during conversion."""
         # Create a selector that might cause conversion errors
         problematic_selector = {
-            DictAttribute.INSTANCE: "not_a_number"  # Should be int
+            "instance": "not_a_number"  # Should be int
         }
 
         # Should handle the error gracefully - the converter logs warning but continues
@@ -636,40 +635,40 @@ class TestDictConverterComplex:
         ui_result = self.converter.dict_to_ui_selector(problematic_selector)
 
         # The result should be empty or minimal since INSTANCE is treated as unknown
-        assert xpath_result == "//*"  # Just the base XPath
-        assert ui_result == "new UiSelector();"  # Just the base UiSelector
+        assert xpath_result == "//*"  # Just the base XPath  # noqa: S101
+        assert ui_result == "new UiSelector();"  # Just the base UiSelector  # noqa: S101
 
     def test_stress_test_deep_nesting(self):
         """Stress test with very deep nesting (10+ levels)."""
         # Build a very deep nested structure
-        current_level: dict = {}
+        current_level: dict[str, Any] = {}
         for i in range(10):
             next_level = {
-                DictAttribute.CLASS_NAME: f"android.widget.Level{i}",
-                DictAttribute.INDEX: i
+                "class": f"android.widget.Level{i}",
+                "index": i
             }
             if i == 0:
                 current_level = next_level
             else:
                 # Add to the deepest level
                 deepest = current_level
-                while DictAttribute.CHILD_SELECTOR in deepest:
-                    deepest = deepest[DictAttribute.CHILD_SELECTOR]  # type: ignore
-                deepest[DictAttribute.CHILD_SELECTOR] = next_level  # type: ignore
+                while "childSelector" in deepest:
+                    deepest = deepest["childSelector"]  # type: ignore
+                deepest["childSelector"] = next_level  # type: ignore
 
         # Add final text element
         deepest = current_level
-        while DictAttribute.CHILD_SELECTOR in deepest:
-            deepest = deepest[DictAttribute.CHILD_SELECTOR]  # type: ignore
-        deepest[DictAttribute.TEXT] = "Deepest Element"  # type: ignore
+        while "childSelector" in deepest:
+            deepest = deepest["childSelector"]  # type: ignore
+        deepest["text"] = "Deepest Element"  # type: ignore
 
         # Should handle deep nesting without issues
         xpath_result = self.converter.dict_to_xpath(current_level)
         ui_result = self.converter.dict_to_ui_selector(current_level)
 
-        assert xpath_result
-        assert ui_result
-        assert "Deepest Element" in xpath_result
-        assert "Deepest Element" in ui_result
-        assert "Level9" in xpath_result  # Deepest level
-        assert "Level9" in ui_result
+        assert xpath_result  # noqa: S101
+        assert ui_result  # noqa: S101
+        assert "Deepest Element" in xpath_result  # noqa: S101
+        assert "Deepest Element" in ui_result  # noqa: S101
+        assert "Level9" in xpath_result  # Deepest level  # noqa: S101
+        assert "Level9" in ui_result  # noqa: S101

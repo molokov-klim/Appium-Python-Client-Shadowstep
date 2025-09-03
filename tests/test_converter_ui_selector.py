@@ -4,8 +4,8 @@ from typing import Any
 
 import pytest
 
-from shadowstep.locator.types.ui_selector import UiAttribute
 from shadowstep.locator.converter.ui_selector_converter import UiSelectorConverter
+from shadowstep.locator.types.ui_selector import UiAttribute
 
 logger = logging.getLogger(__name__)
 
@@ -66,9 +66,9 @@ class TestUiSelectorConverter:
         logger.info(f"{xpath=}")
 
         method_in_dict = parsed["methods"][0]
-        assert method_in_dict["name"] == method_name  # noqa: S101
-        assert method_in_dict["args"][0] == arg  # noqa: S101
-        assert expected_xpath_part in xpath  # noqa: S101
+        assert method_in_dict["name"] == method_name  # noqa: S101  # noqa: S101
+        assert method_in_dict["args"][0] == arg  # noqa: S101  # noqa: S101
+        assert expected_xpath_part in xpath  # noqa: S101  # noqa: S101
 
     @pytest.mark.parametrize(
         "selector_str, expected_xpath",  # noqa: PT006
@@ -221,7 +221,7 @@ class TestUiSelectorConverter:
         # logger.info(f"{expected_xpath=}")
         # logger.info(f"{parsed=}")
         # logger.info(f"{xpath=}")
-        assert expected_xpath.replace(" ", "") == xpath.replace(" ", ""), f"Expected '{expected_xpath}' got: {xpath}"  # noqa: S101
+        assert expected_xpath.replace(" ", "") == xpath.replace(" ", ""), f"Expected '{expected_xpath}' got: {xpath}"  # noqa: S101  # noqa: S101
 
     @pytest.mark.xfail
     @pytest.mark.parametrize(
@@ -241,7 +241,7 @@ class TestUiSelectorConverter:
         # logger.info(f"{expected_xpath=}")
         # logger.info(f"{parsed=}")
         # logger.info(f"{xpath=}")
-        assert expected_xpath.replace(" ", "") == xpath.replace(" ", ""), f"Expected '{expected_xpath}' got: {xpath}"  # noqa: S101
+        assert expected_xpath.replace(" ", "") == xpath.replace(" ", ""), f"Expected '{expected_xpath}' got: {xpath}"  # noqa: S101  # noqa: S101
 
     @pytest.mark.parametrize(
         "method, value, expected",  # noqa: PT006
@@ -300,7 +300,7 @@ class TestUiSelectorConverter:
         logger.info(f"expected={expected}")
         logger.info(f"shadowstep_dict={shadowstep_dict}")
 
-        assert shadowstep_dict == expected  # noqa: S101
+        assert shadowstep_dict == expected  # noqa: S101  # noqa: S101
 
     @pytest.mark.parametrize(
         "selector_str, expected_dict",  # noqa: PT006
@@ -348,7 +348,7 @@ class TestUiSelectorConverter:
         logger.info(f"{expected_dict=}")
         logger.info(f"{shadowstep_dict=}")
 
-        assert shadowstep_dict == expected_dict, f"Expected {expected_dict} got: {shadowstep_dict}"  # noqa: S101
+        assert shadowstep_dict == expected_dict, f"Expected {expected_dict} got: {shadowstep_dict}"  # noqa: S101  # noqa: S101
 
     @pytest.mark.xfail
     @pytest.mark.parametrize(
@@ -368,4 +368,4 @@ class TestUiSelectorConverter:
         logger.info(f"{expected_dict=}")
         logger.info(f"{shadowstep_dict=}")
 
-        assert shadowstep_dict == expected_dict, f"Expected {expected_dict} got: {shadowstep_dict}"  # noqa: S101
+        assert shadowstep_dict == expected_dict, f"Expected {expected_dict} got: {shadowstep_dict}"  # noqa: S101  # noqa: S101
