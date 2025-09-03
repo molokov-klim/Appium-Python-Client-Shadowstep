@@ -21,11 +21,11 @@ logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(name)s - %(level
 logger = logging.getLogger(__name__)
 
 if TYPE_CHECKING:
-    from shadowstep.shadowstep import Shadowstep
+    from shadowstep.base import ShadowstepBase
     from shadowstep.terminal import Transport
 
 
-class NotProvideCredentials(Exception):
+class NotProvideCredentialsError(Exception):
     def __init__(self, message: str = "Not provided credentials for ssh connection "
                                       "in connect() method (ssh_username, ssh_password)"):
         super().__init__(message)
@@ -37,12 +37,12 @@ class Terminal:
     Allows you to perform adb actions using the appium server. Useful for remote connections
     Required ssh
     """
-    base: Shadowstep
+    base: ShadowstepBase
     transport: Transport
     driver: WebDriver
 
-    def __init__(self, base: Shadowstep):
-        self.base: Shadowstep = base
+    def __init__(self, base: ShadowstepBase):
+        self.base: ShadowstepBase = base
         self.transport: Transport = base.transport
         self.driver: WebDriver = base.driver
 
@@ -69,6 +69,7 @@ class Terminal:
                 logger.error(e)
                 traceback_info = "".join(traceback.format_tb(sys.exc_info()[2]))
                 logger.error(traceback_info)
+        return None
 
     def push(self, source_path: str, remote_server_path: str, filename: str, destination: str, udid: str) -> bool:
         """
@@ -226,7 +227,7 @@ class Terminal:
         :param filename: The name of the application file.
         :param udid: The unique device identifier (UDID) of the target mobile device.
         :return: True if the application was successfully installed, False otherwise.
-        :raises NotProvideCredentials: If the transport credentials are not provided.
+        :raises NotProvideCredentialsError: If the transport credentials are not provided.
         """
         try:
             source_filepath = os.path.join(source, filename)
@@ -878,8 +879,7 @@ class Terminal:
         """
         output = self.adb_shell(command="pm", args="list packages")
         lines = output.strip().split("\n")
-        packages = [line.split(":")[-1].replace("\r", "") for line in lines]
-        return packages
+        return [line.split(":")[-1].replace("\r", "") for line in lines]
 
     def get_package_path(self, package: str) -> str:
         """
@@ -921,7 +921,7 @@ class Terminal:
 
         command = ["aapt", "dump", "badging", os.path.join("test", "temp.apk")]
         try:
-            output: str = str(subprocess.check_output(command)).strip()
+            output: str = str(subprocess.check_output(command)).strip()  # noqa: S603
         except subprocess.CalledProcessError:
             return {}
         output = output.replace("\\r\\n", " ").replace('b"', "").replace('"', "").replace(":'", ": '")

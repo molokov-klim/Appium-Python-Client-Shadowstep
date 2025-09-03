@@ -52,7 +52,7 @@ class WebDriverSingleton(WebDriver):
     @classmethod
     def _get_session_id(cls, kwargs: Any) -> str:
         logger.debug(f"{get_current_func_name()}")
-        res = requests.get(kwargs["command_executor"] + "/sessions")
+        res = requests.get(kwargs["command_executor"] + "/sessions", timeout=30)  # noqa: S113
         res_json = json.loads(res.text)
         sessions = res_json.get("value", [])
         if sessions:
@@ -87,19 +87,19 @@ class ShadowstepBase:
 
     def __init__(self):
         self.logger = logger
-        self.driver: WebDriver = None
-        self.server_ip: str = None
-        self.server_port: int = None
-        self.capabilities: dict[str, Any] = None
-        self.options: UiAutomator2Options = None
-        self.extensions: list[WebDriver] = None
-        self.ssh_password: str = None
-        self.ssh_user: str = None
+        self.driver: WebDriver | None = None
+        self.server_ip: str | None = None
+        self.server_port: int | None = None
+        self.capabilities: dict[str, Any] | None = None
+        self.options: UiAutomator2Options | None = None
+        self.extensions: list[WebDriver] | None = None
+        self.ssh_password: str | None = None
+        self.ssh_user: str | None = None
         self.ssh_port = 22
-        self.command_executor: str = None
-        self.transport: Transport = None
-        self.terminal: Terminal = None
-        self.adb: Adb = None
+        self.command_executor: str | None = None
+        self.transport: Transport | None = None
+        self.terminal: Terminal | None = None
+        self.adb: Adb | None = None
         self._ignored_auto_discover_dirs = {"__pycache__", ".venv", "venv", "site-packages", "dist-packages", ".git",
                                             "build", "dist", ".idea", ".pytest_cache", "results"}
         self._ignored_base_path_parts = self._get_ignored_dirs()
@@ -110,9 +110,9 @@ class ShadowstepBase:
                 server_port: int = 4723,
                 options: AppiumOptions | list[AppiumOptions] | None = None,
                 extensions: list[WebDriver] | None = None,
-                ssh_user: str = None,
-                ssh_password: str = None,
-                command_executor: str = None,
+                ssh_user: str | None = None,
+                ssh_password: str | None = None,
+                command_executor: str | None = None,
                 ) -> None:
         """
         Connect to a device using the Appium server and initialize the driver.
@@ -149,7 +149,8 @@ class ShadowstepBase:
         self.command_executor = command_executor
 
         self._capabilities_to_options()
-        self.command_executor = f"http://{server_ip}:{str(server_port)}/wd/hub" if self.command_executor is None else self.command_executor
+        if self.command_executor is None:
+            self.command_executor = f"http://{server_ip}:{str(server_port)}/wd/hub"
 
         self.logger.info(f"Connecting to server: {self.command_executor}")
         WebDriverSingleton.clear_instance()
@@ -158,7 +159,8 @@ class ShadowstepBase:
                                          extensions=self.extensions)
         self._wait_for_session_id()
         self.logger.info("Connection established")
-        self.driver.update_settings(settings={"enforceXPath1": True})  # support for others is currently not provided
+        if self.driver is not None:
+            self.driver.update_settings(settings={"enforceXPath1": True})  # support for others is currently not provided
 
         # init here because need server ip, port and credentials, refactor it later
         if self.ssh_user and self.ssh_password:
@@ -179,7 +181,7 @@ class ShadowstepBase:
         self.logger.debug(f"{get_current_func_name()}")
         try:
             if self.driver:
-                response = requests.delete(f"{self.command_executor}/session/{self.driver.session_id}")
+                response = requests.delete(f"{self.command_executor}/session/{self.driver.session_id}", timeout=30)  # noqa: S113
                 self.logger.info(f"{response=}")
                 self.driver.quit()
                 self.driver = None
@@ -201,17 +203,19 @@ class ShadowstepBase:
         self.logger.debug(f"{get_current_func_name()}")
         self.disconnect()
         WebDriverSingleton.clear_instance()
-        self.connect(command_executor=self.command_executor,
-                     server_ip=self.server_ip,
-                     server_port=self.server_port,
-                     capabilities=self.capabilities,
-                     options=self.options,
-                     extensions=self.extensions,
-                     ssh_user=self.ssh_user,
-                     ssh_password=self.ssh_password
-                     )
+        if self.server_ip is not None and self.server_port is not None and self.capabilities is not None:
+            self.connect(command_executor=self.command_executor,
+                         server_ip=self.server_ip,
+                         server_port=self.server_port,
+                         capabilities=self.capabilities,
+                         options=self.options,
+                         extensions=self.extensions,
+                         ssh_user=self.ssh_user,
+                         ssh_password=self.ssh_password
+                         )
         time.sleep(3)
-        self.driver.update_settings(settings={"enforceXPath1": True})
+        if self.driver is not None:
+            self.driver.update_settings(settings={"enforceXPath1": True})
 
     def is_connected(self) -> bool:
         """
@@ -245,7 +249,7 @@ class ShadowstepBase:
             self.logger.debug(f"[{step}] started")
 
             url = f"{self.command_executor}/status"
-            response = requests.get(url, timeout=5, verify=False)
+            response = requests.get(url, timeout=5, verify=False)  # noqa: S501
             response.raise_for_status()
 
             grid = response.json()
@@ -259,7 +263,7 @@ class ShadowstepBase:
                     if not session:
                         continue
                     session_id = session.get("sessionId")
-                    if session_id == self.driver.session_id:
+                    if self.driver is not None and session_id == self.driver.session_id:
                         self.logger.debug(f"Session found in Grid: {session_id}")
                         return True
 
@@ -279,14 +283,14 @@ class ShadowstepBase:
         """
         self.logger.debug(f"{get_current_func_name()}")
         try:
-            response = requests.get(f"{self.command_executor}/sessions")
+            response = requests.get(f"{self.command_executor}/sessions", timeout=30)  # noqa: S113
             response_json = response.json().get("value", {})
             response.raise_for_status()
             nodes = response_json
             for node in nodes:
                 session_id = node.get("id", None)
                 node.get("ready", False)
-                if self.driver.session_id == session_id:
+                if self.driver is not None and self.driver.session_id == session_id:
                     self.logger.debug(f"Found session_id on standalone: {session_id}")
                     return True
             return False
@@ -303,14 +307,14 @@ class ShadowstepBase:
         """
         self.logger.debug(f"{get_current_func_name()}")
         try:
-            response = requests.get(f"{self.command_executor}/appium/sessions")
+            response = requests.get(f"{self.command_executor}/appium/sessions", timeout=30)  # noqa: S113
             response_json = response.json().get("value", {})
             response.raise_for_status()
             nodes = response_json
             for node in nodes:
                 session_id = node.get("id", None)
                 node.get("ready", False)
-                if self.driver.session_id == session_id:
+                if self.driver is not None and self.driver.session_id == session_id:
                     self.logger.debug(f"Found session_id on standalone: {session_id}")
                     return True
             return False
@@ -347,43 +351,43 @@ class ShadowstepBase:
             self.options = UiAutomator2Options()
 
             # General
-            if "platformName" in self.capabilities.keys():
+            if "platformName" in self.capabilities:
                 self.options.platform_name = self.capabilities["platformName"]
-            if "appium:automationName" in self.capabilities.keys():
+            if "appium:automationName" in self.capabilities:
                 self.options.automation_name = self.capabilities["appium:automationName"]
-            if "appium:deviceName" in self.capabilities.keys():
+            if "appium:deviceName" in self.capabilities:
                 self.options.device_name = self.capabilities["appium:deviceName"]
-            if "appium:platformVersion" in self.capabilities.keys():
+            if "appium:platformVersion" in self.capabilities:
                 self.options.platform_version = self.capabilities["appium:platformVersion"]
-            if "appium:UDID" in self.capabilities.keys():
+            if "appium:UDID" in self.capabilities:
                 self.options.udid = self.capabilities["appium:UDID"]
-            if "appium:udid" in self.capabilities.keys():
+            if "appium:udid" in self.capabilities:
                 self.options.udid = self.capabilities["appium:udid"]
-            if "appium:noReset" in self.capabilities.keys():
+            if "appium:noReset" in self.capabilities:
                 self.options.no_reset = self.capabilities["appium:noReset"]
-            if "appium:fullReset" in self.capabilities.keys():
+            if "appium:fullReset" in self.capabilities:
                 self.options.full_reset = self.capabilities["appium:fullReset"]
-            if "appium:printPageSourceOnFindFailure" in self.capabilities.keys():
+            if "appium:printPageSourceOnFindFailure" in self.capabilities:
                 self.options.print_page_source_on_find_failure = self.capabilities[
                     "appium:printPageSourceOnFindFailure"]
 
             # Driver/Server
-            if "appium:systemPort" in self.capabilities.keys():
+            if "appium:systemPort" in self.capabilities:
                 self.options.system_port = self.capabilities["appium:systemPort"]
-            if "appium:skipServerInstallation" in self.capabilities.keys():
+            if "appium:skipServerInstallation" in self.capabilities:
                 self.options.skip_server_installation = self.capabilities["appium:skipServerInstallation"]
-            if "appium:uiautomator2ServerLaunchTimeout" in self.capabilities.keys():
+            if "appium:uiautomator2ServerLaunchTimeout" in self.capabilities:
                 self.options.uiautomator2_server_launch_timeout = self.capabilities[
                     "appium:uiautomator2ServerLaunchTimeout"]
-            if "appium:uiautomator2ServerInstallTimeout" in self.capabilities.keys():
+            if "appium:uiautomator2ServerInstallTimeout" in self.capabilities:
                 self.options.uiautomator2_server_install_timeout = self.capabilities[
                     "appium:uiautomator2ServerInstallTimeout"]
-            if "appium:uiautomator2ServerReadTimeout" in self.capabilities.keys():
+            if "appium:uiautomator2ServerReadTimeout" in self.capabilities:
                 self.options.uiautomator2_server_read_timeout = self.capabilities[
                     "appium:uiautomator2ServerReadTimeout"]
-            if "appium:disableWindowAnimation" in self.capabilities.keys():
+            if "appium:disableWindowAnimation" in self.capabilities:
                 self.options.disable_window_animation = self.capabilities["appium:disableWindowAnimation"]
-            if "appium:skipDeviceInitialization" in self.capabilities.keys():
+            if "appium:skipDeviceInitialization" in self.capabilities:
                 self.options.skip_device_initialization = self.capabilities["appium:skipDeviceInitialization"]
 
             # App
@@ -392,191 +396,191 @@ class ShadowstepBase:
             "appium:shouldTerminateApp"
             "appium:autoLaunch"
 
-            if "appium:app" in self.capabilities.keys():
+            if "appium:app" in self.capabilities:
                 self.options.app = self.capabilities["appium:app"]
-            if "browserName" in self.capabilities.keys():
+            if "browserName" in self.capabilities:
                 self.options.browser_name = self.capabilities["browserName"]
-            if "appium:appPackage" in self.capabilities.keys():
+            if "appium:appPackage" in self.capabilities:
                 self.options.app_package = self.capabilities["appium:appPackage"]
-            if "appium:appActivity" in self.capabilities.keys():
+            if "appium:appActivity" in self.capabilities:
                 self.options.app_activity = self.capabilities["appium:appActivity"]
-            if "appium:appWaitActivity" in self.capabilities.keys():
+            if "appium:appWaitActivity" in self.capabilities:
                 self.options.app_wait_activity = self.capabilities["appium:appWaitActivity"]
-            if "appium:appWaitPackage" in self.capabilities.keys():
+            if "appium:appWaitPackage" in self.capabilities:
                 self.options.app_wait_package = self.capabilities["appium:appWaitPackage"]
-            if "appium:appWaitDuration" in self.capabilities.keys():
+            if "appium:appWaitDuration" in self.capabilities:
                 self.options.app_wait_duration = self.capabilities["appium:appWaitDuration"]
-            if "appium:androidInstallTimeout" in self.capabilities.keys():
+            if "appium:androidInstallTimeout" in self.capabilities:
                 self.options.android_install_timeout = self.capabilities["appium:androidInstallTimeout"]
-            if "appium:appWaitForLaunch" in self.capabilities.keys():
+            if "appium:appWaitForLaunch" in self.capabilities:
                 self.options.app_wait_for_launch = self.capabilities["appium:appWaitForLaunch"]
-            if "appium:intentCategory" in self.capabilities.keys():
+            if "appium:intentCategory" in self.capabilities:
                 self.options.intent_category = self.capabilities["appium:intentCategory"]
-            if "appium:intentAction" in self.capabilities.keys():
+            if "appium:intentAction" in self.capabilities:
                 self.options.intent_action = self.capabilities["appium:intentAction"]
-            if "appium:intentFlags" in self.capabilities.keys():
+            if "appium:intentFlags" in self.capabilities:
                 self.options.intent_flags = self.capabilities["appium:intentFlags"]
-            if "appium:optionalIntentArguments" in self.capabilities.keys():
+            if "appium:optionalIntentArguments" in self.capabilities:
                 self.options.optional_intent_arguments = self.capabilities["appium:optionalIntentArguments"]
-            if "appium:autoGrantPermissions" in self.capabilities.keys():
+            if "appium:autoGrantPermissions" in self.capabilities:
                 self.options.auto_grant_permissions = self.capabilities["appium:autoGrantPermissions"]
-            if "appium:otherApps" in self.capabilities.keys():
+            if "appium:otherApps" in self.capabilities:
                 self.options.other_apps = self.capabilities["appium:otherApps"]
-            if "appium:uninstallOtherPackages" in self.capabilities.keys():
+            if "appium:uninstallOtherPackages" in self.capabilities:
                 self.options.uninstall_other_packages = self.capabilities["appium:uninstallOtherPackages"]
-            if "appium:allowTestPackages" in self.capabilities.keys():
+            if "appium:allowTestPackages" in self.capabilities:
                 self.options.allow_test_packages = self.capabilities["appium:allowTestPackages"]
-            if "appium:remoteAppsCacheLimit" in self.capabilities.keys():
+            if "appium:remoteAppsCacheLimit" in self.capabilities:
                 self.options.remote_apps_cache_limit = self.capabilities["appium:remoteAppsCacheLimit"]
-            if "appium:enforceAppInstall" in self.capabilities.keys():
+            if "appium:enforceAppInstall" in self.capabilities:
                 self.options.enforce_app_install = self.capabilities["appium:enforceAppInstall"]
 
             # App Localization
-            if "appium:localeScript" in self.capabilities.keys():
+            if "appium:localeScript" in self.capabilities:
                 self.options.locale_script = self.capabilities["appium:localeScript"]
-            if "appium:language" in self.capabilities.keys():
+            if "appium:language" in self.capabilities:
                 self.options.language = self.capabilities["appium:language"]
-            if "appium:locale" in self.capabilities.keys():
+            if "appium:locale" in self.capabilities:
                 self.options.locale = self.capabilities["appium:locale"]
 
             # ADB
             "appium:hideKeyboard"  # didn't find it in options
 
-            if "appium:adbPort" in self.capabilities.keys():
+            if "appium:adbPort" in self.capabilities:
                 self.options.adb_port = self.capabilities["appium:adbPort"]
-            if "appium:remoteAdbHost" in self.capabilities.keys():
+            if "appium:remoteAdbHost" in self.capabilities:
                 self.options.remote_adb_host = self.capabilities["appium:remoteAdbHost"]
-            if "appium:adbExecTimeout" in self.capabilities.keys():
+            if "appium:adbExecTimeout" in self.capabilities:
                 self.options.adb_exec_timeout = self.capabilities["appium:adbExecTimeout"]
-            if "appium:clearDeviceLogsOnStart" in self.capabilities.keys():
+            if "appium:clearDeviceLogsOnStart" in self.capabilities:
                 self.options.clear_device_logs_on_start = self.capabilities["appium:clearDeviceLogsOnStart"]
-            if "appium:buildToolsVersion" in self.capabilities.keys():
+            if "appium:buildToolsVersion" in self.capabilities:
                 self.options.build_tools_version = self.capabilities["appium:buildToolsVersion"]
-            if "appium:skipLogcatCapture" in self.capabilities.keys():
+            if "appium:skipLogcatCapture" in self.capabilities:
                 self.options.skip_logcat_capture = self.capabilities["appium:skipLogcatCapture"]
-            if "appium:suppressKillServer" in self.capabilities.keys():
+            if "appium:suppressKillServer" in self.capabilities:
                 self.options.suppress_kill_server = self.capabilities["appium:suppressKillServer"]
-            if "appium:ignoreHiddenApiPolicyError" in self.capabilities.keys():
+            if "appium:ignoreHiddenApiPolicyError" in self.capabilities:
                 self.options.ignore_hidden_api_policy_error = self.capabilities["appium:ignoreHiddenApiPolicyError"]
-            if "appium:mockLocationApp" in self.capabilities.keys():
+            if "appium:mockLocationApp" in self.capabilities:
                 self.options.mock_location_app = self.capabilities["appium:mockLocationApp"]
-            if "appium:logcatFormat" in self.capabilities.keys():
+            if "appium:logcatFormat" in self.capabilities:
                 self.options.logcat_format = self.capabilities["appium:logcatFormat"]
-            if "appium:logcatFilterSpecs" in self.capabilities.keys():
+            if "appium:logcatFilterSpecs" in self.capabilities:
                 self.options.logcat_filter_specs = self.capabilities["appium:logcatFilterSpecs"]
-            if "appium:allowDelayAdb" in self.capabilities.keys():
+            if "appium:allowDelayAdb" in self.capabilities:
                 self.options.allow_delay_adb = self.capabilities["appium:allowDelayAdb"]
 
             # Emulator (Android Virtual Device)
             "appium:injectedImageProperties"  # didn't find it in options
 
-            if "appium:avd" in self.capabilities.keys():
+            if "appium:avd" in self.capabilities:
                 self.options.avd = self.capabilities["appium:avd"]
-            if "appium:avdLaunchTimeout" in self.capabilities.keys():
+            if "appium:avdLaunchTimeout" in self.capabilities:
                 self.options.avd_launch_timeout = self.capabilities["appium:avdLaunchTimeout"]
-            if "appium:avdReadyTimeout" in self.capabilities.keys():
+            if "appium:avdReadyTimeout" in self.capabilities:
                 self.options.avd_ready_timeout = self.capabilities["appium:avdReadyTimeout"]
-            if "appium:avdArgs" in self.capabilities.keys():
+            if "appium:avdArgs" in self.capabilities:
                 self.options.avd_args = self.capabilities["appium:avdArgs"]
-            if "appium:avdEnv" in self.capabilities.keys():
+            if "appium:avdEnv" in self.capabilities:
                 self.options.avd_env = self.capabilities["appium:avdEnv"]
-            if "appium:networkSpeed" in self.capabilities.keys():
+            if "appium:networkSpeed" in self.capabilities:
                 self.options.network_speed = self.capabilities["appium:networkSpeed"]
-            if "appium:gpsEnabled" in self.capabilities.keys():
+            if "appium:gpsEnabled" in self.capabilities:
                 self.options.gps_enabled = self.capabilities["appium:gpsEnabled"]
-            if "appium:isHeadless" in self.capabilities.keys():
+            if "appium:isHeadless" in self.capabilities:
                 self.options.is_headless = self.capabilities["appium:isHeadless"]
 
             # App Signing
-            if "appium:useKeystore" in self.capabilities.keys():
+            if "appium:useKeystore" in self.capabilities:
                 self.options.use_keystore = self.capabilities["appium:useKeystore"]
-            if "appium:keystorePath" in self.capabilities.keys():
+            if "appium:keystorePath" in self.capabilities:
                 self.options.keystore_path = self.capabilities["appium:keystorePath"]
-            if "appium:keystorePassword" in self.capabilities.keys():
+            if "appium:keystorePassword" in self.capabilities:
                 self.options.keystore_password = self.capabilities["appium:keystorePassword"]
-            if "appium:keyAlias" in self.capabilities.keys():
+            if "appium:keyAlias" in self.capabilities:
                 self.options.key_alias = self.capabilities["appium:keyAlias"]
-            if "appium:keyPassword" in self.capabilities.keys():
+            if "appium:keyPassword" in self.capabilities:
                 self.options.key_password = self.capabilities["appium:keyPassword"]
-            if "appium:noSign" in self.capabilities.keys():
+            if "appium:noSign" in self.capabilities:
                 self.options.no_sign = self.capabilities["appium:noSign"]
 
             # Device Locking
-            if "appium:skipUnlock" in self.capabilities.keys():
+            if "appium:skipUnlock" in self.capabilities:
                 self.options.skip_unlock = self.capabilities["appium:skipUnlock"]
-            if "appium:unlockType" in self.capabilities.keys():
+            if "appium:unlockType" in self.capabilities:
                 self.options.unlock_type = self.capabilities["appium:unlockType"]
-            if "appium:unlockKey" in self.capabilities.keys():
+            if "appium:unlockKey" in self.capabilities:
                 self.options.unlock_key = self.capabilities["appium:unlockKey"]
-            if "appium:unlockStrategy" in self.capabilities.keys():
+            if "appium:unlockStrategy" in self.capabilities:
                 self.options.unlock_strategy = self.capabilities["appium:unlockStrategy"]
-            if "appium:unlockSuccessTimeout" in self.capabilities.keys():
+            if "appium:unlockSuccessTimeout" in self.capabilities:
                 self.options.unlock_success_timeout = self.capabilities["appium:unlockSuccessTimeout"]
 
             # MJPEG
-            if "appium:mjpegServerPort" in self.capabilities.keys():
+            if "appium:mjpegServerPort" in self.capabilities:
                 self.options.mjpeg_server_port = self.capabilities["appium:mjpegServerPort"]
-            if "appium:mjpegScreenshotUrl" in self.capabilities.keys():
+            if "appium:mjpegScreenshotUrl" in self.capabilities:
                 self.options.mjpeg_screenshot_url = self.capabilities["appium:mjpegScreenshotUrl"]
 
             # Web Context
             "appium:autoWebviewName"  # didn't find it in options
             "appium:enableWebviewDetailsCollection"
 
-            if "appium:autoWebview" in self.capabilities.keys():
+            if "appium:autoWebview" in self.capabilities:
                 self.options.auto_web_view = self.capabilities["appium:autoWebview"]
-            if "appium:autoWebviewTimeout" in self.capabilities.keys():
+            if "appium:autoWebviewTimeout" in self.capabilities:
                 self.options.auto_webview_timeout = self.capabilities["appium:autoWebviewTimeout"]
-            if "appium:webviewDevtoolsPort" in self.capabilities.keys():
+            if "appium:webviewDevtoolsPort" in self.capabilities:
                 self.options.webview_devtools_port = self.capabilities["appium:webviewDevtoolsPort"]
-            if "appium:ensureWebviewsHavePages" in self.capabilities.keys():
+            if "appium:ensureWebviewsHavePages" in self.capabilities:
                 self.options.ensure_webviews_have_pages = self.capabilities["appium:ensureWebviewsHavePages"]
-            if "appium:chromedriverPort" in self.capabilities.keys():
+            if "appium:chromedriverPort" in self.capabilities:
                 self.options.chromedriver_port = self.capabilities["appium:chromedriverPort"]
-            if "appium:chromedriverPorts" in self.capabilities.keys():
+            if "appium:chromedriverPorts" in self.capabilities:
                 self.options.chromedriver_ports = self.capabilities["appium:chromedriverPorts"]
-            if "appium:chromedriverArgs" in self.capabilities.keys():
+            if "appium:chromedriverArgs" in self.capabilities:
                 self.options.chromedriver_args = self.capabilities["appium:chromedriverArgs"]
-            if "appium:chromedriverExecutable" in self.capabilities.keys():
+            if "appium:chromedriverExecutable" in self.capabilities:
                 self.options.chromedriver_executable = self.capabilities["appium:chromedriverExecutable"]
-            if "appium:chromedriverExecutableDir" in self.capabilities.keys():
+            if "appium:chromedriverExecutableDir" in self.capabilities:
                 self.options.chromedriver_executable_dir = self.capabilities["appium:chromedriverExecutableDir"]
-            if "appium:chromedriverChromeMappingFile" in self.capabilities.keys():
+            if "appium:chromedriverChromeMappingFile" in self.capabilities:
                 self.options.chromedriver_chrome_mapping_file = self.capabilities[
                     "appium:chromedriverChromeMappingFile"]
-            if "appium:chromedriverUseSystemExecutable" in self.capabilities.keys():
+            if "appium:chromedriverUseSystemExecutable" in self.capabilities:
                 self.options.chromedriver_use_system_executable = self.capabilities[
                     "appium:chromedriverUseSystemExecutable"]
-            if "appium:chromedriverDisableBuildCheck" in self.capabilities.keys():
+            if "appium:chromedriverDisableBuildCheck" in self.capabilities:
                 self.options.chromedriver_disable_build_check = self.capabilities[
                     "appium:chromedriverDisableBuildCheck"]
-            if "appium:recreateChromeDriverSessions" in self.capabilities.keys():
+            if "appium:recreateChromeDriverSessions" in self.capabilities:
                 self.options.recreate_chrome_driver_sessions = self.capabilities["appium:recreateChromeDriverSessions"]
-            if "appium:nativeWebScreenshot" in self.capabilities.keys():
+            if "appium:nativeWebScreenshot" in self.capabilities:
                 self.options.native_web_screenshot = self.capabilities["appium:nativeWebScreenshot"]
-            if "appium:extractChromeAndroidPackageFromContextName" in self.capabilities.keys():
+            if "appium:extractChromeAndroidPackageFromContextName" in self.capabilities:
                 self.options.extract_chrome_android_package_from_context_name = self.capabilities[
                     "appium:extractChromeAndroidPackageFromContextName"]
-            if "appium:showChromedriverLog" in self.capabilities.keys():
+            if "appium:showChromedriverLog" in self.capabilities:
                 self.options.show_chromedriver_log = self.capabilities["appium:showChromedriverLog"]
-            if "pageLoadStrategy" in self.capabilities.keys():
+            if "pageLoadStrategy" in self.capabilities:
                 self.options.page_load_strategy = self.capabilities["pageLoadStrategy"]
-            if "appium:chromeOptions" in self.capabilities.keys():
+            if "appium:chromeOptions" in self.capabilities:
                 self.options.chrome_options = self.capabilities["appium:chromeOptions"]
-            if "appium:chromeLoggingPrefs" in self.capabilities.keys():
+            if "appium:chromeLoggingPrefs" in self.capabilities:
                 self.options.chrome_logging_prefs = self.capabilities["appium:chromeLoggingPrefs"]
 
             # Other
             "appium:timeZone"  # didn't find it in options
 
-            if "appium:disableSuppressAccessibilityService" in self.capabilities.keys():
+            if "appium:disableSuppressAccessibilityService" in self.capabilities:
                 self.options.disable_suppress_accessibility_service = self.capabilities[
                     "appium:disableSuppressAccessibilityService"]
-            if "appium:userProfile" in self.capabilities.keys():
+            if "appium:userProfile" in self.capabilities:
                 self.options.user_profile = self.capabilities["appium:userProfile"]
-            if "appium:newCommandTimeout" in self.capabilities.keys():
+            if "appium:newCommandTimeout" in self.capabilities:
                 self.options.new_command_timeout = self.capabilities["appium:newCommandTimeout"]
-            if "appium:skipLogcatCapture" in self.capabilities.keys():
+            if "appium:skipLogcatCapture" in self.capabilities:
                 self.options.skip_logcat_capture = self.capabilities["appium:skipLogcatCapture"]
 
     def _get_ignored_dirs(self):

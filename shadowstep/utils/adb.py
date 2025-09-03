@@ -39,7 +39,7 @@ class Adb:
         command = ["adb", "devices"]
 
         # Выполнение команды и получение вывода
-        response = str(subprocess.check_output(command))
+        response = str(subprocess.check_output(command))  # noqa: S603
 
         # Извлечение списка устройств из полученного вывода с использованием регулярных выражений
         devices_list = re.findall(r"(\d+\.\d+\.\d+\.\d+:\d+|\d+)", response)
@@ -75,7 +75,7 @@ class Adb:
         command = [f"adb {s_udid}", "shell", "getprop", "ro.product.model"]
         try:
             # Выполнение команды и получение вывода
-            model = subprocess.check_output(command)
+            model = subprocess.check_output(command)  # noqa: S603
             # Преобразование байтовой строки в обычную строку и удаление пробельных символов и символов перевода строки
             model = model.decode().strip()
             logger.info(f"{get_current_func_name()} > {model}")
@@ -109,7 +109,7 @@ class Adb:
         s_udid = f"-s {udid}" if udid else ""
         command = f"adb {s_udid} push {source} {destination}"
         try:
-            subprocess.run(command, check=True)
+            subprocess.run(command, check=True)  # noqa: S603
             logger.info(f"{get_current_func_name()} > True")
             return True
         except subprocess.CalledProcessError as error:
@@ -137,7 +137,7 @@ class Adb:
         s_udid = f"-s {udid}" if udid else ""
         command = f"adb {s_udid} pull {source} {destination}"
         try:
-            subprocess.run(command, check=True)
+            subprocess.run(command, check=True)  # noqa: S603
             logger.info(f"{get_current_func_name()} > True")
             return True
         except subprocess.CalledProcessError as error:
@@ -163,7 +163,7 @@ class Adb:
         s_udid = f"-s {udid}" if udid else ""
         command = f"adb {s_udid} install -r {source}"
         try:
-            subprocess.run(command, check=True)
+            subprocess.run(command, check=True)  # noqa: S603
             logger.info("install() > True")
             return True
         except subprocess.CalledProcessError as error:
@@ -187,7 +187,7 @@ class Adb:
 
         command = "adb shell pm list packages"
         try:
-            result = subprocess.check_output(command, shell=True).decode().strip()
+            result = subprocess.check_output(command, shell=True).decode().strip()  # noqa: S602
             # Фильтруем пакеты
             if any(line.strip().endswith(package) for line in result.splitlines()):
                 logger.info("install() > True")
@@ -215,7 +215,7 @@ class Adb:
 
         command = ["adb", "uninstall", package]
         try:
-            subprocess.run(command, check=True)
+            subprocess.run(command, check=True)  # noqa: S603
             logger.info("uninstall_app() > True")
             return True
         except subprocess.CalledProcessError as error:
@@ -241,7 +241,7 @@ class Adb:
 
         command = ["adb", "shell", "am", "start", "-n", f"{package}/{activity}"]
         try:
-            subprocess.check_output(command)
+            subprocess.check_output(command)  # noqa: S603
             logger.info("start_activity() > True")
             return True
         except subprocess.CalledProcessError as error:
@@ -265,7 +265,7 @@ class Adb:
 
         try:
             # Выполнение команды и декодирование результата
-            result = subprocess.check_output(command, shell=True).decode().strip()
+            result = subprocess.check_output(command, shell=True).decode().strip()  # noqa: S602
 
             # Определение паттерна для поиска нужной информации в результатах
             pattern = r"mCurrentFocus|mFocusedApp"
@@ -308,7 +308,7 @@ class Adb:
 
         try:
             # Выполнение команды и декодирование результата
-            result = subprocess.check_output(command, shell=True).decode().strip()
+            result = subprocess.check_output(command, shell=True).decode().strip()  # noqa: S602
 
             # Определение паттерна для поиска нужной информации в результатах
             pattern = r"mCurrentFocus|mFocusedApp"
@@ -351,7 +351,7 @@ class Adb:
 
         command = ["adb", "shell", "am", "force-stop", package]
         try:
-            subprocess.run(command, check=True)
+            subprocess.run(command, check=True)  # noqa: S603
             logger.info("close_app() > True")
             return True
         except subprocess.CalledProcessError as error:
@@ -400,7 +400,7 @@ class Adb:
 
         command = ["adb", "shell", "input", "keyevent", "KEYCODE_HOME"]
         try:
-            subprocess.run(command, check=True)
+            subprocess.run(command, check=True)  # noqa: S603
             logger.info("press_home() > True")
             return True
         except subprocess.CalledProcessError as error:
@@ -420,7 +420,7 @@ class Adb:
 
         command = ["adb", "shell", "input", "keyevent", "KEYCODE_BACK"]
         try:
-            subprocess.run(command, check=True)
+            subprocess.run(command, check=True)  # noqa: S603
             logger.info("press_back() > True")
             return True
         except subprocess.CalledProcessError as error:
@@ -440,7 +440,7 @@ class Adb:
 
         command = ["adb", "shell", "input", "keyevent", "KEYCODE_MENU"]
         try:
-            subprocess.run(command, check=True)
+            subprocess.run(command, check=True)  # noqa: S603
             logger.info("press_menu() > True")
             return True
         except subprocess.CalledProcessError as error:
@@ -464,7 +464,7 @@ class Adb:
 
         command = ["adb", "shell", "input", "keyevent", f"KEYCODE_NUMPAD_{num}"]
         try:
-            subprocess.run(command, check=True)
+            subprocess.run(command, check=True)  # noqa: S603
             logger.info("input_keycode_num_() > True")
             return True
         except subprocess.CalledProcessError as error:
@@ -488,7 +488,7 @@ class Adb:
 
         command = ["adb", "shell", "input", "keyevent", f"{keycode}"]
         try:
-            subprocess.run(command, check=True)
+            subprocess.run(command, check=True)  # noqa: S603
             logger.info("input_keycode() > True")
             return True
         except subprocess.CalledProcessError as error:
@@ -514,7 +514,7 @@ class Adb:
         command = ["adb", "shell", "input", "text", text]
         try:
             # Выполняем команду
-            subprocess.run(command, check=True)
+            subprocess.run(command, check=True)  # noqa: S603
             logger.info("input_text() > True")
             return True
         except subprocess.CalledProcessError as error:
@@ -541,7 +541,7 @@ class Adb:
         # Формируем команду для выполнения нажатия по указанным координатам с использованием ADB
         command = ["adb", "shell", "input", "tap", str(x), str(y)]
         try:
-            subprocess.run(command, check=True)
+            subprocess.run(command, check=True)  # noqa: S603
             logger.info("tap() > True")
             return True
         except subprocess.CalledProcessError as error:
@@ -577,7 +577,7 @@ class Adb:
         command = ["adb", "shell", "input", "swipe", str(start_x), str(start_y), str(end_x), str(end_y), str(duration)]
         try:
             # Выполняем команду
-            subprocess.run(command, check=True)
+            subprocess.run(command, check=True)  # noqa: S603
             logger.info("swipe() > True")
             return True
         except subprocess.CalledProcessError as error:
@@ -603,7 +603,7 @@ class Adb:
         command = "adb shell netstat"
         try:
             # Выполняем команду и получаем вывод
-            output = subprocess.run(command, shell=True, capture_output=True, text=True, check=True)
+            output = subprocess.run(command, shell=True, capture_output=True, text=True, check=True)  # noqa: S602
 
             # Поиск строки
             lines = output.stdout.split("\n")
@@ -650,7 +650,7 @@ class Adb:
         logger.info(f"is_process_exist() < {name=}")
         command = ["adb", "shell", "ps"]
         try:
-            processes = subprocess.check_output(command, shell=True).decode().strip()
+            processes = subprocess.check_output(command, shell=True).decode().strip()  # noqa: S602
         except subprocess.CalledProcessError as error:
             logger.error(f"{get_current_func_name()}: {error}")
             return False
@@ -691,7 +691,7 @@ class Adb:
 
         command = f"{command} nohup > /dev/null 2>&1 &"
         try:
-            subprocess.Popen(command, stdout=subprocess.DEVNULL)  # не добавлять with
+            subprocess.Popen(command, stdout=subprocess.DEVNULL)  # noqa: S603  # не добавлять with
             if process != "":
                 time.sleep(1)
                 if not Adb.is_process_exist(name=process):
@@ -715,7 +715,7 @@ class Adb:
 
         try:
             command = ["adb", "kill-server"]
-            subprocess.run(command, check=True)
+            subprocess.run(command, check=True)  # noqa: S603
         except subprocess.CalledProcessError as error:
             logger.error(f"{get_current_func_name()}: {error}")
             return False
@@ -723,7 +723,7 @@ class Adb:
         time.sleep(3)
         try:
             command = ["adb", "start-server"]
-            subprocess.run(command, check=True)
+            subprocess.run(command, check=True)  # noqa: S603
         except subprocess.CalledProcessError as error:
             logger.error(f"{get_current_func_name()}: {error}")
             return False
@@ -746,7 +746,7 @@ class Adb:
         logger.info(f"know_pid() < {name=}")
         command = ["adb", "shell", "ps"]
         try:
-            processes = subprocess.check_output(command, shell=True).decode().strip()
+            processes = subprocess.check_output(command, shell=True).decode().strip()  # noqa: S602
         except subprocess.CalledProcessError as error:
             logger.error(f"{get_current_func_name()}: {error}")
             return None
@@ -786,7 +786,7 @@ class Adb:
 
         command = ["adb", "shell", "kill", "-s", "SIGINT", str(pid)]
         try:
-            subprocess.call(command)
+            subprocess.call(command)  # noqa: S603
         except subprocess.CalledProcessError as error:
             logger.error(f"{get_current_func_name()}: {error}")
             return False
@@ -810,7 +810,7 @@ class Adb:
 
         command = ["adb", "shell", "pkill", "-l", "SIGINT", str(name)]
         try:
-            subprocess.call(command)
+            subprocess.call(command)  # noqa: S603
         except subprocess.CalledProcessError as error:
             logger.error(f"{get_current_func_name()}: {error}")
             return False
@@ -834,7 +834,7 @@ class Adb:
 
         command = ["adb", "shell", "pkill", "-f", str(name)]
         try:
-            subprocess.run(command, check=True)
+            subprocess.run(command, check=True)  # noqa: S603
         except subprocess.CalledProcessError as error:
             logger.error(f"{get_current_func_name()}: {error}")
             return False
@@ -858,7 +858,7 @@ class Adb:
 
         command = ["adb", "shell", "rm", "-rf", f"{path}*"]
         try:
-            subprocess.run(command, check=True)
+            subprocess.run(command, check=True)  # noqa: S603
         except subprocess.CalledProcessError as error:
             logger.error(f"{get_current_func_name()}: {error}")
             return False
@@ -892,7 +892,7 @@ class Adb:
 
         command = ["adb", "pull", f"{source}", f"{destination}"]
         try:
-            subprocess.run(command, check=True)
+            subprocess.run(command, check=True)  # noqa: S603
         except subprocess.CalledProcessError as error:
             logger.error(f"{get_current_func_name()}: {error}")
             return False
@@ -900,7 +900,7 @@ class Adb:
         if delete:
             command = ["adb", "shell", "rm", "-rf", f"{source}*"]
             try:
-                subprocess.run(command, check=True)
+                subprocess.run(command, check=True)  # noqa: S603
             except subprocess.CalledProcessError as error:
                 logger.error(f"{get_current_func_name()}: {error}")
                 return False
@@ -921,7 +921,7 @@ class Adb:
 
         command = ["adb", "shell", "pkill", "-l", "SIGINT", "screenrecord"]
         try:
-            subprocess.call(command)
+            subprocess.call(command)  # noqa: S603
         except subprocess.CalledProcessError as error:
             logger.error(f"{get_current_func_name()}: {error}")
             return False
@@ -952,7 +952,7 @@ class Adb:
         command = ["adb", "shell", "screenrecord", f"{path}/{filename}"]
         try:
             # Запускаем команду adb shell screenrecord для начала записи видео
-            return subprocess.Popen(command)
+            return subprocess.Popen(command)  # noqa: S603
         except subprocess.CalledProcessError as error:
             logger.error(f"{get_current_func_name()}: {error}")
             return None
@@ -980,7 +980,7 @@ class Adb:
         command = ["adb", "shell", "screenrecord", f"{path}/{filename}"]
         try:
             # Запускаем команду adb shell screenrecord для начала записи видео
-            subprocess.Popen(command)  # не добавлять with
+            subprocess.Popen(command)  # noqa: S603  # не добавлять with
             return True
         except subprocess.CalledProcessError as error:
             logger.error(f"{get_current_func_name()}: {error}")
@@ -999,7 +999,7 @@ class Adb:
 
         command = ["adb", "shell", "reboot"]
         try:
-            subprocess.call(command)
+            subprocess.call(command)  # noqa: S603
         except subprocess.CalledProcessError as error:
             logger.error(f"{get_current_func_name()}: {error}")
             return False
@@ -1019,7 +1019,7 @@ class Adb:
 
         command = ["adb", "shell", "wm", "size"]
         try:
-            output = subprocess.check_output(command).decode()
+            output = subprocess.check_output(command).decode()  # noqa: S603
             if "Physical size" in output:
                 resolution_str = output.split(":")[1].strip()
                 width, height = resolution_str.split("x")
@@ -1042,8 +1042,7 @@ class Adb:
         # Используем регулярное выражение для удаления "package:" из каждой строки
         packages_raw = re.sub(r"package:", "", packages_raw)
         # Разбиваем строки на список и удаляем пустые элементы
-        packages_list = [package.strip() for package in packages_raw.split("\n") if package.strip()]
-        return packages_list
+        return [package.strip() for package in packages_raw.split("\n") if package.strip()]
 
     @staticmethod
     def execute(command: str):
@@ -1060,4 +1059,4 @@ class Adb:
         """
         logger.info(f"execute() < {command}")
         execute_command = ["adb", *command.split()]
-        return subprocess.check_output(execute_command).decode()
+        return subprocess.check_output(execute_command).decode()  # noqa: S603

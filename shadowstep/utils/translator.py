@@ -35,7 +35,7 @@ class YandexTranslate:
             raise RuntimeError("Missing yandexPassportOauthToken environment variable")
 
         url = "https://iam.api.cloud.yandex.net/iam/v1/tokens"
-        response = requests.post(url, json={"yandexPassportOauthToken": oauth_token})
+        response = requests.post(url, json={"yandexPassportOauthToken": oauth_token}, timeout=30)  # noqa: S113
         response.raise_for_status()
         return response.json()["iamToken"]
 
@@ -78,7 +78,7 @@ class YandexTranslate:
             "targetLanguageCode": "en"
         }
 
-        response = requests.post(url, headers=headers, json=body)
+        response = requests.post(url, headers=headers, json=body, timeout=30)  # noqa: S113
         self.logger.debug(f"{response.text=}")
         response.raise_for_status()
         translations = response.json().get("translations", [])

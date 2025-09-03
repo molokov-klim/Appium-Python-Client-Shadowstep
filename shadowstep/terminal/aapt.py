@@ -23,7 +23,7 @@ class Aapt:
 
         try:
             # Выполнение команды и получение вывода
-            output: str = str(subprocess.check_output(command)).strip()
+            output: str = str(subprocess.check_output(command)).strip()  # noqa: S603
 
             # Извлечение строки, содержащей информацию о пакете
             start_index = output.index("package: name='") + len("package: name='")
@@ -56,7 +56,7 @@ class Aapt:
 
         try:
             # Выполнение команды и получение вывода
-            output = subprocess.check_output(command, universal_newlines=True).strip()
+            output = subprocess.check_output(command, universal_newlines=True).strip()  # noqa: S603
 
             # Извлечение строки, содержащей информацию о запускаемой активности
             package_line = next(line for line in output.splitlines() if line.startswith("launchable-activity"))

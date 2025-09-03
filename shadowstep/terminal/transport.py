@@ -22,14 +22,14 @@ class Transport:
     app.transport.scp.some_scp_method
     """
     def __init__(self, server: str, port: int, user: str, password: str):
-        self.ssh = self._createSSHClient(server=server, port=port, user=user, password=password)
-        self.scp = SCPClient(cast(Transport, self.ssh.get_transport()))
+        self.ssh = self._create_ssh_client(server=server, port=port, user=user, password=password)
+        self.scp = SCPClient(cast(paramiko.Transport, self.ssh.get_transport()))
 
     @staticmethod
-    def _createSSHClient(server: str, port: int, user: str, password: str):
+    def _create_ssh_client(server: str, port: int, user: str, password: str):
         client = paramiko.SSHClient()
         client.load_system_host_keys()
-        client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+        client.set_missing_host_key_policy(paramiko.AutoAddPolicy())  # noqa: S507
         client.connect(server, port, user, password)
         return client
 

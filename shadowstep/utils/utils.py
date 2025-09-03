@@ -53,5 +53,4 @@ def grep_pattern(input_string: str, pattern: str) -> list[str]:
     """
     lines = input_string.split("\n")  # Split the input string into lines
     regex = re.compile(pattern)  # Compile the regex pattern
-    matched_lines = [line for line in lines if regex.search(line)]  # Filter lines matching the pattern
-    return matched_lines
+    return [line for line in lines if regex.search(line)]  # Filter lines matching the pattern

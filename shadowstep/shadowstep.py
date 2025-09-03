@@ -13,6 +13,16 @@ from typing import Any, cast
 
 import numpy as np
 from appium.webdriver.webdriver import WebDriver
+from numpy._typing import NDArray
+from PIL import Image
+from selenium.common import (
+    InvalidSessionIdException,
+    NoSuchDriverException,
+    StaleElementReferenceException,
+    WebDriverException,
+)
+from selenium.types import WaitExcTypes
+
 from shadowstep.base import ShadowstepBase, WebDriverSingleton
 from shadowstep.decorators.decorators import fail_safe
 from shadowstep.element.element import Element
@@ -21,18 +31,9 @@ from shadowstep.image.image import ShadowstepImage
 from shadowstep.logcat.shadowstep_logcat import ShadowstepLogcat
 from shadowstep.mobile_commands import MobileCommands
 from shadowstep.navigator.navigator import PageNavigator
-from numpy._typing import NDArray
 from shadowstep.page_base import PageBaseShadowstep
-from PIL import Image
 from shadowstep.scheduled_actions.action_history import ActionHistory
 from shadowstep.scheduled_actions.action_step import ActionStep
-from selenium.common import (
-    InvalidSessionIdException,
-    NoSuchDriverException,
-    StaleElementReferenceException,
-    WebDriverException,
-)
-from selenium.types import WaitExcTypes
 from shadowstep.utils.utils import get_current_func_name
 
 # Configure the root logger (basic configuration)
@@ -111,8 +112,9 @@ class Shadowstep(ShadowstepBase):
                     continue
                 self.pages[name] = obj
                 page_instance = obj()
-                edges = list(page_instance.edges.keys())
-                self.logger.info(f"✅ register page: {page_instance} with edges {edges}")
+                edges = page_instance.edges
+                edge_names = list(edges.keys())
+                self.logger.info(f"✅ register page: {page_instance} with edges {edge_names}")
                 self.navigator.add_page(page_instance, edges)
         except Exception as e:
             self.logger.error(f"❌ Error page register from module {module.__name__}: {e}")
@@ -142,13 +144,12 @@ class Shadowstep(ShadowstepBase):
                     ignored_exceptions: WaitExcTypes | None = None,
                     contains: bool = False) -> Element:
         self.logger.debug(f"{get_current_func_name()}")
-        element = Element(locator=locator,
-                          timeout=timeout,
-                          poll_frequency=poll_frequency,
-                          ignored_exceptions=ignored_exceptions,
-                          contains=contains,
-                          base=self)
-        return element
+        return Element(locator=locator,
+                       timeout=timeout,
+                       poll_frequency=poll_frequency,
+                       ignored_exceptions=ignored_exceptions,
+                       contains=contains,
+                       base=self)
 
     def get_elements(
             self,
@@ -217,11 +218,26 @@ class Shadowstep(ShadowstepBase):
             image: bytes | NDArray[np.uint8] | Image.Image | str,
             threshold: float = 0.5,
             timeout: float = 5.0
-    ) -> ShadowstepImages:
-        return ShadowstepImages(image=image,
-                                base=self,
-                                threshold=threshold,
-                                timeout=timeout)
+    ) -> list[ShadowstepImage]:
+        """Return a list of ShadowstepImage wrappers for the given template.
+        
+        Args:
+            image: template (bytes, ndarray, PIL.Image or path)
+            threshold: matching threshold [0–1]
+            timeout: max seconds to search
+            
+        Returns:
+            list[ShadowstepImage]: List of lazy objects for image-actions.
+        """
+        self.logger.debug(f"{get_current_func_name()}")
+        # For now, return a single image wrapped in a list
+        # TODO: Implement multiple image matching
+        return [ShadowstepImage(
+            image=image,
+            base=self,
+            threshold=threshold,
+            timeout=timeout
+        )]
 
     def schedule_action(
             self,
@@ -945,8 +961,7 @@ class Shadowstep(ShadowstepBase):
     def get_screenshot(self):
         self.logger.debug(f"{get_current_func_name()}")
         screenshot = self.driver.get_screenshot_as_base64().encode("utf-8")
-        screenshot = base64.b64decode(screenshot)
-        return screenshot
+        return base64.b64decode(screenshot)
 
     @fail_safe(retries=3, delay=0.5,
                raise_exception=ShadowstepException,

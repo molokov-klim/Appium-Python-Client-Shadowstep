@@ -18,7 +18,7 @@ class ShadowstepLogcat:
 
     def __init__(
             self,
-            driver_getter: Callable[[], WebDriver],  # функция, возвращающая актуальный driver
+            driver_getter: Callable[[], WebDriver | None],  # функция, возвращающая актуальный driver
             poll_interval: float = 1.0
     ):
         self._driver_getter = driver_getter
@@ -59,7 +59,8 @@ class ShadowstepLogcat:
         # 3) отправляем команду остановить broadcast
         try:
             driver = self._driver_getter()
-            driver.execute_script("mobile: stopLogsBroadcast")
+            if driver is not None:
+                driver.execute_script("mobile: stopLogsBroadcast")
         except WebDriverException as e:
             logger.warning(f"Failed to stop broadcast: {e!r}")
 
@@ -87,6 +88,10 @@ class ShadowstepLogcat:
                 try:
                     # 1) Запускаем broadcast
                     driver = self._driver_getter()
+                    if driver is None:
+                        logger.warning("Driver is None, skipping logcat iteration")
+                        time.sleep(self._poll_interval)
+                        continue
                     driver.execute_script("mobile: startLogsBroadcast")
 
                     # 2) Формируем базовый ws:// URL
