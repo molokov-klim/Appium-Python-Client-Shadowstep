@@ -165,6 +165,7 @@ class PageObjectGenerator:
         self.logger.debug(step)
         template = self.env.get_template("page_object.py.j2")
         rendered = template.render(**template_data)
+        fixed_rendered = rendered.replace("&#39;", '"').replace("#39;", '"')
 
         step = "Формирование названия файла"
         self.logger.debug(step)
@@ -181,7 +182,7 @@ class PageObjectGenerator:
         path = os.path.join(output_dir, file_name)
         os.makedirs(os.path.dirname(path), exist_ok=True)
         with open(path, "w", encoding="utf-8") as f:
-            f.write(rendered)
+            f.write(fixed_rendered)
 
         self.logger.debug(f"Generated PageObject → {path}")
         return path, class_name

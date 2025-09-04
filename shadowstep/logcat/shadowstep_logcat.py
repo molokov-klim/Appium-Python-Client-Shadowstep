@@ -65,9 +65,12 @@ class ShadowstepLogcat:
         self._filename: str | None = None
         self._ws: WebSocket | None = None
 
-    def __del__(self) -> None:
-        """Cleanup method to ensure logcat is stopped on object destruction."""
+    def __exit__(self, exc_type, exc_val, exc_tb):
         self.stop()
+
+    def __del__(self):
+        with contextlib.suppress(Exception):
+            self.stop()
 
     def start(self, filename: str) -> None:
         """Start logcat capture to specified file.
