@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import contextlib
 import logging
+import re
 import threading
 import time
 from collections.abc import Callable
@@ -64,6 +65,7 @@ class ShadowstepLogcat:
         self._stop_evt = threading.Event()
         self._filename: str | None = None
         self._ws: WebSocket | None = None
+        self.port: int | None = None
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         self.stop()
@@ -72,15 +74,17 @@ class ShadowstepLogcat:
         with contextlib.suppress(Exception):
             self.stop()
 
-    def start(self, filename: str) -> None:
+    def start(self, filename: str, port: int | None = None) -> None:
         """Start logcat capture to specified file.
         
         Args:
             filename: Path to the output file for logcat data.
+            port: port of Appium server instance
             
         Raises:
             ValueError: If filename is empty.
         """
+        self.port = port
         if not filename:
             raise ValueError("filename cannot be empty")
             
@@ -160,6 +164,11 @@ class ShadowstepLogcat:
                         session_id = driver.session_id
                         
                         http_url = self._get_http_url(driver)
+                        match = re.search(r":(\d+)$", http_url)
+                        old_port = int(match.group(1)) if match else None
+                        if self.port:
+                            http_url = http_url.replace(str(old_port), str(self.port))
+
                         scheme, rest = http_url.split("://", 1)
                         ws_scheme = "ws" if scheme == "http" else "wss"
                         base_ws = f"{ws_scheme}://{rest}"
@@ -168,8 +177,8 @@ class ShadowstepLogcat:
 
                         # Try both endpoints
                         endpoints = [
-                            f"{base_ws}/ws/session/{session_id}/appium/logcat",
                             f"{base_ws}/ws/session/{session_id}/appium/device/logcat",
+                            f"{base_ws}/ws/session/{session_id}/appium/logcat",
                         ]
                         ws = None
                         for url in endpoints:
