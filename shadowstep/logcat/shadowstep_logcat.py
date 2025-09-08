@@ -66,7 +66,45 @@ class ShadowstepLogcat:
         self._filename: str | None = None
         self._ws: WebSocket | None = None
         self.port: int | None = None
-        self.filters: list[str] | None = None
+        self._filters = None
+        self._compiled_filter_pattern = None
+        self._filter_set = None
+
+
+    @property
+    def filters(self):
+        return self._filters
+
+    @filters.setter
+    def filters(self, value):
+        self._filters = value
+        if value:
+            import re
+            escaped_filters = [re.escape(f) for f in value]
+            self._compiled_filter_pattern = re.compile('|'.join(escaped_filters))
+            self._filter_set = set(value)
+        else:
+            self._compiled_filter_pattern = None
+            self._filter_set = None
+
+    def _should_filter_line(self, line: str) -> bool:
+        if not self._compiled_filter_pattern:
+            return False
+
+        if not self._compiled_filter_pattern.search(line):
+            return False
+
+        parts = line.split()
+        if len(parts) >= 6:
+            for i, part in enumerate(parts):
+                if part in {'I', 'D', 'W', 'E', 'V'} and i + 1 < len(parts):
+                    tag_part = parts[i + 1]
+                    if ':' in tag_part:
+                        tag = tag_part.split(':', 1)[0]
+                        return tag in self._filter_set
+
+        return True
+
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         self.stop()
@@ -202,8 +240,8 @@ class ShadowstepLogcat:
                                 if isinstance(line, bytes):
                                     line = line.decode(errors="ignore", encoding="utf-8")
 
-                                if self.filters and any(f in line for f in self.filters):
-                                    continue    # FIXME (maybe implement by CPython?)
+                                if self._should_filter_line(line):
+                                    continue
 
                                 f.write(line + "\n")
                             except WebSocketConnectionClosedException:
