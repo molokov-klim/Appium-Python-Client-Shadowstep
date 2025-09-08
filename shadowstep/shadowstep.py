@@ -292,11 +292,13 @@ class Shadowstep(ShadowstepBase):
         # shadowstep/scheduled_actions
         raise NotImplementedError
 
-    def start_logcat(self, filename: str, port: int | None = None) -> None:
+    def start_logcat(self, filename: str, port: int | None = None, filters: list[str] | None = None) -> None:
         """
         filename: log file name
         port: port of Appium server instance, provide if you use grid
         """
+        if filters is not None:
+            self._logcat.filters = filters
         self._logcat.start(filename, port)
 
     def stop_logcat(self) -> None:

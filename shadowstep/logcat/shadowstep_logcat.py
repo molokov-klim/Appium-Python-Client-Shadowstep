@@ -66,6 +66,7 @@ class ShadowstepLogcat:
         self._filename: str | None = None
         self._ws: WebSocket | None = None
         self.port: int | None = None
+        self.filters: list[str] | None = None
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         self.stop()
@@ -200,6 +201,10 @@ class ShadowstepLogcat:
                                 line = ws.recv()
                                 if isinstance(line, bytes):
                                     line = line.decode(errors="ignore", encoding="utf-8")
+
+                                if self.filters and any(f in line for f in self.filters):
+                                    continue    # FIXME (maybe implement by CPython?)
+
                                 f.write(line + "\n")
                             except WebSocketConnectionClosedException:
                                 break  # Reconnect
