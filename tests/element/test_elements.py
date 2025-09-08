@@ -39,7 +39,7 @@ class TestElements:
     """
 
     def test_elements_unique(self, stability: Any,  sample_elements: list[Element]):
-        attrs: list[dict[str, str]] = [
+        attrs: list[dict[str, Any]] = [
             {
                 "class": el.class_name,
                 "text": el.text,

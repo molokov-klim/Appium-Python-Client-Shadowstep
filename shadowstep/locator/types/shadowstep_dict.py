@@ -3,7 +3,7 @@ from enum import Enum
 from typing import Any
 
 
-class DictAttribute(str, Enum):
+class ShadowstepDictAttribute(str, Enum):
     # --- text-based ---
     TEXT = "text"
     TEXT_CONTAINS = "textContains"

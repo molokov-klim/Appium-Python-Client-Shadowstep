@@ -11,7 +11,6 @@ from typing import Any
 
 import pytest
 
-from shadowstep.exceptions.shadowstep_exceptions import ConversionError
 from shadowstep.locator.converter.locator_converter import LocatorConverter
 
 logger = logging.getLogger(__name__)

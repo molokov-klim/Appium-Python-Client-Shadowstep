@@ -16,7 +16,7 @@ from shadowstep.page_object.page_object_element_node import UiElementNode
 from shadowstep.utils.utils import get_current_func_name
 
 # Type aliases for better readability
-ElementAttributes = dict[str, str]
+ElementAttributes = dict[str, Any]
 ScrollStack = list[str]
 
 # Default configuration constants

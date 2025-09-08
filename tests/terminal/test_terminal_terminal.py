@@ -235,7 +235,7 @@ class TestTerminal:
         # Arrange
         source = "/local/path"
         remote_server_path = "/remote/path"
-        filename = "app.apk"
+        filename = "app._apk"
         udid = "emulator-5554"
 
         mock_stdin = Mock()
@@ -260,7 +260,7 @@ class TestTerminal:
         # Arrange
         source = "/local/path"
         remote_server_path = "/remote/path"
-        filename = "app.apk"
+        filename = "app._apk"
         udid = "emulator-5554"
 
         # Mock transport to raise OSError (simulating missing credentials)
@@ -492,7 +492,7 @@ class TestTerminal:
         """Test successful package path retrieval."""
         # Arrange
         package = "com.example.app"
-        expected_path = "/data/app/com.example.app/shadowstep.apk"
+        expected_path = "/data/app/com.example.app/shadowstep._apk"
 
         with patch.object(self.terminal, "adb_shell", return_value=expected_path):
             # Act

@@ -36,7 +36,7 @@ class ShadowstepNoSuchElementError(NoSuchElementException):
                  msg: str | None = None,
                  screen: str | None = None,
                  stacktrace: list[Any] | None = None,
-                 locator: tuple[Any, Any] | dict[str, str] | str | None = None):
+                 locator: Any = None):
         super().__init__(msg, screen, stacktrace)
         self.locator = locator
         self.msg = msg
@@ -54,7 +54,7 @@ class ShadowstepTimeoutException(TimeoutException):
                  msg: str | None = None,
                  screen: str | None = None,
                  stacktrace: list[Any] | None = None,
-                 locator: tuple[Any, Any] | dict[str, str] | None = None,
+                 locator: Any = None,
                  driver: WebDriver | None = None):
         super().__init__(msg, screen, stacktrace)
         self.locator = locator
@@ -69,7 +69,8 @@ class ShadowstepTimeoutException(TimeoutException):
                 f"Current URL: {self.driver.current_url if self.driver else 'N/A'}\n"
                 f"Stacktrace:\n{''.join(self.stacktrace) if self.stacktrace else 'N/A'}")
 
-class GeneralElementException(WebDriverException):
+
+class ShadowstepElementException(WebDriverException):
     """Raised when driver is not specified and cannot be located."""
 
     def __init__(
@@ -79,16 +80,21 @@ class GeneralElementException(WebDriverException):
         super().__init__(msg, screen, stacktrace)
 
 
-class LocatorConverterError(Exception):
+class ShadowstepLocatorConverterError(Exception):
     """Base exception for locator conversion errors."""
     pass
 
 
-class InvalidUiSelectorError(LocatorConverterError):
+class ShadowstepInvalidUiSelectorError(Exception):
     """Raised when UiSelector string is malformed."""
     pass
 
 
-class ConversionError(LocatorConverterError):
+class ShadowstepConversionError(ShadowstepLocatorConverterError):
     """Raised when conversion between formats fails."""
+    pass
+
+
+class ResolvingLocatorError(Exception):
+    """Raised when locator resolving is failed (used in shadowstep.element.dom)."""
     pass

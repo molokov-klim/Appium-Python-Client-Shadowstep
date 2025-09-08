@@ -4,9 +4,9 @@ from typing import Any
 
 import pytest
 
-from shadowstep.exceptions.shadowstep_exceptions import ConversionError
+from shadowstep.exceptions.shadowstep_exceptions import ShadowstepConversionError
 from shadowstep.locator.converter.xpath_converter import XPathConverter
-from shadowstep.locator.types.shadowstep_dict import DictAttribute
+from shadowstep.locator.types.shadowstep_dict import ShadowstepDictAttribute
 
 logger = logging.getLogger(__name__)
 
@@ -17,51 +17,51 @@ class TestXPathConverter:
         "xpath, expected",  # noqa: PT006
         [  # pyright: ignore [reportUnknownArgumentType]
             # --- text-based ---
-            ('//*[@text="Привет"]', {DictAttribute.TEXT: "Привет"}),
-            ('//*[contains(@text,"Hello")]', {DictAttribute.TEXT_CONTAINS: "Hello"}),
-            ('//*[starts-with(@text,"Оплат")]', {DictAttribute.TEXT_STARTS_WITH: "Оплат"}),
-            ('//*[matches(@text,".*Тест.*")]', {DictAttribute.TEXT_MATCHES: ".*Тест.*"}),
+            ('//*[@text="Привет"]', {ShadowstepDictAttribute.TEXT: "Привет"}),
+            ('//*[contains(@text,"Hello")]', {ShadowstepDictAttribute.TEXT_CONTAINS: "Hello"}),
+            ('//*[starts-with(@text,"Оплат")]', {ShadowstepDictAttribute.TEXT_STARTS_WITH: "Оплат"}),
+            ('//*[matches(@text,".*Тест.*")]', {ShadowstepDictAttribute.TEXT_MATCHES: ".*Тест.*"}),
 
             # --- description ---
-            ('//*[@content-desc="desc"]', {DictAttribute.DESCRIPTION: "desc"}),
-            ('//*[contains(@content-desc,"part")]', {DictAttribute.DESCRIPTION_CONTAINS: "part"}),
-            ('//*[starts-with(@content-desc,"start")]', {DictAttribute.DESCRIPTION_STARTS_WITH: "start"}),
-            ('//*[matches(@content-desc,"regex.*")]', {DictAttribute.DESCRIPTION_MATCHES: "regex.*"}),
+            ('//*[@content-desc="desc"]', {ShadowstepDictAttribute.DESCRIPTION: "desc"}),
+            ('//*[contains(@content-desc,"part")]', {ShadowstepDictAttribute.DESCRIPTION_CONTAINS: "part"}),
+            ('//*[starts-with(@content-desc,"start")]', {ShadowstepDictAttribute.DESCRIPTION_STARTS_WITH: "start"}),
+            ('//*[matches(@content-desc,"regex.*")]', {ShadowstepDictAttribute.DESCRIPTION_MATCHES: "regex.*"}),
 
             # --- resource id / package ---
-            ('//*[@resource-id="resId"]', {DictAttribute.RESOURCE_ID: "resId"}),
-            ('//*[matches(@resource-id,"res.*")]', {DictAttribute.RESOURCE_ID_MATCHES: "res.*"}),
-            ('//*[@package="pkg.name"]', {DictAttribute.PACKAGE_NAME: "pkg.name"}),
-            ('//*[matches(@package,"pkg.name")]', {DictAttribute.PACKAGE_NAME_MATCHES: "pkg.name"}),
+            ('//*[@resource-id="resId"]', {ShadowstepDictAttribute.RESOURCE_ID: "resId"}),
+            ('//*[matches(@resource-id,"res.*")]', {ShadowstepDictAttribute.RESOURCE_ID_MATCHES: "res.*"}),
+            ('//*[@package="pkg.name"]', {ShadowstepDictAttribute.PACKAGE_NAME: "pkg.name"}),
+            ('//*[matches(@package,"pkg.name")]', {ShadowstepDictAttribute.PACKAGE_NAME_MATCHES: "pkg.name"}),
 
             # --- class ---
-            ('//*[@class="android.widget.Button"]', {DictAttribute.CLASS_NAME: "android.widget.Button"}),
-            ('//*[matches(@class,".*Button")]', {DictAttribute.CLASS_NAME_MATCHES: ".*Button"}),
+            ('//*[@class="android.widget.Button"]', {ShadowstepDictAttribute.CLASS_NAME: "android.widget.Button"}),
+            ('//*[matches(@class,".*Button")]', {ShadowstepDictAttribute.CLASS_NAME_MATCHES: ".*Button"}),
 
             # --- bool props ---
-            ('//*[@checkable="true"]', {DictAttribute.CHECKABLE: True}),
-            ('//*[@checked="false"]', {DictAttribute.CHECKED: False}),
-            ('//*[@clickable="true"]', {DictAttribute.CLICKABLE: True}),
-            ('//*[@enabled="true"]', {DictAttribute.ENABLED: True}),
-            ('//*[@focusable="true"]', {DictAttribute.FOCUSABLE: True}),
-            ('//*[@focused="false"]', {DictAttribute.FOCUSED: False}),
-            ('//*[@long-clickable="true"]', {DictAttribute.LONG_CLICKABLE: True}),
-            ('//*[@scrollable="false"]', {DictAttribute.SCROLLABLE: False}),
-            ('//*[@selected="false"]', {DictAttribute.SELECTED: False}),
-            ('//*[@password="true"]', {DictAttribute.PASSWORD: True}),
+            ('//*[@checkable="true"]', {ShadowstepDictAttribute.CHECKABLE: True}),
+            ('//*[@checked="false"]', {ShadowstepDictAttribute.CHECKED: False}),
+            ('//*[@clickable="true"]', {ShadowstepDictAttribute.CLICKABLE: True}),
+            ('//*[@enabled="true"]', {ShadowstepDictAttribute.ENABLED: True}),
+            ('//*[@focusable="true"]', {ShadowstepDictAttribute.FOCUSABLE: True}),
+            ('//*[@focused="false"]', {ShadowstepDictAttribute.FOCUSED: False}),
+            ('//*[@long-clickable="true"]', {ShadowstepDictAttribute.LONG_CLICKABLE: True}),
+            ('//*[@scrollable="false"]', {ShadowstepDictAttribute.SCROLLABLE: False}),
+            ('//*[@selected="false"]', {ShadowstepDictAttribute.SELECTED: False}),
+            ('//*[@password="true"]', {ShadowstepDictAttribute.PASSWORD: True}),
 
             # --- numeric ---
-            ("//*[position()=3]", {DictAttribute.INDEX: 2}),
-            ("//*[6]", {DictAttribute.INSTANCE: 5}),
+            ("//*[position()=3]", {ShadowstepDictAttribute.INDEX: 2}),
+            ("//*[6]", {ShadowstepDictAttribute.INSTANCE: 5}),
 
             # --- hierarchy ---
             ('//*[@content-desc="Подтвердить"]/*[@class="android.widget.ImageView"]',
-             {DictAttribute.DESCRIPTION: "Подтвердить",
-              DictAttribute.CHILD_SELECTOR: {"class": "android.widget.ImageView"}}),
+             {ShadowstepDictAttribute.DESCRIPTION: "Подтвердить",
+              ShadowstepDictAttribute.CHILD_SELECTOR: {"class": "android.widget.ImageView"}}),
             ('//*[@class="android.widget.RadioButton"]/..//*[@resource-id="ru.figma.app.debug:id/paymentMethods"]',
-             {DictAttribute.CLASS_NAME: "android.widget.RadioButton",
-              DictAttribute.FROM_PARENT: {
-                  DictAttribute.RESOURCE_ID: "ru.figma.app.debug:id/paymentMethods"}}),
+             {ShadowstepDictAttribute.CLASS_NAME: "android.widget.RadioButton",
+              ShadowstepDictAttribute.FROM_PARENT: {
+                  ShadowstepDictAttribute.RESOURCE_ID: "ru.figma.app.debug:id/paymentMethods"}}),
         ]
     )
     def test_xpath_to_dict_attributes(self, xpath: str, expected: dict[str, Any]):
@@ -82,209 +82,209 @@ class TestXPathConverter:
             (
                     '//*[@text="OK"][@class="android.widget.Button"][position()=1]',
                     {
-                        DictAttribute.TEXT: "OK",
-                        DictAttribute.CLASS_NAME: "android.widget.Button",
-                        DictAttribute.INDEX: 0,
+                        ShadowstepDictAttribute.TEXT: "OK",
+                        ShadowstepDictAttribute.CLASS_NAME: "android.widget.Button",
+                        ShadowstepDictAttribute.INDEX: 0,
                     },
             ),
             (
                     '//*[contains(@text, "Подтвердить")][@clickable="true"]',
                     {
-                        DictAttribute.TEXT_CONTAINS: "Подтвердить",
-                        DictAttribute.CLICKABLE: True,
+                        ShadowstepDictAttribute.TEXT_CONTAINS: "Подтвердить",
+                        ShadowstepDictAttribute.CLICKABLE: True,
                     },
             ),
             (
                     '//*[@resource-id="ru.app:id/btn"][@enabled="false"]',
                     {
-                        DictAttribute.RESOURCE_ID: "ru.app:id/btn",
-                        DictAttribute.ENABLED: False,
+                        ShadowstepDictAttribute.RESOURCE_ID: "ru.app:id/btn",
+                        ShadowstepDictAttribute.ENABLED: False,
                     },
             ),
             (
                     '//*[starts-with(@text, "Нач")][@package="ru.app"][@focusable="true"]',
                     {
-                        DictAttribute.TEXT_STARTS_WITH: "Нач",
-                        DictAttribute.PACKAGE_NAME: "ru.app",
-                        DictAttribute.FOCUSABLE: True,
+                        ShadowstepDictAttribute.TEXT_STARTS_WITH: "Нач",
+                        ShadowstepDictAttribute.PACKAGE_NAME: "ru.app",
+                        ShadowstepDictAttribute.FOCUSABLE: True,
                     },
             ),
             (
                     '//*[contains(@content-desc, "icon")][@long-clickable="true"][@class="android.widget.ImageView"]',
                     {
-                        DictAttribute.DESCRIPTION_CONTAINS: "icon",
-                        DictAttribute.LONG_CLICKABLE: True,
-                        DictAttribute.CLASS_NAME: "android.widget.ImageView",
+                        ShadowstepDictAttribute.DESCRIPTION_CONTAINS: "icon",
+                        ShadowstepDictAttribute.LONG_CLICKABLE: True,
+                        ShadowstepDictAttribute.CLASS_NAME: "android.widget.ImageView",
                     },
             ),
             (
                     '//*[matches(@text, ".*Тест.*")][@scrollable="false"]',
                     {
-                        DictAttribute.TEXT_MATCHES: ".*Тест.*",
-                        DictAttribute.SCROLLABLE: False,
+                        ShadowstepDictAttribute.TEXT_MATCHES: ".*Тест.*",
+                        ShadowstepDictAttribute.SCROLLABLE: False,
                     },
             ),
             (
                     '//*[@content-desc="switch"][@checked="true"][position()=2]',
                     {
-                        DictAttribute.DESCRIPTION: "switch",
-                        DictAttribute.CHECKED: True,
-                        DictAttribute.INDEX: 1,
+                        ShadowstepDictAttribute.DESCRIPTION: "switch",
+                        ShadowstepDictAttribute.CHECKED: True,
+                        ShadowstepDictAttribute.INDEX: 1,
                     },
             ),
             (
                     '//*[@package="ru.pkg"][@enabled="true"][@selected="false"]',
                     {
-                        DictAttribute.PACKAGE_NAME: "ru.pkg",
-                        DictAttribute.ENABLED: True,
-                        DictAttribute.SELECTED: False,
+                        ShadowstepDictAttribute.PACKAGE_NAME: "ru.pkg",
+                        ShadowstepDictAttribute.ENABLED: True,
+                        ShadowstepDictAttribute.SELECTED: False,
                     },
             ),
             (
                     '//*[matches(@class, ".*EditText")][@focusable="true"][position()=3]',
                     {
-                        DictAttribute.CLASS_NAME_MATCHES: ".*EditText",
-                        DictAttribute.FOCUSABLE: True,
-                        DictAttribute.INDEX: 2,
+                        ShadowstepDictAttribute.CLASS_NAME_MATCHES: ".*EditText",
+                        ShadowstepDictAttribute.FOCUSABLE: True,
+                        ShadowstepDictAttribute.INDEX: 2,
                     },
             ),
             (
                     '//*[@text="Save"][matches(@content-desc, ".*save.*")][@clickable="true"]',
                     {
-                        DictAttribute.TEXT: "Save",
-                        DictAttribute.DESCRIPTION_MATCHES: ".*save.*",
-                        DictAttribute.CLICKABLE: True,
+                        ShadowstepDictAttribute.TEXT: "Save",
+                        ShadowstepDictAttribute.DESCRIPTION_MATCHES: ".*save.*",
+                        ShadowstepDictAttribute.CLICKABLE: True,
                     },
             ),
             (
                     '//*[matches(@resource-id, ".*btn.*")][contains(@text, "Отправить")][@enabled="true"]',
                     {
-                        DictAttribute.RESOURCE_ID_MATCHES: ".*btn.*",
-                        DictAttribute.TEXT_CONTAINS: "Отправить",
-                        DictAttribute.ENABLED: True,
+                        ShadowstepDictAttribute.RESOURCE_ID_MATCHES: ".*btn.*",
+                        ShadowstepDictAttribute.TEXT_CONTAINS: "Отправить",
+                        ShadowstepDictAttribute.ENABLED: True,
                     },
             ),
             (
                     '//*[@class="android.widget.TextView"][starts-with(@content-desc, "hint")][@long-clickable="false"]',
                     {
-                        DictAttribute.CLASS_NAME: "android.widget.TextView",
-                        DictAttribute.DESCRIPTION_STARTS_WITH: "hint",
-                        DictAttribute.LONG_CLICKABLE: False,
+                        ShadowstepDictAttribute.CLASS_NAME: "android.widget.TextView",
+                        ShadowstepDictAttribute.DESCRIPTION_STARTS_WITH: "hint",
+                        ShadowstepDictAttribute.LONG_CLICKABLE: False,
                     },
             ),
             (
                     '//*[@text="OK"][matches(@package, "com.example.*")][@checked="true"]',
                     {
-                        DictAttribute.TEXT: "OK",
-                        DictAttribute.PACKAGE_NAME_MATCHES: "com.example.*",
-                        DictAttribute.CHECKED: True,
+                        ShadowstepDictAttribute.TEXT: "OK",
+                        ShadowstepDictAttribute.PACKAGE_NAME_MATCHES: "com.example.*",
+                        ShadowstepDictAttribute.CHECKED: True,
                     },
             ),
             (
                     '//*[contains(@content-desc, "item")][position()=5][position()=2]',
                     {
-                        DictAttribute.DESCRIPTION_CONTAINS: "item",
-                        DictAttribute.INDEX: 1,  # Last index wins
+                        ShadowstepDictAttribute.DESCRIPTION_CONTAINS: "item",
+                        ShadowstepDictAttribute.INDEX: 1,  # Last index wins
                     },
             ),
             (
                     '//*[matches(@text, ".*done.*")][@class="android.widget.CheckBox"][@selected="true"]',
                     {
-                        DictAttribute.TEXT_MATCHES: ".*done.*",
-                        DictAttribute.CLASS_NAME: "android.widget.CheckBox",
-                        DictAttribute.SELECTED: True,
+                        ShadowstepDictAttribute.TEXT_MATCHES: ".*done.*",
+                        ShadowstepDictAttribute.CLASS_NAME: "android.widget.CheckBox",
+                        ShadowstepDictAttribute.SELECTED: True,
                     },
             ),
             (
                     '//*[@resource-id="ru.app:id/input"][@text="Login"][@focusable="true"][@focused="false"]',
                     {
-                        DictAttribute.RESOURCE_ID: "ru.app:id/input",
-                        DictAttribute.TEXT: "Login",
-                        DictAttribute.FOCUSABLE: True,
-                        DictAttribute.FOCUSED: False,
+                        ShadowstepDictAttribute.RESOURCE_ID: "ru.app:id/input",
+                        ShadowstepDictAttribute.TEXT: "Login",
+                        ShadowstepDictAttribute.FOCUSABLE: True,
+                        ShadowstepDictAttribute.FOCUSED: False,
                     },
             ),
             (
                     '//*[@content-desc="menu"][@package="ru.app"][@enabled="true"][@clickable="true"]',
                     {
-                        DictAttribute.DESCRIPTION: "menu",
-                        DictAttribute.PACKAGE_NAME: "ru.app",
-                        DictAttribute.ENABLED: True,
-                        DictAttribute.CLICKABLE: True,
+                        ShadowstepDictAttribute.DESCRIPTION: "menu",
+                        ShadowstepDictAttribute.PACKAGE_NAME: "ru.app",
+                        ShadowstepDictAttribute.ENABLED: True,
+                        ShadowstepDictAttribute.CLICKABLE: True,
                     },
             ),
             (
                     '//*[starts-with(@text, "File")][matches(@class, ".*ListView")][@scrollable="true"]',
                     {
-                        DictAttribute.TEXT_STARTS_WITH: "File",
-                        DictAttribute.CLASS_NAME_MATCHES: ".*ListView",
-                        DictAttribute.SCROLLABLE: True,
+                        ShadowstepDictAttribute.TEXT_STARTS_WITH: "File",
+                        ShadowstepDictAttribute.CLASS_NAME_MATCHES: ".*ListView",
+                        ShadowstepDictAttribute.SCROLLABLE: True,
                     },
             ),
             (
                     '//*[matches(@resource-id, ".*toolbar")][matches(@content-desc, ".*tool.*")][@long-clickable="true"]',
                     {
-                        DictAttribute.RESOURCE_ID_MATCHES: ".*toolbar",
-                        DictAttribute.DESCRIPTION_MATCHES: ".*tool.*",
-                        DictAttribute.LONG_CLICKABLE: True,
+                        ShadowstepDictAttribute.RESOURCE_ID_MATCHES: ".*toolbar",
+                        ShadowstepDictAttribute.DESCRIPTION_MATCHES: ".*tool.*",
+                        ShadowstepDictAttribute.LONG_CLICKABLE: True,
                     },
             ),
             (
                     '//*[@text="Submit"][contains(@content-desc, "send")][@class="android.widget.Button"][@enabled="true"][@clickable="true"][position()=1][position()=4]',
                     {
-                        DictAttribute.TEXT: "Submit",
-                        DictAttribute.DESCRIPTION_CONTAINS: "send",
-                        DictAttribute.CLASS_NAME: "android.widget.Button",
-                        DictAttribute.ENABLED: True,
-                        DictAttribute.CLICKABLE: True,
-                        DictAttribute.INDEX: 3,  # Last index wins
+                        ShadowstepDictAttribute.TEXT: "Submit",
+                        ShadowstepDictAttribute.DESCRIPTION_CONTAINS: "send",
+                        ShadowstepDictAttribute.CLASS_NAME: "android.widget.Button",
+                        ShadowstepDictAttribute.ENABLED: True,
+                        ShadowstepDictAttribute.CLICKABLE: True,
+                        ShadowstepDictAttribute.INDEX: 3,  # Last index wins
                     },
             ),
             (
                     '//*[@text="Оплатить"]/*[@class="android.widget.ImageView"]',
                     {
-                        DictAttribute.TEXT: "Оплатить",
-                        DictAttribute.CHILD_SELECTOR: {
-                            DictAttribute.CLASS_NAME: "android.widget.ImageView",
+                        ShadowstepDictAttribute.TEXT: "Оплатить",
+                        ShadowstepDictAttribute.CHILD_SELECTOR: {
+                            ShadowstepDictAttribute.CLASS_NAME: "android.widget.ImageView",
                         },
                     },
             ),
             (
                     '//*[@class="android.widget.LinearLayout"]/*[contains(@text, "Email")]',
                     {
-                        DictAttribute.CLASS_NAME: "android.widget.LinearLayout",
-                        DictAttribute.CHILD_SELECTOR: {
-                            DictAttribute.TEXT_CONTAINS: "Email",
+                        ShadowstepDictAttribute.CLASS_NAME: "android.widget.LinearLayout",
+                        ShadowstepDictAttribute.CHILD_SELECTOR: {
+                            ShadowstepDictAttribute.TEXT_CONTAINS: "Email",
                         },
                     },
             ),
             (
                     '//*[@resource-id="ru.app:id/input"]/../*[@class="android.widget.ScrollView"]',
                     {
-                        DictAttribute.RESOURCE_ID: "ru.app:id/input",
-                        DictAttribute.FROM_PARENT: {
-                            DictAttribute.CLASS_NAME: "android.widget.ScrollView",
+                        ShadowstepDictAttribute.RESOURCE_ID: "ru.app:id/input",
+                        ShadowstepDictAttribute.FROM_PARENT: {
+                            ShadowstepDictAttribute.CLASS_NAME: "android.widget.ScrollView",
                         },
                     },
             ),
             (
                     '//*[@class="android.widget.Button"][starts-with(@text,"Дал")]/*[@content-desc="icon"]',
                     {
-                        DictAttribute.CLASS_NAME: "android.widget.Button",
-                        DictAttribute.TEXT_STARTS_WITH: "Дал",
-                        DictAttribute.CHILD_SELECTOR: {
-                            DictAttribute.DESCRIPTION: "icon",
+                        ShadowstepDictAttribute.CLASS_NAME: "android.widget.Button",
+                        ShadowstepDictAttribute.TEXT_STARTS_WITH: "Дал",
+                        ShadowstepDictAttribute.CHILD_SELECTOR: {
+                            ShadowstepDictAttribute.DESCRIPTION: "icon",
                         },
                     },
             ),
             (
                     '//*[@text="Settings"]/../*[@class="android.widget.FrameLayout"]/*[@resource-id="ru.app:id/switch"]',
                     {
-                        DictAttribute.TEXT: "Settings",
-                        DictAttribute.FROM_PARENT: {
-                            DictAttribute.CLASS_NAME: "android.widget.FrameLayout",
-                            DictAttribute.CHILD_SELECTOR: {
-                                DictAttribute.RESOURCE_ID: "ru.app:id/switch",
+                        ShadowstepDictAttribute.TEXT: "Settings",
+                        ShadowstepDictAttribute.FROM_PARENT: {
+                            ShadowstepDictAttribute.CLASS_NAME: "android.widget.FrameLayout",
+                            ShadowstepDictAttribute.CHILD_SELECTOR: {
+                                ShadowstepDictAttribute.RESOURCE_ID: "ru.app:id/switch",
                             },
                         },
                     },
@@ -309,12 +309,12 @@ class TestXPathConverter:
             (
                     '//*[@text="Settings"][@class="android.widget.Button"]/../*[@class="android.widget.FrameLayout"]/*[@resource-id="ru.app:id/switch"]',
                     {
-                        DictAttribute.TEXT: "Settings",
-                        DictAttribute.CLASS_NAME: "android.widget.Button",
-                        DictAttribute.FROM_PARENT: {
-                            DictAttribute.CLASS_NAME: "android.widget.FrameLayout",
-                            DictAttribute.CHILD_SELECTOR: {
-                                DictAttribute.RESOURCE_ID: "ru.app:id/switch",
+                        ShadowstepDictAttribute.TEXT: "Settings",
+                        ShadowstepDictAttribute.CLASS_NAME: "android.widget.Button",
+                        ShadowstepDictAttribute.FROM_PARENT: {
+                            ShadowstepDictAttribute.CLASS_NAME: "android.widget.FrameLayout",
+                            ShadowstepDictAttribute.CHILD_SELECTOR: {
+                                ShadowstepDictAttribute.RESOURCE_ID: "ru.app:id/switch",
                             },
                         },
                     },
@@ -324,14 +324,14 @@ class TestXPathConverter:
             (
                     '//*[@text="Root"]/../../*[@class="L1"]/*[@class="L2"]/*[@resource-id="app:id/toggle"]',
                     {
-                        DictAttribute.TEXT: "Root",
-                        DictAttribute.FROM_PARENT: {
-                            DictAttribute.FROM_PARENT: {
-                                DictAttribute.CLASS_NAME: "L1",
-                                DictAttribute.CHILD_SELECTOR: {
-                                    DictAttribute.CLASS_NAME: "L2",
-                                    DictAttribute.CHILD_SELECTOR: {
-                                        DictAttribute.RESOURCE_ID: "app:id/toggle",
+                        ShadowstepDictAttribute.TEXT: "Root",
+                        ShadowstepDictAttribute.FROM_PARENT: {
+                            ShadowstepDictAttribute.FROM_PARENT: {
+                                ShadowstepDictAttribute.CLASS_NAME: "L1",
+                                ShadowstepDictAttribute.CHILD_SELECTOR: {
+                                    ShadowstepDictAttribute.CLASS_NAME: "L2",
+                                    ShadowstepDictAttribute.CHILD_SELECTOR: {
+                                        ShadowstepDictAttribute.RESOURCE_ID: "app:id/toggle",
                                     },
                                 },
                             }
@@ -343,17 +343,17 @@ class TestXPathConverter:
             (
                     '//*[@text="Deep"]/../*[@class="A"]/*[@class="B"]/*[@class="C"]/*[@class="D"]/*[@resource-id="pkg:id/end"]',
                     {
-                        DictAttribute.TEXT: "Deep",
-                        DictAttribute.FROM_PARENT: {
-                            DictAttribute.CLASS_NAME: "A",
-                            DictAttribute.CHILD_SELECTOR: {
-                                DictAttribute.CLASS_NAME: "B",
-                                DictAttribute.CHILD_SELECTOR: {
-                                    DictAttribute.CLASS_NAME: "C",
-                                    DictAttribute.CHILD_SELECTOR: {
-                                        DictAttribute.CLASS_NAME: "D",
-                                        DictAttribute.CHILD_SELECTOR: {
-                                            DictAttribute.RESOURCE_ID: "pkg:id/end",
+                        ShadowstepDictAttribute.TEXT: "Deep",
+                        ShadowstepDictAttribute.FROM_PARENT: {
+                            ShadowstepDictAttribute.CLASS_NAME: "A",
+                            ShadowstepDictAttribute.CHILD_SELECTOR: {
+                                ShadowstepDictAttribute.CLASS_NAME: "B",
+                                ShadowstepDictAttribute.CHILD_SELECTOR: {
+                                    ShadowstepDictAttribute.CLASS_NAME: "C",
+                                    ShadowstepDictAttribute.CHILD_SELECTOR: {
+                                        ShadowstepDictAttribute.CLASS_NAME: "D",
+                                        ShadowstepDictAttribute.CHILD_SELECTOR: {
+                                            ShadowstepDictAttribute.RESOURCE_ID: "pkg:id/end",
                                         },
                                     },
                                 },
@@ -366,15 +366,15 @@ class TestXPathConverter:
             (
                     '//*[@text="T"]/../../../*[@class="P1"]/*[@class="P2"]/*[@resource-id="pkg:id/final"]',
                     {
-                        DictAttribute.TEXT: "T",
-                        DictAttribute.FROM_PARENT: {
-                            DictAttribute.FROM_PARENT: {
-                                DictAttribute.FROM_PARENT: {
-                                    DictAttribute.CLASS_NAME: "P1",
-                                    DictAttribute.CHILD_SELECTOR: {
-                                        DictAttribute.CLASS_NAME: "P2",
-                                        DictAttribute.CHILD_SELECTOR: {
-                                            DictAttribute.RESOURCE_ID: "pkg:id/final",
+                        ShadowstepDictAttribute.TEXT: "T",
+                        ShadowstepDictAttribute.FROM_PARENT: {
+                            ShadowstepDictAttribute.FROM_PARENT: {
+                                ShadowstepDictAttribute.FROM_PARENT: {
+                                    ShadowstepDictAttribute.CLASS_NAME: "P1",
+                                    ShadowstepDictAttribute.CHILD_SELECTOR: {
+                                        ShadowstepDictAttribute.CLASS_NAME: "P2",
+                                        ShadowstepDictAttribute.CHILD_SELECTOR: {
+                                            ShadowstepDictAttribute.RESOURCE_ID: "pkg:id/final",
                                         },
                                     },
                                 }
@@ -388,19 +388,19 @@ class TestXPathConverter:
                     '//*[*[@text="Anchor"]]/*[@class="L1"]/*[@class="L2"]/*[@class="L3"]/*[@class="L4"]/*[@class="L5"]/*[@resource-id="app:id/leaf"]',
                     {
                         # Поскольку в корне у нас предикат по text(), он попадёт в верхний уровень
-                        DictAttribute.TEXT: "Anchor",
-                        DictAttribute.CHILD_SELECTOR: {
-                            DictAttribute.CLASS_NAME: "L1",
-                            DictAttribute.CHILD_SELECTOR: {
-                                DictAttribute.CLASS_NAME: "L2",
-                                DictAttribute.CHILD_SELECTOR: {
-                                    DictAttribute.CLASS_NAME: "L3",
-                                    DictAttribute.CHILD_SELECTOR: {
-                                        DictAttribute.CLASS_NAME: "L4",
-                                        DictAttribute.CHILD_SELECTOR: {
-                                            DictAttribute.CLASS_NAME: "L5",
-                                            DictAttribute.CHILD_SELECTOR: {
-                                                DictAttribute.RESOURCE_ID: "app:id/leaf",
+                        ShadowstepDictAttribute.TEXT: "Anchor",
+                        ShadowstepDictAttribute.CHILD_SELECTOR: {
+                            ShadowstepDictAttribute.CLASS_NAME: "L1",
+                            ShadowstepDictAttribute.CHILD_SELECTOR: {
+                                ShadowstepDictAttribute.CLASS_NAME: "L2",
+                                ShadowstepDictAttribute.CHILD_SELECTOR: {
+                                    ShadowstepDictAttribute.CLASS_NAME: "L3",
+                                    ShadowstepDictAttribute.CHILD_SELECTOR: {
+                                        ShadowstepDictAttribute.CLASS_NAME: "L4",
+                                        ShadowstepDictAttribute.CHILD_SELECTOR: {
+                                            ShadowstepDictAttribute.CLASS_NAME: "L5",
+                                            ShadowstepDictAttribute.CHILD_SELECTOR: {
+                                                ShadowstepDictAttribute.RESOURCE_ID: "app:id/leaf",
                                             },
                                         },
                                     },
@@ -414,15 +414,15 @@ class TestXPathConverter:
             (
                     '//*[@text="Mixed"]/..//*[@class="C1"]/*[@class="C2"]//*[@resource-id="pkg:id/x"]',
                     {
-                        DictAttribute.TEXT: "Mixed",
-                        DictAttribute.FROM_PARENT: {
+                        ShadowstepDictAttribute.TEXT: "Mixed",
+                        ShadowstepDictAttribute.FROM_PARENT: {
                             # После '..' первый нисходящий шаг
-                            DictAttribute.CLASS_NAME: "C1",
-                            DictAttribute.CHILD_SELECTOR: {
-                                DictAttribute.CLASS_NAME: "C2",
-                                DictAttribute.CHILD_SELECTOR: {
+                            ShadowstepDictAttribute.CLASS_NAME: "C1",
+                            ShadowstepDictAttribute.CHILD_SELECTOR: {
+                                ShadowstepDictAttribute.CLASS_NAME: "C2",
+                                ShadowstepDictAttribute.CHILD_SELECTOR: {
                                     # ещё один нисходящий шаг через //
-                                    DictAttribute.RESOURCE_ID: "pkg:id/x",
+                                    ShadowstepDictAttribute.RESOURCE_ID: "pkg:id/x",
                                 },
                             },
                         },
@@ -433,23 +433,23 @@ class TestXPathConverter:
             (
                     '//*[@text="Mega"]/../../../*[@class="L1"]/*[@class="L2"]/*[@class="L3"]/*[@class="L4"]/*[@class="L5"]/*[@class="L6"]/*[@resource-id="pkg:id/the_end"]',
                     {
-                        DictAttribute.TEXT: "Mega",
-                        DictAttribute.FROM_PARENT: {
-                            DictAttribute.FROM_PARENT: {
-                                DictAttribute.FROM_PARENT: {
-                                    DictAttribute.CLASS_NAME: "L1",
-                                    DictAttribute.CHILD_SELECTOR: {
-                                        DictAttribute.CLASS_NAME: "L2",
-                                        DictAttribute.CHILD_SELECTOR: {
-                                            DictAttribute.CLASS_NAME: "L3",
-                                            DictAttribute.CHILD_SELECTOR: {
-                                                DictAttribute.CLASS_NAME: "L4",
-                                                DictAttribute.CHILD_SELECTOR: {
-                                                    DictAttribute.CLASS_NAME: "L5",
-                                                    DictAttribute.CHILD_SELECTOR: {
-                                                        DictAttribute.CLASS_NAME: "L6",
-                                                        DictAttribute.CHILD_SELECTOR: {
-                                                            DictAttribute.RESOURCE_ID: "pkg:id/the_end",
+                        ShadowstepDictAttribute.TEXT: "Mega",
+                        ShadowstepDictAttribute.FROM_PARENT: {
+                            ShadowstepDictAttribute.FROM_PARENT: {
+                                ShadowstepDictAttribute.FROM_PARENT: {
+                                    ShadowstepDictAttribute.CLASS_NAME: "L1",
+                                    ShadowstepDictAttribute.CHILD_SELECTOR: {
+                                        ShadowstepDictAttribute.CLASS_NAME: "L2",
+                                        ShadowstepDictAttribute.CHILD_SELECTOR: {
+                                            ShadowstepDictAttribute.CLASS_NAME: "L3",
+                                            ShadowstepDictAttribute.CHILD_SELECTOR: {
+                                                ShadowstepDictAttribute.CLASS_NAME: "L4",
+                                                ShadowstepDictAttribute.CHILD_SELECTOR: {
+                                                    ShadowstepDictAttribute.CLASS_NAME: "L5",
+                                                    ShadowstepDictAttribute.CHILD_SELECTOR: {
+                                                        ShadowstepDictAttribute.CLASS_NAME: "L6",
+                                                        ShadowstepDictAttribute.CHILD_SELECTOR: {
+                                                            ShadowstepDictAttribute.RESOURCE_ID: "pkg:id/the_end",
                                                         },
                                                     },
                                                 },
@@ -480,11 +480,11 @@ class TestXPathConverter:
             (
                     '//*[contains(@text, "Hello")]/../*[@class="android.view.View"]/*[contains(@content-desc, "Btn")]',
                     {
-                        DictAttribute.TEXT_CONTAINS: "Hello",
-                        DictAttribute.FROM_PARENT: {
-                            DictAttribute.CLASS_NAME: "android.view.View",
-                            DictAttribute.CHILD_SELECTOR: {
-                                DictAttribute.DESCRIPTION_CONTAINS: "Btn",
+                        ShadowstepDictAttribute.TEXT_CONTAINS: "Hello",
+                        ShadowstepDictAttribute.FROM_PARENT: {
+                            ShadowstepDictAttribute.CLASS_NAME: "android.view.View",
+                            ShadowstepDictAttribute.CHILD_SELECTOR: {
+                                ShadowstepDictAttribute.DESCRIPTION_CONTAINS: "Btn",
                             },
                         },
                     },
@@ -494,11 +494,11 @@ class TestXPathConverter:
             (
                     '//*[@text="Start"]/../*[starts-with(@content-desc, "prefix")]/child::*[@resource-id="pkg:id/target"]',
                     {
-                        DictAttribute.TEXT: "Start",
-                        DictAttribute.FROM_PARENT: {
-                            DictAttribute.DESCRIPTION_STARTS_WITH: "prefix",
-                            DictAttribute.CHILD_SELECTOR: {
-                                DictAttribute.RESOURCE_ID: "pkg:id/target",
+                        ShadowstepDictAttribute.TEXT: "Start",
+                        ShadowstepDictAttribute.FROM_PARENT: {
+                            ShadowstepDictAttribute.DESCRIPTION_STARTS_WITH: "prefix",
+                            ShadowstepDictAttribute.CHILD_SELECTOR: {
+                                ShadowstepDictAttribute.RESOURCE_ID: "pkg:id/target",
                             },
                         },
                     },
@@ -508,9 +508,9 @@ class TestXPathConverter:
             (
                     '//*[@class="android.widget.LinearLayout"]//node()[matches(@resource-id, ".*button.*")]',
                     {
-                        DictAttribute.CLASS_NAME: "android.widget.LinearLayout",
-                        DictAttribute.CHILD_SELECTOR: {
-                            DictAttribute.RESOURCE_ID_MATCHES: ".*button.*",
+                        ShadowstepDictAttribute.CLASS_NAME: "android.widget.LinearLayout",
+                        ShadowstepDictAttribute.CHILD_SELECTOR: {
+                            ShadowstepDictAttribute.RESOURCE_ID_MATCHES: ".*button.*",
                         },
                     },
             ),
@@ -519,13 +519,13 @@ class TestXPathConverter:
             (
                     '//*[@text="Anchor"]/../*[contains(@text, "foo")]/child::*[starts-with(@content-desc, "bar")]/*[matches(@class, ".*Layout")]',
                     {
-                        DictAttribute.TEXT: "Anchor",
-                        DictAttribute.FROM_PARENT: {
-                            DictAttribute.TEXT_CONTAINS: "foo",
-                            DictAttribute.CHILD_SELECTOR: {
-                                DictAttribute.DESCRIPTION_STARTS_WITH: "bar",
-                                DictAttribute.CHILD_SELECTOR: {
-                                    DictAttribute.CLASS_NAME_MATCHES: ".*Layout",
+                        ShadowstepDictAttribute.TEXT: "Anchor",
+                        ShadowstepDictAttribute.FROM_PARENT: {
+                            ShadowstepDictAttribute.TEXT_CONTAINS: "foo",
+                            ShadowstepDictAttribute.CHILD_SELECTOR: {
+                                ShadowstepDictAttribute.DESCRIPTION_STARTS_WITH: "bar",
+                                ShadowstepDictAttribute.CHILD_SELECTOR: {
+                                    ShadowstepDictAttribute.CLASS_NAME_MATCHES: ".*Layout",
                                 },
                             },
                         },
@@ -536,16 +536,16 @@ class TestXPathConverter:
             (
                     '//*[@text="Mega"]/../../*[contains(@text, "deep")]/child::*[starts-with(@content-desc, "zzz")]/*[matches(@package, "com\\..*")]/*[@resource-id="pkg:id/the_end"]',
                     {
-                        DictAttribute.TEXT: "Mega",
-                        DictAttribute.FROM_PARENT: {
-                            DictAttribute.FROM_PARENT: {
-                                DictAttribute.TEXT_CONTAINS: "deep",
-                                DictAttribute.CHILD_SELECTOR: {
-                                    DictAttribute.DESCRIPTION_STARTS_WITH: "zzz",
-                                    DictAttribute.CHILD_SELECTOR: {
-                                        DictAttribute.PACKAGE_NAME_MATCHES: "com\\..*",
-                                        DictAttribute.CHILD_SELECTOR: {
-                                            DictAttribute.RESOURCE_ID: "pkg:id/the_end",
+                        ShadowstepDictAttribute.TEXT: "Mega",
+                        ShadowstepDictAttribute.FROM_PARENT: {
+                            ShadowstepDictAttribute.FROM_PARENT: {
+                                ShadowstepDictAttribute.TEXT_CONTAINS: "deep",
+                                ShadowstepDictAttribute.CHILD_SELECTOR: {
+                                    ShadowstepDictAttribute.DESCRIPTION_STARTS_WITH: "zzz",
+                                    ShadowstepDictAttribute.CHILD_SELECTOR: {
+                                        ShadowstepDictAttribute.PACKAGE_NAME_MATCHES: "com\\..*",
+                                        ShadowstepDictAttribute.CHILD_SELECTOR: {
+                                            ShadowstepDictAttribute.RESOURCE_ID: "pkg:id/the_end",
                                         },
                                     },
                                 },
@@ -573,9 +573,9 @@ class TestXPathConverter:
             (
                     '//*[@text="Anchor"]/following-sibling::*[@class="android.widget.FrameLayout"]',
                     {
-                        DictAttribute.TEXT: "Anchor",
-                        DictAttribute.SIBLING: {
-                            DictAttribute.CLASS_NAME: "android.widget.FrameLayout",
+                        ShadowstepDictAttribute.TEXT: "Anchor",
+                        ShadowstepDictAttribute.SIBLING: {
+                            ShadowstepDictAttribute.CLASS_NAME: "android.widget.FrameLayout",
                         },
                     },
             ),
@@ -583,11 +583,11 @@ class TestXPathConverter:
             (
                     '//*[@text="Anchor"]/following-sibling::*[@class="android.widget.FrameLayout"]/child::*[@resource-id="pkg:id/target"]',
                     {
-                        DictAttribute.TEXT: "Anchor",
-                        DictAttribute.SIBLING: {
-                            DictAttribute.CLASS_NAME: "android.widget.FrameLayout",
-                            DictAttribute.CHILD_SELECTOR: {
-                                DictAttribute.RESOURCE_ID: "pkg:id/target",
+                        ShadowstepDictAttribute.TEXT: "Anchor",
+                        ShadowstepDictAttribute.SIBLING: {
+                            ShadowstepDictAttribute.CLASS_NAME: "android.widget.FrameLayout",
+                            ShadowstepDictAttribute.CHILD_SELECTOR: {
+                                ShadowstepDictAttribute.RESOURCE_ID: "pkg:id/target",
                             },
                         },
                     },
@@ -596,13 +596,13 @@ class TestXPathConverter:
             (
                     '//*[@text="Anchor"]/following-sibling::*[@class="android.widget.FrameLayout"]/child::*[@resource-id="pkg:id/target"]/following-sibling::*[contains(@content-desc,"final")]',
                     {
-                        DictAttribute.TEXT: "Anchor",
-                        DictAttribute.SIBLING: {
-                            DictAttribute.CLASS_NAME: "android.widget.FrameLayout",
-                            DictAttribute.CHILD_SELECTOR: {
-                                DictAttribute.RESOURCE_ID: "pkg:id/target",
-                                DictAttribute.SIBLING: {
-                                    DictAttribute.DESCRIPTION_CONTAINS: "final",
+                        ShadowstepDictAttribute.TEXT: "Anchor",
+                        ShadowstepDictAttribute.SIBLING: {
+                            ShadowstepDictAttribute.CLASS_NAME: "android.widget.FrameLayout",
+                            ShadowstepDictAttribute.CHILD_SELECTOR: {
+                                ShadowstepDictAttribute.RESOURCE_ID: "pkg:id/target",
+                                ShadowstepDictAttribute.SIBLING: {
+                                    ShadowstepDictAttribute.DESCRIPTION_CONTAINS: "final",
                                 },
                             },
                         },
@@ -612,9 +612,9 @@ class TestXPathConverter:
             (
                     '//*[@text="Btn"]/following-sibling::*[starts-with(@content-desc,"prefix")]',
                     {
-                        DictAttribute.TEXT: "Btn",
-                        DictAttribute.SIBLING: {
-                            DictAttribute.DESCRIPTION_STARTS_WITH: "prefix",
+                        ShadowstepDictAttribute.TEXT: "Btn",
+                        ShadowstepDictAttribute.SIBLING: {
+                            ShadowstepDictAttribute.DESCRIPTION_STARTS_WITH: "prefix",
                         },
                     },
             ),
@@ -622,9 +622,9 @@ class TestXPathConverter:
             (
                     '//*[@class="android.widget.LinearLayout"]/following-sibling::*[matches(@resource-id,".*button.*")]',
                     {
-                        DictAttribute.CLASS_NAME: "android.widget.LinearLayout",
-                        DictAttribute.SIBLING: {
-                            DictAttribute.RESOURCE_ID_MATCHES: ".*button.*",
+                        ShadowstepDictAttribute.CLASS_NAME: "android.widget.LinearLayout",
+                        ShadowstepDictAttribute.SIBLING: {
+                            ShadowstepDictAttribute.RESOURCE_ID_MATCHES: ".*button.*",
                         },
                     },
             ),
@@ -632,13 +632,13 @@ class TestXPathConverter:
             (
                     '//*[@text="Mega"]/following-sibling::*[@class="android.widget.FrameLayout"]/following-sibling::*[matches(@package,"com.example")]/child::*[@content-desc="leaf"]',
                     {
-                        DictAttribute.TEXT: "Mega",
-                        DictAttribute.SIBLING: {
-                            DictAttribute.CLASS_NAME: "android.widget.FrameLayout",
-                            DictAttribute.SIBLING: {
-                                DictAttribute.PACKAGE_NAME_MATCHES: "com.example",
-                                DictAttribute.CHILD_SELECTOR: {
-                                    DictAttribute.DESCRIPTION: "leaf",
+                        ShadowstepDictAttribute.TEXT: "Mega",
+                        ShadowstepDictAttribute.SIBLING: {
+                            ShadowstepDictAttribute.CLASS_NAME: "android.widget.FrameLayout",
+                            ShadowstepDictAttribute.SIBLING: {
+                                ShadowstepDictAttribute.PACKAGE_NAME_MATCHES: "com.example",
+                                ShadowstepDictAttribute.CHILD_SELECTOR: {
+                                    ShadowstepDictAttribute.DESCRIPTION: "leaf",
                                 },
                             },
                         },
@@ -868,7 +868,7 @@ class TestXPathConverter:
             ui_selector = converter.xpath_to_ui_selector(xpath)
             # If conversion succeeds, it should not match expected empty string
             assert ui_selector != expected  # noqa: S101  # noqa: S101
-        except ConversionError:
+        except ShadowstepConversionError:
             # Expected behavior for invalid XPath
             pass
     

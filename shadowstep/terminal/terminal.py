@@ -804,7 +804,7 @@ class Terminal:
             except InvalidSessionIdException:
                 self.base.reconnect()
 
-    def get_prop(self) -> dict[str, str]:
+    def get_prop(self) -> dict[str, Any]:
         """
         Retrieves system properties from the device.
 
@@ -893,20 +893,20 @@ class Terminal:
             replace("\r", ""). \
             replace("\n", "")
 
-    def pull_package(self, package: str, path: str = "", filename: str = "temp.apk"):
+    def pull_package(self, package: str, path: str = "", filename: str = "temp._apk"):
         """
         Pulls the APK file of the specified package from the device to the local machine.
 
         :param package: The package name of the app.
         :param path: The local path where the APK file will be saved. Default is current directory.
-        :param filename: The name of the APK file. If not provided, a default name 'temp.apk' will be used.
+        :param filename: The name of the APK file. If not provided, a default name 'temp._apk' will be used.
         """
         package_path = self.get_package_path(package=package)
-        if not filename.endswith(".apk"):
-            filename = f"{filename}.apk"
+        if not filename.endswith("._apk"):
+            filename = f"{filename}._apk"
         self.pull(source=package_path, destination=os.path.join(path, filename))
 
-    def get_package_manifest(self, package: str) -> dict[str, str]:
+    def get_package_manifest(self, package: str) -> dict[str, Any]:
         """
         Retrieves the manifest of the specified package from the device.
 
@@ -917,9 +917,9 @@ class Terminal:
             os.makedirs(name="test")
 
         self.pull_package(package=package, path="test",
-                          filename="temp.apk")
+                          filename="temp._apk")
 
-        command = ["aapt", "dump", "badging", os.path.join("test", "temp.apk")]
+        command = ["aapt", "dump", "badging", os.path.join("test", "temp._apk")]
         try:
             output: str = str(subprocess.check_output(command)).strip()  # noqa: S603
         except subprocess.CalledProcessError:
@@ -936,6 +936,6 @@ class Terminal:
                 continue
             result[current_key].append(element.replace("'", ""))
 
-        os.remove(os.path.join("test", "temp.apk"))
+        os.remove(os.path.join("test", "temp._apk"))
 
         return result

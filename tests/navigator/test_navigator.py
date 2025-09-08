@@ -1,7 +1,7 @@
 """Tests for the navigator module.
 
 This module contains comprehensive tests for the PageNavigator and PageGraph classes,
-covering navigation functionality, pathfinding algorithms, and error handling.
+covering dom functionality, pathfinding algorithms, and error handling.
 """
 
 from collections.abc import Callable
@@ -355,7 +355,7 @@ class TestPageNavigator:
         assert result == [page1, page2, page3]  # noqa: S101
     
     def test_perform_navigation_success(self, navigator: PageNavigator) -> None:
-        """Test successful navigation through a path."""
+        """Test successful dom through a path."""
         page1 = MockPageBase("page1")
         page2 = MockPageBase("page2")
         page3 = MockPageBase("page3")
@@ -371,19 +371,19 @@ class TestPageNavigator:
         assert transition_method.call_count == 2  # noqa: S101
     
     def test_perform_navigation_empty_path_raises_error(self, navigator: PageNavigator) -> None:
-        """Test that performing navigation with empty path raises ValueError."""
+        """Test that performing dom with empty path raises ValueError."""
         with pytest.raises(ValueError, match="path cannot be empty"):
             navigator.perform_navigation([])
     
     def test_perform_navigation_single_page_raises_error(self, navigator: PageNavigator) -> None:
-        """Test that performing navigation with single page raises ValueError."""
+        """Test that performing dom with single page raises ValueError."""
         page = MockPageBase("page1")
         
         with pytest.raises(ValueError, match="path must contain at least 2 pages"):
             navigator.perform_navigation([page])
     
     def test_perform_navigation_failure_raises_assertion_error(self, navigator: PageNavigator) -> None:
-        """Test that navigation failure raises AssertionError."""
+        """Test that dom failure raises AssertionError."""
         page1 = MockPageBase("page1")
         page2 = MockPageBase("page2")
         
@@ -399,7 +399,7 @@ class TestPageNavigator:
             navigator.perform_navigation(path)
     
     def test_navigate_successful_path(self, navigator: PageNavigator) -> None:
-        """Test successful navigation through a complete path."""
+        """Test successful dom through a complete path."""
         page1 = MockPage("page1")
         page2 = MockPage("page2")
         
@@ -413,7 +413,7 @@ class TestPageNavigator:
         mock_perform.assert_called_once()
     
     def test_navigate_no_path_found(self, navigator: PageNavigator) -> None:
-        """Test navigation when no path is found."""
+        """Test dom when no path is found."""
         page1 = MockPage("page1")
         
         navigator.graph_manager.add_page(page1, [])
@@ -423,7 +423,7 @@ class TestPageNavigator:
         assert result is False  # noqa: S101
     
     def test_navigate_webdriver_exception(self, navigator: PageNavigator) -> None:
-        """Test navigation when WebDriverException occurs."""
+        """Test dom when WebDriverException occurs."""
         page1 = MockPage("page1")
         page2 = MockPage("page2")
         

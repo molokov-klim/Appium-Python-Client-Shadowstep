@@ -54,3 +54,6 @@ def grep_pattern(input_string: str, pattern: str) -> list[str]:
     lines = input_string.split("\n")  # Split the input string into lines
     regex = re.compile(pattern)  # Compile the regex pattern
     return [line for line in lines if regex.search(line)]  # Filter lines matching the pattern
+
+def is_camel_case(text: str) -> bool:
+    return bool(re.fullmatch(r"[a-z]+(?:[A-Z][a-z0-9]*)*", text))

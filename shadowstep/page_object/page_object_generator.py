@@ -505,7 +505,7 @@ class PageObjectGenerator:
             "recycler_locator": recycler_locator
         }
 
-    def _node_to_locator(self, node: UiElementNode, only_id: bool = False) -> dict[str, str]:
+    def _node_to_locator(self, node: UiElementNode, only_id: bool = False) -> dict[str, Any]:
         """
         Converts UiElementNode to a locator dictionary for template.
 
@@ -514,7 +514,7 @@ class PageObjectGenerator:
             only_id (bool): Whether to return only resource-id
 
         Returns:
-            Dict[str, str]: Locator dictionary
+            dict[str, Any]: Locator dictionary
         """
         self.logger.debug(f"{get_current_func_name()}")
         if only_id and node.attrs.get("resource-id"):

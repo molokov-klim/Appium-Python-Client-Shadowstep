@@ -9,7 +9,7 @@ import sys
 import time
 from collections.abc import Sequence
 from pathlib import Path
-from typing import Any
+from typing import Any, cast
 
 import requests
 from appium.options.android.uiautomator2.base import UiAutomator2Options
@@ -71,7 +71,7 @@ class WebDriverSingleton(WebDriver):
         gc.collect()
 
     @classmethod
-    def get_driver(cls) -> WebDriver | None:
+    def get_driver(cls) -> WebDriver:
         """
         Get the WebDriver instance.
 
@@ -80,7 +80,7 @@ class WebDriverSingleton(WebDriver):
                 The current WebDriver instance.
         """
         logger.debug(f"{get_current_func_name()}")
-        return cls._driver
+        return cast(WebDriver, cls._driver)
 
 
 class ShadowstepBase:
@@ -159,8 +159,8 @@ class ShadowstepBase:
                                          extensions=self.extensions)
         self._wait_for_session_id()
         self.logger.info("Connection established")
-        if self.driver is not None:
-            self.driver.update_settings(settings={"enforceXPath1": True})  # support for others is currently not provided
+        # if self.driver is not None:
+        #     self.driver.update_settings(settings={"enforceXPath1": True})  # support for others is currently not provided
 
         # init here because need server ip, port and credentials, refactor it later
         if self.ssh_user and self.ssh_password:
@@ -214,8 +214,8 @@ class ShadowstepBase:
                          ssh_password=self.ssh_password
                          )
         time.sleep(3)
-        if self.driver is not None:
-            self.driver.update_settings(settings={"enforceXPath1": True})
+        # if self.driver is not None:
+        #     self.driver.update_settings(settings={"enforceXPath1": True})
 
     def is_connected(self) -> bool:
         """

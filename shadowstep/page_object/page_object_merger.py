@@ -94,7 +94,7 @@ class PageObjectMerger:
                 return line.rstrip()
         raise ValueError("No class definition found in the given source.")
 
-    def get_methods(self, page: str) -> dict[str, str]:
+    def get_methods(self, page: str) -> dict[str, Any]:
         """
         Извлекает методы и property-блоки через \n\n-разделение, с нормализацией отступов.
 
@@ -136,7 +136,7 @@ class PageObjectMerger:
 
         return methods
 
-    def remove_duplicates(self, methods1: dict[str, str], methods2: dict[str, str]) -> dict[str, str]:
+    def remove_duplicates(self, methods1: dict[str, Any], methods2: dict[str, Any]) -> dict[str, Any]:
         self.logger.debug(f"{get_current_func_name()}")
 
         unique_methods = {}
@@ -159,7 +159,7 @@ class PageObjectMerger:
             filepath: str,
             imports: str,
             class_name: str,
-            unique_methods: dict[str, str],
+            unique_methods: dict[str, Any],
             encoding: str = "utf-8"
     ) -> None:
         self.logger.debug(f"{get_current_func_name()}")

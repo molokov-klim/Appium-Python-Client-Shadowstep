@@ -240,7 +240,7 @@ ADB examples:
 
 ```python
 app.adb.press_home()
-app.adb.install_app(source="/path/app.apk", udid="192.168.56.101:5555")
+app.adb.install_app(source="/path/app._apk", udid="192.168.56.101:5555")
 app.adb.input_text("hello")
 ```
 
@@ -257,7 +257,7 @@ app.terminal.past_text(text='hello')
 ## Image Operations
 
 ```python
-image = app.get_image(image="tests/test_data/connected_devices.png", threshold=0.5, timeout=3.0)
+image = app.get_image(image="tests/_test_data/connected_devices.png", threshold=0.5, timeout=3.0)
 assert image.is_visible()
 image.tap()
 image.scroll_down(max_attempts=3)

@@ -20,8 +20,7 @@ class TestShadowstep:
         element = app.get_element(locator={"content-desc": "Phone"},
                                   timeout=29,
                                   poll_frequency=0.7,
-                                  ignored_exceptions=[TimeoutError],
-                                  contains=True)
+                                  ignored_exceptions=[TimeoutError])
         assert element.locator == {"content-desc": "Phone"}  # noqa: S101
         assert isinstance(element, Element)  # noqa: S101
         assert element.driver is None  # noqa: S101
@@ -29,7 +28,6 @@ class TestShadowstep:
         assert element.timeout == 29  # noqa: S101
         assert element.poll_frequency == 0.7  # noqa: S101
         assert element.ignored_exceptions == [TimeoutError]  # noqa: S101
-        assert element.contains is True  # noqa: S101
         element.tap()
         assert element.driver is not None  # noqa: S101
 

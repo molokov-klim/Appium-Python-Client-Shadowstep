@@ -192,7 +192,7 @@ class TestAdb:
     def test_install_app_success(self):
         """Test successful app installation."""
         # Arrange
-        source = "/path/to/app.apk"
+        source = "/path/to/app._apk"
         udid = "emulator-5554"
 
         with patch("subprocess.run") as mock_subprocess:
@@ -208,7 +208,7 @@ class TestAdb:
     def test_install_app_no_udid(self):
         """Test app installation without UDID."""
         # Arrange
-        source = "/path/to/app.apk"
+        source = "/path/to/app._apk"
 
         with patch("subprocess.run") as mock_subprocess:
             # Act
@@ -223,7 +223,7 @@ class TestAdb:
     def test_install_app_subprocess_error(self):
         """Test app installation with subprocess error."""
         # Arrange
-        source = "/path/to/invalid.apk"
+        source = "/path/to/invalid._apk"
         udid = "emulator-5554"
 
         with patch("subprocess.run", side_effect=subprocess.CalledProcessError(1, "adb")):

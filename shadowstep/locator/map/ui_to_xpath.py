@@ -27,7 +27,7 @@ def _handle_from_parent(parent_xpath: str) -> str:
         parent_xpath: The XPath string for the parent selector
 
     Returns:
-        XPath string with parent navigation
+        XPath string with parent dom
     """
     return f"/..{parent_xpath}"
 

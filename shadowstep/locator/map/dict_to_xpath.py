@@ -8,10 +8,10 @@ to XPath expressions with proper attribute mapping and hierarchy handling.
 
 from typing import Any
 
-from shadowstep.locator.types.shadowstep_dict import DictAttribute
+from shadowstep.locator.types.shadowstep_dict import ShadowstepDictAttribute
 
 
-def dict_to_xpath_attribute(attr: DictAttribute, value: Any) -> str:
+def dict_to_xpath_attribute(attr: ShadowstepDictAttribute, value: Any) -> str:
     """
     Convert a single dictionary attribute to XPath expression.
     
@@ -30,7 +30,7 @@ def dict_to_xpath_attribute(attr: DictAttribute, value: Any) -> str:
     raise ValueError(f"Unsupported attribute for XPath conversion: {attr}")
 
 
-def is_hierarchical_attribute(attr: DictAttribute) -> bool:
+def is_hierarchical_attribute(attr: ShadowstepDictAttribute) -> bool:
     """
     Check if attribute represents hierarchical relationship.
     
@@ -40,10 +40,10 @@ def is_hierarchical_attribute(attr: DictAttribute) -> bool:
     Returns:
         True if attribute is hierarchical
     """
-    return attr in (DictAttribute.CHILD_SELECTOR, DictAttribute.FROM_PARENT, DictAttribute.SIBLING)
+    return attr in (ShadowstepDictAttribute.CHILD_SELECTOR, ShadowstepDictAttribute.FROM_PARENT, ShadowstepDictAttribute.SIBLING)
 
 
-def get_xpath_for_hierarchical_attribute(attr: DictAttribute, nested_xpath: str) -> str:
+def get_xpath_for_hierarchical_attribute(attr: ShadowstepDictAttribute, nested_xpath: str) -> str:
     """
     Get XPath expression for hierarchical attributes.
     
@@ -54,46 +54,46 @@ def get_xpath_for_hierarchical_attribute(attr: DictAttribute, nested_xpath: str)
     Returns:
         XPath expression with hierarchy
     """
-    if attr == DictAttribute.CHILD_SELECTOR:
+    if attr == ShadowstepDictAttribute.CHILD_SELECTOR:
         return f"/{nested_xpath.lstrip('/')}"
-    if attr == DictAttribute.FROM_PARENT:
+    if attr == ShadowstepDictAttribute.FROM_PARENT:
         return f"/..//{nested_xpath.lstrip('/')}"
-    if attr == DictAttribute.SIBLING:
+    if attr == ShadowstepDictAttribute.SIBLING:
         return f"/following-sibling::{nested_xpath.lstrip('/')}"
     raise ValueError(f"Unsupported hierarchical attribute: {attr}")
 
 
 # Mapping dictionary for quick lookup
 DICT_TO_XPATH_MAPPING = {  # type: ignore
-    DictAttribute.TEXT: lambda v: f'@text="{v}"',
-    DictAttribute.TEXT_CONTAINS: lambda v: f'contains(@text, "{v}")',
-    DictAttribute.TEXT_STARTS_WITH: lambda v: f'starts-with(@text, "{v}")',
-    DictAttribute.TEXT_MATCHES: lambda v: f'matches(@text, "{v}")',
+    ShadowstepDictAttribute.TEXT: lambda v: f'@text="{v}"',
+    ShadowstepDictAttribute.TEXT_CONTAINS: lambda v: f'contains(@text, "{v}")',
+    ShadowstepDictAttribute.TEXT_STARTS_WITH: lambda v: f'starts-with(@text, "{v}")',
+    ShadowstepDictAttribute.TEXT_MATCHES: lambda v: f'matches(@text, "{v}")',
     
-    DictAttribute.DESCRIPTION: lambda v: f'@content-desc="{v}"',
-    DictAttribute.DESCRIPTION_CONTAINS: lambda v: f'contains(@content-desc, "{v}")',
-    DictAttribute.DESCRIPTION_STARTS_WITH: lambda v: f'starts-with(@content-desc, "{v}")',
-    DictAttribute.DESCRIPTION_MATCHES: lambda v: f'matches(@content-desc, "{v}")',
+    ShadowstepDictAttribute.DESCRIPTION: lambda v: f'@content-desc="{v}"',
+    ShadowstepDictAttribute.DESCRIPTION_CONTAINS: lambda v: f'contains(@content-desc, "{v}")',
+    ShadowstepDictAttribute.DESCRIPTION_STARTS_WITH: lambda v: f'starts-with(@content-desc, "{v}")',
+    ShadowstepDictAttribute.DESCRIPTION_MATCHES: lambda v: f'matches(@content-desc, "{v}")',
     
-    DictAttribute.RESOURCE_ID: lambda v: f'@resource-id="{v}"',
-    DictAttribute.RESOURCE_ID_MATCHES: lambda v: f'matches(@resource-id, "{v}")',
-    DictAttribute.PACKAGE_NAME: lambda v: f'@package="{v}"',
-    DictAttribute.PACKAGE_NAME_MATCHES: lambda v: f'matches(@package, "{v}")',
+    ShadowstepDictAttribute.RESOURCE_ID: lambda v: f'@resource-id="{v}"',
+    ShadowstepDictAttribute.RESOURCE_ID_MATCHES: lambda v: f'matches(@resource-id, "{v}")',
+    ShadowstepDictAttribute.PACKAGE_NAME: lambda v: f'@package="{v}"',
+    ShadowstepDictAttribute.PACKAGE_NAME_MATCHES: lambda v: f'matches(@package, "{v}")',
     
-    DictAttribute.CLASS_NAME: lambda v: f'@class="{v}"',
-    DictAttribute.CLASS_NAME_MATCHES: lambda v: f'matches(@class, "{v}")',
+    ShadowstepDictAttribute.CLASS_NAME: lambda v: f'@class="{v}"',
+    ShadowstepDictAttribute.CLASS_NAME_MATCHES: lambda v: f'matches(@class, "{v}")',
     
-    DictAttribute.CHECKABLE: lambda v: f'@checkable="{str(v).lower()}"',
-    DictAttribute.CHECKED: lambda v: f'@checked="{str(v).lower()}"',
-    DictAttribute.CLICKABLE: lambda v: f'@clickable="{str(v).lower()}"',
-    DictAttribute.ENABLED: lambda v: f'@enabled="{str(v).lower()}"',
-    DictAttribute.FOCUSABLE: lambda v: f'@focusable="{str(v).lower()}"',
-    DictAttribute.FOCUSED: lambda v: f'@focused="{str(v).lower()}"',
-    DictAttribute.LONG_CLICKABLE: lambda v: f'@long-clickable="{str(v).lower()}"',
-    DictAttribute.SCROLLABLE: lambda v: f'@scrollable="{str(v).lower()}"',
-    DictAttribute.SELECTED: lambda v: f'@selected="{str(v).lower()}"',
-    DictAttribute.PASSWORD: lambda v: f'@password="{str(v).lower()}"',
+    ShadowstepDictAttribute.CHECKABLE: lambda v: f'@checkable="{str(v).lower()}"',
+    ShadowstepDictAttribute.CHECKED: lambda v: f'@checked="{str(v).lower()}"',
+    ShadowstepDictAttribute.CLICKABLE: lambda v: f'@clickable="{str(v).lower()}"',
+    ShadowstepDictAttribute.ENABLED: lambda v: f'@enabled="{str(v).lower()}"',
+    ShadowstepDictAttribute.FOCUSABLE: lambda v: f'@focusable="{str(v).lower()}"',
+    ShadowstepDictAttribute.FOCUSED: lambda v: f'@focused="{str(v).lower()}"',
+    ShadowstepDictAttribute.LONG_CLICKABLE: lambda v: f'@long-clickable="{str(v).lower()}"',
+    ShadowstepDictAttribute.SCROLLABLE: lambda v: f'@scrollable="{str(v).lower()}"',
+    ShadowstepDictAttribute.SELECTED: lambda v: f'@selected="{str(v).lower()}"',
+    ShadowstepDictAttribute.PASSWORD: lambda v: f'@password="{str(v).lower()}"',
     
-    DictAttribute.INDEX: lambda v: f"position()={int(v) + 1}",
-    DictAttribute.INSTANCE: lambda v: f"[{int(v) + 1}]",
+    ShadowstepDictAttribute.INDEX: lambda v: f"position()={int(v) + 1}",
+    ShadowstepDictAttribute.INSTANCE: lambda v: f"[{int(v) + 1}]",
 }

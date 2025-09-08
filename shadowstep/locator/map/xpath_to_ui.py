@@ -27,7 +27,7 @@ def _handle_from_parent(parent_ui: str) -> str:
         parent_ui: The UiSelector string for the parent selector
 
     Returns:
-        UiSelector string with parent navigation
+        UiSelector string with parent dom
     """
     return f".fromParent({parent_ui})"
 

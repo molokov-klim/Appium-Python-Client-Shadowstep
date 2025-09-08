@@ -5,52 +5,11 @@ from typing import Any
 import pytest
 from selenium.common import NoSuchElementException
 
-from shadowstep.element.element import Element, GeneralElementException
+from shadowstep.element.element import Element, ShadowstepElementException
 from shadowstep.shadowstep import Shadowstep
 
 
 class TestElement:
-
-    def test_get_element_positive(self, app: Shadowstep, stability: None,
-                                  android_settings_open_close: None,
-                                  android_settings_recycler: Element):
-        inner_element = android_settings_recycler.get_element(locator={"text": "Network & internet"})
-        assert isinstance(inner_element, Element)  # noqa: S101  # noqa: S101
-        assert inner_element.package == "com.android.settings"  # noqa: S101  # noqa: S101
-        assert inner_element.class_ == "android.widget.TextView"  # noqa: S101  # noqa: S101
-        assert inner_element.resource_id == "android:id/title"  # noqa: S101  # noqa: S101
-
-    def test_get_element_contains(self, app: Shadowstep, stability: None, android_settings_open_close: None,
-                                  android_settings_recycler: Element):
-        inner_element = android_settings_recycler.get_element(locator={"text": "ork & int"},
-                                                              contains=True)
-        assert inner_element.contains  # noqa: S101  # noqa: S101
-        assert inner_element.text == "Network & internet"   # noqa: S101  # noqa: S101
-
-    def test_get_element_repeated_search(self, app: Shadowstep, stability: None):
-        element1 = app.get_element(locator={"content-desc": "Phone"})
-        element2 = app.get_element(locator={"content-desc": "Phone"})
-        assert element1 is not None  # noqa: S101  # noqa: S101
-        assert element2 is not None  # noqa: S101  # noqa: S101
-        assert element1.locator == element2.locator  # noqa: S101  # noqa: S101
-
-    def test_get_element_disconnected(self, app: Shadowstep, stability: None):
-        app.disconnect()
-        assert not app.is_connected()  # noqa: S101  # noqa: S101
-        element = app.get_element(locator={"content-desc": "Phone"})
-        app.reconnect()
-        assert app.is_connected()  # noqa: S101  # noqa: S101
-        assert isinstance(element, Element)  # noqa: S101  # noqa: S101
-        assert element.locator == {"content-desc": "Phone"}  # noqa: S101  # noqa: S101
-
-    def test_get_elements(self, app: Shadowstep, stability: None, android_settings_open_close: None,
-                          android_settings_recycler: Element):
-        inner_elements = android_settings_recycler.get_elements(locator={"resource-id": "android:id/title"})
-        assert isinstance(inner_elements, list)  # noqa: S101  # noqa: S101
-        for inner_element in inner_elements:
-            app.logger.info(f"{inner_element.text=}")
-            assert isinstance(inner_element, Element)  # noqa: S101  # noqa: S101
-            assert inner_element.get_attribute("resource-id") == "android:id/title"  # noqa: S101  # noqa: S101
 
     def test_get_attributes(self, app: Shadowstep, stability: None):
         element = app.get_element(locator={"package": "com.android.launcher3",
@@ -449,7 +408,7 @@ class TestElement:
 
     def test_shadow_root_error(self, app: Shadowstep, stability: None):
         el = app.get_element({"content-desc": "non_existing"})
-        with pytest.raises(GeneralElementException):
+        with pytest.raises(ShadowstepElementException):
             _ = el.shadow_root
 
     def test_get_attribute_no_such_element(self, app: Shadowstep, stability: None):

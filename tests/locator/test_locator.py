@@ -7,12 +7,12 @@ including UiSelector DSL, LocatorConverter, and various mapping functions.
 
 import pytest
 
-from shadowstep.exceptions.shadowstep_exceptions import ConversionError
+from shadowstep.exceptions.shadowstep_exceptions import ShadowstepConversionError
 from shadowstep.locator.converter.dict_converter import DictConverter
 from shadowstep.locator.converter.locator_converter import LocatorConverter
 from shadowstep.locator.map.dict_to_ui import dict_to_ui_attribute, is_hierarchical_attribute
 from shadowstep.locator.map.dict_to_xpath import dict_to_xpath_attribute
-from shadowstep.locator.types.shadowstep_dict import DictAttribute
+from shadowstep.locator.types.shadowstep_dict import ShadowstepDictAttribute
 from shadowstep.locator.ui_selector import UiSelector
 
 
@@ -237,7 +237,7 @@ class TestLocatorConverter:
     
     def test_to_dict_unsupported_type(self, converter: LocatorConverter) -> None:
         """Test conversion to dict with unsupported type."""
-        with pytest.raises(ConversionError):
+        with pytest.raises(ShadowstepConversionError):
             converter.to_dict(123)  # type: ignore
     
     def test_to_xpath_from_dict(self, converter: LocatorConverter) -> None:
@@ -372,55 +372,55 @@ class TestDictToUiMapping:
     
     def test_dict_to_ui_attribute_text(self) -> None:
         """Test text attribute conversion."""
-        result = dict_to_ui_attribute(DictAttribute.TEXT, "OK")
+        result = dict_to_ui_attribute(ShadowstepDictAttribute.TEXT, "OK")
         expected = '.text("OK")'
         assert result == expected  # noqa: S101
     
     def test_dict_to_ui_attribute_text_contains(self) -> None:
         """Test textContains attribute conversion."""
-        result = dict_to_ui_attribute(DictAttribute.TEXT_CONTAINS, "Hello")
+        result = dict_to_ui_attribute(ShadowstepDictAttribute.TEXT_CONTAINS, "Hello")
         expected = '.textContains("Hello")'
         assert result == expected  # noqa: S101
     
     def test_dict_to_ui_attribute_resource_id(self) -> None:
         """Test resourceId attribute conversion."""
-        result = dict_to_ui_attribute(DictAttribute.RESOURCE_ID, "com.example:id/button")
+        result = dict_to_ui_attribute(ShadowstepDictAttribute.RESOURCE_ID, "com.example:id/button")
         expected = '.resourceId("com.example:id/button")'
         assert result == expected  # noqa: S101
     
     def test_dict_to_ui_attribute_clickable(self) -> None:
         """Test clickable attribute conversion."""
-        result = dict_to_ui_attribute(DictAttribute.CLICKABLE, True)
+        result = dict_to_ui_attribute(ShadowstepDictAttribute.CLICKABLE, True)
         expected = ".clickable(true)"
         assert result == expected  # noqa: S101
     
     def test_dict_to_ui_attribute_clickable_false(self) -> None:
         """Test clickable attribute conversion with False."""
-        result = dict_to_ui_attribute(DictAttribute.CLICKABLE, False)
+        result = dict_to_ui_attribute(ShadowstepDictAttribute.CLICKABLE, False)
         expected = ".clickable(false)"
         assert result == expected  # noqa: S101
     
     def test_dict_to_ui_attribute_index(self) -> None:
         """Test index attribute conversion."""
-        result = dict_to_ui_attribute(DictAttribute.INDEX, 0)
+        result = dict_to_ui_attribute(ShadowstepDictAttribute.INDEX, 0)
         expected = ".index(0)"
         assert result == expected  # noqa: S101
     
     def test_dict_to_ui_attribute_unsupported(self) -> None:
         """Test unsupported attribute conversion."""
         with pytest.raises(ValueError, match="Unsupported attribute for UiSelector conversion"):
-            dict_to_ui_attribute(DictAttribute.CHILD_SELECTOR, {})  # type: ignore
+            dict_to_ui_attribute(ShadowstepDictAttribute.CHILD_SELECTOR, {})  # type: ignore
     
     def test_is_hierarchical_attribute_true(self) -> None:
         """Test hierarchical attribute detection."""
-        assert is_hierarchical_attribute(DictAttribute.CHILD_SELECTOR) is True  # noqa: S101
-        assert is_hierarchical_attribute(DictAttribute.FROM_PARENT) is True  # noqa: S101
-        assert is_hierarchical_attribute(DictAttribute.SIBLING) is True  # noqa: S101
+        assert is_hierarchical_attribute(ShadowstepDictAttribute.CHILD_SELECTOR) is True  # noqa: S101
+        assert is_hierarchical_attribute(ShadowstepDictAttribute.FROM_PARENT) is True  # noqa: S101
+        assert is_hierarchical_attribute(ShadowstepDictAttribute.SIBLING) is True  # noqa: S101
     
     def test_is_hierarchical_attribute_false(self) -> None:
         """Test non-hierarchical attribute detection."""
-        assert is_hierarchical_attribute(DictAttribute.TEXT) is False  # noqa: S101
-        assert is_hierarchical_attribute(DictAttribute.CLICKABLE) is False  # noqa: S101
+        assert is_hierarchical_attribute(ShadowstepDictAttribute.TEXT) is False  # noqa: S101
+        assert is_hierarchical_attribute(ShadowstepDictAttribute.CLICKABLE) is False  # noqa: S101
 
 
 class TestDictToXPathMapping:
@@ -428,108 +428,108 @@ class TestDictToXPathMapping:
     
     def test_dict_to_xpath_attribute_text(self) -> None:
         """Test text attribute conversion."""
-        result = dict_to_xpath_attribute(DictAttribute.TEXT, "OK")
+        result = dict_to_xpath_attribute(ShadowstepDictAttribute.TEXT, "OK")
         expected = '@text="OK"'
         assert result == expected  # noqa: S101
     
     def test_dict_to_xpath_attribute_text_contains(self) -> None:
         """Test textContains attribute conversion."""
-        result = dict_to_xpath_attribute(DictAttribute.TEXT_CONTAINS, "Hello")
+        result = dict_to_xpath_attribute(ShadowstepDictAttribute.TEXT_CONTAINS, "Hello")
         expected = 'contains(@text, "Hello")'
         assert result == expected  # noqa: S101
     
     def test_dict_to_xpath_attribute_resource_id(self) -> None:
         """Test resourceId attribute conversion."""
-        result = dict_to_xpath_attribute(DictAttribute.RESOURCE_ID, "com.example:id/button")
+        result = dict_to_xpath_attribute(ShadowstepDictAttribute.RESOURCE_ID, "com.example:id/button")
         expected = '@resource-id="com.example:id/button"'
         assert result == expected  # noqa: S101
     
     def test_dict_to_xpath_attribute_clickable(self) -> None:
         """Test clickable attribute conversion."""
-        result = dict_to_xpath_attribute(DictAttribute.CLICKABLE, True)
+        result = dict_to_xpath_attribute(ShadowstepDictAttribute.CLICKABLE, True)
         expected = '@clickable="true"'
         assert result == expected  # noqa: S101
     
     def test_dict_to_xpath_attribute_clickable_false(self) -> None:
         """Test clickable attribute conversion with False."""
-        result = dict_to_xpath_attribute(DictAttribute.CLICKABLE, False)
+        result = dict_to_xpath_attribute(ShadowstepDictAttribute.CLICKABLE, False)
         expected = '@clickable="false"'
         assert result == expected  # noqa: S101
     
     def test_dict_to_xpath_attribute_index(self) -> None:
         """Test index attribute conversion."""
-        result = dict_to_xpath_attribute(DictAttribute.INDEX, 0)
+        result = dict_to_xpath_attribute(ShadowstepDictAttribute.INDEX, 0)
         expected = "position()=1"
         assert result == expected  # noqa: S101
     
     def test_dict_to_xpath_attribute_unsupported(self) -> None:
         """Test unsupported attribute conversion."""
         with pytest.raises(ValueError, match="Unsupported attribute for XPath conversion"):
-            dict_to_xpath_attribute(DictAttribute.CHILD_SELECTOR, {})  # type: ignore
+            dict_to_xpath_attribute(ShadowstepDictAttribute.CHILD_SELECTOR, {})  # type: ignore
 
 
 class TestDictAttribute:
-    """Test cases for DictAttribute enum."""
+    """Test cases for ShadowstepDictAttribute enum."""
     
     def test_text_attributes(self) -> None:
         """Test text-related attributes."""
-        assert DictAttribute.TEXT == "text"  # noqa: S101
-        assert DictAttribute.TEXT_CONTAINS == "textContains"  # noqa: S101
-        assert DictAttribute.TEXT_STARTS_WITH == "textStartsWith"  # noqa: S101
-        assert DictAttribute.TEXT_MATCHES == "textMatches"  # noqa: S101
+        assert ShadowstepDictAttribute.TEXT == "text"  # noqa: S101
+        assert ShadowstepDictAttribute.TEXT_CONTAINS == "textContains"  # noqa: S101
+        assert ShadowstepDictAttribute.TEXT_STARTS_WITH == "textStartsWith"  # noqa: S101
+        assert ShadowstepDictAttribute.TEXT_MATCHES == "textMatches"  # noqa: S101
     
     def test_description_attributes(self) -> None:
         """Test description-related attributes."""
-        assert DictAttribute.DESCRIPTION == "content-desc"  # noqa: S101
-        assert DictAttribute.DESCRIPTION_CONTAINS == "content-descContains"  # noqa: S101
-        assert DictAttribute.DESCRIPTION_STARTS_WITH == "content-descStartsWith"  # noqa: S101
-        assert DictAttribute.DESCRIPTION_MATCHES == "content-descMatches"  # noqa: S101
+        assert ShadowstepDictAttribute.DESCRIPTION == "content-desc"  # noqa: S101
+        assert ShadowstepDictAttribute.DESCRIPTION_CONTAINS == "content-descContains"  # noqa: S101
+        assert ShadowstepDictAttribute.DESCRIPTION_STARTS_WITH == "content-descStartsWith"  # noqa: S101
+        assert ShadowstepDictAttribute.DESCRIPTION_MATCHES == "content-descMatches"  # noqa: S101
     
     def test_resource_attributes(self) -> None:
         """Test resource ID and package attributes."""
-        assert DictAttribute.RESOURCE_ID == "resource-id"  # noqa: S101
-        assert DictAttribute.RESOURCE_ID_MATCHES == "resource-idMatches"  # noqa: S101
-        assert DictAttribute.PACKAGE_NAME == "package"  # noqa: S101
-        assert DictAttribute.PACKAGE_NAME_MATCHES == "packageMatches"  # noqa: S101
+        assert ShadowstepDictAttribute.RESOURCE_ID == "resource-id"  # noqa: S101
+        assert ShadowstepDictAttribute.RESOURCE_ID_MATCHES == "resource-idMatches"  # noqa: S101
+        assert ShadowstepDictAttribute.PACKAGE_NAME == "package"  # noqa: S101
+        assert ShadowstepDictAttribute.PACKAGE_NAME_MATCHES == "packageMatches"  # noqa: S101
     
     def test_class_attributes(self) -> None:
         """Test class name attributes."""
-        assert DictAttribute.CLASS_NAME == "class"  # noqa: S101
-        assert DictAttribute.CLASS_NAME_MATCHES == "classMatches"  # noqa: S101
+        assert ShadowstepDictAttribute.CLASS_NAME == "class"  # noqa: S101
+        assert ShadowstepDictAttribute.CLASS_NAME_MATCHES == "classMatches"  # noqa: S101
     
     def test_boolean_attributes(self) -> None:
         """Test boolean property attributes."""
-        assert DictAttribute.CHECKABLE == "checkable"  # noqa: S101
-        assert DictAttribute.CHECKED == "checked"  # noqa: S101
-        assert DictAttribute.CLICKABLE == "clickable"  # noqa: S101
-        assert DictAttribute.ENABLED == "enabled"  # noqa: S101
-        assert DictAttribute.FOCUSABLE == "focusable"  # noqa: S101
-        assert DictAttribute.FOCUSED == "focused"  # noqa: S101
-        assert DictAttribute.LONG_CLICKABLE == "long-clickable"  # noqa: S101
-        assert DictAttribute.SCROLLABLE == "scrollable"  # noqa: S101
-        assert DictAttribute.SELECTED == "selected"  # noqa: S101
-        assert DictAttribute.PASSWORD == "password"  # noqa: S101, S105
+        assert ShadowstepDictAttribute.CHECKABLE == "checkable"  # noqa: S101
+        assert ShadowstepDictAttribute.CHECKED == "checked"  # noqa: S101
+        assert ShadowstepDictAttribute.CLICKABLE == "clickable"  # noqa: S101
+        assert ShadowstepDictAttribute.ENABLED == "enabled"  # noqa: S101
+        assert ShadowstepDictAttribute.FOCUSABLE == "focusable"  # noqa: S101
+        assert ShadowstepDictAttribute.FOCUSED == "focused"  # noqa: S101
+        assert ShadowstepDictAttribute.LONG_CLICKABLE == "long-clickable"  # noqa: S101
+        assert ShadowstepDictAttribute.SCROLLABLE == "scrollable"  # noqa: S101
+        assert ShadowstepDictAttribute.SELECTED == "selected"  # noqa: S101
+        assert ShadowstepDictAttribute.PASSWORD == "password"  # noqa: S101, S105
     
     def test_numeric_attributes(self) -> None:
         """Test numeric attributes."""
-        assert DictAttribute.INDEX == "index"  # noqa: S101
-        assert DictAttribute.INSTANCE == "instance"  # noqa: S101
+        assert ShadowstepDictAttribute.INDEX == "index"  # noqa: S101
+        assert ShadowstepDictAttribute.INSTANCE == "instance"  # noqa: S101
     
     def test_hierarchical_attributes(self) -> None:
         """Test hierarchical attributes."""
-        assert DictAttribute.CHILD_SELECTOR == "childSelector"  # noqa: S101
-        assert DictAttribute.FROM_PARENT == "fromParent"  # noqa: S101
-        assert DictAttribute.SIBLING == "sibling"  # noqa: S101
+        assert ShadowstepDictAttribute.CHILD_SELECTOR == "childSelector"  # noqa: S101
+        assert ShadowstepDictAttribute.FROM_PARENT == "fromParent"  # noqa: S101
+        assert ShadowstepDictAttribute.SIBLING == "sibling"  # noqa: S101
     
     def test_string_comparison(self) -> None:
         """Test string comparison functionality."""
-        assert DictAttribute.TEXT == "text"  # noqa: S101
-        assert DictAttribute.TEXT != "not_text"  # noqa: S101
+        assert ShadowstepDictAttribute.TEXT == "text"  # noqa: S101
+        assert ShadowstepDictAttribute.TEXT != "not_text"  # noqa: S101
     
     def test_hash_functionality(self) -> None:
         """Test hash functionality."""
-        text_hash = hash(DictAttribute.TEXT)
-        clickable_hash = hash(DictAttribute.CLICKABLE)
+        text_hash = hash(ShadowstepDictAttribute.TEXT)
+        clickable_hash = hash(ShadowstepDictAttribute.CLICKABLE)
         
         assert text_hash != clickable_hash  # noqa: S101
-        assert hash(DictAttribute.TEXT) == hash("text")  # noqa: S101
+        assert hash(ShadowstepDictAttribute.TEXT) == hash("text")  # noqa: S101

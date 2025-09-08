@@ -10,8 +10,6 @@ from collections.abc import Generator
 from typing import TYPE_CHECKING, Any, cast
 
 from appium.webdriver.webelement import WebElement
-from shadowstep.exceptions.shadowstep_exceptions import GeneralElementException
-from shadowstep.locator import UiSelector
 from lxml import etree  # type: ignore
 from selenium.common import (
     InvalidSessionIdException,
@@ -27,11 +25,20 @@ from selenium.webdriver.common.actions import interaction
 from selenium.webdriver.common.actions.action_builder import ActionBuilder
 from selenium.webdriver.common.actions.pointer_input import PointerInput
 from selenium.webdriver.remote.shadowroot import ShadowRoot
-from selenium.webdriver.support import expected_conditions as expected_conditions
 from selenium.webdriver.support.wait import WebDriverWait
 
 from shadowstep.element import conditions
+from shadowstep.element.actions import ElementActions
 from shadowstep.element.base import ElementBase
+from shadowstep.element.coordinates import ElementCoordinates
+from shadowstep.element.gestures import ElementGestures
+from shadowstep.element.dom import ElementDOM
+from shadowstep.element.properties import ElementProperties
+from shadowstep.element.screenshots import ElementScreenshots
+from shadowstep.element.utilities import ElementUtilities
+from shadowstep.element.waiting import ElementWaiting
+from shadowstep.exceptions.shadowstep_exceptions import ShadowstepElementException
+from shadowstep.locator import UiSelector
 from shadowstep.utils.utils import find_coordinates_by_vector, get_current_func_name
 
 if TYPE_CHECKING:
@@ -45,146 +52,63 @@ logger = logging.getLogger(__name__)
 
 class Element(ElementBase):
     def __init__(self,
-                 locator: tuple[str, str] | dict[str, str] | Element | UiSelector | WebElement,
+                 locator: tuple[str, str] | dict[str, Any] | Element | UiSelector,
                  shadowstep: Shadowstep,
                  timeout: float = 30,
                  poll_frequency: float = 0.5,
                  ignored_exceptions: WaitExcTypes | None = None,
-                 contains: bool = False,
                  native: WebElement | None = None):
         # Convert Element to its locator if needed
         if isinstance(locator, Element):
             locator = locator.locator
         elif isinstance(locator, UiSelector):
             locator = cast(UiSelector, locator.__str__())
-        super().__init__(locator, shadowstep, timeout, poll_frequency, ignored_exceptions, contains, native)
+        super().__init__(locator, shadowstep, timeout, poll_frequency, ignored_exceptions, native)
         self.logger = logging.getLogger(f"{__name__}.{self.__class__.__name__}")
         self.logger.debug(f"Initialized Element with locator: {self.locator}")
+        self.utilities = ElementUtilities(self)
+        self.properties = ElementProperties(self)
+        self.dom = ElementDOM(self)
+        self.actions = ElementActions(self)
+        self.gestures = ElementGestures(self)
+        self.coordinates = ElementCoordinates(self)
+        self.screenshots = ElementScreenshots(self)
+        self.waiting = ElementWaiting(self)
 
     def __repr__(self):
         return f"Element(locator={self.locator!r}"
 
     def get_element(self,
-                    locator: tuple[str, str] | dict[str, str] | Element | UiSelector | WebElement,
+                    locator: tuple[str, str] | dict[str, Any] | Element | UiSelector | WebElement,
                     timeout: int = 30,
                     poll_frequency: float = 0.5,
-                    ignored_exceptions: WaitExcTypes | None = None,
-                    contains: bool = False) -> Element:
+                    ignored_exceptions: WaitExcTypes | None = None) -> Element:
+        """
+        method is lazy
+        """
         self.logger.debug(f"{get_current_func_name()}")
+        if isinstance(locator, WebElement):
+            raise NotImplementedError("WebElement locator not implemented yet")  # FIXME
+        return self.dom.resolve_child(locator, timeout, poll_frequency, ignored_exceptions)
 
-        if isinstance(locator, Element):
-            locator = locator.locator
-
-        # XPath for parent
-        parent_locator = self.handle_locator(self.locator, self.contains)
-        if not parent_locator:
-            raise GeneralElementException("Failed to resolve parent locator")
-
-        # XPath for child (relative)
-        pre_inner_locator = self.handle_locator(locator, contains)
-        if not pre_inner_locator:
-            raise GeneralElementException("Failed to resolve child locator")
-        inner_path = pre_inner_locator[1].lstrip("/")  # Remove accidental `/` in front
-
-        # Guaranteed nesting: parent//child
-        if not inner_path.startswith("//"):
-            inner_path = f"//{inner_path}"
-
-        inner_locator = ("xpath", f"{parent_locator[1]}{inner_path}")
-
-        return Element(locator=inner_locator,
-                       shadowstep=self.shadowstep,
-                       timeout=timeout,
-                       poll_frequency=poll_frequency,
-                       ignored_exceptions=ignored_exceptions,
-                       contains=contains)
-
-    def get_elements(  # noqa: C901
+    def get_elements(
             self,
-            locator: tuple[str, str] | dict[str, str] | Element | UiSelector | WebElement,
+            locator: tuple[str, str] | dict[str, Any] | Element | UiSelector,
             timeout: float = 30,
             poll_frequency: float = 0.5,
-            ignored_exceptions: WaitExcTypes | None = None,
-            contains: bool = False
+            ignored_exceptions: WaitExcTypes | None = None
     ) -> list[Element]:
         """
         method is greedy
         """
         self.logger.debug(f"{get_current_func_name()}")
-        start_time = time.time()
+        return self.dom.get_elements(locator, timeout, poll_frequency, ignored_exceptions)
 
-        if isinstance(locator, Element):
-            locator = locator.locator
-            
-        base_xpath = self._get_xpath()
-        if not base_xpath:
-            raise GeneralElementException("Unable to resolve shadowstep xpath")
-
-        locator = self.locator_converter.to_xpath(locator)
-        locator = self._contains_to_xpath(locator)
-
-        while time.time() - start_time < self.timeout:
-            try:
-                self._get_driver()
-                wait = WebDriverWait(
-                    driver=self.driver,
-                    timeout=timeout,
-                    poll_frequency=poll_frequency,
-                    ignored_exceptions=ignored_exceptions,
-                )
-                wait.until(expected_conditions.presence_of_element_located(locator))
-                native_parent = self._get_native()
-                native_elements = native_parent.find_elements(*locator)
-
-                elements = []
-                for native_element in native_elements:
-                    attributes = {
-                        attr: native_element.get_attribute(attr) for attr in [
-                            "resource-id", "bounds",
-                            "class", "text", "content-desc", "checkable", "checked",
-                            "clickable", "enabled", "focusable", "focused",
-                            "long-clickable", "scrollable", "selected", "displayed"
-                        ]
-                    }
-                    element = Element(
-                        locator=cast(dict[str, str], attributes),
-                        shadowstep=self.shadowstep,
-                        timeout=timeout,
-                        poll_frequency=poll_frequency,
-                        ignored_exceptions=ignored_exceptions,
-                        contains=contains
-                    )
-                    elements.append(element)
-                return elements
-
-            except NoSuchDriverException as error:
-                self._handle_driver_error(error)
-
-            except InvalidSessionIdException as error:
-                self._handle_driver_error(error)
-
-            except StaleElementReferenceException as error:
-                self.logger.debug(error)
-                self.logger.warning("StaleElementReferenceException\nRe-acquire element")
-                self.native = None
-                self._get_native()
-                continue
-            except WebDriverException as error:
-                if "instrumentation process is not running" in str(error).lower():
-                    self._handle_driver_error(error)
-                    continue
-                raise
-
-            except TimeoutException as error:
-                self.logger.warning(f"Timeout while waiting for presence of element | {error}")
-                continue
-        # if nothing found return empty list
-        return []
 
     def _resolve_xpath_for_attributes(self) -> str | None:
         """Resolve XPath expression from locator for attributes fetching."""
         try:
-            xpath_expr = self.locator_converter.to_xpath(self.locator)[1]
+            xpath_expr = self.converter.to_xpath(self.locator)[1]
             if not xpath_expr:
                 self.logger.error(f"Failed to resolve XPath from locator: {self.locator}")
                 return None
@@ -194,85 +118,34 @@ class Element(ElementBase):
             self.logger.error(f"Exception in to_xpath: {e}")
             return None
 
-    def _parse_page_source_for_attributes(self, xpath_expr: str) -> dict[str, str] | None:
-        """Parse page source and extract attributes using XPath."""
-        try:
-            self._get_driver()
-            page_source = self.driver.page_source
-            parser = etree.XMLParser(recover=True)
-            root = etree.fromstring(page_source.encode("utf-8"), parser=parser)
-
-            matches = root.xpath(self._clean_xpath_expr(xpath_expr))
-            if matches:
-                element = matches[0]
-                attrib = {k: str(v) for k, v in element.attrib.items()}
-                self.logger.debug(f"Matched attributes: {attrib}")
-                return attrib
-            self.logger.warning(f"{xpath_expr=}")
-            self.logger.warning(type(xpath_expr))
-            self.logger.warning(f"No matches found for given XPath. {matches}")
-            return None
-        except (NoSuchDriverException, InvalidSessionIdException) as error:
-            self._handle_driver_error(error)
-            return None
-        except StaleElementReferenceException as error:
-            self.logger.debug(error)
-            self.logger.warning("StaleElementReferenceException\nRe-acquire element")
-            self.native = None
-            self._get_native()
-            return None
-        except WebDriverException as error:
-            if "instrumentation process is not running" in str(error).lower():
-                self._handle_driver_error(error)
-                return None
-            raise
-        except (etree.XPathEvalError, etree.XMLSyntaxError, UnicodeEncodeError) as e:
-            self.logger.error(f"Parsing error: {e}")
-            if isinstance(e, etree.XPathEvalError):
-                self.logger.error(f"XPath: {xpath_expr}")
-            return None
-        except Exception as e:
-            self.logger.error(f"Unexpected error in _parse_page_source_for_attributes: {e}")
-            return None
-
-    def get_attributes(self) -> dict[str, str]:
+    def get_attributes(self) -> dict[str, Any]:
         """Fetch all XML attributes of the element by matching locator against page source.
 
         Returns:
-            Optional[Dict[str, str]]: Dictionary of all attributes, or None if not found.
+            Optional[dict[str, Any]]: Dictionary of all attributes, or None if not found.
         """
         self.logger.debug(f"{get_current_func_name()}")
-        start_time = time.time()
-
         xpath_expr = self._resolve_xpath_for_attributes()
         if not xpath_expr:
             return {}
-
-        while time.time() - start_time < self.timeout:
-            result = self._parse_page_source_for_attributes(xpath_expr)
-            if result is not None:
-                return result
-            time.sleep(0.1)  # Small delay before retry
-
-        self.logger.warning(f"Timeout exceeded ({self.timeout}s) without matching element.")
-        return {}
+        return self.utilities.extract_el_attrs_from_source(xpath_expr, self.shadowstep.driver.page_source)[0]
 
     def get_parent(self) -> Element:
         self.logger.debug(f"{get_current_func_name()}")
         try:
             xpath = self._get_xpath()
             if xpath is None:
-                raise GeneralElementException("Unable to retrieve XPath of the element")
+                raise ShadowstepElementException("Unable to retrieve XPath of the element")
             xpath = xpath + "/.."
             return Element(locator=("xpath", xpath), shadowstep=self.shadowstep)
         except NoSuchDriverException:
             self.logger.error(
-                f"{inspect.currentframe().f_code.co_name if inspect.currentframe() else 'unknown'} NoSuchDriverException")
+                f"{inspect.currentframe() if inspect.currentframe() else 'unknown'} NoSuchDriverException")
             self.shadowstep.reconnect()
             return None
         except InvalidSessionIdException:
             self.logger.error(
-                f"{inspect.currentframe().f_code.co_name if inspect.currentframe() else 'unknown'} InvalidSessionIdException")
+                f"{inspect.currentframe() if inspect.currentframe() else 'unknown'} InvalidSessionIdException")
             self.shadowstep.reconnect()
             return None
 
@@ -288,7 +161,7 @@ class Element(ElementBase):
         current_xpath = self._get_xpath()
 
         if not current_xpath:
-            raise GeneralElementException("Cannot resolve current XPath")
+            raise ShadowstepElementException("Cannot resolve current XPath")
 
         # Form shadowstep XPath that captures all parents
         base_ancestor_xpath = f"{current_xpath}/ancestor::*"
@@ -301,8 +174,7 @@ class Element(ElementBase):
                 shadowstep=self.shadowstep,
                 timeout=self.timeout,
                 poll_frequency=self.poll_frequency,
-                ignored_exceptions=self.ignored_exceptions,
-                contains=self.contains
+                ignored_exceptions=self.ignored_exceptions
             )
             # Check element existence by some safe attribute
             try:
@@ -314,16 +186,16 @@ class Element(ElementBase):
             except WebDriverException:
                 break
 
-    def get_sibling(self, locator: tuple[str, str] | dict[str, str] | Element) -> Element:
+    def get_sibling(self, locator: tuple[str, str] | dict[str, Any] | Element) -> Element:
         self.logger.debug(f"{get_current_func_name()}")
         if isinstance(locator, Element):
             locator = locator.locator
 
         base_xpath = self._get_xpath()
         if not base_xpath:
-            raise GeneralElementException("Unable to resolve current XPath")
+            raise ShadowstepElementException("Unable to resolve current XPath")
 
-        sibling_locator = self.handle_locator(locator, contains=self.contains)
+        sibling_locator = self.remove_null_value(locator)
         sibling_path = sibling_locator[1].lstrip("/")
 
         # Try to find first matching "sibling" on the right
@@ -334,8 +206,7 @@ class Element(ElementBase):
             shadowstep=self.shadowstep,
             timeout=self.timeout,
             poll_frequency=self.poll_frequency,
-            ignored_exceptions=self.ignored_exceptions,
-            contains=self.contains
+            ignored_exceptions=self.ignored_exceptions
         )
 
     def get_siblings(self) -> Generator[Element]:
@@ -350,7 +221,7 @@ class Element(ElementBase):
 
         base_xpath = self._get_xpath()
         if not base_xpath:
-            raise GeneralElementException("Unable to resolve current XPath")
+            raise ShadowstepElementException("Unable to resolve current XPath")
 
         # First preceding-sibling (in reverse order)
         for index in range(1, 50):
@@ -360,8 +231,7 @@ class Element(ElementBase):
                 shadowstep=self.shadowstep,
                 timeout=self.timeout,
                 poll_frequency=self.poll_frequency,
-                ignored_exceptions=self.ignored_exceptions,
-                contains=self.contains
+                ignored_exceptions=self.ignored_exceptions
             )
             try:
                 if sibling.get_attribute("class") is None:
@@ -380,8 +250,7 @@ class Element(ElementBase):
                 shadowstep=self.shadowstep,
                 timeout=self.timeout,
                 poll_frequency=self.poll_frequency,
-                ignored_exceptions=self.ignored_exceptions,
-                contains=self.contains
+                ignored_exceptions=self.ignored_exceptions
             )
             try:
                 if sibling.get_attribute("class") is None:
@@ -394,14 +263,14 @@ class Element(ElementBase):
 
     def get_cousin(
             self,
-            cousin_locator: tuple[str, str] | dict[str, str] | Element,
+            cousin_locator: tuple[str, str] | dict[str, Any] | Element,
             depth_to_parent: int = 1,
     ) -> Element:
         """
         Returns an Element located by cousin_locator, relative to the current element's ancestor.
 
         Args:
-            cousin_locator (Union[Tuple[str, str], Dict[str, str], 'Element']): Locator of the cousin element.
+            cousin_locator (Union[Tuple[str, str], dict[str, Any], 'Element']): Locator of the cousin element.
             depth_to_parent (int): How many levels up the DOM tree to traverse.
 
         Returns:
@@ -418,7 +287,7 @@ class Element(ElementBase):
             # Resolve current XPath
             current_xpath = self._get_xpath()
             if not current_xpath:
-                raise GeneralElementException("Unable to resolve current XPath")
+                raise ShadowstepElementException("Unable to resolve current XPath")
 
             self.logger.debug(f"[XPath Resolution] current_xpath: {current_xpath}")
             self.logger.debug(f"[Depth] depth_to_parent: {depth_to_parent}")
@@ -428,7 +297,7 @@ class Element(ElementBase):
             base_xpath = f"{current_xpath}/{up_xpath}" if up_xpath else current_xpath
 
             # Resolve cousin locator to relative XPath
-            cousin_relative = self.handle_locator(cousin_locator, contains=self.contains)[1].lstrip("/")
+            cousin_relative = self.remove_null_value(cousin_locator)[1].lstrip("/")
 
             self.logger.debug(f"[Cousin Locator] relative_xpath: {cousin_relative}")
 
@@ -442,12 +311,11 @@ class Element(ElementBase):
                 shadowstep=self.shadowstep,
                 timeout=self.timeout,
                 poll_frequency=self.poll_frequency,
-                ignored_exceptions=self.ignored_exceptions,
-                contains=self.contains
+                ignored_exceptions=self.ignored_exceptions
             )
 
         except (NoSuchDriverException, InvalidSessionIdException) as error:
-            self._handle_driver_error(error)
+            self.handle_driver_error(error)
             return None
 
     def get_center(self, element: WebElement | None = None) -> tuple[int, int]:
@@ -463,9 +331,9 @@ class Element(ElementBase):
         start_time = time.time()
         while time.time() - start_time < self.timeout:
             try:
-                self._get_driver()
+                self.get_driver()
                 if element is None:
-                    element = self._get_native()
+                    element = self.get_native()
                 coords = self.get_coordinates(element)
                 if coords is None:
                     continue
@@ -474,25 +342,25 @@ class Element(ElementBase):
                 y = int((top + bottom) / 2)
                 return x, y
             except NoSuchDriverException as error:
-                self._handle_driver_error(error)
+                self.handle_driver_error(error)
             except InvalidSessionIdException as error:
-                self._handle_driver_error(error)
+                self.handle_driver_error(error)
             except AttributeError as error:
-                self._handle_driver_error(error)
+                self.handle_driver_error(error)
             except StaleElementReferenceException as error:
                 self.logger.debug(error)
                 self.logger.warning("StaleElementReferenceException\nRe-acquire element")
                 self.native = None
-                self._get_native()
+                self.get_native()
                 continue
             except WebDriverException as error:
                 if "instrumentation process is not running" in str(error).lower():
-                    self._handle_driver_error(error)
+                    self.handle_driver_error(error)
                     continue
                 raise
 
-        raise GeneralElementException(
-            msg=f"Failed to {inspect.currentframe().f_code.co_name if inspect.currentframe() else 'unknown'} within {self.timeout=}",
+        raise ShadowstepElementException(
+            msg=f"Failed to {inspect.currentframe() if inspect.currentframe() else 'unknown'} within {self.timeout=}",
             stacktrace=traceback.format_stack()
         )
 
@@ -509,34 +377,34 @@ class Element(ElementBase):
         start_time = time.time()
         while time.time() - start_time < self.timeout:
             try:
-                self._get_driver()
+                self.get_driver()
                 if element is None:
-                    element = self._get_native()
+                    element = self.get_native()
                 bounds = element.get_attribute("bounds")
                 if not bounds:
                     continue
                 left, top, right, bottom = map(int, bounds.strip("[]").replace("][", ",").split(","))
                 return left, top, right, bottom
             except NoSuchDriverException as error:
-                self._handle_driver_error(error)
+                self.handle_driver_error(error)
             except InvalidSessionIdException as error:
-                self._handle_driver_error(error)
+                self.handle_driver_error(error)
             except AttributeError as error:
-                self._handle_driver_error(error)
+                self.handle_driver_error(error)
             except StaleElementReferenceException as error:
                 self.logger.debug(error)
                 self.logger.warning("StaleElementReferenceException\nRe-acquire element")
                 self.native = None
-                self._get_native()
+                self.get_native()
                 continue
             except WebDriverException as error:
                 if "instrumentation process is not running" in str(error).lower():
-                    self._handle_driver_error(error)
+                    self.handle_driver_error(error)
                     continue
                 raise
 
-        raise GeneralElementException(
-            msg=f"Failed to {inspect.currentframe().f_code.co_name if inspect.currentframe() else 'unknown'} within {self.timeout=}",
+        raise ShadowstepElementException(
+            msg=f"Failed to {inspect.currentframe() if inspect.currentframe() else 'unknown'} within {self.timeout=}",
             stacktrace=traceback.format_stack()
         )
 
@@ -554,29 +422,29 @@ class Element(ElementBase):
         start_time = time.time()
         while time.time() - start_time < self.timeout:
             try:
-                self._get_driver()
-                current_element = self._get_native()
+                self.get_driver()
+                current_element = self.get_native()
                 return current_element.get_attribute(name)
             except NoSuchDriverException as error:
-                self._handle_driver_error(error)
+                self.handle_driver_error(error)
             except InvalidSessionIdException as error:
-                self._handle_driver_error(error)
+                self.handle_driver_error(error)
             except AttributeError as error:
-                self._handle_driver_error(error)
+                self.handle_driver_error(error)
             except StaleElementReferenceException as error:
                 self.logger.debug(error)
                 self.logger.warning("StaleElementReferenceException\nRe-acquire element")
                 self.native = None
-                self._get_native()
+                self.get_native()
                 continue
             except WebDriverException as error:
                 if "instrumentation process is not running" in str(error).lower():
-                    self._handle_driver_error(error)
+                    self.handle_driver_error(error)
                     continue
                 raise
 
-        raise GeneralElementException(
-            msg=f"Failed to {inspect.currentframe().f_code.co_name if inspect.currentframe() else 'unknown'}('{name}') within {self.timeout=}",
+        raise ShadowstepElementException(
+            msg=f"Failed to {inspect.currentframe() if inspect.currentframe() else 'unknown'}('{name}') within {self.timeout=}",
             stacktrace=traceback.format_stack()
         )
 
@@ -592,33 +460,33 @@ class Element(ElementBase):
         """
         self.logger.debug(f"{get_current_func_name()}")
         self.logger.warning(
-            f"Method {inspect.currentframe().f_code.co_name if inspect.currentframe() else 'unknown'} is not implemented in UiAutomator2")
+            f"Method {inspect.currentframe() if inspect.currentframe() else 'unknown'} is not implemented in UiAutomator2")
         start_time = time.time()
         while time.time() - start_time < self.timeout:
             try:
-                self._get_driver()
-                current_element = self._get_native()
+                self.get_driver()
+                current_element = self.get_native()
                 return current_element.get_property(name)
             except NoSuchDriverException as error:
-                self._handle_driver_error(error)
+                self.handle_driver_error(error)
             except InvalidSessionIdException as error:
-                self._handle_driver_error(error)
+                self.handle_driver_error(error)
             except AttributeError as error:
-                self._handle_driver_error(error)
+                self.handle_driver_error(error)
             except StaleElementReferenceException as error:
                 self.logger.debug(error)
                 self.logger.warning("StaleElementReferenceException\nRe-acquire element")
                 self.native = None
-                self._get_native()
+                self.get_native()
                 continue
             except WebDriverException as error:
                 if "instrumentation process is not running" in str(error).lower():
-                    self._handle_driver_error(error)
+                    self.handle_driver_error(error)
                     continue
                 raise
 
-        raise GeneralElementException(
-            msg=f"Failed to {inspect.currentframe().f_code.co_name if inspect.currentframe() else 'unknown'} within {self.timeout=}",
+        raise ShadowstepElementException(
+            msg=f"Failed to {inspect.currentframe() if inspect.currentframe() else 'unknown'} within {self.timeout=}",
             stacktrace=traceback.format_stack()
         )
 
@@ -639,29 +507,29 @@ class Element(ElementBase):
         start_time = time.time()
         while time.time() - start_time < self.timeout:
             try:
-                self._get_driver()
-                current_element = self._get_native()
+                self.get_driver()
+                current_element = self.get_native()
                 return current_element.get_dom_attribute(name)
             except NoSuchDriverException as error:
-                self._handle_driver_error(error)
+                self.handle_driver_error(error)
             except InvalidSessionIdException as error:
-                self._handle_driver_error(error)
+                self.handle_driver_error(error)
             except AttributeError as error:
-                self._handle_driver_error(error)
+                self.handle_driver_error(error)
             except StaleElementReferenceException as error:
                 self.logger.debug(error)
                 self.logger.warning("StaleElementReferenceException\nRe-acquire element")
                 self.native = None
-                self._get_native()
+                self.get_native()
                 continue
             except WebDriverException as error:
                 if "instrumentation process is not running" in str(error).lower():
-                    self._handle_driver_error(error)
+                    self.handle_driver_error(error)
                     continue
                 raise
 
-        raise GeneralElementException(
-            msg=f"Failed to {inspect.currentframe().f_code.co_name if inspect.currentframe() else 'unknown'} within {self.timeout=}",
+        raise ShadowstepElementException(
+            msg=f"Failed to {inspect.currentframe() if inspect.currentframe() else 'unknown'} within {self.timeout=}",
             stacktrace=traceback.format_stack()
         )
 
@@ -676,41 +544,42 @@ class Element(ElementBase):
         start_time = time.time()
         while time.time() - start_time < self.timeout:
             try:
-                self._get_driver()
-                element = self._get_native()
+                self.get_driver()
+                element = self.get_native()
                 return element.is_displayed()
             except NoSuchElementException:
                 return False
             except NoSuchDriverException as error:
-                self._handle_driver_error(error)
+                self.handle_driver_error(error)
             except InvalidSessionIdException as error:
-                self._handle_driver_error(error)
+                self.handle_driver_error(error)
             except AttributeError as error:
-                self._handle_driver_error(error)
+                self.handle_driver_error(error)
             except StaleElementReferenceException as error:
                 self.logger.debug(error)
                 self.logger.warning("StaleElementReferenceException\nRe-acquire element")
                 self.native = None
-                self._get_native()
+                self.get_native()
                 continue
             except WebDriverException as error:
                 if "instrumentation process is not running" in str(error).lower():
-                    self._handle_driver_error(error)
+                    self.handle_driver_error(error)
                     continue
                 raise
 
-        raise GeneralElementException(
-            msg=f"Failed to {inspect.currentframe().f_code.co_name if inspect.currentframe() else 'unknown'} within {self.timeout=}",
+        raise ShadowstepElementException(
+            msg=f"Failed to {inspect.currentframe() if inspect.currentframe() else 'unknown'} within {self.timeout=}",
             stacktrace=traceback.format_stack()
         )
 
-    def _check_element_bounds(self, element_location: dict, element_size: dict, screen_width: int, screen_height: int) -> bool:
+    def _check_element_bounds(self, element_location: dict, element_size: dict, screen_width: int,
+                              screen_height: int) -> bool:
         """Check if element is within screen bounds."""
         return not (
-            element_location["y"] + element_size["height"] > screen_height or
-            element_location["x"] + element_size["width"] > screen_width or
-            element_location["y"] < 0 or
-            element_location["x"] < 0
+                element_location["y"] + element_size["height"] > screen_height or
+                element_location["x"] + element_size["width"] > screen_width or
+                element_location["y"] < 0 or
+                element_location["x"] < 0
         )
 
     def _check_element_visibility(self) -> bool | None:
@@ -719,46 +588,46 @@ class Element(ElementBase):
             screen_size = self.shadowstep.terminal.get_screen_resolution()
             screen_width = screen_size[0]
             screen_height = screen_size[1]
-            current_element = self._get_native()
-            
+            current_element = self.get_native()
+
             if current_element is None:
                 return False
             if current_element.get_attribute("displayed") != "true":
                 return False
-                
+
             element_location = current_element.location
             element_size = current_element.size
             return self._check_element_bounds(element_location, element_size, screen_width, screen_height)
-            
+
         except NoSuchElementException:
             return False
         except (NoSuchDriverException, InvalidSessionIdException, AttributeError) as error:
-            self._handle_driver_error(error)
+            self.handle_driver_error(error)
             return None
         except StaleElementReferenceException as error:
             self.logger.debug(error)
             self.logger.warning("StaleElementReferenceException\nRe-acquire element")
             self.native = None
-            self._get_native()
+            self.get_native()
             return None
         except WebDriverException as error:
             if "instrumentation process is not running" in str(error).lower():
-                self._handle_driver_error(error)
+                self.handle_driver_error(error)
                 return None
             raise
 
     def is_visible(self) -> bool:
         self.logger.debug(f"{get_current_func_name()}")
         start_time = time.time()
-        
+
         while time.time() - start_time < self.timeout:
             result = self._check_element_visibility()
             if result is not None:
                 return result
             time.sleep(0.1)
-            
-        raise GeneralElementException(
-            msg=f"Failed to {inspect.currentframe().f_code.co_name if inspect.currentframe() else 'unknown'} within {self.timeout=}",
+
+        raise ShadowstepElementException(
+            msg=f"Failed to {inspect.currentframe() if inspect.currentframe() else 'unknown'} within {self.timeout=}",
             stacktrace=traceback.format_stack()
         )
 
@@ -774,31 +643,31 @@ class Element(ElementBase):
         start_time = time.time()
         while time.time() - start_time < self.timeout:
             try:
-                self._get_driver()
-                element = self._get_native()
+                self.get_driver()
+                element = self.get_native()
                 return element.is_selected()
             except NoSuchElementException:
                 return False
             except NoSuchDriverException as error:
-                self._handle_driver_error(error)
+                self.handle_driver_error(error)
             except InvalidSessionIdException as error:
-                self._handle_driver_error(error)
+                self.handle_driver_error(error)
             except AttributeError as error:
-                self._handle_driver_error(error)
+                self.handle_driver_error(error)
             except StaleElementReferenceException as error:
                 self.logger.debug(error)
                 self.logger.warning("StaleElementReferenceException\nRe-acquire element")
                 self.native = None
-                self._get_native()
+                self.get_native()
                 continue
             except WebDriverException as error:
                 if "instrumentation process is not running" in str(error).lower():
-                    self._handle_driver_error(error)
+                    self.handle_driver_error(error)
                     continue
                 raise
 
-        raise GeneralElementException(
-            msg=f"Failed to {inspect.currentframe().f_code.co_name if inspect.currentframe() else 'unknown'} within {self.timeout=}",
+        raise ShadowstepElementException(
+            msg=f"Failed to {inspect.currentframe() if inspect.currentframe() else 'unknown'} within {self.timeout=}",
             stacktrace=traceback.format_stack()
         )
 
@@ -812,36 +681,36 @@ class Element(ElementBase):
         start_time = time.time()
         while time.time() - start_time < self.timeout:
             try:
-                self._get_driver()
-                element = self._get_native()
+                self.get_driver()
+                element = self.get_native()
                 return element.is_enabled()
             except NoSuchElementException:
                 return False
             except NoSuchDriverException as error:
-                self._handle_driver_error(error)
+                self.handle_driver_error(error)
             except InvalidSessionIdException as error:
-                self._handle_driver_error(error)
+                self.handle_driver_error(error)
             except AttributeError as error:
-                self._handle_driver_error(error)
+                self.handle_driver_error(error)
             except StaleElementReferenceException as error:
                 self.logger.debug(error)
                 self.logger.warning("StaleElementReferenceException\nRe-acquire element")
                 self.native = None
-                self._get_native()
+                self.get_native()
                 continue
             except WebDriverException as error:
                 if "instrumentation process is not running" in str(error).lower():
-                    self._handle_driver_error(error)
+                    self.handle_driver_error(error)
                     continue
                 raise
 
-        raise GeneralElementException(
-            msg=f"Failed to {inspect.currentframe().f_code.co_name if inspect.currentframe() else 'unknown'} within {self.timeout=}",
+        raise ShadowstepElementException(
+            msg=f"Failed to {inspect.currentframe() if inspect.currentframe() else 'unknown'} within {self.timeout=}",
             stacktrace=traceback.format_stack()
         )
 
     def is_contains(self,
-                    locator: tuple | dict[str, str] | Element = None,
+                    locator: tuple | dict[str, Any] | Element = None,
                     contains: bool = False
                     ) -> bool:
         self.logger.debug(f"{get_current_func_name()}")
@@ -850,29 +719,29 @@ class Element(ElementBase):
             try:
                 if isinstance(locator, Element):
                     locator = locator.locator
-                child_element = self._get_element(locator=locator, contains=contains)
+                child_element = self._get_element(locator=locator)
                 return child_element is not None
             except NoSuchElementException:
                 return False
             except NoSuchDriverException as error:
-                self._handle_driver_error(error)
+                self.handle_driver_error(error)
             except InvalidSessionIdException as error:
-                self._handle_driver_error(error)
+                self.handle_driver_error(error)
             except AttributeError as error:
-                self._handle_driver_error(error)
+                self.handle_driver_error(error)
             except StaleElementReferenceException as error:
                 self.logger.debug(error)
                 self.logger.warning("StaleElementReferenceException\nRe-acquire element")
                 self.native = None
-                self._get_native()
+                self.get_native()
                 continue
             except WebDriverException as error:
                 if "instrumentation process is not running" in str(error).lower():
-                    self._handle_driver_error(error)
+                    self.handle_driver_error(error)
                     continue
                 raise
-        raise GeneralElementException(
-            msg=f"Failed to {inspect.currentframe().f_code.co_name if inspect.currentframe() else 'unknown'} within {self.timeout=}",
+        raise ShadowstepElementException(
+            msg=f"Failed to {inspect.currentframe() if inspect.currentframe() else 'unknown'} within {self.timeout=}",
             stacktrace=traceback.format_stack()
         )
 
@@ -881,31 +750,31 @@ class Element(ElementBase):
         start_time = time.time()
         while time.time() - start_time < self.timeout:
             try:
-                self._get_driver()
+                self.get_driver()
                 x, y = self.get_center()
                 if x is None or y is None:
                     continue
                 self.driver.tap(positions=[(x, y)], duration=duration)
                 return self
             except NoSuchDriverException as error:
-                self._handle_driver_error(error)
+                self.handle_driver_error(error)
             except InvalidSessionIdException as error:
-                self._handle_driver_error(error)
+                self.handle_driver_error(error)
             except AttributeError as error:
-                self._handle_driver_error(error)
+                self.handle_driver_error(error)
             except StaleElementReferenceException as error:
                 self.logger.debug(error)
                 self.logger.warning("StaleElementReferenceException\nRe-acquire element")
                 self.native = None
-                self._get_native()
+                self.get_native()
                 continue
             except WebDriverException as error:
                 if "instrumentation process is not running" in str(error).lower():
-                    self._handle_driver_error(error)
+                    self.handle_driver_error(error)
                     continue
                 raise
-        raise GeneralElementException(
-            msg=f"Failed to {inspect.currentframe().f_code.co_name if inspect.currentframe() else 'unknown'} within {self.timeout=}\n{duration}",
+        raise ShadowstepElementException(
+            msg=f"Failed to {inspect.currentframe() if inspect.currentframe() else 'unknown'} within {self.timeout=}\n{duration}",
             stacktrace=traceback.format_stack()
         )
 
@@ -924,25 +793,31 @@ class Element(ElementBase):
         actions.perform()
         return self
 
-    def _execute_tap_and_move_to_element(self, actions: ActionChains, locator: tuple[str, str] | WebElement | dict[str, str] | str) -> Element:
+    def _execute_tap_and_move_to_element(self, actions: ActionChains,
+                                         locator: tuple[str, str] | WebElement | dict[str, Any] | str) -> Element:
         """Execute tap and move to another element."""
         target_element = self._get_element(locator=locator)
         x, y = self.get_center(target_element)
         return self._execute_tap_and_move_to_coordinates(actions, x, y)
 
-    def _execute_tap_and_move_by_direction(self, actions: ActionChains, x1: int, y1: int, direction: int, distance: int) -> Element:
+    def _execute_tap_and_move_by_direction(self, actions: ActionChains, x1: int, y1: int, direction: int,
+                                           distance: int) -> Element:
         """Execute tap and move by direction vector."""
         width, height = self.shadowstep.terminal.get_screen_resolution()
-        x2, y2 = find_coordinates_by_vector(width=width, height=height, direction=direction, distance=distance, start_x=x1, start_y=y1)
+        x2, y2 = find_coordinates_by_vector(width=width, height=height, direction=direction, distance=distance,
+                                            start_x=x1, start_y=y1)
         return self._execute_tap_and_move_to_coordinates(actions, x2, y2)
 
-    def _perform_tap_and_move_action(self, locator: tuple[str, str] | WebElement | Element | dict[str, str] | str | None, x: int | None, y: int | None, direction: int | None, distance: int | None) -> Element | None:
+    def _perform_tap_and_move_action(self,
+                                     locator: tuple[str, str] | WebElement | Element | dict[str, Any] | str | None,
+                                     x: int | None, y: int | None, direction: int | None,
+                                     distance: int | None) -> Element | None:
         """Perform tap and move action with error handling."""
         try:
-            self._get_driver()
+            self.get_driver()
             if isinstance(locator, Element):
                 locator = locator.locator
-                
+
             x1, y1 = self.get_center()
             actions = self._create_touch_actions(x1, y1)
 
@@ -953,30 +828,30 @@ class Element(ElementBase):
             # Move to another element
             if locator is not None:
                 return self._execute_tap_and_move_to_element(actions, locator)
-                
+
             # Move by direction vector
             if direction is not None and distance is not None:
                 return self._execute_tap_and_move_by_direction(actions, x1, y1, direction, distance)
-                
+
             return None
         except (NoSuchDriverException, InvalidSessionIdException, AttributeError) as error:
-            self._handle_driver_error(error)
+            self.handle_driver_error(error)
             return None
         except StaleElementReferenceException as error:
             self.logger.debug(error)
             self.logger.warning("StaleElementReferenceException\nRe-acquire element")
             self.native = None
-            self._get_native()
+            self.get_native()
             return None
         except WebDriverException as error:
             if "instrumentation process is not running" in str(error).lower():
-                self._handle_driver_error(error)
+                self.handle_driver_error(error)
                 return None
             raise
 
     def tap_and_move(
             self,
-            locator: tuple[str, str] | WebElement | Element | dict[str, str] | str | None = None,
+            locator: tuple[str, str] | WebElement | Element | dict[str, Any] | str | None = None,
             x: int = None,
             y: int = None,
             direction: int = None,
@@ -984,15 +859,15 @@ class Element(ElementBase):
     ) -> Element:
         self.logger.debug(f"{get_current_func_name()}")
         start_time = time.time()
-        
+
         while time.time() - start_time < self.timeout:
             result = self._perform_tap_and_move_action(locator, x, y, direction, distance)
             if result is not None:
                 return result
             time.sleep(0.1)
-            
-        raise GeneralElementException(
-            msg=f"Failed to {inspect.currentframe().f_code.co_name if inspect.currentframe() else 'unknown'} within {self.timeout=}\n{locator=}\n{x=}\n{y=}\n{direction}\n{distance}\n",
+
+        raise ShadowstepElementException(
+            msg=f"Failed to {inspect.currentframe() if inspect.currentframe() else 'unknown'} within {self.timeout=}\n{locator=}\n{x=}\n{y=}\n{direction}\n{distance}\n",
             stacktrace=traceback.format_stack()
         )
 
@@ -1001,7 +876,7 @@ class Element(ElementBase):
         start_time = time.time()
         while time.time() - start_time < self.timeout:
             try:
-                self._get_driver()
+                self.get_driver()
                 self._get_element(locator=self.locator)
                 if duration is None:
                     self._mobile_gesture("mobile: clickGesture",
@@ -1011,24 +886,24 @@ class Element(ElementBase):
                                          {"elementId": self.id, "duration": duration})
                 return self
             except NoSuchDriverException as error:
-                self._handle_driver_error(error)
+                self.handle_driver_error(error)
             except InvalidSessionIdException as error:
-                self._handle_driver_error(error)
+                self.handle_driver_error(error)
             except AttributeError as error:
-                self._handle_driver_error(error)
+                self.handle_driver_error(error)
             except StaleElementReferenceException as error:
                 self.logger.debug(error)
                 self.logger.warning("StaleElementReferenceException\nRe-acquire element")
                 self.native = None
-                self._get_native()
+                self.get_native()
                 continue
             except WebDriverException as error:
                 if "instrumentation process is not running" in str(error).lower():
-                    self._handle_driver_error(error)
+                    self.handle_driver_error(error)
                     continue
                 raise
-        raise GeneralElementException(
-            msg=f"Failed to {inspect.currentframe().f_code.co_name if inspect.currentframe() else 'unknown'} within {self.timeout=}\n{duration}",
+        raise ShadowstepElementException(
+            msg=f"Failed to {inspect.currentframe() if inspect.currentframe() else 'unknown'} within {self.timeout=}\n{duration}",
             stacktrace=traceback.format_stack()
         )
 
@@ -1037,30 +912,30 @@ class Element(ElementBase):
         start_time = time.time()
         while time.time() - start_time < self.timeout:
             try:
-                self._get_driver()
+                self.get_driver()
                 self._get_element(locator=self.locator)
                 self._mobile_gesture("mobile: doubleClickGesture",
                                      {"elementId": self.id})
                 return self
             except NoSuchDriverException as error:
-                self._handle_driver_error(error)
+                self.handle_driver_error(error)
             except InvalidSessionIdException as error:
-                self._handle_driver_error(error)
+                self.handle_driver_error(error)
             except AttributeError as error:
-                self._handle_driver_error(error)
+                self.handle_driver_error(error)
             except StaleElementReferenceException as error:
                 self.logger.debug(error)
                 self.logger.warning("StaleElementReferenceException\nRe-acquire element")
                 self.native = None
-                self._get_native()
+                self.get_native()
                 continue
             except WebDriverException as error:
                 if "instrumentation process is not running" in str(error).lower():
-                    self._handle_driver_error(error)
+                    self.handle_driver_error(error)
                     continue
                 raise
-        raise GeneralElementException(
-            msg=f"Failed to {inspect.currentframe().f_code.co_name if inspect.currentframe() else 'unknown'} within {self.timeout=}",
+        raise ShadowstepElementException(
+            msg=f"Failed to {inspect.currentframe() if inspect.currentframe() else 'unknown'} within {self.timeout=}",
             stacktrace=traceback.format_stack()
         )
 
@@ -1069,7 +944,7 @@ class Element(ElementBase):
         start_time = time.time()
         while time.time() - start_time < self.timeout:
             try:
-                self._get_driver()
+                self.get_driver()
                 self._get_element(locator=self.locator)
                 self._mobile_gesture("mobile: dragGesture",
                                      {"elementId": self.id,
@@ -1078,24 +953,24 @@ class Element(ElementBase):
                                       "speed": speed})
                 return self
             except NoSuchDriverException as error:
-                self._handle_driver_error(error)
+                self.handle_driver_error(error)
             except InvalidSessionIdException as error:
-                self._handle_driver_error(error)
+                self.handle_driver_error(error)
             except AttributeError as error:
-                self._handle_driver_error(error)
+                self.handle_driver_error(error)
             except StaleElementReferenceException as error:
                 self.logger.debug(error)
                 self.logger.warning("StaleElementReferenceException\nRe-acquire element")
                 self.native = None
-                self._get_native()
+                self.get_native()
                 continue
             except WebDriverException as error:
                 if "instrumentation process is not running" in str(error).lower():
-                    self._handle_driver_error(error)
+                    self.handle_driver_error(error)
                     continue
                 raise
-        raise GeneralElementException(
-            msg=f"Failed to {inspect.currentframe().f_code.co_name if inspect.currentframe() else 'unknown'} within {self.timeout=}",
+        raise ShadowstepElementException(
+            msg=f"Failed to {inspect.currentframe() if inspect.currentframe() else 'unknown'} within {self.timeout=}",
             stacktrace=traceback.format_stack()
         )
 
@@ -1121,7 +996,7 @@ class Element(ElementBase):
         start_time = time.time()
         while time.time() - start_time < self.timeout:
             try:
-                self._get_driver()
+                self.get_driver()
                 self._get_element(locator=self.locator)
                 self._mobile_gesture("mobile: flingGesture",
                                      {"elementId": self.id,
@@ -1129,24 +1004,24 @@ class Element(ElementBase):
                                       "speed": speed})
                 return self
             except NoSuchDriverException as error:
-                self._handle_driver_error(error)
+                self.handle_driver_error(error)
             except InvalidSessionIdException as error:
-                self._handle_driver_error(error)
+                self.handle_driver_error(error)
             except AttributeError as error:
-                self._handle_driver_error(error)
+                self.handle_driver_error(error)
             except StaleElementReferenceException as error:
                 self.logger.debug(error)
                 self.logger.warning("StaleElementReferenceException\nRe-acquire element")
                 self.native = None
-                self._get_native()
+                self.get_native()
                 continue
             except WebDriverException as error:
                 if "instrumentation process is not running" in str(error).lower():
-                    self._handle_driver_error(error)
+                    self.handle_driver_error(error)
                     continue
                 raise
-        raise GeneralElementException(
-            msg=f"Failed to {inspect.currentframe().f_code.co_name if inspect.currentframe() else 'unknown'} within {self.timeout=}",
+        raise ShadowstepElementException(
+            msg=f"Failed to {inspect.currentframe() if inspect.currentframe() else 'unknown'} within {self.timeout=}",
             stacktrace=traceback.format_stack()
         )
 
@@ -1178,7 +1053,7 @@ class Element(ElementBase):
         start_time = time.time()
         while time.time() - start_time < self.timeout:
             try:
-                self._get_driver()
+                self.get_driver()
                 self._get_element(locator=self.locator)
                 can_scroll = self._mobile_gesture("mobile: scrollGesture",
                                                   {"elementId": self.id,
@@ -1189,24 +1064,24 @@ class Element(ElementBase):
                     return can_scroll
                 return self
             except NoSuchDriverException as error:
-                self._handle_driver_error(error)
+                self.handle_driver_error(error)
             except InvalidSessionIdException as error:
-                self._handle_driver_error(error)
+                self.handle_driver_error(error)
             except AttributeError as error:
-                self._handle_driver_error(error)
+                self.handle_driver_error(error)
             except StaleElementReferenceException as error:
                 self.logger.debug(error)
                 self.logger.warning("StaleElementReferenceException\nRe-acquire element")
                 self.native = None
-                self._get_native()
+                self.get_native()
                 continue
             except WebDriverException as error:
                 if "instrumentation process is not running" in str(error).lower():
-                    self._handle_driver_error(error)
+                    self.handle_driver_error(error)
                     continue
                 raise
-        raise GeneralElementException(
-            msg=f"Failed to {inspect.currentframe().f_code.co_name if inspect.currentframe() else 'unknown'} within {self.timeout=}",
+        raise ShadowstepElementException(
+            msg=f"Failed to {inspect.currentframe() if inspect.currentframe() else 'unknown'} within {self.timeout=}",
             stacktrace=traceback.format_stack()
         )
 
@@ -1223,19 +1098,19 @@ class Element(ElementBase):
             except (
                     NoSuchDriverException, InvalidSessionIdException, AttributeError
             ) as error:
-                self._handle_driver_error(error)
+                self.handle_driver_error(error)
             except StaleElementReferenceException as error:
                 self.logger.debug(error)
                 self.logger.warning("StaleElementReferenceException\nRe-acquire element")
                 self.native = None
-                self._get_native()
+                self.get_native()
                 continue
             except WebDriverException as error:
                 if "instrumentation process is not running" in str(error).lower():
-                    self._handle_driver_error(error)
+                    self.handle_driver_error(error)
                     continue
                 raise
-        raise GeneralElementException(
+        raise ShadowstepElementException(
             msg=f"Failed to scroll to bottom within {self.timeout=}",
             stacktrace=traceback.format_stack()
         )
@@ -1252,36 +1127,36 @@ class Element(ElementBase):
                 self.scroll_up(percent=percent, speed=speed, return_bool=True)
             except (
                     NoSuchDriverException, InvalidSessionIdException, AttributeError) as error:
-                self._handle_driver_error(error)
+                self.handle_driver_error(error)
             except StaleElementReferenceException as error:
                 self.logger.debug(error)
                 self.logger.warning("StaleElementReferenceException\nRe-acquire element")
                 self.native = None
-                self._get_native()
+                self.get_native()
                 continue
             except WebDriverException as error:
                 if "instrumentation process is not running" in str(error).lower():
-                    self._handle_driver_error(error)
+                    self.handle_driver_error(error)
                     continue
                 raise
-        raise GeneralElementException(
+        raise ShadowstepElementException(
             msg=f"Failed to scroll to top within {self.timeout=}",
             stacktrace=traceback.format_stack()
         )
 
-    def _prepare_scroll_locator(self, locator: Element | dict[str, str] | tuple[str, str]) -> tuple[str, str]:
+    def _prepare_scroll_locator(self, locator: Element | dict[str, Any] | tuple[str, str]) -> tuple[str, str]:
         """Prepare locator for scrolling operation."""
         if isinstance(locator, Element):
             locator = locator.locator
         if isinstance(locator, (dict, tuple)):
-            selector = self.locator_converter.to_uiselector(locator)
+            selector = self.converter.to_uiselector(locator)
         else:
-            raise GeneralElementException("Only dictionary locators are supported")
-        return self.locator_converter.to_xpath(locator), selector
+            raise ShadowstepElementException("Only dictionary locators are supported")
+        return self.converter.to_xpath(locator), selector
 
     def _execute_scroll_script(self, selector: str, max_swipes: int) -> None:
         """Execute mobile scroll script."""
-        self._get_driver()
+        self.get_driver()
         self.driver.execute_script("mobile: scroll", {
             "elementId": self.id,
             "strategy": "-android uiautomator",
@@ -1295,31 +1170,31 @@ class Element(ElementBase):
             self._execute_scroll_script(selector, max_swipes)
             return cast(Element, self.shadowstep.get_element(locator))
         except (NoSuchDriverException, InvalidSessionIdException, AttributeError) as error:
-            self._handle_driver_error(error)
+            self.handle_driver_error(error)
             return None
         except StaleElementReferenceException as error:
             self.logger.debug(error)
             self.logger.warning("StaleElementReferenceException\nRe-acquire element")
             self.native = None
-            self._get_native()
+            self.get_native()
             return None
         except WebDriverException as error:
             if "instrumentation process is not running" in str(error).lower():
-                self._handle_driver_error(error)
+                self.handle_driver_error(error)
                 return None
             raise
         except Exception as error:
             self.logger.error(error)
             self.logger.error(type(error))
             self.logger.error(traceback.format_stack())
-            self._handle_driver_error(error)
+            self.handle_driver_error(error)
             self.scroll_to_top(percent=0.75, speed=8000)
             return None
 
-    def scroll_to_element(self, locator: Element | dict[str, str] | tuple[str, str], max_swipes: int = 30) -> Element:
+    def scroll_to_element(self, locator: Element | dict[str, Any] | tuple[str, str], max_swipes: int = 30) -> Element:
         self.logger.debug(f"{get_current_func_name()}")
         start_time = time.time()
-        
+
         locator, selector = self._prepare_scroll_locator(locator)
 
         while time.time() - start_time < self.timeout:
@@ -1328,22 +1203,23 @@ class Element(ElementBase):
                 return result
             time.sleep(0.1)
 
-        raise GeneralElementException(
+        raise ShadowstepElementException(
             msg=f"Failed to scroll to element with locator: {locator}",
             stacktrace=traceback.format_stack()
         )
 
-    def _prepare_optional_scroll_locator(self, locator: Element | dict[str, str] | tuple[str, str]) -> tuple[str, str]:
+    def _prepare_optional_scroll_locator(self, locator: Element | dict[str, Any] | tuple[str, str]) -> tuple[str, str]:
         """Prepare locator for optional scroll operation."""
         if isinstance(locator, Element):
             locator = locator.locator
         if isinstance(locator, (dict, tuple)):
-            pass  # selector = self.locator_converter.to_uiselector(locator)  # unused variable
+            pass  # selector = self.converter.to_uiselector(locator)  # unused variable
         else:
-            raise GeneralElementException("Only dictionary locators are supported")
-        return self.locator_converter.to_xpath(locator), locator
+            raise ShadowstepElementException("Only dictionary locators are supported")
+        return self.converter.to_xpath(locator), locator
 
-    def _check_element_visibility_after_scroll(self, locator: tuple[str, str], waiting_element_timeout: int) -> Element | None:
+    def _check_element_visibility_after_scroll(self, locator: tuple[str, str],
+                                               waiting_element_timeout: int) -> Element | None:
         """Check if element is visible after scroll operation."""
         found = self.shadowstep.get_element(locator)
         found.timeout = waiting_element_timeout
@@ -1351,23 +1227,24 @@ class Element(ElementBase):
             return found
         return None
 
-    def _perform_optional_scroll_sequence(self, locator: tuple[str, str], percent: float, speed: int, waiting_element_timeout: int) -> Element | None:
+    def _perform_optional_scroll_sequence(self, locator: tuple[str, str], percent: float, speed: int,
+                                          waiting_element_timeout: int) -> Element | None:
         """Perform scroll sequence to find element."""
-        self._get_driver()
-        self._get_native()
+        self.get_driver()
+        self.get_native()
         self.scroll_to_top()
-        
+
         # Check if element is visible at top
         result = self._check_element_visibility_after_scroll(locator, waiting_element_timeout)
         if result is not None:
             return result
-            
+
         # Scroll down while element is not visible
         while self.scroll_down(return_bool=True, percent=percent, speed=speed):
             result = self._check_element_visibility_after_scroll(locator, waiting_element_timeout)
             if result is not None:
                 return result
-                
+
         # Final scroll and check
         self.scroll_down(return_bool=True, percent=percent, speed=speed)
         return self._check_element_visibility_after_scroll(locator, waiting_element_timeout)
@@ -1375,30 +1252,30 @@ class Element(ElementBase):
     def _handle_optional_scroll_errors(self, error: Exception) -> None:
         """Handle errors during optional scroll operation."""
         if isinstance(error, (NoSuchDriverException, InvalidSessionIdException, AttributeError)):
-            self._handle_driver_error(error)
+            self.handle_driver_error(error)
         elif isinstance(error, StaleElementReferenceException):
             self.logger.debug(error)
             self.logger.warning("StaleElementReferenceException\nRe-acquire element")
             self.native = None
-            self._get_native()
+            self.get_native()
         elif isinstance(error, WebDriverException):
             if "instrumentation process is not running" in str(error).lower():
-                self._handle_driver_error(error)
+                self.handle_driver_error(error)
             else:
                 raise
         else:
             self.logger.error(error)
             self.logger.error(type(error))
             self.logger.error(traceback.format_stack())
-            self._handle_driver_error(error)
+            self.handle_driver_error(error)
             self.scroll_to_top(percent=0.75, speed=8000)
 
-    def scroll_to_element_optional(self, locator: Element | dict[str, str] | tuple[str, str], max_swipes: int = 30,
+    def scroll_to_element_optional(self, locator: Element | dict[str, Any] | tuple[str, str], max_swipes: int = 30,
                                    percent: float = 0.7, speed: int = 2000,
                                    waiting_element_timeout: int = 1) -> Element:
         self.logger.debug(f"{get_current_func_name()}")
         start_time = time.time()
-        
+
         locator, _ = self._prepare_optional_scroll_locator(locator)
 
         while time.time() - start_time < self.timeout:
@@ -1408,13 +1285,15 @@ class Element(ElementBase):
                     return result
             except Exception as error:
                 self._handle_optional_scroll_errors(error)
-                if isinstance(error, StaleElementReferenceException) or isinstance(error, WebDriverException) and "instrumentation process is not running" in str(error).lower():
+                if isinstance(error, StaleElementReferenceException) or isinstance(error,
+                                                                                   WebDriverException) and "instrumentation process is not running" in str(
+                    error).lower():
                     continue
                 if not isinstance(error, (NoSuchDriverException, InvalidSessionIdException, AttributeError)):
                     raise
             time.sleep(0.1)
 
-        raise GeneralElementException(
+        raise ShadowstepElementException(
             msg=f"Failed to scroll to element with locator: {locator}",
             stacktrace=traceback.format_stack()
         )
@@ -1435,7 +1314,7 @@ class Element(ElementBase):
 
         while time.time() - start_time < self.timeout:
             try:
-                self._get_driver()
+                self.get_driver()
                 self._get_element(locator=self.locator)
 
                 self._mobile_gesture("mobile: pinchOpenGesture", {
@@ -1446,24 +1325,24 @@ class Element(ElementBase):
 
                 return self
             except NoSuchDriverException as error:
-                self._handle_driver_error(error)
+                self.handle_driver_error(error)
             except InvalidSessionIdException as error:
-                self._handle_driver_error(error)
+                self.handle_driver_error(error)
             except AttributeError as error:
-                self._handle_driver_error(error)
+                self.handle_driver_error(error)
             except StaleElementReferenceException as error:
                 self.logger.debug(error)
                 self.logger.warning("StaleElementReferenceException\nRe-acquire element")
                 self.native = None
-                self._get_native()
+                self.get_native()
                 continue
             except WebDriverException as error:
                 if "instrumentation process is not running" in str(error).lower():
-                    self._handle_driver_error(error)
+                    self.handle_driver_error(error)
                     continue
                 raise
-        raise GeneralElementException(
-            msg=f"Failed to {inspect.currentframe().f_code.co_name if inspect.currentframe() else 'unknown'} within {self.timeout=}",
+        raise ShadowstepElementException(
+            msg=f"Failed to {inspect.currentframe() if inspect.currentframe() else 'unknown'} within {self.timeout=}",
             stacktrace=traceback.format_stack()
         )
 
@@ -1483,7 +1362,7 @@ class Element(ElementBase):
 
         while time.time() - start_time < self.timeout:
             try:
-                self._get_driver()
+                self.get_driver()
                 self._get_element(locator=self.locator)
 
                 self._mobile_gesture("mobile: pinchCloseGesture", {
@@ -1494,24 +1373,24 @@ class Element(ElementBase):
 
                 return self
             except NoSuchDriverException as error:
-                self._handle_driver_error(error)
+                self.handle_driver_error(error)
             except InvalidSessionIdException as error:
-                self._handle_driver_error(error)
+                self.handle_driver_error(error)
             except AttributeError as error:
-                self._handle_driver_error(error)
+                self.handle_driver_error(error)
             except StaleElementReferenceException as error:
                 self.logger.debug(error)
                 self.logger.warning("StaleElementReferenceException\nRe-acquire element")
                 self.native = None
-                self._get_native()
+                self.get_native()
                 continue
             except WebDriverException as error:
                 if "instrumentation process is not running" in str(error).lower():
-                    self._handle_driver_error(error)
+                    self.handle_driver_error(error)
                     continue
                 raise
-        raise GeneralElementException(
-            msg=f"Failed to {inspect.currentframe().f_code.co_name if inspect.currentframe() else 'unknown'} within {self.timeout=}",
+        raise ShadowstepElementException(
+            msg=f"Failed to {inspect.currentframe() if inspect.currentframe() else 'unknown'} within {self.timeout=}",
             stacktrace=traceback.format_stack()
         )
 
@@ -1548,7 +1427,7 @@ class Element(ElementBase):
 
         while time.time() - start_time < self.timeout:
             try:
-                self._get_driver()
+                self.get_driver()
 
                 self._mobile_gesture("mobile: swipeGesture", {
                     "elementId": self.id,
@@ -1559,24 +1438,24 @@ class Element(ElementBase):
 
                 return self
             except NoSuchDriverException as error:
-                self._handle_driver_error(error)
+                self.handle_driver_error(error)
             except InvalidSessionIdException as error:
-                self._handle_driver_error(error)
+                self.handle_driver_error(error)
             except AttributeError as error:
-                self._handle_driver_error(error)
+                self.handle_driver_error(error)
             except StaleElementReferenceException as error:
                 self.logger.debug(error)
                 self.logger.warning("StaleElementReferenceException\nRe-acquire element")
                 self.native = None
-                self._get_native()
+                self.get_native()
                 continue
             except WebDriverException as error:
                 if "instrumentation process is not running" in str(error).lower():
-                    self._handle_driver_error(error)
+                    self.handle_driver_error(error)
                     continue
                 raise
-        raise GeneralElementException(
-            msg=f"Failed to {inspect.currentframe().f_code.co_name if inspect.currentframe() else 'unknown'} within {self.timeout=} {direction=} {percent=}",
+        raise ShadowstepElementException(
+            msg=f"Failed to {inspect.currentframe() if inspect.currentframe() else 'unknown'} within {self.timeout=} {direction=} {percent=}",
             stacktrace=traceback.format_stack()
         )
 
@@ -1592,30 +1471,30 @@ class Element(ElementBase):
 
         while time.time() - start_time < self.timeout:
             try:
-                self._get_driver()
+                self.get_driver()
 
-                current_element = self._get_native()
+                current_element = self.get_native()
 
                 current_element.clear()
                 return self
             except NoSuchDriverException as error:
-                self._handle_driver_error(error)
+                self.handle_driver_error(error)
             except InvalidSessionIdException as error:
-                self._handle_driver_error(error)
+                self.handle_driver_error(error)
             except AttributeError as error:
-                self._handle_driver_error(error)
+                self.handle_driver_error(error)
             except StaleElementReferenceException as error:
                 self.logger.debug(error)
                 self.logger.warning("StaleElementReferenceException\nRe-acquire element")
                 self.native = None
-                self._get_native()
+                self.get_native()
                 continue
             except WebDriverException as error:
                 if "instrumentation process is not running" in str(error).lower():
-                    self._handle_driver_error(error)
+                    self.handle_driver_error(error)
                     continue
                 raise
-        raise GeneralElementException(
+        raise ShadowstepElementException(
             msg=f"Failed to clear element within {self.timeout=}",
             stacktrace=traceback.format_stack()
         )
@@ -1633,29 +1512,29 @@ class Element(ElementBase):
 
         while time.time() - start_time < self.timeout:
             try:
-                self._get_driver()
+                self.get_driver()
 
-                current_element = self._get_native()
+                current_element = self.get_native()
 
                 return current_element.location_in_view  # Appium WebElement property
             except NoSuchDriverException as error:
-                self._handle_driver_error(error)
+                self.handle_driver_error(error)
             except InvalidSessionIdException as error:
-                self._handle_driver_error(error)
+                self.handle_driver_error(error)
             except AttributeError as error:
-                self._handle_driver_error(error)
+                self.handle_driver_error(error)
             except StaleElementReferenceException as error:
                 self.logger.debug(error)
                 self.logger.warning("StaleElementReferenceException\nRe-acquire element")
                 self.native = None
-                self._get_native()
+                self.get_native()
                 continue
             except WebDriverException as error:
                 if "instrumentation process is not running" in str(error).lower():
-                    self._handle_driver_error(error)
+                    self.handle_driver_error(error)
                     continue
                 raise
-        raise GeneralElementException(
+        raise ShadowstepElementException(
             msg=f"Failed to get location_in_view within {self.timeout=}",
             stacktrace=traceback.format_stack()
         )
@@ -1673,37 +1552,37 @@ class Element(ElementBase):
         """
         self.logger.debug(f"{get_current_func_name()}")
         self.logger.warning(
-            f"Method {inspect.currentframe().f_code.co_name if inspect.currentframe() else 'unknown'} is not implemented in UiAutomator2")
+            f"Method {inspect.currentframe() if inspect.currentframe() else 'unknown'} is not implemented in UiAutomator2")
 
         start_time = time.time()
 
         while time.time() - start_time < self.timeout:
             try:
-                self._get_driver()
+                self.get_driver()
 
-                element = self._get_native()
+                element = self.get_native()
 
                 element.set_value(value)
                 return self
 
             except NoSuchDriverException as error:
-                self._handle_driver_error(error)
+                self.handle_driver_error(error)
             except InvalidSessionIdException as error:
-                self._handle_driver_error(error)
+                self.handle_driver_error(error)
             except AttributeError as error:
-                self._handle_driver_error(error)
+                self.handle_driver_error(error)
             except StaleElementReferenceException as error:
                 self.logger.debug(error)
                 self.logger.warning("StaleElementReferenceException\nRe-acquire element")
                 self.native = None
-                self._get_native()
+                self.get_native()
                 continue
             except WebDriverException as error:
                 if "instrumentation process is not running" in str(error).lower():
-                    self._handle_driver_error(error)
+                    self.handle_driver_error(error)
                     continue
                 raise
-        raise GeneralElementException(
+        raise ShadowstepElementException(
             msg=f"Failed to set_value({value}) within {self.timeout=}",
             stacktrace=traceback.format_stack()
         )
@@ -1725,31 +1604,31 @@ class Element(ElementBase):
 
         while time.time() - start_time < self.timeout:
             try:
-                self._get_driver()
+                self.get_driver()
 
-                element = self._get_native()
+                element = self.get_native()
 
                 element.send_keys(text)
                 return self
 
             except NoSuchDriverException as error:
-                self._handle_driver_error(error)
+                self.handle_driver_error(error)
             except InvalidSessionIdException as error:
-                self._handle_driver_error(error)
+                self.handle_driver_error(error)
             except AttributeError as error:
-                self._handle_driver_error(error)
+                self.handle_driver_error(error)
             except StaleElementReferenceException as error:
                 self.logger.debug(error)
                 self.logger.warning("StaleElementReferenceException\nRe-acquire element")
                 self.native = None
-                self._get_native()
+                self.get_native()
                 continue
             except WebDriverException as error:
                 if "instrumentation process is not running" in str(error).lower():
-                    self._handle_driver_error(error)
+                    self.handle_driver_error(error)
                     continue
                 raise
-        raise GeneralElementException(
+        raise ShadowstepElementException(
             msg=f"Failed to send_keys({text}) within {self.timeout=}",
             stacktrace=traceback.format_stack()
         )
@@ -1766,30 +1645,30 @@ class Element(ElementBase):
 
         while time.time() - start_time < self.timeout:
             try:
-                self._get_driver()
+                self.get_driver()
 
-                element = self._get_native()
+                element = self.get_native()
 
                 return element.tag_name
 
             except NoSuchDriverException as error:
-                self._handle_driver_error(error)
+                self.handle_driver_error(error)
             except InvalidSessionIdException as error:
-                self._handle_driver_error(error)
+                self.handle_driver_error(error)
             except AttributeError as error:
-                self._handle_driver_error(error)
+                self.handle_driver_error(error)
             except StaleElementReferenceException as error:
                 self.logger.debug(error)
                 self.logger.warning("StaleElementReferenceException\nRe-acquire element")
                 self.native = None
-                self._get_native()
+                self.get_native()
                 continue
             except WebDriverException as error:
                 if "instrumentation process is not running" in str(error).lower():
-                    self._handle_driver_error(error)
+                    self.handle_driver_error(error)
                     continue
                 raise
-        raise GeneralElementException(
+        raise ShadowstepElementException(
             msg=f"Failed to retrieve tag_name within {self.timeout=}",
             stacktrace=traceback.format_stack()
         )
@@ -1805,30 +1684,30 @@ class Element(ElementBase):
 
         while time.time() - start_time < self.timeout:
             try:
-                self._get_driver()
+                self.get_driver()
 
-                element = self._get_native()
+                element = self.get_native()
 
                 return element.text
 
             except NoSuchDriverException as error:
-                self._handle_driver_error(error)
+                self.handle_driver_error(error)
             except InvalidSessionIdException as error:
-                self._handle_driver_error(error)
+                self.handle_driver_error(error)
             except AttributeError as error:
-                self._handle_driver_error(error)
+                self.handle_driver_error(error)
             except StaleElementReferenceException as error:
                 self.logger.debug(error)
                 self.logger.warning("StaleElementReferenceException\nRe-acquire element")
                 self.native = None
-                self._get_native()
+                self.get_native()
                 continue
             except WebDriverException as error:
                 if "instrumentation process is not running" in str(error).lower():
-                    self._handle_driver_error(error)
+                    self.handle_driver_error(error)
                     continue
                 raise
-        raise GeneralElementException(
+        raise ShadowstepElementException(
             msg=f"Failed to retrieve text within {self.timeout=}",
             stacktrace=traceback.format_stack()
         )
@@ -1840,28 +1719,28 @@ class Element(ElementBase):
 
         while time.time() - start_time < self.timeout:
             try:
-                self._get_driver()
+                self.get_driver()
 
                 return self.get_attribute("resource-id")
 
             except NoSuchDriverException as error:
-                self._handle_driver_error(error)
+                self.handle_driver_error(error)
             except InvalidSessionIdException as error:
-                self._handle_driver_error(error)
+                self.handle_driver_error(error)
             except AttributeError as error:
-                self._handle_driver_error(error)
+                self.handle_driver_error(error)
             except StaleElementReferenceException as error:
                 self.logger.debug(error)
                 self.logger.warning("StaleElementReferenceException\nRe-acquire element")
                 self.native = None
-                self._get_native()
+                self.get_native()
                 continue
             except WebDriverException as error:
                 if "instrumentation process is not running" in str(error).lower():
-                    self._handle_driver_error(error)
+                    self.handle_driver_error(error)
                     continue
                 raise
-        raise GeneralElementException(
+        raise ShadowstepElementException(
             msg=f"Failed to retrieve attr within {self.timeout=}",
             stacktrace=traceback.format_stack()
         )
@@ -1873,28 +1752,28 @@ class Element(ElementBase):
 
         while time.time() - start_time < self.timeout:
             try:
-                self._get_driver()
+                self.get_driver()
 
                 return self.get_attribute("class")
 
             except NoSuchDriverException as error:
-                self._handle_driver_error(error)
+                self.handle_driver_error(error)
             except InvalidSessionIdException as error:
-                self._handle_driver_error(error)
+                self.handle_driver_error(error)
             except AttributeError as error:
-                self._handle_driver_error(error)
+                self.handle_driver_error(error)
             except StaleElementReferenceException as error:
                 self.logger.debug(error)
                 self.logger.warning("StaleElementReferenceException\nRe-acquire element")
                 self.native = None
-                self._get_native()
+                self.get_native()
                 continue
             except WebDriverException as error:
                 if "instrumentation process is not running" in str(error).lower():
-                    self._handle_driver_error(error)
+                    self.handle_driver_error(error)
                     continue
                 raise
-        raise GeneralElementException(
+        raise ShadowstepElementException(
             msg=f"Failed to retrieve attr within {self.timeout=}",
             stacktrace=traceback.format_stack()
         )
@@ -1906,23 +1785,23 @@ class Element(ElementBase):
 
         while time.time() - start_time < self.timeout:
             try:
-                self._get_driver()
+                self.get_driver()
                 return self.get_attribute("index")
 
             except (NoSuchDriverException, InvalidSessionIdException, AttributeError) as error:
-                self._handle_driver_error(error)
+                self.handle_driver_error(error)
             except StaleElementReferenceException as error:
                 self.logger.debug(error)
                 self.logger.warning("StaleElementReferenceException\nRe-acquire element")
                 self.native = None
-                self._get_native()
+                self.get_native()
                 continue
             except WebDriverException as error:
                 if "instrumentation process is not running" in str(error).lower():
-                    self._handle_driver_error(error)
+                    self.handle_driver_error(error)
                     continue
                 raise
-        raise GeneralElementException(
+        raise ShadowstepElementException(
             msg=f"Failed to retrieve attr within {self.timeout=}",
             stacktrace=traceback.format_stack()
         )
@@ -1934,23 +1813,23 @@ class Element(ElementBase):
 
         while time.time() - start_time < self.timeout:
             try:
-                self._get_driver()
+                self.get_driver()
                 return self.get_attribute("package")
 
             except (NoSuchDriverException, InvalidSessionIdException, AttributeError) as error:
-                self._handle_driver_error(error)
+                self.handle_driver_error(error)
             except StaleElementReferenceException as error:
                 self.logger.debug(error)
                 self.logger.warning("StaleElementReferenceException\nRe-acquire element")
                 self.native = None
-                self._get_native()
+                self.get_native()
                 continue
             except WebDriverException as error:
                 if "instrumentation process is not running" in str(error).lower():
-                    self._handle_driver_error(error)
+                    self.handle_driver_error(error)
                     continue
                 raise
-        raise GeneralElementException(
+        raise ShadowstepElementException(
             msg=f"Failed to retrieve attr within {self.timeout=}",
             stacktrace=traceback.format_stack()
         )
@@ -1962,23 +1841,23 @@ class Element(ElementBase):
 
         while time.time() - start_time < self.timeout:
             try:
-                self._get_driver()
+                self.get_driver()
                 return self.get_attribute("class")
 
             except (NoSuchDriverException, InvalidSessionIdException, AttributeError) as error:
-                self._handle_driver_error(error)
+                self.handle_driver_error(error)
             except StaleElementReferenceException as error:
                 self.logger.debug(error)
                 self.logger.warning("StaleElementReferenceException\nRe-acquire element")
                 self.native = None
-                self._get_native()
+                self.get_native()
                 continue
             except WebDriverException as error:
                 if "instrumentation process is not running" in str(error).lower():
-                    self._handle_driver_error(error)
+                    self.handle_driver_error(error)
                     continue
                 raise
-        raise GeneralElementException(
+        raise ShadowstepElementException(
             msg=f"Failed to retrieve attr within {self.timeout=}",
             stacktrace=traceback.format_stack()
         )
@@ -1990,23 +1869,23 @@ class Element(ElementBase):
 
         while time.time() - start_time < self.timeout:
             try:
-                self._get_driver()
+                self.get_driver()
                 return self.get_attribute("bounds")
 
             except (NoSuchDriverException, InvalidSessionIdException, AttributeError) as error:
-                self._handle_driver_error(error)
+                self.handle_driver_error(error)
             except StaleElementReferenceException as error:
                 self.logger.debug(error)
                 self.logger.warning("StaleElementReferenceException\nRe-acquire element")
                 self.native = None
-                self._get_native()
+                self.get_native()
                 continue
             except WebDriverException as error:
                 if "instrumentation process is not running" in str(error).lower():
-                    self._handle_driver_error(error)
+                    self.handle_driver_error(error)
                     continue
                 raise
-        raise GeneralElementException(
+        raise ShadowstepElementException(
             msg=f"Failed to retrieve attr within {self.timeout=}",
             stacktrace=traceback.format_stack()
         )
@@ -2018,27 +1897,27 @@ class Element(ElementBase):
 
         while time.time() - start_time < self.timeout:
             try:
-                self._get_driver()
+                self.get_driver()
                 return self.get_attribute("checked")
 
             except NoSuchDriverException as error:
-                self._handle_driver_error(error)
+                self.handle_driver_error(error)
             except InvalidSessionIdException as error:
-                self._handle_driver_error(error)
+                self.handle_driver_error(error)
             except AttributeError as error:
-                self._handle_driver_error(error)
+                self.handle_driver_error(error)
             except StaleElementReferenceException as error:
                 self.logger.debug(error)
                 self.logger.warning("StaleElementReferenceException\nRe-acquire element")
                 self.native = None
-                self._get_native()
+                self.get_native()
                 continue
             except WebDriverException as error:
                 if "instrumentation process is not running" in str(error).lower():
-                    self._handle_driver_error(error)
+                    self.handle_driver_error(error)
                     continue
                 raise
-        raise GeneralElementException(
+        raise ShadowstepElementException(
             msg=f"Failed to retrieve attr within {self.timeout=}",
             stacktrace=traceback.format_stack()
         )
@@ -2050,27 +1929,27 @@ class Element(ElementBase):
 
         while time.time() - start_time < self.timeout:
             try:
-                self._get_driver()
+                self.get_driver()
                 return self.get_attribute("checkable")
 
             except NoSuchDriverException as error:
-                self._handle_driver_error(error)
+                self.handle_driver_error(error)
             except InvalidSessionIdException as error:
-                self._handle_driver_error(error)
+                self.handle_driver_error(error)
             except AttributeError as error:
-                self._handle_driver_error(error)
+                self.handle_driver_error(error)
             except StaleElementReferenceException as error:
                 self.logger.debug(error)
                 self.logger.warning("StaleElementReferenceException\nRe-acquire element")
                 self.native = None
-                self._get_native()
+                self.get_native()
                 continue
             except WebDriverException as error:
                 if "instrumentation process is not running" in str(error).lower():
-                    self._handle_driver_error(error)
+                    self.handle_driver_error(error)
                     continue
                 raise
-        raise GeneralElementException(
+        raise ShadowstepElementException(
             msg=f"Failed to retrieve attr within {self.timeout=}",
             stacktrace=traceback.format_stack()
         )
@@ -2082,27 +1961,27 @@ class Element(ElementBase):
 
         while time.time() - start_time < self.timeout:
             try:
-                self._get_driver()
+                self.get_driver()
                 return self.get_attribute("enabled")
 
             except NoSuchDriverException as error:
-                self._handle_driver_error(error)
+                self.handle_driver_error(error)
             except InvalidSessionIdException as error:
-                self._handle_driver_error(error)
+                self.handle_driver_error(error)
             except AttributeError as error:
-                self._handle_driver_error(error)
+                self.handle_driver_error(error)
             except StaleElementReferenceException as error:
                 self.logger.debug(error)
                 self.logger.warning("StaleElementReferenceException\nRe-acquire element")
                 self.native = None
-                self._get_native()
+                self.get_native()
                 continue
             except WebDriverException as error:
                 if "instrumentation process is not running" in str(error).lower():
-                    self._handle_driver_error(error)
+                    self.handle_driver_error(error)
                     continue
                 raise
-        raise GeneralElementException(
+        raise ShadowstepElementException(
             msg=f"Failed to retrieve attr within {self.timeout=}",
             stacktrace=traceback.format_stack()
         )
@@ -2114,27 +1993,27 @@ class Element(ElementBase):
 
         while time.time() - start_time < self.timeout:
             try:
-                self._get_driver()
+                self.get_driver()
                 return self.get_attribute("focusable")
 
             except NoSuchDriverException as error:
-                self._handle_driver_error(error)
+                self.handle_driver_error(error)
             except InvalidSessionIdException as error:
-                self._handle_driver_error(error)
+                self.handle_driver_error(error)
             except AttributeError as error:
-                self._handle_driver_error(error)
+                self.handle_driver_error(error)
             except StaleElementReferenceException as error:
                 self.logger.debug(error)
                 self.logger.warning("StaleElementReferenceException\nRe-acquire element")
                 self.native = None
-                self._get_native()
+                self.get_native()
                 continue
             except WebDriverException as error:
                 if "instrumentation process is not running" in str(error).lower():
-                    self._handle_driver_error(error)
+                    self.handle_driver_error(error)
                     continue
                 raise
-        raise GeneralElementException(
+        raise ShadowstepElementException(
             msg=f"Failed to retrieve attr within {self.timeout=}",
             stacktrace=traceback.format_stack()
         )
@@ -2146,27 +2025,27 @@ class Element(ElementBase):
 
         while time.time() - start_time < self.timeout:
             try:
-                self._get_driver()
+                self.get_driver()
                 return self.get_attribute("focused")
 
             except NoSuchDriverException as error:
-                self._handle_driver_error(error)
+                self.handle_driver_error(error)
             except InvalidSessionIdException as error:
-                self._handle_driver_error(error)
+                self.handle_driver_error(error)
             except AttributeError as error:
-                self._handle_driver_error(error)
+                self.handle_driver_error(error)
             except StaleElementReferenceException as error:
                 self.logger.debug(error)
                 self.logger.warning("StaleElementReferenceException\nRe-acquire element")
                 self.native = None
-                self._get_native()
+                self.get_native()
                 continue
             except WebDriverException as error:
                 if "instrumentation process is not running" in str(error).lower():
-                    self._handle_driver_error(error)
+                    self.handle_driver_error(error)
                     continue
                 raise
-        raise GeneralElementException(
+        raise ShadowstepElementException(
             msg=f"Failed to retrieve attr within {self.timeout=}",
             stacktrace=traceback.format_stack()
         )
@@ -2178,27 +2057,27 @@ class Element(ElementBase):
 
         while time.time() - start_time < self.timeout:
             try:
-                self._get_driver()
+                self.get_driver()
                 return self.get_attribute("long-clickable")
 
             except NoSuchDriverException as error:
-                self._handle_driver_error(error)
+                self.handle_driver_error(error)
             except InvalidSessionIdException as error:
-                self._handle_driver_error(error)
+                self.handle_driver_error(error)
             except AttributeError as error:
-                self._handle_driver_error(error)
+                self.handle_driver_error(error)
             except StaleElementReferenceException as error:
                 self.logger.debug(error)
                 self.logger.warning("StaleElementReferenceException\nRe-acquire element")
                 self.native = None
-                self._get_native()
+                self.get_native()
                 continue
             except WebDriverException as error:
                 if "instrumentation process is not running" in str(error).lower():
-                    self._handle_driver_error(error)
+                    self.handle_driver_error(error)
                     continue
                 raise
-        raise GeneralElementException(
+        raise ShadowstepElementException(
             msg=f"Failed to retrieve attr within {self.timeout=}",
             stacktrace=traceback.format_stack()
         )
@@ -2210,27 +2089,27 @@ class Element(ElementBase):
 
         while time.time() - start_time < self.timeout:
             try:
-                self._get_driver()
+                self.get_driver()
                 return self.get_attribute("password")
 
             except NoSuchDriverException as error:
-                self._handle_driver_error(error)
+                self.handle_driver_error(error)
             except InvalidSessionIdException as error:
-                self._handle_driver_error(error)
+                self.handle_driver_error(error)
             except AttributeError as error:
-                self._handle_driver_error(error)
+                self.handle_driver_error(error)
             except StaleElementReferenceException as error:
                 self.logger.debug(error)
                 self.logger.warning("StaleElementReferenceException\nRe-acquire element")
                 self.native = None
-                self._get_native()
+                self.get_native()
                 continue
             except WebDriverException as error:
                 if "instrumentation process is not running" in str(error).lower():
-                    self._handle_driver_error(error)
+                    self.handle_driver_error(error)
                     continue
                 raise
-        raise GeneralElementException(
+        raise ShadowstepElementException(
             msg=f"Failed to retrieve attr within {self.timeout=}",
             stacktrace=traceback.format_stack()
         )
@@ -2242,27 +2121,27 @@ class Element(ElementBase):
 
         while time.time() - start_time < self.timeout:
             try:
-                self._get_driver()
+                self.get_driver()
                 return self.get_attribute("scrollable")
 
             except NoSuchDriverException as error:
-                self._handle_driver_error(error)
+                self.handle_driver_error(error)
             except InvalidSessionIdException as error:
-                self._handle_driver_error(error)
+                self.handle_driver_error(error)
             except AttributeError as error:
-                self._handle_driver_error(error)
+                self.handle_driver_error(error)
             except StaleElementReferenceException as error:
                 self.logger.debug(error)
                 self.logger.warning("StaleElementReferenceException\nRe-acquire element")
                 self.native = None
-                self._get_native()
+                self.get_native()
                 continue
             except WebDriverException as error:
                 if "instrumentation process is not running" in str(error).lower():
-                    self._handle_driver_error(error)
+                    self.handle_driver_error(error)
                     continue
                 raise
-        raise GeneralElementException(
+        raise ShadowstepElementException(
             msg=f"Failed to retrieve attr within {self.timeout=}",
             stacktrace=traceback.format_stack()
         )
@@ -2274,27 +2153,27 @@ class Element(ElementBase):
 
         while time.time() - start_time < self.timeout:
             try:
-                self._get_driver()
+                self.get_driver()
                 return self.get_attribute("selected")
 
             except NoSuchDriverException as error:
-                self._handle_driver_error(error)
+                self.handle_driver_error(error)
             except InvalidSessionIdException as error:
-                self._handle_driver_error(error)
+                self.handle_driver_error(error)
             except AttributeError as error:
-                self._handle_driver_error(error)
+                self.handle_driver_error(error)
             except StaleElementReferenceException as error:
                 self.logger.debug(error)
                 self.logger.warning("StaleElementReferenceException\nRe-acquire element")
                 self.native = None
-                self._get_native()
+                self.get_native()
                 continue
             except WebDriverException as error:
                 if "instrumentation process is not running" in str(error).lower():
-                    self._handle_driver_error(error)
+                    self.handle_driver_error(error)
                     continue
                 raise
-        raise GeneralElementException(
+        raise ShadowstepElementException(
             msg=f"Failed to retrieve attr within {self.timeout=}",
             stacktrace=traceback.format_stack()
         )
@@ -2306,27 +2185,27 @@ class Element(ElementBase):
 
         while time.time() - start_time < self.timeout:
             try:
-                self._get_driver()
+                self.get_driver()
                 return self.get_attribute("displayed")
 
             except NoSuchDriverException as error:
-                self._handle_driver_error(error)
+                self.handle_driver_error(error)
             except InvalidSessionIdException as error:
-                self._handle_driver_error(error)
+                self.handle_driver_error(error)
             except AttributeError as error:
-                self._handle_driver_error(error)
+                self.handle_driver_error(error)
             except StaleElementReferenceException as error:
                 self.logger.debug(error)
                 self.logger.warning("StaleElementReferenceException\nRe-acquire element")
                 self.native = None
-                self._get_native()
+                self.get_native()
                 continue
             except WebDriverException as error:
                 if "instrumentation process is not running" in str(error).lower():
-                    self._handle_driver_error(error)
+                    self.handle_driver_error(error)
                     continue
                 raise
-        raise GeneralElementException(
+        raise ShadowstepElementException(
             msg=f"Failed to retrieve attr within {self.timeout=}",
             stacktrace=traceback.format_stack()
         )
@@ -2340,34 +2219,34 @@ class Element(ElementBase):
         """
         self.logger.debug(f"{get_current_func_name()}")
         self.logger.warning(
-            f"Method {inspect.currentframe().f_code.co_name if inspect.currentframe() else 'unknown'} is not implemented in UiAutomator2")
+            f"Method {inspect.currentframe() if inspect.currentframe() else 'unknown'} is not implemented in UiAutomator2")
         start_time = time.time()
 
         while time.time() - start_time < self.timeout:
             try:
-                self._get_driver()
-                element = self._get_native()
+                self.get_driver()
+                element = self.get_native()
                 element.submit()
                 return self
 
             except NoSuchDriverException as error:
-                self._handle_driver_error(error)
+                self.handle_driver_error(error)
             except InvalidSessionIdException as error:
-                self._handle_driver_error(error)
+                self.handle_driver_error(error)
             except AttributeError as error:
-                self._handle_driver_error(error)
+                self.handle_driver_error(error)
             except StaleElementReferenceException as error:
                 self.logger.debug(error)
                 self.logger.warning("StaleElementReferenceException\nRe-acquire element")
                 self.native = None
-                self._get_native()
+                self.get_native()
                 continue
             except WebDriverException as error:
                 if "instrumentation process is not running" in str(error).lower():
-                    self._handle_driver_error(error)
+                    self.handle_driver_error(error)
                     continue
                 raise
-        raise GeneralElementException(
+        raise ShadowstepElementException(
             msg=f"Failed to submit element within {self.timeout=}",
             stacktrace=traceback.format_stack()
         )
@@ -2381,30 +2260,30 @@ class Element(ElementBase):
             ShadowRoot: Shadow DOM root attached to the element.
 
         Raises:
-            GeneralElementException: If shadow root is not available or an error occurs.
+            ShadowstepElementException: If shadow root is not available or an error occurs.
         """
         self.logger.debug(f"{get_current_func_name()}")
         self.logger.warning(
-            f"Method {inspect.currentframe().f_code.co_name if inspect.currentframe() else 'unknown'} is not implemented in UiAutomator2")
+            f"Method {inspect.currentframe() if inspect.currentframe() else 'unknown'} is not implemented in UiAutomator2")
 
         start_time = time.time()
 
         while time.time() - start_time < self.timeout:
             try:
-                self._get_driver()
-                element = self._get_native()
+                self.get_driver()
+                element = self.get_native()
                 return element.shadow_root
 
             except NoSuchDriverException as error:
-                self._handle_driver_error(error)
+                self.handle_driver_error(error)
             except InvalidSessionIdException as error:
-                self._handle_driver_error(error)
+                self.handle_driver_error(error)
             except AttributeError as error:
-                self._handle_driver_error(error)
+                self.handle_driver_error(error)
             except WebDriverException as error:
-                self._handle_driver_error(error)
+                self.handle_driver_error(error)
 
-        raise GeneralElementException(
+        raise ShadowstepElementException(
             msg=f"Failed to retrieve shadow_root within {self.timeout=}",
             stacktrace=traceback.format_stack()
         )
@@ -2418,32 +2297,32 @@ class Element(ElementBase):
             dict: Dictionary with keys 'x' and 'y' indicating location on screen.
 
         Raises:
-            GeneralElementException: If element could not be scrolled into view or location determined.
+            ShadowstepElementException: If element could not be scrolled into view or location determined.
         """
         self.logger.debug(f"{get_current_func_name()}")
         self.logger.warning(
-            f"Method {inspect.currentframe().f_code.co_name if inspect.currentframe() else 'unknown'} is not implemented in UiAutomator2")
+            f"Method {inspect.currentframe() if inspect.currentframe() else 'unknown'} is not implemented in UiAutomator2")
 
         start_time = time.time()
 
         while time.time() - start_time < self.timeout:
             try:
-                self._get_driver()
+                self.get_driver()
 
-                current_element = self._get_native()
+                current_element = self.get_native()
 
                 return current_element.location_once_scrolled_into_view
 
             except NoSuchDriverException as error:
-                self._handle_driver_error(error)
+                self.handle_driver_error(error)
             except InvalidSessionIdException as error:
-                self._handle_driver_error(error)
+                self.handle_driver_error(error)
             except AttributeError as error:
-                self._handle_driver_error(error)
+                self.handle_driver_error(error)
             except WebDriverException as error:
-                self._handle_driver_error(error)
+                self.handle_driver_error(error)
 
-        raise GeneralElementException(
+        raise ShadowstepElementException(
             msg=f"Failed to get location_once_scrolled_into_view within {self.timeout=}",
             stacktrace=traceback.format_stack()
         )
@@ -2456,35 +2335,35 @@ class Element(ElementBase):
             dict: Dictionary with keys 'width' and 'height'.
 
         Raises:
-            GeneralElementException: If size cannot be determined.
+            ShadowstepElementException: If size cannot be determined.
         """
         self.logger.debug(f"{get_current_func_name()}")
         start_time = time.time()
 
         while time.time() - start_time < self.timeout:
             try:
-                self._get_driver()
+                self.get_driver()
 
-                current_element = self._get_native()
+                current_element = self.get_native()
 
                 return current_element.size
 
             except NoSuchDriverException as error:
-                self._handle_driver_error(error)
+                self.handle_driver_error(error)
             except InvalidSessionIdException as error:
-                self._handle_driver_error(error)
+                self.handle_driver_error(error)
             except AttributeError as error:
-                self._handle_driver_error(error)
+                self.handle_driver_error(error)
             except StaleElementReferenceException as error:
                 self.logger.debug(error)
                 self.logger.warning("StaleElementReferenceException\nRe-acquire element")
                 self.native = None
-                self._get_native()
+                self.get_native()
                 continue
             except WebDriverException as error:
-                self._handle_driver_error(error)
+                self.handle_driver_error(error)
 
-        raise GeneralElementException(
+        raise ShadowstepElementException(
             msg=f"Failed to retrieve size within {self.timeout=}",
             stacktrace=traceback.format_stack()
         )
@@ -2500,38 +2379,38 @@ class Element(ElementBase):
             str: The value of the CSS property.
 
         Raises:
-            GeneralElementException: If value could not be retrieved within timeout.
+            ShadowstepElementException: If value could not be retrieved within timeout.
         """
         self.logger.debug(f"{get_current_func_name()}")
         self.logger.warning(
-            f"Method {inspect.currentframe().f_code.co_name if inspect.currentframe() else 'unknown'} is not implemented in UiAutomator2")
+            f"Method {inspect.currentframe() if inspect.currentframe() else 'unknown'} is not implemented in UiAutomator2")
 
         start_time = time.time()
 
         while time.time() - start_time < self.timeout:
             try:
-                self._get_driver()
+                self.get_driver()
 
-                current_element = self._get_native()
+                current_element = self.get_native()
 
                 return current_element.value_of_css_property(property_name)
 
             except NoSuchDriverException as error:
-                self._handle_driver_error(error)
+                self.handle_driver_error(error)
             except InvalidSessionIdException as error:
-                self._handle_driver_error(error)
+                self.handle_driver_error(error)
             except AttributeError as error:
-                self._handle_driver_error(error)
+                self.handle_driver_error(error)
             except StaleElementReferenceException as error:
                 self.logger.debug(error)
                 self.logger.warning("StaleElementReferenceException\nRe-acquire element")
                 self.native = None
-                self._get_native()
+                self.get_native()
                 continue
             except WebDriverException as error:
-                self._handle_driver_error(error)
+                self.handle_driver_error(error)
 
-        raise GeneralElementException(
+        raise ShadowstepElementException(
             msg=f"Failed to retrieve CSS property '{property_name}' within {self.timeout=}",
             stacktrace=traceback.format_stack()
         )
@@ -2545,38 +2424,38 @@ class Element(ElementBase):
             dict: Dictionary with 'x' and 'y' coordinates of the element.
 
         Raises:
-            GeneralElementException: If location could not be retrieved within timeout.
+            ShadowstepElementException: If location could not be retrieved within timeout.
         """
         self.logger.debug(f"{get_current_func_name()}")
         self.logger.warning(
-            f"Method {inspect.currentframe().f_code.co_name if inspect.currentframe() else 'unknown'} is not implemented in UiAutomator2")
+            f"Method {inspect.currentframe() if inspect.currentframe() else 'unknown'} is not implemented in UiAutomator2")
 
         start_time = time.time()
 
         while time.time() - start_time < self.timeout:
             try:
-                self._get_driver()
+                self.get_driver()
 
-                current_element = self._get_native()
+                current_element = self.get_native()
 
                 return current_element.location
 
             except NoSuchDriverException as error:
-                self._handle_driver_error(error)
+                self.handle_driver_error(error)
             except InvalidSessionIdException as error:
-                self._handle_driver_error(error)
+                self.handle_driver_error(error)
             except AttributeError as error:
-                self._handle_driver_error(error)
+                self.handle_driver_error(error)
             except StaleElementReferenceException as error:
                 self.logger.debug(error)
                 self.logger.warning("StaleElementReferenceException\nRe-acquire element")
                 self.native = None
-                self._get_native()
+                self.get_native()
                 continue
             except WebDriverException as error:
-                self._handle_driver_error(error)
+                self.handle_driver_error(error)
 
-        raise GeneralElementException(
+        raise ShadowstepElementException(
             msg=f"Failed to retrieve location within {self.timeout=}",
             stacktrace=traceback.format_stack()
         )
@@ -2589,35 +2468,35 @@ class Element(ElementBase):
             dict: Dictionary with keys 'x', 'y', 'width', 'height'.
 
         Raises:
-            GeneralElementException: If rect could not be retrieved within timeout.
+            ShadowstepElementException: If rect could not be retrieved within timeout.
         """
         self.logger.debug(f"{get_current_func_name()}")
         start_time = time.time()
 
         while time.time() - start_time < self.timeout:
             try:
-                self._get_driver()
+                self.get_driver()
 
-                current_element = self._get_native()
+                current_element = self.get_native()
 
                 return current_element.rect
 
             except NoSuchDriverException as error:
-                self._handle_driver_error(error)
+                self.handle_driver_error(error)
             except InvalidSessionIdException as error:
-                self._handle_driver_error(error)
+                self.handle_driver_error(error)
             except AttributeError as error:
-                self._handle_driver_error(error)
+                self.handle_driver_error(error)
             except StaleElementReferenceException as error:
                 self.logger.debug(error)
                 self.logger.warning("StaleElementReferenceException\nRe-acquire element")
                 self.native = None
-                self._get_native()
+                self.get_native()
                 continue
             except WebDriverException as error:
-                self._handle_driver_error(error)
+                self.handle_driver_error(error)
 
-        raise GeneralElementException(
+        raise ShadowstepElementException(
             msg=f"Failed to retrieve rect within {self.timeout=}",
             stacktrace=traceback.format_stack()
         )
@@ -2634,28 +2513,28 @@ class Element(ElementBase):
 
         while time.time() - start_time < self.timeout:
             try:
-                self._get_driver()
+                self.get_driver()
 
-                current_element = self._get_native()
+                current_element = self.get_native()
 
                 return current_element.aria_role
 
             except NoSuchDriverException as error:
-                self._handle_driver_error(error)
+                self.handle_driver_error(error)
             except InvalidSessionIdException as error:
-                self._handle_driver_error(error)
+                self.handle_driver_error(error)
             except AttributeError as error:
-                self._handle_driver_error(error)
+                self.handle_driver_error(error)
             except StaleElementReferenceException as error:
                 self.logger.debug(error)
                 self.logger.warning("StaleElementReferenceException\nRe-acquire element")
                 self.native = None
-                self._get_native()
+                self.get_native()
                 continue
             except WebDriverException as error:
-                self._handle_driver_error(error)
+                self.handle_driver_error(error)
 
-        raise GeneralElementException(
+        raise ShadowstepElementException(
             msg=f"Failed to retrieve aria_role within {self.timeout=}",
             stacktrace=traceback.format_stack()
         )
@@ -2672,28 +2551,28 @@ class Element(ElementBase):
 
         while time.time() - start_time < self.timeout:
             try:
-                self._get_driver()
+                self.get_driver()
 
-                current_element = self._get_native()
+                current_element = self.get_native()
 
                 return current_element.accessible_name
 
             except NoSuchDriverException as error:
-                self._handle_driver_error(error)
+                self.handle_driver_error(error)
             except InvalidSessionIdException as error:
-                self._handle_driver_error(error)
+                self.handle_driver_error(error)
             except AttributeError as error:
-                self._handle_driver_error(error)
+                self.handle_driver_error(error)
             except StaleElementReferenceException as error:
                 self.logger.debug(error)
                 self.logger.warning("StaleElementReferenceException\nRe-acquire element")
                 self.native = None
-                self._get_native()
+                self.get_native()
                 continue
             except WebDriverException as error:
-                self._handle_driver_error(error)
+                self.handle_driver_error(error)
 
-        raise GeneralElementException(
+        raise ShadowstepElementException(
             msg=f"Failed to retrieve accessible_name within {self.timeout=}",
             stacktrace=traceback.format_stack()
         )
@@ -2710,28 +2589,28 @@ class Element(ElementBase):
 
         while time.time() - start_time < self.timeout:
             try:
-                self._get_driver()
+                self.get_driver()
 
-                current_element = self._get_native()
+                current_element = self.get_native()
 
                 return current_element.screenshot_as_base64
 
             except NoSuchDriverException as error:
-                self._handle_driver_error(error)
+                self.handle_driver_error(error)
             except InvalidSessionIdException as error:
-                self._handle_driver_error(error)
+                self.handle_driver_error(error)
             except AttributeError as error:
-                self._handle_driver_error(error)
+                self.handle_driver_error(error)
             except StaleElementReferenceException as error:
                 self.logger.debug(error)
                 self.logger.warning("StaleElementReferenceException\nRe-acquire element")
                 self.native = None
-                self._get_native()
+                self.get_native()
                 continue
             except WebDriverException as error:
-                self._handle_driver_error(error)
+                self.handle_driver_error(error)
 
-        raise GeneralElementException(
+        raise ShadowstepElementException(
             msg=f"Failed to get screenshot_as_base64 within {self.timeout=}",
             stacktrace=traceback.format_stack()
         )
@@ -2748,28 +2627,28 @@ class Element(ElementBase):
 
         while time.time() - start_time < self.timeout:
             try:
-                self._get_driver()
+                self.get_driver()
 
-                current_element = self._get_native()
+                current_element = self.get_native()
 
                 return current_element.screenshot_as_png
 
             except NoSuchDriverException as error:
-                self._handle_driver_error(error)
+                self.handle_driver_error(error)
             except InvalidSessionIdException as error:
-                self._handle_driver_error(error)
+                self.handle_driver_error(error)
             except AttributeError as error:
-                self._handle_driver_error(error)
+                self.handle_driver_error(error)
             except StaleElementReferenceException as error:
                 self.logger.debug(error)
                 self.logger.warning("StaleElementReferenceException\nRe-acquire element")
                 self.native = None
-                self._get_native()
+                self.get_native()
                 continue
             except WebDriverException as error:
-                self._handle_driver_error(error)
+                self.handle_driver_error(error)
 
-        raise GeneralElementException(
+        raise ShadowstepElementException(
             msg=f"Failed to get screenshot_as_png within {self.timeout=}",
             stacktrace=traceback.format_stack()
         )
@@ -2788,37 +2667,37 @@ class Element(ElementBase):
 
         while time.time() - start_time < self.timeout:
             try:
-                self._get_driver()
+                self.get_driver()
 
-                current_element = self._get_native()
+                current_element = self.get_native()
 
                 return current_element.screenshot(filename)
 
             except NoSuchDriverException as error:
-                self._handle_driver_error(error)
+                self.handle_driver_error(error)
             except InvalidSessionIdException as error:
-                self._handle_driver_error(error)
+                self.handle_driver_error(error)
             except AttributeError as error:
-                self._handle_driver_error(error)
+                self.handle_driver_error(error)
             except StaleElementReferenceException as error:
                 self.logger.debug(error)
                 self.logger.warning("StaleElementReferenceException\nRe-acquire element")
                 self.native = None
-                self._get_native()
+                self.get_native()
                 continue
             except OSError as error:
                 self.logger.error(f"IOError while saving screenshot to {filename}: {error}")
                 return False
             except WebDriverException as error:
-                self._handle_driver_error(error)
+                self.handle_driver_error(error)
 
-        raise GeneralElementException(
+        raise ShadowstepElementException(
             msg=f"Failed to save screenshot to {filename} within {self.timeout=}",
             stacktrace=traceback.format_stack()
         )
 
-    def _handle_driver_error(self, error: Exception) -> None:
-        self.logger.warning(f"{inspect.currentframe().f_code.co_name if inspect.currentframe() else 'unknown'} {error}")
+    def handle_driver_error(self, error: Exception) -> None:
+        self.logger.warning(f"{inspect.currentframe() if inspect.currentframe() else 'unknown'} {error}")
         self.shadowstep.reconnect()
         time.sleep(0.3)
 
@@ -2829,7 +2708,7 @@ class Element(ElementBase):
     def _ensure_session_alive(self) -> None:
         self.logger.debug(f"{get_current_func_name()}")
         try:
-            self._get_driver()
+            self.get_driver()
         except NoSuchDriverException:
             self.logger.warning("Reconnecting driver due to session issue")
             self.shadowstep.reconnect()
@@ -2852,21 +2731,16 @@ class Element(ElementBase):
                 self.logger.debug(error)
                 self.logger.warning("StaleElementReferenceException\nRe-acquire element")
                 self.native = None
-                self._get_native()
+                self.get_native()
                 continue
             except WebDriverException as error:
                 if "instrumentation process is not running" in str(error).lower():
-                    self._handle_driver_error(error)
+                    self.handle_driver_error(error)
                     continue
                 raise
         return ""  # Return empty string if no child class found
 
-    def _get_xpath(self) -> str:
-        self.logger.debug(f"{get_current_func_name()}")
-        locator = self.handle_locator(self.locator, self.contains)
-        if locator is not None and locator[0] == "xpath":
-            return locator[1]
-        return self._get_xpath_by_driver()
+
 
     def _build_xpath_attribute_condition(self, key: str, value: str) -> str:
         """Build XPath attribute condition based on value content."""
@@ -2883,7 +2757,7 @@ class Element(ElementBase):
             return f"[@{key}={escaped}]"
         return f"[@{key}='{value}']"
 
-    def _build_xpath_from_attributes(self, attrs: dict[str, str]) -> str:
+    def build_xpath_from_attributes(self, attrs: dict[str, Any]) -> str:
         """Build XPath from element attributes."""
         xpath = "//"
         element_type = attrs.get("class")
@@ -2894,23 +2768,14 @@ class Element(ElementBase):
             xpath += element_type
         else:
             xpath += "*"
-            
+
         for key, value in attrs.items():
             if key in except_attrs:
                 continue
             xpath += self._build_xpath_attribute_condition(key, value)
         return xpath
 
-    def _get_xpath_by_driver(self) -> str:
-        self.logger.debug(f"{get_current_func_name()}")
-        try:
-            attrs = self.get_attributes()
-            if not attrs:
-                raise GeneralElementException("Failed to retrieve attributes for XPath construction.")
-            return self._build_xpath_from_attributes(attrs)
-        except (AttributeError, KeyError, WebDriverException) as e:
-            self.logger.error(f"Error forming XPath: {str(e)}")
-        return ""
+
 
     def _build_element_xpath(self, base_element: WebElement, index: int) -> str:
         """
@@ -2943,7 +2808,7 @@ class Element(ElementBase):
         start_time = time.time()
         while time.time() - start_time < self.timeout:
             try:
-                resolved_locator = self.handle_locator(self.locator, self.contains)
+                resolved_locator = self.remove_null_value(self.locator)
                 if not resolved_locator:
                     self.logger.error("Resolved locator is None or invalid")
                     if return_bool:
@@ -2960,23 +2825,24 @@ class Element(ElementBase):
                     return False
                 return self
             except NoSuchDriverException as error:
-                self._handle_driver_error(error)
+                self.handle_driver_error(error)
             except InvalidSessionIdException as error:
-                self._handle_driver_error(error)
+                self.handle_driver_error(error)
             except StaleElementReferenceException as error:
                 self.logger.debug(error)
                 self.logger.warning("StaleElementReferenceException\nRe-acquire element")
                 self.native = None
-                self._get_native()
+                self.get_native()
                 continue
             except WebDriverException as error:
-                self._handle_driver_error(error)
+                self.handle_driver_error(error)
             except Exception as error:
                 self.logger.error(f"{error}")
                 continue
         return False
 
-    def _wait_for_visibility_with_locator(self, resolved_locator: tuple[str, str], timeout: int, poll_frequency: float) -> bool:
+    def _wait_for_visibility_with_locator(self, resolved_locator: tuple[str, str], timeout: int,
+                                          poll_frequency: float) -> bool:
         """Wait for element visibility using resolved locator."""
         try:
             WebDriverWait(self.shadowstep.driver, timeout, poll_frequency).until(
@@ -2989,12 +2855,12 @@ class Element(ElementBase):
     def _handle_wait_visibility_errors(self, error: Exception) -> None:
         """Handle errors during wait visibility operation."""
         if isinstance(error, (NoSuchDriverException, InvalidSessionIdException, WebDriverException)):
-            self._handle_driver_error(error)
+            self.handle_driver_error(error)
         elif isinstance(error, StaleElementReferenceException):
             self.logger.debug(error)
             self.logger.warning("StaleElementReferenceException\nRe-acquire element")
             self.native = None
-            self._get_native()
+            self.get_native()
         else:
             self.logger.error(f"{error}")
 
@@ -3011,25 +2877,26 @@ class Element(ElementBase):
         """
         self.logger.debug(f"{get_current_func_name()}")
         start_time = time.time()
-        
+
         while time.time() - start_time < self.timeout:
             try:
-                resolved_locator = self.handle_locator(self.locator, self.contains)
+                resolved_locator = self.remove_null_value(self.locator)
                 if not resolved_locator:
                     self.logger.error("Resolved locator is None or invalid")
                     return False if return_bool else self
 
                 if self._wait_for_visibility_with_locator(resolved_locator, timeout, poll_frequency):
                     return True if return_bool else self
-                    
+
             except Exception as error:
                 self._handle_wait_visibility_errors(error)
                 if isinstance(error, StaleElementReferenceException):
                     continue
-                    
+
         return False if return_bool else self
 
-    def _wait_for_clickability_with_locator(self, resolved_locator: tuple[str, str], timeout: int, poll_frequency: float) -> bool:
+    def _wait_for_clickability_with_locator(self, resolved_locator: tuple[str, str], timeout: int,
+                                            poll_frequency: float) -> bool:
         """Wait for element clickability using resolved locator."""
         try:
             WebDriverWait(self.shadowstep.driver, timeout, poll_frequency).until(
@@ -3042,12 +2909,12 @@ class Element(ElementBase):
     def _handle_wait_clickability_errors(self, error: Exception) -> None:
         """Handle errors during wait clickability operation."""
         if isinstance(error, (NoSuchDriverException, InvalidSessionIdException, WebDriverException)):
-            self._handle_driver_error(error)
+            self.handle_driver_error(error)
         elif isinstance(error, StaleElementReferenceException):
             self.logger.debug(error)
             self.logger.warning("StaleElementReferenceException\nRe-acquire element")
             self.native = None
-            self._get_native()
+            self.get_native()
         else:
             self.logger.error(f"{error}")
 
@@ -3065,25 +2932,26 @@ class Element(ElementBase):
         """
         self.logger.debug(f"{get_current_func_name()}")
         start_time = time.time()
-        
+
         while time.time() - start_time < self.timeout:
             try:
-                resolved_locator = self.handle_locator(self.locator, self.contains)
+                resolved_locator = self.remove_null_value(self.locator)
                 if not resolved_locator:
                     self.logger.error("Resolved locator is None or invalid")
                     return False if return_bool else self
 
                 if self._wait_for_clickability_with_locator(resolved_locator, timeout, poll_frequency):
                     return True if return_bool else self
-                    
+
             except Exception as error:
                 self._handle_wait_clickability_errors(error)
                 if isinstance(error, StaleElementReferenceException):
                     continue
-                    
+
         return False if return_bool else self
 
-    def _wait_for_not_present_with_locator(self, resolved_locator: tuple[str, str], timeout: int, poll_frequency: float) -> bool:
+    def _wait_for_not_present_with_locator(self, resolved_locator: tuple[str, str], timeout: int,
+                                           poll_frequency: float) -> bool:
         """Wait for element to not be present using resolved locator."""
         try:
             WebDriverWait(self.shadowstep.driver, timeout, poll_frequency).until(
@@ -3096,12 +2964,12 @@ class Element(ElementBase):
     def _handle_wait_for_not_errors(self, error: Exception) -> None:
         """Handle errors during wait for not operation."""
         if isinstance(error, (NoSuchDriverException, InvalidSessionIdException, WebDriverException)):
-            self._handle_driver_error(error)
+            self.handle_driver_error(error)
         elif isinstance(error, StaleElementReferenceException):
             self.logger.debug(error)
             self.logger.warning("StaleElementReferenceException\nRe-acquire element")
             self.native = None
-            self._get_native()
+            self.get_native()
         else:
             self.logger.error(f"{error}")
 
@@ -3118,24 +2986,25 @@ class Element(ElementBase):
         """
         self.logger.debug(f"{get_current_func_name()}")
         start_time = time.time()
-        
+
         while time.time() - start_time < self.timeout:
             try:
-                resolved_locator = self.handle_locator(self.locator, self.contains)
+                resolved_locator = self.remove_null_value(self.locator)
                 if not resolved_locator:
                     return False if return_bool else self
-                    
+
                 if self._wait_for_not_present_with_locator(resolved_locator, timeout, poll_frequency):
                     return True if return_bool else self
-                    
+
             except Exception as error:
                 self._handle_wait_for_not_errors(error)
                 if isinstance(error, StaleElementReferenceException):
                     continue
-                    
+
         return False
 
-    def _wait_for_not_visible_with_locator(self, resolved_locator: tuple[str, str], timeout: int, poll_frequency: float) -> bool:
+    def _wait_for_not_visible_with_locator(self, resolved_locator: tuple[str, str], timeout: int,
+                                           poll_frequency: float) -> bool:
         """Wait for element to not be visible using resolved locator."""
         try:
             WebDriverWait(self.shadowstep.driver, timeout, poll_frequency).until(
@@ -3148,12 +3017,12 @@ class Element(ElementBase):
     def _handle_wait_for_not_visible_errors(self, error: Exception) -> None:
         """Handle errors during wait for not visible operation."""
         if isinstance(error, (NoSuchDriverException, InvalidSessionIdException, WebDriverException)):
-            self._handle_driver_error(error)
+            self.handle_driver_error(error)
         elif isinstance(error, StaleElementReferenceException):
             self.logger.debug(error)
             self.logger.warning("StaleElementReferenceException\nRe-acquire element")
             self.native = None
-            self._get_native()
+            self.get_native()
         else:
             self.logger.error(f"{error}")
 
@@ -3171,24 +3040,25 @@ class Element(ElementBase):
         """
         self.logger.debug(f"{get_current_func_name()}")
         start_time = time.time()
-        
+
         while time.time() - start_time < self.timeout:
             try:
-                resolved_locator = self.handle_locator(self.locator, self.contains)
+                resolved_locator = self.remove_null_value(self.locator)
                 if not resolved_locator:
                     return False if return_bool else self
-                    
+
                 if self._wait_for_not_visible_with_locator(resolved_locator, timeout, poll_frequency):
                     return True if return_bool else self
-                    
+
             except Exception as error:
                 self._handle_wait_for_not_visible_errors(error)
                 if isinstance(error, StaleElementReferenceException):
                     continue
-                    
+
         return False if return_bool else self
 
-    def _wait_for_not_clickable_with_locator(self, resolved_locator: tuple[str, str], timeout: int, poll_frequency: float) -> bool:
+    def _wait_for_not_clickable_with_locator(self, resolved_locator: tuple[str, str], timeout: int,
+                                             poll_frequency: float) -> bool:
         """Wait for element to not be clickable using resolved locator."""
         try:
             WebDriverWait(self.shadowstep.driver, timeout, poll_frequency).until(
@@ -3201,12 +3071,12 @@ class Element(ElementBase):
     def _handle_wait_for_not_clickable_errors(self, error: Exception) -> None:
         """Handle errors during wait for not clickable operation."""
         if isinstance(error, (NoSuchDriverException, InvalidSessionIdException, WebDriverException)):
-            self._handle_driver_error(error)
+            self.handle_driver_error(error)
         elif isinstance(error, StaleElementReferenceException):
             self.logger.debug(error)
             self.logger.warning("StaleElementReferenceException\nRe-acquire element")
             self.native = None
-            self._get_native()
+            self.get_native()
         else:
             self.logger.error(f"{error}")
 
@@ -3224,22 +3094,22 @@ class Element(ElementBase):
         """
         self.logger.debug(f"{get_current_func_name()}")
         start_time = time.time()
-        
+
         while time.time() - start_time < self.timeout:
             try:
-                resolved_locator = self.handle_locator(self.locator, self.contains)
+                resolved_locator = self.remove_null_value(self.locator)
                 if not resolved_locator:
                     self.logger.error("Resolved locator is None or invalid")
                     return False if return_bool else self
-                    
+
                 if self._wait_for_not_clickable_with_locator(resolved_locator, timeout, poll_frequency):
                     return True if return_bool else self
-                    
+
             except Exception as error:
                 self._handle_wait_for_not_clickable_errors(error)
                 if isinstance(error, StaleElementReferenceException):
                     continue
-                    
+
         return False if return_bool else self
 
     @property
@@ -3250,7 +3120,7 @@ class Element(ElementBase):
         )
         return Should(self)
 
-    def _get_native(self) -> WebElement:
+    def get_native(self) -> WebElement:
         """
         Returns either the provided native element or resolves via locator.
         """
@@ -3266,42 +3136,8 @@ class Element(ElementBase):
             locator=locator,
             timeout=self.timeout,
             poll_frequency=self.poll_frequency,
-            ignored_exceptions=self.ignored_exceptions,
-            contains=self.contains
+            ignored_exceptions=self.ignored_exceptions
         )
-
-    def _contains_to_xpath(self, xpath: tuple[str, str]) -> tuple[str, str]:
-        """
-        Applies contains(...) only to specific attributes in XPath expression.
-
-        Args:
-            xpath (Tuple[str, str]): The ('strategy', 'xpath') pair.
-
-        Returns:
-            Tuple[str, str]: Transformed XPath with selective contains().
-        """
-        strategy, value = xpath
-
-        # Target specific attributes that need to be wrapped in contains()
-        patterns = {
-            "text": r"@text='([^']*)'",
-            "content-desc": r"@content-desc='([^']*)'",
-            "contentDescription": r"@contentDescription='([^']*)'",
-            "label": r"@label='([^']*)'",
-            "title": r"@title='([^']*)'",
-            "name": r"@name='([^']*)'",
-            "hint": r"@hint='([^']*)'"
-        }
-
-        for attr, pattern in patterns.items():
-            def make_replacer(attribute: str):
-                def replacer(match: Any) -> str:
-                    return f"contains(@{attribute}, '{match.group(1)}')"
-
-                return replacer
-
-            value = re.sub(pattern, make_replacer(attr), value)
-        return strategy, value
 
     def _clean_xpath_expr(self, expr: str) -> str:
         # Remove all attributes where value is 'null'
@@ -3319,59 +3155,118 @@ class Element(ElementBase):
 Инициализация и базовые методы
 Основные свойства и атрибуты
 Логирование и обработка ошибок
+
 2. Element Navigation (element_navigation.py)
 Методы навигации по DOM-дереву:
-get_parent(), get_parents()
-get_sibling(), get_siblings()
+get_element(),
+get_elements()
+get_parent(),
+get_parents()
+get_sibling(),
+get_siblings()
 get_cousin()
-get_element(), get_elements()
+get_element(),
+get_elements()
+
 3. Element Actions (element_actions.py)
 Методы взаимодействия с элементами:
-click(), click_double()
-tap(), tap_and_move()
-send_keys(), clear()
-set_value(), submit()
+click(),
+click_double()
+tap(),
+tap_and_move()
+send_keys(),
+clear()
+set_value(),
+submit()
+
 4. Element Gestures (element_gestures.py)
 Жесты и движения:
-swipe(), swipe_up(), swipe_down(), swipe_left(), swipe_right()
-scroll(), scroll_up(), scroll_down(), scroll_left(), scroll_right()
-fling(), fling_up(), fling_down(), fling_left(), fling_right()
-drag(), zoom(), unzoom()
-scroll_to_element(), scroll_to_bottom(), scroll_to_top()
+swipe(),
+swipe_up(),
+swipe_down(),
+swipe_left(),
+swipe_right()
+scroll(),
+scroll_up(),
+scroll_down(),
+scroll_left(),
+scroll_right()
+fling(),
+fling_up(),
+fling_down(),
+fling_left(),
+fling_right()
+drag(),
+zoom(),
+unzoom()
+scroll_to_element(),
+scroll_to_bottom(),
+scroll_to_top()
+
 5. Element Properties (element_properties.py)
 Свойства и атрибуты элементов:
-text, tag_name, size, location, rect
-resource_id, class_, index, package, bounds
-checked, checkable, enabled, focusable, focused
-long_clickable, password, scrollable, selected, displayed
-aria_role, accessible_name
+text,
+tag_name,
+size,
+location, rect
+resource_id,
+class_,
+index,
+package,
+bounds
+checked,
+checkable,
+enabled,
+focusable,
+focused
+long_clickable,
+password,
+scrollable,
+selected,
+displayed
+aria_role,
+accessible_name
+
 6. Element Coordinates (element_coordinates.py)
 Работа с координатами:
-get_coordinates(), get_center()
-location_in_view, location_once_scrolled_into_view
+get_coordinates(),
+get_center()
+location_in_view,
+location_once_scrolled_into_view
+
 7. Element Screenshots (element_screenshots.py)
 Снимки экрана:
-screenshot_as_base64, screenshot_as_png
+screenshot_as_base64,
+screenshot_as_png
 save_screenshot()
+
 8. Element Waiting (element_waiting.py)
 Методы ожидания:
-wait(), wait_visible(), wait_clickable()
-wait_for_not(), wait_for_not_visible(), wait_for_not_clickable()
+wait(),
+wait_visible(),
+wait_clickable()
+wait_for_not(),
+wait_for_not_visible(),
+wait_for_not_clickable()
+
 9. Element Utilities (element_utilities.py)
 Вспомогательные методы:
-_handle_driver_error(), _mobile_gesture()
-_ensure_session_alive(), _get_xpath(), _get_xpath_by_driver()
-_build_element_xpath(), _contains_to_xpath()
-_get_first_child_class(), _get_native()
-10. Element Exceptions (element_exceptions.py)
-Пользовательские исключения:
-GeneralElementException
+_handle_driver_error(),
+_mobile_gesture()
+_ensure_session_alive(),
+_get_xpath(),
+_get_xpath_by_driver()
+_build_element_xpath(),
+_contains_to_xpath()
+_get_first_child_class(),
+_get_native()
+
 Архитектура композиции
 После разделения основной класс Element будет использовать композицию:
 class Element(ElementBase):
     def __init__(self, ...):
         super().__init__(...)
-        self.navigation = ElementNavigation(self)
+        self.dom = ElementDOM(self)
         self.actions = ElementActions(self)
         self.gestures = ElementGestures(self)
         self.properties = ElementProperties(self)

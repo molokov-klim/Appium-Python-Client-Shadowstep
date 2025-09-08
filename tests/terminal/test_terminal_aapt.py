@@ -19,7 +19,7 @@ class TestAapt:
         # Arrange
         mock_output = b"package: name='com.example.app' versionCode='1' versionName='1.0'"
         expected_package = "com.example.app"
-        apk_path = "/path/to/app.apk"
+        apk_path = "/path/to/app._apk"
 
         with patch("subprocess.check_output", return_value=mock_output) as mock_subprocess:
             # Act
@@ -32,7 +32,7 @@ class TestAapt:
     def test_get_package_name_subprocess_error(self):
         """Test package name extraction with subprocess error."""
         # Arrange
-        apk_path = "/path/to/invalid.apk"
+        apk_path = "/path/to/invalid._apk"
 
         with patch("subprocess.check_output", side_effect=subprocess.CalledProcessError(1, "aapt")), \
              pytest.raises(subprocess.CalledProcessError):
@@ -43,7 +43,7 @@ class TestAapt:
         """Test package name extraction with ValueError (package name not found)."""
         # Arrange
         mock_output = b"invalid output without package name"
-        apk_path = "/path/to/app.apk"
+        apk_path = "/path/to/app._apk"
 
         with patch("subprocess.check_output", return_value=mock_output), \
              pytest.raises(ValueError, match=".*"):  # noqa: PT011
@@ -57,7 +57,7 @@ class TestAapt:
 launchable-activity: name='com.example.app.MainActivity' label='App' icon=''
 application: label='App' icon=''"""
         expected_activity = "com.example.app.MainActivity"
-        apk_path = "/path/to/app.apk"
+        apk_path = "/path/to/app._apk"
 
         with patch("subprocess.check_output", return_value=mock_output) as mock_subprocess:
             # Act
@@ -70,7 +70,7 @@ application: label='App' icon=''"""
     def test_get_launchable_activity_subprocess_error(self):
         """Test launchable activity extraction with subprocess error."""
         # Arrange
-        apk_path = "/path/to/invalid.apk"
+        apk_path = "/path/to/invalid._apk"
 
         with patch("subprocess.check_output", side_effect=subprocess.CalledProcessError(1, "aapt")):
             # Act
@@ -84,7 +84,7 @@ application: label='App' icon=''"""
         # Arrange
         mock_output = """package: name='com.example.app' versionCode='1' versionName='1.0'
 application: label='App' icon=''"""
-        apk_path = "/path/to/app.apk"
+        apk_path = "/path/to/app._apk"
 
         with patch("subprocess.check_output", return_value=mock_output):
             # Act
@@ -97,7 +97,7 @@ application: label='App' icon=''"""
         """Test launchable activity extraction with empty output."""
         # Arrange
         mock_output = ""
-        apk_path = "/path/to/app.apk"
+        apk_path = "/path/to/app._apk"
 
         with patch("subprocess.check_output", return_value=mock_output):
             # Act
@@ -114,7 +114,7 @@ launchable-activity: name='com.example.app.MainActivity' label='Main' icon=''
 launchable-activity: name='com.example.app.SecondActivity' label='Second' icon=''
 application: label='App' icon=''"""
         expected_activity = "com.example.app.MainActivity"
-        apk_path = "/path/to/app.apk"
+        apk_path = "/path/to/app._apk"
 
         with patch("subprocess.check_output", return_value=mock_output):
             # Act
@@ -127,7 +127,7 @@ application: label='App' icon=''"""
         """Test that os.path.join is used correctly in get_package_name."""
         # Arrange
         mock_output = b"package: name='com.example.app' versionCode='1' versionName='1.0'"
-        apk_path = "app.apk"
+        apk_path = "app._apk"
         expected_path = os.path.join(apk_path)
 
         with patch("subprocess.check_output", return_value=mock_output) as mock_subprocess, \
@@ -144,7 +144,7 @@ application: label='App' icon=''"""
         # Arrange
         mock_output = """package: name='com.example.app' versionCode='1' versionName='1.0'
 launchable-activity: name='com.example.app.MainActivity' label='App' icon=''"""
-        apk_path = "/path/to/app.apk"
+        apk_path = "/path/to/app._apk"
 
         with patch("subprocess.check_output", return_value=mock_output) as mock_subprocess:
             # Act

@@ -3,7 +3,7 @@ from __future__ import annotations
 
 import logging
 import re
-from typing import TYPE_CHECKING, cast
+from typing import TYPE_CHECKING, Any, cast
 
 from appium.webdriver.webdriver import WebDriver
 from appium.webdriver.webelement import WebElement
@@ -39,36 +39,33 @@ class ElementBase:
     """
 
     def __init__(self,
-                 locator: tuple[str, str] | dict[str, str] | Element | UiSelector | WebElement,
+                 locator: tuple[str, str] | dict[str, Any] | Element | UiSelector,
                  shadowstep: Shadowstep,
                  timeout: float = 30,
                  poll_frequency: float = 0.5,
                  ignored_exceptions: WaitExcTypes | None = None,
-                 contains: bool = False,
                  native: WebElement | None = None):
         self.logger = logger
         self.driver: WebDriver = cast(WebDriver, None)
-        self.locator: tuple[str, str] | dict[str, str] | Element | UiSelector | WebElement = locator # type: ignore
+        self.locator: tuple[str, str] | dict[str, Any] | Element | UiSelector = locator  # type: ignore
         self.shadowstep = shadowstep
         self.timeout: float = timeout
         self.poll_frequency: float = poll_frequency
         self.ignored_exceptions: WaitExcTypes | None = ignored_exceptions
-        self.contains: bool = contains
-        self.native: WebElement | None  = native
+        self.native: WebElement | None = native
         self.id: str = cast(str, None)
-        self.locator_converter = LocatorConverter()
+        self.converter = LocatorConverter()
 
     def _get_element(self,
-                     locator: tuple[str, str] | dict[str, str] | Element | UiSelector | WebElement,
+                     locator: tuple[str, str] | dict[str, Any] | Element | UiSelector,
                      timeout: float = 3,
                      poll_frequency: float = 0.5,
-                     ignored_exceptions: WaitExcTypes | None = None,
-                     contains: bool = False) -> WebElement:
+                     ignored_exceptions: WaitExcTypes | None = None) -> WebElement:
         """
         Retrieve a web element based on the specified locator.
 
         Args:
-            locator : Union[Tuple, Dict[str, str]]
+            locator : Union[Tuple, dict[str, Any]]
                 The locator used to find the element.
             timeout : float, optional
                 The maximum time to wait for the element to be located (default is 3 seconds).
@@ -82,14 +79,14 @@ class ElementBase:
                 The located web element, or None if not found.
         """
         self.logger.debug(f"{get_current_func_name()}")
-        self._get_driver()
+        self.get_driver()
         if isinstance(locator, WebElement):
             return locator
         wait = WebDriverWait(driver=self.driver,
                              timeout=timeout,
                              poll_frequency=poll_frequency,
                              ignored_exceptions=ignored_exceptions)
-        locator = self.handle_locator(locator, contains)
+        locator = self.remove_null_value(locator)
         if locator is None:
             raise ShadowstepNoSuchElementError(
                 msg="Failed to resolve locator",
@@ -98,6 +95,7 @@ class ElementBase:
                 locator=locator
             )
         try:
+            locator = LocatorConverter().to_xpath(locator)
             element = wait.until(expected_conditions.presence_of_element_located(locator))
             self.id = element.id
             return cast(WebElement, element)
@@ -111,14 +109,15 @@ class ElementBase:
             ) from error
         except TimeoutException as error:
             self.logger.debug(f"{get_current_func_name()} {locator=} {error}")
-            for stack in error.stacktrace:
-                if "NoSuchElementError" in stack:
-                    raise ShadowstepNoSuchElementError(
-                        msg=error.msg,
-                        screen=error.screen,
-                        stacktrace=list(error.stacktrace) if error.stacktrace else None,
-                        locator=locator
-                    ) from error
+            if error.stacktrace is not None:
+                for stack in error.stacktrace:
+                    if "NoSuchElementError" in stack:
+                        raise ShadowstepNoSuchElementError(
+                            msg=error.msg,
+                            screen=error.screen,
+                            stacktrace=list(error.stacktrace) if error.stacktrace else None,
+                            locator=locator
+                        ) from error
             raise ShadowstepTimeoutException(
                 msg=f"Timeout waiting for element with locator: {locator}. Original: {error.msg}",
                 screen=error.screen,
@@ -133,9 +132,9 @@ class ElementBase:
             self.logger.debug(f"{get_current_func_name()} {locator=} {error}")
             raise
 
-    def handle_locator(self,
-                       locator: tuple[str, str] | dict[str, str] | Element | UiSelector | WebElement,
-                       contains: bool = False) -> tuple[str, str] | None:
+    def remove_null_value(self,
+                          locator: tuple[str, str] | dict[str, Any] | Element | UiSelector,
+                          ) -> tuple[str, str] | dict[str, Any] | Element | UiSelector:
         self.logger.debug(f"{get_current_func_name()}")
         if isinstance(locator, tuple):
             by, value = locator
@@ -144,42 +143,10 @@ class ElementBase:
             return by, value
         if isinstance(locator, dict):
             # Удаляем ключи, у которых значение == 'null'
-            locator = {k: v for k, v in locator.items() if v != "null"}
-            locator = self.handle_dict_locator(locator, contains)
+            return {k: v for k, v in locator.items() if v != "null"}
         return locator
 
-    def handle_dict_locator(self,
-                            locator: dict[str, str],
-                            contains: bool = False) -> tuple[str, str] | None:
-        """
-        Convert a dictionary locator to an XPath locator.
-
-        Args:
-            locator : Dict[str, str]
-                The dictionary containing locator attributes.
-            contains : bool, optional
-                Indicates whether to use partial matching in the XPath (default is False).
-
-        Returns:
-            Union[Tuple, None]
-                The XPath locator as a tuple, or None if there was an error.
-        """
-        self.logger.debug(f"{get_current_func_name()}")
-        xpath = "//*" if "class" not in locator else "//" + locator["class"]
-        try:
-            if contains:
-                for attr, value in locator.items():
-                    xpath += f"[contains(@{attr}, '{value}')]"
-                return ("xpath", xpath)
-            for attr, value in locator.items():
-                xpath += f"[@{attr}='{value}']"
-            return ("xpath", xpath)
-        except KeyError as e:
-            self.logger.error(f"Dict error: {locator}")
-            self.logger.error(f"{str(e)}")
-            return None
-
-    def _get_driver(self):
+    def get_driver(self):
         """
         Retrieve the WebDriver instance, creating it if necessary.
 

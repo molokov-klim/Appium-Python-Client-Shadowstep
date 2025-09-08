@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "appium-python-client-shadowstep"
-version = "0.34.153"
+version = "0.34.154"
 description = "UI Testing Framework powered by Appium Python Client"
 authors = [{ name = "Klim Molokov", email = "klim.molokov@yandex.ru" }]
 license = "MIT"
@@ -12,7 +12,7 @@ readme = "README.md"
 requires-python = ">=3.9"
 
 dependencies = [
-    "Appium-Python-Client>=4.2.0", # webdriver
+    "Appium-Python-Client>=5.2.2", # webdriver
     "selenium>=4.12", # webdriver
     "websocket-client>=1.8.0", # logcat
     "requests>=2.31.0", # http

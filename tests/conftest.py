@@ -31,6 +31,7 @@ CAPABILITIES = {
     "appium:autoGrantPermissions": True,
     "appium:newCommandTimeout": 900,
 }
+application = Shadowstep()
 
 
 @pytest.fixture(scope="session")
@@ -40,7 +41,7 @@ def app():
     Yields:
         Shadowstep: Connected Shadowstep instance for tests.
     """
-    application = Shadowstep()
+    global application
     global UDID
 
     application.connect(server_ip=APPIUM_IP,
@@ -109,12 +110,13 @@ def android_settings_recycler(app: Shadowstep, android_settings_open_close: None
 
 @pytest.fixture
 def connected_devices_image_path():
-    return "test_data/connected_devices.png"
+    return "_test_data/connected_devices.png"
 
 
 @pytest.fixture
 def system_image_path():
-    return "test_data/system.png"
+    return "_test_data/system.png"
+
 
 @pytest.fixture
 def cleanup_pages():
@@ -123,7 +125,8 @@ def cleanup_pages():
         path = Path(folder)
         if path.exists() and path.is_dir():
             shutil.rmtree(path)
-            
+
+
 @pytest.fixture
 def cleanup_log():
     yield

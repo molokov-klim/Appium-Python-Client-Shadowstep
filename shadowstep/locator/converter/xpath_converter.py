@@ -18,54 +18,54 @@ from eulxml.xpath.ast import (
     Step,
 )
 
-from shadowstep.exceptions.shadowstep_exceptions import ConversionError
-from shadowstep.locator.types.shadowstep_dict import DictAttribute
+from shadowstep.exceptions.shadowstep_exceptions import ShadowstepConversionError
+from shadowstep.locator.types.shadowstep_dict import ShadowstepDictAttribute
 from shadowstep.locator.types.ui_selector import UiAttribute
 
 _BOOL_ATTRS = {
-    "checkable": (DictAttribute.CHECKABLE, UiAttribute.CHECKABLE),
-    "checked": (DictAttribute.CHECKED, UiAttribute.CHECKED),
-    "clickable": (DictAttribute.CLICKABLE, UiAttribute.CLICKABLE),
-    "enabled": (DictAttribute.ENABLED, UiAttribute.ENABLED),
-    "focusable": (DictAttribute.FOCUSABLE, UiAttribute.FOCUSABLE),
-    "focused": (DictAttribute.FOCUSED, UiAttribute.FOCUSED),
-    "long-clickable": (DictAttribute.LONG_CLICKABLE, UiAttribute.LONG_CLICKABLE),
-    "scrollable": (DictAttribute.SCROLLABLE, UiAttribute.SCROLLABLE),
-    "selected": (DictAttribute.SELECTED, UiAttribute.SELECTED),
-    "password": (DictAttribute.PASSWORD, UiAttribute.PASSWORD),
+    "checkable": (ShadowstepDictAttribute.CHECKABLE, UiAttribute.CHECKABLE),
+    "checked": (ShadowstepDictAttribute.CHECKED, UiAttribute.CHECKED),
+    "clickable": (ShadowstepDictAttribute.CLICKABLE, UiAttribute.CLICKABLE),
+    "enabled": (ShadowstepDictAttribute.ENABLED, UiAttribute.ENABLED),
+    "focusable": (ShadowstepDictAttribute.FOCUSABLE, UiAttribute.FOCUSABLE),
+    "focused": (ShadowstepDictAttribute.FOCUSED, UiAttribute.FOCUSED),
+    "long-clickable": (ShadowstepDictAttribute.LONG_CLICKABLE, UiAttribute.LONG_CLICKABLE),
+    "scrollable": (ShadowstepDictAttribute.SCROLLABLE, UiAttribute.SCROLLABLE),
+    "selected": (ShadowstepDictAttribute.SELECTED, UiAttribute.SELECTED),
+    "password": (ShadowstepDictAttribute.PASSWORD, UiAttribute.PASSWORD),
 }
 
 _NUM_ATTRS = {
-    "index": (DictAttribute.INDEX, UiAttribute.INDEX),
-    "instance": (DictAttribute.INSTANCE, UiAttribute.INSTANCE),
+    "index": (ShadowstepDictAttribute.INDEX, UiAttribute.INDEX),
+    "instance": (ShadowstepDictAttribute.INSTANCE, UiAttribute.INSTANCE),
 }
 
 _EQ_ATTRS = {
     # text / description (content-desc)
-    "text": (DictAttribute.TEXT, UiAttribute.TEXT),
-    "content-desc": (DictAttribute.DESCRIPTION, UiAttribute.DESCRIPTION),
+    "text": (ShadowstepDictAttribute.TEXT, UiAttribute.TEXT),
+    "content-desc": (ShadowstepDictAttribute.DESCRIPTION, UiAttribute.DESCRIPTION),
     # resource id / package / class
-    "resource-id": (DictAttribute.RESOURCE_ID, UiAttribute.RESOURCE_ID),
-    "package": (DictAttribute.PACKAGE_NAME, UiAttribute.PACKAGE_NAME),
-    "class": (DictAttribute.CLASS_NAME, UiAttribute.CLASS_NAME),
+    "resource-id": (ShadowstepDictAttribute.RESOURCE_ID, UiAttribute.RESOURCE_ID),
+    "package": (ShadowstepDictAttribute.PACKAGE_NAME, UiAttribute.PACKAGE_NAME),
+    "class": (ShadowstepDictAttribute.CLASS_NAME, UiAttribute.CLASS_NAME),
 }
 
 # where contains / starts-with are allowed
 _CONTAINS_ATTRS = {
-    "text": (DictAttribute.TEXT_CONTAINS, UiAttribute.TEXT_CONTAINS),
-    "content-desc": (DictAttribute.DESCRIPTION_CONTAINS, UiAttribute.DESCRIPTION_CONTAINS),
+    "text": (ShadowstepDictAttribute.TEXT_CONTAINS, UiAttribute.TEXT_CONTAINS),
+    "content-desc": (ShadowstepDictAttribute.DESCRIPTION_CONTAINS, UiAttribute.DESCRIPTION_CONTAINS),
 }
 _STARTS_ATTRS = {
-    "text": (DictAttribute.TEXT_STARTS_WITH, UiAttribute.TEXT_STARTS_WITH),
-    "content-desc": (DictAttribute.DESCRIPTION_STARTS_WITH, UiAttribute.DESCRIPTION_STARTS_WITH),
+    "text": (ShadowstepDictAttribute.TEXT_STARTS_WITH, UiAttribute.TEXT_STARTS_WITH),
+    "content-desc": (ShadowstepDictAttribute.DESCRIPTION_STARTS_WITH, UiAttribute.DESCRIPTION_STARTS_WITH),
 }
 # where matches() is allowed
 _MATCHES_ATTRS = {
-    "text": (DictAttribute.TEXT_MATCHES, UiAttribute.TEXT_MATCHES),
-    "content-desc": (DictAttribute.DESCRIPTION_MATCHES, UiAttribute.DESCRIPTION_MATCHES),
-    "resource-id": (DictAttribute.RESOURCE_ID_MATCHES, UiAttribute.RESOURCE_ID_MATCHES),
-    "package": (DictAttribute.PACKAGE_NAME_MATCHES, UiAttribute.PACKAGE_NAME_MATCHES),
-    "class": (DictAttribute.CLASS_NAME_MATCHES, UiAttribute.CLASS_NAME_MATCHES),
+    "text": (ShadowstepDictAttribute.TEXT_MATCHES, UiAttribute.TEXT_MATCHES),
+    "content-desc": (ShadowstepDictAttribute.DESCRIPTION_MATCHES, UiAttribute.DESCRIPTION_MATCHES),
+    "resource-id": (ShadowstepDictAttribute.RESOURCE_ID_MATCHES, UiAttribute.RESOURCE_ID_MATCHES),
+    "package": (ShadowstepDictAttribute.PACKAGE_NAME_MATCHES, UiAttribute.PACKAGE_NAME_MATCHES),
+    "class": (ShadowstepDictAttribute.CLASS_NAME_MATCHES, UiAttribute.CLASS_NAME_MATCHES),
 }
 
 
@@ -78,7 +78,7 @@ def _to_bool(val: Any) -> bool:
             return True
         if v in ("false", "0"):
             return False
-    raise ConversionError(f"Expected boolean literal, got: {val!r}")
+    raise ShadowstepConversionError(f"Expected boolean literal, got: {val!r}")
 
 
 def _to_number(val: Any) -> int:
@@ -86,7 +86,7 @@ def _to_number(val: Any) -> int:
         return int(val)
     if isinstance(val, str) and val.isdigit():
         return int(val)
-    raise ConversionError(f"Expected numeric literal, got: {val!r}")
+    raise ShadowstepConversionError(f"Expected numeric literal, got: {val!r}")
 
 
 class XPathConverter:
@@ -102,11 +102,11 @@ class XPathConverter:
     @staticmethod
     def _validate_xpath(xpath_str: str) -> None:
         if re.search(r"\band\b|\bor\b", xpath_str):
-            raise ConversionError("Logical operators (and/or) are not supported")
+            raise ShadowstepConversionError("Logical operators (and/or) are not supported")
         try:
             parse(xpath_str)
         except Exception as e:
-            raise ConversionError(f"Invalid XPath: {e}")  # noqa: B904
+            raise ShadowstepConversionError(f"Invalid XPath: {e}")  # noqa: B904
 
     # ========== public API ==========
 
@@ -169,9 +169,9 @@ class XPathConverter:
                 return ""
             if node.abbr == ".":
                 return self._ast_to_ui_selector(node_list[1:])
-            raise ConversionError(f"Unsupported abbreviated step in UiSelector: {node!r}")
+            raise ShadowstepConversionError(f"Unsupported abbreviated step in UiSelector: {node!r}")
         else:
-            raise ConversionError(f"Unsupported AST node in UiSelector: {node!r}")
+            raise ShadowstepConversionError(f"Unsupported AST node in UiSelector: {node!r}")
         return "".join(parts)
 
     def _ast_to_dict(self, node_list: list[Any]) -> dict[str, Any]:
@@ -196,7 +196,7 @@ class XPathConverter:
             # ".."
             if i < len(node_list) and isinstance(node_list[i], AbbreviatedStep) and node_list[i].abbr == "..":
                 # создаём fromParent
-                shadowstep_dict[DictAttribute.FROM_PARENT.value] = self._build_shadowstep_dict(node_list[i + 1:], {})
+                shadowstep_dict[ShadowstepDictAttribute.FROM_PARENT.value] = self._build_shadowstep_dict(node_list[i + 1:], {})
                 return shadowstep_dict
             
             # sibling
@@ -204,12 +204,12 @@ class XPathConverter:
                 "following-sibling",
                 "preceding-sibling",
             ):
-                shadowstep_dict[DictAttribute.SIBLING] = self._build_shadowstep_dict(node_list[i:], {})
+                shadowstep_dict[ShadowstepDictAttribute.SIBLING] = self._build_shadowstep_dict(node_list[i:], {})
                 return shadowstep_dict
 
             # childSelector
             if i < len(node_list):
-                shadowstep_dict[DictAttribute.CHILD_SELECTOR.value] = self._build_shadowstep_dict(node_list[i:], {})
+                shadowstep_dict[ShadowstepDictAttribute.CHILD_SELECTOR.value] = self._build_shadowstep_dict(node_list[i:], {})
             return shadowstep_dict
 
         if isinstance(node, AbbreviatedStep) and node.abbr == "..":    # type: ignore
@@ -224,12 +224,12 @@ class XPathConverter:
 
             # ".."
             for _ in range(depth):
-                rest_dict = {DictAttribute.FROM_PARENT.value: rest_dict}
+                rest_dict = {ShadowstepDictAttribute.FROM_PARENT.value: rest_dict}
 
             shadowstep_dict.update(rest_dict)
             return shadowstep_dict
 
-        raise ConversionError(f"Unsupported AST node in build: {node!r}")
+        raise ShadowstepConversionError(f"Unsupported AST node in build: {node!r}")
 
     def _ast_to_list(self, node: Any) -> list[AbbreviatedStep | Step]:    # type: ignore
         result = []
@@ -242,7 +242,7 @@ class XPathConverter:
             result.extend(self._ast_to_list(node.right))
 
         else:
-            raise ConversionError(f"Unsupported AST node: {node!r}")
+            raise ShadowstepConversionError(f"Unsupported AST node: {node!r}")
 
         return result
 
@@ -283,25 +283,25 @@ class XPathConverter:
             if kind == "contains":
                 d_attr = _CONTAINS_ATTRS.get(attr)
                 if not d_attr:
-                    raise ConversionError(f"contains() is not supported for @{attr}")
+                    raise ShadowstepConversionError(f"contains() is not supported for @{attr}")
                 out[d_attr[0].value] = value    # type: ignore
                 return
             if kind == "starts-with":
                 d_attr = _STARTS_ATTRS.get(attr)
                 if not d_attr:
-                    raise ConversionError(f"starts-with() is not supported for @{attr}")
+                    raise ShadowstepConversionError(f"starts-with() is not supported for @{attr}")
                 out[d_attr[0].value] = value    # type: ignore
                 return
             if kind == "matches":
                 d_attr = _MATCHES_ATTRS.get(attr)
                 if not d_attr:
-                    raise ConversionError(f"matches() is not supported for @{attr}")
+                    raise ShadowstepConversionError(f"matches() is not supported for @{attr}")
                 out[d_attr[0].value] = value    # type: ignore
                 return
-            raise ConversionError(f"Unsupported function: {pred_expr.name}")
+            raise ShadowstepConversionError(f"Unsupported function: {pred_expr.name}")
 
         if isinstance(pred_expr, (int, float)):    # type: ignore  # noqa: UP038
-            out[DictAttribute.INSTANCE.value] = int(pred_expr) - 1
+            out[ShadowstepDictAttribute.INSTANCE.value] = int(pred_expr) - 1
             return
 
         if isinstance(pred_expr, BinaryExpression):
@@ -312,11 +312,11 @@ class XPathConverter:
                     and not pred_expr.left.args
                     and isinstance(pred_expr.right, (int, float))    # type: ignore  # noqa: UP038
             ):
-                out[DictAttribute.INDEX.value] = int(pred_expr.right) - 1
+                out[ShadowstepDictAttribute.INDEX.value] = int(pred_expr.right) - 1
                 return
 
             if pred_expr.op not in ("=",):
-                raise ConversionError(f"Unsupported comparison operator: {pred_expr.op}")
+                raise ShadowstepConversionError(f"Unsupported comparison operator: {pred_expr.op}")
             attr, value = self._parse_equality_comparison(pred_expr)
             if attr in _EQ_ATTRS:
                 out[_EQ_ATTRS[attr][0].value] = value    # type: ignore
@@ -327,7 +327,7 @@ class XPathConverter:
             if attr in _NUM_ATTRS:
                 out[_NUM_ATTRS[attr][0].value] = _to_number(value)    # type: ignore
                 return
-            raise ConversionError(f"Unsupported attribute: @{attr}")
+            raise ShadowstepConversionError(f"Unsupported attribute: @{attr}")
 
         # наличие атрибута: [@enabled]
         if isinstance(pred_expr, Step) and pred_expr.axis == "@" and isinstance(pred_expr.node_test, NameTest):
@@ -335,10 +335,10 @@ class XPathConverter:
             if attr in _BOOL_ATTRS:
                 out[_BOOL_ATTRS[attr][0].value] = True    # type: ignore
                 return
-            raise ConversionError(f"Attribute presence predicate not supported for @{attr}")
+            raise ShadowstepConversionError(f"Attribute presence predicate not supported for @{attr}")
 
         # позиционный номер [3] или что-то ещё
-        raise ConversionError(f"Unsupported predicate: {pred_expr!r}")
+        raise ShadowstepConversionError(f"Unsupported predicate: {pred_expr!r}")
 
     # ========== predicate handlers (UI SELECTOR) ==========
 
@@ -348,19 +348,19 @@ class XPathConverter:
             if kind == "contains":
                 u = _CONTAINS_ATTRS.get(attr)
                 if not u:
-                    raise ConversionError(f"contains() is not supported for @{attr}")
+                    raise ShadowstepConversionError(f"contains() is not supported for @{attr}")
                 return f'.{u[1].value}("{value}")'
             if kind == "starts-with":
                 u = _STARTS_ATTRS.get(attr)
                 if not u:
-                    raise ConversionError(f"starts-with() is not supported for @{attr}")
+                    raise ShadowstepConversionError(f"starts-with() is not supported for @{attr}")
                 return f'.{u[1].value}("{value}")'
             if kind == "matches":
                 u = _MATCHES_ATTRS.get(attr)
                 if not u:
-                    raise ConversionError(f"matches() is not supported for @{attr}")
+                    raise ShadowstepConversionError(f"matches() is not supported for @{attr}")
                 return f'.{u[1].value}("{value}")'
-            raise ConversionError(f"Unsupported function: {kind}")
+            raise ShadowstepConversionError(f"Unsupported function: {kind}")
 
         if isinstance(pred_expr, (int, float)):  # noqa: UP038
             return f".{UiAttribute.INSTANCE.value}({int(pred_expr) - 1})"
@@ -381,15 +381,15 @@ class XPathConverter:
                 return f".{_BOOL_ATTRS[attr][1].value}({str(_to_bool(value)).lower()})"
             if attr in _NUM_ATTRS:
                 return f".{_NUM_ATTRS[attr][1].value}({_to_number(value)})"
-            raise ConversionError(f"Unsupported attribute: @{attr}")
-        raise ConversionError(f"Unsupported predicate: {pred_expr!r}")
+            raise ShadowstepConversionError(f"Unsupported attribute: @{attr}")
+        raise ShadowstepConversionError(f"Unsupported predicate: {pred_expr!r}")
 
     def _parse_function_predicate(self, func: FunctionCall) -> tuple[str, str, Any]:
         name = func.name
         if name not in ("contains", "starts-with", "matches"):
-            raise ConversionError(f"Unsupported function: {name}")
+            raise ShadowstepConversionError(f"Unsupported function: {name}")
         if len(func.args) != 2:    # type: ignore
-            raise ConversionError(f"{name}() must have 2 arguments")
+            raise ShadowstepConversionError(f"{name}() must have 2 arguments")
         lhs, rhs = func.args
         attr = self._extract_attr_name(lhs)
         value = self._extract_literal(rhs)
@@ -406,12 +406,12 @@ class XPathConverter:
             return "text", self._extract_literal(bexpr.right)
         if isinstance(bexpr.right, FunctionCall) and bexpr.right.name == "text":
             return "text", self._extract_literal(bexpr.left)
-        raise ConversionError("Equality must compare @attribute or text() with a literal")
+        raise ShadowstepConversionError("Equality must compare @attribute or text() with a literal")
 
     def _maybe_attr(self, node: Any) -> str | None:    # type: ignore
         try:
             return self._extract_attr_name(node)
-        except ConversionError:
+        except ShadowstepConversionError:
             return None
 
     @staticmethod
@@ -422,7 +422,7 @@ class XPathConverter:
             return "text"
         if isinstance(node, NodeType) and node.name == "text":
             return "text"
-        raise ConversionError(f"Unsupported attribute expression: {node!r}")
+        raise ShadowstepConversionError(f"Unsupported attribute expression: {node!r}")
 
     @staticmethod
     def _extract_literal(node: Any) -> Any:
@@ -430,7 +430,7 @@ class XPathConverter:
             return node
         if isinstance(node, FunctionCall) and node.name in ("true", "false") and not node.args:
             return node.name == "true"
-        raise ConversionError(f"Unsupported literal: {node!r}")
+        raise ShadowstepConversionError(f"Unsupported literal: {node!r}")
     
     @staticmethod
     def _balance_parentheses(selector: str) -> str:
@@ -457,7 +457,7 @@ class XPathConverter:
             return selector[:i] + selector[i+1:]
     
         if open_count > close_count:
-            raise ConversionError(
+            raise ShadowstepConversionError(
                 f"Unbalanced UiSelector string: too many '(' in {selector}"
             )
     

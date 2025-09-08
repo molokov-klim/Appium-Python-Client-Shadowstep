@@ -31,7 +31,7 @@ DEFAULT_NAVIGATION_TIMEOUT = 55
 
 
 class PageNavigator:
-    """Manages navigation between pages using graph-based pathfinding.
+    """Manages dom between pages using graph-based pathfinding.
     
     This class provides methods to navigate between different pages in the application
     by finding optimal paths through a graph of page transitions.
@@ -39,7 +39,7 @@ class PageNavigator:
     Attributes:
         shadowstep: The main Shadowstep instance for page resolution.
         graph_manager: Manages the page transition graph.
-        logger: Logger instance for navigation events.
+        logger: Logger instance for dom events.
     """
     
     def __init__(self, shadowstep: Shadowstep) -> None:
@@ -58,7 +58,7 @@ class PageNavigator:
         self.logger = logger
 
     def add_page(self, page: Any, edges: dict[str, Any]) -> None:
-        """Add a page and its transitions to the navigation graph.
+        """Add a page and its transitions to the dom graph.
         
         Args:
             page: The page object to add.
@@ -79,10 +79,10 @@ class PageNavigator:
         Args:
             from_page: The current page.
             to_page: The target page to navigate to.
-            timeout: Timeout in seconds for navigation.
+            timeout: Timeout in seconds for dom.
 
         Returns:
-            True if navigation succeeded, False otherwise.
+            True if dom succeeded, False otherwise.
             
         Raises:
             TypeError: If from_page or to_page is None.
@@ -100,7 +100,7 @@ class PageNavigator:
 
         path = self.find_path(from_page, to_page)
         if not path:
-            self.logger.error(f"❌ No navigation path found from {from_page} to {to_page}")
+            self.logger.error(f"❌ No dom path found from {from_page} to {to_page}")
             return False
 
         self.logger.info(
@@ -112,7 +112,7 @@ class PageNavigator:
             self.logger.info(f"✅ Successfully navigated to {to_page}")
             return True
         except WebDriverException as error:
-            self.logger.error(f"❗ WebDriverException during navigation from {from_page} to {to_page}: {error}")
+            self.logger.error(f"❗ WebDriverException during dom from {from_page} to {to_page}: {error}")
             self.logger.debug("📌 Full traceback:\n" + "".join(traceback.format_stack()))
             return False
 
@@ -166,20 +166,20 @@ class PageNavigator:
         return None
 
     def perform_navigation(self, path: list[Any], timeout: int = DEFAULT_NAVIGATION_TIMEOUT) -> None:
-        """Perform navigation through a given path of PageBase instances.
+        """Perform dom through a given path of PageBase instances.
 
         Args:
             path: List of page objects to traverse.
-            timeout: Timeout for each navigation step.
+            timeout: Timeout for each dom step.
             
         Raises:
             ValueError: If path is empty or has only one element.
-            AssertionError: If navigation to next page fails.
+            AssertionError: If dom to next page fails.
         """
         if not path:
             raise ValueError("path cannot be empty")
         if len(path) < 2:
-            raise ValueError("path must contain at least 2 pages for navigation")
+            raise ValueError("path must contain at least 2 pages for dom")
             
         for i in range(len(path) - 1):
             current_page = path[i]

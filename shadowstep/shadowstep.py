@@ -140,26 +140,23 @@ class Shadowstep(ShadowstepBase):
         raise ValueError(f"Page '{name}' not found.")
 
     def get_element(self,
-                    locator: tuple[str, str] | dict[str, str] | Element | UiSelector | WebElement,
+                    locator: tuple[str, str] | dict[str, Any] | Element | UiSelector | WebElement,
                     timeout: int = 30,
                     poll_frequency: float = 0.5,
-                    ignored_exceptions: WaitExcTypes | None = None,
-                    contains: bool = False) -> Element:
+                    ignored_exceptions: WaitExcTypes | None = None) -> Element:
         self.logger.debug(f"{get_current_func_name()}")
         return Element(locator=locator,
                        timeout=timeout,
                        poll_frequency=poll_frequency,
                        ignored_exceptions=ignored_exceptions,
-                       contains=contains,
                        shadowstep=self)
 
     def get_elements(
             self,
-            locator: tuple[str, str] | dict[str, str] | Element | UiSelector | WebElement,
+            locator: tuple[str, str] | dict[str, Any] | Element | UiSelector | WebElement,
             timeout: int = 30,
             poll_frequency: float = 0.5,
-            ignored_exceptions: WaitExcTypes | None = None,
-            contains: bool = False
+            ignored_exceptions: WaitExcTypes | None = None
     ) -> list[Element]:
         """
         Find multiple elements matching the given locator across the whole page.
@@ -181,14 +178,12 @@ class Shadowstep(ShadowstepBase):
             shadowstep=self,
             timeout=timeout,
             poll_frequency=poll_frequency,
-            ignored_exceptions=ignored_exceptions,
-            contains=False
+            ignored_exceptions=ignored_exceptions
         )
         return root.get_elements(locator=locator,
                                  timeout=timeout,
                                  poll_frequency=poll_frequency,
-                                 ignored_exceptions=ignored_exceptions,
-                                 contains=contains)
+                                 ignored_exceptions=ignored_exceptions)
 
     def get_image(
             self,
@@ -306,7 +301,7 @@ class Shadowstep(ShadowstepBase):
 
     def find_and_get_element(
             self,
-            locator: tuple[str, str] | dict[str, str] | Element | UiSelector | WebElement,
+            locator: tuple[str, str] | dict[str, Any] | Element | UiSelector | WebElement,
             timeout: int = 30,
             poll_frequency: float = 0.5,
             ignored_exceptions: WaitExcTypes | None = None,
@@ -319,8 +314,7 @@ class Shadowstep(ShadowstepBase):
                 locator={"scrollable": "true"},
                 timeout=timeout,
                 poll_frequency=poll_frequency,
-                ignored_exceptions=ignored_exceptions,
-                contains=contains
+                ignored_exceptions=ignored_exceptions
             )
             for scrollable in scrollables:
                 try:
@@ -346,7 +340,7 @@ class Shadowstep(ShadowstepBase):
         """
         self.logger.debug(f"{get_current_func_name()}")
         try:
-            element = Element(locator={"text": text}, shadowstep=self, contains=True)
+            element = Element(locator={"text": text}, shadowstep=self)
             return element.is_visible()
         except Exception as e:
             self.logger.warning(f"Failed to check visibility for text='{text}': {e}")
