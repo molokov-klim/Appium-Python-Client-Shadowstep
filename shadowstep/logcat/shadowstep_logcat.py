@@ -94,6 +94,10 @@ class ShadowstepLogcat:
         if not self._compiled_filter_pattern.search(line):
             return False
 
+        for filter_text in self._filters:
+            if filter_text in line:
+                return True
+
         parts = line.split()
         if len(parts) >= 6:
             for i, part in enumerate(parts):
