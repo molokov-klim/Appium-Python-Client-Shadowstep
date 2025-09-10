@@ -166,6 +166,6 @@ class ElementDOM:
         xpath = self.converter.to_xpath(clean_locator)
         xpath = (xpath[0], xpath[1] + "/ancestor::*")
         parents = self.get_elements(xpath, timeout, poll_frequency, ignored_exceptions)
-        if parents and parents[0].locator.get("class") == "hierarchy":
+        if parents and parents[0].locator.get("class") == "hierarchy":      # type: ignore
             parents.pop(0)
         return parents

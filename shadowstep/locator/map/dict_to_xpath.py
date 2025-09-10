@@ -94,6 +94,7 @@ DICT_TO_XPATH_MAPPING = {  # type: ignore
     ShadowstepDictAttribute.SELECTED: lambda v: f'@selected="{str(v).lower()}"',
     ShadowstepDictAttribute.PASSWORD: lambda v: f'@password="{str(v).lower()}"',
     
-    ShadowstepDictAttribute.INDEX: lambda v: f"position()={int(v) + 1}",
+    # ShadowstepDictAttribute.INDEX: lambda v: f"position()={int(v) + 1}",
+    ShadowstepDictAttribute.INDEX: lambda v: f"@index={v}",
     ShadowstepDictAttribute.INSTANCE: lambda v: f"[{int(v) + 1}]",
 }

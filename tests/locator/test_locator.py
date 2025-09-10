@@ -459,7 +459,7 @@ class TestDictToXPathMapping:
     def test_dict_to_xpath_attribute_index(self) -> None:
         """Test index attribute conversion."""
         result = dict_to_xpath_attribute(ShadowstepDictAttribute.INDEX, 0)
-        expected = "position()=1"
+        expected = "@index=0"
         assert result == expected  # noqa: S101
     
     def test_dict_to_xpath_attribute_unsupported(self) -> None:

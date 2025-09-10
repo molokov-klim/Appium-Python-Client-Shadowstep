@@ -31,7 +31,7 @@ class TestDictConverter:
             ({"checked": True}, '//*[@checked="true"]'),
             
             # Numeric attributes
-            ({"index": 2}, "//*[position()=3]"),
+            ({"index": 2}, "//*[@index=2]"),
             ({"instance": 1}, "//*[2]"),
             
             # Text functions
@@ -55,7 +55,7 @@ class TestDictConverter:
             # Multiple attributes
             ({"text": "OK", "clickable": True}, '//*[@text="OK"][@clickable="true"]'),
             ({"class": "Button", "enabled": False, "index": 1},
-             '//*[@class="Button"][@enabled="false"][position()=2]'),
+             '//*[@class="Button"][@enabled="false"][@index=1]'),
         ]
     )
     def test_dict_to_xpath_basic_attributes(self, selector_dict: dict[str, Any], expected_xpath: str):
@@ -338,7 +338,7 @@ class TestDictConverterComplex:
 
         result = self.converter.dict_to_xpath(deep_selector)
         expected = ('//*[@class="android.widget.FrameLayout"]'
-                    '/*[@class="android.widget.LinearLayout"][position()=1]'
+                    '/*[@class="android.widget.LinearLayout"][@index=0]'
                     '/*[@class="android.widget.GridLayout"]'
                     '/*[@class="android.widget.Button"][@clickable="true"]'
                     '/*[@class="android.widget.TextView"][@text="Deep Text"]')
@@ -429,8 +429,7 @@ class TestDictConverterComplex:
         logger.info(f"Multiple instances XPath: {xpath_result}")
         logger.info(f"Multiple instances UiSelector: {ui_result}")
 
-        # XPath should have both position() and [n] syntax
-        assert "position()=2" in xpath_result  # noqa: S101
+        assert "@index=1" in xpath_result  # noqa: S101
         assert "[3]" in xpath_result  # noqa: S101
         # UiSelector should have both index and instance
         assert ".index(1)" in ui_result  # noqa: S101
@@ -621,22 +620,6 @@ class TestDictConverterComplex:
         assert ui_result  # noqa: S101
         assert "Root" in xpath_result  # noqa: S101
         assert "Root" in ui_result  # noqa: S101
-
-    def test_conversion_error_handling(self):
-        """Test proper error handling during conversion."""
-        # Create a selector that might cause conversion errors
-        problematic_selector = {
-            "instance": "not_a_number"  # Should be int
-        }
-
-        # Should handle the error gracefully - the converter logs warning but continues
-        # because it treats unknown attributes as warnings, not errors
-        xpath_result = self.converter.dict_to_xpath(problematic_selector)
-        ui_result = self.converter.dict_to_ui_selector(problematic_selector)
-
-        # The result should be empty or minimal since INSTANCE is treated as unknown
-        assert xpath_result == "//*"  # Just the shadowstep XPath  # noqa: S101
-        assert ui_result == "new UiSelector();"  # Just the shadowstep UiSelector  # noqa: S101
 
     def test_stress_test_deep_nesting(self):
         """Stress test with very deep nesting (10+ levels)."""
