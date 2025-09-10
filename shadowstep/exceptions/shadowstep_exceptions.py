@@ -95,6 +95,7 @@ class ShadowstepConversionError(ShadowstepLocatorConverterError):
     pass
 
 
-class ResolvingLocatorError(Exception):
+class ShadowstepResolvingLocatorError(Exception):
     """Raised when locator resolving is failed (used in shadowstep.element.dom)."""
     pass
+

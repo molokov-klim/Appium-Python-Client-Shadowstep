@@ -2,29 +2,27 @@
 from __future__ import annotations
 
 import logging
-import re
 import time
 from typing import TYPE_CHECKING, Any, cast
 
-from appium.webdriver.webelement import WebElement
 from selenium.common import (
     InvalidSessionIdException,
     NoSuchDriverException,
     StaleElementReferenceException,
-    UnknownMethodException,
     WebDriverException,
 )
 from selenium.types import WaitExcTypes
 from selenium.webdriver.support import expected_conditions as expected_conditions
 from selenium.webdriver.support.wait import WebDriverWait
-from utils.utils import get_current_func_name, is_camel_case
 
+from shadowstep.decorators.decorators import log_debug
 from shadowstep.element.utilities import ElementUtilities
 from shadowstep.exceptions.shadowstep_exceptions import (
-    ResolvingLocatorError,
     ShadowstepElementException,
+    ShadowstepResolvingLocatorError,
 )
 from shadowstep.locator.types.shadowstep_dict import ShadowstepDictAttribute
+from shadowstep.utils.utils import get_current_func_name
 
 if TYPE_CHECKING:
     from shadowstep.element.element import Element
@@ -40,11 +38,12 @@ class ElementDOM:
         self.converter: LocatorConverter = element.converter
         self.utilities: ElementUtilities = element.utilities
 
-    def resolve_child(self,
-                      locator: tuple[str, str] | dict[str, Any] | UiSelector | Element,
-                      timeout: int = 30,
-                      poll_frequency: float = 0.5,
-                      ignored_exceptions: WaitExcTypes | None = None) -> Element:
+    @log_debug()
+    def get_element(self,
+                    locator: tuple[str, str] | dict[str, Any] | UiSelector | Element,
+                    timeout: int = 30,
+                    poll_frequency: float = 0.5,
+                    ignored_exceptions: WaitExcTypes | None = None) -> Element:
         from shadowstep.element.element import Element
         resolved_locator = None
         if isinstance(locator, Element):
@@ -54,9 +53,9 @@ class ElementDOM:
         child_locator = self.utilities.remove_null_value(locator)
 
         if not parent_locator:
-            raise ResolvingLocatorError("Failed to resolve parent locator")
+            raise ShadowstepResolvingLocatorError("Failed to resolve parent locator")
         if not child_locator:
-            raise ResolvingLocatorError("Failed to resolve child locator")
+            raise ShadowstepResolvingLocatorError("Failed to resolve child locator")
 
         if isinstance(parent_locator, tuple):
             child_locator = self.converter.to_xpath(child_locator)
@@ -76,7 +75,7 @@ class ElementDOM:
             resolved_locator = parent_locator.childSelector(UiSelector.from_string(child_locator))
 
         if resolved_locator is None:
-            raise ResolvingLocatorError("Failed to resolve locator")
+            raise ShadowstepResolvingLocatorError("Failed to resolve locator")
 
         return Element(locator=resolved_locator,
                        shadowstep=self.shadowstep,
@@ -84,6 +83,7 @@ class ElementDOM:
                        poll_frequency=poll_frequency,
                        ignored_exceptions=ignored_exceptions)
 
+    @log_debug()
     def get_elements(  # noqa: C901
             self,
             locator: tuple[str, str] | dict[str, Any] | Element | UiSelector,
@@ -141,3 +141,31 @@ class ElementDOM:
                     continue
                 raise error
         return []
+
+    @log_debug()
+    def get_parent(self,
+                   timeout: int = 30,
+                   poll_frequency: float = 0.5,
+                   ignored_exceptions: WaitExcTypes | None = None) -> Element:
+        from shadowstep.element.element import Element
+        clean_locator = self.utilities.remove_null_value(self.element.locator)
+        xpath = self.converter.to_xpath(clean_locator)
+        xpath = (xpath[0], xpath[1] + "/..")
+        return Element(locator=xpath,
+                       shadowstep=self.shadowstep,
+                       timeout=timeout,
+                       poll_frequency=poll_frequency,
+                       ignored_exceptions=ignored_exceptions)
+
+    @log_debug()
+    def get_parents(self,
+                    timeout: int = 30,
+                    poll_frequency: float = 0.5,
+                    ignored_exceptions: WaitExcTypes | None = None) -> list[Element]:
+        clean_locator = self.utilities.remove_null_value(self.element.locator)
+        xpath = self.converter.to_xpath(clean_locator)
+        xpath = (xpath[0], xpath[1] + "/ancestor::*")
+        parents = self.get_elements(xpath, timeout, poll_frequency, ignored_exceptions)
+        if parents and parents[0].locator.get("class") == "hierarchy":
+            parents.pop(0)
+        return parents

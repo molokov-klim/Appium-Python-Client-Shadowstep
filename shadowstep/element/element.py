@@ -3,14 +3,12 @@ from __future__ import annotations
 
 import inspect
 import logging
-import re
 import time
 import traceback
 from collections.abc import Generator
 from typing import TYPE_CHECKING, Any, cast
 
 from appium.webdriver.webelement import WebElement
-from lxml import etree  # type: ignore
 from selenium.common import (
     InvalidSessionIdException,
     NoSuchDriverException,
@@ -27,12 +25,13 @@ from selenium.webdriver.common.actions.pointer_input import PointerInput
 from selenium.webdriver.remote.shadowroot import ShadowRoot
 from selenium.webdriver.support.wait import WebDriverWait
 
+from shadowstep.decorators.decorators import log_debug
 from shadowstep.element import conditions
 from shadowstep.element.actions import ElementActions
 from shadowstep.element.base import ElementBase
 from shadowstep.element.coordinates import ElementCoordinates
-from shadowstep.element.gestures import ElementGestures
 from shadowstep.element.dom import ElementDOM
+from shadowstep.element.gestures import ElementGestures
 from shadowstep.element.properties import ElementProperties
 from shadowstep.element.screenshots import ElementScreenshots
 from shadowstep.element.utilities import ElementUtilities
@@ -51,6 +50,9 @@ logger = logging.getLogger(__name__)
 
 
 class Element(ElementBase):
+    """
+    Public API for Element
+    """
     def __init__(self,
                  locator: tuple[str, str] | dict[str, Any] | Element | UiSelector,
                  shadowstep: Shadowstep,
@@ -78,19 +80,18 @@ class Element(ElementBase):
     def __repr__(self):
         return f"Element(locator={self.locator!r}"
 
+    @log_debug()
     def get_element(self,
-                    locator: tuple[str, str] | dict[str, Any] | Element | UiSelector | WebElement,
+                    locator: tuple[str, str] | dict[str, Any] | Element | UiSelector,
                     timeout: int = 30,
                     poll_frequency: float = 0.5,
                     ignored_exceptions: WaitExcTypes | None = None) -> Element:
         """
-        method is lazy
+        lazy
         """
-        self.logger.debug(f"{get_current_func_name()}")
-        if isinstance(locator, WebElement):
-            raise NotImplementedError("WebElement locator not implemented yet")  # FIXME
-        return self.dom.resolve_child(locator, timeout, poll_frequency, ignored_exceptions)
+        return self.dom.get_element(locator, timeout, poll_frequency, ignored_exceptions)
 
+    @log_debug()
     def get_elements(
             self,
             locator: tuple[str, str] | dict[str, Any] | Element | UiSelector,
@@ -99,99 +100,23 @@ class Element(ElementBase):
             ignored_exceptions: WaitExcTypes | None = None
     ) -> list[Element]:
         """
-        method is greedy
+        greedy
         """
-        self.logger.debug(f"{get_current_func_name()}")
         return self.dom.get_elements(locator, timeout, poll_frequency, ignored_exceptions)
 
-
-    def _resolve_xpath_for_attributes(self) -> str | None:
-        """Resolve XPath expression from locator for attributes fetching."""
-        try:
-            xpath_expr = self.converter.to_xpath(self.locator)[1]
-            if not xpath_expr:
-                self.logger.error(f"Failed to resolve XPath from locator: {self.locator}")
-                return None
-            self.logger.debug(f"Resolved XPath: {xpath_expr}")
-            return xpath_expr
-        except Exception as e:
-            self.logger.error(f"Exception in to_xpath: {e}")
-            return None
-
-    def get_attributes(self) -> dict[str, Any]:
-        """Fetch all XML attributes of the element by matching locator against page source.
-
-        Returns:
-            Optional[dict[str, Any]]: Dictionary of all attributes, or None if not found.
-        """
-        self.logger.debug(f"{get_current_func_name()}")
-        xpath_expr = self._resolve_xpath_for_attributes()
-        if not xpath_expr:
-            return {}
-        return self.utilities.extract_el_attrs_from_source(xpath_expr, self.shadowstep.driver.page_source)[0]
-
+    @log_debug()
     def get_parent(self) -> Element:
-        self.logger.debug(f"{get_current_func_name()}")
-        try:
-            xpath = self._get_xpath()
-            if xpath is None:
-                raise ShadowstepElementException("Unable to retrieve XPath of the element")
-            xpath = xpath + "/.."
-            return Element(locator=("xpath", xpath), shadowstep=self.shadowstep)
-        except NoSuchDriverException:
-            self.logger.error(
-                f"{inspect.currentframe() if inspect.currentframe() else 'unknown'} NoSuchDriverException")
-            self.shadowstep.reconnect()
-            return None
-        except InvalidSessionIdException:
-            self.logger.error(
-                f"{inspect.currentframe() if inspect.currentframe() else 'unknown'} InvalidSessionIdException")
-            self.shadowstep.reconnect()
-            return None
+        return self.dom.get_parent()
 
-    def get_parents(self) -> Generator[Element]:
-        """Yields all parent elements lazily using XPath `ancestor::*`.
-
-        # FIXME must be greedy (bcs generator is wrong desicion)
-
-        Yields:
-            Generator of Element instances representing each parent in the hierarchy.
-        """
-        self.logger.debug(f"{get_current_func_name()}")
-        current_xpath = self._get_xpath()
-
-        if not current_xpath:
-            raise ShadowstepElementException("Cannot resolve current XPath")
-
-        # Form shadowstep XPath that captures all parents
-        base_ancestor_xpath = f"{current_xpath}/ancestor::*"
-
-        # Instead of calling `find_elements`, just iterate indices and build XPath
-        for index in range(1, 100):  # limit to reasonable bound
-            ancestor_xpath = f"{base_ancestor_xpath}[{index}]"
-            element = Element(
-                locator=("xpath", ancestor_xpath),
-                shadowstep=self.shadowstep,
-                timeout=self.timeout,
-                poll_frequency=self.poll_frequency,
-                ignored_exceptions=self.ignored_exceptions
-            )
-            # Check element existence by some safe attribute
-            try:
-                if element.get_attribute("class") is None:
-                    break
-                yield element
-            except NoSuchElementException:
-                break
-            except WebDriverException:
-                break
+    def get_parents(self) -> list[Element]:
+        return self.dom.get_parents()
 
     def get_sibling(self, locator: tuple[str, str] | dict[str, Any] | Element) -> Element:
         self.logger.debug(f"{get_current_func_name()}")
         if isinstance(locator, Element):
             locator = locator.locator
 
-        base_xpath = self._get_xpath()
+        base_xpath = self.utilities.get_xpath()
         if not base_xpath:
             raise ShadowstepElementException("Unable to resolve current XPath")
 
@@ -219,7 +144,7 @@ class Element(ElementBase):
         """
         self.logger.debug(f"{get_current_func_name()}")
 
-        base_xpath = self._get_xpath()
+        base_xpath = self.utilities.get_xpath()
         if not base_xpath:
             raise ShadowstepElementException("Unable to resolve current XPath")
 
@@ -285,7 +210,7 @@ class Element(ElementBase):
                 cousin_locator = cousin_locator.locator
 
             # Resolve current XPath
-            current_xpath = self._get_xpath()
+            current_xpath = self.utilities.get_xpath()
             if not current_xpath:
                 raise ShadowstepElementException("Unable to resolve current XPath")
 
@@ -317,6 +242,18 @@ class Element(ElementBase):
         except (NoSuchDriverException, InvalidSessionIdException) as error:
             self.handle_driver_error(error)
             return None
+
+    def get_attributes(self) -> dict[str, Any]:
+        """Fetch all XML attributes of the element by matching locator against page source.
+
+        Returns:
+            Optional[dict[str, Any]]: Dictionary of all attributes, or None if not found.
+        """
+        self.logger.debug(f"{get_current_func_name()}")
+        xpath_expr = self._resolve_xpath_for_attributes()
+        if not xpath_expr:
+            return {}
+        return self.utilities.extract_el_attrs_from_source(xpath_expr, self.shadowstep.driver.page_source)[0]
 
     def get_center(self, element: WebElement | None = None) -> tuple[int, int]:
         """Get the center coordinates of the element.
@@ -2740,8 +2677,6 @@ class Element(ElementBase):
                 raise
         return ""  # Return empty string if no child class found
 
-
-
     def _build_xpath_attribute_condition(self, key: str, value: str) -> str:
         """Build XPath attribute condition based on value content."""
         if value is None or value == "null":
@@ -2775,8 +2710,6 @@ class Element(ElementBase):
             xpath += self._build_xpath_attribute_condition(key, value)
         return xpath
 
-
-
     def _build_element_xpath(self, base_element: WebElement, index: int) -> str:
         """
         Constructs XPath for a child element at a specific index.
@@ -2790,7 +2723,7 @@ class Element(ElementBase):
             XPath string to access the element.
         """
         self.logger.debug(f"{get_current_func_name()}")
-        parent_xpath = self._get_xpath()
+        parent_xpath = self.utilities.get_xpath()
         return f"{parent_xpath}/*[{index}]"
 
     def wait(self, timeout: int = 10, poll_frequency: float = 0.5, return_bool: bool = False) -> Element:  # noqa: C901
@@ -3139,12 +3072,18 @@ class Element(ElementBase):
             ignored_exceptions=self.ignored_exceptions
         )
 
-    def _clean_xpath_expr(self, expr: str) -> str:
-        # Remove all attributes where value is 'null'
-        expr = re.sub(r"\s*and\s*@[\w:-]+='null'", "", expr)
-        # if attribute happens to be first (without "and")
-        expr = re.sub(r"\[@[\w:-]+='null'\s*and\s*", "[", expr)
-        return re.sub(r"\[@[\w:-]+='null'\s*\]", "", expr)
+    def _resolve_xpath_for_attributes(self) -> str | None:
+        """Resolve XPath expression from locator for attributes fetching."""
+        try:
+            xpath_expr = self.converter.to_xpath(self.locator)[1]
+            if not xpath_expr:
+                self.logger.error(f"Failed to resolve XPath from locator: {self.locator}")
+                return None
+            self.logger.debug(f"Resolved XPath: {xpath_expr}")
+            return xpath_expr
+        except Exception as e:
+            self.logger.error(f"Exception in to_xpath: {e}")
+            return None
 
 
 """

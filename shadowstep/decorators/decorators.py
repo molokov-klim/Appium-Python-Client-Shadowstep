@@ -371,3 +371,36 @@ def log_info() -> Callable[[Callable[P, T]], Callable[P, T]]:
         return wrapper
 
     return decorator
+
+
+def log_debug() -> Callable[[Callable[P, T]], Callable[P, T]]:
+    """
+    Decorator for logging method entry/exit with type hints preserved.
+
+    This decorator automatically logs method entry with arguments and exit with
+    return value. It preserves type hints and works with any callable function.
+
+    Returns:
+        Decorator function that wraps the target method.
+
+    Example:
+        @log_info()
+        def my_function(arg1: str, arg2: int) -> bool:
+            # Function implementation
+            return True
+    """
+
+    def decorator(func: Callable[P, T]) -> Callable[P, T]:
+        @wraps(func)
+        def wrapper(*args: P.args, **kwargs: P.kwargs) -> T:
+            method_name = func.__name__
+            module = cast(ModuleType, inspect.getmodule(func))
+            logger = logging.getLogger(module.__name__)
+            logger.debug(f"{method_name}() < args={args}, kwargs={kwargs}")
+            result: T = func(*args, **kwargs)
+            logger.debug(f"{method_name}() > {result}")
+            return result
+
+        return wrapper
+
+    return decorator

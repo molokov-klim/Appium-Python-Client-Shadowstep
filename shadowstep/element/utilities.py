@@ -3,12 +3,12 @@ from __future__ import annotations
 
 import logging
 import re
-from typing import TYPE_CHECKING, Any, cast
+from typing import TYPE_CHECKING, Any
 
-from exceptions.shadowstep_exceptions import ShadowstepElementException
 from lxml import etree as etree
 from selenium.common import WebDriverException
 
+from shadowstep.exceptions.shadowstep_exceptions import ShadowstepElementException
 from shadowstep.locator import UiSelector
 from shadowstep.utils.utils import get_current_func_name
 
@@ -18,7 +18,7 @@ if TYPE_CHECKING:
 
 
 class ElementUtilities:
-    def __init__(self, element: "Element"):
+    def __init__(self, element: Element):
         self.element: Element = element
         self.shadowstep: Shadowstep = element.shadowstep
         self.logger: logging.Logger = logging.getLogger(get_current_func_name())

@@ -36,4 +36,6 @@ adb devices
 pytest -svl --log-cli-level INFO --tb=short --setup-show tests/test_shadowstep.py
 
 pytest -svl --log-cli-level INFO --tb=short --setup-show tests/test_element.py
+
+uv run pytest -svl --log-cli-level INFO --tb=short --setup-show  tests/element/test_element_dom.py
 ```
