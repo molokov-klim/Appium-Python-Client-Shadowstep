@@ -71,20 +71,6 @@ dev-dependencies = [
     "ruff>=0.12.9",
 ]
 
-[tool.uv.sources]
-pytest-zephyr = { index = "pytest-zephyr" }
-
-[[tool.uv.index]]
-name = "pytest-zephyr"
-url = "https://pypi:eixahsh6shai4Ais5Cha@nexus.atol.tech/repository/pypi-group/simple"
-explicit = true
-
-#url = "https://nexus.atol.tech/repository/pypi-group/simple"
-#username = "pypi"
-#password = "eixahsh6shai4Ais5Cha"
-#trusted-host = "nexus.atol.tech"
-#default = false  # если true — uv будет искать сначала здесь
-
 # ---------- RUFF ----------
 [tool.ruff]
 # Общие настройки
