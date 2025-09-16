@@ -24,7 +24,6 @@ from selenium.webdriver.common.actions.pointer_input import PointerInput
 from selenium.webdriver.remote.shadowroot import ShadowRoot
 from selenium.webdriver.support.wait import WebDriverWait
 
-from shadowstep.decorators.decorators import log_debug
 from shadowstep.element import conditions
 from shadowstep.element.actions import ElementActions
 from shadowstep.element.base import ElementBase
@@ -81,10 +80,9 @@ class Element(ElementBase):
         return f"Element(locator={self.locator!r}"
 
     """
-    Element DOM navigation (dom.py)
+    Element DOM navigation
     """
 
-    @log_debug()
     def get_element(self,
                     locator: tuple[str, str] | dict[str, Any] | Element | UiSelector,
                     timeout: int = 30,
@@ -92,7 +90,6 @@ class Element(ElementBase):
                     ignored_exceptions: WaitExcTypes | None = None) -> Element:
         return self.dom.get_element(locator, timeout, poll_frequency, ignored_exceptions)
 
-    @log_debug()
     def get_elements(
             self,
             locator: tuple[str, str] | dict[str, Any] | Element | UiSelector,
@@ -102,7 +99,6 @@ class Element(ElementBase):
     ) -> list[Element]:
         return self.dom.get_elements(locator, timeout, poll_frequency, ignored_exceptions)
 
-    @log_debug()
     def get_parent(self,
                    timeout: float = 30,
                    poll_frequency: float = 0.5,
@@ -150,189 +146,31 @@ class Element(ElementBase):
         return self.dom.get_cousins(cousin_locator, depth_to_parent, timeout, poll_frequency, ignored_exceptions)
 
     """
-    3. Element Actions (element_actions.py)
-    Методы прямого взаимодействия с элементами:
-    send_keys(),
-    clear()
-    set_value(),
-    submit()
+    Element Actions
     """
 
     # Override
     def send_keys(self, *value: str) -> Element:
-        """Simulates typing into the element.
-
-        Args:
-            value: One or more strings to type.
-
-        Returns:
-            Element: Self instance on success.
-        """
-        self.logger.debug(f"{get_current_func_name()}")
-        start_time = time.time()
-
-        text = "".join(value)
-
-        while time.time() - start_time < self.timeout:
-            try:
-                self.get_driver()
-                element = self.get_native()
-                element.send_keys(text)
-                return self
-
-            except NoSuchDriverException as error:
-                self.handle_driver_error(error)
-            except InvalidSessionIdException as error:
-                self.handle_driver_error(error)
-            except AttributeError as error:
-                self.handle_driver_error(error)
-            except StaleElementReferenceException as error:
-                self.logger.debug(error)
-                self.logger.warning("StaleElementReferenceException\nRe-acquire element")
-                self.native = None
-                self.get_native()
-                continue
-            except WebDriverException as error:
-                if "instrumentation process is not running" in str(error).lower():
-                    self.handle_driver_error(error)
-                    continue
-                raise
-        raise ShadowstepElementException(
-            msg=f"Failed to send_keys({text}) within {self.timeout=}",
-            stacktrace=traceback.format_stack()
-        )
+        return self.actions.send_keys(*value)
 
     # Override
     def clear(self) -> Element:
-        """Clears text content of the element (e.g. input or textarea).
-
-        Returns:
-            Element: Self instance if successful.
-        """
-        self.logger.debug(f"{get_current_func_name()}")
-        start_time = time.time()
-
-        while time.time() - start_time < self.timeout:
-            try:
-                self.get_driver()
-
-                current_element = self.get_native()
-
-                current_element.clear()
-                return self
-            except NoSuchDriverException as error:
-                self.handle_driver_error(error)
-            except InvalidSessionIdException as error:
-                self.handle_driver_error(error)
-            except AttributeError as error:
-                self.handle_driver_error(error)
-            except StaleElementReferenceException as error:
-                self.logger.debug(error)
-                self.logger.warning("StaleElementReferenceException\nRe-acquire element")
-                self.native = None
-                self.get_native()
-                continue
-            except WebDriverException as error:
-                if "instrumentation process is not running" in str(error).lower():
-                    self.handle_driver_error(error)
-                    continue
-                raise
-        raise ShadowstepElementException(
-            msg=f"Failed to clear element within {self.timeout=}",
-            stacktrace=traceback.format_stack()
-        )
+        return self.actions.clear()
 
     # Override
     def set_value(self, value: str) -> Element:
-        """NOT IMPLEMENTED!
-        Set the value on this element in the application.
-
-        Args:
-            value: The value to be set.
-
-        Returns:
-            Element: Self instance on success.
-        """
-        self.logger.debug(f"{get_current_func_name()}")
         self.logger.warning(
             f"Method {inspect.currentframe() if inspect.currentframe() else 'unknown'} is not implemented in UiAutomator2")
+        return self.actions.set_value(value)
 
-        start_time = time.time()
-
-        while time.time() - start_time < self.timeout:
-            try:
-                self.get_driver()
-
-                element = self.get_native()
-
-                element.set_value(value)
-                return self
-
-            except NoSuchDriverException as error:
-                self.handle_driver_error(error)
-            except InvalidSessionIdException as error:
-                self.handle_driver_error(error)
-            except AttributeError as error:
-                self.handle_driver_error(error)
-            except StaleElementReferenceException as error:
-                self.logger.debug(error)
-                self.logger.warning("StaleElementReferenceException\nRe-acquire element")
-                self.native = None
-                self.get_native()
-                continue
-            except WebDriverException as error:
-                if "instrumentation process is not running" in str(error).lower():
-                    self.handle_driver_error(error)
-                    continue
-                raise
-        raise ShadowstepElementException(
-            msg=f"Failed to set_value({value}) within {self.timeout=}",
-            stacktrace=traceback.format_stack()
-        )
-
+    # Override
     def submit(self) -> Element:
-        """NOT IMPLEMENTED!
-        Submits a form element.
-
-        Returns:
-            Element: Self instance on success.
-        """
-        self.logger.debug(f"{get_current_func_name()}")
         self.logger.warning(
             f"Method {inspect.currentframe() if inspect.currentframe() else 'unknown'} is not implemented in UiAutomator2")
-        start_time = time.time()
-
-        while time.time() - start_time < self.timeout:
-            try:
-                self.get_driver()
-                element = self.get_native()
-                element.submit()
-                return self
-
-            except NoSuchDriverException as error:
-                self.handle_driver_error(error)
-            except InvalidSessionIdException as error:
-                self.handle_driver_error(error)
-            except AttributeError as error:
-                self.handle_driver_error(error)
-            except StaleElementReferenceException as error:
-                self.logger.debug(error)
-                self.logger.warning("StaleElementReferenceException\nRe-acquire element")
-                self.native = None
-                self.get_native()
-                continue
-            except WebDriverException as error:
-                if "instrumentation process is not running" in str(error).lower():
-                    self.handle_driver_error(error)
-                    continue
-                raise
-        raise ShadowstepElementException(
-            msg=f"Failed to submit element within {self.timeout=}",
-            stacktrace=traceback.format_stack()
-        )
+        return self.actions.submit()
 
     """
-    Element Gestures (gestures.py)
+    Element Gestures
     """
 
     def tap(self, duration: int = None) -> Element:

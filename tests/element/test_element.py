@@ -7,6 +7,9 @@ from selenium.common import NoSuchElementException
 from shadowstep.element.element import Element, ShadowstepElementException
 from shadowstep.shadowstep import Shadowstep
 
+"""
+uv run pytest -svl --log-cli-level INFO --tb=short --setup-show  tests/element/test_element.py
+"""
 
 class TestElement:
 
@@ -280,41 +283,6 @@ class TestElement:
         assert isinstance(el.text, str)  # noqa: S101  # noqa: S101
         assert el.text == "Phone"  # noqa: S101  # noqa: S101
 
-    def test_clear(self, app: Shadowstep, stability: None):
-        el = app.get_element({"resource-id": "com.android.quicksearchbox:id/search_widget_text"})
-        el.tap()
-        time.sleep(3)
-        app.terminal.past_text("some_text")
-        time.sleep(3)
-        el = app.get_element({"resource-id": "com.android.quicksearchbox:id/search_src_text"})
-        assert el.text == "some_text"  # noqa: S101  # noqa: S101
-        el.clear()
-        assert el.text == ""  # noqa: S101  # noqa: S101
-
-    @pytest.mark.skip(reason="Method is not implemented in UiAutomator2")
-    def test_set_value(self, app: Shadowstep, stability: None):
-        el = app.get_element({"resource-id": "com.android.quicksearchbox:id/search_widget_text"})
-        el.tap()
-        time.sleep(3)
-        el = app.get_element({"resource-id": "com.android.quicksearchbox:id/search_src_text"})
-        el.set_value("test123")
-        assert "test123" in el.text  # noqa: S101  # noqa: S101
-        el.clear()
-
-    def test_send_keys(self, app: Shadowstep, stability: None):
-        el = app.get_element({"resource-id": "com.android.quicksearchbox:id/search_widget_text"})
-        el.tap()
-        time.sleep(3)
-        el = app.get_element({"resource-id": "com.android.quicksearchbox:id/search_src_text"})
-        el.send_keys("abc")
-        assert "abc" in el.text  # noqa: S101  # noqa: S101
-        el.clear()
-
-    @pytest.mark.skip(reason="Method is not implemented in UiAutomator2")
-    def test_submit(self, app: Shadowstep, stability: None):
-        el = app.get_element({"resource-id": "com.android.quicksearchbox:id/search_widget_text"})
-        el.submit()  # Не всегда валидно, но для теста вызова достаточно
-
     @pytest.mark.skip(reason="Method is not implemented in UiAutomator2")
     def test_shadow_root(self, app: Shadowstep, stability: None):
         el = app.get_element({"content-desc": "Phone"})
@@ -376,4 +344,3 @@ class TestElement:
         container = app.get_element({"resource-id": "com.android.settings:id/main_content_scrollable_container"})
         with pytest.raises(NoSuchElementException):
             container.scroll_to_element(locator={"text": "Element That Does Not Exist"})
-

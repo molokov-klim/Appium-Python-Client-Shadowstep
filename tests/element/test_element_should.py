@@ -6,6 +6,9 @@ import pytest
 from shadowstep.element.element import Element
 from shadowstep.shadowstep import Shadowstep
 
+"""
+uv run pytest -svl --log-cli-level INFO --tb=short --setup-show  tests/element/test_element_should.py
+"""
 
 @pytest.fixture
 def sample_element(app: Shadowstep):

@@ -7,6 +7,9 @@ from shadowstep.element.element import Element
 from shadowstep.locator import UiSelector
 from shadowstep.shadowstep import Shadowstep
 
+"""
+uv run pytest -svl --log-cli-level INFO --tb=short --setup-show  tests/element/test_element_dom.py
+"""
 
 class TestGetElement:
 
