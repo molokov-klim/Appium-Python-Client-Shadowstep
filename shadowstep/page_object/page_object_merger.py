@@ -3,6 +3,7 @@ from __future__ import annotations
 import logging
 import textwrap
 from pathlib import Path
+from typing import Any
 
 from shadowstep.utils.utils import get_current_func_name
 

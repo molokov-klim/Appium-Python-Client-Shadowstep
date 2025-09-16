@@ -29,7 +29,6 @@ if TYPE_CHECKING:
 DEFAULT_NAVIGATION_TIMEOUT = 55
 
 
-
 class PageNavigator:
     """Manages dom between pages using graph-based pathfinding.
     
@@ -41,7 +40,7 @@ class PageNavigator:
         graph_manager: Manages the page transition graph.
         logger: Logger instance for dom events.
     """
-    
+
     def __init__(self, shadowstep: Shadowstep) -> None:
         """Initialize the PageNavigator.
         
@@ -52,7 +51,7 @@ class PageNavigator:
             TypeError: If shadowstep is None.
         """
         # shadowstep is already typed as Shadowstep, so it cannot be None
-            
+
         self.shadowstep = shadowstep
         self.graph_manager = PageGraph()
         self.logger = logger
@@ -70,7 +69,7 @@ class PageNavigator:
         if page is None:
             raise TypeError("page cannot be None")
         # edges is already typed as dict[str, Any], so isinstance check is unnecessary
-            
+
         self.graph_manager.add_page(page=page, edges=edges)
 
     def navigate(self, from_page: Any, to_page: Any, timeout: int = DEFAULT_NAVIGATION_TIMEOUT) -> bool:
@@ -140,7 +139,7 @@ class PageNavigator:
 
         # Fallback: BFS traversal
         return self._find_path_bfs(start, target)
-    
+
     def _find_path_bfs(self, start: Any, target: Any) -> list[Any] | None:
         """Find path using breadth-first search as fallback.
         
@@ -180,7 +179,7 @@ class PageNavigator:
             raise ValueError("path cannot be empty")
         if len(path) < 2:
             raise ValueError("path must contain at least 2 pages for dom")
-            
+
         for i in range(len(path) - 1):
             current_page = path[i]
             next_page = path[i + 1]
@@ -203,7 +202,7 @@ class PageGraph:
         graph: Dictionary-based graph for backward compatibility.
         nx_graph: NetworkX directed graph for advanced operations.
     """
-    
+
     def __init__(self) -> None:
         """Initialize the PageGraph with empty graphs."""
         self.graph: dict[Any, Any] = {}  # Legacy dictionary-based graph
@@ -221,12 +220,12 @@ class PageGraph:
         """
         if page is None:
             raise TypeError("page cannot be None")
-            
+
         self.graph[page] = edges
 
         # Add vertex and edges to NetworkX graph
         self.nx_graph.add_node(page)
-        if isinstance(edges, dict | list | tuple):
+        if isinstance(edges, (dict, list, tuple)):  # noqa
             for target_name in edges:
                 self.nx_graph.add_edge(page, target_name)
 

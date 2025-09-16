@@ -81,7 +81,7 @@ class ShadowstepLogcat:
         if value:
             import re
             escaped_filters = [re.escape(f) for f in value]
-            self._compiled_filter_pattern = re.compile('|'.join(escaped_filters))
+            self._compiled_filter_pattern = re.compile("|".join(escaped_filters))
             self._filter_set = set(value)
         else:
             self._compiled_filter_pattern = None
@@ -101,10 +101,10 @@ class ShadowstepLogcat:
         parts = line.split()
         if len(parts) >= 6:
             for i, part in enumerate(parts):
-                if part in {'I', 'D', 'W', 'E', 'V'} and i + 1 < len(parts):
+                if part in {"I", "D", "W", "E", "V"} and i + 1 < len(parts):
                     tag_part = parts[i + 1]
-                    if ':' in tag_part:
-                        tag = tag_part.split(':', 1)[0]
+                    if ":" in tag_part:
+                        tag = tag_part.split(":", 1)[0]
                         return tag in self._filter_set
 
         return True

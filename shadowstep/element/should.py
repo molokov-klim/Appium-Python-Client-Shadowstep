@@ -2,7 +2,7 @@
 
 from typing import Any
 
-from .element import Element
+from shadowstep.element.element import Element
 
 
 class Should:

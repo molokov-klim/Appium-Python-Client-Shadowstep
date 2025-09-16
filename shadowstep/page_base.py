@@ -19,6 +19,7 @@ class PageBaseShadowstep(ABC):
 
     def __new__(cls, *args: Any, **kwargs: Any) -> "PageBaseShadowstep":
         if cls not in cls._instances:
+            from shadowstep.shadowstep import Shadowstep
             instance = super().__new__(cls)
             instance.shadowstep = cast(Shadowstep, Shadowstep.get_instance())
             cls._instances[cls] = instance

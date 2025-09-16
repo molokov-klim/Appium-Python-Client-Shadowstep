@@ -7,4 +7,4 @@ if TYPE_CHECKING:
 
 class ElementWaiting:
     def __init__(self, element: "Element"):
-        self.element: "Element" = element
+        self.element: Element = element

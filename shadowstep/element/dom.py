@@ -5,6 +5,7 @@ import logging
 import time
 from typing import TYPE_CHECKING, Any, cast
 
+from icecream import ic
 from selenium.common import (
     InvalidSessionIdException,
     NoSuchDriverException,
@@ -22,7 +23,6 @@ from shadowstep.exceptions.shadowstep_exceptions import (
     ShadowstepResolvingLocatorError,
 )
 from shadowstep.locator.types.shadowstep_dict import ShadowstepDictAttribute
-from shadowstep.utils.utils import get_current_func_name
 
 if TYPE_CHECKING:
     from shadowstep.element.element import Element
@@ -144,7 +144,7 @@ class ElementDOM:
 
     @log_debug()
     def get_parent(self,
-                   timeout: int = 30,
+                   timeout: float = 30.0,
                    poll_frequency: float = 0.5,
                    ignored_exceptions: WaitExcTypes | None = None) -> Element:
         from shadowstep.element.element import Element
@@ -159,13 +159,95 @@ class ElementDOM:
 
     @log_debug()
     def get_parents(self,
-                    timeout: int = 30,
+                    timeout: float = 30.0,
                     poll_frequency: float = 0.5,
                     ignored_exceptions: WaitExcTypes | None = None) -> list[Element]:
         clean_locator = self.utilities.remove_null_value(self.element.locator)
         xpath = self.converter.to_xpath(clean_locator)
         xpath = (xpath[0], xpath[1] + "/ancestor::*")
         parents = self.get_elements(xpath, timeout, poll_frequency, ignored_exceptions)
-        if parents and parents[0].locator.get("class") == "hierarchy":      # type: ignore
+        if parents and parents[0].locator.get("class") == "hierarchy":  # type: ignore
             parents.pop(0)
         return parents
+
+    @log_debug()
+    def get_sibling(self,
+                    locator: tuple[str, str] | dict[str, Any] | Element,
+                    timeout: float = 30.0,
+                    poll_frequency: float = 0.5,
+                    ignored_exceptions: WaitExcTypes | None = None) -> Element:
+        from shadowstep.element.element import Element
+        clean_locator = self.utilities.remove_null_value(self.element.locator)
+        base_xpath = self.converter.to_xpath(clean_locator)[1]
+        sibling_locator = self.utilities.remove_null_value(locator)
+        sibling_xpath = self.converter.to_xpath(sibling_locator)
+        sibling_path = sibling_xpath[1].lstrip("/")
+        xpath = f"{base_xpath}/following-sibling::{sibling_path}[1]"
+        return Element(
+            locator=("xpath", xpath),
+            shadowstep=self.shadowstep,
+            timeout=timeout,
+            poll_frequency=poll_frequency,
+            ignored_exceptions=ignored_exceptions
+        )
+
+    @log_debug()
+    def get_siblings(self,
+                     locator: tuple[str, str] | dict[str, Any] | Element,
+                     timeout: float = 30.0,
+                     poll_frequency: float = 0.5,
+                     ignored_exceptions: WaitExcTypes | None = None) -> list[Element]:
+        clean_locator = self.utilities.remove_null_value(self.element.locator)
+        base_xpath = self.converter.to_xpath(clean_locator)[1]
+        sibling_locator = self.utilities.remove_null_value(locator)
+        sibling_xpath = self.converter.to_xpath(sibling_locator)
+        sibling_path = sibling_xpath[1].lstrip("/")
+        xpath = f"{base_xpath}/following-sibling::{sibling_path}"
+        return self.get_elements(("xpath", xpath), timeout, poll_frequency, ignored_exceptions)
+
+    @log_debug()
+    def get_cousin(
+            self,
+            cousin_locator: tuple[str, str] | dict[str, Any] | Element,
+            depth_to_parent: int = 1,
+            timeout: float = 30.0,
+            poll_frequency: float = 0.5,
+            ignored_exceptions: WaitExcTypes | None = None) -> Element:
+        from shadowstep.element.element import Element
+        depth_to_parent += 1
+        clean_base_locator = self.utilities.remove_null_value(self.element.locator)
+        current_xpath = self.converter.to_xpath(clean_base_locator)[1]
+        up_xpath = "/".join([".."] * depth_to_parent)
+        base_xpath = f"{current_xpath}/{up_xpath}" if up_xpath else current_xpath
+
+        clean_cousin_locator = self.utilities.remove_null_value(cousin_locator)
+        cousin_xpath = self.converter.to_xpath(clean_cousin_locator)[1]
+
+        full_xpath = f"{base_xpath}{cousin_xpath}"
+        return Element(
+            locator=("xpath", full_xpath),
+            shadowstep=self.shadowstep,
+            timeout=timeout,
+            poll_frequency=poll_frequency,
+            ignored_exceptions=ignored_exceptions
+        )
+
+    @log_debug()
+    def get_cousins(self,
+                    cousin_locator: tuple[str, str] | dict[str, Any] | Element,
+                    depth_to_parent: int = 1,
+                    timeout: float = 30.0,
+                    poll_frequency: float = 0.5,
+                    ignored_exceptions: WaitExcTypes | None = None) -> list[Element]:
+        depth_to_parent += 1
+        clean_base_locator = self.utilities.remove_null_value(self.element.locator)
+        current_xpath = self.converter.to_xpath(clean_base_locator)[1]
+        up_xpath = "/".join([".."] * depth_to_parent)
+        base_xpath = f"{current_xpath}/{up_xpath}" if up_xpath else current_xpath
+
+        clean_cousin_locator = self.utilities.remove_null_value(cousin_locator)
+        cousin_xpath = self.converter.to_xpath(clean_cousin_locator)[1]
+
+        full_xpath = f"{base_xpath}{cousin_xpath}"
+        ic(full_xpath)
+        return self.get_elements(("xpath", full_xpath), timeout, poll_frequency, ignored_exceptions)

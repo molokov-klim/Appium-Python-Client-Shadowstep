@@ -224,10 +224,6 @@ class ShadowstepBase:
         Returns:
             bool: True if the session is active, False otherwise.
         """
-        self.logger.debug(f"{get_current_func_name()}")
-
-        step = "Checking session status"
-        self.logger.debug(f"[{step}] started")
         return bool(
             self._is_session_active_on_grid() or self._is_session_active_on_standalone() or self._is_session_active_on_standalone_new_style())
 

@@ -1,5 +1,4 @@
 import time
-from collections.abc import Generator
 from typing import Any
 
 import pytest
@@ -19,50 +18,6 @@ class TestElement:
         attrs = element.get_attributes()
         assert isinstance(attrs, dict)  # noqa: S101  # noqa: S101
         assert "bounds" in attrs  # noqa: S101  # noqa: S101
-
-    def test_get_parent(self, app: Shadowstep, stability: None):
-        child = app.get_element(locator={"content-desc": "Phone"})
-        parent = child.get_parent()
-        assert isinstance(parent, Element)  # noqa: S101  # noqa: S101
-        assert "ViewGroup" in parent.get_attribute("class")  # noqa: S101  # noqa: S101
-        child = app.get_element(locator={"resource-id": "com.android.launcher3:id/drag_layer"})
-        parent = child.get_parent()
-        assert "com.android.launcher3:id/launcher" in parent.get_attribute("resource-id")  # noqa: S101  # noqa: S101
-
-    def test_get_parents(self, app: Shadowstep, stability: None):
-        element = app.get_element(locator={"content-desc": "Phone"})
-        parents = element.get_parents()
-        assert isinstance(parents, Generator)  # noqa: S101  # noqa: S101
-        count = 0
-        for parent in parents:
-            assert isinstance(parent, Element)  # noqa: S101  # noqa: S101
-            count += 1
-        assert count > 0  # noqa: S101  # noqa: S101
-        app.adb.press_home()
-
-    def test_get_sibling(self, app: Shadowstep, stability: None, android_settings_open_close: None):
-        el = app.get_element({"text": "Network & internet"})
-        sibling = el.get_sibling({"resource-id": "android:id/summary"})
-        assert isinstance(sibling, Element)  # noqa: S101  # noqa: S101
-        assert "Mobile, Wi‑Fi, hotspot" in sibling.get_attribute("text")  # noqa: S101  # noqa: S101
-
-    def test_get_siblings(self, app: Shadowstep, stability: None, android_settings_open_close: None,
-                          android_settings_recycler: Element):
-        el = android_settings_recycler.get_element(
-            {"resource-id": "com.android.settings:id/recycler_view"}).get_element(
-            {"class": "android.widget.LinearLayout"})
-        siblings = el.get_siblings()
-        assert isinstance(siblings, Generator)  # noqa: S101  # noqa: S101
-        count = 0
-        bounds: list[str] = []
-        for sibling in siblings:
-            assert isinstance(sibling, Element)  # noqa: S101  # noqa: S101
-            assert sibling.get_attribute("bounds") is not None  # noqa: S101  # noqa: S101
-            bounds.append(sibling.get_attribute("bounds"))
-            count += 1
-        bounds_unique = set(bounds)
-        assert len(bounds_unique) > 3  # noqa: S101  # noqa: S101
-        assert count > 0  # noqa: S101  # noqa: S101
 
     def test_tap(self, app: Shadowstep, stability: None):
         element = app.get_element(locator={"content-desc": "Phone"})
@@ -258,7 +213,7 @@ class TestElement:
         app.terminal.start_activity(package="com.android.settings", activity="com.android.settings.Settings")
         time.sleep(3)
         assert "Network & internet" in settings_network.get_attribute("text")  # noqa: S101  # noqa: S101
-        settings_recycler.scroll_to_element(locator=settings_about_phone.locator)
+        settings_recycler.scroll_to_element(locator=settings_about_phone.locator)  # type: ignore
         time.sleep(3)
         assert "About phone" in settings_about_phone.get_attribute("text")  # noqa: S101  # noqa: S101
         settings_recycler.scroll_to_element(locator=settings_network)
@@ -422,12 +377,3 @@ class TestElement:
         with pytest.raises(NoSuchElementException):
             container.scroll_to_element(locator={"text": "Element That Does Not Exist"})
 
-    def test_get_cousin(self, app: Shadowstep, stability: None, android_settings_open_close: None):
-        app.get_element({"text": "Network & internet"}).tap()
-        switcher = app.get_element({"text": "Airplane mode"}).get_cousin({"resource-id": "android:id/switch_widget"})
-        assert switcher.get_attribute("class") == "android.widget.Switch"  # noqa: S101  # noqa: S101
-
-    def test_get_cousin_depth(self, app: Shadowstep, stability: None, android_settings_open_close: None):
-        app.get_element({"text": "Network & internet"}).tap()
-        switcher = app.get_element({"text": "Airplane mode"}).get_cousin({"resource-id": "android:id/switch_widget"}, 5)
-        assert switcher.get_attribute("class") == "android.widget.Switch"  # noqa: S101  # noqa: S101

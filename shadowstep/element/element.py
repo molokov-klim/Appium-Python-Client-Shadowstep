@@ -5,7 +5,6 @@ import inspect
 import logging
 import time
 import traceback
-from collections.abc import Generator
 from typing import TYPE_CHECKING, Any, cast
 
 from appium.webdriver.webelement import WebElement
@@ -53,6 +52,7 @@ class Element(ElementBase):
     """
     Public API for Element
     """
+
     def __init__(self,
                  locator: tuple[str, str] | dict[str, Any] | Element | UiSelector,
                  shadowstep: Shadowstep,
@@ -80,15 +80,16 @@ class Element(ElementBase):
     def __repr__(self):
         return f"Element(locator={self.locator!r}"
 
+    """
+    Element DOM navigation (dom.py)
+    """
+
     @log_debug()
     def get_element(self,
                     locator: tuple[str, str] | dict[str, Any] | Element | UiSelector,
                     timeout: int = 30,
                     poll_frequency: float = 0.5,
                     ignored_exceptions: WaitExcTypes | None = None) -> Element:
-        """
-        lazy
-        """
         return self.dom.get_element(locator, timeout, poll_frequency, ignored_exceptions)
 
     @log_debug()
@@ -99,149 +100,367 @@ class Element(ElementBase):
             poll_frequency: float = 0.5,
             ignored_exceptions: WaitExcTypes | None = None
     ) -> list[Element]:
-        """
-        greedy
-        """
         return self.dom.get_elements(locator, timeout, poll_frequency, ignored_exceptions)
 
     @log_debug()
-    def get_parent(self) -> Element:
-        return self.dom.get_parent()
+    def get_parent(self,
+                   timeout: float = 30,
+                   poll_frequency: float = 0.5,
+                   ignored_exceptions: WaitExcTypes | None = None) -> Element:
+        return self.dom.get_parent(timeout, poll_frequency, ignored_exceptions)
 
-    def get_parents(self) -> list[Element]:
-        return self.dom.get_parents()
+    def get_parents(self,
+                    timeout: float = 30,
+                    poll_frequency: float = 0.5,
+                    ignored_exceptions: WaitExcTypes | None = None) -> list[Element]:
+        return self.dom.get_parents(timeout, poll_frequency, ignored_exceptions)
 
-    def get_sibling(self, locator: tuple[str, str] | dict[str, Any] | Element) -> Element:
-        self.logger.debug(f"{get_current_func_name()}")
-        if isinstance(locator, Element):
-            locator = locator.locator
+    def get_sibling(self,
+                    locator: tuple[str, str] | dict[str, Any] | Element,
+                    timeout: float = 30,
+                    poll_frequency: float = 0.5,
+                    ignored_exceptions: WaitExcTypes | None = None) -> Element:
+        return self.dom.get_sibling(locator, timeout, poll_frequency, ignored_exceptions)
 
-        base_xpath = self.utilities.get_xpath()
-        if not base_xpath:
-            raise ShadowstepElementException("Unable to resolve current XPath")
-
-        sibling_locator = self.remove_null_value(locator)
-        sibling_path = sibling_locator[1].lstrip("/")
-
-        # Try to find first matching "sibling" on the right
-        xpath = f"{base_xpath}/following-sibling::{sibling_path}[1]"
-
-        return Element(
-            locator=("xpath", xpath),
-            shadowstep=self.shadowstep,
-            timeout=self.timeout,
-            poll_frequency=self.poll_frequency,
-            ignored_exceptions=self.ignored_exceptions
-        )
-
-    def get_siblings(self) -> Generator[Element]:
-        """Yields all sibling elements of the current element.
-
-        # FIXME must be greedy
-
-        Yields:
-            Generator of Element instances that are siblings of the current element.
-        """
-        self.logger.debug(f"{get_current_func_name()}")
-
-        base_xpath = self.utilities.get_xpath()
-        if not base_xpath:
-            raise ShadowstepElementException("Unable to resolve current XPath")
-
-        # First preceding-sibling (in reverse order)
-        for index in range(1, 50):
-            xpath = f"{base_xpath}/preceding-sibling::*[{index}]"
-            sibling = Element(
-                locator=("xpath", xpath),
-                shadowstep=self.shadowstep,
-                timeout=self.timeout,
-                poll_frequency=self.poll_frequency,
-                ignored_exceptions=self.ignored_exceptions
-            )
-            try:
-                if sibling.get_attribute("class") is None:
-                    break
-                yield sibling
-            except NoSuchElementException:
-                break
-            except WebDriverException:
-                break
-
-        # Then following-sibling (in forward order)
-        for index in range(1, 50):
-            xpath = f"{base_xpath}/following-sibling::*[{index}]"
-            sibling = Element(
-                locator=("xpath", xpath),
-                shadowstep=self.shadowstep,
-                timeout=self.timeout,
-                poll_frequency=self.poll_frequency,
-                ignored_exceptions=self.ignored_exceptions
-            )
-            try:
-                if sibling.get_attribute("class") is None:
-                    break
-                yield sibling
-            except NoSuchElementException:
-                break
-            except WebDriverException:
-                break
+    def get_siblings(self,
+                     locator: tuple[str, str] | dict[str, Any] | Element,
+                     timeout: float = 30.0,
+                     poll_frequency: float = 0.5,
+                     ignored_exceptions: WaitExcTypes | None = None) -> list[Element]:
+        return self.dom.get_siblings(locator, timeout, poll_frequency, ignored_exceptions)
 
     def get_cousin(
             self,
             cousin_locator: tuple[str, str] | dict[str, Any] | Element,
             depth_to_parent: int = 1,
+            timeout: float = 30.0,
+            poll_frequency: float = 0.5,
+            ignored_exceptions: WaitExcTypes | None = None
     ) -> Element:
-        """
-        Returns an Element located by cousin_locator, relative to the current element's ancestor.
+        return self.dom.get_cousin(cousin_locator, depth_to_parent, timeout, poll_frequency, ignored_exceptions)
+
+    def get_cousins(
+            self,
+            cousin_locator: tuple[str, str] | dict[str, Any] | Element,
+            depth_to_parent: int = 1,
+            timeout: float = 30.0,
+            poll_frequency: float = 0.5,
+            ignored_exceptions: WaitExcTypes | None = None
+    ) -> list[Element]:
+        return self.dom.get_cousins(cousin_locator, depth_to_parent, timeout, poll_frequency, ignored_exceptions)
+
+    """
+    3. Element Actions (element_actions.py)
+    Методы прямого взаимодействия с элементами:
+    send_keys(),
+    clear()
+    set_value(),
+    submit()
+    """
+
+    # Override
+    def send_keys(self, *value: str) -> Element:
+        """Simulates typing into the element.
 
         Args:
-            cousin_locator (Union[Tuple[str, str], dict[str, Any], 'Element']): Locator of the cousin element.
-            depth_to_parent (int): How many levels up the DOM tree to traverse.
+            value: One or more strings to type.
 
         Returns:
-            Union['Element', None]: The cousin Element or None if not found.
+            Element: Self instance on success.
         """
         self.logger.debug(f"{get_current_func_name()}")
-        depth_to_parent += 1
+        start_time = time.time()
 
-        try:
-            # Convert Element to locator if needed
-            if isinstance(cousin_locator, Element):
-                cousin_locator = cousin_locator.locator
+        text = "".join(value)
 
-            # Resolve current XPath
-            current_xpath = self.utilities.get_xpath()
-            if not current_xpath:
-                raise ShadowstepElementException("Unable to resolve current XPath")
+        while time.time() - start_time < self.timeout:
+            try:
+                self.get_driver()
+                element = self.get_native()
+                element.send_keys(text)
+                return self
 
-            self.logger.debug(f"[XPath Resolution] current_xpath: {current_xpath}")
-            self.logger.debug(f"[Depth] depth_to_parent: {depth_to_parent}")
+            except NoSuchDriverException as error:
+                self.handle_driver_error(error)
+            except InvalidSessionIdException as error:
+                self.handle_driver_error(error)
+            except AttributeError as error:
+                self.handle_driver_error(error)
+            except StaleElementReferenceException as error:
+                self.logger.debug(error)
+                self.logger.warning("StaleElementReferenceException\nRe-acquire element")
+                self.native = None
+                self.get_native()
+                continue
+            except WebDriverException as error:
+                if "instrumentation process is not running" in str(error).lower():
+                    self.handle_driver_error(error)
+                    continue
+                raise
+        raise ShadowstepElementException(
+            msg=f"Failed to send_keys({text}) within {self.timeout=}",
+            stacktrace=traceback.format_stack()
+        )
 
-            # Climb up the tree
-            up_xpath = "/".join([".."] * depth_to_parent)
-            base_xpath = f"{current_xpath}/{up_xpath}" if up_xpath else current_xpath
+    # Override
+    def clear(self) -> Element:
+        """Clears text content of the element (e.g. input or textarea).
 
-            # Resolve cousin locator to relative XPath
-            cousin_relative = self.remove_null_value(cousin_locator)[1].lstrip("/")
+        Returns:
+            Element: Self instance if successful.
+        """
+        self.logger.debug(f"{get_current_func_name()}")
+        start_time = time.time()
 
-            self.logger.debug(f"[Cousin Locator] relative_xpath: {cousin_relative}")
+        while time.time() - start_time < self.timeout:
+            try:
+                self.get_driver()
 
-            # Full cousin XPath
-            cousin_xpath = f"{base_xpath}//{cousin_relative}"
+                current_element = self.get_native()
 
-            self.logger.debug(f"[Final XPath] cousin_xpath: {cousin_xpath}")
+                current_element.clear()
+                return self
+            except NoSuchDriverException as error:
+                self.handle_driver_error(error)
+            except InvalidSessionIdException as error:
+                self.handle_driver_error(error)
+            except AttributeError as error:
+                self.handle_driver_error(error)
+            except StaleElementReferenceException as error:
+                self.logger.debug(error)
+                self.logger.warning("StaleElementReferenceException\nRe-acquire element")
+                self.native = None
+                self.get_native()
+                continue
+            except WebDriverException as error:
+                if "instrumentation process is not running" in str(error).lower():
+                    self.handle_driver_error(error)
+                    continue
+                raise
+        raise ShadowstepElementException(
+            msg=f"Failed to clear element within {self.timeout=}",
+            stacktrace=traceback.format_stack()
+        )
 
-            return Element(
-                locator=("xpath", cousin_xpath),
-                shadowstep=self.shadowstep,
-                timeout=self.timeout,
-                poll_frequency=self.poll_frequency,
-                ignored_exceptions=self.ignored_exceptions
-            )
+    # Override
+    def set_value(self, value: str) -> Element:
+        """NOT IMPLEMENTED!
+        Set the value on this element in the application.
 
-        except (NoSuchDriverException, InvalidSessionIdException) as error:
-            self.handle_driver_error(error)
-            return None
+        Args:
+            value: The value to be set.
+
+        Returns:
+            Element: Self instance on success.
+        """
+        self.logger.debug(f"{get_current_func_name()}")
+        self.logger.warning(
+            f"Method {inspect.currentframe() if inspect.currentframe() else 'unknown'} is not implemented in UiAutomator2")
+
+        start_time = time.time()
+
+        while time.time() - start_time < self.timeout:
+            try:
+                self.get_driver()
+
+                element = self.get_native()
+
+                element.set_value(value)
+                return self
+
+            except NoSuchDriverException as error:
+                self.handle_driver_error(error)
+            except InvalidSessionIdException as error:
+                self.handle_driver_error(error)
+            except AttributeError as error:
+                self.handle_driver_error(error)
+            except StaleElementReferenceException as error:
+                self.logger.debug(error)
+                self.logger.warning("StaleElementReferenceException\nRe-acquire element")
+                self.native = None
+                self.get_native()
+                continue
+            except WebDriverException as error:
+                if "instrumentation process is not running" in str(error).lower():
+                    self.handle_driver_error(error)
+                    continue
+                raise
+        raise ShadowstepElementException(
+            msg=f"Failed to set_value({value}) within {self.timeout=}",
+            stacktrace=traceback.format_stack()
+        )
+
+    def submit(self) -> Element:
+        """NOT IMPLEMENTED!
+        Submits a form element.
+
+        Returns:
+            Element: Self instance on success.
+        """
+        self.logger.debug(f"{get_current_func_name()}")
+        self.logger.warning(
+            f"Method {inspect.currentframe() if inspect.currentframe() else 'unknown'} is not implemented in UiAutomator2")
+        start_time = time.time()
+
+        while time.time() - start_time < self.timeout:
+            try:
+                self.get_driver()
+                element = self.get_native()
+                element.submit()
+                return self
+
+            except NoSuchDriverException as error:
+                self.handle_driver_error(error)
+            except InvalidSessionIdException as error:
+                self.handle_driver_error(error)
+            except AttributeError as error:
+                self.handle_driver_error(error)
+            except StaleElementReferenceException as error:
+                self.logger.debug(error)
+                self.logger.warning("StaleElementReferenceException\nRe-acquire element")
+                self.native = None
+                self.get_native()
+                continue
+            except WebDriverException as error:
+                if "instrumentation process is not running" in str(error).lower():
+                    self.handle_driver_error(error)
+                    continue
+                raise
+        raise ShadowstepElementException(
+            msg=f"Failed to submit element within {self.timeout=}",
+            stacktrace=traceback.format_stack()
+        )
+
+    """
+    Element Gestures (gestures.py)
+    """
+
+    def tap(self, duration: int = None) -> Element:
+        self.logger.debug(f"{get_current_func_name()}")
+        start_time = time.time()
+        while time.time() - start_time < self.timeout:
+            try:
+                self.get_driver()
+                x, y = self.get_center()
+                if x is None or y is None:
+                    continue
+                self.driver.tap(positions=[(x, y)], duration=duration)
+                return self
+            except NoSuchDriverException as error:
+                self.handle_driver_error(error)
+            except InvalidSessionIdException as error:
+                self.handle_driver_error(error)
+            except AttributeError as error:
+                self.handle_driver_error(error)
+            except StaleElementReferenceException as error:
+                self.logger.debug(error)
+                self.logger.warning("StaleElementReferenceException\nRe-acquire element")
+                self.native = None
+                self.get_native()
+                continue
+            except WebDriverException as error:
+                if "instrumentation process is not running" in str(error).lower():
+                    self.handle_driver_error(error)
+                    continue
+                raise
+        raise ShadowstepElementException(
+            msg=f"Failed to {inspect.currentframe() if inspect.currentframe() else 'unknown'} within {self.timeout=}\n{duration}",
+            stacktrace=traceback.format_stack()
+        )
+
+    def tap_and_move(
+            self,
+            locator: tuple[str, str] | WebElement | Element | dict[str, Any] | str | None = None,
+            x: int = None,
+            y: int = None,
+            direction: int = None,
+            distance: int = None,
+    ) -> Element:
+        self.logger.debug(f"{get_current_func_name()}")
+        start_time = time.time()
+
+        while time.time() - start_time < self.timeout:
+            result = self._perform_tap_and_move_action(locator, x, y, direction, distance)
+            if result is not None:
+                return result
+            time.sleep(0.1)
+
+        raise ShadowstepElementException(
+            msg=f"Failed to {inspect.currentframe() if inspect.currentframe() else 'unknown'} within {self.timeout=}\n{locator=}\n{x=}\n{y=}\n{direction}\n{distance}\n",
+            stacktrace=traceback.format_stack()
+        )
+
+    def click(self, duration: int = None) -> Element:
+        self.logger.debug(f"{get_current_func_name()}")
+        start_time = time.time()
+        while time.time() - start_time < self.timeout:
+            try:
+                self.get_driver()
+                self._get_element(locator=self.locator)
+                if duration is None:
+                    self._mobile_gesture("mobile: clickGesture",
+                                         {"elementId": self.id})
+                else:
+                    self._mobile_gesture("mobile: longClickGesture",
+                                         {"elementId": self.id, "duration": duration})
+                return self
+            except NoSuchDriverException as error:
+                self.handle_driver_error(error)
+            except InvalidSessionIdException as error:
+                self.handle_driver_error(error)
+            except AttributeError as error:
+                self.handle_driver_error(error)
+            except StaleElementReferenceException as error:
+                self.logger.debug(error)
+                self.logger.warning("StaleElementReferenceException\nRe-acquire element")
+                self.native = None
+                self.get_native()
+                continue
+            except WebDriverException as error:
+                if "instrumentation process is not running" in str(error).lower():
+                    self.handle_driver_error(error)
+                    continue
+                raise
+        raise ShadowstepElementException(
+            msg=f"Failed to {inspect.currentframe() if inspect.currentframe() else 'unknown'} within {self.timeout=}\n{duration}",
+            stacktrace=traceback.format_stack()
+        )
+
+    def click_double(self) -> Element:
+        self.logger.debug(f"{get_current_func_name()}")
+        start_time = time.time()
+        while time.time() - start_time < self.timeout:
+            try:
+                self.get_driver()
+                self._get_element(locator=self.locator)
+                self._mobile_gesture("mobile: doubleClickGesture",
+                                     {"elementId": self.id})
+                return self
+            except NoSuchDriverException as error:
+                self.handle_driver_error(error)
+            except InvalidSessionIdException as error:
+                self.handle_driver_error(error)
+            except AttributeError as error:
+                self.handle_driver_error(error)
+            except StaleElementReferenceException as error:
+                self.logger.debug(error)
+                self.logger.warning("StaleElementReferenceException\nRe-acquire element")
+                self.native = None
+                self.get_native()
+                continue
+            except WebDriverException as error:
+                if "instrumentation process is not running" in str(error).lower():
+                    self.handle_driver_error(error)
+                    continue
+                raise
+        raise ShadowstepElementException(
+            msg=f"Failed to {inspect.currentframe() if inspect.currentframe() else 'unknown'} within {self.timeout=}",
+            stacktrace=traceback.format_stack()
+        )
+
+    """
+    
+    """
 
     def get_attributes(self) -> dict[str, Any]:
         """Fetch all XML attributes of the element by matching locator against page source.
@@ -509,50 +728,6 @@ class Element(ElementBase):
             stacktrace=traceback.format_stack()
         )
 
-    def _check_element_bounds(self, element_location: dict, element_size: dict, screen_width: int,
-                              screen_height: int) -> bool:
-        """Check if element is within screen bounds."""
-        return not (
-                element_location["y"] + element_size["height"] > screen_height or
-                element_location["x"] + element_size["width"] > screen_width or
-                element_location["y"] < 0 or
-                element_location["x"] < 0
-        )
-
-    def _check_element_visibility(self) -> bool | None:
-        """Check if element is visible, handling exceptions."""
-        try:
-            screen_size = self.shadowstep.terminal.get_screen_resolution()
-            screen_width = screen_size[0]
-            screen_height = screen_size[1]
-            current_element = self.get_native()
-
-            if current_element is None:
-                return False
-            if current_element.get_attribute("displayed") != "true":
-                return False
-
-            element_location = current_element.location
-            element_size = current_element.size
-            return self._check_element_bounds(element_location, element_size, screen_width, screen_height)
-
-        except NoSuchElementException:
-            return False
-        except (NoSuchDriverException, InvalidSessionIdException, AttributeError) as error:
-            self.handle_driver_error(error)
-            return None
-        except StaleElementReferenceException as error:
-            self.logger.debug(error)
-            self.logger.warning("StaleElementReferenceException\nRe-acquire element")
-            self.native = None
-            self.get_native()
-            return None
-        except WebDriverException as error:
-            if "instrumentation process is not running" in str(error).lower():
-                self.handle_driver_error(error)
-                return None
-            raise
-
     def is_visible(self) -> bool:
         self.logger.debug(f"{get_current_func_name()}")
         start_time = time.time()
@@ -660,200 +835,6 @@ class Element(ElementBase):
                 return child_element is not None
             except NoSuchElementException:
                 return False
-            except NoSuchDriverException as error:
-                self.handle_driver_error(error)
-            except InvalidSessionIdException as error:
-                self.handle_driver_error(error)
-            except AttributeError as error:
-                self.handle_driver_error(error)
-            except StaleElementReferenceException as error:
-                self.logger.debug(error)
-                self.logger.warning("StaleElementReferenceException\nRe-acquire element")
-                self.native = None
-                self.get_native()
-                continue
-            except WebDriverException as error:
-                if "instrumentation process is not running" in str(error).lower():
-                    self.handle_driver_error(error)
-                    continue
-                raise
-        raise ShadowstepElementException(
-            msg=f"Failed to {inspect.currentframe() if inspect.currentframe() else 'unknown'} within {self.timeout=}",
-            stacktrace=traceback.format_stack()
-        )
-
-    def tap(self, duration: int = None) -> Element:
-        self.logger.debug(f"{get_current_func_name()}")
-        start_time = time.time()
-        while time.time() - start_time < self.timeout:
-            try:
-                self.get_driver()
-                x, y = self.get_center()
-                if x is None or y is None:
-                    continue
-                self.driver.tap(positions=[(x, y)], duration=duration)
-                return self
-            except NoSuchDriverException as error:
-                self.handle_driver_error(error)
-            except InvalidSessionIdException as error:
-                self.handle_driver_error(error)
-            except AttributeError as error:
-                self.handle_driver_error(error)
-            except StaleElementReferenceException as error:
-                self.logger.debug(error)
-                self.logger.warning("StaleElementReferenceException\nRe-acquire element")
-                self.native = None
-                self.get_native()
-                continue
-            except WebDriverException as error:
-                if "instrumentation process is not running" in str(error).lower():
-                    self.handle_driver_error(error)
-                    continue
-                raise
-        raise ShadowstepElementException(
-            msg=f"Failed to {inspect.currentframe() if inspect.currentframe() else 'unknown'} within {self.timeout=}\n{duration}",
-            stacktrace=traceback.format_stack()
-        )
-
-    def _create_touch_actions(self, x1: int, y1: int) -> ActionChains:
-        """Create touch action chain starting at given coordinates."""
-        actions = ActionChains(self.driver)
-        actions.w3c_actions = ActionBuilder(self.driver, mouse=PointerInput(interaction.POINTER_TOUCH, "touch"))
-        actions.w3c_actions.pointer_action.move_to_location(x1, y1)
-        actions.w3c_actions.pointer_action.pointer_down()
-        return actions
-
-    def _execute_tap_and_move_to_coordinates(self, actions: ActionChains, x: int, y: int) -> Element:
-        """Execute tap and move to specific coordinates."""
-        actions.w3c_actions.pointer_action.move_to_location(x, y)
-        actions.w3c_actions.pointer_action.pointer_up()
-        actions.perform()
-        return self
-
-    def _execute_tap_and_move_to_element(self, actions: ActionChains,
-                                         locator: tuple[str, str] | WebElement | dict[str, Any] | str) -> Element:
-        """Execute tap and move to another element."""
-        target_element = self._get_element(locator=locator)
-        x, y = self.get_center(target_element)
-        return self._execute_tap_and_move_to_coordinates(actions, x, y)
-
-    def _execute_tap_and_move_by_direction(self, actions: ActionChains, x1: int, y1: int, direction: int,
-                                           distance: int) -> Element:
-        """Execute tap and move by direction vector."""
-        width, height = self.shadowstep.terminal.get_screen_resolution()
-        x2, y2 = find_coordinates_by_vector(width=width, height=height, direction=direction, distance=distance,
-                                            start_x=x1, start_y=y1)
-        return self._execute_tap_and_move_to_coordinates(actions, x2, y2)
-
-    def _perform_tap_and_move_action(self,
-                                     locator: tuple[str, str] | WebElement | Element | dict[str, Any] | str | None,
-                                     x: int | None, y: int | None, direction: int | None,
-                                     distance: int | None) -> Element | None:
-        """Perform tap and move action with error handling."""
-        try:
-            self.get_driver()
-            if isinstance(locator, Element):
-                locator = locator.locator
-
-            x1, y1 = self.get_center()
-            actions = self._create_touch_actions(x1, y1)
-
-            # Direct coordinate specification
-            if x is not None and y is not None:
-                return self._execute_tap_and_move_to_coordinates(actions, x, y)
-
-            # Move to another element
-            if locator is not None:
-                return self._execute_tap_and_move_to_element(actions, locator)
-
-            # Move by direction vector
-            if direction is not None and distance is not None:
-                return self._execute_tap_and_move_by_direction(actions, x1, y1, direction, distance)
-
-            return None
-        except (NoSuchDriverException, InvalidSessionIdException, AttributeError) as error:
-            self.handle_driver_error(error)
-            return None
-        except StaleElementReferenceException as error:
-            self.logger.debug(error)
-            self.logger.warning("StaleElementReferenceException\nRe-acquire element")
-            self.native = None
-            self.get_native()
-            return None
-        except WebDriverException as error:
-            if "instrumentation process is not running" in str(error).lower():
-                self.handle_driver_error(error)
-                return None
-            raise
-
-    def tap_and_move(
-            self,
-            locator: tuple[str, str] | WebElement | Element | dict[str, Any] | str | None = None,
-            x: int = None,
-            y: int = None,
-            direction: int = None,
-            distance: int = None,
-    ) -> Element:
-        self.logger.debug(f"{get_current_func_name()}")
-        start_time = time.time()
-
-        while time.time() - start_time < self.timeout:
-            result = self._perform_tap_and_move_action(locator, x, y, direction, distance)
-            if result is not None:
-                return result
-            time.sleep(0.1)
-
-        raise ShadowstepElementException(
-            msg=f"Failed to {inspect.currentframe() if inspect.currentframe() else 'unknown'} within {self.timeout=}\n{locator=}\n{x=}\n{y=}\n{direction}\n{distance}\n",
-            stacktrace=traceback.format_stack()
-        )
-
-    def click(self, duration: int = None) -> Element:
-        self.logger.debug(f"{get_current_func_name()}")
-        start_time = time.time()
-        while time.time() - start_time < self.timeout:
-            try:
-                self.get_driver()
-                self._get_element(locator=self.locator)
-                if duration is None:
-                    self._mobile_gesture("mobile: clickGesture",
-                                         {"elementId": self.id})
-                else:
-                    self._mobile_gesture("mobile: longClickGesture",
-                                         {"elementId": self.id, "duration": duration})
-                return self
-            except NoSuchDriverException as error:
-                self.handle_driver_error(error)
-            except InvalidSessionIdException as error:
-                self.handle_driver_error(error)
-            except AttributeError as error:
-                self.handle_driver_error(error)
-            except StaleElementReferenceException as error:
-                self.logger.debug(error)
-                self.logger.warning("StaleElementReferenceException\nRe-acquire element")
-                self.native = None
-                self.get_native()
-                continue
-            except WebDriverException as error:
-                if "instrumentation process is not running" in str(error).lower():
-                    self.handle_driver_error(error)
-                    continue
-                raise
-        raise ShadowstepElementException(
-            msg=f"Failed to {inspect.currentframe() if inspect.currentframe() else 'unknown'} within {self.timeout=}\n{duration}",
-            stacktrace=traceback.format_stack()
-        )
-
-    def click_double(self) -> Element:
-        self.logger.debug(f"{get_current_func_name()}")
-        start_time = time.time()
-        while time.time() - start_time < self.timeout:
-            try:
-                self.get_driver()
-                self._get_element(locator=self.locator)
-                self._mobile_gesture("mobile: doubleClickGesture",
-                                     {"elementId": self.id})
-                return self
             except NoSuchDriverException as error:
                 self.handle_driver_error(error)
             except InvalidSessionIdException as error:
@@ -1149,8 +1130,8 @@ class Element(ElementBase):
         """Prepare locator for optional scroll operation."""
         if isinstance(locator, Element):
             locator = locator.locator
-        if isinstance(locator, (dict, tuple)):
-            pass  # selector = self.converter.to_uiselector(locator)  # unused variable
+        if isinstance(locator, (dict, tuple)):  # noqa
+            pass
         else:
             raise ShadowstepElementException("Only dictionary locators are supported")
         return self.converter.to_xpath(locator), locator
@@ -1397,46 +1378,6 @@ class Element(ElementBase):
         )
 
     # Override
-    def clear(self) -> Element:
-        """Clears text content of the element (e.g. input or textarea).
-
-        Returns:
-            Element: Self instance if successful.
-        """
-        self.logger.debug(f"{get_current_func_name()}")
-        start_time = time.time()
-
-        while time.time() - start_time < self.timeout:
-            try:
-                self.get_driver()
-
-                current_element = self.get_native()
-
-                current_element.clear()
-                return self
-            except NoSuchDriverException as error:
-                self.handle_driver_error(error)
-            except InvalidSessionIdException as error:
-                self.handle_driver_error(error)
-            except AttributeError as error:
-                self.handle_driver_error(error)
-            except StaleElementReferenceException as error:
-                self.logger.debug(error)
-                self.logger.warning("StaleElementReferenceException\nRe-acquire element")
-                self.native = None
-                self.get_native()
-                continue
-            except WebDriverException as error:
-                if "instrumentation process is not running" in str(error).lower():
-                    self.handle_driver_error(error)
-                    continue
-                raise
-        raise ShadowstepElementException(
-            msg=f"Failed to clear element within {self.timeout=}",
-            stacktrace=traceback.format_stack()
-        )
-
-    # Override
     @property
     def location_in_view(self) -> dict | None:
         """Gets the location of an element relative to the view.
@@ -1473,100 +1414,6 @@ class Element(ElementBase):
                 raise
         raise ShadowstepElementException(
             msg=f"Failed to get location_in_view within {self.timeout=}",
-            stacktrace=traceback.format_stack()
-        )
-
-    # Override
-    def set_value(self, value: str) -> Element:
-        """NOT IMPLEMENTED!
-        Set the value on this element in the application.
-
-        Args:
-            value: The value to be set.
-
-        Returns:
-            Element: Self instance on success.
-        """
-        self.logger.debug(f"{get_current_func_name()}")
-        self.logger.warning(
-            f"Method {inspect.currentframe() if inspect.currentframe() else 'unknown'} is not implemented in UiAutomator2")
-
-        start_time = time.time()
-
-        while time.time() - start_time < self.timeout:
-            try:
-                self.get_driver()
-
-                element = self.get_native()
-
-                element.set_value(value)
-                return self
-
-            except NoSuchDriverException as error:
-                self.handle_driver_error(error)
-            except InvalidSessionIdException as error:
-                self.handle_driver_error(error)
-            except AttributeError as error:
-                self.handle_driver_error(error)
-            except StaleElementReferenceException as error:
-                self.logger.debug(error)
-                self.logger.warning("StaleElementReferenceException\nRe-acquire element")
-                self.native = None
-                self.get_native()
-                continue
-            except WebDriverException as error:
-                if "instrumentation process is not running" in str(error).lower():
-                    self.handle_driver_error(error)
-                    continue
-                raise
-        raise ShadowstepElementException(
-            msg=f"Failed to set_value({value}) within {self.timeout=}",
-            stacktrace=traceback.format_stack()
-        )
-
-    # Override
-    def send_keys(self, *value: str) -> Element:
-        """Simulates typing into the element.
-
-        Args:
-            value: One or more strings to type.
-
-        Returns:
-            Element: Self instance on success.
-        """
-        self.logger.debug(f"{get_current_func_name()}")
-        start_time = time.time()
-
-        text = "".join(value)
-
-        while time.time() - start_time < self.timeout:
-            try:
-                self.get_driver()
-
-                element = self.get_native()
-
-                element.send_keys(text)
-                return self
-
-            except NoSuchDriverException as error:
-                self.handle_driver_error(error)
-            except InvalidSessionIdException as error:
-                self.handle_driver_error(error)
-            except AttributeError as error:
-                self.handle_driver_error(error)
-            except StaleElementReferenceException as error:
-                self.logger.debug(error)
-                self.logger.warning("StaleElementReferenceException\nRe-acquire element")
-                self.native = None
-                self.get_native()
-                continue
-            except WebDriverException as error:
-                if "instrumentation process is not running" in str(error).lower():
-                    self.handle_driver_error(error)
-                    continue
-                raise
-        raise ShadowstepElementException(
-            msg=f"Failed to send_keys({text}) within {self.timeout=}",
             stacktrace=traceback.format_stack()
         )
 
@@ -2147,47 +1994,6 @@ class Element(ElementBase):
             stacktrace=traceback.format_stack()
         )
 
-    def submit(self) -> Element:
-        """NOT IMPLEMENTED!
-        Submits a form element.
-
-        Returns:
-            Element: Self instance on success.
-        """
-        self.logger.debug(f"{get_current_func_name()}")
-        self.logger.warning(
-            f"Method {inspect.currentframe() if inspect.currentframe() else 'unknown'} is not implemented in UiAutomator2")
-        start_time = time.time()
-
-        while time.time() - start_time < self.timeout:
-            try:
-                self.get_driver()
-                element = self.get_native()
-                element.submit()
-                return self
-
-            except NoSuchDriverException as error:
-                self.handle_driver_error(error)
-            except InvalidSessionIdException as error:
-                self.handle_driver_error(error)
-            except AttributeError as error:
-                self.handle_driver_error(error)
-            except StaleElementReferenceException as error:
-                self.logger.debug(error)
-                self.logger.warning("StaleElementReferenceException\nRe-acquire element")
-                self.native = None
-                self.get_native()
-                continue
-            except WebDriverException as error:
-                if "instrumentation process is not running" in str(error).lower():
-                    self.handle_driver_error(error)
-                    continue
-                raise
-        raise ShadowstepElementException(
-            msg=f"Failed to submit element within {self.timeout=}",
-            stacktrace=traceback.format_stack()
-        )
-
     @property
     def shadow_root(self) -> ShadowRoot:
         """NOT IMPLEMENTED!
@@ -2710,22 +2516,6 @@ class Element(ElementBase):
             xpath += self._build_xpath_attribute_condition(key, value)
         return xpath
 
-    def _build_element_xpath(self, base_element: WebElement, index: int) -> str:
-        """
-        Constructs XPath for a child element at a specific index.
-        Used for greedy element wrapping.
-
-        Args:
-            base_element: Parent WebElement.
-            index: Index of the child element (1-based).
-
-        Returns:
-            XPath string to access the element.
-        """
-        self.logger.debug(f"{get_current_func_name()}")
-        parent_xpath = self.utilities.get_xpath()
-        return f"{parent_xpath}/*[{index}]"
-
     def wait(self, timeout: int = 10, poll_frequency: float = 0.5, return_bool: bool = False) -> Element:  # noqa: C901
         """Waits for the element to appear (present in DOM).
 
@@ -2949,7 +2739,7 @@ class Element(ElementBase):
 
     def _handle_wait_for_not_visible_errors(self, error: Exception) -> None:
         """Handle errors during wait for not visible operation."""
-        if isinstance(error, (NoSuchDriverException, InvalidSessionIdException, WebDriverException)):
+        if isinstance(error, (NoSuchDriverException, InvalidSessionIdException, WebDriverException)):  # noqa
             self.handle_driver_error(error)
         elif isinstance(error, StaleElementReferenceException):
             self.logger.debug(error)
@@ -3003,7 +2793,7 @@ class Element(ElementBase):
 
     def _handle_wait_for_not_clickable_errors(self, error: Exception) -> None:
         """Handle errors during wait for not clickable operation."""
-        if isinstance(error, (NoSuchDriverException, InvalidSessionIdException, WebDriverException)):
+        if isinstance(error, (NoSuchDriverException, InvalidSessionIdException, WebDriverException)):  # noqa
             self.handle_driver_error(error)
         elif isinstance(error, StaleElementReferenceException):
             self.logger.debug(error)
@@ -3085,6 +2875,121 @@ class Element(ElementBase):
             self.logger.error(f"Exception in to_xpath: {e}")
             return None
 
+    def _check_element_bounds(self, element_location: dict, element_size: dict, screen_width: int,
+                              screen_height: int) -> bool:
+        """Check if element is within screen bounds."""
+        return not (
+                element_location["y"] + element_size["height"] > screen_height or
+                element_location["x"] + element_size["width"] > screen_width or
+                element_location["y"] < 0 or
+                element_location["x"] < 0
+        )
+
+    def _check_element_visibility(self) -> bool | None:
+        """Check if element is visible, handling exceptions."""
+        try:
+            screen_size = self.shadowstep.terminal.get_screen_resolution()
+            screen_width = screen_size[0]
+            screen_height = screen_size[1]
+            current_element = self.get_native()
+
+            if current_element is None:
+                return False
+            if current_element.get_attribute("displayed") != "true":
+                return False
+
+            element_location = current_element.location
+            element_size = current_element.size
+            return self._check_element_bounds(element_location, element_size, screen_width, screen_height)
+
+        except NoSuchElementException:
+            return False
+        except (NoSuchDriverException, InvalidSessionIdException, AttributeError) as error:
+            self.handle_driver_error(error)
+            return None
+        except StaleElementReferenceException as error:
+            self.logger.debug(error)
+            self.logger.warning("StaleElementReferenceException\nRe-acquire element")
+            self.native = None
+            self.get_native()
+            return None
+        except WebDriverException as error:
+            if "instrumentation process is not running" in str(error).lower():
+                self.handle_driver_error(error)
+                return None
+            raise
+
+    def _create_touch_actions(self, x1: int, y1: int) -> ActionChains:
+        """Create touch action chain starting at given coordinates."""
+        actions = ActionChains(self.driver)
+        actions.w3c_actions = ActionBuilder(self.driver, mouse=PointerInput(interaction.POINTER_TOUCH, "touch"))
+        actions.w3c_actions.pointer_action.move_to_location(x1, y1)
+        actions.w3c_actions.pointer_action.pointer_down()
+        return actions
+
+    def _execute_tap_and_move_to_coordinates(self, actions: ActionChains, x: int, y: int) -> Element:
+        """Execute tap and move to specific coordinates."""
+        actions.w3c_actions.pointer_action.move_to_location(x, y)
+        actions.w3c_actions.pointer_action.pointer_up()
+        actions.perform()
+        return self
+
+    def _execute_tap_and_move_to_element(self, actions: ActionChains,
+                                         locator: tuple[str, str] | WebElement | dict[str, Any] | str) -> Element:
+        """Execute tap and move to another element."""
+        target_element = self._get_element(locator=locator)
+        x, y = self.get_center(target_element)
+        return self._execute_tap_and_move_to_coordinates(actions, x, y)
+
+    def _execute_tap_and_move_by_direction(self, actions: ActionChains, x1: int, y1: int, direction: int,
+                                           distance: int) -> Element:
+        """Execute tap and move by direction vector."""
+        width, height = self.shadowstep.terminal.get_screen_resolution()
+        x2, y2 = find_coordinates_by_vector(width=width, height=height, direction=direction, distance=distance,
+                                            start_x=x1, start_y=y1)
+        return self._execute_tap_and_move_to_coordinates(actions, x2, y2)
+
+    def _perform_tap_and_move_action(self,
+                                     locator: tuple[str, str] | WebElement | Element | dict[str, Any] | str | None,
+                                     x: int | None, y: int | None, direction: int | None,
+                                     distance: int | None) -> Element | None:
+        """Perform tap and move action with error handling."""
+        try:
+            self.get_driver()
+            if isinstance(locator, Element):
+                locator = locator.locator
+
+            x1, y1 = self.get_center()
+            actions = self._create_touch_actions(x1, y1)
+
+            # Direct coordinate specification
+            if x is not None and y is not None:
+                return self._execute_tap_and_move_to_coordinates(actions, x, y)
+
+            # Move to another element
+            if locator is not None:
+                return self._execute_tap_and_move_to_element(actions, locator)
+
+            # Move by direction vector
+            if direction is not None and distance is not None:
+                return self._execute_tap_and_move_by_direction(actions, x1, y1, direction, distance)
+
+            return None
+        except (NoSuchDriverException, InvalidSessionIdException, AttributeError) as error:
+            self.handle_driver_error(error)
+            return None
+        except StaleElementReferenceException as error:
+            self.logger.debug(error)
+            self.logger.warning("StaleElementReferenceException\nRe-acquire element")
+            self.native = None
+            self.get_native()
+            return None
+        except WebDriverException as error:
+            if "instrumentation process is not running" in str(error).lower():
+                self.handle_driver_error(error)
+                return None
+            raise
+
 
 """
 Предлагаемое логическое разделение на сегменты
@@ -3095,31 +3000,30 @@ class Element(ElementBase):
 Основные свойства и атрибуты
 Логирование и обработка ошибок
 
-2. Element Navigation (element_navigation.py)
+2. Element DOM navigation (dom.py)
 Методы навигации по DOM-дереву:
 get_element(),
 get_elements()
 get_parent(),
 get_parents()
 get_sibling(),
-get_siblings()
-get_cousin()
-get_element(),
-get_elements()
+get_siblings(),
+get_cousin(),
+get_cousins(),
 
-3. Element Actions (element_actions.py)
+3. Element Actions (actions.py)
 Методы взаимодействия с элементами:
-click(),
-click_double()
-tap(),
-tap_and_move()
 send_keys(),
 clear()
 set_value(),
 submit()
 
-4. Element Gestures (element_gestures.py)
+4. Element Gestures (gestures.py)
 Жесты и движения:
+click(),
+click_double()
+tap(),
+tap_and_move()
 swipe(),
 swipe_up(),
 swipe_down(),

@@ -2,7 +2,10 @@
 import logging
 from typing import Any, cast
 
-from shadowstep.exceptions.shadowstep_exceptions import ShadowstepConversionError, ShadowstepInvalidUiSelectorError
+from shadowstep.exceptions.shadowstep_exceptions import (
+    ShadowstepConversionError,
+    ShadowstepInvalidUiSelectorError,
+)
 from shadowstep.locator.converter.ui_selector_converter_core.ast import Selector
 from shadowstep.locator.converter.ui_selector_converter_core.lexer import Lexer
 from shadowstep.locator.converter.ui_selector_converter_core.parser import Parser

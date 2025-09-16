@@ -198,11 +198,11 @@ class TestGetElements:
         actual_text_list = []
         expected_text_list = ["Network & internet", "Connected devices", "Apps", "Notifications", "Battery"]
 
-        assert isinstance(inner_elements, list)  # noqa: S101  # noqa: S101
+        assert isinstance(inner_elements, list)  # noqa: S101
         for inner_element in inner_elements:
             actual_text_list.append(inner_element.text)
 
-        assert actual_text_list == expected_text_list
+        assert actual_text_list == expected_text_list  # noqa: S101
 
         app.logger.info(f"Время выполнения get_elements: {elapsed:.4f} сек")
 
@@ -262,7 +262,7 @@ class TestGetParent:
                          android_settings_recycler: Element,
                          child):
         parents = app.get_element(child).get_parents()
-        assert len(parents) == 12   # noqa: S101
+        assert len(parents) == 12  # noqa: S101
         assert isinstance(parents, list) and parents, "Список родителей пуст"  # noqa: S101, PT018
         assert all(isinstance(p, Element) for p in parents)  # noqa: S101
 
@@ -270,28 +270,12 @@ class TestGetParent:
 
         for parent in parents:
             parent.timeout = 1
-            ic()
-            ic(parent)
-            ic(parent.locator)
-            ic(parent)
             try:
-                ic(parent.package)
                 assert parent.package == "com.android.settings"  # noqa: S101
             except Exception as error:
-                ic("::::::::::::::::::::::::::::::::::")
                 from loguru import logger
                 logger.exception(error)
                 brokens.append(parent)
-                
-        ic(")))))))))))))))(((((((((((((")
-        ic(len(brokens))
-            
-        for broken in brokens:
-            ic()
-            ic("___")
-            ic(broken)
-            ic(app.driver.page_source)
-
 
         nearest_parent = parents[-1]
         expected_parent_class = "android.widget.RelativeLayout"
@@ -299,3 +283,159 @@ class TestGetParent:
 
         assert nearest_parent.resource_id == expected_parent_resource_id  # noqa: S101
         assert nearest_parent.class_ == expected_parent_class  # noqa: S101
+
+
+class TestGetSibling:
+    @pytest.mark.parametrize(
+        "locator, sibling_locator, expected_text, expected_class, expected_resource_id",  # noqa: PT006
+        [
+            # dict
+            (
+                    {"text": "Network & internet"},
+                    {"class": "android.widget.TextView"},
+                    "Mobile, Wi‑Fi, hotspot", "android.widget.TextView", "android:id/summary"
+            ),
+            # xpath
+            (
+                    ("xpath", '//*[@text="Network & internet"]'),
+                    ("xpath", '//*[@class="android.widget.TextView"]'),
+                    "Mobile, Wi‑Fi, hotspot", "android.widget.TextView", "android:id/summary"
+            ),
+            # uiselector
+            (
+                    UiSelector().text("Network & internet"),
+                    UiSelector().className("android.widget.TextView"),
+                    "Mobile, Wi‑Fi, hotspot", "android.widget.TextView", "android:id/summary"
+            ),
+        ]
+    )
+    def test_get_sibling(self,
+                         app: Shadowstep, stability: None,
+                         android_settings_open_close: None,
+                         android_settings_recycler: Element,
+                         locator, sibling_locator, expected_text, expected_class, expected_resource_id):
+        element = android_settings_recycler.get_element(locator=locator)
+        sibling = element.get_sibling(sibling_locator)
+        assert isinstance(sibling, Element)  # noqa: S101
+        assert sibling.text == expected_text  # noqa: S101
+        assert sibling.class_ == expected_class  # noqa: S101
+        assert sibling.resource_id == expected_resource_id  # noqa: S101
+
+    @pytest.mark.parametrize(
+        "locator, siblings_locator, expected_texts",  # noqa: PT006
+        [
+            # dict
+            (
+                    {"text": "Network & internet"},
+                    {"class": "android.widget.TextView"},
+                    ["Mobile, Wi‑Fi, hotspot"]
+            ),
+            # xpath
+            (
+                    ("xpath", '//*[@text="Network & internet"]'),
+                    ("xpath", '//*[contains(@class,"TextView")]'),
+                    ["Mobile, Wi‑Fi, hotspot"]
+            ),
+            # uiselector
+            (
+                    UiSelector().text("Network & internet"),
+                    UiSelector().className("android.widget.TextView"),
+                    ["Mobile, Wi‑Fi, hotspot"]
+            ),
+        ]
+    )
+    def test_get_siblings(self,
+                          app: Shadowstep, stability: None,
+                          android_settings_open_close: None,
+                          android_settings_recycler: Element,
+                          locator, siblings_locator, expected_texts):
+        element = android_settings_recycler.get_element(locator=locator)
+        siblings = element.get_siblings(siblings_locator)
+        assert isinstance(siblings, list) and siblings  # noqa: S101, PT018
+        actual_texts = [e.text for e in siblings]
+        assert actual_texts == expected_texts  # noqa: S101
+        assert all(isinstance(e, Element) for e in siblings)  # noqa: S101
+
+
+class TestGetCousin:
+    @pytest.mark.parametrize(
+        "locator, cousin_locator, expected_text, expected_class, expected_resource_id",  # noqa: PT006
+        [
+            # dict
+            (
+                    {"text": "Bluetooth, pairing"},
+                    {"resource-id": "android:id/summary"},
+                    "Mobile, Wi‑Fi, hotspot", "android.widget.TextView", "android:id/summary"
+            ),
+            # xpath
+            (
+                    ("xpath", '//*[@text="Bluetooth, pairing"]'),
+                    ("xpath", '//*[@resource-id="android:id/summary"]'),
+                    "Mobile, Wi‑Fi, hotspot", "android.widget.TextView", "android:id/summary"
+            ),
+            # uiselector
+            (
+                    UiSelector().text("Bluetooth, pairing"),
+                    UiSelector().resourceId("android:id/summary"),
+                    "Mobile, Wi‑Fi, hotspot", "android.widget.TextView", "android:id/summary"
+            ),
+        ]
+    )
+    def test_get_cousin(self,
+                        app: Shadowstep, stability: None,
+                        android_settings_open_close: None,
+                        android_settings_recycler: Element,
+                        locator, cousin_locator, expected_text, expected_class, expected_resource_id):
+        element = android_settings_recycler.get_element(locator=locator)
+        cousin = element.get_cousin(cousin_locator, 2)
+        assert isinstance(cousin, Element)  # noqa: S101
+        assert cousin.text == expected_text  # noqa: S101
+        assert cousin.class_ == expected_class  # noqa: S101
+        assert cousin.resource_id == expected_resource_id  # noqa: S101
+
+    @pytest.mark.parametrize(
+        "locator, cousin_locator, expected_text_list",  # noqa: PT006
+        [
+            # dict
+            (
+                    {"text": "Bluetooth, pairing"},
+                    {"resource-id": "android:id/summary"},
+                    ["Mobile, Wi‑Fi, hotspot",
+                     "Bluetooth, pairing",
+                     "Recent apps, default apps",
+                     "Notification history, conversations",
+                     "100%"]
+            ),
+            # xpath
+            (
+                    ("xpath", '//*[@text="Bluetooth, pairing"]'),
+                    ("xpath", '//*[@resource-id="android:id/summary"]'),
+                    ["Mobile, Wi‑Fi, hotspot",
+                     "Bluetooth, pairing",
+                     "Recent apps, default apps",
+                     "Notification history, conversations",
+                     "100%"]
+            ),
+            # uiselector
+            (
+                    UiSelector().text("Bluetooth, pairing"),
+                    UiSelector().resourceId("android:id/summary"),
+                    ["Mobile, Wi‑Fi, hotspot",
+                     "Bluetooth, pairing",
+                     "Recent apps, default apps",
+                     "Notification history, conversations",
+                     "100%"]
+            ),
+        ]
+    )
+    def test_get_cousins(self,
+                         app: Shadowstep, stability: None,
+                         android_settings_open_close: None,
+                         android_settings_recycler: Element,
+                         locator, cousin_locator, expected_text_list):
+        element = android_settings_recycler.get_element(locator=locator)
+        cousins = element.get_cousins(cousin_locator, 2)
+        actual_text_list = []
+        for cousin in cousins:
+            actual_text_list.append(cousin.text)
+        assert actual_text_list == expected_text_list  # noqa: S101
