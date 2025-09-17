@@ -84,11 +84,9 @@ class Adb:
         """
         logger.info(f"{get_current_func_name()} < {udid}")
         command = ["adb", "-s", f"{udid}", "shell", "getprop", "ro.product.model"] if udid else ["adb", "shell", "getprop", "ro.product.model"]
-        ic(command)
         try:
             # Выполнение команды и получение вывода
             model = subprocess.check_output(command)  # noqa: S603
-            ic(model)
             # Преобразование байтовой строки в обычную строку и удаление пробельных символов и символов перевода строки
             model = model.decode().strip()
             logger.info(f"{get_current_func_name()} > {model}")

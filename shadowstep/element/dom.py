@@ -249,5 +249,4 @@ class ElementDOM:
         cousin_xpath = self.converter.to_xpath(clean_cousin_locator)[1]
 
         full_xpath = f"{base_xpath}{cousin_xpath}"
-        ic(full_xpath)
         return self.get_elements(("xpath", full_xpath), timeout, poll_frequency, ignored_exceptions)
