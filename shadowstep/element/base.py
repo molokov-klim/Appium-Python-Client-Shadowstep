@@ -53,14 +53,14 @@ class ElementBase:
         self.poll_frequency: float = poll_frequency
         self.ignored_exceptions: WaitExcTypes | None = ignored_exceptions
         self.native: WebElement | None = native
-        self.id: str = cast(str, None)
         self.converter = LocatorConverter()
-
-    def _get_element(self,
-                     locator: tuple[str, str] | dict[str, Any] | Element | UiSelector,
-                     timeout: float = 3,
-                     poll_frequency: float = 0.5,
-                     ignored_exceptions: WaitExcTypes | None = None) -> WebElement:
+        self.id: str = cast(str, None)
+                
+    def _get_web_element(self,
+                         locator: tuple[str, str] | dict[str, Any] | Element | UiSelector,
+                         timeout: float = 3,
+                         poll_frequency: float = 0.5,
+                         ignored_exceptions: WaitExcTypes | None = None) -> WebElement:
         """
         Retrieve a web element based on the specified locator.
 
@@ -88,12 +88,7 @@ class ElementBase:
                              ignored_exceptions=ignored_exceptions)
         locator = self.remove_null_value(locator)
         if locator is None:
-            raise ShadowstepNoSuchElementError(
-                msg="Failed to resolve locator",
-                screen=None,
-                stacktrace=None,
-                locator=locator
-            )
+            raise ShadowstepNoSuchElementError(msg="Failed to resolve locator", locator=locator)
         try:
             locator = LocatorConverter().to_xpath(locator)
             element = wait.until(expected_conditions.presence_of_element_located(locator))

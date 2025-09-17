@@ -11,7 +11,6 @@ import traceback
 from typing import TYPE_CHECKING
 
 from appium.webdriver.webdriver import WebDriver
-from icecream import ic
 
 from shadowstep.utils.utils import get_current_func_name, grep_pattern
 

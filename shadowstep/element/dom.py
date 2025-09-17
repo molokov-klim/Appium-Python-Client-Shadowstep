@@ -5,7 +5,6 @@ import logging
 import time
 from typing import TYPE_CHECKING, Any, cast
 
-from icecream import ic
 from selenium.common import (
     InvalidSessionIdException,
     NoSuchDriverException,
@@ -40,7 +39,7 @@ class ElementDOM:
 
     @log_debug()
     def get_element(self,
-                    locator: tuple[str, str] | dict[str, Any] | UiSelector | Element,
+                    locator: tuple[str, str] | dict[str, Any] | Element | UiSelector,
                     timeout: int = 30,
                     poll_frequency: float = 0.5,
                     ignored_exceptions: WaitExcTypes | None = None) -> Element:
@@ -136,7 +135,8 @@ class ElementDOM:
                 self.element.get_native()
                 continue
             except WebDriverException as error:
-                if "instrumentation process is not running" in str(error).lower():
+                err_msg = str(error).lower()
+                if "instrumentation process is not running" in err_msg or "socket hang up" in err_msg:
                     self.element.handle_driver_error(error)
                     continue
                 raise error
@@ -172,7 +172,7 @@ class ElementDOM:
 
     @log_debug()
     def get_sibling(self,
-                    locator: tuple[str, str] | dict[str, Any] | Element,
+                    locator: tuple[str, str] | dict[str, Any] | Element | UiSelector,
                     timeout: float = 30.0,
                     poll_frequency: float = 0.5,
                     ignored_exceptions: WaitExcTypes | None = None) -> Element:
@@ -193,7 +193,7 @@ class ElementDOM:
 
     @log_debug()
     def get_siblings(self,
-                     locator: tuple[str, str] | dict[str, Any] | Element,
+                     locator: tuple[str, str] | dict[str, Any] | Element | UiSelector,
                      timeout: float = 30.0,
                      poll_frequency: float = 0.5,
                      ignored_exceptions: WaitExcTypes | None = None) -> list[Element]:
@@ -208,7 +208,7 @@ class ElementDOM:
     @log_debug()
     def get_cousin(
             self,
-            cousin_locator: tuple[str, str] | dict[str, Any] | Element,
+            cousin_locator: tuple[str, str] | dict[str, Any] | Element | UiSelector,
             depth_to_parent: int = 1,
             timeout: float = 30.0,
             poll_frequency: float = 0.5,
@@ -234,7 +234,7 @@ class ElementDOM:
 
     @log_debug()
     def get_cousins(self,
-                    cousin_locator: tuple[str, str] | dict[str, Any] | Element,
+                    cousin_locator: tuple[str, str] | dict[str, Any] | Element | UiSelector,
                     depth_to_parent: int = 1,
                     timeout: float = 30.0,
                     poll_frequency: float = 0.5,

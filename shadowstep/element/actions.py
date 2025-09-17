@@ -56,7 +56,8 @@ class ElementActions:
                 self.element.get_native()
                 continue
             except WebDriverException as error:
-                if "instrumentation process is not running" in str(error).lower():
+                err_msg = str(error).lower()
+                if "instrumentation process is not running" in err_msg or "socket hang up" in err_msg:
                     self.element.handle_driver_error(error)
                     continue
                 raise ShadowstepElementException(
@@ -91,7 +92,8 @@ class ElementActions:
                 self.element.get_native()
                 continue
             except WebDriverException as error:
-                if "instrumentation process is not running" in str(error).lower():
+                err_msg = str(error).lower()
+                if "instrumentation process is not running" in err_msg or "socket hang up" in err_msg:
                     self.element.handle_driver_error(error)
                     continue
                 raise ShadowstepElementException(
@@ -131,7 +133,8 @@ class ElementActions:
                 self.element.get_native()
                 continue
             except WebDriverException as error:
-                if "instrumentation process is not running" in str(error).lower():
+                err_msg = str(error).lower()
+                if "instrumentation process is not running" in err_msg or "socket hang up" in err_msg:
                     self.element.handle_driver_error(error)
                     continue
                 raise ShadowstepElementException(
@@ -168,7 +171,8 @@ class ElementActions:
                 self.element.get_native()
                 continue
             except WebDriverException as error:
-                if "instrumentation process is not running" in str(error).lower():
+                err_msg = str(error).lower()
+                if "instrumentation process is not running" in err_msg or "socket hang up" in err_msg:
                     self.element.handle_driver_error(error)
                     continue
                 raise ShadowstepElementException(

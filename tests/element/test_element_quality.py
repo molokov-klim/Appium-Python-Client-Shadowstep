@@ -197,7 +197,6 @@ class TestElementTypeAnnotations:
         assert "timeout" in annotations  # noqa: S101
         assert "poll_frequency" in annotations  # noqa: S101
         assert "ignored_exceptions" in annotations  # noqa: S101
-        assert "contains" in annotations  # noqa: S101
         assert "native" in annotations  # noqa: S101
 
     def test_element_base_type_annotations(self):
@@ -208,7 +207,6 @@ class TestElementTypeAnnotations:
         assert "timeout" in annotations  # noqa: S101
         assert "poll_frequency" in annotations  # noqa: S101
         assert "ignored_exceptions" in annotations  # noqa: S101
-        assert "contains" in annotations  # noqa: S101
         assert "native" in annotations  # noqa: S101
 
     def test_conditions_type_annotations(self):

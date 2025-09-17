@@ -140,7 +140,7 @@ class Shadowstep(ShadowstepBase):
         raise ValueError(f"Page '{name}' not found.")
 
     def get_element(self,
-                    locator: tuple[str, str] | dict[str, Any] | Element | UiSelector | WebElement,
+                    locator: tuple[str, str] | dict[str, Any] | Element | UiSelector,
                     timeout: int = 30,
                     poll_frequency: float = 0.5,
                     ignored_exceptions: WaitExcTypes | None = None) -> Element:

@@ -17,10 +17,6 @@ from selenium.common import (
     WebDriverException,
 )
 from selenium.types import WaitExcTypes
-from selenium.webdriver import ActionChains
-from selenium.webdriver.common.actions import interaction
-from selenium.webdriver.common.actions.action_builder import ActionBuilder
-from selenium.webdriver.common.actions.pointer_input import PointerInput
 from selenium.webdriver.remote.shadowroot import ShadowRoot
 from selenium.webdriver.support.wait import WebDriverWait
 
@@ -36,7 +32,7 @@ from shadowstep.element.utilities import ElementUtilities
 from shadowstep.element.waiting import ElementWaiting
 from shadowstep.exceptions.shadowstep_exceptions import ShadowstepElementException
 from shadowstep.locator import UiSelector
-from shadowstep.utils.utils import find_coordinates_by_vector, get_current_func_name
+from shadowstep.utils.utils import get_current_func_name
 
 if TYPE_CHECKING:
     from shadowstep.element.should import Should
@@ -80,7 +76,7 @@ class Element(ElementBase):
         return f"Element(locator={self.locator!r}"
 
     """
-    Element DOM navigation
+    DOM
     """
 
     def get_element(self,
@@ -112,14 +108,14 @@ class Element(ElementBase):
         return self.dom.get_parents(timeout, poll_frequency, ignored_exceptions)
 
     def get_sibling(self,
-                    locator: tuple[str, str] | dict[str, Any] | Element,
+                    locator: tuple[str, str] | dict[str, Any] | Element | UiSelector,
                     timeout: float = 30,
                     poll_frequency: float = 0.5,
                     ignored_exceptions: WaitExcTypes | None = None) -> Element:
         return self.dom.get_sibling(locator, timeout, poll_frequency, ignored_exceptions)
 
     def get_siblings(self,
-                     locator: tuple[str, str] | dict[str, Any] | Element,
+                     locator: tuple[str, str] | dict[str, Any] | Element | UiSelector,
                      timeout: float = 30.0,
                      poll_frequency: float = 0.5,
                      ignored_exceptions: WaitExcTypes | None = None) -> list[Element]:
@@ -127,7 +123,7 @@ class Element(ElementBase):
 
     def get_cousin(
             self,
-            cousin_locator: tuple[str, str] | dict[str, Any] | Element,
+            cousin_locator: tuple[str, str] | dict[str, Any] | Element | UiSelector,
             depth_to_parent: int = 1,
             timeout: float = 30.0,
             poll_frequency: float = 0.5,
@@ -137,7 +133,7 @@ class Element(ElementBase):
 
     def get_cousins(
             self,
-            cousin_locator: tuple[str, str] | dict[str, Any] | Element,
+            cousin_locator: tuple[str, str] | dict[str, Any] | Element | UiSelector,
             depth_to_parent: int = 1,
             timeout: float = 30.0,
             poll_frequency: float = 0.5,
@@ -146,7 +142,7 @@ class Element(ElementBase):
         return self.dom.get_cousins(cousin_locator, depth_to_parent, timeout, poll_frequency, ignored_exceptions)
 
     """
-    Element Actions
+    Actions
     """
 
     # Override
@@ -170,135 +166,104 @@ class Element(ElementBase):
         return self.actions.submit()
 
     """
-    Element Gestures
+    Gestures
     """
 
-    def tap(self, duration: int = None) -> Element:
-        self.logger.debug(f"{get_current_func_name()}")
-        start_time = time.time()
-        while time.time() - start_time < self.timeout:
-            try:
-                self.get_driver()
-                x, y = self.get_center()
-                if x is None or y is None:
-                    continue
-                self.driver.tap(positions=[(x, y)], duration=duration)
-                return self
-            except NoSuchDriverException as error:
-                self.handle_driver_error(error)
-            except InvalidSessionIdException as error:
-                self.handle_driver_error(error)
-            except AttributeError as error:
-                self.handle_driver_error(error)
-            except StaleElementReferenceException as error:
-                self.logger.debug(error)
-                self.logger.warning("StaleElementReferenceException\nRe-acquire element")
-                self.native = None
-                self.get_native()
-                continue
-            except WebDriverException as error:
-                if "instrumentation process is not running" in str(error).lower():
-                    self.handle_driver_error(error)
-                    continue
-                raise
-        raise ShadowstepElementException(
-            msg=f"Failed to {inspect.currentframe() if inspect.currentframe() else 'unknown'} within {self.timeout=}\n{duration}",
-            stacktrace=traceback.format_stack()
-        )
+    def tap(self, duration: int | None = None) -> Element:
+        return self.gestures.tap(duration)
 
     def tap_and_move(
             self,
-            locator: tuple[str, str] | WebElement | Element | dict[str, Any] | str | None = None,
-            x: int = None,
-            y: int = None,
-            direction: int = None,
-            distance: int = None,
+            locator: tuple[str, str] | dict[str, Any] | Element | UiSelector | None = None,
+            x: int | None = None,
+            y: int | None = None,
+            direction: int | None = None,
+            distance: int | None = None,
     ) -> Element:
-        self.logger.debug(f"{get_current_func_name()}")
-        start_time = time.time()
+        return self.gestures.tap_and_move(locator, x, y, direction, distance)
 
-        while time.time() - start_time < self.timeout:
-            result = self._perform_tap_and_move_action(locator, x, y, direction, distance)
-            if result is not None:
-                return result
-            time.sleep(0.1)
-
-        raise ShadowstepElementException(
-            msg=f"Failed to {inspect.currentframe() if inspect.currentframe() else 'unknown'} within {self.timeout=}\n{locator=}\n{x=}\n{y=}\n{direction}\n{distance}\n",
-            stacktrace=traceback.format_stack()
-        )
-
-    def click(self, duration: int = None) -> Element:
-        self.logger.debug(f"{get_current_func_name()}")
-        start_time = time.time()
-        while time.time() - start_time < self.timeout:
-            try:
-                self.get_driver()
-                self._get_element(locator=self.locator)
-                if duration is None:
-                    self._mobile_gesture("mobile: clickGesture",
-                                         {"elementId": self.id})
-                else:
-                    self._mobile_gesture("mobile: longClickGesture",
-                                         {"elementId": self.id, "duration": duration})
-                return self
-            except NoSuchDriverException as error:
-                self.handle_driver_error(error)
-            except InvalidSessionIdException as error:
-                self.handle_driver_error(error)
-            except AttributeError as error:
-                self.handle_driver_error(error)
-            except StaleElementReferenceException as error:
-                self.logger.debug(error)
-                self.logger.warning("StaleElementReferenceException\nRe-acquire element")
-                self.native = None
-                self.get_native()
-                continue
-            except WebDriverException as error:
-                if "instrumentation process is not running" in str(error).lower():
-                    self.handle_driver_error(error)
-                    continue
-                raise
-        raise ShadowstepElementException(
-            msg=f"Failed to {inspect.currentframe() if inspect.currentframe() else 'unknown'} within {self.timeout=}\n{duration}",
-            stacktrace=traceback.format_stack()
-        )
+    def click(self, duration: int | None = None) -> Element:
+        return self.gestures.click(duration)
 
     def click_double(self) -> Element:
-        self.logger.debug(f"{get_current_func_name()}")
-        start_time = time.time()
-        while time.time() - start_time < self.timeout:
-            try:
-                self.get_driver()
-                self._get_element(locator=self.locator)
-                self._mobile_gesture("mobile: doubleClickGesture",
-                                     {"elementId": self.id})
-                return self
-            except NoSuchDriverException as error:
-                self.handle_driver_error(error)
-            except InvalidSessionIdException as error:
-                self.handle_driver_error(error)
-            except AttributeError as error:
-                self.handle_driver_error(error)
-            except StaleElementReferenceException as error:
-                self.logger.debug(error)
-                self.logger.warning("StaleElementReferenceException\nRe-acquire element")
-                self.native = None
-                self.get_native()
-                continue
-            except WebDriverException as error:
-                if "instrumentation process is not running" in str(error).lower():
-                    self.handle_driver_error(error)
-                    continue
-                raise
-        raise ShadowstepElementException(
-            msg=f"Failed to {inspect.currentframe() if inspect.currentframe() else 'unknown'} within {self.timeout=}",
-            stacktrace=traceback.format_stack()
-        )
+        return self.gestures.click_double()
+
+    def drag(self, end_x: int, end_y: int, speed: int = 2500) -> Element:
+        return self.gestures.drag(end_x, end_y, speed)
+
+    def fling_up(self, speed: int = 2500) -> Element:
+        return self.fling(speed=speed, direction="up")
+
+    def fling_down(self, speed: int = 2500) -> Element:
+        return self.fling(speed=speed, direction="down")
+
+    def fling_left(self, speed: int = 2500) -> Element:
+        return self.fling(speed=speed, direction="left")
+
+    def fling_right(self, speed: int = 2500) -> Element:
+        return self.fling(speed=speed, direction="right")
+
+    def fling(self, speed: int, direction: str) -> Element:
+        return self.gestures.fling(speed, direction)
+
+    def scroll_down(self, percent: float = 0.7, speed: int = 2000, return_bool: bool = False) -> Element:
+        return self.scroll(direction="down", percent=percent, speed=speed, return_bool=return_bool)
+
+    def scroll_up(self, percent: float = 0.7, speed: int = 2000, return_bool: bool = False) -> Element:
+        return self.scroll(direction="up", percent=percent, speed=speed, return_bool=return_bool)
+
+    def scroll_left(self, percent: float = 0.7, speed: int = 2000, return_bool: bool = False) -> Element:
+        return self.scroll(direction="left", percent=percent, speed=speed, return_bool=return_bool)
+
+    def scroll_right(self, percent: float = 0.7, speed: int = 2000, return_bool: bool = False) -> Element:
+        return self.scroll(direction="right", percent=percent, speed=speed, return_bool=return_bool)
+
+    def scroll(self, direction: str, percent: float, speed: int, return_bool: bool) -> Element:
+        return self.gestures.scroll(direction, percent, speed, return_bool)
+
+    def scroll_to_bottom(self, percent: float = 0.7, speed: int = 8000) -> Element:
+        return self.gestures.scroll_to_bottom(percent, speed)
+
+    def scroll_to_top(self, percent: float = 0.7, speed: int = 8000) -> Element:
+        return self.gestures.scroll_to_top(percent, speed)
+
+    def scroll_to_element(self,
+                          locator: tuple[str, str] | dict[str, Any] | Element | UiSelector,
+                          max_swipes: int = 30) -> Element:
+        return self.gestures.scroll_to_element(locator, max_swipes)
+
+    def zoom(self, percent: float = 0.75, speed: int = 2500) -> Element:
+        return self.gestures.zoom(percent, speed)
+
+    def unzoom(self, percent: float = 0.75, speed: int = 2500) -> Element:
+        return self.gestures.unzoom(percent, speed)
+
+    def swipe_up(self, percent: float = 0.75, speed: int = 5000) -> Element:
+        """Performs a swipe up gesture on the current element."""
+        return self.swipe(direction="up", percent=percent, speed=speed)
+
+    def swipe_down(self, percent: float = 0.75, speed: int = 5000) -> Element:
+        """Performs a swipe down gesture on the current element."""
+        return self.swipe(direction="down", percent=percent, speed=speed)
+
+    def swipe_left(self, percent: float = 0.75, speed: int = 5000) -> Element:
+        """Performs a swipe left gesture on the current element."""
+        return self.swipe(direction="left", percent=percent, speed=speed)
+
+    def swipe_right(self, percent: float = 0.75, speed: int = 5000) -> Element:
+        """Performs a swipe right gesture on the current element."""
+        return self.swipe(direction="right", percent=percent, speed=speed)
+
+    def swipe(self, direction: str, percent: float = 0.75, speed: int = 5000) -> Element:
+        return self.gestures.swipe(direction, percent, speed)
 
     """
-    
+    Properties
     """
+
+    # Override
+    def get_attribute(self, name: str) -> str:  # type: ignore[override]
+        return self.properties.get_attribute(name)
 
     def get_attributes(self) -> dict[str, Any]:
         """Fetch all XML attributes of the element by matching locator against page source.
@@ -306,11 +271,206 @@ class Element(ElementBase):
         Returns:
             Optional[dict[str, Any]]: Dictionary of all attributes, or None if not found.
         """
-        self.logger.debug(f"{get_current_func_name()}")
-        xpath_expr = self._resolve_xpath_for_attributes()
-        if not xpath_expr:
-            return {}
-        return self.utilities.extract_el_attrs_from_source(xpath_expr, self.shadowstep.driver.page_source)[0]
+        return self.properties.get_attributes()
+
+    def get_property(self, name: str) -> Any:
+        self.logger.warning(
+            f"Method {inspect.currentframe() if inspect.currentframe() else 'unknown'} is not implemented in UiAutomator2")
+        return self.properties.get_property(name)
+
+    def get_dom_attribute(self, name: str) -> str:
+        """Gets the given attribute of the element. Unlike
+        :func:`~selenium.webdriver.remote.BaseWebElement.get_attribute`, this
+        method only returns attributes declared in the element's HTML markup.
+
+        :Args:
+            - name - Name of the attribute to retrieve.
+
+        :Usage:
+            ::
+
+                text_length = target_element.get_dom_attribute("class")
+        """
+        return self.properties.get_dom_attribute(name)
+
+    # Override
+    def is_displayed(self) -> bool:
+        """Whether the element is visible to a user.
+
+        Returns:
+            bool: True if the element is displayed on screen and visible to the user.
+        """
+        return self.properties.is_displayed()
+
+    def is_visible(self) -> bool:
+        return self.properties.is_visible()
+
+    def is_selected(self) -> bool:
+        """Returns whether the element is selected.
+
+        Can be used to check if a checkbox or radio button is selected.
+
+        Returns:
+            bool: True if the element is selected.
+        """
+        return self.properties.is_selected()
+
+    def is_enabled(self) -> bool:
+        """Returns whether the element is enabled.
+
+        Returns:
+            bool: True if the element is enabled.
+        """
+        return self.properties.is_enabled()
+
+    def is_contains(self,
+                    locator: tuple | dict[str, Any] | Element | UiSelector,
+                    ) -> bool:
+        return self.properties.is_contains(locator)
+
+    @property
+    def tag_name(self) -> str:
+        """This element's ``tagName`` property.
+
+        Returns:
+            Optional[str]: The tag name of the element, or None if not retrievable.
+        """
+        return self.properties.tag_name()
+
+    @property
+    def attributes(self):
+        return self.get_attributes()
+
+    @property
+    def text(self) -> str:
+        return self.properties.text()
+
+    @property
+    def resource_id(self) -> str:
+        return self.properties.resource_id()
+
+    @property
+    def class_(self) -> str:  # 'class' is a reserved word, so class_name is better
+        return self.properties.class_()
+
+    @property
+    def class_name(self) -> str:  # 'class' is a reserved word, so class_name is better
+        return self.properties.class_name()
+
+    @property
+    def index(self) -> str:
+        return self.properties.index()
+
+    @property
+    def package(self) -> str:
+        return self.properties.package()
+
+    @property
+    def bounds(self) -> str:
+        return self.properties.bounds()
+
+    @property
+    def checked(self) -> str:
+        return self.properties.checked()
+
+    @property
+    def checkable(self) -> str:
+        return self.properties.checkable()
+
+    @property
+    def enabled(self) -> str:
+        return self.properties.enabled()
+
+    @property
+    def focusable(self) -> str:
+        return self.properties.focusable()
+
+    @property
+    def focused(self) -> str:
+        return self.properties.focused()
+
+    @property
+    def long_clickable(self) -> str:
+        return self.properties.long_clickable()
+
+    @property
+    def password(self) -> str:
+        return self.properties.password()
+
+    @property
+    def scrollable(self) -> str:
+        return self.properties.scrollable()
+
+    @property
+    def selected(self) -> str:
+        return self.properties.selected()
+
+    @property
+    def displayed(self) -> str:
+        return self.properties.displayed()
+
+    @property
+    def shadow_root(self) -> ShadowRoot:
+        self.logger.warning(
+            f"Method {inspect.currentframe() if inspect.currentframe() else 'unknown'} is not implemented in UiAutomator2")
+        return self.properties.shadow_root()
+
+    @property
+    def size(self) -> dict:
+        """Returns the size of the element.
+
+        Returns:
+            dict: Dictionary with keys 'width' and 'height'.
+
+        Raises:
+            ShadowstepElementException: If size cannot be determined.
+        """
+        return self.properties.size()
+
+    def value_of_css_property(self, property_name: str) -> str:
+        self.logger.warning(
+            f"Method {inspect.currentframe() if inspect.currentframe() else 'unknown'} is not implemented in UiAutomator2")
+        return self.properties.value_of_css_property(property_name)
+
+    @property
+    def location(self) -> dict:
+        self.logger.warning(
+            f"Method {inspect.currentframe() if inspect.currentframe() else 'unknown'} is not implemented in UiAutomator2")
+        return self.properties.location()
+
+    @property
+    def rect(self) -> dict:
+        """A dictionary with the size and location of the element.
+
+        Returns:
+            dict: Dictionary with keys 'x', 'y', 'width', 'height'.
+
+        Raises:
+            ShadowstepElementException: If rect could not be retrieved within timeout.
+        """
+        return self.properties.rect()
+
+    @property
+    def aria_role(self) -> str:
+        """Returns the ARIA role of the current web element.
+
+        Returns:
+            str: The ARIA role of the element, or None if not found.
+        """
+        return self.properties.aria_role()
+
+    @property
+    def accessible_name(self) -> str:
+        """Returns the ARIA Level (accessible name) of the current web element.
+
+        Returns:
+            Optional[str]: Accessible name or None if not found.
+        """
+        return self.properties.accessible_name()
+
+    """
+    
+    """
 
     def get_center(self, element: WebElement | None = None) -> tuple[int, int]:
         """Get the center coordinates of the element.
@@ -348,7 +508,8 @@ class Element(ElementBase):
                 self.get_native()
                 continue
             except WebDriverException as error:
-                if "instrumentation process is not running" in str(error).lower():
+                err_msg = str(error).lower()
+                if "instrumentation process is not running" in err_msg or "socket hang up" in err_msg:
                     self.handle_driver_error(error)
                     continue
                 raise
@@ -392,826 +553,14 @@ class Element(ElementBase):
                 self.get_native()
                 continue
             except WebDriverException as error:
-                if "instrumentation process is not running" in str(error).lower():
+                err_msg = str(error).lower()
+                if "instrumentation process is not running" in err_msg or "socket hang up" in err_msg:
                     self.handle_driver_error(error)
                     continue
                 raise
 
         raise ShadowstepElementException(
             msg=f"Failed to {inspect.currentframe() if inspect.currentframe() else 'unknown'} within {self.timeout=}",
-            stacktrace=traceback.format_stack()
-        )
-
-    # Override
-    def get_attribute(self, name: str) -> str:
-        """Gets the specified attribute of the element.
-
-        Args:
-            name (str): Name of the attribute to retrieve.
-
-        Returns:
-            Optional[Union[str, Dict]]: Value of the attribute or None.
-        """
-        self.logger.debug(f"{get_current_func_name()}")
-        start_time = time.time()
-        while time.time() - start_time < self.timeout:
-            try:
-                self.get_driver()
-                current_element = self.get_native()
-                return current_element.get_attribute(name)
-            except NoSuchDriverException as error:
-                self.handle_driver_error(error)
-            except InvalidSessionIdException as error:
-                self.handle_driver_error(error)
-            except AttributeError as error:
-                self.handle_driver_error(error)
-            except StaleElementReferenceException as error:
-                self.logger.debug(error)
-                self.logger.warning("StaleElementReferenceException\nRe-acquire element")
-                self.native = None
-                self.get_native()
-                continue
-            except WebDriverException as error:
-                if "instrumentation process is not running" in str(error).lower():
-                    self.handle_driver_error(error)
-                    continue
-                raise
-
-        raise ShadowstepElementException(
-            msg=f"Failed to {inspect.currentframe() if inspect.currentframe() else 'unknown'}('{name}') within {self.timeout=}",
-            stacktrace=traceback.format_stack()
-        )
-
-    def get_property(self, name: str) -> Any:
-        """NOT IMPLEMENTED!
-        Gets the given property of the element.
-
-        Args:
-            name (str): Name of the property to retrieve.
-
-        Returns:
-            Union[str, bool, dict, None]: Property value.
-        """
-        self.logger.debug(f"{get_current_func_name()}")
-        self.logger.warning(
-            f"Method {inspect.currentframe() if inspect.currentframe() else 'unknown'} is not implemented in UiAutomator2")
-        start_time = time.time()
-        while time.time() - start_time < self.timeout:
-            try:
-                self.get_driver()
-                current_element = self.get_native()
-                return current_element.get_property(name)
-            except NoSuchDriverException as error:
-                self.handle_driver_error(error)
-            except InvalidSessionIdException as error:
-                self.handle_driver_error(error)
-            except AttributeError as error:
-                self.handle_driver_error(error)
-            except StaleElementReferenceException as error:
-                self.logger.debug(error)
-                self.logger.warning("StaleElementReferenceException\nRe-acquire element")
-                self.native = None
-                self.get_native()
-                continue
-            except WebDriverException as error:
-                if "instrumentation process is not running" in str(error).lower():
-                    self.handle_driver_error(error)
-                    continue
-                raise
-
-        raise ShadowstepElementException(
-            msg=f"Failed to {inspect.currentframe() if inspect.currentframe() else 'unknown'} within {self.timeout=}",
-            stacktrace=traceback.format_stack()
-        )
-
-    def get_dom_attribute(self, name: str) -> str:
-        """Gets the given attribute of the element. Unlike
-        :func:`~selenium.webdriver.remote.BaseWebElement.get_attribute`, this
-        method only returns attributes declared in the element's HTML markup.
-
-        :Args:
-            - name - Name of the attribute to retrieve.
-
-        :Usage:
-            ::
-
-                text_length = target_element.get_dom_attribute("class")
-        """
-        self.logger.debug(f"{get_current_func_name()}")
-        start_time = time.time()
-        while time.time() - start_time < self.timeout:
-            try:
-                self.get_driver()
-                current_element = self.get_native()
-                return current_element.get_dom_attribute(name)
-            except NoSuchDriverException as error:
-                self.handle_driver_error(error)
-            except InvalidSessionIdException as error:
-                self.handle_driver_error(error)
-            except AttributeError as error:
-                self.handle_driver_error(error)
-            except StaleElementReferenceException as error:
-                self.logger.debug(error)
-                self.logger.warning("StaleElementReferenceException\nRe-acquire element")
-                self.native = None
-                self.get_native()
-                continue
-            except WebDriverException as error:
-                if "instrumentation process is not running" in str(error).lower():
-                    self.handle_driver_error(error)
-                    continue
-                raise
-
-        raise ShadowstepElementException(
-            msg=f"Failed to {inspect.currentframe() if inspect.currentframe() else 'unknown'} within {self.timeout=}",
-            stacktrace=traceback.format_stack()
-        )
-
-    # Override
-    def is_displayed(self) -> bool:
-        """Whether the element is visible to a user.
-
-        Returns:
-            bool: True if the element is displayed on screen and visible to the user.
-        """
-        self.logger.debug(f"{get_current_func_name()}")
-        start_time = time.time()
-        while time.time() - start_time < self.timeout:
-            try:
-                self.get_driver()
-                element = self.get_native()
-                return element.is_displayed()
-            except NoSuchElementException:
-                return False
-            except NoSuchDriverException as error:
-                self.handle_driver_error(error)
-            except InvalidSessionIdException as error:
-                self.handle_driver_error(error)
-            except AttributeError as error:
-                self.handle_driver_error(error)
-            except StaleElementReferenceException as error:
-                self.logger.debug(error)
-                self.logger.warning("StaleElementReferenceException\nRe-acquire element")
-                self.native = None
-                self.get_native()
-                continue
-            except WebDriverException as error:
-                if "instrumentation process is not running" in str(error).lower():
-                    self.handle_driver_error(error)
-                    continue
-                raise
-
-        raise ShadowstepElementException(
-            msg=f"Failed to {inspect.currentframe() if inspect.currentframe() else 'unknown'} within {self.timeout=}",
-            stacktrace=traceback.format_stack()
-        )
-
-    def is_visible(self) -> bool:
-        self.logger.debug(f"{get_current_func_name()}")
-        start_time = time.time()
-
-        while time.time() - start_time < self.timeout:
-            result = self._check_element_visibility()
-            if result is not None:
-                return result
-            time.sleep(0.1)
-
-        raise ShadowstepElementException(
-            msg=f"Failed to {inspect.currentframe() if inspect.currentframe() else 'unknown'} within {self.timeout=}",
-            stacktrace=traceback.format_stack()
-        )
-
-    def is_selected(self) -> bool:
-        """Returns whether the element is selected.
-
-        Can be used to check if a checkbox or radio button is selected.
-
-        Returns:
-            bool: True if the element is selected.
-        """
-        self.logger.debug(f"{get_current_func_name()}")
-        start_time = time.time()
-        while time.time() - start_time < self.timeout:
-            try:
-                self.get_driver()
-                element = self.get_native()
-                return element.is_selected()
-            except NoSuchElementException:
-                return False
-            except NoSuchDriverException as error:
-                self.handle_driver_error(error)
-            except InvalidSessionIdException as error:
-                self.handle_driver_error(error)
-            except AttributeError as error:
-                self.handle_driver_error(error)
-            except StaleElementReferenceException as error:
-                self.logger.debug(error)
-                self.logger.warning("StaleElementReferenceException\nRe-acquire element")
-                self.native = None
-                self.get_native()
-                continue
-            except WebDriverException as error:
-                if "instrumentation process is not running" in str(error).lower():
-                    self.handle_driver_error(error)
-                    continue
-                raise
-
-        raise ShadowstepElementException(
-            msg=f"Failed to {inspect.currentframe() if inspect.currentframe() else 'unknown'} within {self.timeout=}",
-            stacktrace=traceback.format_stack()
-        )
-
-    def is_enabled(self) -> bool:
-        """Returns whether the element is enabled.
-
-        Returns:
-            bool: True if the element is enabled.
-        """
-        self.logger.debug(f"{get_current_func_name()}")
-        start_time = time.time()
-        while time.time() - start_time < self.timeout:
-            try:
-                self.get_driver()
-                element = self.get_native()
-                return element.is_enabled()
-            except NoSuchElementException:
-                return False
-            except NoSuchDriverException as error:
-                self.handle_driver_error(error)
-            except InvalidSessionIdException as error:
-                self.handle_driver_error(error)
-            except AttributeError as error:
-                self.handle_driver_error(error)
-            except StaleElementReferenceException as error:
-                self.logger.debug(error)
-                self.logger.warning("StaleElementReferenceException\nRe-acquire element")
-                self.native = None
-                self.get_native()
-                continue
-            except WebDriverException as error:
-                if "instrumentation process is not running" in str(error).lower():
-                    self.handle_driver_error(error)
-                    continue
-                raise
-
-        raise ShadowstepElementException(
-            msg=f"Failed to {inspect.currentframe() if inspect.currentframe() else 'unknown'} within {self.timeout=}",
-            stacktrace=traceback.format_stack()
-        )
-
-    def is_contains(self,
-                    locator: tuple | dict[str, Any] | Element = None,
-                    contains: bool = False
-                    ) -> bool:
-        self.logger.debug(f"{get_current_func_name()}")
-        start_time = time.time()
-        while time.time() - start_time < self.timeout:
-            try:
-                if isinstance(locator, Element):
-                    locator = locator.locator
-                child_element = self._get_element(locator=locator)
-                return child_element is not None
-            except NoSuchElementException:
-                return False
-            except NoSuchDriverException as error:
-                self.handle_driver_error(error)
-            except InvalidSessionIdException as error:
-                self.handle_driver_error(error)
-            except AttributeError as error:
-                self.handle_driver_error(error)
-            except StaleElementReferenceException as error:
-                self.logger.debug(error)
-                self.logger.warning("StaleElementReferenceException\nRe-acquire element")
-                self.native = None
-                self.get_native()
-                continue
-            except WebDriverException as error:
-                if "instrumentation process is not running" in str(error).lower():
-                    self.handle_driver_error(error)
-                    continue
-                raise
-        raise ShadowstepElementException(
-            msg=f"Failed to {inspect.currentframe() if inspect.currentframe() else 'unknown'} within {self.timeout=}",
-            stacktrace=traceback.format_stack()
-        )
-
-    def drag(self, end_x: int, end_y: int, speed: int = 2500) -> Element:
-        self.logger.debug(f"{get_current_func_name()}")
-        start_time = time.time()
-        while time.time() - start_time < self.timeout:
-            try:
-                self.get_driver()
-                self._get_element(locator=self.locator)
-                self._mobile_gesture("mobile: dragGesture",
-                                     {"elementId": self.id,
-                                      "endX": end_x,
-                                      "endY": end_y,
-                                      "speed": speed})
-                return self
-            except NoSuchDriverException as error:
-                self.handle_driver_error(error)
-            except InvalidSessionIdException as error:
-                self.handle_driver_error(error)
-            except AttributeError as error:
-                self.handle_driver_error(error)
-            except StaleElementReferenceException as error:
-                self.logger.debug(error)
-                self.logger.warning("StaleElementReferenceException\nRe-acquire element")
-                self.native = None
-                self.get_native()
-                continue
-            except WebDriverException as error:
-                if "instrumentation process is not running" in str(error).lower():
-                    self.handle_driver_error(error)
-                    continue
-                raise
-        raise ShadowstepElementException(
-            msg=f"Failed to {inspect.currentframe() if inspect.currentframe() else 'unknown'} within {self.timeout=}",
-            stacktrace=traceback.format_stack()
-        )
-
-    def fling_up(self, speed: int = 2500) -> Element:
-        return self._fling(speed=speed, direction="up")
-
-    def fling_down(self, speed: int = 2500) -> Element:
-        return self._fling(speed=speed, direction="down")
-
-    def fling_left(self, speed: int = 2500) -> Element:
-        return self._fling(speed=speed, direction="left")
-
-    def fling_right(self, speed: int = 2500) -> Element:
-        return self._fling(speed=speed, direction="right")
-
-    def _fling(self, speed: int, direction: str) -> Element:
-        """
-        direction: Direction of the fling. Mandatory value. Acceptable values are: up, down, left and right (case insensitive)
-        speed: The speed at which to perform this gesture in pixels per second. The value must be greater than the minimum fling velocity for the given view (50 by default). The default value is 7500 * displayDensity
-        https://github.com/appium/appium-uiautomator2-driver/blob/master/docs/android-mobile-gestures.md#mobile-flinggesture
-        """
-        self.logger.debug(f"{get_current_func_name()}")
-        start_time = time.time()
-        while time.time() - start_time < self.timeout:
-            try:
-                self.get_driver()
-                self._get_element(locator=self.locator)
-                self._mobile_gesture("mobile: flingGesture",
-                                     {"elementId": self.id,
-                                      "direction": direction,
-                                      "speed": speed})
-                return self
-            except NoSuchDriverException as error:
-                self.handle_driver_error(error)
-            except InvalidSessionIdException as error:
-                self.handle_driver_error(error)
-            except AttributeError as error:
-                self.handle_driver_error(error)
-            except StaleElementReferenceException as error:
-                self.logger.debug(error)
-                self.logger.warning("StaleElementReferenceException\nRe-acquire element")
-                self.native = None
-                self.get_native()
-                continue
-            except WebDriverException as error:
-                if "instrumentation process is not running" in str(error).lower():
-                    self.handle_driver_error(error)
-                    continue
-                raise
-        raise ShadowstepElementException(
-            msg=f"Failed to {inspect.currentframe() if inspect.currentframe() else 'unknown'} within {self.timeout=}",
-            stacktrace=traceback.format_stack()
-        )
-
-    def scroll_down(self, percent: float = 0.7, speed: int = 2000, return_bool: bool = False) -> Element:
-        self.logger.debug(f"{get_current_func_name()}")
-        return self._scroll(direction="down", percent=percent, speed=speed, return_bool=return_bool)
-
-    def scroll_up(self, percent: float = 0.7, speed: int = 2000, return_bool: bool = False) -> Element:
-        self.logger.debug(f"{get_current_func_name()}")
-        return self._scroll(direction="up", percent=percent, speed=speed, return_bool=return_bool)
-
-    def scroll_left(self, percent: float = 0.7, speed: int = 2000, return_bool: bool = False) -> Element:
-        self.logger.debug(f"{get_current_func_name()}")
-        return self._scroll(direction="left", percent=percent, speed=speed, return_bool=return_bool)
-
-    def scroll_right(self, percent: float = 0.7, speed: int = 2000, return_bool: bool = False) -> Element:
-        self.logger.debug(f"{get_current_func_name()}")
-        return self._scroll(direction="right", percent=percent, speed=speed, return_bool=return_bool)
-
-    def _scroll(self, direction: str, percent: float, speed: int, return_bool: bool) -> Element:
-        """
-        direction: Scrolling direction. Mandatory value. Acceptable values are: up, down, left and right (case insensitive)
-        percent: The size of the scroll as a percentage of the scrolling area size. Valid values must be float numbers greater than zero, where 1.0 is 100%. Mandatory value.
-        speed: The speed at which to perform this gesture in pixels per second. The value must not be negative. The default value is 5000 * displayDensity
-        return_bool: if true return bool else return self
-        """
-        self.logger.debug(f"{get_current_func_name()}")
-        # https://github.com/appium/appium-uiautomator2-driver/blob/master/docs/android-mobile-gestures.md#mobile-scrollgesture
-        start_time = time.time()
-        while time.time() - start_time < self.timeout:
-            try:
-                self.get_driver()
-                self._get_element(locator=self.locator)
-                can_scroll = self._mobile_gesture("mobile: scrollGesture",
-                                                  {"elementId": self.id,
-                                                   "percent": percent,
-                                                   "direction": direction,
-                                                   "speed": speed})
-                if return_bool:
-                    return can_scroll
-                return self
-            except NoSuchDriverException as error:
-                self.handle_driver_error(error)
-            except InvalidSessionIdException as error:
-                self.handle_driver_error(error)
-            except AttributeError as error:
-                self.handle_driver_error(error)
-            except StaleElementReferenceException as error:
-                self.logger.debug(error)
-                self.logger.warning("StaleElementReferenceException\nRe-acquire element")
-                self.native = None
-                self.get_native()
-                continue
-            except WebDriverException as error:
-                if "instrumentation process is not running" in str(error).lower():
-                    self.handle_driver_error(error)
-                    continue
-                raise
-        raise ShadowstepElementException(
-            msg=f"Failed to {inspect.currentframe() if inspect.currentframe() else 'unknown'} within {self.timeout=}",
-            stacktrace=traceback.format_stack()
-        )
-
-    def scroll_to_bottom(self, percent: float = 0.7, speed: int = 8000) -> Element:
-        """Scrolls down until the bottom is reached."""
-        self.logger.debug(f"{get_current_func_name()}")
-        start_time = time.time()
-
-        while time.time() - start_time < self.timeout:
-            try:
-                if not self.scroll_down(percent=percent, speed=speed, return_bool=True):
-                    return self
-                self.scroll_down(percent=percent, speed=speed, return_bool=True)
-            except (
-                    NoSuchDriverException, InvalidSessionIdException, AttributeError
-            ) as error:
-                self.handle_driver_error(error)
-            except StaleElementReferenceException as error:
-                self.logger.debug(error)
-                self.logger.warning("StaleElementReferenceException\nRe-acquire element")
-                self.native = None
-                self.get_native()
-                continue
-            except WebDriverException as error:
-                if "instrumentation process is not running" in str(error).lower():
-                    self.handle_driver_error(error)
-                    continue
-                raise
-        raise ShadowstepElementException(
-            msg=f"Failed to scroll to bottom within {self.timeout=}",
-            stacktrace=traceback.format_stack()
-        )
-
-    def scroll_to_top(self, percent: float = 0.7, speed: int = 8000) -> Element:
-        """Scrolls up until the top is reached."""
-        self.logger.debug(f"{get_current_func_name()}")
-        start_time = time.time()
-
-        while time.time() - start_time < self.timeout:
-            try:
-                if not self.scroll_up(percent, speed, return_bool=True):
-                    return self
-                self.scroll_up(percent=percent, speed=speed, return_bool=True)
-            except (
-                    NoSuchDriverException, InvalidSessionIdException, AttributeError) as error:
-                self.handle_driver_error(error)
-            except StaleElementReferenceException as error:
-                self.logger.debug(error)
-                self.logger.warning("StaleElementReferenceException\nRe-acquire element")
-                self.native = None
-                self.get_native()
-                continue
-            except WebDriverException as error:
-                if "instrumentation process is not running" in str(error).lower():
-                    self.handle_driver_error(error)
-                    continue
-                raise
-        raise ShadowstepElementException(
-            msg=f"Failed to scroll to top within {self.timeout=}",
-            stacktrace=traceback.format_stack()
-        )
-
-    def _prepare_scroll_locator(self, locator: Element | dict[str, Any] | tuple[str, str]) -> tuple[str, str]:
-        """Prepare locator for scrolling operation."""
-        if isinstance(locator, Element):
-            locator = locator.locator
-        if isinstance(locator, (dict, tuple)):
-            selector = self.converter.to_uiselector(locator)
-        else:
-            raise ShadowstepElementException("Only dictionary locators are supported")
-        return self.converter.to_xpath(locator), selector
-
-    def _execute_scroll_script(self, selector: str, max_swipes: int) -> None:
-        """Execute mobile scroll script."""
-        self.get_driver()
-        self.driver.execute_script("mobile: scroll", {
-            "elementId": self.id,
-            "strategy": "-android uiautomator",
-            "selector": selector,
-            "maxSwipes": max_swipes
-        })
-
-    def _perform_scroll_to_element(self, selector: str, max_swipes: int, locator: tuple[str, str]) -> Element | None:
-        """Perform scroll to element with error handling."""
-        try:
-            self._execute_scroll_script(selector, max_swipes)
-            return cast(Element, self.shadowstep.get_element(locator))
-        except (NoSuchDriverException, InvalidSessionIdException, AttributeError) as error:
-            self.handle_driver_error(error)
-            return None
-        except StaleElementReferenceException as error:
-            self.logger.debug(error)
-            self.logger.warning("StaleElementReferenceException\nRe-acquire element")
-            self.native = None
-            self.get_native()
-            return None
-        except WebDriverException as error:
-            if "instrumentation process is not running" in str(error).lower():
-                self.handle_driver_error(error)
-                return None
-            raise
-        except Exception as error:
-            self.logger.error(error)
-            self.logger.error(type(error))
-            self.logger.error(traceback.format_stack())
-            self.handle_driver_error(error)
-            self.scroll_to_top(percent=0.75, speed=8000)
-            return None
-
-    def scroll_to_element(self, locator: Element | dict[str, Any] | tuple[str, str], max_swipes: int = 30) -> Element:
-        self.logger.debug(f"{get_current_func_name()}")
-        start_time = time.time()
-
-        locator, selector = self._prepare_scroll_locator(locator)
-
-        while time.time() - start_time < self.timeout:
-            result = self._perform_scroll_to_element(selector, max_swipes, locator)
-            if result is not None:
-                return result
-            time.sleep(0.1)
-
-        raise ShadowstepElementException(
-            msg=f"Failed to scroll to element with locator: {locator}",
-            stacktrace=traceback.format_stack()
-        )
-
-    def _prepare_optional_scroll_locator(self, locator: Element | dict[str, Any] | tuple[str, str]) -> tuple[str, str]:
-        """Prepare locator for optional scroll operation."""
-        if isinstance(locator, Element):
-            locator = locator.locator
-        if isinstance(locator, (dict, tuple)):  # noqa
-            pass
-        else:
-            raise ShadowstepElementException("Only dictionary locators are supported")
-        return self.converter.to_xpath(locator), locator
-
-    def _check_element_visibility_after_scroll(self, locator: tuple[str, str],
-                                               waiting_element_timeout: int) -> Element | None:
-        """Check if element is visible after scroll operation."""
-        found = self.shadowstep.get_element(locator)
-        found.timeout = waiting_element_timeout
-        if found.is_visible():
-            return found
-        return None
-
-    def _perform_optional_scroll_sequence(self, locator: tuple[str, str], percent: float, speed: int,
-                                          waiting_element_timeout: int) -> Element | None:
-        """Perform scroll sequence to find element."""
-        self.get_driver()
-        self.get_native()
-        self.scroll_to_top()
-
-        # Check if element is visible at top
-        result = self._check_element_visibility_after_scroll(locator, waiting_element_timeout)
-        if result is not None:
-            return result
-
-        # Scroll down while element is not visible
-        while self.scroll_down(return_bool=True, percent=percent, speed=speed):
-            result = self._check_element_visibility_after_scroll(locator, waiting_element_timeout)
-            if result is not None:
-                return result
-
-        # Final scroll and check
-        self.scroll_down(return_bool=True, percent=percent, speed=speed)
-        return self._check_element_visibility_after_scroll(locator, waiting_element_timeout)
-
-    def _handle_optional_scroll_errors(self, error: Exception) -> None:
-        """Handle errors during optional scroll operation."""
-        if isinstance(error, (NoSuchDriverException, InvalidSessionIdException, AttributeError)):
-            self.handle_driver_error(error)
-        elif isinstance(error, StaleElementReferenceException):
-            self.logger.debug(error)
-            self.logger.warning("StaleElementReferenceException\nRe-acquire element")
-            self.native = None
-            self.get_native()
-        elif isinstance(error, WebDriverException):
-            if "instrumentation process is not running" in str(error).lower():
-                self.handle_driver_error(error)
-            else:
-                raise
-        else:
-            self.logger.error(error)
-            self.logger.error(type(error))
-            self.logger.error(traceback.format_stack())
-            self.handle_driver_error(error)
-            self.scroll_to_top(percent=0.75, speed=8000)
-
-    def scroll_to_element_optional(self, locator: Element | dict[str, Any] | tuple[str, str], max_swipes: int = 30,
-                                   percent: float = 0.7, speed: int = 2000,
-                                   waiting_element_timeout: int = 1) -> Element:
-        self.logger.debug(f"{get_current_func_name()}")
-        start_time = time.time()
-
-        locator, _ = self._prepare_optional_scroll_locator(locator)
-
-        while time.time() - start_time < self.timeout:
-            try:
-                result = self._perform_optional_scroll_sequence(locator, percent, speed, waiting_element_timeout)
-                if result is not None:
-                    return result
-            except Exception as error:
-                self._handle_optional_scroll_errors(error)
-                if isinstance(error, StaleElementReferenceException) or isinstance(error,
-                                                                                   WebDriverException) and "instrumentation process is not running" in str(
-                    error).lower():
-                    continue
-                if not isinstance(error, (NoSuchDriverException, InvalidSessionIdException, AttributeError)):
-                    raise
-            time.sleep(0.1)
-
-        raise ShadowstepElementException(
-            msg=f"Failed to scroll to element with locator: {locator}",
-            stacktrace=traceback.format_stack()
-        )
-
-    def zoom(self, percent: float = 0.75, speed: int = 2500) -> Element:
-        """
-        Performs a pinch-open (zoom) gesture on the element.
-
-        Args:
-            percent (float): Size of the pinch as a percentage of the pinch area size (0.0 to 1.0).
-            speed (int): Speed in pixels per second.
-
-        Returns:
-            Element: Self instance on success.
-        """
-        self.logger.debug(f"{get_current_func_name()}")
-        start_time = time.time()
-
-        while time.time() - start_time < self.timeout:
-            try:
-                self.get_driver()
-                self._get_element(locator=self.locator)
-
-                self._mobile_gesture("mobile: pinchOpenGesture", {
-                    "elementId": self.id,
-                    "percent": percent,
-                    "speed": speed
-                })
-
-                return self
-            except NoSuchDriverException as error:
-                self.handle_driver_error(error)
-            except InvalidSessionIdException as error:
-                self.handle_driver_error(error)
-            except AttributeError as error:
-                self.handle_driver_error(error)
-            except StaleElementReferenceException as error:
-                self.logger.debug(error)
-                self.logger.warning("StaleElementReferenceException\nRe-acquire element")
-                self.native = None
-                self.get_native()
-                continue
-            except WebDriverException as error:
-                if "instrumentation process is not running" in str(error).lower():
-                    self.handle_driver_error(error)
-                    continue
-                raise
-        raise ShadowstepElementException(
-            msg=f"Failed to {inspect.currentframe() if inspect.currentframe() else 'unknown'} within {self.timeout=}",
-            stacktrace=traceback.format_stack()
-        )
-
-    def unzoom(self, percent: float = 0.75, speed: int = 2500) -> Element:
-        """
-        Performs a pinch-close (unzoom) gesture on the element.
-
-        Args:
-            percent (float): Size of the pinch as a percentage of the pinch area size (0.0 to 1.0).
-            speed (int): Speed in pixels per second.
-
-        Returns:
-            Element: Self instance on success.
-        """
-        self.logger.debug(f"{get_current_func_name()}")
-        start_time = time.time()
-
-        while time.time() - start_time < self.timeout:
-            try:
-                self.get_driver()
-                self._get_element(locator=self.locator)
-
-                self._mobile_gesture("mobile: pinchCloseGesture", {
-                    "elementId": self.id,
-                    "percent": percent,
-                    "speed": speed
-                })
-
-                return self
-            except NoSuchDriverException as error:
-                self.handle_driver_error(error)
-            except InvalidSessionIdException as error:
-                self.handle_driver_error(error)
-            except AttributeError as error:
-                self.handle_driver_error(error)
-            except StaleElementReferenceException as error:
-                self.logger.debug(error)
-                self.logger.warning("StaleElementReferenceException\nRe-acquire element")
-                self.native = None
-                self.get_native()
-                continue
-            except WebDriverException as error:
-                if "instrumentation process is not running" in str(error).lower():
-                    self.handle_driver_error(error)
-                    continue
-                raise
-        raise ShadowstepElementException(
-            msg=f"Failed to {inspect.currentframe() if inspect.currentframe() else 'unknown'} within {self.timeout=}",
-            stacktrace=traceback.format_stack()
-        )
-
-    def swipe_up(self, percent: float = 0.75, speed: int = 5000) -> Element:
-        """Performs a swipe up gesture on the current element."""
-        return self.swipe(direction="up", percent=percent, speed=speed)
-
-    def swipe_down(self, percent: float = 0.75, speed: int = 5000) -> Element:
-        """Performs a swipe down gesture on the current element."""
-        return self.swipe(direction="down", percent=percent, speed=speed)
-
-    def swipe_left(self, percent: float = 0.75, speed: int = 5000) -> Element:
-        """Performs a swipe left gesture on the current element."""
-        return self.swipe(direction="left", percent=percent, speed=speed)
-
-    def swipe_right(self, percent: float = 0.75, speed: int = 5000) -> Element:
-        """Performs a swipe right gesture on the current element."""
-        return self.swipe(direction="right", percent=percent, speed=speed)
-
-    def swipe(self, direction: str, percent: float = 0.75, speed: int = 5000) -> Element:
-        """
-        Performs a swipe gesture on the current element.
-
-        Args:
-            direction (str): Swipe direction. Acceptable values: 'up', 'down', 'left', 'right'.
-            percent (float): The size of the swipe as a percentage of the swipe area size (0.0 - 1.0).
-            speed (int): Speed in pixels per second (default: 5000).
-
-        Returns:
-            Element: Self instance on success.
-        """
-        self.logger.debug(f"{get_current_func_name()}")
-        start_time = time.time()
-
-        while time.time() - start_time < self.timeout:
-            try:
-                self.get_driver()
-
-                self._mobile_gesture("mobile: swipeGesture", {
-                    "elementId": self.id,
-                    "direction": direction.lower(),
-                    "percent": percent,
-                    "speed": speed
-                })
-
-                return self
-            except NoSuchDriverException as error:
-                self.handle_driver_error(error)
-            except InvalidSessionIdException as error:
-                self.handle_driver_error(error)
-            except AttributeError as error:
-                self.handle_driver_error(error)
-            except StaleElementReferenceException as error:
-                self.logger.debug(error)
-                self.logger.warning("StaleElementReferenceException\nRe-acquire element")
-                self.native = None
-                self.get_native()
-                continue
-            except WebDriverException as error:
-                if "instrumentation process is not running" in str(error).lower():
-                    self.handle_driver_error(error)
-                    continue
-                raise
-        raise ShadowstepElementException(
-            msg=f"Failed to {inspect.currentframe() if inspect.currentframe() else 'unknown'} within {self.timeout=} {direction=} {percent=}",
             stacktrace=traceback.format_stack()
         )
 
@@ -1246,626 +595,13 @@ class Element(ElementBase):
                 self.get_native()
                 continue
             except WebDriverException as error:
-                if "instrumentation process is not running" in str(error).lower():
+                err_msg = str(error).lower()
+                if "instrumentation process is not running" in err_msg or "socket hang up" in err_msg:
                     self.handle_driver_error(error)
                     continue
                 raise
         raise ShadowstepElementException(
             msg=f"Failed to get location_in_view within {self.timeout=}",
-            stacktrace=traceback.format_stack()
-        )
-
-    @property
-    def tag_name(self) -> str:
-        """This element's ``tagName`` property.
-
-        Returns:
-            Optional[str]: The tag name of the element, or None if not retrievable.
-        """
-        self.logger.debug(f"{get_current_func_name()}")
-        start_time = time.time()
-
-        while time.time() - start_time < self.timeout:
-            try:
-                self.get_driver()
-
-                element = self.get_native()
-
-                return element.tag_name
-
-            except NoSuchDriverException as error:
-                self.handle_driver_error(error)
-            except InvalidSessionIdException as error:
-                self.handle_driver_error(error)
-            except AttributeError as error:
-                self.handle_driver_error(error)
-            except StaleElementReferenceException as error:
-                self.logger.debug(error)
-                self.logger.warning("StaleElementReferenceException\nRe-acquire element")
-                self.native = None
-                self.get_native()
-                continue
-            except WebDriverException as error:
-                if "instrumentation process is not running" in str(error).lower():
-                    self.handle_driver_error(error)
-                    continue
-                raise
-        raise ShadowstepElementException(
-            msg=f"Failed to retrieve tag_name within {self.timeout=}",
-            stacktrace=traceback.format_stack()
-        )
-
-    @property
-    def attributes(self):
-        return self.get_attributes()
-
-    @property
-    def text(self) -> str:
-        self.logger.debug(f"{get_current_func_name()}")
-        start_time = time.time()
-
-        while time.time() - start_time < self.timeout:
-            try:
-                self.get_driver()
-
-                element = self.get_native()
-
-                return element.text
-
-            except NoSuchDriverException as error:
-                self.handle_driver_error(error)
-            except InvalidSessionIdException as error:
-                self.handle_driver_error(error)
-            except AttributeError as error:
-                self.handle_driver_error(error)
-            except StaleElementReferenceException as error:
-                self.logger.debug(error)
-                self.logger.warning("StaleElementReferenceException\nRe-acquire element")
-                self.native = None
-                self.get_native()
-                continue
-            except WebDriverException as error:
-                if "instrumentation process is not running" in str(error).lower():
-                    self.handle_driver_error(error)
-                    continue
-                raise
-        raise ShadowstepElementException(
-            msg=f"Failed to retrieve text within {self.timeout=}",
-            stacktrace=traceback.format_stack()
-        )
-
-    @property
-    def resource_id(self) -> str:
-        self.logger.debug(f"{get_current_func_name()}")
-        start_time = time.time()
-
-        while time.time() - start_time < self.timeout:
-            try:
-                self.get_driver()
-
-                return self.get_attribute("resource-id")
-
-            except NoSuchDriverException as error:
-                self.handle_driver_error(error)
-            except InvalidSessionIdException as error:
-                self.handle_driver_error(error)
-            except AttributeError as error:
-                self.handle_driver_error(error)
-            except StaleElementReferenceException as error:
-                self.logger.debug(error)
-                self.logger.warning("StaleElementReferenceException\nRe-acquire element")
-                self.native = None
-                self.get_native()
-                continue
-            except WebDriverException as error:
-                if "instrumentation process is not running" in str(error).lower():
-                    self.handle_driver_error(error)
-                    continue
-                raise
-        raise ShadowstepElementException(
-            msg=f"Failed to retrieve attr within {self.timeout=}",
-            stacktrace=traceback.format_stack()
-        )
-
-    @property
-    def class_(self) -> str:
-        self.logger.debug(f"{get_current_func_name()}")
-        start_time = time.time()
-
-        while time.time() - start_time < self.timeout:
-            try:
-                self.get_driver()
-
-                return self.get_attribute("class")
-
-            except NoSuchDriverException as error:
-                self.handle_driver_error(error)
-            except InvalidSessionIdException as error:
-                self.handle_driver_error(error)
-            except AttributeError as error:
-                self.handle_driver_error(error)
-            except StaleElementReferenceException as error:
-                self.logger.debug(error)
-                self.logger.warning("StaleElementReferenceException\nRe-acquire element")
-                self.native = None
-                self.get_native()
-                continue
-            except WebDriverException as error:
-                if "instrumentation process is not running" in str(error).lower():
-                    self.handle_driver_error(error)
-                    continue
-                raise
-        raise ShadowstepElementException(
-            msg=f"Failed to retrieve attr within {self.timeout=}",
-            stacktrace=traceback.format_stack()
-        )
-
-    @property
-    def index(self) -> str:
-        self.logger.debug(f"{get_current_func_name()}")
-        start_time = time.time()
-
-        while time.time() - start_time < self.timeout:
-            try:
-                self.get_driver()
-                return self.get_attribute("index")
-
-            except (NoSuchDriverException, InvalidSessionIdException, AttributeError) as error:
-                self.handle_driver_error(error)
-            except StaleElementReferenceException as error:
-                self.logger.debug(error)
-                self.logger.warning("StaleElementReferenceException\nRe-acquire element")
-                self.native = None
-                self.get_native()
-                continue
-            except WebDriverException as error:
-                if "instrumentation process is not running" in str(error).lower():
-                    self.handle_driver_error(error)
-                    continue
-                raise
-        raise ShadowstepElementException(
-            msg=f"Failed to retrieve attr within {self.timeout=}",
-            stacktrace=traceback.format_stack()
-        )
-
-    @property
-    def package(self) -> str:
-        self.logger.debug(f"{get_current_func_name()}")
-        start_time = time.time()
-
-        while time.time() - start_time < self.timeout:
-            try:
-                self.get_driver()
-                return self.get_attribute("package")
-
-            except (NoSuchDriverException, InvalidSessionIdException, AttributeError) as error:
-                self.handle_driver_error(error)
-            except StaleElementReferenceException as error:
-                self.logger.debug(error)
-                self.logger.warning("StaleElementReferenceException\nRe-acquire element")
-                self.native = None
-                self.get_native()
-                continue
-            except WebDriverException as error:
-                if "instrumentation process is not running" in str(error).lower():
-                    self.handle_driver_error(error)
-                    continue
-                raise
-        raise ShadowstepElementException(
-            msg=f"Failed to retrieve attr within {self.timeout=}",
-            stacktrace=traceback.format_stack()
-        )
-
-    @property
-    def class_name(self) -> str:  # 'class' is a reserved word, so class_name is better
-        self.logger.debug(f"{get_current_func_name()}")
-        start_time = time.time()
-
-        while time.time() - start_time < self.timeout:
-            try:
-                self.get_driver()
-                return self.get_attribute("class")
-
-            except (NoSuchDriverException, InvalidSessionIdException, AttributeError) as error:
-                self.handle_driver_error(error)
-            except StaleElementReferenceException as error:
-                self.logger.debug(error)
-                self.logger.warning("StaleElementReferenceException\nRe-acquire element")
-                self.native = None
-                self.get_native()
-                continue
-            except WebDriverException as error:
-                if "instrumentation process is not running" in str(error).lower():
-                    self.handle_driver_error(error)
-                    continue
-                raise
-        raise ShadowstepElementException(
-            msg=f"Failed to retrieve attr within {self.timeout=}",
-            stacktrace=traceback.format_stack()
-        )
-
-    @property
-    def bounds(self) -> str:
-        self.logger.debug(f"{get_current_func_name()}")
-        start_time = time.time()
-
-        while time.time() - start_time < self.timeout:
-            try:
-                self.get_driver()
-                return self.get_attribute("bounds")
-
-            except (NoSuchDriverException, InvalidSessionIdException, AttributeError) as error:
-                self.handle_driver_error(error)
-            except StaleElementReferenceException as error:
-                self.logger.debug(error)
-                self.logger.warning("StaleElementReferenceException\nRe-acquire element")
-                self.native = None
-                self.get_native()
-                continue
-            except WebDriverException as error:
-                if "instrumentation process is not running" in str(error).lower():
-                    self.handle_driver_error(error)
-                    continue
-                raise
-        raise ShadowstepElementException(
-            msg=f"Failed to retrieve attr within {self.timeout=}",
-            stacktrace=traceback.format_stack()
-        )
-
-    @property
-    def checked(self) -> str:
-        self.logger.debug(f"{get_current_func_name()}")
-        start_time = time.time()
-
-        while time.time() - start_time < self.timeout:
-            try:
-                self.get_driver()
-                return self.get_attribute("checked")
-
-            except NoSuchDriverException as error:
-                self.handle_driver_error(error)
-            except InvalidSessionIdException as error:
-                self.handle_driver_error(error)
-            except AttributeError as error:
-                self.handle_driver_error(error)
-            except StaleElementReferenceException as error:
-                self.logger.debug(error)
-                self.logger.warning("StaleElementReferenceException\nRe-acquire element")
-                self.native = None
-                self.get_native()
-                continue
-            except WebDriverException as error:
-                if "instrumentation process is not running" in str(error).lower():
-                    self.handle_driver_error(error)
-                    continue
-                raise
-        raise ShadowstepElementException(
-            msg=f"Failed to retrieve attr within {self.timeout=}",
-            stacktrace=traceback.format_stack()
-        )
-
-    @property
-    def checkable(self) -> str:
-        self.logger.debug(f"{get_current_func_name()}")
-        start_time = time.time()
-
-        while time.time() - start_time < self.timeout:
-            try:
-                self.get_driver()
-                return self.get_attribute("checkable")
-
-            except NoSuchDriverException as error:
-                self.handle_driver_error(error)
-            except InvalidSessionIdException as error:
-                self.handle_driver_error(error)
-            except AttributeError as error:
-                self.handle_driver_error(error)
-            except StaleElementReferenceException as error:
-                self.logger.debug(error)
-                self.logger.warning("StaleElementReferenceException\nRe-acquire element")
-                self.native = None
-                self.get_native()
-                continue
-            except WebDriverException as error:
-                if "instrumentation process is not running" in str(error).lower():
-                    self.handle_driver_error(error)
-                    continue
-                raise
-        raise ShadowstepElementException(
-            msg=f"Failed to retrieve attr within {self.timeout=}",
-            stacktrace=traceback.format_stack()
-        )
-
-    @property
-    def enabled(self) -> str:
-        self.logger.debug(f"{get_current_func_name()}")
-        start_time = time.time()
-
-        while time.time() - start_time < self.timeout:
-            try:
-                self.get_driver()
-                return self.get_attribute("enabled")
-
-            except NoSuchDriverException as error:
-                self.handle_driver_error(error)
-            except InvalidSessionIdException as error:
-                self.handle_driver_error(error)
-            except AttributeError as error:
-                self.handle_driver_error(error)
-            except StaleElementReferenceException as error:
-                self.logger.debug(error)
-                self.logger.warning("StaleElementReferenceException\nRe-acquire element")
-                self.native = None
-                self.get_native()
-                continue
-            except WebDriverException as error:
-                if "instrumentation process is not running" in str(error).lower():
-                    self.handle_driver_error(error)
-                    continue
-                raise
-        raise ShadowstepElementException(
-            msg=f"Failed to retrieve attr within {self.timeout=}",
-            stacktrace=traceback.format_stack()
-        )
-
-    @property
-    def focusable(self) -> str:
-        self.logger.debug(f"{get_current_func_name()}")
-        start_time = time.time()
-
-        while time.time() - start_time < self.timeout:
-            try:
-                self.get_driver()
-                return self.get_attribute("focusable")
-
-            except NoSuchDriverException as error:
-                self.handle_driver_error(error)
-            except InvalidSessionIdException as error:
-                self.handle_driver_error(error)
-            except AttributeError as error:
-                self.handle_driver_error(error)
-            except StaleElementReferenceException as error:
-                self.logger.debug(error)
-                self.logger.warning("StaleElementReferenceException\nRe-acquire element")
-                self.native = None
-                self.get_native()
-                continue
-            except WebDriverException as error:
-                if "instrumentation process is not running" in str(error).lower():
-                    self.handle_driver_error(error)
-                    continue
-                raise
-        raise ShadowstepElementException(
-            msg=f"Failed to retrieve attr within {self.timeout=}",
-            stacktrace=traceback.format_stack()
-        )
-
-    @property
-    def focused(self) -> str:
-        self.logger.debug(f"{get_current_func_name()}")
-        start_time = time.time()
-
-        while time.time() - start_time < self.timeout:
-            try:
-                self.get_driver()
-                return self.get_attribute("focused")
-
-            except NoSuchDriverException as error:
-                self.handle_driver_error(error)
-            except InvalidSessionIdException as error:
-                self.handle_driver_error(error)
-            except AttributeError as error:
-                self.handle_driver_error(error)
-            except StaleElementReferenceException as error:
-                self.logger.debug(error)
-                self.logger.warning("StaleElementReferenceException\nRe-acquire element")
-                self.native = None
-                self.get_native()
-                continue
-            except WebDriverException as error:
-                if "instrumentation process is not running" in str(error).lower():
-                    self.handle_driver_error(error)
-                    continue
-                raise
-        raise ShadowstepElementException(
-            msg=f"Failed to retrieve attr within {self.timeout=}",
-            stacktrace=traceback.format_stack()
-        )
-
-    @property
-    def long_clickable(self) -> str:
-        self.logger.debug(f"{get_current_func_name()}")
-        start_time = time.time()
-
-        while time.time() - start_time < self.timeout:
-            try:
-                self.get_driver()
-                return self.get_attribute("long-clickable")
-
-            except NoSuchDriverException as error:
-                self.handle_driver_error(error)
-            except InvalidSessionIdException as error:
-                self.handle_driver_error(error)
-            except AttributeError as error:
-                self.handle_driver_error(error)
-            except StaleElementReferenceException as error:
-                self.logger.debug(error)
-                self.logger.warning("StaleElementReferenceException\nRe-acquire element")
-                self.native = None
-                self.get_native()
-                continue
-            except WebDriverException as error:
-                if "instrumentation process is not running" in str(error).lower():
-                    self.handle_driver_error(error)
-                    continue
-                raise
-        raise ShadowstepElementException(
-            msg=f"Failed to retrieve attr within {self.timeout=}",
-            stacktrace=traceback.format_stack()
-        )
-
-    @property
-    def password(self) -> str:
-        self.logger.debug(f"{get_current_func_name()}")
-        start_time = time.time()
-
-        while time.time() - start_time < self.timeout:
-            try:
-                self.get_driver()
-                return self.get_attribute("password")
-
-            except NoSuchDriverException as error:
-                self.handle_driver_error(error)
-            except InvalidSessionIdException as error:
-                self.handle_driver_error(error)
-            except AttributeError as error:
-                self.handle_driver_error(error)
-            except StaleElementReferenceException as error:
-                self.logger.debug(error)
-                self.logger.warning("StaleElementReferenceException\nRe-acquire element")
-                self.native = None
-                self.get_native()
-                continue
-            except WebDriverException as error:
-                if "instrumentation process is not running" in str(error).lower():
-                    self.handle_driver_error(error)
-                    continue
-                raise
-        raise ShadowstepElementException(
-            msg=f"Failed to retrieve attr within {self.timeout=}",
-            stacktrace=traceback.format_stack()
-        )
-
-    @property
-    def scrollable(self) -> str:
-        self.logger.debug(f"{get_current_func_name()}")
-        start_time = time.time()
-
-        while time.time() - start_time < self.timeout:
-            try:
-                self.get_driver()
-                return self.get_attribute("scrollable")
-
-            except NoSuchDriverException as error:
-                self.handle_driver_error(error)
-            except InvalidSessionIdException as error:
-                self.handle_driver_error(error)
-            except AttributeError as error:
-                self.handle_driver_error(error)
-            except StaleElementReferenceException as error:
-                self.logger.debug(error)
-                self.logger.warning("StaleElementReferenceException\nRe-acquire element")
-                self.native = None
-                self.get_native()
-                continue
-            except WebDriverException as error:
-                if "instrumentation process is not running" in str(error).lower():
-                    self.handle_driver_error(error)
-                    continue
-                raise
-        raise ShadowstepElementException(
-            msg=f"Failed to retrieve attr within {self.timeout=}",
-            stacktrace=traceback.format_stack()
-        )
-
-    @property
-    def selected(self) -> str:
-        self.logger.debug(f"{get_current_func_name()}")
-        start_time = time.time()
-
-        while time.time() - start_time < self.timeout:
-            try:
-                self.get_driver()
-                return self.get_attribute("selected")
-
-            except NoSuchDriverException as error:
-                self.handle_driver_error(error)
-            except InvalidSessionIdException as error:
-                self.handle_driver_error(error)
-            except AttributeError as error:
-                self.handle_driver_error(error)
-            except StaleElementReferenceException as error:
-                self.logger.debug(error)
-                self.logger.warning("StaleElementReferenceException\nRe-acquire element")
-                self.native = None
-                self.get_native()
-                continue
-            except WebDriverException as error:
-                if "instrumentation process is not running" in str(error).lower():
-                    self.handle_driver_error(error)
-                    continue
-                raise
-        raise ShadowstepElementException(
-            msg=f"Failed to retrieve attr within {self.timeout=}",
-            stacktrace=traceback.format_stack()
-        )
-
-    @property
-    def displayed(self) -> str:
-        self.logger.debug(f"{get_current_func_name()}")
-        start_time = time.time()
-
-        while time.time() - start_time < self.timeout:
-            try:
-                self.get_driver()
-                return self.get_attribute("displayed")
-
-            except NoSuchDriverException as error:
-                self.handle_driver_error(error)
-            except InvalidSessionIdException as error:
-                self.handle_driver_error(error)
-            except AttributeError as error:
-                self.handle_driver_error(error)
-            except StaleElementReferenceException as error:
-                self.logger.debug(error)
-                self.logger.warning("StaleElementReferenceException\nRe-acquire element")
-                self.native = None
-                self.get_native()
-                continue
-            except WebDriverException as error:
-                if "instrumentation process is not running" in str(error).lower():
-                    self.handle_driver_error(error)
-                    continue
-                raise
-        raise ShadowstepElementException(
-            msg=f"Failed to retrieve attr within {self.timeout=}",
-            stacktrace=traceback.format_stack()
-        )
-
-    @property
-    def shadow_root(self) -> ShadowRoot:
-        """NOT IMPLEMENTED!
-        Returns the shadow root of the current element if available.
-
-        Returns:
-            ShadowRoot: Shadow DOM root attached to the element.
-
-        Raises:
-            ShadowstepElementException: If shadow root is not available or an error occurs.
-        """
-        self.logger.debug(f"{get_current_func_name()}")
-        self.logger.warning(
-            f"Method {inspect.currentframe() if inspect.currentframe() else 'unknown'} is not implemented in UiAutomator2")
-
-        start_time = time.time()
-
-        while time.time() - start_time < self.timeout:
-            try:
-                self.get_driver()
-                element = self.get_native()
-                return element.shadow_root
-
-            except NoSuchDriverException as error:
-                self.handle_driver_error(error)
-            except InvalidSessionIdException as error:
-                self.handle_driver_error(error)
-            except AttributeError as error:
-                self.handle_driver_error(error)
-            except WebDriverException as error:
-                self.handle_driver_error(error)
-
-        raise ShadowstepElementException(
-            msg=f"Failed to retrieve shadow_root within {self.timeout=}",
             stacktrace=traceback.format_stack()
         )
 
@@ -1905,256 +641,6 @@ class Element(ElementBase):
 
         raise ShadowstepElementException(
             msg=f"Failed to get location_once_scrolled_into_view within {self.timeout=}",
-            stacktrace=traceback.format_stack()
-        )
-
-    @property
-    def size(self) -> dict:
-        """Returns the size of the element.
-
-        Returns:
-            dict: Dictionary with keys 'width' and 'height'.
-
-        Raises:
-            ShadowstepElementException: If size cannot be determined.
-        """
-        self.logger.debug(f"{get_current_func_name()}")
-        start_time = time.time()
-
-        while time.time() - start_time < self.timeout:
-            try:
-                self.get_driver()
-
-                current_element = self.get_native()
-
-                return current_element.size
-
-            except NoSuchDriverException as error:
-                self.handle_driver_error(error)
-            except InvalidSessionIdException as error:
-                self.handle_driver_error(error)
-            except AttributeError as error:
-                self.handle_driver_error(error)
-            except StaleElementReferenceException as error:
-                self.logger.debug(error)
-                self.logger.warning("StaleElementReferenceException\nRe-acquire element")
-                self.native = None
-                self.get_native()
-                continue
-            except WebDriverException as error:
-                self.handle_driver_error(error)
-
-        raise ShadowstepElementException(
-            msg=f"Failed to retrieve size within {self.timeout=}",
-            stacktrace=traceback.format_stack()
-        )
-
-    def value_of_css_property(self, property_name: str) -> str:
-        """NOT IMPLEMENTED!
-        Returns the value of a CSS property.
-
-        Args:
-            property_name (str): The name of the CSS property.
-
-        Returns:
-            str: The value of the CSS property.
-
-        Raises:
-            ShadowstepElementException: If value could not be retrieved within timeout.
-        """
-        self.logger.debug(f"{get_current_func_name()}")
-        self.logger.warning(
-            f"Method {inspect.currentframe() if inspect.currentframe() else 'unknown'} is not implemented in UiAutomator2")
-
-        start_time = time.time()
-
-        while time.time() - start_time < self.timeout:
-            try:
-                self.get_driver()
-
-                current_element = self.get_native()
-
-                return current_element.value_of_css_property(property_name)
-
-            except NoSuchDriverException as error:
-                self.handle_driver_error(error)
-            except InvalidSessionIdException as error:
-                self.handle_driver_error(error)
-            except AttributeError as error:
-                self.handle_driver_error(error)
-            except StaleElementReferenceException as error:
-                self.logger.debug(error)
-                self.logger.warning("StaleElementReferenceException\nRe-acquire element")
-                self.native = None
-                self.get_native()
-                continue
-            except WebDriverException as error:
-                self.handle_driver_error(error)
-
-        raise ShadowstepElementException(
-            msg=f"Failed to retrieve CSS property '{property_name}' within {self.timeout=}",
-            stacktrace=traceback.format_stack()
-        )
-
-    @property
-    def location(self) -> dict:
-        """NOT IMPLEMENTED
-        The location of the element in the renderable canvas.
-
-        Returns:
-            dict: Dictionary with 'x' and 'y' coordinates of the element.
-
-        Raises:
-            ShadowstepElementException: If location could not be retrieved within timeout.
-        """
-        self.logger.debug(f"{get_current_func_name()}")
-        self.logger.warning(
-            f"Method {inspect.currentframe() if inspect.currentframe() else 'unknown'} is not implemented in UiAutomator2")
-
-        start_time = time.time()
-
-        while time.time() - start_time < self.timeout:
-            try:
-                self.get_driver()
-
-                current_element = self.get_native()
-
-                return current_element.location
-
-            except NoSuchDriverException as error:
-                self.handle_driver_error(error)
-            except InvalidSessionIdException as error:
-                self.handle_driver_error(error)
-            except AttributeError as error:
-                self.handle_driver_error(error)
-            except StaleElementReferenceException as error:
-                self.logger.debug(error)
-                self.logger.warning("StaleElementReferenceException\nRe-acquire element")
-                self.native = None
-                self.get_native()
-                continue
-            except WebDriverException as error:
-                self.handle_driver_error(error)
-
-        raise ShadowstepElementException(
-            msg=f"Failed to retrieve location within {self.timeout=}",
-            stacktrace=traceback.format_stack()
-        )
-
-    @property
-    def rect(self) -> dict:
-        """A dictionary with the size and location of the element.
-
-        Returns:
-            dict: Dictionary with keys 'x', 'y', 'width', 'height'.
-
-        Raises:
-            ShadowstepElementException: If rect could not be retrieved within timeout.
-        """
-        self.logger.debug(f"{get_current_func_name()}")
-        start_time = time.time()
-
-        while time.time() - start_time < self.timeout:
-            try:
-                self.get_driver()
-
-                current_element = self.get_native()
-
-                return current_element.rect
-
-            except NoSuchDriverException as error:
-                self.handle_driver_error(error)
-            except InvalidSessionIdException as error:
-                self.handle_driver_error(error)
-            except AttributeError as error:
-                self.handle_driver_error(error)
-            except StaleElementReferenceException as error:
-                self.logger.debug(error)
-                self.logger.warning("StaleElementReferenceException\nRe-acquire element")
-                self.native = None
-                self.get_native()
-                continue
-            except WebDriverException as error:
-                self.handle_driver_error(error)
-
-        raise ShadowstepElementException(
-            msg=f"Failed to retrieve rect within {self.timeout=}",
-            stacktrace=traceback.format_stack()
-        )
-
-    @property
-    def aria_role(self) -> str:
-        """Returns the ARIA role of the current web element.
-
-        Returns:
-            str: The ARIA role of the element, or None if not found.
-        """
-        self.logger.debug(f"{get_current_func_name()}")
-        start_time = time.time()
-
-        while time.time() - start_time < self.timeout:
-            try:
-                self.get_driver()
-
-                current_element = self.get_native()
-
-                return current_element.aria_role
-
-            except NoSuchDriverException as error:
-                self.handle_driver_error(error)
-            except InvalidSessionIdException as error:
-                self.handle_driver_error(error)
-            except AttributeError as error:
-                self.handle_driver_error(error)
-            except StaleElementReferenceException as error:
-                self.logger.debug(error)
-                self.logger.warning("StaleElementReferenceException\nRe-acquire element")
-                self.native = None
-                self.get_native()
-                continue
-            except WebDriverException as error:
-                self.handle_driver_error(error)
-
-        raise ShadowstepElementException(
-            msg=f"Failed to retrieve aria_role within {self.timeout=}",
-            stacktrace=traceback.format_stack()
-        )
-
-    @property
-    def accessible_name(self) -> str:
-        """Returns the ARIA Level (accessible name) of the current web element.
-
-        Returns:
-            Optional[str]: Accessible name or None if not found.
-        """
-        self.logger.debug(f"{get_current_func_name()}")
-        start_time = time.time()
-
-        while time.time() - start_time < self.timeout:
-            try:
-                self.get_driver()
-
-                current_element = self.get_native()
-
-                return current_element.accessible_name
-
-            except NoSuchDriverException as error:
-                self.handle_driver_error(error)
-            except InvalidSessionIdException as error:
-                self.handle_driver_error(error)
-            except AttributeError as error:
-                self.handle_driver_error(error)
-            except StaleElementReferenceException as error:
-                self.logger.debug(error)
-                self.logger.warning("StaleElementReferenceException\nRe-acquire element")
-                self.native = None
-                self.get_native()
-                continue
-            except WebDriverException as error:
-                self.handle_driver_error(error)
-
-        raise ShadowstepElementException(
-            msg=f"Failed to retrieve accessible_name within {self.timeout=}",
             stacktrace=traceback.format_stack()
         )
 
@@ -2281,45 +767,6 @@ class Element(ElementBase):
         self.logger.warning(f"{inspect.currentframe() if inspect.currentframe() else 'unknown'} {error}")
         self.shadowstep.reconnect()
         time.sleep(0.3)
-
-    def _mobile_gesture(self, name: str, params: dict[str, Any] | list[Any]) -> Any:
-        # https://github.com/appium/appium-uiautomator2-driver/blob/master/docs/android-mobile-gestures.md
-        return self.driver.execute_script(name, params)
-
-    def _ensure_session_alive(self) -> None:
-        self.logger.debug(f"{get_current_func_name()}")
-        try:
-            self.get_driver()
-        except NoSuchDriverException:
-            self.logger.warning("Reconnecting driver due to session issue")
-            self.shadowstep.reconnect()
-        except InvalidSessionIdException:
-            self.logger.warning("Reconnecting driver due to session issue")
-            self.shadowstep.reconnect()
-
-    def _get_first_child_class(self, tries: int = 3) -> str:
-        self.logger.debug(f"{get_current_func_name()}")
-        for _ in range(tries):
-            try:
-                parent_element = self
-                parent_class = parent_element.get_attribute("class")
-                child_elements = parent_element.get_elements(("xpath", "//*[1]"))
-                for _i, child_element in enumerate(child_elements):
-                    child_class = child_element.get_attribute("class")
-                    if parent_class != child_class:
-                        return str(child_class)
-            except StaleElementReferenceException as error:
-                self.logger.debug(error)
-                self.logger.warning("StaleElementReferenceException\nRe-acquire element")
-                self.native = None
-                self.get_native()
-                continue
-            except WebDriverException as error:
-                if "instrumentation process is not running" in str(error).lower():
-                    self.handle_driver_error(error)
-                    continue
-                raise
-        return ""  # Return empty string if no child class found
 
     def _build_xpath_attribute_condition(self, key: str, value: str) -> str:
         """Build XPath attribute condition based on value content."""
@@ -2693,25 +1140,12 @@ class Element(ElementBase):
         if isinstance(locator, Element):
             locator = locator.locator
 
-        return self._get_element(
+        return self._get_web_element(
             locator=locator,
             timeout=self.timeout,
             poll_frequency=self.poll_frequency,
             ignored_exceptions=self.ignored_exceptions
         )
-
-    def _resolve_xpath_for_attributes(self) -> str | None:
-        """Resolve XPath expression from locator for attributes fetching."""
-        try:
-            xpath_expr = self.converter.to_xpath(self.locator)[1]
-            if not xpath_expr:
-                self.logger.error(f"Failed to resolve XPath from locator: {self.locator}")
-                return None
-            self.logger.debug(f"Resolved XPath: {xpath_expr}")
-            return xpath_expr
-        except Exception as e:
-            self.logger.error(f"Exception in to_xpath: {e}")
-            return None
 
     def _check_element_bounds(self, element_location: dict, element_size: dict, screen_width: int,
                               screen_height: int) -> bool:
@@ -2752,81 +1186,47 @@ class Element(ElementBase):
             self.get_native()
             return None
         except WebDriverException as error:
-            if "instrumentation process is not running" in str(error).lower():
+            err_msg = str(error).lower()
+            if "instrumentation process is not running" in err_msg or "socket hang up" in err_msg:
                 self.handle_driver_error(error)
                 return None
             raise
 
-    def _create_touch_actions(self, x1: int, y1: int) -> ActionChains:
-        """Create touch action chain starting at given coordinates."""
-        actions = ActionChains(self.driver)
-        actions.w3c_actions = ActionBuilder(self.driver, mouse=PointerInput(interaction.POINTER_TOUCH, "touch"))
-        actions.w3c_actions.pointer_action.move_to_location(x1, y1)
-        actions.w3c_actions.pointer_action.pointer_down()
-        return actions
-
-    def _execute_tap_and_move_to_coordinates(self, actions: ActionChains, x: int, y: int) -> Element:
-        """Execute tap and move to specific coordinates."""
-        actions.w3c_actions.pointer_action.move_to_location(x, y)
-        actions.w3c_actions.pointer_action.pointer_up()
-        actions.perform()
-        return self
-
-    def _execute_tap_and_move_to_element(self, actions: ActionChains,
-                                         locator: tuple[str, str] | WebElement | dict[str, Any] | str) -> Element:
-        """Execute tap and move to another element."""
-        target_element = self._get_element(locator=locator)
-        x, y = self.get_center(target_element)
-        return self._execute_tap_and_move_to_coordinates(actions, x, y)
-
-    def _execute_tap_and_move_by_direction(self, actions: ActionChains, x1: int, y1: int, direction: int,
-                                           distance: int) -> Element:
-        """Execute tap and move by direction vector."""
-        width, height = self.shadowstep.terminal.get_screen_resolution()
-        x2, y2 = find_coordinates_by_vector(width=width, height=height, direction=direction, distance=distance,
-                                            start_x=x1, start_y=y1)
-        return self._execute_tap_and_move_to_coordinates(actions, x2, y2)
-
-    def _perform_tap_and_move_action(self,
-                                     locator: tuple[str, str] | WebElement | Element | dict[str, Any] | str | None,
-                                     x: int | None, y: int | None, direction: int | None,
-                                     distance: int | None) -> Element | None:
-        """Perform tap and move action with error handling."""
+    def _ensure_session_alive(self) -> None:
+        self.logger.debug(f"{get_current_func_name()}")
         try:
             self.get_driver()
-            if isinstance(locator, Element):
-                locator = locator.locator
+        except NoSuchDriverException:
+            self.logger.warning("Reconnecting driver due to session issue")
+            self.shadowstep.reconnect()
+        except InvalidSessionIdException:
+            self.logger.warning("Reconnecting driver due to session issue")
+            self.shadowstep.reconnect()
 
-            x1, y1 = self.get_center()
-            actions = self._create_touch_actions(x1, y1)
-
-            # Direct coordinate specification
-            if x is not None and y is not None:
-                return self._execute_tap_and_move_to_coordinates(actions, x, y)
-
-            # Move to another element
-            if locator is not None:
-                return self._execute_tap_and_move_to_element(actions, locator)
-
-            # Move by direction vector
-            if direction is not None and distance is not None:
-                return self._execute_tap_and_move_by_direction(actions, x1, y1, direction, distance)
-
-            return None
-        except (NoSuchDriverException, InvalidSessionIdException, AttributeError) as error:
-            self.handle_driver_error(error)
-            return None
-        except StaleElementReferenceException as error:
-            self.logger.debug(error)
-            self.logger.warning("StaleElementReferenceException\nRe-acquire element")
-            self.native = None
-            self.get_native()
-            return None
-        except WebDriverException as error:
-            if "instrumentation process is not running" in str(error).lower():
-                self.handle_driver_error(error)
-                return None
-            raise
+    def _get_first_child_class(self, tries: int = 3) -> str:
+        self.logger.debug(f"{get_current_func_name()}")
+        for _ in range(tries):
+            try:
+                parent_element = self
+                parent_class = parent_element.get_attribute("class")
+                child_elements = parent_element.get_elements(("xpath", "//*[1]"))
+                for _i, child_element in enumerate(child_elements):
+                    child_class = child_element.get_attribute("class")
+                    if parent_class != child_class:
+                        return str(child_class)
+            except StaleElementReferenceException as error:
+                self.logger.debug(error)
+                self.logger.warning("StaleElementReferenceException\nRe-acquire element")
+                self.native = None
+                self.get_native()
+                continue
+            except WebDriverException as error:
+                err_msg = str(error).lower()
+                if "instrumentation process is not running" in err_msg or "socket hang up" in err_msg:
+                    self.handle_driver_error(error)
+                    continue
+                raise
+        return ""  # Return empty string if no child class found
 
 
 """
