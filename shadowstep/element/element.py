@@ -816,7 +816,7 @@ class Element(ElementBase):
         start_time = time.time()
         while time.time() - start_time < self.timeout:
             try:
-                resolved_locator = self.remove_null_value(self.locator)
+                resolved_locator = self.converter.to_xpath(self.remove_null_value(self.locator))
                 if not resolved_locator:
                     self.logger.error("Resolved locator is None or invalid")
                     if return_bool:
@@ -888,7 +888,7 @@ class Element(ElementBase):
 
         while time.time() - start_time < self.timeout:
             try:
-                resolved_locator = self.remove_null_value(self.locator)
+                resolved_locator = self.converter.to_xpath(self.remove_null_value(self.locator))
                 if not resolved_locator:
                     self.logger.error("Resolved locator is None or invalid")
                     return False if return_bool else self
@@ -943,7 +943,7 @@ class Element(ElementBase):
 
         while time.time() - start_time < self.timeout:
             try:
-                resolved_locator = self.remove_null_value(self.locator)
+                resolved_locator = self.converter.to_xpath(self.remove_null_value(self.locator))
                 if not resolved_locator:
                     self.logger.error("Resolved locator is None or invalid")
                     return False if return_bool else self
@@ -997,7 +997,7 @@ class Element(ElementBase):
 
         while time.time() - start_time < self.timeout:
             try:
-                resolved_locator = self.remove_null_value(self.locator)
+                resolved_locator = self.converter.to_xpath(self.remove_null_value(self.locator))
                 if not resolved_locator:
                     return False if return_bool else self
 
@@ -1051,7 +1051,7 @@ class Element(ElementBase):
 
         while time.time() - start_time < self.timeout:
             try:
-                resolved_locator = self.remove_null_value(self.locator)
+                resolved_locator = self.converter.to_xpath(self.remove_null_value(self.locator))
                 if not resolved_locator:
                     return False if return_bool else self
 
@@ -1105,7 +1105,7 @@ class Element(ElementBase):
 
         while time.time() - start_time < self.timeout:
             try:
-                resolved_locator = self.remove_null_value(self.locator)
+                resolved_locator = self.converter.to_xpath(self.remove_null_value(self.locator))
                 if not resolved_locator:
                     self.logger.error("Resolved locator is None or invalid")
                     return False if return_bool else self
