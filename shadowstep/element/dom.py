@@ -67,7 +67,9 @@ class ElementDOM:
             resolved_locator = ("xpath", f"{parent_locator[1]}{inner_path}")
         elif isinstance(parent_locator, dict):
             child_locator = self.converter.to_dict(child_locator)
-            resolved_locator = parent_locator[ShadowstepDictAttribute.CHILD_SELECTOR] = child_locator
+            resolved_child_locator = {ShadowstepDictAttribute.CHILD_SELECTOR.value: child_locator}
+            parent_locator.update(resolved_child_locator)
+            resolved_locator = parent_locator
 
         elif isinstance(parent_locator, UiSelector):
             child_locator = self.converter.to_uiselector(child_locator)
