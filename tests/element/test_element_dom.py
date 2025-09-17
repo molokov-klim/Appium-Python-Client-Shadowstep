@@ -1,7 +1,6 @@
 import time
 
 import pytest
-from icecream import ic  # noqa: F401
 
 from shadowstep.element.element import Element
 from shadowstep.locator import UiSelector
