@@ -119,7 +119,7 @@ class DictConverter:
         for hierarchical_key, hierarchical_value in hierarchical_parts:
             if isinstance(hierarchical_value, dict):
                 nested_xpath = self._dict_to_xpath_recursive(
-                    hierarchical_value, base_xpath="*"
+                    hierarchical_value
                 )
                 hierarchical_attr = ShadowstepDictAttribute(hierarchical_key)
                 xpath += get_xpath_for_hierarchical_attribute(

@@ -55,7 +55,7 @@ def get_xpath_for_hierarchical_attribute(attr: ShadowstepDictAttribute, nested_x
         XPath expression with hierarchy
     """
     if attr == ShadowstepDictAttribute.CHILD_SELECTOR:
-        return f"/{nested_xpath.lstrip('/')}"
+        return nested_xpath
     if attr == ShadowstepDictAttribute.FROM_PARENT:
         return f"/..//{nested_xpath.lstrip('/')}"
     if attr == ShadowstepDictAttribute.SIBLING:
