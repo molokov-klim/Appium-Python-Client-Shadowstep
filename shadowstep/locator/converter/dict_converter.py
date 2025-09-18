@@ -48,7 +48,7 @@ class DictConverter:
             ShadowstepConversionError: If conversion fails
         """
         try:
-            return self._dict_to_xpath_recursive(selector_dict, base_xpath="//*")
+            return self._dict_to_xpath_recursive(selector_dict)
         except Exception as e:
             raise ShadowstepConversionError(f"Failed to convert dict to XPath: {e}") from e
 
@@ -97,7 +97,7 @@ class DictConverter:
                 attr = ShadowstepDictAttribute(key)
             except ValueError:
                 # fallback: ключа нет в ShadowstepDictAttribute → берём как есть
-                xpath_parts.append(f'@{key}="{value}"')
+                xpath_parts.append(f"@{key}='{value}'")
                 continue
 
             if attr == ShadowstepDictAttribute.INSTANCE:
@@ -106,7 +106,7 @@ class DictConverter:
                 xpath_parts.append(DICT_TO_XPATH_MAPPING[attr](value))
             else:
                 # fallback: есть Enum, но нет в DICT_TO_XPATH_MAPPING → всё равно юзаем raw
-                xpath_parts.append(f'@{attr.value}="{value}"')
+                xpath_parts.append(f"@{attr.value}='{value}'")
 
         # собираем XPath
         xpath = base_xpath

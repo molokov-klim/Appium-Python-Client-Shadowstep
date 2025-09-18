@@ -34,38 +34,38 @@ def _handle_from_parent(parent_xpath: str) -> str:
 
 UI_TO_XPATH: dict[UiAttribute, Callable[[Any], str]] = {
     # --- text-based ---
-    UiAttribute.TEXT: lambda v: f'[{XPathAttribute.TEXT.value}"{v}"]',
-    UiAttribute.TEXT_CONTAINS: lambda v: f'[{XPathAttribute.TEXT_CONTAINS.value}"{v}")]',
-    UiAttribute.TEXT_STARTS_WITH: lambda v: f'[{XPathAttribute.TEXT_STARTS_WITH.value}"{v}")]',
+    UiAttribute.TEXT: lambda v: f"[{XPathAttribute.TEXT.value}'{v}']",
+    UiAttribute.TEXT_CONTAINS: lambda v: f"[{XPathAttribute.TEXT_CONTAINS.value}'{v}')]",
+    UiAttribute.TEXT_STARTS_WITH: lambda v: f"[{XPathAttribute.TEXT_STARTS_WITH.value}'{v}')]",
     UiAttribute.TEXT_MATCHES: lambda v: f'[{XPathAttribute.TEXT_MATCHES.value}"{v}")]',  # Appium >= 2
 
     # --- description ---
-    UiAttribute.DESCRIPTION: lambda v: f'[{XPathAttribute.DESCRIPTION.value}"{v}"]',
-    UiAttribute.DESCRIPTION_CONTAINS: lambda v: f'[{XPathAttribute.DESCRIPTION_CONTAINS.value}"{v}")]',
-    UiAttribute.DESCRIPTION_STARTS_WITH: lambda v: f'[{XPathAttribute.DESCRIPTION_STARTS_WITH.value}"{v}")]',
-    UiAttribute.DESCRIPTION_MATCHES: lambda v: f'[{XPathAttribute.DESCRIPTION_MATCHES.value}"{v}")]',
+    UiAttribute.DESCRIPTION: lambda v: f"[{XPathAttribute.DESCRIPTION.value}'{v}']",
+    UiAttribute.DESCRIPTION_CONTAINS: lambda v: f"[{XPathAttribute.DESCRIPTION_CONTAINS.value}'{v}')]",
+    UiAttribute.DESCRIPTION_STARTS_WITH: lambda v: f"[{XPathAttribute.DESCRIPTION_STARTS_WITH.value}'{v}')]",
+    UiAttribute.DESCRIPTION_MATCHES: lambda v: f"[{XPathAttribute.DESCRIPTION_MATCHES.value}'{v}')]",
 
     # --- resource id / package ---
-    UiAttribute.RESOURCE_ID: lambda v: f'[{XPathAttribute.RESOURCE_ID.value}"{v}"]',
-    UiAttribute.RESOURCE_ID_MATCHES: lambda v: f'[{XPathAttribute.RESOURCE_ID_MATCHES.value}"{v}")]',
-    UiAttribute.PACKAGE_NAME: lambda v: f'[{XPathAttribute.PACKAGE_NAME.value}"{v}"]',
-    UiAttribute.PACKAGE_NAME_MATCHES: lambda v: f'[{XPathAttribute.PACKAGE_NAME_MATCHES.value}"{v}")]',
+    UiAttribute.RESOURCE_ID: lambda v: f"[{XPathAttribute.RESOURCE_ID.value}'{v}']",
+    UiAttribute.RESOURCE_ID_MATCHES: lambda v: f"[{XPathAttribute.RESOURCE_ID_MATCHES.value}'{v}')]",
+    UiAttribute.PACKAGE_NAME: lambda v: f"[{XPathAttribute.PACKAGE_NAME.value}'{v}']",
+    UiAttribute.PACKAGE_NAME_MATCHES: lambda v: f"[{XPathAttribute.PACKAGE_NAME_MATCHES.value}'{v}')]",
 
     # --- class ---
-    UiAttribute.CLASS_NAME: lambda v: f'[{XPathAttribute.CLASS_NAME.value}"{v}"]',
-    UiAttribute.CLASS_NAME_MATCHES: lambda v: f'[{XPathAttribute.CLASS_NAME_MATCHES.value}"{v}")]',
+    UiAttribute.CLASS_NAME: lambda v: f"[{XPathAttribute.CLASS_NAME.value}'{v}']",
+    UiAttribute.CLASS_NAME_MATCHES: lambda v: f"[{XPathAttribute.CLASS_NAME_MATCHES.value}'{v}')]",
 
     # --- bool props ---
-    UiAttribute.CHECKABLE: lambda v: f'[{XPathAttribute.CHECKABLE.value}"{str(v).lower()}"]',
-    UiAttribute.CHECKED: lambda v: f'[{XPathAttribute.CHECKED.value}"{str(v).lower()}"]',
-    UiAttribute.CLICKABLE: lambda v: f'[{XPathAttribute.CLICKABLE.value}"{str(v).lower()}"]',
-    UiAttribute.ENABLED: lambda v: f'[{XPathAttribute.ENABLED.value}"{str(v).lower()}"]',
-    UiAttribute.FOCUSABLE: lambda v: f'[{XPathAttribute.FOCUSABLE.value}"{str(v).lower()}"]',
-    UiAttribute.FOCUSED: lambda v: f'[{XPathAttribute.FOCUSED.value}"{str(v).lower()}"]',
-    UiAttribute.LONG_CLICKABLE: lambda v: f'[{XPathAttribute.LONG_CLICKABLE.value}"{str(v).lower()}"]',
-    UiAttribute.SCROLLABLE: lambda v: f'[{XPathAttribute.SCROLLABLE.value}"{str(v).lower()}"]',
-    UiAttribute.SELECTED: lambda v: f'[{XPathAttribute.SELECTED.value}"{str(v).lower()}"]',
-    UiAttribute.PASSWORD: lambda v: f'[{XPathAttribute.PASSWORD.value}"{str(v).lower()}"]',
+    UiAttribute.CHECKABLE: lambda v: f"[{XPathAttribute.CHECKABLE.value}'{str(v).lower()}']",
+    UiAttribute.CHECKED: lambda v: f"[{XPathAttribute.CHECKED.value}'{str(v).lower()}']",
+    UiAttribute.CLICKABLE: lambda v: f"[{XPathAttribute.CLICKABLE.value}'{str(v).lower()}']",
+    UiAttribute.ENABLED: lambda v: f"[{XPathAttribute.ENABLED.value}'{str(v).lower()}']",
+    UiAttribute.FOCUSABLE: lambda v: f"[{XPathAttribute.FOCUSABLE.value}'{str(v).lower()}']",
+    UiAttribute.FOCUSED: lambda v: f"[{XPathAttribute.FOCUSED.value}'{str(v).lower()}']",
+    UiAttribute.LONG_CLICKABLE: lambda v: f"[{XPathAttribute.LONG_CLICKABLE.value}'{str(v).lower()}']",
+    UiAttribute.SCROLLABLE: lambda v: f"[{XPathAttribute.SCROLLABLE.value}'{str(v).lower()}']",
+    UiAttribute.SELECTED: lambda v: f"[{XPathAttribute.SELECTED.value}'{str(v).lower()}']",
+    UiAttribute.PASSWORD: lambda v: f"[{XPathAttribute.PASSWORD.value}'{str(v).lower()}']",
 
     # --- numeric ---
     UiAttribute.INDEX: lambda v: f"[{XPathAttribute.INDEX.value}{int(v) + 1}]",
