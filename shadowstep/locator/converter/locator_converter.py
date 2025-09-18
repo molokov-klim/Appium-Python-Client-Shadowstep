@@ -42,7 +42,7 @@ class LocatorConverter:
         self.ui_selector_converter = UiSelectorConverter()
         self.xpath_converter = XPathConverter()
 
-    def to_dict(self, selector: tuple[str, str] | dict[str, Any] | Element | UiSelector) -> dict[str, Any]:
+    def to_dict(self, selector: tuple[str, str] | dict[str, Any] | Element | UiSelector | str) -> dict[str, Any]:
         """
         Convert any selector format to dictionary format.
         

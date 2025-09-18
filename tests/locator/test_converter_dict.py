@@ -20,42 +20,41 @@ class TestDictConverter:
         "selector_dict, expected_xpath",  # noqa: PT006
         [
             # Basic attributes
-            ({"text": "OK"}, '//*[@text="OK"]'),
-            ({"class": "android.widget.Button"}, '//*[@class="android.widget.Button"]'),
-            ({"resource-id": "com.example:id/button"}, '//*[@resource-id="com.example:id/button"]'),
-            ({"content-desc": "Submit"}, '//*[@content-desc="Submit"]'),
+            ({"text": "OK"}, "//*[@text='OK']"),
+            ({"class": "android.widget.Button"}, "//*[@class='android.widget.Button']"),
+            ({"resource-id": "com.example:id/button"}, "//*[@resource-id='com.example:id/button']"),
+            ({"content-desc": "Submit"}, "//*[@content-desc='Submit']"),
             
             # Boolean attributes
-            ({"clickable": True}, '//*[@clickable="true"]'),
-            ({"enabled": False}, '//*[@enabled="false"]'),
-            ({"checked": True}, '//*[@checked="true"]'),
+            ({"clickable": True}, "//*[@clickable='true']"),
+            ({"enabled": False}, "//*[@enabled='false']"),
+            ({"checked": True}, "//*[@checked='true']"),
             
             # Numeric attributes
             ({"index": 2}, "//*[@index=2]"),
             ({"instance": 1}, "//*[2]"),
             
             # Text functions
-            ({"textContains": "Hello"}, '//*[contains(@text, "Hello")]'),
-            ({"textStartsWith": "Start"}, '//*[starts-with(@text, "Start")]'),
-            ({"textMatches": ".*test.*"}, '//*[matches(@text, ".*test.*")]'),
+            ({"textContains": "Hello"}, "//*[contains(@text, 'Hello')]"),
+            ({"textStartsWith": "Start"}, "//*[starts-with(@text, 'Start')]"),
+            ({"textMatches": ".*test.*"}, "//*[matches(@text, '.*test.*')]"),
             
             # Description functions
-            ({"content-descContains": "icon"}, '//*[contains(@content-desc, "icon")]'),
-            ({"content-descStartsWith": "prefix"}, '//*[starts-with(@content-desc, "prefix")]'),
-            ({"content-descMatches": ".*icon.*"}, '//*[matches(@content-desc, ".*icon.*")]'),
+            ({"content-descContains": "icon"}, "//*[contains(@content-desc, 'icon')]"),
+            ({"content-descStartsWith": "prefix"}, "//*[starts-with(@content-desc, 'prefix')]"),
+            ({"content-descMatches": ".*icon.*"}, "//*[matches(@content-desc, '.*icon.*')]"),
             
             # Resource ID and Package functions
-            ({"resource-idMatches": ".*button.*"}, '//*[matches(@resource-id, ".*button.*")]'),
-            ({"package": "com.example.app"}, '//*[@package="com.example.app"]'),
-            ({"packageMatches": "com.example.*"}, '//*[matches(@package, "com.example.*")]'),
+            ({"resource-idMatches": ".*button.*"}, "//*[matches(@resource-id, '.*button.*')]"),
+            ({"package": "com.example.app"}, "//*[@package='com.example.app']"),
+            ({"packageMatches": "com.example.*"}, "//*[matches(@package, 'com.example.*')]"),
             
             # Class functions
-            ({"classMatches": ".*Button"}, '//*[matches(@class, ".*Button")]'),
+            ({"classMatches": ".*Button"}, "//*[matches(@class, '.*Button')]"),
             
             # Multiple attributes
-            ({"text": "OK", "clickable": True}, '//*[@text="OK"][@clickable="true"]'),
-            ({"class": "Button", "enabled": False, "index": 1},
-             '//*[@class="Button"][@enabled="false"][@index=1]'),
+            ({"text": 'OK', "clickable": True}, "//*[@text='OK'][@clickable='true']"),  # noqa
+            ({"class": 'Button', "enabled": False, "index": 1}, "//*[@class='Button'][@enabled='false'][@index=1]"),  # noqa
         ]
     )
     def test_dict_to_xpath_basic_attributes(self, selector_dict: dict[str, Any], expected_xpath: str):
@@ -120,52 +119,57 @@ class TestDictConverter:
         "selector_dict, expected_xpath",  # noqa: PT006
         [
             # Child selector
-            ({
-                "class": "android.widget.LinearLayout",
-                "childSelector": {
-                    "text": "Item"
-                }
-            }, '//*[@class="android.widget.LinearLayout"]/*[@text="Item"]'),
-            
+            (
+                    {
+                        "class": "android.widget.LinearLayout",
+                        "childSelector": {"text": "Item"}
+                    },
+                    "//*[@class='android.widget.LinearLayout']//*[@text='Item']",
+            ),
+
             # From parent selector
-            ({
-                "text": "Child",
-                "fromParent": {
-                    "class": "android.widget.FrameLayout"
-                }
-            }, '//*[@text="Child"]/..//*[@class="android.widget.FrameLayout"]'),
-            
+            (
+                    {
+                        "text": "Child",
+                        "fromParent": {"class": "android.widget.FrameLayout"}
+                    },
+                    "//*[@text='Child']/..//*[@class='android.widget.FrameLayout']",
+            ),
+
             # Sibling selector
-            ({
-                "text": "First",
-                "sibling": {
-                    "text": "Second"
-                }
-            }, '//*[@text="First"]/following-sibling::*[@text="Second"]'),
-            
+            (
+                    {
+                        "text": "First",
+                        "sibling": {"text": "Second"}
+                    },
+                    "//*[@text='First']/following-sibling::*[@text='Second']",
+            ),
+
             # Nested hierarchy
-            ({
-                "class": "Container",
-                "childSelector": {
-                    "class": "Row",
-                    "childSelector": {
-                        "text": "Cell"
-                    }
-                }
-            }, '//*[@class="Container"]/*[@class="Row"]/*[@text="Cell"]'),
-            
+            (
+                    {
+                        "class": "Container",
+                        "childSelector": {
+                            "class": "Row",
+                            "childSelector": {"text": "Cell"}
+                        }
+                    },
+                    "//*[@class='Container']//*[@class='Row']//*[@text='Cell']",
+            ),
+
             # Complex hierarchy with multiple attributes
-            ({
-                "text": "Settings",
-                "clickable": True,
-                "fromParent": {
-                    "class": "android.widget.LinearLayout",
-                    "enabled": True,
-                    "childSelector": {
-                        "text": "Menu"
-                    }
-                }
-            }, '//*[@text="Settings"][@clickable="true"]/..//*[@class="android.widget.LinearLayout"][@enabled="true"]/*[@text="Menu"]'),
+            (
+                    {
+                        "text": "Settings",
+                        "clickable": True,
+                        "fromParent": {
+                            "class": "android.widget.LinearLayout",
+                            "enabled": True,
+                            "childSelector": {"text": "Menu"}
+                        }
+                    },
+                    "//*[@text='Settings'][@clickable='true']/..//*[@class='android.widget.LinearLayout'][@enabled='true']//*[@text='Menu']",
+            ),
         ]
     )
     def test_dict_to_xpath_hierarchical(self, selector_dict: dict[str, Any], expected_xpath: str):
@@ -337,11 +341,13 @@ class TestDictConverterComplex:
         }
 
         result = self.converter.dict_to_xpath(deep_selector)
-        expected = ('//*[@class="android.widget.FrameLayout"]'
-                    '/*[@class="android.widget.LinearLayout"][@index=0]'
-                    '/*[@class="android.widget.GridLayout"]'
-                    '/*[@class="android.widget.Button"][@clickable="true"]'
-                    '/*[@class="android.widget.TextView"][@text="Deep Text"]')
+        expected = (
+            "//*[@class='android.widget.FrameLayout']"
+            "//*[@class='android.widget.LinearLayout'][@index=0]"
+            "//*[@class='android.widget.GridLayout']"
+            "//*[@class='android.widget.Button'][@clickable='true']"
+            "//*[@class='android.widget.TextView'][@text='Deep Text']"
+        )
 
         logger.info(f"Deep nested XPath result: {result}")
         assert result == expected  # noqa: S101

@@ -274,6 +274,7 @@ class ElementProperties:
     def is_contains(self,
                     locator: tuple | dict[str, Any] | Element | UiSelector,
                     ) -> bool:
+        from shadowstep.element.element import Element
         start_time = time.time()
         while time.time() - start_time < self.element.timeout:
             try:

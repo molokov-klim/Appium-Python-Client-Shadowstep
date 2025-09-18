@@ -515,7 +515,7 @@ class Element(ElementBase):
                 raise
 
         raise ShadowstepElementException(
-            msg=f"Failed to {inspect.currentframe() if inspect.currentframe() else 'unknown'} within {self.timeout=}",
+            msg=f"Failed to {get_current_func_name()} within {self.timeout=}",
             stacktrace=traceback.format_stack()
         )
 
@@ -1139,7 +1139,6 @@ class Element(ElementBase):
         locator = self.locator
         if isinstance(locator, Element):
             locator = locator.locator
-
         return self._get_web_element(
             locator=locator,
             timeout=self.timeout,

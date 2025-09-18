@@ -1,10 +1,3 @@
-"""
-Test cases for the shadowstep.decorators module.
-
-This module contains comprehensive tests for all decorators including
-fail_safe, retry, time_it, step_info, current_page, and log_info.
-"""
-
 import time
 from typing import Any
 from unittest.mock import Mock, patch
@@ -20,6 +13,10 @@ from shadowstep.decorators.decorators import (
     step_info,
     time_it,
 )
+
+"""
+uv run pytest -svl --log-cli-level INFO --tb=short --setup-show  tests/decorators/test_decorators.py
+"""
 
 
 class MockClass:

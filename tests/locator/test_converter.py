@@ -55,7 +55,7 @@ class TestUnifiedLocatorConverter:
         selector_dict: dict[str, Any] = {"text": "OK"}
         result = self.converter.to_xpath(selector_dict)
         assert result[0] == "xpath"  # noqa: S101
-        assert 'text="OK"' in result[1]  # noqa: S101
+        assert "text='OK'" in result[1]  # noqa: S101
 
     def test_to_xpath_from_xpath_tuple(self):
         """Test converting XPath tuple to XPath tuple (should return unchanged)."""
@@ -75,7 +75,7 @@ class TestUnifiedLocatorConverter:
         ui_string = 'new UiSelector().text("OK");'
         result = self.converter.to_xpath(ui_string)
         assert result[0] == "xpath"  # noqa: S101
-        assert 'text="OK"' in result[1]  # noqa: S101
+        assert "text='OK'" in result[1]  # noqa: S101
 
     def test_to_uiselector_from_dict(self):
         """Test converting dict to UiSelector string."""
@@ -110,8 +110,8 @@ class TestUnifiedLocatorConverter:
         
         # Dict to XPath
         xpath = self.converter.dict_to_xpath(selector_dict)
-        assert 'text="OK"' in xpath  # noqa: S101
-        assert 'clickable="true"' in xpath  # noqa: S101
+        assert "text='OK'" in xpath  # noqa: S101
+        assert "clickable='true'" in xpath  # noqa: S101
         
         # Dict to UiSelector
         ui_selector = self.converter.dict_to_uiselector(selector_dict)
@@ -135,8 +135,8 @@ class TestUnifiedLocatorConverter:
         
         # UiSelector to XPath
         xpath_from_ui = self.converter.uiselector_to_xpath(ui_selector)
-        assert 'text="OK"' in xpath_from_ui  # noqa: S101
-        assert 'clickable="true"' in xpath_from_ui  # noqa: S101
+        assert "text='OK'" in xpath_from_ui  # noqa: S101
+        assert "clickable='true'" in xpath_from_ui  # noqa: S101
 
     def test_validate_selector_valid_dict(self):
         """Test validation of valid dictionary selector."""

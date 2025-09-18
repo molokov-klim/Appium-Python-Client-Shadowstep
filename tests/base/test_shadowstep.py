@@ -1,6 +1,10 @@
 from shadowstep.element.element import Element
 from shadowstep.shadowstep import Shadowstep
 
+"""
+uv run pytest -svl --log-cli-level INFO --tb=short --setup-show  tests/base/test_shadowstep.py
+"""
+
 
 class TestShadowstep:
     """

@@ -16,37 +16,37 @@ class TestUiSelectorConverter:
         "method_name, arg, expected_xpath_part",  # noqa: PT006
         [
             # --- text-based ---
-            (UiAttribute.TEXT, "Привет", '@text="Привет"'),
-            (UiAttribute.TEXT_CONTAINS, "Hello", 'contains(@text, "Hello")'),
-            (UiAttribute.TEXT_STARTS_WITH, "Оплат", 'starts-with(@text, "Оплат")'),
-            (UiAttribute.TEXT_MATCHES, ".*Тест.*", 'matches(@text, ".*Тест.*")'),
+            (UiAttribute.TEXT, "Привет", "@text='Привет'"),
+            (UiAttribute.TEXT_CONTAINS, "Hello", "contains(@text, 'Hello')"),
+            (UiAttribute.TEXT_STARTS_WITH, "Оплат", "starts-with(@text, 'Оплат')"),
+            (UiAttribute.TEXT_MATCHES, ".*Тест.*", "matches(@text, '.*Тест.*')"),
 
             # --- description ---
-            (UiAttribute.DESCRIPTION, "desc", '@content-desc="desc"'),
-            (UiAttribute.DESCRIPTION_CONTAINS, "part", 'contains(@content-desc, "part")'),
-            (UiAttribute.DESCRIPTION_STARTS_WITH, "start", 'starts-with(@content-desc, "start")'),
-            (UiAttribute.DESCRIPTION_MATCHES, "regex.*", 'matches(@content-desc, "regex.*")'),
+            (UiAttribute.DESCRIPTION, "desc", "@content-desc='desc'"),
+            (UiAttribute.DESCRIPTION_CONTAINS, "part", "contains(@content-desc, 'part')"),
+            (UiAttribute.DESCRIPTION_STARTS_WITH, "start", "starts-with(@content-desc, 'start')"),
+            (UiAttribute.DESCRIPTION_MATCHES, "regex.*", "matches(@content-desc, 'regex.*')"),
 
             # --- resource id / package ---
-            (UiAttribute.RESOURCE_ID, "resId", '@resource-id="resId"'),
-            (UiAttribute.RESOURCE_ID_MATCHES, "res.*", 'matches(@resource-id, "res.*")'),
-            (UiAttribute.PACKAGE_NAME, "pkg.name", '@package="pkg.name"'),
-            (UiAttribute.PACKAGE_NAME_MATCHES, "pkg.name", 'matches(@package, "pkg.name")'),
+            (UiAttribute.RESOURCE_ID, "resId", "@resource-id='resId'"),
+            (UiAttribute.RESOURCE_ID_MATCHES, "res.*", "matches(@resource-id, 'res.*')"),
+            (UiAttribute.PACKAGE_NAME, "pkg.name", "@package='pkg.name'"),
+            (UiAttribute.PACKAGE_NAME_MATCHES, "pkg.name", "matches(@package, 'pkg.name')"),
 
             # --- class ---
-            (UiAttribute.CLASS_NAME, "android.widget.Button", '@class="android.widget.Button"'),
-            (UiAttribute.CLASS_NAME_MATCHES, ".*Button", 'matches(@class, ".*Button")'),
+            (UiAttribute.CLASS_NAME, "android.widget.Button", "@class='android.widget.Button'"),
+            (UiAttribute.CLASS_NAME_MATCHES, ".*Button", "matches(@class, '.*Button')"),
 
             # --- bool props ---
-            (UiAttribute.CHECKABLE, True, '@checkable="true"'),
-            (UiAttribute.CHECKED, False, '@checked="false"'),
-            (UiAttribute.CLICKABLE, True, '@clickable="true"'),
-            (UiAttribute.ENABLED, False, '@enabled="false"'),
-            (UiAttribute.FOCUSABLE, True, '@focusable="true"'),
-            (UiAttribute.FOCUSED, False, '@focused="false"'),
-            (UiAttribute.LONG_CLICKABLE, True, '@long-clickable="true"'),
-            (UiAttribute.SCROLLABLE, False, '@scrollable="false"'),
-            (UiAttribute.SELECTED, True, '@selected="true"'),
+            (UiAttribute.CHECKABLE, True, "@checkable='true'"),
+            (UiAttribute.CHECKED, False, "@checked='false'"),
+            (UiAttribute.CLICKABLE, True, "@clickable='true'"),
+            (UiAttribute.ENABLED, False, "@enabled='false'"),
+            (UiAttribute.FOCUSABLE, True, "@focusable='true'"),
+            (UiAttribute.FOCUSED, False, "@focused='false'"),
+            (UiAttribute.LONG_CLICKABLE, True, "@long-clickable='true'"),
+            (UiAttribute.SCROLLABLE, False, "@scrollable='false'"),
+            (UiAttribute.SELECTED, True, "@selected='true'"),
 
             # --- numeric ---
             (UiAttribute.INDEX, 2, "position()=3"),
@@ -66,9 +66,9 @@ class TestUiSelectorConverter:
         logger.info(f"{xpath=}")
 
         method_in_dict = parsed["methods"][0]
-        assert method_in_dict["name"] == method_name  # noqa: S101  # noqa: S101
-        assert method_in_dict["args"][0] == arg  # noqa: S101  # noqa: S101
-        assert expected_xpath_part in xpath  # noqa: S101  # noqa: S101
+        assert method_in_dict["name"] == method_name  # noqa: S101
+        assert method_in_dict["args"][0] == arg  # noqa: S101
+        assert expected_xpath_part in xpath  # noqa: S101
 
     @pytest.mark.parametrize(
         "selector_str, expected_xpath",  # noqa: PT006
@@ -76,107 +76,107 @@ class TestUiSelectorConverter:
             (
                     'new UiSelector().textStartsWith("Оплат").className("android.widget.Button")'
                     '.childSelector(new UiSelector().className("android.widget.ImageView"));',
-                    '//*[starts-with(@text, "Оплат")][@class="android.widget.Button"]/*[@class="android.widget.ImageView"]'
+                    "//*[starts-with(@text,'Оплат')][@class='android.widget.Button']/*[@class='android.widget.ImageView']"
             ),
             (
                     'new UiSelector().className("android.widget.EditText").focused(true).instance(0);',
-                    '//*[@class="android.widget.EditText"][@focused="true"][1]'
+                    "//*[@class='android.widget.EditText'][@focused='true'][1]"
             ),
             (
                     'new UiSelector().packageName("ru.figma.app.debug").resourceIdMatches(".*:id/btn.*");',
-                    '//*[@package="ru.figma.app.debug"][matches(@resource-id, ".*:id/btn.*")]'
+                    "//*[@package='ru.figma.app.debug'][matches(@resource-id,'.*:id/btn.*')]"
             ),
             (
                     'new UiSelector().descriptionContains("Карта").clickable(true);',
-                    '//*[contains(@content-desc,"Карта")][@clickable="true"]'
+                    "//*[contains(@content-desc,'Карта')][@clickable='true']"
             ),
             (
                     'new UiSelector().className("androidx.appcompat.app.ActionBar$Tab").index(2);',
-                    '//*[@class="androidx.appcompat.app.ActionBar$Tab"][position()=3]'
+                    "//*[@class='androidx.appcompat.app.ActionBar$Tab'][position()=3]"
             ),
             (
                     'new UiSelector().className("android.widget.RadioButton").fromParent(new UiSelector().resourceId("ru.figma.app.debug:id/paymentMethods"));',
-                    '//*[@class="android.widget.RadioButton"]/..//*[@resource-id="ru.figma.app.debug:id/paymentMethods"]'
+                    "//*[@class='android.widget.RadioButton']/..//*[@resource-id='ru.figma.app.debug:id/paymentMethods']"
             ),
             (
                     'new UiSelector().className("android.widget.EditText").textStartsWith("+7").enabled(true);',
-                    '//*[@class="android.widget.EditText"][starts-with(@text,"+7")][@enabled="true"]'
+                    "//*[@class='android.widget.EditText'][starts-with(@text,'+7')][@enabled='true']"
             ),
             (
                     'new UiSelector().descriptionMatches("[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}");',
-                    '//*[matches(@content-desc,"[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}")]'
+                    "//*[matches(@content-desc,'[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}')]"
             ),
             (
                     'new UiSelector().scrollable(true).childSelector(new UiSelector().text("История"));',
-                    '//*[@scrollable="true"]/*[@text="История"]'
+                    "//*[@scrollable='true']/*[@text='История']"
             ),
             (
                     'new UiSelector().className("android.widget.CheckBox").checkable(true).checked(false).instance(2);',
-                    '//*[@class="android.widget.CheckBox"][@checkable="true"][@checked="false"][3]'
+                    "//*[@class='android.widget.CheckBox'][@checkable='true'][@checked='false'][3]"
             ),
             (
                     'new UiSelector().textStartsWith("Оплат").textContains("Карт").enabled(true);',
-                    '//*[starts-with(@text,"Оплат")][contains(@text,"Карт")][@enabled="true"]'
+                    "//*[starts-with(@text,'Оплат')][contains(@text,'Карт')][@enabled='true']"
             ),
             (
                     'new UiSelector().classNameMatches("android\\.widget\\..*Button").instance(1);',
-                    '//*[matches(@class,"android\\.widget\\..*Button")][2]'
+                    "//*[matches(@class,'android\\.widget\\..*Button')][2]"
             ),
             (
                     'new UiSelector().description("Подтвердить").clickable(true)'
                     '.childSelector(new UiSelector().className("android.widget.ImageView"));',
-                    '//*[@content-desc="Подтвердить"][@clickable="true"]/*[@class="android.widget.ImageView"]'
+                    "//*[@content-desc='Подтвердить'][@clickable='true']/*[@class='android.widget.ImageView']"
             ),
             (
                     'new UiSelector().className("android.widget.LinearLayout")'
                     '.childSelector(new UiSelector().className("android.widget.FrameLayout")'
                     '.childSelector(new UiSelector().text("Список")))',
-                    '//*[@class="android.widget.LinearLayout"]/*[@class="android.widget.FrameLayout"]/*[@text="Список"]'
+                    "//*[@class='android.widget.LinearLayout']/*[@class='android.widget.FrameLayout']/*[@text='Список']"
             ),
             (
                     'new UiSelector().className("android.widget.TextView").fromParent('
                     'new UiSelector().className("android.widget.LinearLayout").enabled(true).index(0));',
-                    '//*[@class="android.widget.TextView"]/..//*[@class="android.widget.LinearLayout"][@enabled="true"][position()=1]'
+                    "//*[@class='android.widget.TextView']/..//*[@class='android.widget.LinearLayout'][@enabled='true'][position()=1]"
             ),
             (
                     "new UiSelector().scrollable(false).clickable(false).instance(2);",
-                    '//*[@scrollable="false"][@clickable="false"][3]'
+                    "//*[@scrollable='false'][@clickable='false'][3]"
             ),
             (
                     'new UiSelector().textContains("карт").resourceId("ru.figma.app.debug:id/card_number");',
-                    '//*[contains(@text,"карт")][@resource-id="ru.figma.app.debug:id/card_number"]'
+                    "//*[contains(@text,'карт')][@resource-id='ru.figma.app.debug:id/card_number']"
             ),
             (
                     'new UiSelector().text("Оплатить").longClickable(false);',
-                    '//*[@text="Оплатить"][@long-clickable="false"]'
+                    "//*[@text='Оплатить'][@long-clickable='false']"
             ),
             (
                     'new UiSelector().className("android.widget.Button").selected(true);',
-                    '//*[@class="android.widget.Button"][@selected="true"]'
+                    "//*[@class='android.widget.Button'][@selected='true']"
             ),
             (
                     'new UiSelector().className("Button").longClickable(true).packageName("com.example.app");',
-                    '//*[@class="Button"][@long-clickable="true"][@package="com.example.app"]'
+                    "//*[@class='Button'][@long-clickable='true'][@package='com.example.app']"
             ),
             (
                     'new UiSelector().childSelector(new UiSelector().className("ListView").childSelector(new UiSelector().text("Item")));',
-                    '//*/*[@class="ListView"]/*[@text="Item"]'
+                    "//*/*[@class='ListView']/*[@text='Item']"
             ),
             (
                     'new UiSelector().fromParent(new UiSelector().className("Container").childSelector(new UiSelector().text("Title")));',
-                    '//*/..//*[@class="Container"]/*[@text="Title"]'
+                    "//*/..//*[@class='Container']/*[@text='Title']"
             ),
             (
                     'new UiSelector().text("C:\\Windows\\Path");',
-                    '//*[@text="C:\\Windows\\Path"]'
+                    "//*[@text='C:\\Windows\\Path']"
             ),
             (
                     'new UiSelector().descriptionMatches(".*\\d+.*");',
-                    '//*[matches(@content-desc,".*\\d+.*")]'
+                    "//*[matches(@content-desc,'.*\\d+.*')]"
             ),
             (
                     'new UiSelector().resourceId("");',
-                    '//*[@resource-id=""]'
+                    "//*[@resource-id='']"
             ),
             (
                     "new UiSelector().index(0);",
@@ -188,40 +188,40 @@ class TestUiSelectorConverter:
             ),
             (
                     "new UiSelector().focusable(true).password(true);",
-                    '//*[@focusable="true"][@password="true"]'
+                    "//*[@focusable='true'][@password='true']"
             ),
             (
                     'new UiSelector().textContains("секция").className("android.widget.TextView");',
-                    '//*[contains(@text, "секция")][@class="android.widget.TextView"]'
+                    "//*[contains(@text,'секция')][@class='android.widget.TextView']"
             ),
             (
                     'new UiSelector().textMatches("\\\\d{3}-\\\\d{2}-\\\\d{4}");',
-                    '//*[matches(@text, "\\d{3}-\\d{2}-\\d{4}")]'  # type: ignore
+                    "//*[matches(@text,'\\d{3}-\\d{2}-\\d{4}')]"
             ),
             (
                     'new UiSelector().className("android.widget.LinearLayout")'
                     '.childSelector(new UiSelector().className("android.widget.FrameLayout")'
                     '.childSelector(new UiSelector().className("android.widget.TextView")));',
-                    '//*[@class="android.widget.LinearLayout"]/*[@class="android.widget.FrameLayout"]/*[@class="android.widget.TextView"]'
+                    "//*[@class='android.widget.LinearLayout']/*[@class='android.widget.FrameLayout']/*[@class='android.widget.TextView']"
             ),
             (
                     'new UiSelector().className("android.widget.Button").enabled(true).clickable(true);',
-                    '//*[@class="android.widget.Button"][@enabled="true"][@clickable="true"]'
+                    "//*[@class='android.widget.Button'][@enabled='true'][@clickable='true']"
             ),
             (
                     'new UiSelector().className("android.widget.ImageView");',
-                    '//*[@class="android.widget.ImageView"]'
-            )
+                    "//*[@class='android.widget.ImageView']"
+            ),
         ]
     )
     def test_ui_to_xpath(self, selector_str: str, expected_xpath: str):
         converter = UiSelectorConverter()
         xpath = converter.selector_to_xpath(selector_str)
-        # logger.info(f"{selector_str=}")
-        # logger.info(f"{expected_xpath=}")
-        # logger.info(f"{parsed=}")
-        # logger.info(f"{xpath=}")
-        assert expected_xpath.replace(" ", "") == xpath.replace(" ", ""), f"Expected '{expected_xpath}' got: {xpath}"  # noqa: S101  # noqa: S101
+        logger.info(f"{selector_str=}")
+        logger.info(f"{expected_xpath=}")
+        logger.info(f"{xpath=}")
+        assert expected_xpath.replace(" ", "") == xpath.replace(" ", ""), \
+            f"Expected '{expected_xpath}' got: {xpath}"  # noqa: S101
 
     @pytest.mark.xfail
     @pytest.mark.parametrize(

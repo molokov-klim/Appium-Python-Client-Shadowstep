@@ -12,6 +12,10 @@ from tests.conftest import APPIUM_IP, APPIUM_PORT, CAPABILITIES
 
 logger = logging.getLogger(__name__)
 
+"""
+uv run pytest -svl --log-cli-level INFO --tb=short --setup-show  tests/base/test_shadowstep_base.py
+"""
+
 
 class TestBase:
 

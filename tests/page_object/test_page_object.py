@@ -35,7 +35,7 @@ class TestPageObjectextractor:
         file_path = Path(page_path)
         assert file_path.exists(), f"Файл {file_path} не найден"  # noqa: S101
 
-    def test_explorer(self, app: Shadowstep, android_settings_open_close: None, cleanup_pages: None):
+    def test_explorer(self, app: Shadowstep, press_home: None, android_settings_open_close: None, cleanup_pages: None):
         translator = YandexTranslate(folder_id="b1ghf7n3imfg7foodstv")
         recycler_explorer = PageObjectRecyclerExplorer(app, translator)
         page_path = recycler_explorer.explore("pages")

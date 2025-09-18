@@ -35,7 +35,7 @@ class TestUiSelectorDSLIntegration:
         """Test conversion from UiSelector DSL to XPath."""
         selector = UiSelector().text("OK").clickable(True)
         result = self.converter.to_xpath(selector)
-        expected = ("xpath", '//*[@text="OK"][@clickable="true"]')
+        expected = ("xpath", "//*[@text='OK'][@clickable='true']")
         assert result == expected  # noqa: S101
 
     def test_ui_selector_to_uiselector_conversion(self):
@@ -63,7 +63,7 @@ class TestUiSelectorDSLIntegration:
         child = UiSelector().text("Item")
         selector = UiSelector().className("android.widget.LinearLayout").childSelector(child)
         result = self.converter.to_xpath(selector)
-        expected = ("xpath", '//*[@class="android.widget.LinearLayout"]/*[@text="Item"]')
+        expected = ("xpath", "//*[@class='android.widget.LinearLayout']//*[@text='Item']")
         assert result == expected  # noqa: S101
 
     def test_ui_selector_hierarchical_to_uiselector(self):

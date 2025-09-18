@@ -14,14 +14,14 @@ uv run pytest -svl --log-cli-level INFO --tb=short --setup-show  tests/element/t
 
 class TestElementGestures:
 
-    def test_tap(self, app: Shadowstep, stability: None):
+    def test_tap(self, app: Shadowstep, press_home: None, stability: None):
         element = app.get_element(locator={"content-desc": "Phone"})
         element.tap()
         time.sleep(3)
         expect_element = app.get_element({"package": "com.android.dialer"})
         assert expect_element.is_visible()  # noqa: S101  # noqa: S101
 
-    def test_tap_duration(self, app: Shadowstep, stability: None):
+    def test_tap_duration(self, app: Shadowstep, press_home: None, stability: None):
         phone = app.get_element(locator={"content-desc": "Phone"})
         phone.tap(duration=3000)
         bubble = app.get_element(locator={"package": "com.android.launcher3",
@@ -35,14 +35,14 @@ class TestElementGestures:
         assert phone_info_title.get_attribute("text") == "App info"  # noqa: S101  # noqa: S101
         assert phone_info_storage.get_attribute("text") == "Storage & cache"  # noqa: S101  # noqa: S101
 
-    def test_tap_no_such_driver_exception(self, app: Shadowstep, stability: None):
+    def test_tap_no_such_driver_exception(self, app: Shadowstep, press_home: None, stability: None):
         app.disconnect()
         assert not app.is_connected()  # noqa: S101  # noqa: S101
         element = app.get_element(locator={"content-desc": "Phone"})
         element.tap()
         assert app.is_connected()  # noqa: S101  # noqa: S101
 
-    def test_tap_invalid_session_id_exception(self, app: Shadowstep, stability: None):
+    def test_tap_invalid_session_id_exception(self, app: Shadowstep, press_home: None, stability: None):
         app.driver.session_id = "12345"
         element = app.get_element(locator={"content-desc": "Phone"})
         element.tap()
@@ -51,7 +51,7 @@ class TestElementGestures:
         expect_element = app.get_element({"package": "com.android.dialer"})
         assert expect_element.is_visible()  # noqa: S101  # noqa: S101
 
-    def test_tap_no_such_element_exception(self, app: Shadowstep, stability: None):
+    def test_tap_no_such_element_exception(self, app: Shadowstep, press_home: None, stability: None):
         try:
             element = app.get_element(locator={"content-desc": "no_such_element"})
             element.timeout = 3
@@ -60,10 +60,10 @@ class TestElementGestures:
             print(error)
             assert isinstance(error, ShadowstepElementException)  # noqa: S101, PT017  # noqa: S101
 
-    def test_tap_stale_element_reference_exception(self, app: Shadowstep, stability: None):
+    def test_tap_stale_element_reference_exception(self, app: Shadowstep, press_home: None, stability: None):
         pass  # don't know how to catch
 
-    def test_tap_invalid_element_state_exception(self, app: Shadowstep, stability: None):
+    def test_tap_invalid_element_state_exception(self, app: Shadowstep, press_home: None, stability: None):
         pass  # don't know how to catch
 
     @pytest.mark.parametrize("params", [
@@ -73,7 +73,7 @@ class TestElementGestures:
                      "resource-id": "com.android.quicksearchbox:id/search_widget_text"}},  # Локатор
         {"direction": 0, "distance": 1000},  # Вверх
     ])
-    def test_tap_and_move(self, app: Shadowstep, stability: None, params: Any):
+    def test_tap_and_move(self, app: Shadowstep, press_home: None, stability: None, params: Any):
         element = app.get_element(locator={"content-desc": "Phone"})
         target_element = app.get_element(locator={"resource-id": "com.android.launcher3:id/search_container_all_apps"})
         element.tap_and_move(**params)
@@ -81,14 +81,14 @@ class TestElementGestures:
         assert "Search apps" in target_element.get_attribute(name="text")  # noqa: S101  # noqa: S101
         assert isinstance(element, Element)  # noqa: S101  # noqa: S101
 
-    def test_click(self, app: Shadowstep, stability: None):
+    def test_click(self, app: Shadowstep, press_home: None, stability: None):
         element = app.get_element(locator={"content-desc": "Phone"})
         element.click()
         time.sleep(5)
         expect_element = app.get_element({"package": "com.android.dialer"})
         assert expect_element.is_visible()  # noqa: S101  # noqa: S101
 
-    def test_click_duration(self, app: Shadowstep, stability: None):
+    def test_click_duration(self, app: Shadowstep, press_home: None, stability: None):
         phone = app.get_element(locator={"content-desc": "Phone"})
         phone.click(duration=3000)
         bubble = app.get_element(locator={"package": "com.android.launcher3",
@@ -102,7 +102,7 @@ class TestElementGestures:
         assert phone_info_title.get_attribute("text") == "App info"  # noqa: S101  # noqa: S101
         assert phone_info_storage.get_attribute("text") == "Storage & cache"  # noqa: S101  # noqa: S101
 
-    def test_click_double(self, app: Shadowstep, stability: None):
+    def test_click_double(self, app: Shadowstep, press_home: None, stability: None):
         search = app.get_element(locator={"resource-id": "com.android.quicksearchbox:id/search_widget_text"})
         search.click_double()
         time.sleep(5)
@@ -110,7 +110,7 @@ class TestElementGestures:
         app.terminal.past_text(text="some_text")
         assert "some_text" in search_src_text.get_attribute("text")  # noqa: S101  # noqa: S101
 
-    def test_drag(self, app: Shadowstep, stability: None):
+    def test_drag(self, app: Shadowstep, press_home: None, stability: None):
         app.terminal.press_home()
         time.sleep(10)
         messaging_1 = app.get_element(locator={"content-desc": "Messaging"})
@@ -131,7 +131,7 @@ class TestElementGestures:
         messaging_2 = app.get_element(locator={"content-desc": "Messaging"})
         messaging_2.drag(end_x=m1_center_x, end_y=m1_center_y)
 
-    def test_fling(self, app: Shadowstep, stability: None):
+    def test_fling(self, app: Shadowstep, press_home: None, stability: None):
         element = app.get_element(locator={"content-desc": "Phone"})
         target_element = app.get_element(locator={"content-desc": "Do Not Disturb."})
         element.fling_up(speed=2000)
@@ -139,7 +139,7 @@ class TestElementGestures:
         assert "Off" in target_element.get_attribute(name="text")  # noqa: S101  # noqa: S101
         assert isinstance(element, Element)  # noqa: S101  # noqa: S101
 
-    def test_scroll(self, app: Shadowstep, stability: None):
+    def test_scroll(self, app: Shadowstep, press_home: None, stability: None):
         settings_recycler = app.get_element(
             locator={"resource-id": "com.android.settings:id/main_content_scrollable_container"})
         settings_network = app.get_element(locator={"text": "Network & internet",
@@ -154,7 +154,7 @@ class TestElementGestures:
         assert "About phone" in settings_about_phone.get_attribute("text")  # noqa: S101  # noqa: S101
         app.terminal.close_app(package="com.android.settings")
 
-    def test_scroll_to_bottom(self, app: Shadowstep, stability: None, android_settings_open_close: None):
+    def test_scroll_to_bottom(self, app: Shadowstep, press_home: None, stability: None, android_settings_open_close: None):
         settings_recycler = app.get_element(
             locator={"resource-id": "com.android.settings:id/main_content_scrollable_container"})
         settings_network = app.get_element(locator={"text": "Network & internet",
@@ -172,7 +172,7 @@ class TestElementGestures:
         app.logger.info(f"{settings_about_phone.get_attributes()=}")
         app.terminal.close_app(package="com.android.settings")
 
-    def test_scroll_to_top(self, app: Shadowstep, stability: None, android_settings_open_close: None):
+    def test_scroll_to_top(self, app: Shadowstep, press_home: None, stability: None, android_settings_open_close: None):
         settings_recycler = app.get_element(
             locator={"resource-id": "com.android.settings:id/main_content_scrollable_container"})
         settings_network = app.get_element(locator={"text": "Network & internet",
@@ -190,7 +190,7 @@ class TestElementGestures:
         assert "Network & internet" in settings_network.get_attribute("text")  # noqa: S101  # noqa: S101
         app.terminal.close_app(package="com.android.settings")
 
-    def test_scroll_to_element(self, app: Shadowstep, stability: None, android_settings_open_close: None):
+    def test_scroll_to_element(self, app: Shadowstep, press_home: None, stability: None, android_settings_open_close: None):
         settings_recycler = app.get_element(
             locator={"resource-id": "com.android.settings:id/settings_homepage_container"})
         settings_network = app.get_element(locator={"text": "Network & internet",
@@ -208,51 +208,51 @@ class TestElementGestures:
         assert "Network & internet" in settings_network.get_attribute("text")  # noqa: S101  # noqa: S101
         app.terminal.close_app(package="com.android.settings")
 
-    def test_zoom(self, app: Shadowstep, stability: None, android_settings_open_close: None):
+    def test_zoom(self, app: Shadowstep, press_home: None, stability: None, android_settings_open_close: None):
         settings_network = app.get_element(locator={"text": "Network & internet",
                                                     "resource-id": "android:id/title"})
         settings_network.zoom()
         time.sleep(3)
 
-    def test_unzoom(self, app: Shadowstep, stability: None, android_settings_open_close: None):
+    def test_unzoom(self, app: Shadowstep, press_home: None, stability: None, android_settings_open_close: None):
         settings_network = app.get_element(locator={"text": "Network & internet",
                                                     "resource-id": "android:id/title"})
         settings_network.unzoom()
         time.sleep(3)
 
     @pytest.mark.parametrize("direction", ["up", "down", "left", "right"])
-    def test_swipe_directions(self, app: Shadowstep, stability: None, direction: str):
+    def test_swipe_directions(self, app: Shadowstep, press_home: None, stability: None, direction: str):
         element = app.get_element(locator={"content-desc": "Phone"})
         element.swipe(direction=direction, percent=0.5, speed=3000)
         time.sleep(2)
         assert isinstance(element, Element)  # noqa: S101
 
-    def test_swipe_up(self, app: Shadowstep, stability: None, android_settings_open_close: None):
+    def test_swipe_up(self, app: Shadowstep, press_home: None, stability: None, android_settings_open_close: None):
         element = app.get_element(locator={"text": "Network & internet"})
         element.swipe_up(percent=0.6, speed=2500)
         time.sleep(2)
         assert isinstance(element, Element)  # noqa: S101
 
-    def test_swipe_down(self, app: Shadowstep, stability: None, android_settings_open_close: None):
+    def test_swipe_down(self, app: Shadowstep, press_home: None, stability: None, android_settings_open_close: None):
         element = app.get_element(locator={"text": "Network & internet"})
         element.swipe_down(percent=0.6, speed=2500)
         time.sleep(2)
         assert isinstance(element, Element)  # noqa: S101
 
-    def test_swipe_left(self, app: Shadowstep, stability: None, android_settings_open_close: None):
+    def test_swipe_left(self, app: Shadowstep, press_home: None, stability: None, android_settings_open_close: None):
         element = app.get_element(locator={"text": "Network & internet"})
         element.swipe_left(percent=0.6, speed=2500)
         time.sleep(2)
         assert isinstance(element, Element)  # noqa: S101
 
-    def test_swipe_right(self, app: Shadowstep, stability: None, android_settings_open_close: None):
+    def test_swipe_right(self, app: Shadowstep, press_home: None, stability: None, android_settings_open_close: None):
         element = app.get_element(locator={"text": "Network & internet"})
         element.swipe_right(percent=0.6, speed=2500)
         time.sleep(2)
         assert isinstance(element, Element)  # noqa: S101
 
     @pytest.mark.parametrize("direction", ["up", "down", "left", "right"])
-    def test_fling_directions(self, app: Shadowstep, stability: None, direction: str):
+    def test_fling_directions(self, app: Shadowstep, press_home: None, stability: None, direction: str):
         element = app.get_element(locator={"content-desc": "Phone"})
         element.fling(speed=3000, direction=direction)
         time.sleep(2)

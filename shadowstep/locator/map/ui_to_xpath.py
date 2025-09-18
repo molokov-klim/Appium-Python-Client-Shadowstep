@@ -37,7 +37,7 @@ UI_TO_XPATH: dict[UiAttribute, Callable[[Any], str]] = {
     UiAttribute.TEXT: lambda v: f"[{XPathAttribute.TEXT.value}'{v}']",
     UiAttribute.TEXT_CONTAINS: lambda v: f"[{XPathAttribute.TEXT_CONTAINS.value}'{v}')]",
     UiAttribute.TEXT_STARTS_WITH: lambda v: f"[{XPathAttribute.TEXT_STARTS_WITH.value}'{v}')]",
-    UiAttribute.TEXT_MATCHES: lambda v: f'[{XPathAttribute.TEXT_MATCHES.value}"{v}")]',  # Appium >= 2
+    UiAttribute.TEXT_MATCHES: lambda v: f"[{XPathAttribute.TEXT_MATCHES.value}'{v}')]",  # Appium >= 2
 
     # --- description ---
     UiAttribute.DESCRIPTION: lambda v: f"[{XPathAttribute.DESCRIPTION.value}'{v}']",

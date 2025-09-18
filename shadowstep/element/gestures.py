@@ -21,7 +21,7 @@ from selenium.webdriver.common.actions.pointer_input import PointerInput
 from shadowstep.decorators.decorators import log_debug
 from shadowstep.element.utilities import ElementUtilities
 from shadowstep.exceptions.shadowstep_exceptions import ShadowstepElementException
-from shadowstep.utils.utils import find_coordinates_by_vector
+from shadowstep.utils.utils import find_coordinates_by_vector, get_current_func_name
 
 if TYPE_CHECKING:
     from shadowstep.element.element import Element
@@ -50,10 +50,13 @@ class ElementGestures:
                 return self.element
             except NoSuchDriverException as error:
                 self.element.handle_driver_error(error)
+                continue
             except InvalidSessionIdException as error:
                 self.element.handle_driver_error(error)
+                continue
             except AttributeError as error:
                 self.element.handle_driver_error(error)
+                continue
             except StaleElementReferenceException as error:
                 self.logger.debug(error)
                 self.logger.warning("StaleElementReferenceException\nRe-acquire element")
@@ -563,7 +566,7 @@ class ElementGestures:
                     return self._execute_tap_and_move_by_direction(actions, x1, y1, direction, distance)
 
                 raise ShadowstepElementException(
-                    msg=f"Failed to {inspect.currentframe() if inspect.currentframe() else 'unknown'} within {self.element.timeout=} {direction=} {percent=}",
+                    msg=f"Failed to {inspect.currentframe() if inspect.currentframe() else 'unknown'} within {self.element.timeout=} {direction=}",
                     stacktrace=traceback.format_stack()
                 )
             except (NoSuchDriverException, InvalidSessionIdException, AttributeError) as error:
@@ -581,7 +584,7 @@ class ElementGestures:
                     self.element.handle_driver_error(error)
                     continue
         raise ShadowstepElementException(
-            msg=f"Failed to {inspect.currentframe() if inspect.currentframe() else 'unknown'} within {self.element.timeout=} {direction=} {percent=}",
+            msg=f"Failed to {get_current_func_name()} within {self.element.timeout=} {direction=}",
             stacktrace=traceback.format_stack()
         )
 

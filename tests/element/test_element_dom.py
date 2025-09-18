@@ -1,3 +1,4 @@
+import logging
 import time
 
 import pytest
@@ -9,6 +10,8 @@ from shadowstep.shadowstep import Shadowstep
 """
 uv run pytest -svl --log-cli-level INFO --tb=short --setup-show  tests/element/test_element_dom.py
 """
+
+logger = logging.getLogger(__name__)
 
 class TestGetElement:
 
@@ -117,19 +120,19 @@ class TestGetElement:
             # dict
             (
                     {"classMatches": "TextView"},
-                    "com.android.settings", "android.widget.TextView", "com.android.settings:id/homepage_title"
+                    "com.android.settings", "android.widget.TextView", "android:id/title"
             ),
 
             # xpath
             (
                     ("xpath", '//*[matches(@class,".*Text.*")]'),
-                    "com.android.settings", "android.widget.TextView", "com.android.settings:id/homepage_title"
+                    "com.android.settings", "android.widget.TextView", "android:id/title"
             ),
 
             # uiselector
             (
-                    UiSelector().textMatches(".*Settings"),
-                    "com.android.settings", "android.widget.TextView", "com.android.settings:id/homepage_title"
+                    UiSelector().classNameMatches(".*Text"),
+                    "com.android.settings", "android.widget.TextView", "android:id/title"
             ),
         ]
     )
@@ -140,6 +143,9 @@ class TestGetElement:
                                  locator,
                                  expected_package, expected_class_, expected_resource_id):
         inner_element = android_settings_recycler.get_element(locator=locator)
+        logger.info(inner_element.package)
+        logger.info(inner_element.class_)
+        logger.info(inner_element.resource_id)
         assert isinstance(inner_element, Element)  # noqa: S101
         assert inner_element.package == expected_package  # noqa: S101
         assert inner_element.class_ == expected_class_  # noqa: S101
@@ -219,7 +225,7 @@ class TestGetParent:
             ),
             # xpath
             (
-                    ("xpath", '//*[@text="Network & internet"]')
+                    ("xpath", "//*[@text='Network & internet']")
             ),
 
             # uiselector
@@ -236,7 +242,7 @@ class TestGetParent:
         actual_parent = app.get_element(child).get_parent()
         assert isinstance(actual_parent, Element)  # noqa: S101
 
-        expected_parent_locator = ("xpath", '//*[@text="Network & internet"]/..')
+        expected_parent_locator = ("xpath", "//*[@text='Network & internet']/..")
         expected_parent_class = "android.widget.RelativeLayout"
         expected_parent_resource_id = "com.android.settings:id/text_frame"
 
@@ -274,9 +280,7 @@ class TestGetParent:
             parent.timeout = 1
             try:
                 assert parent.package == "com.android.settings"  # noqa: S101
-            except Exception as error:
-                from loguru import logger
-                logger.exception(error)
+            except Exception:
                 brokens.append(parent)
 
         nearest_parent = parents[-1]
