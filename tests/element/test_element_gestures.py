@@ -154,7 +154,14 @@ class TestElementGestures:
         assert "About phone" in settings_about_phone.get_attribute("text")  # noqa: S101  # noqa: S101
         app.terminal.close_app(package="com.android.settings")
 
-    def test_scroll_to_bottom(self, app: Shadowstep, press_home: None, stability: None, android_settings_open_close: None):
+    def test_scroll_to_element_not_found(self, app: Shadowstep, press_home: Any, stability: None):
+        app.terminal.start_activity(package="com.android.settings", activity=".Settings")
+        container = app.get_element({"resource-id": "com.android.settings:id/main_content_scrollable_container"})
+        with pytest.raises(ShadowstepElementException):
+            container.scroll_to_element(locator={"text": "Element That Does Not Exist"})
+
+    def test_scroll_to_bottom(self, app: Shadowstep, press_home: None,
+                              android_settings_open_close: None, stability: None):
         settings_recycler = app.get_element(
             locator={"resource-id": "com.android.settings:id/main_content_scrollable_container"})
         settings_network = app.get_element(locator={"text": "Network & internet",
@@ -172,7 +179,7 @@ class TestElementGestures:
         app.logger.info(f"{settings_about_phone.get_attributes()=}")
         app.terminal.close_app(package="com.android.settings")
 
-    def test_scroll_to_top(self, app: Shadowstep, press_home: None, stability: None, android_settings_open_close: None):
+    def test_scroll_to_top(self, app: Shadowstep, press_home: None, android_settings_open_close: None, stability: None):
         settings_recycler = app.get_element(
             locator={"resource-id": "com.android.settings:id/main_content_scrollable_container"})
         settings_network = app.get_element(locator={"text": "Network & internet",
@@ -190,7 +197,8 @@ class TestElementGestures:
         assert "Network & internet" in settings_network.get_attribute("text")  # noqa: S101  # noqa: S101
         app.terminal.close_app(package="com.android.settings")
 
-    def test_scroll_to_element(self, app: Shadowstep, press_home: None, stability: None, android_settings_open_close: None):
+    def test_scroll_to_element(self, app: Shadowstep, press_home: None,
+                               android_settings_open_close: None, stability: None):
         settings_recycler = app.get_element(
             locator={"resource-id": "com.android.settings:id/settings_homepage_container"})
         settings_network = app.get_element(locator={"text": "Network & internet",
@@ -208,13 +216,13 @@ class TestElementGestures:
         assert "Network & internet" in settings_network.get_attribute("text")  # noqa: S101  # noqa: S101
         app.terminal.close_app(package="com.android.settings")
 
-    def test_zoom(self, app: Shadowstep, press_home: None, stability: None, android_settings_open_close: None):
+    def test_zoom(self, app: Shadowstep, press_home: None, android_settings_open_close: None, stability: None):
         settings_network = app.get_element(locator={"text": "Network & internet",
                                                     "resource-id": "android:id/title"})
         settings_network.zoom()
         time.sleep(3)
 
-    def test_unzoom(self, app: Shadowstep, press_home: None, stability: None, android_settings_open_close: None):
+    def test_unzoom(self, app: Shadowstep, press_home: None, android_settings_open_close: None, stability: None):
         settings_network = app.get_element(locator={"text": "Network & internet",
                                                     "resource-id": "android:id/title"})
         settings_network.unzoom()
@@ -227,25 +235,25 @@ class TestElementGestures:
         time.sleep(2)
         assert isinstance(element, Element)  # noqa: S101
 
-    def test_swipe_up(self, app: Shadowstep, press_home: None, stability: None, android_settings_open_close: None):
+    def test_swipe_up(self, app: Shadowstep, press_home: None, android_settings_open_close: None, stability: None):
         element = app.get_element(locator={"text": "Network & internet"})
         element.swipe_up(percent=0.6, speed=2500)
         time.sleep(2)
         assert isinstance(element, Element)  # noqa: S101
 
-    def test_swipe_down(self, app: Shadowstep, press_home: None, stability: None, android_settings_open_close: None):
+    def test_swipe_down(self, app: Shadowstep, press_home: None, android_settings_open_close: None, stability: None):
         element = app.get_element(locator={"text": "Network & internet"})
         element.swipe_down(percent=0.6, speed=2500)
         time.sleep(2)
         assert isinstance(element, Element)  # noqa: S101
 
-    def test_swipe_left(self, app: Shadowstep, press_home: None, stability: None, android_settings_open_close: None):
+    def test_swipe_left(self, app: Shadowstep, press_home: None, android_settings_open_close: None, stability: None):
         element = app.get_element(locator={"text": "Network & internet"})
         element.swipe_left(percent=0.6, speed=2500)
         time.sleep(2)
         assert isinstance(element, Element)  # noqa: S101
 
-    def test_swipe_right(self, app: Shadowstep, press_home: None, stability: None, android_settings_open_close: None):
+    def test_swipe_right(self, app: Shadowstep, press_home: None, android_settings_open_close: None, stability: None):
         element = app.get_element(locator={"text": "Network & internet"})
         element.swipe_right(percent=0.6, speed=2500)
         time.sleep(2)

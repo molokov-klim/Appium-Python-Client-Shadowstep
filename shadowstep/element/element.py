@@ -1,10 +1,8 @@
 # shadowstep/element/element.py
 from __future__ import annotations
 
-import inspect
 import logging
 import time
-import traceback
 from typing import TYPE_CHECKING, Any, cast
 
 from appium.webdriver.webelement import WebElement
@@ -30,7 +28,6 @@ from shadowstep.element.properties import ElementProperties
 from shadowstep.element.screenshots import ElementScreenshots
 from shadowstep.element.utilities import ElementUtilities
 from shadowstep.element.waiting import ElementWaiting
-from shadowstep.exceptions.shadowstep_exceptions import ShadowstepElementException
 from shadowstep.locator import UiSelector
 from shadowstep.utils.utils import get_current_func_name
 
@@ -156,13 +153,13 @@ class Element(ElementBase):
     # Override
     def set_value(self, value: str) -> Element:
         self.logger.warning(
-            f"Method {inspect.currentframe() if inspect.currentframe() else 'unknown'} is not implemented in UiAutomator2")
+            f"Method {get_current_func_name()} is not implemented in UiAutomator2")
         return self.actions.set_value(value)
 
     # Override
     def submit(self) -> Element:
         self.logger.warning(
-            f"Method {inspect.currentframe() if inspect.currentframe() else 'unknown'} is not implemented in UiAutomator2")
+            f"Method {get_current_func_name()} is not implemented in UiAutomator2")
         return self.actions.submit()
 
     """
@@ -275,7 +272,7 @@ class Element(ElementBase):
 
     def get_property(self, name: str) -> Any:
         self.logger.warning(
-            f"Method {inspect.currentframe() if inspect.currentframe() else 'unknown'} is not implemented in UiAutomator2")
+            f"Method {get_current_func_name()} is not implemented in UiAutomator2")
         return self.properties.get_property(name)
 
     def get_dom_attribute(self, name: str) -> str:
@@ -359,6 +356,8 @@ class Element(ElementBase):
 
     @property
     def index(self) -> str:
+        self.logger.warning(
+            f"Method {get_current_func_name()} 'index' attribute is unknown for the element")
         return self.properties.index()
 
     @property
@@ -412,7 +411,7 @@ class Element(ElementBase):
     @property
     def shadow_root(self) -> ShadowRoot:
         self.logger.warning(
-            f"Method {inspect.currentframe() if inspect.currentframe() else 'unknown'} is not implemented in UiAutomator2")
+            f"Method {get_current_func_name()} is not implemented in UiAutomator2")
         return self.properties.shadow_root()
 
     @property
@@ -429,13 +428,13 @@ class Element(ElementBase):
 
     def value_of_css_property(self, property_name: str) -> str:
         self.logger.warning(
-            f"Method {inspect.currentframe() if inspect.currentframe() else 'unknown'} is not implemented in UiAutomator2")
+            f"Method {get_current_func_name()} is not implemented in UiAutomator2")
         return self.properties.value_of_css_property(property_name)
 
     @property
     def location(self) -> dict:
         self.logger.warning(
-            f"Method {inspect.currentframe() if inspect.currentframe() else 'unknown'} is not implemented in UiAutomator2")
+            f"Method {get_current_func_name()} is not implemented in UiAutomator2")
         return self.properties.location()
 
     @property
@@ -469,180 +468,29 @@ class Element(ElementBase):
         return self.properties.accessible_name()
 
     """
-    
+    Coordinates
     """
 
-    def get_center(self, element: WebElement | None = None) -> tuple[int, int]:
-        """Get the center coordinates of the element.
-
-        Args:
-            element (Optional[WebElement]): Optional direct WebElement. If not provided, uses current locator.
-
-        Returns:
-            Optional[Tuple[int, int]]: (x, y) center point or None if element not found.
-        """
-        self.logger.debug(f"{get_current_func_name()}")
-        start_time = time.time()
-        while time.time() - start_time < self.timeout:
-            try:
-                self.get_driver()
-                if element is None:
-                    element = self.get_native()
-                coords = self.get_coordinates(element)
-                if coords is None:
-                    continue
-                left, top, right, bottom = coords
-                x = int((left + right) / 2)
-                y = int((top + bottom) / 2)
-                return x, y
-            except NoSuchDriverException as error:
-                self.handle_driver_error(error)
-            except InvalidSessionIdException as error:
-                self.handle_driver_error(error)
-            except AttributeError as error:
-                self.handle_driver_error(error)
-            except StaleElementReferenceException as error:
-                self.logger.debug(error)
-                self.logger.warning("StaleElementReferenceException\nRe-acquire element")
-                self.native = None
-                self.get_native()
-                continue
-            except WebDriverException as error:
-                err_msg = str(error).lower()
-                if "instrumentation process is not running" in err_msg or "socket hang up" in err_msg:
-                    self.handle_driver_error(error)
-                    continue
-                raise
-
-        raise ShadowstepElementException(
-            msg=f"Failed to {get_current_func_name()} within {self.timeout=}",
-            stacktrace=traceback.format_stack()
-        )
-
     def get_coordinates(self, element: WebElement | None = None) -> tuple[int, int, int, int]:
-        """Get the bounding box coordinates of the element.
+        return self.coordinates.get_coordinates(element)
 
-        Args:
-            element (Optional[WebElement]): Element to get bounds from. If None, uses internal locator.
-
-        Returns:
-            Optional[Tuple[int, int, int, int]]: (left, top, right, bottom) or None.
-        """
-        self.logger.debug(f"{get_current_func_name()}")
-        start_time = time.time()
-        while time.time() - start_time < self.timeout:
-            try:
-                self.get_driver()
-                if element is None:
-                    element = self.get_native()
-                bounds = element.get_attribute("bounds")
-                if not bounds:
-                    continue
-                left, top, right, bottom = map(int, bounds.strip("[]").replace("][", ",").split(","))
-                return left, top, right, bottom
-            except NoSuchDriverException as error:
-                self.handle_driver_error(error)
-            except InvalidSessionIdException as error:
-                self.handle_driver_error(error)
-            except AttributeError as error:
-                self.handle_driver_error(error)
-            except StaleElementReferenceException as error:
-                self.logger.debug(error)
-                self.logger.warning("StaleElementReferenceException\nRe-acquire element")
-                self.native = None
-                self.get_native()
-                continue
-            except WebDriverException as error:
-                err_msg = str(error).lower()
-                if "instrumentation process is not running" in err_msg or "socket hang up" in err_msg:
-                    self.handle_driver_error(error)
-                    continue
-                raise
-
-        raise ShadowstepElementException(
-            msg=f"Failed to {inspect.currentframe() if inspect.currentframe() else 'unknown'} within {self.timeout=}",
-            stacktrace=traceback.format_stack()
-        )
+    def get_center(self, element: WebElement | None = None) -> tuple[int, int]:
+        return self.coordinates.get_center(element)
 
     # Override
     @property
-    def location_in_view(self) -> dict | None:
-        """Gets the location of an element relative to the view.
-
-        Returns:
-            dict: Dictionary with keys 'x' and 'y', or None on failure.
-        """
-        self.logger.debug(f"{get_current_func_name()}")
-        start_time = time.time()
-
-        while time.time() - start_time < self.timeout:
-            try:
-                self.get_driver()
-
-                current_element = self.get_native()
-
-                return current_element.location_in_view  # Appium WebElement property
-            except NoSuchDriverException as error:
-                self.handle_driver_error(error)
-            except InvalidSessionIdException as error:
-                self.handle_driver_error(error)
-            except AttributeError as error:
-                self.handle_driver_error(error)
-            except StaleElementReferenceException as error:
-                self.logger.debug(error)
-                self.logger.warning("StaleElementReferenceException\nRe-acquire element")
-                self.native = None
-                self.get_native()
-                continue
-            except WebDriverException as error:
-                err_msg = str(error).lower()
-                if "instrumentation process is not running" in err_msg or "socket hang up" in err_msg:
-                    self.handle_driver_error(error)
-                    continue
-                raise
-        raise ShadowstepElementException(
-            msg=f"Failed to get location_in_view within {self.timeout=}",
-            stacktrace=traceback.format_stack()
-        )
+    def location_in_view(self) -> dict[str, int]:
+        return self.coordinates.location_in_view()
 
     @property
     def location_once_scrolled_into_view(self) -> dict[str, int]:
-        """NOT IMPLEMENTED
-        Gets the top-left corner location of the element after scrolling it into view.
-
-        Returns:
-            dict: Dictionary with keys 'x' and 'y' indicating location on screen.
-
-        Raises:
-            ShadowstepElementException: If element could not be scrolled into view or location determined.
-        """
-        self.logger.debug(f"{get_current_func_name()}")
         self.logger.warning(
-            f"Method {inspect.currentframe() if inspect.currentframe() else 'unknown'} is not implemented in UiAutomator2")
+            f"Method {get_current_func_name()} is not implemented in UiAutomator2")
+        return self.coordinates.location_once_scrolled_into_view()
 
-        start_time = time.time()
-
-        while time.time() - start_time < self.timeout:
-            try:
-                self.get_driver()
-
-                current_element = self.get_native()
-
-                return current_element.location_once_scrolled_into_view
-
-            except NoSuchDriverException as error:
-                self.handle_driver_error(error)
-            except InvalidSessionIdException as error:
-                self.handle_driver_error(error)
-            except AttributeError as error:
-                self.handle_driver_error(error)
-            except WebDriverException as error:
-                self.handle_driver_error(error)
-
-        raise ShadowstepElementException(
-            msg=f"Failed to get location_once_scrolled_into_view within {self.timeout=}",
-            stacktrace=traceback.format_stack()
-        )
+    """
+    Screenshots
+    """
 
     @property
     def screenshot_as_base64(self) -> str:
@@ -651,36 +499,7 @@ class Element(ElementBase):
         Returns:
             Optional[str]: Base64-encoded screenshot string or None if failed.
         """
-        self.logger.debug(f"{get_current_func_name()}")
-        start_time = time.time()
-
-        while time.time() - start_time < self.timeout:
-            try:
-                self.get_driver()
-
-                current_element = self.get_native()
-
-                return current_element.screenshot_as_base64
-
-            except NoSuchDriverException as error:
-                self.handle_driver_error(error)
-            except InvalidSessionIdException as error:
-                self.handle_driver_error(error)
-            except AttributeError as error:
-                self.handle_driver_error(error)
-            except StaleElementReferenceException as error:
-                self.logger.debug(error)
-                self.logger.warning("StaleElementReferenceException\nRe-acquire element")
-                self.native = None
-                self.get_native()
-                continue
-            except WebDriverException as error:
-                self.handle_driver_error(error)
-
-        raise ShadowstepElementException(
-            msg=f"Failed to get screenshot_as_base64 within {self.timeout=}",
-            stacktrace=traceback.format_stack()
-        )
+        return self.screenshots.screenshot_as_base64()
 
     @property
     def screenshot_as_png(self) -> bytes:
@@ -689,36 +508,7 @@ class Element(ElementBase):
         Returns:
             Optional[bytes]: PNG-encoded screenshot bytes or None if failed.
         """
-        self.logger.debug(f"{get_current_func_name()}")
-        start_time = time.time()
-
-        while time.time() - start_time < self.timeout:
-            try:
-                self.get_driver()
-
-                current_element = self.get_native()
-
-                return current_element.screenshot_as_png
-
-            except NoSuchDriverException as error:
-                self.handle_driver_error(error)
-            except InvalidSessionIdException as error:
-                self.handle_driver_error(error)
-            except AttributeError as error:
-                self.handle_driver_error(error)
-            except StaleElementReferenceException as error:
-                self.logger.debug(error)
-                self.logger.warning("StaleElementReferenceException\nRe-acquire element")
-                self.native = None
-                self.get_native()
-                continue
-            except WebDriverException as error:
-                self.handle_driver_error(error)
-
-        raise ShadowstepElementException(
-            msg=f"Failed to get screenshot_as_png within {self.timeout=}",
-            stacktrace=traceback.format_stack()
-        )
+        return self.screenshots.screenshot_as_png()
 
     def save_screenshot(self, filename: str) -> bool:
         """Saves a screenshot of the current element to a PNG image file.
@@ -729,42 +519,14 @@ class Element(ElementBase):
         Returns:
             bool: True if successful, False otherwise.
         """
-        self.logger.debug(f"{get_current_func_name()}")
-        start_time = time.time()
+        return self.screenshots.save_screenshot(filename)
 
-        while time.time() - start_time < self.timeout:
-            try:
-                self.get_driver()
-
-                current_element = self.get_native()
-
-                return current_element.screenshot(filename)
-
-            except NoSuchDriverException as error:
-                self.handle_driver_error(error)
-            except InvalidSessionIdException as error:
-                self.handle_driver_error(error)
-            except AttributeError as error:
-                self.handle_driver_error(error)
-            except StaleElementReferenceException as error:
-                self.logger.debug(error)
-                self.logger.warning("StaleElementReferenceException\nRe-acquire element")
-                self.native = None
-                self.get_native()
-                continue
-            except OSError as error:
-                self.logger.error(f"IOError while saving screenshot to {filename}: {error}")
-                return False
-            except WebDriverException as error:
-                self.handle_driver_error(error)
-
-        raise ShadowstepElementException(
-            msg=f"Failed to save screenshot to {filename} within {self.timeout=}",
-            stacktrace=traceback.format_stack()
-        )
+    """
+    
+    """
 
     def handle_driver_error(self, error: Exception) -> None:
-        self.logger.warning(f"{inspect.currentframe() if inspect.currentframe() else 'unknown'} {error}")
+        self.logger.warning(f"{get_current_func_name()} {error}")
         self.shadowstep.reconnect()
         time.sleep(0.3)
 

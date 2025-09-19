@@ -11,8 +11,9 @@ from shadowstep.element.conditions import (
     present,
     visible,
 )
-from shadowstep.element.element import Element, ShadowstepElementException
+from shadowstep.element.element import Element
 from shadowstep.element.should import Should, _ShouldBe, _ShouldHave, _ShouldNotBe, _ShouldNotHave
+from shadowstep.exceptions.shadowstep_exceptions import ShadowstepElementException
 
 """
 uv run pytest -svl --log-cli-level INFO --tb=short --setup-show  tests/element/test_element_quality.py
