@@ -1,55 +1,60 @@
 # shadowstep/shadowstep.py
+from __future__ import annotations
+
 import base64
 import importlib
 import inspect
 import logging
 import os
 import sys
-import typing
 from pathlib import Path
 from types import ModuleType
-from typing import Union, Tuple, Dict
+from typing import Any, cast
 
-from PIL import Image
 import numpy as np
+from appium.webdriver import WebElement
 from appium.webdriver.webdriver import WebDriver
-from selenium.common import NoSuchDriverException, InvalidSessionIdException, WebDriverException, \
-    StaleElementReferenceException
-
+from numpy._typing import NDArray
+from PIL import Image
+from selenium.common import (
+    InvalidSessionIdException,
+    NoSuchDriverException,
+    StaleElementReferenceException,
+    WebDriverException,
+)
 from selenium.types import WaitExcTypes
 
 from shadowstep.base import ShadowstepBase, WebDriverSingleton
+from shadowstep.decorators.decorators import fail_safe
 from shadowstep.element.element import Element
-from shadowstep.elements.elements import Elements
+from shadowstep.exceptions.shadowstep_exceptions import ShadowstepException
 from shadowstep.image.image import ShadowstepImage
-from shadowstep.images.images import ShadowstepImages
-from shadowstep.logging.shadowstep_logcat import ShadowstepLogcat
+from shadowstep.locator import UiSelector
+from shadowstep.logcat.shadowstep_logcat import ShadowstepLogcat
 from shadowstep.mobile_commands import MobileCommands
 from shadowstep.navigator.navigator import PageNavigator
 from shadowstep.page_base import PageBaseShadowstep
 from shadowstep.scheduled_actions.action_history import ActionHistory
 from shadowstep.scheduled_actions.action_step import ActionStep
-from shadowstep.utils.decorators import fail_safe
-from shadowstep.exceptions.shadowstep_exceptions import ShadowstepException
+from shadowstep.utils.utils import get_current_func_name
 
 # Configure the root logger (basic configuration)
-logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s")
 logger = logging.getLogger(__name__)
 
 
 class Shadowstep(ShadowstepBase):
-    pages: typing.Dict[str, typing.Type[PageBaseShadowstep]] = {}
-    _instance: typing.Optional["Shadowstep"] = None
+    pages: dict[str, type[PageBaseShadowstep]] = {}
+    _instance: Shadowstep | None = None
     _pages_discovered: bool = False
 
-    def __new__(cls, *args, **kwargs):
+    def __new__(cls, *args: Any, **kwargs: Any):
         if cls._instance is None:
             cls._instance = super().__new__(cls)
-            # возможная инициализация по kwargs
         return cls._instance
 
     @classmethod
-    def get_instance(cls) -> "Shadowstep":
+    def get_instance(cls) -> Shadowstep:
         if cls._instance is None:
             cls._instance = cls()
         return cls._instance
@@ -59,28 +64,28 @@ class Shadowstep(ShadowstepBase):
             return
         super().__init__()
 
-        self._logcat = ShadowstepLogcat(driver_getter=WebDriverSingleton.get_driver)
-        self.navigator = PageNavigator(self)
-        self.mobile_commands = MobileCommands(self)
+        self._logcat: ShadowstepLogcat = ShadowstepLogcat(driver_getter=WebDriverSingleton.get_driver)
+        self.navigator: PageNavigator = PageNavigator(self)
+        self.mobile_commands: MobileCommands = MobileCommands(self)
         self.logger = logging.getLogger(f"{__name__}.{self.__class__.__name__}")
         self._auto_discover_pages()
         self._initialized = True
 
     def _auto_discover_pages(self):
         """Automatically import and register all PageBase subclasses from all 'pages' directories in sys.path."""
-        self.logger.debug(f"📂 {inspect.currentframe().f_code.co_name}: {list(set(sys.path))}")
+        self.logger.debug(f"📂 {get_current_func_name()}: {list(set(sys.path))}")
         if self._pages_discovered:
             return
         self._pages_discovered = True
         for base_path in map(Path, list(set(sys.path))):
-            base_str = str(base_path).lower()
-            if any(part in base_str for part in self._ignored_base_path_parts):
+            base_str = os.path.basename(str(base_path).lower())
+            if base_str in self._ignored_base_path_parts:
                 continue
             if not base_path.exists() or not base_path.is_dir():
                 continue
             for dirpath, dirs, filenames in os.walk(base_path):
                 dir_name = Path(dirpath).name
-                # ❌ исключаем вложенные директории
+                # ❌ remove inner folders
                 dirs[:] = [d for d in dirs if d not in self._ignored_auto_discover_dirs]
                 if dir_name in self._ignored_auto_discover_dirs:
                     continue
@@ -88,7 +93,7 @@ class Shadowstep(ShadowstepBase):
                     if file.startswith("page") and file.endswith(".py"):
                         try:
                             file_path = Path(dirpath) / file
-                            rel_path = file_path.relative_to(base_path).with_suffix('')
+                            rel_path = file_path.relative_to(base_path).with_suffix("")
                             module_name = ".".join(rel_path.parts)
                             module = importlib.import_module(module_name)
                             self._register_pages_from_module(module)
@@ -109,8 +114,9 @@ class Shadowstep(ShadowstepBase):
                     continue
                 self.pages[name] = obj
                 page_instance = obj()
-                edges = list(page_instance.edges.keys())
-                self.logger.info(f"✅ register page: {page_instance} with edges {edges}")
+                edges = page_instance.edges
+                edge_names = list(edges.keys())
+                self.logger.info(f"✅ register page: {page_instance} with edges {edge_names}")
                 self.navigator.add_page(page_instance, edges)
         except Exception as e:
             self.logger.error(f"❌ Error page register from module {module.__name__}: {e}")
@@ -134,28 +140,24 @@ class Shadowstep(ShadowstepBase):
         raise ValueError(f"Page '{name}' not found.")
 
     def get_element(self,
-                    locator: Union[Tuple[str, str], Dict[str, str]] = None,
+                    locator: tuple[str, str] | dict[str, Any] | Element | UiSelector,
                     timeout: int = 30,
                     poll_frequency: float = 0.5,
-                    ignored_exceptions: typing.Optional[WaitExcTypes] = None,
-                    contains: bool = False) -> Element:
-        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
-        element = Element(locator=locator,
-                          timeout=timeout,
-                          poll_frequency=poll_frequency,
-                          ignored_exceptions=ignored_exceptions,
-                          contains=contains,
-                          base=self)
-        return element
+                    ignored_exceptions: WaitExcTypes | None = None) -> Element:
+        self.logger.debug(f"{get_current_func_name()}")
+        return Element(locator=locator,
+                       timeout=timeout,
+                       poll_frequency=poll_frequency,
+                       ignored_exceptions=ignored_exceptions,
+                       shadowstep=self)
 
     def get_elements(
             self,
-            locator: Union[Tuple[str, str], Dict[str, str]],
+            locator: tuple[str, str] | dict[str, Any] | Element | UiSelector | WebElement,
             timeout: int = 30,
             poll_frequency: float = 0.5,
-            ignored_exceptions: typing.Optional[WaitExcTypes] = None,
-            contains: bool = False
-    ) -> Union[typing.List['Element'], typing.List]:
+            ignored_exceptions: WaitExcTypes | None = None
+    ) -> list[Element]:
         """
         Find multiple elements matching the given locator across the whole page.
         method is greedy
@@ -170,24 +172,22 @@ class Shadowstep(ShadowstepBase):
         Returns:
             Elements: Lazy iterable of Element instances.
         """
-        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
+        self.logger.debug(f"{get_current_func_name()}")
         root = Element(
             locator=("xpath", "//*"),
-            base=self,
+            shadowstep=self,
             timeout=timeout,
             poll_frequency=poll_frequency,
-            ignored_exceptions=ignored_exceptions,
-            contains=False
+            ignored_exceptions=ignored_exceptions
         )
         return root.get_elements(locator=locator,
                                  timeout=timeout,
                                  poll_frequency=poll_frequency,
-                                 ignored_exceptions=ignored_exceptions,
-                                 contains=contains)
+                                 ignored_exceptions=ignored_exceptions)
 
     def get_image(
             self,
-            image: Union[bytes, np.ndarray, Image.Image, str],
+            image: bytes | NDArray[np.uint8] | Image.Image | str,
             threshold: float = 0.5,
             timeout: float = 5.0
     ) -> ShadowstepImage:
@@ -202,7 +202,7 @@ class Shadowstep(ShadowstepBase):
         Returns:
             ShadowstepImage: ленивый объект для image-actions.
         """
-        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
+        self.logger.debug(f"{get_current_func_name()}")
         return ShadowstepImage(
             image=image,
             base=self,
@@ -212,25 +212,40 @@ class Shadowstep(ShadowstepBase):
 
     def get_images(
             self,
-            image: Union[bytes, np.ndarray, Image.Image, str],
+            image: bytes | NDArray[np.uint8] | Image.Image | str,
             threshold: float = 0.5,
             timeout: float = 5.0
-    ) -> ShadowstepImages:
-        return ShadowstepImages(image=image,
-                                base=self,
-                                threshold=threshold,
-                                timeout=timeout)
+    ) -> list[ShadowstepImage]:
+        """Return a list of ShadowstepImage wrappers for the given template.
+        
+        Args:
+            image: template (bytes, ndarray, PIL.Image or path)
+            threshold: matching threshold [0–1]
+            timeout: max seconds to search
+            
+        Returns:
+            list[ShadowstepImage]: List of lazy objects for image-actions.
+        """
+        self.logger.debug(f"{get_current_func_name()}")
+        # For now, return a single image wrapped in a list
+        # TODO: Implement multiple image matching
+        return [ShadowstepImage(
+            image=image,
+            base=self,
+            threshold=threshold,
+            timeout=timeout
+        )]
 
     def schedule_action(
             self,
             name: str,
-            steps: typing.List[ActionStep],
+            steps: list[ActionStep],
             interval_ms: int = 1000,
             times: int = 1,
-            max_pass: typing.Optional[int] = None,
-            max_fail: typing.Optional[int] = None,
+            max_pass: int | None = None,
+            max_fail: int | None = None,
             max_history_items: int = 20
-    ) -> 'Shadowstep':
+    ) -> Shadowstep:
         """
         Schedule a server-side action sequence.
 
@@ -272,42 +287,47 @@ class Shadowstep(ShadowstepBase):
         # shadowstep/scheduled_actions
         raise NotImplementedError
 
-    def start_logcat(self, filename: str) -> None:
-        self._logcat.start(filename)
+    def start_logcat(self, filename: str, port: int | None = None, filters: list[str] | None = None) -> None:
+        """
+        filename: log file name
+        port: port of Appium server instance, provide if you use grid
+        """
+        if filters is not None:
+            self._logcat.filters = filters
+        self._logcat.start(filename, port)
 
     def stop_logcat(self) -> None:
         self._logcat.stop()
 
     def find_and_get_element(
             self,
-            locator: Union[Tuple[str, str], Dict[str, str]],
+            locator: tuple[str, str] | dict[str, Any] | Element | UiSelector | WebElement,
             timeout: int = 30,
             poll_frequency: float = 0.5,
-            ignored_exceptions: typing.Optional[WaitExcTypes] = None,
+            ignored_exceptions: WaitExcTypes | None = None,
             contains: bool = False,
             max_swipes: int = 30
-    ) -> typing.Optional[Element]:
-        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
+    ) -> Element:
+        self.logger.debug(f"{get_current_func_name()}")
         try:
             scrollables = self.get_elements(
-                locator={'scrollable': 'true'},
+                locator={"scrollable": "true"},
                 timeout=timeout,
                 poll_frequency=poll_frequency,
-                ignored_exceptions=ignored_exceptions,
-                contains=contains
+                ignored_exceptions=ignored_exceptions
             )
             for scrollable in scrollables:
                 try:
                     scrollable: Element
-                    result = scrollable.scroll_to_element(locator=locator, max_swipes=max_swipes)
-                    if result is not None and result.is_visible():
-                        return result
+                    return scrollable.scroll_to_element(locator=locator, max_swipes=max_swipes)
                 except Exception as e:  # FIXME use specified exception
                     self.logger.debug(f"Scroll attempt failed on scrollable element: {e}")
                     continue
+            raise ShadowstepException(f"Element with locator {locator} not found in any scrollable element")
         except Exception as e:  # FIXME use specified exception
             self.logger.error(f"Failed to find scrollable elements: {e}")
-        return None
+            raise
+
 
     def is_text_visible(self, text: str) -> bool:
         """Check if an element with the given text is visible.
@@ -318,9 +338,9 @@ class Shadowstep(ShadowstepBase):
         Returns:
             bool: True if element is found and visible, False otherwise.
         """
-        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
+        self.logger.debug(f"{get_current_func_name()}")
         try:
-            element = Element(locator={'text': text}, base=self, contains=True)
+            element = Element(locator={"text": text}, shadowstep=self)
             return element.is_visible()
         except Exception as e:
             self.logger.warning(f"Failed to check visibility for text='{text}': {e}")
@@ -341,7 +361,7 @@ class Shadowstep(ShadowstepBase):
             direction: str,
             percent: float,
             speed: int
-    ) -> 'Shadowstep':
+    ) -> Shadowstep:
         """
         https://github.com/appium/appium-uiautomator2-driver/blob/61abedddcde2d606394acfa0f0c2bac395a0e14c/docs/android-mobile-gestures.md#mobile-scrollgesture
         Perform a scroll gesture in the specified area.
@@ -369,11 +389,11 @@ class Shadowstep(ShadowstepBase):
         percent: The size of the scroll as a percentage of the scrolling area size. Valid values must be float numbers greater than zero, where 1.0 is 100%. Mandatory value.
         speed: The speed at which to perform this gesture in pixels per second. The value must not be negative. The default value is 5000 * displayDensity
         """
-        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
+        self.logger.debug(f"{get_current_func_name()}")
         self.driver: WebDriver = WebDriverSingleton.get_driver()
 
         # Defensive validation (optional, to fail early on bad input)
-        if direction.lower() not in {'up', 'down', 'left', 'right'}:
+        if direction.lower() not in {"up", "down", "left", "right"}:
             raise ValueError(f"Invalid direction '{direction}', must be one of: up, down, left, right")
 
         if not (0.0 < percent <= 1.0):
@@ -383,15 +403,15 @@ class Shadowstep(ShadowstepBase):
             raise ValueError(f"Speed must be non-negative, got {speed}")
 
         self._execute(
-            'mobile: scrollGesture',
+            "mobile: scrollGesture",
             {
-                'left': left,
-                'top': top,
-                'width': width,
-                'height': height,
-                'direction': direction.lower(),
-                'percent': percent,
-                'speed': speed
+                "left": left,
+                "top": top,
+                "width": width,
+                "height": height,
+                "direction": direction.lower(),
+                "percent": percent,
+                "speed": speed
             }
         )
         return self
@@ -402,7 +422,7 @@ class Shadowstep(ShadowstepBase):
         raise_exception=ShadowstepException,
         exceptions=(NoSuchDriverException, InvalidSessionIdException)
     )
-    def long_click(self, x: int, y: int, duration: int) -> 'Shadowstep':
+    def long_click(self, x: int, y: int, duration: int) -> Shadowstep:
         """
         https://github.com/appium/appium-uiautomator2-driver/blob/61abedddcde2d606394acfa0f0c2bac395a0e14c/docs/android-mobile-gestures.md#mobile-longclickgesture
         Perform a long click gesture at the given coordinates.
@@ -423,15 +443,15 @@ class Shadowstep(ShadowstepBase):
         duration: Click duration in milliseconds. 500 by default. The value must not be negative
         locator: The map containing strategy and selector items to make it possible to click dynamic elements.
         """
-        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
+        self.logger.debug(f"{get_current_func_name()}")
 
         if duration < 0:
             raise ValueError(f"Duration must be non-negative, got {duration}")
 
         self.driver = WebDriverSingleton.get_driver()
         self._execute(
-            'mobile: longClickGesture',
-            {'x': x, 'y': y, 'duration': duration}
+            "mobile: longClickGesture",
+            {"x": x, "y": y, "duration": duration}
         )
         return self
 
@@ -441,7 +461,7 @@ class Shadowstep(ShadowstepBase):
         raise_exception=ShadowstepException,
         exceptions=(NoSuchDriverException, InvalidSessionIdException, StaleElementReferenceException)
     )
-    def double_click(self, x: int, y: int) -> 'Shadowstep':
+    def double_click(self, x: int, y: int) -> Shadowstep:
         """
         https://github.com/appium/appium-uiautomator2-driver/blob/61abedddcde2d606394acfa0f0c2bac395a0e14c/docs/android-mobile-gestures.md#mobile-doubleclickgesture
         Perform a double click gesture at the given coordinates.
@@ -460,12 +480,12 @@ class Shadowstep(ShadowstepBase):
         y: The y-offset coordinate
         locator: The map containing strategy and selector items to make it possible to click dynamic elements.
         """
-        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
+        self.logger.debug(f"{get_current_func_name()}")
 
         self.driver = WebDriverSingleton.get_driver()
         self._execute(
-            'mobile: doubleClickGesture',
-            {'x': x, 'y': y}
+            "mobile: doubleClickGesture",
+            {"x": x, "y": y}
         )
         return self
 
@@ -475,7 +495,7 @@ class Shadowstep(ShadowstepBase):
         raise_exception=ShadowstepException,
         exceptions=(NoSuchDriverException, InvalidSessionIdException, StaleElementReferenceException)
     )
-    def click(self, x: int, y: int) -> 'Shadowstep':
+    def click(self, x: int, y: int) -> Shadowstep:
         """
         https://github.com/appium/appium-uiautomator2-driver/blob/61abedddcde2d606394acfa0f0c2bac395a0e14c/docs/android-mobile-gestures.md#mobile-clickgesture
         Perform a click gesture at the given coordinates.
@@ -494,12 +514,12 @@ class Shadowstep(ShadowstepBase):
         y: The y-offset coordinate
         locator: The map containing strategy and selector items to make it possible to click dynamic elements.
         """
-        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
+        self.logger.debug(f"{get_current_func_name()}")
 
         self.driver = WebDriverSingleton.get_driver()
         self._execute(
-            'mobile: clickGesture',
-            {'x': x, 'y': y}
+            "mobile: clickGesture",
+            {"x": x, "y": y}
         )
         return self
 
@@ -516,7 +536,7 @@ class Shadowstep(ShadowstepBase):
             end_x: int,
             end_y: int,
             speed: int
-    ) -> 'Shadowstep':
+    ) -> Shadowstep:
         """
         https://github.com/appium/appium-uiautomator2-driver/blob/61abedddcde2d606394acfa0f0c2bac395a0e14c/docs/android-mobile-gestures.md#mobile-draggesture
         Perform a drag gesture from one point to another.
@@ -540,20 +560,20 @@ class Shadowstep(ShadowstepBase):
         endY: The y-end coordinate. Mandatory argument
         speed: The speed at which to perform this gesture in pixels per second. The value must not be negative. The default value is 2500 * displayDensity
         """
-        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
+        self.logger.debug(f"{get_current_func_name()}")
 
         if speed < 0:
             raise ValueError(f"Speed must be non-negative, got {speed}")
 
         self.driver = WebDriverSingleton.get_driver()
         self._execute(
-            'mobile: dragGesture',
+            "mobile: dragGesture",
             {
-                'startX': start_x,
-                'startY': start_y,
-                'endX': end_x,
-                'endY': end_y,
-                'speed': speed
+                "startX": start_x,
+                "startY": start_y,
+                "endX": end_x,
+                "endY": end_y,
+                "speed": speed
             }
         )
         return self
@@ -572,7 +592,7 @@ class Shadowstep(ShadowstepBase):
             height: int,
             direction: str,
             speed: int
-    ) -> 'Shadowstep':
+    ) -> Shadowstep:
         """
         https://github.com/appium/appium-uiautomator2-driver/blob/61abedddcde2d606394acfa0f0c2bac395a0e14c/docs/android-mobile-gestures.md#mobile-flinggesture
         Perform a fling gesture in the specified area.
@@ -598,7 +618,7 @@ class Shadowstep(ShadowstepBase):
         direction: Direction of the fling. Mandatory value. Acceptable values are: up, down, left and right (case insensitive)
         speed: The speed at which to perform this gesture in pixels per second. The value must be greater than the minimum fling velocity for the given view (50 by default). The default value is 7500 * displayDensity
         """
-        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
+        self.logger.debug(f"{get_current_func_name()}")
 
         if direction.lower() not in {"up", "down", "left", "right"}:
             raise ValueError("Invalid direction: {direction}")
@@ -607,14 +627,14 @@ class Shadowstep(ShadowstepBase):
 
         self.driver = WebDriverSingleton.get_driver()
         self._execute(
-            'mobile: flingGesture',
+            "mobile: flingGesture",
             {
-                'left': left,
-                'top': top,
-                'width': width,
-                'height': height,
-                'direction': direction.lower(),
-                'speed': speed
+                "left": left,
+                "top": top,
+                "width": width,
+                "height": height,
+                "direction": direction.lower(),
+                "speed": speed
             }
         )
         return self
@@ -633,7 +653,7 @@ class Shadowstep(ShadowstepBase):
             height: int,
             percent: float,
             speed: int
-    ) -> 'Shadowstep':
+    ) -> Shadowstep:
         """
         https://github.com/appium/appium-uiautomator2-driver/blob/61abedddcde2d606394acfa0f0c2bac395a0e14c/docs/android-mobile-gestures.md#mobile-pinchopengesture
         Perform a pinch-open gesture in the given bounding area.
@@ -659,7 +679,7 @@ class Shadowstep(ShadowstepBase):
         percent: The size of the pinch as a percentage of the pinch area size. Valid values must be float numbers in range 0..1, where 1.0 is 100%. Mandatory value.
         speed: The speed at which to perform this gesture in pixels per second. The value must not be negative. The default value is 2500 * displayDensity
         """
-        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
+        self.logger.debug(f"{get_current_func_name()}")
 
         if not (0.0 < percent <= 1.0):
             raise ValueError(f"Percent must be between 0 and 1, got {percent}")
@@ -668,14 +688,14 @@ class Shadowstep(ShadowstepBase):
 
         self.driver = WebDriverSingleton.get_driver()
         self._execute(
-            'mobile: pinchOpenGesture',
+            "mobile: pinchOpenGesture",
             {
-                'left': left,
-                'top': top,
-                'width': width,
-                'height': height,
-                'percent': percent,
-                'speed': speed
+                "left": left,
+                "top": top,
+                "width": width,
+                "height": height,
+                "percent": percent,
+                "speed": speed
             }
         )
         return self
@@ -693,7 +713,7 @@ class Shadowstep(ShadowstepBase):
             height: int,
             percent: float,
             speed: int
-    ) -> 'Shadowstep':
+    ) -> Shadowstep:
         """
         https://github.com/appium/appium-uiautomator2-driver/blob/61abedddcde2d606394acfa0f0c2bac395a0e14c/docs/android-mobile-gestures.md#mobile-pinchclosegesture
         Perform a pinch-close gesture in the given bounding area.
@@ -719,7 +739,7 @@ class Shadowstep(ShadowstepBase):
         percent: The size of the pinch as a percentage of the pinch area size. Valid values must be float numbers in range 0..1, where 1.0 is 100%. Mandatory value.
         speed: The speed at which to perform this gesture in pixels per second. The value must not be negative. The default value is 2500 * displayDensity
         """
-        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
+        self.logger.debug(f"{get_current_func_name()}")
 
         if not (0.0 < percent <= 1.0):
             raise ValueError(f"Percent must be between 0 and 1, got {percent}")
@@ -728,14 +748,14 @@ class Shadowstep(ShadowstepBase):
 
         self.driver = WebDriverSingleton.get_driver()
         self._execute(
-            'mobile: pinchCloseGesture',
+            "mobile: pinchCloseGesture",
             {
-                'left': left,
-                'top': top,
-                'width': width,
-                'height': height,
-                'percent': percent,
-                'speed': speed
+                "left": left,
+                "top": top,
+                "width": width,
+                "height": height,
+                "percent": percent,
+                "speed": speed
             }
         )
         return self
@@ -755,7 +775,7 @@ class Shadowstep(ShadowstepBase):
             direction: str,
             percent: float,
             speed: int
-    ) -> 'Shadowstep':
+    ) -> Shadowstep:
         """
         https://github.com/appium/appium-uiautomator2-driver/blob/61abedddcde2d606394acfa0f0c2bac395a0e14c/docs/android-mobile-gestures.md#mobile-swipegesture
         Perform a swipe gesture within the specified bounding box.
@@ -783,7 +803,7 @@ class Shadowstep(ShadowstepBase):
         percent: The size of the swipe as a percentage of the swipe area size. Valid values must be float numbers in range 0..1, where 1.0 is 100%. Mandatory value.
         speed: The speed at which to perform this gesture in pixels per second. The value must not be negative. The default value is 5000 * displayDensity
         """
-        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
+        self.logger.debug(f"{get_current_func_name()}")
 
         if direction.lower() not in {"up", "down", "left", "right"}:
             raise ValueError(f"Invalid direction '{direction}' — must be one of: up, down, left, right")
@@ -794,15 +814,15 @@ class Shadowstep(ShadowstepBase):
 
         self.driver = WebDriverSingleton.get_driver()
         self._execute(
-            'mobile: swipeGesture',
+            "mobile: swipeGesture",
             {
-                'left': left,
-                'top': top,
-                'width': width,
-                'height': height,
-                'direction': direction.lower(),
-                'percent': percent,
-                'speed': speed
+                "left": left,
+                "top": top,
+                "width": width,
+                "height": height,
+                "direction": direction.lower(),
+                "percent": percent,
+                "speed": speed
             }
         )
         return self
@@ -813,18 +833,18 @@ class Shadowstep(ShadowstepBase):
         raise_exception=ShadowstepException,
         exceptions=(NoSuchDriverException, InvalidSessionIdException)
     )
-    def swipe_right_to_left(self) -> 'Shadowstep':
+    def swipe_right_to_left(self) -> Shadowstep:
         """Perform a full-width horizontal swipe from right to left.
 
         Returns:
             Shadowstep: Self for method chaining.
         """
-        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
+        self.logger.debug(f"{get_current_func_name()}")
 
         self.driver = WebDriverSingleton.get_driver()
         size = self.driver.get_window_size()
-        width = size["width"]
-        height = size["height"]
+        width = cast(int, size["width"])
+        height = cast(int, size["height"])
 
         return self.swipe(
             left=0,
@@ -842,18 +862,18 @@ class Shadowstep(ShadowstepBase):
         raise_exception=ShadowstepException,
         exceptions=(NoSuchDriverException, InvalidSessionIdException, StaleElementReferenceException)
     )
-    def swipe_left_to_right(self) -> 'Shadowstep':
+    def swipe_left_to_right(self) -> Shadowstep:
         """Perform a full-width horizontal swipe from left to right.
 
         Returns:
             Shadowstep: Self for method chaining.
         """
-        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
+        self.logger.debug(f"{get_current_func_name()}")
 
         self.driver = WebDriverSingleton.get_driver()
         size = self.driver.get_window_size()
-        width = size["width"]
-        height = size["height"]
+        width = cast(int, size["width"])
+        height = cast(int, size["height"])
 
         return self.swipe(
             left=0,
@@ -871,18 +891,18 @@ class Shadowstep(ShadowstepBase):
         raise_exception=ShadowstepException,
         exceptions=(NoSuchDriverException, InvalidSessionIdException, StaleElementReferenceException)
     )
-    def swipe_top_to_bottom(self, percent: float = 1.0, speed: int = 5000) -> 'Shadowstep':
+    def swipe_top_to_bottom(self, percent: float = 1.0, speed: int = 5000) -> Shadowstep:
         """Perform a full-height vertical swipe from top to bottom.
 
         Returns:
             Shadowstep: Self for method chaining.
         """
-        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
+        self.logger.debug(f"{get_current_func_name()}")
 
         self.driver = WebDriverSingleton.get_driver()
         size = self.driver.get_window_size()
-        width = size["width"]
-        height = size["height"]
+        width = cast(int, size["width"])
+        height = cast(int, size["height"])
 
         return self.swipe(
             left=width // 2,
@@ -900,18 +920,18 @@ class Shadowstep(ShadowstepBase):
         raise_exception=ShadowstepException,
         exceptions=(NoSuchDriverException, InvalidSessionIdException, StaleElementReferenceException)
     )
-    def swipe_bottom_to_top(self, percent: float = 1.0, speed: int = 5000) -> 'Shadowstep':
+    def swipe_bottom_to_top(self, percent: float = 1.0, speed: int = 5000) -> Shadowstep:
         """Perform a full-height vertical swipe from bottom to top.
 
         Returns:
             Shadowstep: Self for method chaining.
         """
-        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
+        self.logger.debug(f"{get_current_func_name()}")
 
         self.driver = WebDriverSingleton.get_driver()
         size = self.driver.get_window_size()
-        width = size["width"]
-        height = size["height"]
+        width = cast(int, size["width"])
+        height = cast(int, size["height"])
 
         return self.swipe(
             left=width // 2,
@@ -929,8 +949,8 @@ class Shadowstep(ShadowstepBase):
                            InvalidSessionIdException,
                            WebDriverException,
                            StaleElementReferenceException))
-    def save_screenshot(self, path: str = '', filename: str = 'screenshot.png') -> bool:
-        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
+    def save_screenshot(self, path: str = "", filename: str = "screenshot.png") -> bool:
+        self.logger.debug(f"{get_current_func_name()}")
         path_to_file = os.path.join(path, filename)
         with open(path_to_file, "wb") as f:
             f.write(self.get_screenshot())
@@ -941,17 +961,16 @@ class Shadowstep(ShadowstepBase):
                exceptions=(NoSuchDriverException,
                            InvalidSessionIdException))
     def get_screenshot(self):
-        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
-        screenshot = self.driver.get_screenshot_as_base64().encode('utf-8')
-        screenshot = base64.b64decode(screenshot)
-        return screenshot
+        self.logger.debug(f"{get_current_func_name()}")
+        screenshot = self.driver.get_screenshot_as_base64().encode("utf-8")
+        return base64.b64decode(screenshot)
 
     @fail_safe(retries=3, delay=0.5,
                raise_exception=ShadowstepException,
                exceptions=(NoSuchDriverException,
                            InvalidSessionIdException))
-    def save_source(self, path: str = '', filename: str = 'screenshot.png') -> bool:
-        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
+    def save_source(self, path: str = "", filename: str = "screenshot.png") -> bool:
+        self.logger.debug(f"{get_current_func_name()}")
         path_to_file = os.path.join(path, filename)
         with open(path_to_file, "wb") as f:
             f.write(self.driver.page_source.encode("utf-8"))
@@ -962,10 +981,11 @@ class Shadowstep(ShadowstepBase):
                exceptions=(NoSuchDriverException,
                            InvalidSessionIdException,
                            StaleElementReferenceException))
-    def tap(self, x: int = None, y: int = None, duration: typing.Optional[float] = None) -> 'Shadowstep':
-        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
+    def tap(self, x: int, y: int, duration: int | None = None) -> Shadowstep:
+        self.logger.debug(f"{get_current_func_name()}")
         self.driver.tap([(x, y)], duration or 100)
         return self
+
 
     @fail_safe(retries=3, delay=0.5,
                raise_exception=ShadowstepException,
@@ -973,7 +993,7 @@ class Shadowstep(ShadowstepBase):
                            InvalidSessionIdException))
     def start_recording_screen(self) -> None:
         """Start screen recording using Appium driver."""
-        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
+        self.logger.debug(f"{get_current_func_name()}")
         self.driver.start_recording_screen()
 
     @fail_safe(retries=3, delay=0.5,
@@ -986,7 +1006,7 @@ class Shadowstep(ShadowstepBase):
         Returns:
             bytes: Video recording in base64-decoded format.
         """
-        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
+        self.logger.debug(f"{get_current_func_name()}")
         encoded = self.driver.stop_recording_screen()
         return base64.b64decode(encoded)
 
@@ -994,10 +1014,10 @@ class Shadowstep(ShadowstepBase):
                raise_exception=ShadowstepException,
                exceptions=(NoSuchDriverException,
                            InvalidSessionIdException))
-    def push(self, source_file_path: str, destination_file_path: str) -> 'Shadowstep':
-        with open(os.path.join(source_file_path), 'rb') as file:
+    def push(self, source_file_path: str, destination_file_path: str) -> Shadowstep:
+        with open(os.path.join(source_file_path), "rb") as file:
             file_data = file.read()
-            base64data = base64.b64encode(file_data).decode('utf-8')
+            base64data = base64.b64encode(file_data).decode("utf-8")
         self.driver.push_file(
             destination_path=destination_file_path,
             base64data=base64data
@@ -1051,6 +1071,6 @@ class Shadowstep(ShadowstepBase):
         """
         raise NotImplementedError
 
-    def _execute(self, name: str, params: Union[dict, list]) -> None:
+    def _execute(self, name: str, params: dict[Any, Any] | list[Any]) -> None:
         # https://github.com/appium/appium-uiautomator2-driver/blob/master/docs/android-mobile-gestures.md
         self.driver.execute_script(name, params)

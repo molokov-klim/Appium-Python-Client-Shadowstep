@@ -1,9 +1,10 @@
-import inspect
 import logging
 import os
 import re
+
 import requests
-from typing import List, Optional, Any
+
+from shadowstep.utils.utils import get_current_func_name
 
 
 class YandexTranslate:
@@ -29,12 +30,12 @@ class YandexTranslate:
         Returns:
             str: The IAM token.
         """
-        oauth_token = os.getenv("yandexPassportOauthToken")
+        oauth_token = os.getenv("yandexPassportOauthToken")  # noqa: SIM112
         if not oauth_token:
             raise RuntimeError("Missing yandexPassportOauthToken environment variable")
 
         url = "https://iam.api.cloud.yandex.net/iam/v1/tokens"
-        response = requests.post(url, json={"yandexPassportOauthToken": oauth_token})
+        response = requests.post(url, json={"yandexPassportOauthToken": oauth_token}, timeout=30)  # noqa: S113
         response.raise_for_status()
         return response.json()["iamToken"]
 
@@ -60,7 +61,7 @@ class YandexTranslate:
         Returns:
             str: Translated string (or original if not translated).
         """
-        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
+        self.logger.debug(f"{get_current_func_name()}")
         self.logger.debug(f"{text=}")
         if not self._contains_cyrillic(text):
             return text  # No translation needed
@@ -77,7 +78,7 @@ class YandexTranslate:
             "targetLanguageCode": "en"
         }
 
-        response = requests.post(url, headers=headers, json=body)
+        response = requests.post(url, headers=headers, json=body, timeout=30)  # noqa: S113
         self.logger.debug(f"{response.text=}")
         response.raise_for_status()
         translations = response.json().get("translations", [])

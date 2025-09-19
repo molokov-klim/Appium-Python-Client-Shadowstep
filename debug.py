@@ -1,39 +1,22 @@
 import json
 import logging
 import requests
+from lxml import etree  # type: ignore
 
+from shadowstep.element.element import Element
 from shadowstep.page_object.page_object_generator import PageObjectGenerator
 from shadowstep.page_object.page_object_parser import PageObjectParser
+from shadowstep.page_object.page_object_recycler_explorer import PageObjectRecyclerExplorer
+from shadowstep.shadowstep import Shadowstep
 from shadowstep.utils.translator import YandexTranslate
+from tests.conftest import APPIUM_IP, APPIUM_COMMAND_EXECUTOR, CAPABILITIES, APPIUM_PORT
 
+app = Shadowstep()
+app.connect(server_ip=APPIUM_IP,
+            server_port=APPIUM_PORT,
+            command_executor=APPIUM_COMMAND_EXECUTOR,
+            capabilities=CAPABILITIES)
 
-
-
-
-
-
-
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
-
-parser = PageObjectParser()
-translator = YandexTranslate(folder_id="b1ghf7n3imfg7foodstv")
-generator = PageObjectGenerator(translator)
-
-tree = parser.parse(app.shadowstep.driver.page_source)
-page_path, page_class_name = generator.generate(tree, output_dir="pages")
-
-logger.info(f"{page_path=}")
-logger.info(f"{page_class_name=}")
-
-
-
-
-
-
-
-
-
-
-
-
+page_source = app.driver.page_source
+parser = etree.XMLParser(recover=True)
+root = etree.fromstring(page_source.encode("utf-8"), parser=parser)

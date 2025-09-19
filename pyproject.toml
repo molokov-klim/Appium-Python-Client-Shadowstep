@@ -1,66 +1,138 @@
-# pyproject.toml
-
 [build-system]
 requires = ["setuptools", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
 name = "appium-python-client-shadowstep"
-version = "0.32.107"
+version = "0.34.161"
 description = "UI Testing Framework powered by Appium Python Client"
 authors = [{ name = "Klim Molokov", email = "klim.molokov@yandex.ru" }]
 license = "MIT"
 readme = "README.md"
-requires-python = ">=3.8"
-
-# >=>=>=>=>=>=>=>=>=>=>=
-# 🔖 Versioning Guidelines
-# >=>=>=>=>=>=>=>=>=>=>=
-# Version is defined in the [project] -> version field.
-# Follows Semantic Versioning (SemVer): MAJOR.MINOR.PATCH
-#
-# Examples:
-#   - 0.14.28  → current working version with new features
-#   - 1.0.0    → stable public release
-#
-# Bump rules:
-# - PATCH for bug fixes (0.14.28 → 0.14.29)
-# - MINOR for backward-compatible features (0.14.28 → 0.15.0)
-# - MAJOR for breaking changes (0.14.28 → 1.0.0)
-#
-# Commits:
-# - If the version is bumped, commit with message: "0.15.29 your comment"
-# - If the version remains unchanged, commit with: "0.14.28 your comment"
+requires-python = ">=3.9"
 
 dependencies = [
-    "Appium-Python-Client>=4.2.0",
-    "allure-pytest>=2.13.2",
-    "zlib-compress>=0.0.1",
-    "zlib-decompress>=0.0.2",
-    "pylibjpeg>=1.4.0",
-    "Pillow>=11.3.0",
-    "requests>=2.31.0",
-    "pyserial>=3.5",
-    "opencv-python>=4.8.0.74",
-    "pytesseract>=0.3.10",
-    "numpy>=2.3.2",
-    "selenium>=4.12",
-    "paramiko>=3.4.0",
-    "scp>=0.14.5",
-    "lxml>=5.3.2",
-    "networkx>=3.2.1",
-    "matplotlib>=3.7.5",
-    "websocket-client>=1.8.0",
-    "unidecode>=1.4.0",
-    "jinja2>=3.1.6"
+    "Appium-Python-Client>=5.2.2", # webdriver
+    "selenium>=4.12", # webdriver
+    "websocket-client>=1.8.0", # logcat
+    "requests>=2.31.0", # http
+    "opencv-python>=4.8.0.74", # image
+    "numpy>=2.0.0", # image
+    "Pillow>=11.3.0", # image
+    "pytesseract>=0.3.10", # image (ocr)
+    "allure-pytest>=2.13.2", # reports (decorators)
+    "paramiko>=3.4.0", # terminal
+    "scp>=0.14.5", # terminal
+    "networkx>=3.2.1", # navigator
+    "lxml>=5.3.2", # page object generator
+    "jinja2>=3.1.6", # page object generator
+    "unidecode>=1.4.0", # page object generator
+    "eulxml>=1.1.3", # ast parsing xpath
+    "setuptools==80.9.0",   # nessecary dependency for eulxml
 ]
 
 keywords = ["appium", "testing", "uiautomator2", "android", "automation", "framework"]
 
 classifiers = [
     "Programming Language :: Python :: 3.9",
-    "Programming Language :: Python :: 3.10"
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13"
+]
+
+[project.optional-dependencies]
+dev = [
+    "ruff>=0.5.0",
+    "pyright>=1.1.377",
+    "pytest>=7.4.0",
+    "pytest-cov>=4.1.0",
+    "setuptools",
+    "icecream",
+]
+docs = [
+    "sphinx>=7.2.0",
+    "myst-parser>=2.0.0",
 ]
 
 [project.urls]
 Repository = "https://github.com/molokov-klim/Appium-Python-Client-Shadowstep"
+
+# ---------- UV ----------
+[tool.uv]
+environments = [
+    "sys_platform == 'win32'",
+    "sys_platform == 'windows'",
+    "sys_platform == 'linux'"
+]
+
+dev-dependencies = [
+    "pre-commit>=4.3.0",
+    "pyright>=1.1.403",
+    "ruff>=0.12.9",
+]
+
+# ---------- RUFF ----------
+[tool.ruff]
+# Общие настройки
+target-version = "py313"
+line-length = 100
+
+[tool.ruff.lint]
+# "Строгий" режим Ruff: берем все доступные проверки (включая модули flake8/pylint/pyupgrade и т.п.)
+# select = ["ALL"]
+select = [
+    "E", # Ошибки синтаксиса и базовые ошибки Python (flake8 E*). Например, E302 — отсутствует пустая строка после функции/класса.
+    "F", # Ошибки импорта и несуществующих переменных (flake8 F*). Например, F401 — импортирован модуль, но не используется.
+    "UP", # Правила для обновления кода под новые версии Python (pyupgrade). Например, UP001 — устаревший синтаксис, который можно заменить.
+    "W", # Ворнинги и потенциально проблемный код (flake8 W*). Например, W291 — лишние пробелы в конце строки.
+    "B", # Правила безопасности из flake8-bugbear. Например, B001 — assert используется вне тестов.
+    "C", # Статические проверки кода, производительность, оптимизации (flake8-comprehensions и др.).
+    "SIM", # Простейшие стилистические проверки. Например, дублирование кода, простые паттерны.
+    "I", # Правила для импорта и организации импорта (isort/flake8-import-order). Например, порядок стандартных и сторонних библиотек.
+    "N", # Naming conventions (naming). Именование переменных, функций, классов.
+    "S", # Security (bandit). Потенциально небезопасный код.
+    "R", # Refactoring suggestions. Возможные улучшения и упрощения кода.
+    "PT", # Performance tweaks. Проверка кода на производительность.
+    "Q", # Complexity (radon, cognitive complexity). Сложность функций/методов.
+]
+# "D",   - Docstring и документация (pydocstyle). Проверка стиля docstring.
+# "T",   - Type-checking (pyright/mypy). Проверка аннотаций типов.
+# "ANN", - Type annotations. Проверка наличия и корректности аннотаций типов.
+
+ignore = [
+    "E203", # пробел перед ":" в срезах
+    "D203", # пустые строки вокруг docstring
+    "D212", # пустые строки в блоках docstring
+    "E501", # строка слишком длинная
+    "W293", # пустые строки содержат пробелы
+]
+
+exclude = [
+    "**/__pycache__",
+    ".venv",
+    "build",
+    "dist",
+    "debug*.py",
+    "tests"
+]
+
+# Опционально авто-правки:
+[tool.ruff.format]
+preview = true
+
+# ---------- PYTEST ----------
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-svl --log-cli-level INFO --tb=short --setup-show"
+#-v (или --verbose) — включает подробный вывод, показывая названия тестов и их статус (PASSED, FAILED и т. д.).
+#--tb=short — настраивает формат трассировки ошибок (traceback):
+#short — выводит укороченный traceback, только ключевые строки с ошибкой (меньше "шума" по сравнению с полным выводом).
+#Другие варианты: --tb=auto (по умолчанию), --tb=long, --tb=line, --tb=native, --tb=no (вообще не показывать).
+
+# ---------- DEPLOY ----------
+[tool.setuptools.packages.find]
+include = ["shadowstep*"]
+
+[tool.setuptools.package-data]
+"shadowstep.page_object.templates" = ["*.j2"]

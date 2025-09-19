@@ -1,45 +1,105 @@
 # shadowstep/navigator/navigator.py
+"""Navigation module for managing page transitions in Shadowstep framework.
 
+This module provides functionality for navigating between pages using graph-based
+pathfinding algorithms. It supports both NetworkX-based shortest path finding
+and fallback BFS traversal.
+"""
+
+from __future__ import annotations
+
+import logging
 import traceback
+from collections import deque
+from typing import TYPE_CHECKING, Any, cast
 
 import networkx as nx
-import matplotlib.pyplot as plt
-from collections import deque
-from typing import Any, Optional, List, Union
-import logging
-logger = logging.getLogger(__name__)
+from networkx.classes import DiGraph
 from networkx.exception import NetworkXException
-
 from selenium.common import WebDriverException
+
+from shadowstep.page_base import PageBaseShadowstep
+
+logger = logging.getLogger(__name__)
+
+if TYPE_CHECKING:
+    from shadowstep.shadowstep import Shadowstep
+
+# Constants
+DEFAULT_NAVIGATION_TIMEOUT = 55
 
 
 class PageNavigator:
-    def __init__(self, shadowstep: "ShadowstepBase"):
+    """Manages dom between pages using graph-based pathfinding.
+    
+    This class provides methods to navigate between different pages in the application
+    by finding optimal paths through a graph of page transitions.
+    
+    Attributes:
+        shadowstep: The main Shadowstep instance for page resolution.
+        graph_manager: Manages the page transition graph.
+        logger: Logger instance for dom events.
+    """
+
+    def __init__(self, shadowstep: Shadowstep) -> None:
+        """Initialize the PageNavigator.
+        
+        Args:
+            shadowstep: The main Shadowstep instance.
+            
+        Raises:
+            TypeError: If shadowstep is None.
+        """
+        # shadowstep is already typed as Shadowstep, so it cannot be None
+
         self.shadowstep = shadowstep
         self.graph_manager = PageGraph()
         self.logger = logger
 
-    def add_page(self, page, edges):
+    def add_page(self, page: Any, edges: dict[str, Any]) -> None:
+        """Add a page and its transitions to the dom graph.
+        
+        Args:
+            page: The page object to add.
+            edges: Dictionary mapping target page names to transition methods.
+            
+        Raises:
+            TypeError: If page is None or edges is not a dictionary.
+        """
+        if page is None:
+            raise TypeError("page cannot be None")
+        # edges is already typed as dict[str, Any], so isinstance check is unnecessary
+
         self.graph_manager.add_page(page=page, edges=edges)
 
-    def navigate(self, from_page: Any, to_page: Any, timeout: int = 55) -> bool:
+    def navigate(self, from_page: Any, to_page: Any, timeout: int = DEFAULT_NAVIGATION_TIMEOUT) -> bool:
         """Navigate from one page to another following the defined graph.
 
         Args:
-            from_page (Any): The current page.
-            to_page (Any): The target page to navigate to.
-            timeout (int): Timeout in seconds for navigation.
+            from_page: The current page.
+            to_page: The target page to navigate to.
+            timeout: Timeout in seconds for dom.
 
         Returns:
-            bool: True if navigation succeeded, False otherwise.
+            True if dom succeeded, False otherwise.
+            
+        Raises:
+            TypeError: If from_page or to_page is None.
+            ValueError: If timeout is negative.
         """
+        if from_page is None:
+            raise TypeError("from_page cannot be None")
+        if to_page is None:
+            raise TypeError("to_page cannot be None")
+        if timeout < 0:
+            raise ValueError("timeout must be non-negative")
         if from_page == to_page:
             self.logger.info(f"⏭️ Already on target page: {to_page}")
             return True
 
         path = self.find_path(from_page, to_page)
         if not path:
-            self.logger.error(f"❌ No navigation path found from {from_page} to {to_page}")
+            self.logger.error(f"❌ No dom path found from {from_page} to {to_page}")
             return False
 
         self.logger.info(
@@ -47,15 +107,24 @@ class PageNavigator:
         )
 
         try:
-            self.perform_navigation(path, timeout)
+            self.perform_navigation(cast(list["PageBaseShadowstep"], path), timeout)
             self.logger.info(f"✅ Successfully navigated to {to_page}")
             return True
         except WebDriverException as error:
-            self.logger.error(f"❗ WebDriverException during navigation from {from_page} to {to_page}: {error}")
+            self.logger.error(f"❗ WebDriverException during dom from {from_page} to {to_page}: {error}")
             self.logger.debug("📌 Full traceback:\n" + "".join(traceback.format_stack()))
             return False
 
-    def find_path(self, start, target):
+    def find_path(self, start: Any, target: Any) -> list[Any] | None:
+        """Find a path from start page to target page.
+        
+        Args:
+            start: Starting page (can be string or page object).
+            target: Target page (can be string or page object).
+            
+        Returns:
+            List of pages representing the path, or None if no path exists.
+        """
         if isinstance(start, str):
             start = self.shadowstep.resolve_page(start)
         if isinstance(target, str):
@@ -66,105 +135,154 @@ class PageNavigator:
             if path:
                 return path
         except NetworkXException as error:
-            self.logger.error(error)
-            pass
+            self.logger.error(f"NetworkX error in find_shortest_path: {error}")
 
-        # fallback: BFS
+        # Fallback: BFS traversal
+        return self._find_path_bfs(start, target)
+
+    def _find_path_bfs(self, start: Any, target: Any) -> list[Any] | None:
+        """Find path using breadth-first search as fallback.
+        
+        Args:
+            start: Starting page.
+            target: Target page.
+            
+        Returns:
+            List of pages representing the path, or None if no path exists.
+        """
         visited = set()
-        queue = deque([(start, [])])
+        queue = deque([(start, [])])  # type: ignore
         while queue:
             current_page, path = queue.popleft()
             visited.add(current_page)
             transitions = self.graph_manager.get_edges(current_page)
             for next_page_name in transitions:
-                next_page = self.shadowstep.resolve_page(next_page_name)
+                next_page = self.shadowstep.resolve_page(cast(str, next_page_name))
                 if next_page == target:
                     return path + [current_page, next_page]
                 if next_page not in visited:
                     queue.append((next_page, path + [current_page]))
         return None
 
-    def perform_navigation(self, path: List["PageBase"], timeout: int = 55) -> None:
-        """Perform navigation through a given path of PageBase instances.
+    def perform_navigation(self, path: list[Any], timeout: int = DEFAULT_NAVIGATION_TIMEOUT) -> None:
+        """Perform dom through a given path of PageBase instances.
 
         Args:
-            path (List[PageBase]): List of page objects to traverse.
-            timeout (int): Timeout for each navigation step.
+            path: List of page objects to traverse.
+            timeout: Timeout for each dom step.
+            
+        Raises:
+            ValueError: If path is empty or has only one element.
+            AssertionError: If dom to next page fails.
         """
+        if not path:
+            raise ValueError("path cannot be empty")
+        if len(path) < 2:
+            raise ValueError("path must contain at least 2 pages for dom")
+
         for i in range(len(path) - 1):
             current_page = path[i]
             next_page = path[i + 1]
             transition_method = current_page.edges[next_page.__class__.__name__]
             transition_method()
             if not next_page.is_current_page():
-                raise AssertionError(f"navigation error: \n from {current_page} to {next_page} with {transition_method}")
-
-    def save_graph(self, path: str = "page_graph.png"):
-        self.graph_manager.save_graph_image(path)
-
-    def test_graph(self):
-        for from_page in self.graph_manager.nx_graph.nodes:
-            for to_page in self.graph_manager.get_edges(from_page):
-                from_inst = self.shadowstep.resolve_page(from_page.__repr__)
-                to_inst = self.shadowstep.resolve_page(to_page)
-                if from_inst and to_inst:
-                    try:
-                        self.navigate(from_page=from_inst, to_page=to_inst)
-                        assert to_inst.is_current_page()
-                        logger.info(f"✅ Переход {from_page.__repr__} → {to_page} прошёл успешно.")
-                    except Exception as e:
-                        logger.warning(f"❌ Ошибка при переходе {from_page.__repr__} → {to_page}: {e}")
+                raise AssertionError(
+                    f"Navigation error: failed to navigate from {current_page} to {next_page} "
+                    f"using method {transition_method}"
+                )
 
 
 class PageGraph:
-    def __init__(self):
-        self.graph = {}  # старый способ
-        self.nx_graph = nx.DiGraph()  # новый способ (networkx)
+    """Manages the graph of page transitions.
+    
+    This class maintains both a simple dictionary-based graph and a NetworkX
+    directed graph for efficient pathfinding operations.
+    
+    Attributes:
+        graph: Dictionary-based graph for backward compatibility.
+        nx_graph: NetworkX directed graph for advanced operations.
+    """
 
-    def add_page(self, page, edges):
+    def __init__(self) -> None:
+        """Initialize the PageGraph with empty graphs."""
+        self.graph: dict[Any, Any] = {}  # Legacy dictionary-based graph
+        self.nx_graph: DiGraph[Any] = nx.DiGraph()  # NetworkX directed graph
+
+    def add_page(self, page: Any, edges: Any) -> None:
+        """Add a page and its edges to both graph representations.
+        
+        Args:
+            page: The page object to add.
+            edges: Dictionary or list of target pages/names.
+            
+        Raises:
+            TypeError: If page is None.
+        """
+        if page is None:
+            raise TypeError("page cannot be None")
+
         self.graph[page] = edges
 
-        # добавим вершину и рёбра в networkx-граф
+        # Add vertex and edges to NetworkX graph
         self.nx_graph.add_node(page)
-        for target_name in edges:
-            self.nx_graph.add_edge(page, target_name)
+        if isinstance(edges, (dict, list, tuple)):  # noqa
+            for target_name in edges:
+                self.nx_graph.add_edge(page, target_name)
 
-    def get_edges(self, page):
+    def get_edges(self, page: Any) -> list[Any]:
+        """Get edges for a given page.
+        
+        Args:
+            page: The page to get edges for.
+            
+        Returns:
+            List of target pages/names, empty list if page not found.
+        """
         return self.graph.get(page, [])
 
-    def is_valid_edge(self, from_page, to_page):
+    def is_valid_edge(self, from_page: Any, to_page: Any) -> bool:
+        """Check if there's a valid edge between two pages.
+        
+        Args:
+            from_page: Source page.
+            to_page: Target page.
+            
+        Returns:
+            True if edge exists, False otherwise.
+        """
         transitions = self.get_edges(from_page)
         return to_page in transitions
 
-    def has_path(self, from_page, to_page) -> bool:
-        return nx.has_path(self.nx_graph, from_page, to_page)
+    def has_path(self, from_page: Any, to_page: Any) -> bool:
+        """Check if there's a path between two pages.
+        
+        Args:
+            from_page: Source page.
+            to_page: Target page.
+            
+        Returns:
+            True if path exists, False otherwise.
+        """
+        try:
+            return nx.has_path(self.nx_graph, from_page, to_page)
+        except (nx.NetworkXError, KeyError):
+            return False
 
-    def find_shortest_path(self, from_page, to_page) -> Optional[List[Any]]:
+    def find_shortest_path(self, from_page: Any, to_page: Any) -> list[Any] | None:
+        """Find the shortest path between two pages.
+        
+        Args:
+            from_page: Source page.
+            to_page: Target page.
+            
+        Returns:
+            List of pages representing the shortest path, or None if no path exists.
+        """
         try:
             return nx.shortest_path(self.nx_graph, source=from_page, target=to_page)
         except nx.NetworkXNoPath:
             return None
         except nx.NodeNotFound:
             return None
-
-    def save_graph_image(self, path: str = "page_graph.png"):
-        plt.figure(figsize=(12, 8))
-        pos = nx.spring_layout(self.nx_graph, seed=42)  # позиционирование узлов
-
-        # Отрисовка
-        nx.draw(
-            self.nx_graph,
-            pos,
-            with_labels=True,
-            arrows=True,
-            node_size=2000,
-            node_color="lightblue",
-            font_size=10,
-            font_weight="bold",
-            edge_color="gray",
-        )
-
-        plt.title("Shadowstep Page Graph")
-        plt.tight_layout()
-        plt.savefig(path)
-        plt.close()
+        except nx.NetworkXError:
+            return None

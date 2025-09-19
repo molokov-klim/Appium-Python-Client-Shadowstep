@@ -5,7 +5,7 @@ from shadowstep.terminal.terminal import Terminal
 from shadowstep.terminal.transport import Transport
 
 __all__ = [
-    'Adb',
-    'Terminal',
-    'Transport',
+    "Adb",
+    "Terminal",
+    "Transport",
 ]

@@ -1,12 +1,12 @@
 # shadowstep/page_object/page_object_test_generator.py
-import re
 import ast
-from typing import List, Tuple
-import inspect
-from jinja2 import Environment, FileSystemLoader
-import os
-
 import logging
+import os
+import re
+
+from jinja2 import Environment, FileSystemLoader
+
+from shadowstep.utils.utils import get_current_func_name
 
 
 class PageObjectTestGenerator:
@@ -50,14 +50,14 @@ class PageObjectTestGenerator:
         templates_dir = os.path.join(os.path.dirname(__file__), "templates")
         self.env = Environment(
             loader=FileSystemLoader(templates_dir),
-            autoescape=False,
+            autoescape=True,  # noqa: S701
             keep_trailing_newline=True,
             trim_blocks=True,
             lstrip_blocks=True
         )
 
-    def generate_test(self, input_path: str, class_name: str, output_dir: str) -> Tuple[str, str]:
-        self.logger.debug(f"{inspect.currentframe().f_code.co_name}")
+    def generate_test(self, input_path: str, class_name: str, output_dir: str) -> tuple[str, str]:
+        self.logger.debug(f"{get_current_func_name()}")
 
         step = "Извлечение имени модуля"
         self.logger.debug(f"[{step}] started")
@@ -67,7 +67,7 @@ class PageObjectTestGenerator:
 
         step = "Извлечение свойств из файла"
         self.logger.debug(f"[{step}] started")
-        with open(input_path, "r", encoding="utf-8") as f:
+        with open(input_path, encoding="utf-8") as f:
             source = f.read()
         properties = self._extract_properties(source)
 
@@ -95,7 +95,7 @@ class PageObjectTestGenerator:
         self.logger.info(f"Generated test → {test_path}")
         return test_path, test_class_name
 
-    def _extract_properties(self, source: str) -> List[str]:
+    def _extract_properties(self, source: str) -> list[str]:
         """Парсит Python AST и вытаскивает список свойств класса."""
         tree = ast.parse(source)
         class_node = next((n for n in tree.body if isinstance(n, ast.ClassDef)), None)
@@ -112,4 +112,4 @@ class PageObjectTestGenerator:
         ]
 
     def _camel_to_snake(self, name: str) -> str:
-        return re.sub(r'(?<!^)(?=[A-Z])', '_', name).lower()
+        return re.sub(r"(?<!^)(?=[A-Z])", "_", name).lower()
