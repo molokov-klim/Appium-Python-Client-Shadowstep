@@ -10,6 +10,7 @@ Shadowstep is a modular UI automation framework for Android applications built o
 - DSL-style assertions for readable checks (`should.have`, `should.be`)
 - Image-based actions on screen
 
+[![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/molokov-klim/Appium-Python-Client-Shadowstep)
 ---
 
 ## Contents
