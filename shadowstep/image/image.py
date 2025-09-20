@@ -168,7 +168,7 @@ class ShadowstepImage:
         # if not self._base:
         #     raise RuntimeError("Shadowstep instance is not set.")
         #
-        # self._ensure_visible()  # контейнер должен быть видим
+        # self._ensure_visible()  # container should be visible
         #
         # for _ in range(max_attempts):
         #     try:

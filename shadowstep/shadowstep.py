@@ -200,7 +200,7 @@ class Shadowstep(ShadowstepBase):
             timeout: max seconds to search
 
         Returns:
-            ShadowstepImage: ленивый объект для image-actions.
+            ShadowstepImage: Lazy object for image-actions.
         """
         self.logger.debug(f"{get_current_func_name()}")
         return ShadowstepImage(
@@ -251,14 +251,14 @@ class Shadowstep(ShadowstepBase):
 
         Args:
             name: unique action name.
-            steps: список шагов (GestureStep, SourceStep, ScreenshotStep и т.п.).
-            interval_ms: пауза между запусками в мс.
-            times: сколько раз попытаться выполнить.
-            max_pass: прекратить после N успешных запусков.
-            max_fail: прекратить после N неудач.
-            max_history_items: сколько записей хранить в истории.
+            steps: List of steps (GestureStep, SourceStep, ScreenshotStep, etc.).
+            interval_ms: Pause between runs in milliseconds.
+            times: How many times to attempt execution.
+            max_pass: Stop after N successful runs.
+            max_fail: Stop after N failures.
+            max_history_items: How many records to keep in history.
         Returns:
-            self — для удобного чейнинга.
+            self — for convenient chaining.
         """
         # shadowstep/scheduled_actions
         raise NotImplementedError
@@ -268,9 +268,9 @@ class Shadowstep(ShadowstepBase):
         Fetch the execution history for the named action.
 
         Args:
-            name: то же имя, что и при schedule_action.
+            name: Same name as used in schedule_action.
         Returns:
-            ActionHistory — удобная обёртка над JSON-ответом.
+            ActionHistory — convenient wrapper over JSON response.
         """
         # shadowstep/scheduled_actions
         raise NotImplementedError
@@ -280,9 +280,9 @@ class Shadowstep(ShadowstepBase):
         Unschedule the action and return its final history.
 
         Args:
-            name: то же имя, что и при schedule_action.
+            name: Same name as used in schedule_action.
         Returns:
-            ActionHistory — история всех выполнений до момента отмены.
+            ActionHistory — history of all executions until cancellation.
         """
         # shadowstep/scheduled_actions
         raise NotImplementedError
@@ -1026,7 +1026,7 @@ class Shadowstep(ShadowstepBase):
 
     def update_settings(self):
         """
-        # TODO вынести в отдельный класс с прозрачным выбором settings (enum?)
+        # TODO move to separate class with transparent settings selection (enum?)
         self.driver.update_settings(settings={'enableMultiWindows': True})
 
         https://github.com/appium/appium-uiautomator2-driver/blob/61abedddcde2d606394acfa0f0c2bac395a0e14c/README.md?plain=1#L304

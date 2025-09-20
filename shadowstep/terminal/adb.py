@@ -44,7 +44,7 @@ class Adb:
         """
         logger.info(f"{get_current_func_name()}")
 
-        # Определение команды для выполнения с помощью adb для получения списка устройств
+        # Define command to execute with adb to get list of devices
         command = ["adb", "devices"]
 
         try:

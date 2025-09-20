@@ -195,7 +195,7 @@ class XPathConverter:
             i = 1
             # ".."
             if i < len(node_list) and isinstance(node_list[i], AbbreviatedStep) and node_list[i].abbr == "..":
-                # создаём fromParent
+                # create fromParent
                 shadowstep_dict[ShadowstepDictAttribute.FROM_PARENT.value] = self._build_shadowstep_dict(node_list[i + 1:], {})
                 return shadowstep_dict
             
@@ -329,7 +329,7 @@ class XPathConverter:
                 return
             raise ShadowstepConversionError(f"Unsupported attribute: @{attr}")
 
-        # наличие атрибута: [@enabled]
+        # attribute presence: [@enabled]
         if isinstance(pred_expr, Step) and pred_expr.axis == "@" and isinstance(pred_expr.node_test, NameTest):
             attr = pred_expr.node_test.name
             if attr in _BOOL_ATTRS:
@@ -337,7 +337,7 @@ class XPathConverter:
                 return
             raise ShadowstepConversionError(f"Attribute presence predicate not supported for @{attr}")
 
-        # позиционный номер [3] или что-то ещё
+        # positional number [3] or something else
         raise ShadowstepConversionError(f"Unsupported predicate: {pred_expr!r}")
 
     # ========== predicate handlers (UI SELECTOR) ==========
@@ -447,7 +447,7 @@ class XPathConverter:
             return selector
     
         if close_count > open_count:
-            # убираем лишние ')' справа
+            # remove extra ')' on the right
             diff = close_count - open_count
             i = len(selector)
             while diff > 0 and i > 0:

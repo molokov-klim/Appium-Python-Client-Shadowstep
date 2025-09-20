@@ -124,7 +124,7 @@ class Terminal:
         """
         try:
             if not destination:
-                # Если путь не указан, сохраняем в текущей директории
+                # If path not specified, save in current directory
                 destination = os.path.join(os.getcwd(), os.path.basename(source))
 
             file_contents_base64 = self.driver.assert_extension_exists("mobile: pullFile"). \
@@ -569,7 +569,7 @@ class Terminal:
         """
         processes = self.adb_shell(command="ps")
         if name not in processes:
-            logger.error("know_pid() [Процесс не обнаружен]")
+            logger.error("know_pid() [Process not found]")
             return None
         lines = processes.strip().split("\n")
         for line in lines[1:]:
@@ -579,7 +579,7 @@ class Terminal:
                 if name == process_name:
                     logger.debug(f"know_pid() > {str(pid)}")
                     return int(pid)
-        logger.error("know_pid() [Процесс не обнаружен]")
+        logger.error("know_pid() [Process not found]")
         return None
 
     def is_process_exist(self, name: str) -> bool:
@@ -793,7 +793,7 @@ class Terminal:
 
     def past_text(self, text: str, tries: int = 3) -> None:
         """
-        Помещает в буфер обмена заданный текст, затем вставляет его
+        Places given text in clipboard, then pastes it
         """
         for _ in range(tries):
             try:

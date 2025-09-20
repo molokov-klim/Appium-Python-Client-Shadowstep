@@ -49,21 +49,21 @@ class PageObjectGenerator:
         }
         self._anchor_name_map = None
 
-        # Инициализируем Jinja2
+        # Initialize Jinja2
         templates_dir = os.path.join(
             os.path.dirname(__file__),
             "templates"
         )
         self.env = Environment(
-            loader=FileSystemLoader(templates_dir),  # откуда загружать шаблоны (директория с .j2-файлами)
+            loader=FileSystemLoader(templates_dir),  # where to load templates from (directory with .j2 files)
             autoescape=True,  # noqa: S701
             keep_trailing_newline=True,
-            # сохраняем завершающий перевод строки в файле (важно для git-diff, PEP8 и т.д.)
-            trim_blocks=True,  # удаляет новую строку сразу после {% block %} или {% endif %} (уменьшает пустые строки)
+            # preserve trailing newline in file (important for git-diff, PEP8, etc.)
+            trim_blocks=True,  # removes newline immediately after {% block %} or {% endif %} (reduces empty lines)
             lstrip_blocks=True
-            # удаляет ведущие пробелы перед {% block %} (избавляет от случайных отступов и пустых строк)
+            # removes leading spaces before {% block %} (eliminates accidental indentation and empty lines)
         )
-        # добавляем фильтр repr
+        # add repr filter
         self.env.filters["pretty_dict"] = _pretty_dict
 
     def generate(
@@ -73,28 +73,28 @@ class PageObjectGenerator:
             filename_prefix: str = ""
     ) -> tuple[str, str]:
         self.logger.debug(f"{get_current_func_name()}")
-        step = "Формирование title property"
+        step = "Forming title property"
         self.logger.debug(step)
         title = self._get_title_property(ui_element_tree)
         if title is None:
             raise ValueError("Can't find title")  # noqa: S101
         self.logger.debug(f"{title.attrs=}")
 
-        step = "Формирование name property"
+        step = "Forming name property"
         self.logger.debug(step)
         name = self._get_name_property(title)
         if name == "":
             raise ValueError("Name cannot be empty")  # noqa: S101
         self.logger.debug(f"{name=}")
 
-        step = "Формирование имени класса"
+        step = "Forming class name"
         self.logger.debug(step)
         page_class_name = self._normilize_to_camel_case(name)
         if page_class_name == "":
             raise ValueError("page_class_name cannot be empty")  # noqa: S101
         self.logger.debug(f"{page_class_name=}")
 
-        step = "Формирование recycler property"
+        step = "Forming recycler property"
         self.logger.debug(step)
         recycler = self._get_recycler_property(ui_element_tree)
         # assert recycler is not None, "Can't find recycler"
@@ -102,35 +102,35 @@ class PageObjectGenerator:
             recycler = title
         self.logger.debug(f"{recycler.attrs=}")
 
-        step = "Сбор пар свитчер - якорь"
+        step = "Collecting switch-anchor pairs"
         self.logger.debug(step)
         switcher_anchor_pairs = self._get_anchor_pairs(ui_element_tree, {"class": "android.widget.Switch"})
-        # свитчеры могут быть не найдены, это нормально
+        # switches may not be found, this is normal
         # self.logger.debug(f"{switcher_anchor_pairs=}")
         self.logger.debug(f"{len(switcher_anchor_pairs)=}")
 
-        step = "Сбор summary-свойств"
+        step = "Collecting summary properties"
         self.logger.debug(step)
         summary_anchor_pairs = self._get_summary_pairs(ui_element_tree)
-        # summary могут быть не найдены, это нормально
+        # summary may not be found, this is normal
         # self.logger.debug(f"{summary_anchor_pairs=}")
         self.logger.debug(f"{len(summary_anchor_pairs)=}")
 
-        step = "Сбор оставшихся обычных свойств"
+        step = "Collecting remaining regular properties"
         self.logger.debug(step)
         used_elements = switcher_anchor_pairs + summary_anchor_pairs + [(title, recycler)]
         regular_properties = self._get_regular_properties(ui_element_tree, used_elements, recycler)
 
-        step = "Удаление text из локаторов у элементов, которые не ищутся по text в UiAutomator2 (ex. android.widget.SeekBar)"
+        step = "Removing text from locators for elements that are not searched by text in UiAutomator2 (ex. android.widget.SeekBar)"
         self.logger.debug(step)
         self._remove_text_from_non_text_elements(regular_properties)
 
-        step = "Определение необходимости recycler"
+        step = "Determining recycler necessity"
         self.logger.debug(step)
         need_recycler = self._is_need_recycler(recycler, regular_properties)
         self.logger.debug(f"{need_recycler=}")
 
-        step = "Подготовка свойств для шаблона"
+        step = "Preparing properties for template"
         self.logger.debug(step)
         properties_for_template = self._transform_properties(
             regular_properties,
@@ -144,14 +144,14 @@ class PageObjectGenerator:
         skip_ids = {title.id, recycler.id}
         properties_for_template = [p for p in properties_for_template if p.get("element_id") not in skip_ids]
 
-        step = "Фильтрация итоговых свойств"
+        step = "Filtering final properties"
         self.logger.debug(step)
 
         properties_for_template = self._filter_properties(properties_for_template,
                                                           title.id,
                                                           recycler.id if recycler else None)
 
-        step = "Подготовка данных для рендеринга"
+        step = "Preparing data for rendering"
         self.logger.debug(step)
         template_data = self._prepare_template_data(
             ui_element_tree,
@@ -161,23 +161,23 @@ class PageObjectGenerator:
             need_recycler
         )
 
-        step = "Рендеринг"
+        step = "Rendering"
         self.logger.debug(step)
         template = self.env.get_template("page_object.py.j2")
         rendered = template.render(**template_data)
         fixed_rendered = rendered.replace("&#39;", '"').replace("#39;", '"')
 
-        step = "Формирование названия файла"
+        step = "Forming filename"
         self.logger.debug(step)
         class_name = template_data["class_name"]
         file_name = self._class_name_to_file_name(class_name)
 
-        step = "Добавление префикса к названию файла, если необходимо"
+        step = "Adding prefix to filename if necessary"
         self.logger.debug(step)
         if filename_prefix:
             file_name = f"{filename_prefix}{file_name}"
 
-        step = "Запись в файл"
+        step = "Writing to file"
         self.logger.debug(step)
         path = os.path.join(output_dir, file_name)
         os.makedirs(os.path.dirname(path), exist_ok=True)
@@ -253,7 +253,7 @@ class PageObjectGenerator:
         for node in ui_element_tree.walk():
             scrollable_parents = node.scrollable_parents
             if scrollable_parents:
-                # берём самый близкий scrollable (первый в списке)
+                # take the closest scrollable (first in list)
                 scrollable_id = scrollable_parents[0]
                 self.logger.debug(f"Recycler determined from node={node.id}, scrollable_id={scrollable_id}")
                 return self._find_by_id(ui_element_tree, scrollable_id)
@@ -330,12 +330,12 @@ class PageObjectGenerator:
         self.logger.debug(f"[{step}] started")
 
         result: list[UiElementNode] = []
-        # Сначала собираем всех потомков предка
+        # First collect all descendants of ancestor
         all_descendants = []
         for child in ancestor.children:
             all_descendants.extend(child.walk())
 
-        # Теперь фильтруем по глубине
+        # Now filter by depth
         for node in all_descendants:
             # self.logger.debug(f"{node.id=}, {node.attrs=}")
             if node is target:
@@ -370,27 +370,27 @@ class PageObjectGenerator:
 
     def _get_summary_pairs(self, ui_element_tree: UiElementNode) -> list[tuple[UiElementNode, UiElementNode]]:
         """
-        Находит пары элементов anchor-summary.
+        Find anchor-summary element pairs.
 
         Args:
-            ui_element_tree (UiElementNode): Дерево элементов UI
+            ui_element_tree (UiElementNode): UI element tree
 
         Returns:
-            List[Tuple[UiElementNode, UiElementNode]]: Список пар (anchor, summary)
+            List[Tuple[UiElementNode, UiElementNode]]: List of (anchor, summary) pairs
         """
         self.logger.debug(f"{get_current_func_name()}")
 
-        # Находим все элементы, у которых в атрибутах есть "summary"
+        # Find all elements that have "summary" in attributes
         summary_elements = []
         for element in ui_element_tree.walk():
             if any(re.search(r"\bsummary\b", str(value).lower()) for value in element.attrs.values()):
                 summary_elements.append(element)
                 self.logger.debug(f"Found summary element: {element.id}, attrs={element.attrs}")
 
-        # Для каждого summary элемента ищем соответствующий anchor
+        # For each summary element find corresponding anchor
         summary_pairs: list[tuple[UiElementNode, UiElementNode]] = []
         for summary in summary_elements:
-            # Ищем ближайший anchor для summary элемента
+            # Find closest anchor for summary element
             anchor = self._find_anchor_for_target(cast(UiElementNode, summary), max_levels=3,
                                                   target_anchor=("text", "content-desc"))
             if anchor and not any("summary" in str(value).lower() for value in anchor.attrs.values()):
@@ -420,7 +420,7 @@ class PageObjectGenerator:
         """
         self.logger.debug(f"{get_current_func_name()}")
 
-        # 🔁 Сконвертировать used_elements в set of locator hashes
+        # 🔁 Convert used_elements to set of locator hashes
         used_locators: set[frozenset[tuple[str, str]]] = set()
         for pair in used_elements:
             for node in pair:
@@ -452,8 +452,8 @@ class PageObjectGenerator:
     def _normilize_to_camel_case(self, text: str) -> str:
         self.logger.debug(f"{get_current_func_name()}")
         # sanitize → remove spaces, symbols, make CamelCase
-        normalized = self._translate(text)  # переводим на английский
-        normalized = re.sub(r"[^\w\s]", "", normalized)  # удаляем спецсимволы
+        normalized = self._translate(text)  # translate to English
+        normalized = re.sub(r"[^\w\s]", "", normalized)  # remove special characters
         camel_case = "".join(word.capitalize() for word in normalized.split())
 
         if not camel_case:
@@ -555,7 +555,7 @@ class PageObjectGenerator:
         used_names: set[str] = set()
         used_ids: set[str] = set()
 
-        # 💣 Фильтрация: remove элемент, если он совпадает с recycler
+        # 💣 Filtering: remove element if it matches recycler
         regular_properties = [
             node for node in regular_properties
             if node.id != recycler_id
@@ -876,7 +876,7 @@ class PageObjectGenerator:
         self.logger.debug(f"[{step}] started")
         properties = self._filter_structural_containers(properties)
 
-        # ⛔ Защита от удаления title и recycler
+        # ⛔ Protection from removing title and recycler
         step = "Protect title and recycler"
         self.logger.debug(f"[{step}] started")
 
@@ -888,7 +888,7 @@ class PageObjectGenerator:
             if is_important(prop):
                 final.append(prop)
                 continue
-            # Остальная фильтрация (если добавишь еще шаги - вставь сюда)
+            # Other filtering (if you add more steps - insert here)
             final.append(prop)
 
         self.logger.debug(f"{get_current_func_name()} > {final=}")
@@ -945,7 +945,7 @@ class PageObjectGenerator:
 
 
 def _pretty_dict(d: dict[str, Any], base_indent: int = 8) -> str:
-    """Форматирует dict в Python-стиле: каждый ключ с новой строки, выровнено по отступу."""
+    """Format dict in Python style: each key on new line, aligned by indentation."""
     lines = ["{"]
     indent = " " * base_indent
     for i, (k, v) in enumerate(d.items()):
