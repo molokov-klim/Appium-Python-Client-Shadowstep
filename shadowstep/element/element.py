@@ -80,7 +80,7 @@ class Element(ElementBase):
                     timeout: int = 30,
                     poll_frequency: float = 0.5,
                     ignored_exceptions: WaitExcTypes | None = None) -> Element:
-        """Find a single element within this element's context.
+        """Return a single Element, lazy.
 
         Args:
             locator: Element locator to search for.
@@ -89,7 +89,7 @@ class Element(ElementBase):
             ignored_exceptions: Exceptions to ignore during waiting.
 
         Returns:
-            Element: Found element instance.
+            Element: Element instance.
         """
         return self.dom.get_element(locator, timeout, poll_frequency, ignored_exceptions)
 
@@ -100,7 +100,7 @@ class Element(ElementBase):
             poll_frequency: float = 0.5,
             ignored_exceptions: WaitExcTypes | None = None
     ) -> list[Element]:
-        """Find multiple elements within this element's context.
+        """Find multiple Elements within this element's context. Greedy
 
         Args:
             locator: Element locator to search for.
@@ -117,7 +117,7 @@ class Element(ElementBase):
                    timeout: float = 30,
                    poll_frequency: float = 0.5,
                    ignored_exceptions: WaitExcTypes | None = None) -> Element:
-        """Get the parent element of this element.
+        """Get the parent element of this element. Lazy
 
         Args:
             timeout: Maximum time to wait for parent element (default: 30).
@@ -133,7 +133,7 @@ class Element(ElementBase):
                     timeout: float = 30,
                     poll_frequency: float = 0.5,
                     ignored_exceptions: WaitExcTypes | None = None) -> list[Element]:
-        """Get all parent elements of this element.
+        """Get all parent elements of this element. Greedy
 
         Args:
             timeout: Maximum time to wait for parent elements (default: 30).
@@ -150,7 +150,7 @@ class Element(ElementBase):
                     timeout: float = 30,
                     poll_frequency: float = 0.5,
                     ignored_exceptions: WaitExcTypes | None = None) -> Element:
-        """Get a sibling element of this element.
+        """Get a sibling element of this element. Lazy
 
         Args:
             locator: Element locator to search for.
@@ -168,8 +168,8 @@ class Element(ElementBase):
                      timeout: float = 30.0,
                      poll_frequency: float = 0.5,
                      ignored_exceptions: WaitExcTypes | None = None) -> list[Element]:
-        """Get all sibling elements of this element.
-
+        """Get all sibling elements of this element. Greedy
+        
         Args:
             locator: Element locator to search for.
             timeout: Maximum time to wait for sibling elements (default: 30.0).
@@ -189,7 +189,7 @@ class Element(ElementBase):
             poll_frequency: float = 0.5,
             ignored_exceptions: WaitExcTypes | None = None
     ) -> Element:
-        """Get a cousin element (sibling of parent) of this element.
+        """Get a cousin element (sibling of parent) of this element. Lazy
 
         Args:
             cousin_locator: Element locator to search for.
@@ -211,7 +211,7 @@ class Element(ElementBase):
             poll_frequency: float = 0.5,
             ignored_exceptions: WaitExcTypes | None = None
     ) -> list[Element]:
-        """Get all cousin elements (siblings of parent) of this element.
+        """Get all cousin elements (siblings of parent) of this element. Greedy
 
         Args:
             cousin_locator: Element locator to search for.
