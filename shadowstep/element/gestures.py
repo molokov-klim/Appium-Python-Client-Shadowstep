@@ -49,13 +49,13 @@ class ElementGestures:
                 self.element.driver.tap(positions=[(x, y)], duration=duration)
                 return self.element
             except NoSuchDriverException as error:
-                self.element.handle_driver_error(error)
+                self.element.utilities.handle_driver_error(error)
                 continue
             except InvalidSessionIdException as error:
-                self.element.handle_driver_error(error)
+                self.element.utilities.handle_driver_error(error)
                 continue
             except AttributeError as error:
-                self.element.handle_driver_error(error)
+                self.element.utilities.handle_driver_error(error)
                 continue
             except StaleElementReferenceException as error:
                 self.logger.debug(error)
@@ -66,7 +66,7 @@ class ElementGestures:
             except WebDriverException as error:
                 err_msg = str(error).lower()
                 if "instrumentation process is not running" in err_msg or "socket hang up" in err_msg:
-                    self.element.handle_driver_error(error)
+                    self.element.utilities.handle_driver_error(error)
                     continue
                 raise ShadowstepElementException(
                     msg=f"Failed to {inspect.currentframe() if inspect.currentframe() else 'unknown'} within {self.element.timeout=}\n{duration}",
@@ -114,11 +114,11 @@ class ElementGestures:
                                          {"elementId": self.element.id, "duration": duration})
                 return self.element
             except NoSuchDriverException as error:
-                self.element.handle_driver_error(error)
+                self.element.utilities.handle_driver_error(error)
             except InvalidSessionIdException as error:
-                self.element.handle_driver_error(error)
+                self.element.utilities.handle_driver_error(error)
             except AttributeError as error:
-                self.element.handle_driver_error(error)
+                self.element.utilities.handle_driver_error(error)
             except StaleElementReferenceException as error:
                 self.logger.debug(error)
                 self.logger.warning("StaleElementReferenceException\nRe-acquire element")
@@ -128,7 +128,7 @@ class ElementGestures:
             except WebDriverException as error:
                 err_msg = str(error).lower()
                 if "instrumentation process is not running" in err_msg or "socket hang up" in err_msg:
-                    self.element.handle_driver_error(error)
+                    self.element.utilities.handle_driver_error(error)
                     continue
                 raise ShadowstepElementException(
                     msg=f"Failed to {inspect.currentframe() if inspect.currentframe() else 'unknown'} within {self.element.timeout=}\n{duration}",
@@ -150,11 +150,11 @@ class ElementGestures:
                                      {"elementId": self.element.id})
                 return self.element
             except NoSuchDriverException as error:
-                self.element.handle_driver_error(error)
+                self.element.utilities.handle_driver_error(error)
             except InvalidSessionIdException as error:
-                self.element.handle_driver_error(error)
+                self.element.utilities.handle_driver_error(error)
             except AttributeError as error:
-                self.element.handle_driver_error(error)
+                self.element.utilities.handle_driver_error(error)
             except StaleElementReferenceException as error:
                 self.logger.debug(error)
                 self.logger.warning("StaleElementReferenceException\nRe-acquire element")
@@ -164,7 +164,7 @@ class ElementGestures:
             except WebDriverException as error:
                 err_msg = str(error).lower()
                 if "instrumentation process is not running" in err_msg or "socket hang up" in err_msg:
-                    self.element.handle_driver_error(error)
+                    self.element.utilities.handle_driver_error(error)
                     continue
                 raise ShadowstepElementException(
                     msg=f"Failed to {inspect.currentframe() if inspect.currentframe() else 'unknown'} within {self.element.timeout=}",
@@ -189,11 +189,11 @@ class ElementGestures:
                                       "speed": speed})
                 return self.element
             except NoSuchDriverException as error:
-                self.element.handle_driver_error(error)
+                self.element.utilities.handle_driver_error(error)
             except InvalidSessionIdException as error:
-                self.element.handle_driver_error(error)
+                self.element.utilities.handle_driver_error(error)
             except AttributeError as error:
-                self.element.handle_driver_error(error)
+                self.element.utilities.handle_driver_error(error)
             except StaleElementReferenceException as error:
                 self.logger.debug(error)
                 self.logger.warning("StaleElementReferenceException\nRe-acquire element")
@@ -203,7 +203,7 @@ class ElementGestures:
             except WebDriverException as error:
                 err_msg = str(error).lower()
                 if "instrumentation process is not running" in err_msg or "socket hang up" in err_msg:
-                    self.element.handle_driver_error(error)
+                    self.element.utilities.handle_driver_error(error)
                     continue
                 raise ShadowstepElementException(
                     msg=f"Failed to {inspect.currentframe() if inspect.currentframe() else 'unknown'} within {self.element.timeout=}",
@@ -232,11 +232,11 @@ class ElementGestures:
                                       "speed": speed})
                 return self.element
             except NoSuchDriverException as error:
-                self.element.handle_driver_error(error)
+                self.element.utilities.handle_driver_error(error)
             except InvalidSessionIdException as error:
-                self.element.handle_driver_error(error)
+                self.element.utilities.handle_driver_error(error)
             except AttributeError as error:
-                self.element.handle_driver_error(error)
+                self.element.utilities.handle_driver_error(error)
             except StaleElementReferenceException as error:
                 self.logger.debug(error)
                 self.logger.warning("StaleElementReferenceException\nRe-acquire element")
@@ -246,7 +246,7 @@ class ElementGestures:
             except WebDriverException as error:
                 err_msg = str(error).lower()
                 if "instrumentation process is not running" in err_msg or "socket hang up" in err_msg:
-                    self.element.handle_driver_error(error)
+                    self.element.utilities.handle_driver_error(error)
                     continue
                 raise ShadowstepElementException(
                     msg=f"Failed to {inspect.currentframe() if inspect.currentframe() else 'unknown'} within {self.element.timeout=}",
@@ -280,11 +280,11 @@ class ElementGestures:
                     return can_scroll
                 return self.element
             except NoSuchDriverException as error:
-                self.element.handle_driver_error(error)
+                self.element.utilities.handle_driver_error(error)
             except InvalidSessionIdException as error:
-                self.element.handle_driver_error(error)
+                self.element.utilities.handle_driver_error(error)
             except AttributeError as error:
-                self.element.handle_driver_error(error)
+                self.element.utilities.handle_driver_error(error)
             except StaleElementReferenceException as error:
                 self.logger.debug(error)
                 self.logger.warning("StaleElementReferenceException\nRe-acquire element")
@@ -294,7 +294,7 @@ class ElementGestures:
             except WebDriverException as error:
                 err_msg = str(error).lower()
                 if "instrumentation process is not running" in err_msg or "socket hang up" in err_msg:
-                    self.element.handle_driver_error(error)
+                    self.element.utilities.handle_driver_error(error)
                     continue
                 raise ShadowstepElementException(
                     msg=f"Failed to {inspect.currentframe() if inspect.currentframe() else 'unknown'} within {self.element.timeout=}",
@@ -316,7 +316,7 @@ class ElementGestures:
             except (
                     NoSuchDriverException, InvalidSessionIdException, AttributeError
             ) as error:
-                self.element.handle_driver_error(error)
+                self.element.utilities.handle_driver_error(error)
             except StaleElementReferenceException as error:
                 self.logger.debug(error)
                 self.logger.warning("StaleElementReferenceException\nRe-acquire element")
@@ -326,7 +326,7 @@ class ElementGestures:
             except WebDriverException as error:
                 err_msg = str(error).lower()
                 if "instrumentation process is not running" in err_msg or "socket hang up" in err_msg:
-                    self.element.handle_driver_error(error)
+                    self.element.utilities.handle_driver_error(error)
                     continue
                 raise ShadowstepElementException(
                     msg=f"Failed to scroll to bottom within {self.element.timeout=}",
@@ -347,7 +347,7 @@ class ElementGestures:
                 self.element.scroll_up(percent=percent, speed=speed, return_bool=True)
             except (
                     NoSuchDriverException, InvalidSessionIdException, AttributeError) as error:
-                self.element.handle_driver_error(error)
+                self.element.utilities.handle_driver_error(error)
             except StaleElementReferenceException as error:
                 self.logger.debug(error)
                 self.logger.warning("StaleElementReferenceException\nRe-acquire element")
@@ -357,7 +357,7 @@ class ElementGestures:
             except WebDriverException as error:
                 err_msg = str(error).lower()
                 if "instrumentation process is not running" in err_msg or "socket hang up" in err_msg:
-                    self.element.handle_driver_error(error)
+                    self.element.utilities.handle_driver_error(error)
                     continue
                 raise ShadowstepElementException(
                     msg=f"Failed to scroll to top within {self.element.timeout=}",
@@ -381,7 +381,7 @@ class ElementGestures:
                 self._execute_scroll_script(selector, max_swipes)
                 return self.shadowstep.get_element(locator)
             except (NoSuchDriverException, InvalidSessionIdException, AttributeError) as error:
-                self.element.handle_driver_error(error)
+                self.element.utilities.handle_driver_error(error)
                 continue
             except StaleElementReferenceException as error:
                 self.logger.debug(error)
@@ -392,7 +392,7 @@ class ElementGestures:
             except WebDriverException as error:
                 err_msg = str(error).lower()
                 if "instrumentation process is not running" in err_msg or "socket hang up" in err_msg:
-                    self.element.handle_driver_error(error)
+                    self.element.utilities.handle_driver_error(error)
                     continue
                 raise ShadowstepElementException(
                     msg=f"Failed to scroll to element with locator: {locator}",
@@ -417,11 +417,11 @@ class ElementGestures:
                 })
                 return self.element
             except NoSuchDriverException as error:
-                self.element.handle_driver_error(error)
+                self.element.utilities.handle_driver_error(error)
             except InvalidSessionIdException as error:
-                self.element.handle_driver_error(error)
+                self.element.utilities.handle_driver_error(error)
             except AttributeError as error:
-                self.element.handle_driver_error(error)
+                self.element.utilities.handle_driver_error(error)
             except StaleElementReferenceException as error:
                 self.logger.debug(error)
                 self.logger.warning("StaleElementReferenceException\nRe-acquire element")
@@ -431,7 +431,7 @@ class ElementGestures:
             except WebDriverException as error:
                 err_msg = str(error).lower()
                 if "instrumentation process is not running" in err_msg or "socket hang up" in err_msg:
-                    self.element.handle_driver_error(error)
+                    self.element.utilities.handle_driver_error(error)
                     continue
                 raise ShadowstepElementException(
                     msg=f"Failed to {inspect.currentframe() if inspect.currentframe() else 'unknown'} within {self.element.timeout=}",
@@ -456,11 +456,11 @@ class ElementGestures:
                 })
                 return self.element
             except NoSuchDriverException as error:
-                self.element.handle_driver_error(error)
+                self.element.utilities.handle_driver_error(error)
             except InvalidSessionIdException as error:
-                self.element.handle_driver_error(error)
+                self.element.utilities.handle_driver_error(error)
             except AttributeError as error:
-                self.element.handle_driver_error(error)
+                self.element.utilities.handle_driver_error(error)
             except StaleElementReferenceException as error:
                 self.logger.debug(error)
                 self.logger.warning("StaleElementReferenceException\nRe-acquire element")
@@ -470,7 +470,7 @@ class ElementGestures:
             except WebDriverException as error:
                 err_msg = str(error).lower()
                 if "instrumentation process is not running" in err_msg or "socket hang up" in err_msg:
-                    self.element.handle_driver_error(error)
+                    self.element.utilities.handle_driver_error(error)
                     continue
                 raise ShadowstepElementException(
                     msg=f"Failed to {inspect.currentframe() if inspect.currentframe() else 'unknown'} within {self.element.timeout=}",
@@ -496,11 +496,11 @@ class ElementGestures:
                 })
                 return self.element
             except NoSuchDriverException as error:
-                self.element.handle_driver_error(error)
+                self.element.utilities.handle_driver_error(error)
             except InvalidSessionIdException as error:
-                self.element.handle_driver_error(error)
+                self.element.utilities.handle_driver_error(error)
             except AttributeError as error:
-                self.element.handle_driver_error(error)
+                self.element.utilities.handle_driver_error(error)
             except StaleElementReferenceException as error:
                 self.logger.debug(error)
                 self.logger.warning("StaleElementReferenceException\nRe-acquire element")
@@ -510,7 +510,7 @@ class ElementGestures:
             except WebDriverException as error:
                 err_msg = str(error).lower()
                 if "instrumentation process is not running" in err_msg or "socket hang up" in err_msg:
-                    self.element.handle_driver_error(error)
+                    self.element.utilities.handle_driver_error(error)
                     continue
                 raise ShadowstepElementException(
                     msg=f"Failed to {inspect.currentframe() if inspect.currentframe() else 'unknown'} within {self.element.timeout=} {direction=} {percent=}",
@@ -570,18 +570,18 @@ class ElementGestures:
                     stacktrace=traceback.format_stack()
                 )
             except (NoSuchDriverException, InvalidSessionIdException, AttributeError) as error:
-                self.element.handle_driver_error(error)
+                self.element.utilities.handle_driver_error(error)
                 continue
             except StaleElementReferenceException as error:
                 self.logger.debug(error)
                 self.logger.warning("StaleElementReferenceException\nRe-acquire element")
-                self.native = None
+                self.element.native = None
                 self.element.get_native()
                 continue
             except WebDriverException as error:
                 err_msg = str(error).lower()
                 if "instrumentation process is not running" in err_msg or "socket hang up" in err_msg:
-                    self.element.handle_driver_error(error)
+                    self.element.utilities.handle_driver_error(error)
                     continue
         raise ShadowstepElementException(
             msg=f"Failed to {get_current_func_name()} within {self.element.timeout=} {direction=}",

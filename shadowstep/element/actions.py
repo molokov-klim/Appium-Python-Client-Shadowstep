@@ -44,11 +44,11 @@ class ElementActions:
                 element.send_keys(text)
                 return self.element
             except NoSuchDriverException as error:
-                self.element.handle_driver_error(error)
+                self.element.utilities.handle_driver_error(error)
             except InvalidSessionIdException as error:
-                self.element.handle_driver_error(error)
+                self.element.utilities.handle_driver_error(error)
             except AttributeError as error:
-                self.element.handle_driver_error(error)
+                self.element.utilities.handle_driver_error(error)
             except StaleElementReferenceException as error:
                 self.logger.debug(error)
                 self.logger.warning("StaleElementReferenceException\nRe-acquire element")
@@ -58,7 +58,7 @@ class ElementActions:
             except WebDriverException as error:
                 err_msg = str(error).lower()
                 if "instrumentation process is not running" in err_msg or "socket hang up" in err_msg:
-                    self.element.handle_driver_error(error)
+                    self.element.utilities.handle_driver_error(error)
                     continue
                 raise ShadowstepElementException(
                     msg=f"Failed to send_keys({text}) within {self.element.timeout=}",
@@ -80,11 +80,11 @@ class ElementActions:
                 current_element.clear()
                 return self.element
             except NoSuchDriverException as error:
-                self.element.handle_driver_error(error)
+                self.element.utilities.handle_driver_error(error)
             except InvalidSessionIdException as error:
-                self.element.handle_driver_error(error)
+                self.element.utilities.handle_driver_error(error)
             except AttributeError as error:
-                self.element.handle_driver_error(error)
+                self.element.utilities.handle_driver_error(error)
             except StaleElementReferenceException as error:
                 self.logger.debug(error)
                 self.logger.warning("StaleElementReferenceException\nRe-acquire element")
@@ -94,7 +94,7 @@ class ElementActions:
             except WebDriverException as error:
                 err_msg = str(error).lower()
                 if "instrumentation process is not running" in err_msg or "socket hang up" in err_msg:
-                    self.element.handle_driver_error(error)
+                    self.element.utilities.handle_driver_error(error)
                     continue
                 raise ShadowstepElementException(
                     msg=f"Failed to clear element within {self.element.timeout=}",
@@ -121,11 +121,11 @@ class ElementActions:
                 element.set_value(value)  # type: ignore
                 return self.element
             except NoSuchDriverException as error:
-                self.element.handle_driver_error(error)
+                self.element.utilities.handle_driver_error(error)
             except InvalidSessionIdException as error:
-                self.element.handle_driver_error(error)
+                self.element.utilities.handle_driver_error(error)
             except AttributeError as error:
-                self.element.handle_driver_error(error)
+                self.element.utilities.handle_driver_error(error)
             except StaleElementReferenceException as error:
                 self.logger.debug(error)
                 self.logger.warning("StaleElementReferenceException\nRe-acquire element")
@@ -135,7 +135,7 @@ class ElementActions:
             except WebDriverException as error:
                 err_msg = str(error).lower()
                 if "instrumentation process is not running" in err_msg or "socket hang up" in err_msg:
-                    self.element.handle_driver_error(error)
+                    self.element.utilities.handle_driver_error(error)
                     continue
                 raise ShadowstepElementException(
                     msg=f"Failed to set_value({value}) within {self.element.timeout=}",
@@ -159,11 +159,11 @@ class ElementActions:
                 element.submit()
                 return self.element
             except NoSuchDriverException as error:
-                self.element.handle_driver_error(error)
+                self.element.utilities.handle_driver_error(error)
             except InvalidSessionIdException as error:
-                self.element.handle_driver_error(error)
+                self.element.utilities.handle_driver_error(error)
             except AttributeError as error:
-                self.element.handle_driver_error(error)
+                self.element.utilities.handle_driver_error(error)
             except StaleElementReferenceException as error:
                 self.logger.debug(error)
                 self.logger.warning("StaleElementReferenceException\nRe-acquire element")
@@ -173,7 +173,7 @@ class ElementActions:
             except WebDriverException as error:
                 err_msg = str(error).lower()
                 if "instrumentation process is not running" in err_msg or "socket hang up" in err_msg:
-                    self.element.handle_driver_error(error)
+                    self.element.utilities.handle_driver_error(error)
                     continue
                 raise ShadowstepElementException(
                     msg=f"Failed to submit element within {self.element.timeout=}",

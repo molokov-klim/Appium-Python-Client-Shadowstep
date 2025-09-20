@@ -129,7 +129,7 @@ class ElementDOM:
                     elements.append(element)
                 return elements
             except (NoSuchDriverException, InvalidSessionIdException) as error:
-                self.element.handle_driver_error(error)
+                self.element.utilities.handle_driver_error(error)
             except StaleElementReferenceException as error:
                 self.logger.debug(error)
                 self.logger.warning("StaleElementReferenceException \n Re-acquire element")
@@ -139,7 +139,7 @@ class ElementDOM:
             except WebDriverException as error:
                 err_msg = str(error).lower()
                 if "instrumentation process is not running" in err_msg or "socket hang up" in err_msg:
-                    self.element.handle_driver_error(error)
+                    self.element.utilities.handle_driver_error(error)
                     continue
                 raise error
         return []

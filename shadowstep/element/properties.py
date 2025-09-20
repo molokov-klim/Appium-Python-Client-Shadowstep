@@ -44,11 +44,11 @@ class ElementProperties:
                 current_element = self.element.get_native()
                 return cast(str, current_element.get_attribute(name))  # never seen not str
             except NoSuchDriverException as error:
-                self.element.handle_driver_error(error)
+                self.element.utilities.handle_driver_error(error)
             except InvalidSessionIdException as error:
-                self.element.handle_driver_error(error)
+                self.element.utilities.handle_driver_error(error)
             except AttributeError as error:
-                self.element.handle_driver_error(error)
+                self.element.utilities.handle_driver_error(error)
             except StaleElementReferenceException as error:
                 self.logger.debug(error)
                 self.logger.warning("StaleElementReferenceException\nRe-acquire element")
@@ -58,7 +58,7 @@ class ElementProperties:
             except WebDriverException as error:
                 err_msg = str(error).lower()
                 if "instrumentation process is not running" in err_msg or "socket hang up" in err_msg:
-                    self.element.handle_driver_error(error)
+                    self.element.utilities.handle_driver_error(error)
                     continue
                 raise ShadowstepElementException(
                     msg=f"Failed to {inspect.currentframe() if inspect.currentframe() else 'unknown'}('{name}') within {self.element.timeout=}",
@@ -87,11 +87,11 @@ class ElementProperties:
                 current_element = self.element.get_native()
                 return current_element.get_property(name)
             except NoSuchDriverException as error:
-                self.element.handle_driver_error(error)
+                self.element.utilities.handle_driver_error(error)
             except InvalidSessionIdException as error:
-                self.element.handle_driver_error(error)
+                self.element.utilities.handle_driver_error(error)
             except AttributeError as error:
-                self.element.handle_driver_error(error)
+                self.element.utilities.handle_driver_error(error)
             except StaleElementReferenceException as error:
                 self.logger.debug(error)
                 self.logger.warning("StaleElementReferenceException\nRe-acquire element")
@@ -101,7 +101,7 @@ class ElementProperties:
             except WebDriverException as error:
                 err_msg = str(error).lower()
                 if "instrumentation process is not running" in err_msg or "socket hang up" in err_msg:
-                    self.element.handle_driver_error(error)
+                    self.element.utilities.handle_driver_error(error)
                     continue
                 raise ShadowstepElementException(
                     msg=f"Failed to {inspect.currentframe() if inspect.currentframe() else 'unknown'} within {self.element.timeout=}",
@@ -121,11 +121,11 @@ class ElementProperties:
                 current_element = self.element.get_native()
                 return current_element.get_dom_attribute(name)
             except NoSuchDriverException as error:
-                self.element.handle_driver_error(error)
+                self.element.utilities.handle_driver_error(error)
             except InvalidSessionIdException as error:
-                self.element.handle_driver_error(error)
+                self.element.utilities.handle_driver_error(error)
             except AttributeError as error:
-                self.element.handle_driver_error(error)
+                self.element.utilities.handle_driver_error(error)
             except StaleElementReferenceException as error:
                 self.logger.debug(error)
                 self.logger.warning("StaleElementReferenceException\nRe-acquire element")
@@ -135,7 +135,7 @@ class ElementProperties:
             except WebDriverException as error:
                 err_msg = str(error).lower()
                 if "instrumentation process is not running" in err_msg or "socket hang up" in err_msg:
-                    self.element.handle_driver_error(error)
+                    self.element.utilities.handle_driver_error(error)
                     continue
                 raise ShadowstepElementException(
                     msg=f"Failed to {inspect.currentframe() if inspect.currentframe() else 'unknown'} within {self.element.timeout=}",
@@ -158,11 +158,11 @@ class ElementProperties:
             except NoSuchElementException:
                 return False
             except NoSuchDriverException as error:
-                self.element.handle_driver_error(error)
+                self.element.utilities.handle_driver_error(error)
             except InvalidSessionIdException as error:
-                self.element.handle_driver_error(error)
+                self.element.utilities.handle_driver_error(error)
             except AttributeError as error:
-                self.element.handle_driver_error(error)
+                self.element.utilities.handle_driver_error(error)
             except StaleElementReferenceException as error:
                 self.logger.debug(error)
                 self.logger.warning("StaleElementReferenceException\nRe-acquire element")
@@ -172,7 +172,7 @@ class ElementProperties:
             except WebDriverException as error:
                 err_msg = str(error).lower()
                 if "instrumentation process is not running" in err_msg or "socket hang up" in err_msg:
-                    self.element.handle_driver_error(error)
+                    self.element.utilities.handle_driver_error(error)
                     continue
                 raise ShadowstepElementException(
                     msg=f"Failed to {inspect.currentframe() if inspect.currentframe() else 'unknown'} within {self.element.timeout=}",
@@ -189,7 +189,7 @@ class ElementProperties:
     def is_visible(self) -> bool:
         start_time = time.time()
         while time.time() - start_time < self.element.timeout:
-            result = self.element._check_element_visibility()
+            result = self._check_element_visibility()
             if result is not None:
                 return result
             time.sleep(0.1)
@@ -209,11 +209,11 @@ class ElementProperties:
             except NoSuchElementException:
                 return False
             except NoSuchDriverException as error:
-                self.element.handle_driver_error(error)
+                self.element.utilities.handle_driver_error(error)
             except InvalidSessionIdException as error:
-                self.element.handle_driver_error(error)
+                self.element.utilities.handle_driver_error(error)
             except AttributeError as error:
-                self.element.handle_driver_error(error)
+                self.element.utilities.handle_driver_error(error)
             except StaleElementReferenceException as error:
                 self.logger.debug(error)
                 self.logger.warning("StaleElementReferenceException\nRe-acquire element")
@@ -223,7 +223,7 @@ class ElementProperties:
             except WebDriverException as error:
                 err_msg = str(error).lower()
                 if "instrumentation process is not running" in err_msg or "socket hang up" in err_msg:
-                    self.element.handle_driver_error(error)
+                    self.element.utilities.handle_driver_error(error)
                     continue
                 raise ShadowstepElementException(
                     msg=f"Failed to {inspect.currentframe() if inspect.currentframe() else 'unknown'} within {self.element.timeout=}",
@@ -245,11 +245,11 @@ class ElementProperties:
             except NoSuchElementException:
                 return False
             except NoSuchDriverException as error:
-                self.element.handle_driver_error(error)
+                self.element.utilities.handle_driver_error(error)
             except InvalidSessionIdException as error:
-                self.element.handle_driver_error(error)
+                self.element.utilities.handle_driver_error(error)
             except AttributeError as error:
-                self.element.handle_driver_error(error)
+                self.element.utilities.handle_driver_error(error)
             except StaleElementReferenceException as error:
                 self.logger.debug(error)
                 self.logger.warning("StaleElementReferenceException\nRe-acquire element")
@@ -259,7 +259,7 @@ class ElementProperties:
             except WebDriverException as error:
                 err_msg = str(error).lower()
                 if "instrumentation process is not running" in err_msg or "socket hang up" in err_msg:
-                    self.element.handle_driver_error(error)
+                    self.element.utilities.handle_driver_error(error)
                     continue
                 raise ShadowstepElementException(
                     msg=f"Failed to {inspect.currentframe() if inspect.currentframe() else 'unknown'} within {self.element.timeout=}",
@@ -285,11 +285,11 @@ class ElementProperties:
             except NoSuchElementException:
                 return False
             except NoSuchDriverException as error:
-                self.element.handle_driver_error(error)
+                self.element.utilities.handle_driver_error(error)
             except InvalidSessionIdException as error:
-                self.element.handle_driver_error(error)
+                self.element.utilities.handle_driver_error(error)
             except AttributeError as error:
-                self.element.handle_driver_error(error)
+                self.element.utilities.handle_driver_error(error)
             except StaleElementReferenceException as error:
                 self.logger.debug(error)
                 self.logger.warning("StaleElementReferenceException\nRe-acquire element")
@@ -299,7 +299,7 @@ class ElementProperties:
             except WebDriverException as error:
                 err_msg = str(error).lower()
                 if "instrumentation process is not running" in err_msg or "socket hang up" in err_msg:
-                    self.element.handle_driver_error(error)
+                    self.element.utilities.handle_driver_error(error)
                     continue
                 raise ShadowstepElementException(
                     msg=f"Failed to {inspect.currentframe() if inspect.currentframe() else 'unknown'} within {self.element.timeout=}",
@@ -319,11 +319,11 @@ class ElementProperties:
                 element = self.element.get_native()
                 return element.tag_name
             except NoSuchDriverException as error:
-                self.element.handle_driver_error(error)
+                self.element.utilities.handle_driver_error(error)
             except InvalidSessionIdException as error:
-                self.element.handle_driver_error(error)
+                self.element.utilities.handle_driver_error(error)
             except AttributeError as error:
-                self.element.handle_driver_error(error)
+                self.element.utilities.handle_driver_error(error)
             except StaleElementReferenceException as error:
                 self.logger.debug(error)
                 self.logger.warning("StaleElementReferenceException\nRe-acquire element")
@@ -333,7 +333,7 @@ class ElementProperties:
             except WebDriverException as error:
                 err_msg = str(error).lower()
                 if "instrumentation process is not running" in err_msg or "socket hang up" in err_msg:
-                    self.element.handle_driver_error(error)
+                    self.element.utilities.handle_driver_error(error)
                     continue
                 raise ShadowstepElementException(
                     msg=f"Failed to retrieve tag_name within {self.element.timeout=}",
@@ -357,11 +357,11 @@ class ElementProperties:
                 element = self.element.get_native()
                 return element.text
             except NoSuchDriverException as error:
-                self.element.handle_driver_error(error)
+                self.element.utilities.handle_driver_error(error)
             except InvalidSessionIdException as error:
-                self.element.handle_driver_error(error)
+                self.element.utilities.handle_driver_error(error)
             except AttributeError as error:
-                self.element.handle_driver_error(error)
+                self.element.utilities.handle_driver_error(error)
             except StaleElementReferenceException as error:
                 self.logger.debug(error)
                 self.logger.warning("StaleElementReferenceException\nRe-acquire element")
@@ -371,7 +371,7 @@ class ElementProperties:
             except WebDriverException as error:
                 err_msg = str(error).lower()
                 if "instrumentation process is not running" in err_msg or "socket hang up" in err_msg:
-                    self.element.handle_driver_error(error)
+                    self.element.utilities.handle_driver_error(error)
                     continue
                 raise ShadowstepElementException(
                     msg=f"Failed to retrieve text within {self.element.timeout=}",
@@ -390,11 +390,11 @@ class ElementProperties:
                 self.element.get_driver()
                 return self.get_attribute("resource-id")
             except NoSuchDriverException as error:
-                self.element.handle_driver_error(error)
+                self.element.utilities.handle_driver_error(error)
             except InvalidSessionIdException as error:
-                self.element.handle_driver_error(error)
+                self.element.utilities.handle_driver_error(error)
             except AttributeError as error:
-                self.element.handle_driver_error(error)
+                self.element.utilities.handle_driver_error(error)
             except StaleElementReferenceException as error:
                 self.logger.debug(error)
                 self.logger.warning("StaleElementReferenceException\nRe-acquire element")
@@ -404,7 +404,7 @@ class ElementProperties:
             except WebDriverException as error:
                 err_msg = str(error).lower()
                 if "instrumentation process is not running" in err_msg or "socket hang up" in err_msg:
-                    self.element.handle_driver_error(error)
+                    self.element.utilities.handle_driver_error(error)
                     continue
                 raise ShadowstepElementException(
                     msg=f"Failed to retrieve attr within {self.element.timeout=}",
@@ -423,11 +423,11 @@ class ElementProperties:
                 self.element.get_driver()
                 return self.get_attribute("class")
             except NoSuchDriverException as error:
-                self.element.handle_driver_error(error)
+                self.element.utilities.handle_driver_error(error)
             except InvalidSessionIdException as error:
-                self.element.handle_driver_error(error)
+                self.element.utilities.handle_driver_error(error)
             except AttributeError as error:
-                self.element.handle_driver_error(error)
+                self.element.utilities.handle_driver_error(error)
             except StaleElementReferenceException as error:
                 self.logger.debug(error)
                 self.logger.warning("StaleElementReferenceException\nRe-acquire element")
@@ -437,7 +437,7 @@ class ElementProperties:
             except WebDriverException as error:
                 err_msg = str(error).lower()
                 if "instrumentation process is not running" in err_msg or "socket hang up" in err_msg:
-                    self.element.handle_driver_error(error)
+                    self.element.utilities.handle_driver_error(error)
                     continue
                 raise ShadowstepElementException(
                     msg=f"Failed to retrieve attr within {self.element.timeout=}",
@@ -456,7 +456,7 @@ class ElementProperties:
                 self.element.get_driver()
                 return self.get_attribute("index")
             except (NoSuchDriverException, InvalidSessionIdException, AttributeError) as error:
-                self.element.handle_driver_error(error)
+                self.element.utilities.handle_driver_error(error)
             except StaleElementReferenceException as error:
                 self.logger.debug(error)
                 self.logger.warning("StaleElementReferenceException\nRe-acquire element")
@@ -466,7 +466,7 @@ class ElementProperties:
             except WebDriverException as error:
                 err_msg = str(error).lower()
                 if "instrumentation process is not running" in err_msg or "socket hang up" in err_msg:
-                    self.element.handle_driver_error(error)
+                    self.element.utilities.handle_driver_error(error)
                     continue
                 raise ShadowstepElementException(
                     msg=f"Failed to retrieve attr within {self.element.timeout=}",
@@ -485,7 +485,7 @@ class ElementProperties:
                 self.element.get_driver()
                 return self.get_attribute("package")
             except (NoSuchDriverException, InvalidSessionIdException, AttributeError) as error:
-                self.element.handle_driver_error(error)
+                self.element.utilities.handle_driver_error(error)
             except StaleElementReferenceException as error:
                 self.logger.debug(error)
                 self.logger.warning("StaleElementReferenceException\nRe-acquire element")
@@ -495,7 +495,7 @@ class ElementProperties:
             except WebDriverException as error:
                 err_msg = str(error).lower()
                 if "instrumentation process is not running" in err_msg or "socket hang up" in err_msg:
-                    self.element.handle_driver_error(error)
+                    self.element.utilities.handle_driver_error(error)
                     continue
                 raise ShadowstepElementException(
                     msg=f"Failed to retrieve attr within {self.element.timeout=}",
@@ -514,7 +514,7 @@ class ElementProperties:
                 self.element.get_driver()
                 return self.get_attribute("class")
             except (NoSuchDriverException, InvalidSessionIdException, AttributeError) as error:
-                self.element.handle_driver_error(error)
+                self.element.utilities.handle_driver_error(error)
             except StaleElementReferenceException as error:
                 self.logger.debug(error)
                 self.logger.warning("StaleElementReferenceException\nRe-acquire element")
@@ -524,7 +524,7 @@ class ElementProperties:
             except WebDriverException as error:
                 err_msg = str(error).lower()
                 if "instrumentation process is not running" in err_msg or "socket hang up" in err_msg:
-                    self.element.handle_driver_error(error)
+                    self.element.utilities.handle_driver_error(error)
                     continue
                 raise ShadowstepElementException(
                     msg=f"Failed to retrieve attr within {self.element.timeout=}",
@@ -543,7 +543,7 @@ class ElementProperties:
                 self.element.get_driver()
                 return self.get_attribute("bounds")
             except (NoSuchDriverException, InvalidSessionIdException, AttributeError) as error:
-                self.element.handle_driver_error(error)
+                self.element.utilities.handle_driver_error(error)
             except StaleElementReferenceException as error:
                 self.logger.debug(error)
                 self.logger.warning("StaleElementReferenceException\nRe-acquire element")
@@ -553,7 +553,7 @@ class ElementProperties:
             except WebDriverException as error:
                 err_msg = str(error).lower()
                 if "instrumentation process is not running" in err_msg or "socket hang up" in err_msg:
-                    self.element.handle_driver_error(error)
+                    self.element.utilities.handle_driver_error(error)
                     continue
                 raise ShadowstepElementException(
                     msg=f"Failed to retrieve attr within {self.element.timeout=}",
@@ -572,11 +572,11 @@ class ElementProperties:
                 self.element.get_driver()
                 return self.get_attribute("checked")
             except NoSuchDriverException as error:
-                self.element.handle_driver_error(error)
+                self.element.utilities.handle_driver_error(error)
             except InvalidSessionIdException as error:
-                self.element.handle_driver_error(error)
+                self.element.utilities.handle_driver_error(error)
             except AttributeError as error:
-                self.element.handle_driver_error(error)
+                self.element.utilities.handle_driver_error(error)
             except StaleElementReferenceException as error:
                 self.logger.debug(error)
                 self.logger.warning("StaleElementReferenceException\nRe-acquire element")
@@ -586,7 +586,7 @@ class ElementProperties:
             except WebDriverException as error:
                 err_msg = str(error).lower()
                 if "instrumentation process is not running" in err_msg or "socket hang up" in err_msg:
-                    self.element.handle_driver_error(error)
+                    self.element.utilities.handle_driver_error(error)
                     continue
                 raise ShadowstepElementException(
                     msg=f"Failed to retrieve attr within {self.element.timeout=}",
@@ -605,11 +605,11 @@ class ElementProperties:
                 self.element.get_driver()
                 return self.get_attribute("checkable")
             except NoSuchDriverException as error:
-                self.element.handle_driver_error(error)
+                self.element.utilities.handle_driver_error(error)
             except InvalidSessionIdException as error:
-                self.element.handle_driver_error(error)
+                self.element.utilities.handle_driver_error(error)
             except AttributeError as error:
-                self.element.handle_driver_error(error)
+                self.element.utilities.handle_driver_error(error)
             except StaleElementReferenceException as error:
                 self.logger.debug(error)
                 self.logger.warning("StaleElementReferenceException\nRe-acquire element")
@@ -619,7 +619,7 @@ class ElementProperties:
             except WebDriverException as error:
                 err_msg = str(error).lower()
                 if "instrumentation process is not running" in err_msg or "socket hang up" in err_msg:
-                    self.element.handle_driver_error(error)
+                    self.element.utilities.handle_driver_error(error)
                     continue
                 raise ShadowstepElementException(
                     msg=f"Failed to retrieve attr within {self.element.timeout=}",
@@ -638,11 +638,11 @@ class ElementProperties:
                 self.element.get_driver()
                 return self.get_attribute("enabled")
             except NoSuchDriverException as error:
-                self.element.handle_driver_error(error)
+                self.element.utilities.handle_driver_error(error)
             except InvalidSessionIdException as error:
-                self.element.handle_driver_error(error)
+                self.element.utilities.handle_driver_error(error)
             except AttributeError as error:
-                self.element.handle_driver_error(error)
+                self.element.utilities.handle_driver_error(error)
             except StaleElementReferenceException as error:
                 self.logger.debug(error)
                 self.logger.warning("StaleElementReferenceException\nRe-acquire element")
@@ -652,7 +652,7 @@ class ElementProperties:
             except WebDriverException as error:
                 err_msg = str(error).lower()
                 if "instrumentation process is not running" in err_msg or "socket hang up" in err_msg:
-                    self.element.handle_driver_error(error)
+                    self.element.utilities.handle_driver_error(error)
                     continue
                 raise ShadowstepElementException(
                     msg=f"Failed to retrieve attr within {self.element.timeout=}",
@@ -671,11 +671,11 @@ class ElementProperties:
                 self.element.get_driver()
                 return self.get_attribute("focusable")
             except NoSuchDriverException as error:
-                self.element.handle_driver_error(error)
+                self.element.utilities.handle_driver_error(error)
             except InvalidSessionIdException as error:
-                self.element.handle_driver_error(error)
+                self.element.utilities.handle_driver_error(error)
             except AttributeError as error:
-                self.element.handle_driver_error(error)
+                self.element.utilities.handle_driver_error(error)
             except StaleElementReferenceException as error:
                 self.logger.debug(error)
                 self.logger.warning("StaleElementReferenceException\nRe-acquire element")
@@ -685,7 +685,7 @@ class ElementProperties:
             except WebDriverException as error:
                 err_msg = str(error).lower()
                 if "instrumentation process is not running" in err_msg or "socket hang up" in err_msg:
-                    self.element.handle_driver_error(error)
+                    self.element.utilities.handle_driver_error(error)
                     continue
                 raise ShadowstepElementException(
                     msg=f"Failed to retrieve attr within {self.element.timeout=}",
@@ -704,11 +704,11 @@ class ElementProperties:
                 self.element.get_driver()
                 return self.get_attribute("focused")
             except NoSuchDriverException as error:
-                self.element.handle_driver_error(error)
+                self.element.utilities.handle_driver_error(error)
             except InvalidSessionIdException as error:
-                self.element.handle_driver_error(error)
+                self.element.utilities.handle_driver_error(error)
             except AttributeError as error:
-                self.element.handle_driver_error(error)
+                self.element.utilities.handle_driver_error(error)
             except StaleElementReferenceException as error:
                 self.logger.debug(error)
                 self.logger.warning("StaleElementReferenceException\nRe-acquire element")
@@ -718,7 +718,7 @@ class ElementProperties:
             except WebDriverException as error:
                 err_msg = str(error).lower()
                 if "instrumentation process is not running" in err_msg or "socket hang up" in err_msg:
-                    self.element.handle_driver_error(error)
+                    self.element.utilities.handle_driver_error(error)
                     continue
                 raise ShadowstepElementException(
                     msg=f"Failed to retrieve attr within {self.element.timeout=}",
@@ -737,11 +737,11 @@ class ElementProperties:
                 self.element.get_driver()
                 return self.get_attribute("long-clickable")
             except NoSuchDriverException as error:
-                self.element.handle_driver_error(error)
+                self.element.utilities.handle_driver_error(error)
             except InvalidSessionIdException as error:
-                self.element.handle_driver_error(error)
+                self.element.utilities.handle_driver_error(error)
             except AttributeError as error:
-                self.element.handle_driver_error(error)
+                self.element.utilities.handle_driver_error(error)
             except StaleElementReferenceException as error:
                 self.logger.debug(error)
                 self.logger.warning("StaleElementReferenceException\nRe-acquire element")
@@ -751,7 +751,7 @@ class ElementProperties:
             except WebDriverException as error:
                 err_msg = str(error).lower()
                 if "instrumentation process is not running" in err_msg or "socket hang up" in err_msg:
-                    self.element.handle_driver_error(error)
+                    self.element.utilities.handle_driver_error(error)
                     continue
                 raise ShadowstepElementException(
                     msg=f"Failed to retrieve attr within {self.element.timeout=}",
@@ -770,11 +770,11 @@ class ElementProperties:
                 self.element.get_driver()
                 return self.get_attribute("password")
             except NoSuchDriverException as error:
-                self.element.handle_driver_error(error)
+                self.element.utilities.handle_driver_error(error)
             except InvalidSessionIdException as error:
-                self.element.handle_driver_error(error)
+                self.element.utilities.handle_driver_error(error)
             except AttributeError as error:
-                self.element.handle_driver_error(error)
+                self.element.utilities.handle_driver_error(error)
             except StaleElementReferenceException as error:
                 self.logger.debug(error)
                 self.logger.warning("StaleElementReferenceException\nRe-acquire element")
@@ -784,7 +784,7 @@ class ElementProperties:
             except WebDriverException as error:
                 err_msg = str(error).lower()
                 if "instrumentation process is not running" in err_msg or "socket hang up" in err_msg:
-                    self.element.handle_driver_error(error)
+                    self.element.utilities.handle_driver_error(error)
                     continue
                 raise ShadowstepElementException(
                     msg=f"Failed to retrieve attr within {self.element.timeout=}",
@@ -803,11 +803,11 @@ class ElementProperties:
                 self.element.get_driver()
                 return self.get_attribute("scrollable")
             except NoSuchDriverException as error:
-                self.element.handle_driver_error(error)
+                self.element.utilities.handle_driver_error(error)
             except InvalidSessionIdException as error:
-                self.element.handle_driver_error(error)
+                self.element.utilities.handle_driver_error(error)
             except AttributeError as error:
-                self.element.handle_driver_error(error)
+                self.element.utilities.handle_driver_error(error)
             except StaleElementReferenceException as error:
                 self.logger.debug(error)
                 self.logger.warning("StaleElementReferenceException\nRe-acquire element")
@@ -817,7 +817,7 @@ class ElementProperties:
             except WebDriverException as error:
                 err_msg = str(error).lower()
                 if "instrumentation process is not running" in err_msg or "socket hang up" in err_msg:
-                    self.element.handle_driver_error(error)
+                    self.element.utilities.handle_driver_error(error)
                     continue
                 raise ShadowstepElementException(
                     msg=f"Failed to retrieve attr within {self.element.timeout=}",
@@ -836,11 +836,11 @@ class ElementProperties:
                 self.element.get_driver()
                 return self.get_attribute("selected")
             except NoSuchDriverException as error:
-                self.element.handle_driver_error(error)
+                self.element.utilities.handle_driver_error(error)
             except InvalidSessionIdException as error:
-                self.element.handle_driver_error(error)
+                self.element.utilities.handle_driver_error(error)
             except AttributeError as error:
-                self.element.handle_driver_error(error)
+                self.element.utilities.handle_driver_error(error)
             except StaleElementReferenceException as error:
                 self.logger.debug(error)
                 self.logger.warning("StaleElementReferenceException\nRe-acquire element")
@@ -850,7 +850,7 @@ class ElementProperties:
             except WebDriverException as error:
                 err_msg = str(error).lower()
                 if "instrumentation process is not running" in err_msg or "socket hang up" in err_msg:
-                    self.element.handle_driver_error(error)
+                    self.element.utilities.handle_driver_error(error)
                     continue
                 raise ShadowstepElementException(
                     msg=f"Failed to retrieve attr within {self.element.timeout=}",
@@ -869,11 +869,11 @@ class ElementProperties:
                 self.element.get_driver()
                 return self.get_attribute("displayed")
             except NoSuchDriverException as error:
-                self.element.handle_driver_error(error)
+                self.element.utilities.handle_driver_error(error)
             except InvalidSessionIdException as error:
-                self.element.handle_driver_error(error)
+                self.element.utilities.handle_driver_error(error)
             except AttributeError as error:
-                self.element.handle_driver_error(error)
+                self.element.utilities.handle_driver_error(error)
             except StaleElementReferenceException as error:
                 self.logger.debug(error)
                 self.logger.warning("StaleElementReferenceException\nRe-acquire element")
@@ -883,7 +883,7 @@ class ElementProperties:
             except WebDriverException as error:
                 err_msg = str(error).lower()
                 if "instrumentation process is not running" in err_msg or "socket hang up" in err_msg:
-                    self.element.handle_driver_error(error)
+                    self.element.utilities.handle_driver_error(error)
                     continue
                 raise ShadowstepElementException(
                     msg=f"Failed to retrieve attr within {self.element.timeout=}",
@@ -905,13 +905,13 @@ class ElementProperties:
                 element = self.element.get_native()
                 return element.shadow_root
             except NoSuchDriverException as error:
-                self.element.handle_driver_error(error)
+                self.element.utilities.handle_driver_error(error)
             except InvalidSessionIdException as error:
-                self.element.handle_driver_error(error)
+                self.element.utilities.handle_driver_error(error)
             except AttributeError as error:
-                self.element.handle_driver_error(error)
+                self.element.utilities.handle_driver_error(error)
             except WebDriverException as error:
-                self.element.handle_driver_error(error)
+                self.element.utilities.handle_driver_error(error)
         raise ShadowstepElementException(
             msg=f"Failed to retrieve shadow_root within {self.element.timeout=}",
             stacktrace=traceback.format_stack()
@@ -926,11 +926,11 @@ class ElementProperties:
                 current_element = self.element.get_native()
                 return current_element.size
             except NoSuchDriverException as error:
-                self.element.handle_driver_error(error)
+                self.element.utilities.handle_driver_error(error)
             except InvalidSessionIdException as error:
-                self.element.handle_driver_error(error)
+                self.element.utilities.handle_driver_error(error)
             except AttributeError as error:
-                self.element.handle_driver_error(error)
+                self.element.utilities.handle_driver_error(error)
             except StaleElementReferenceException as error:
                 self.logger.debug(error)
                 self.logger.warning("StaleElementReferenceException\nRe-acquire element")
@@ -938,7 +938,7 @@ class ElementProperties:
                 self.element.get_native()
                 continue
             except WebDriverException as error:
-                self.element.handle_driver_error(error)
+                self.element.utilities.handle_driver_error(error)
         raise ShadowstepElementException(
             msg=f"Failed to retrieve size within {self.element.timeout=}",
             stacktrace=traceback.format_stack()
@@ -955,11 +955,11 @@ class ElementProperties:
                 current_element = self.element.get_native()
                 return current_element.value_of_css_property(property_name)
             except NoSuchDriverException as error:
-                self.element.handle_driver_error(error)
+                self.element.utilities.handle_driver_error(error)
             except InvalidSessionIdException as error:
-                self.element.handle_driver_error(error)
+                self.element.utilities.handle_driver_error(error)
             except AttributeError as error:
-                self.element.handle_driver_error(error)
+                self.element.utilities.handle_driver_error(error)
             except StaleElementReferenceException as error:
                 self.logger.debug(error)
                 self.logger.warning("StaleElementReferenceException\nRe-acquire element")
@@ -967,7 +967,7 @@ class ElementProperties:
                 self.element.get_native()
                 continue
             except WebDriverException as error:
-                self.element.handle_driver_error(error)
+                self.element.utilities.handle_driver_error(error)
         raise ShadowstepElementException(
             msg=f"Failed to retrieve CSS property '{property_name}' within {self.element.timeout=}",
             stacktrace=traceback.format_stack()
@@ -984,11 +984,11 @@ class ElementProperties:
                 current_element = self.element.get_native()
                 return current_element.location
             except NoSuchDriverException as error:
-                self.element.handle_driver_error(error)
+                self.element.utilities.handle_driver_error(error)
             except InvalidSessionIdException as error:
-                self.element.handle_driver_error(error)
+                self.element.utilities.handle_driver_error(error)
             except AttributeError as error:
-                self.element.handle_driver_error(error)
+                self.element.utilities.handle_driver_error(error)
             except StaleElementReferenceException as error:
                 self.logger.debug(error)
                 self.logger.warning("StaleElementReferenceException\nRe-acquire element")
@@ -996,7 +996,7 @@ class ElementProperties:
                 self.element.get_native()
                 continue
             except WebDriverException as error:
-                self.element.handle_driver_error(error)
+                self.element.utilities.handle_driver_error(error)
         raise ShadowstepElementException(
             msg=f"Failed to retrieve location within {self.element.timeout=}",
             stacktrace=traceback.format_stack()
@@ -1011,11 +1011,11 @@ class ElementProperties:
                 current_element = self.element.get_native()
                 return current_element.rect
             except NoSuchDriverException as error:
-                self.element.handle_driver_error(error)
+                self.element.utilities.handle_driver_error(error)
             except InvalidSessionIdException as error:
-                self.element.handle_driver_error(error)
+                self.element.utilities.handle_driver_error(error)
             except AttributeError as error:
-                self.element.handle_driver_error(error)
+                self.element.utilities.handle_driver_error(error)
             except StaleElementReferenceException as error:
                 self.logger.debug(error)
                 self.logger.warning("StaleElementReferenceException\nRe-acquire element")
@@ -1023,7 +1023,7 @@ class ElementProperties:
                 self.element.get_native()
                 continue
             except WebDriverException as error:
-                self.element.handle_driver_error(error)
+                self.element.utilities.handle_driver_error(error)
         raise ShadowstepElementException(
             msg=f"Failed to retrieve rect within {self.element.timeout=}",
             stacktrace=traceback.format_stack()
@@ -1038,11 +1038,11 @@ class ElementProperties:
                 current_element = self.element.get_native()
                 return current_element.aria_role
             except NoSuchDriverException as error:
-                self.element.handle_driver_error(error)
+                self.element.utilities.handle_driver_error(error)
             except InvalidSessionIdException as error:
-                self.element.handle_driver_error(error)
+                self.element.utilities.handle_driver_error(error)
             except AttributeError as error:
-                self.element.handle_driver_error(error)
+                self.element.utilities.handle_driver_error(error)
             except StaleElementReferenceException as error:
                 self.logger.debug(error)
                 self.logger.warning("StaleElementReferenceException\nRe-acquire element")
@@ -1050,7 +1050,7 @@ class ElementProperties:
                 self.element.get_native()
                 continue
             except WebDriverException as error:
-                self.element.handle_driver_error(error)
+                self.element.utilities.handle_driver_error(error)
         raise ShadowstepElementException(
             msg=f"Failed to retrieve aria_role within {self.element.timeout=}",
             stacktrace=traceback.format_stack()
@@ -1065,11 +1065,11 @@ class ElementProperties:
                 current_element = self.element.get_native()
                 return current_element.accessible_name
             except NoSuchDriverException as error:
-                self.element.handle_driver_error(error)
+                self.element.utilities.handle_driver_error(error)
             except InvalidSessionIdException as error:
-                self.element.handle_driver_error(error)
+                self.element.utilities.handle_driver_error(error)
             except AttributeError as error:
-                self.element.handle_driver_error(error)
+                self.element.utilities.handle_driver_error(error)
             except StaleElementReferenceException as error:
                 self.logger.debug(error)
                 self.logger.warning("StaleElementReferenceException\nRe-acquire element")
@@ -1077,12 +1077,12 @@ class ElementProperties:
                 self.element.get_native()
                 continue
             except WebDriverException as error:
-                self.element.handle_driver_error(error)
+                self.element.utilities.handle_driver_error(error)
         raise ShadowstepElementException(
             msg=f"Failed to retrieve accessible_name within {self.element.timeout=}",
             stacktrace=traceback.format_stack()
         )
-    
+
     def _resolve_xpath_for_attributes(self) -> str | None:
         """Resolve XPath expression from locator for attributes fetching."""
         try:
@@ -1095,3 +1095,48 @@ class ElementProperties:
         except Exception as e:
             self.logger.error(f"Exception in to_xpath: {e}")
             return None
+
+    def _check_element_visibility(self) -> bool | None:
+        """Check if element is visible, handling exceptions."""
+        try:
+            screen_size = self.shadowstep.terminal.get_screen_resolution()
+            screen_width = screen_size[0]
+            screen_height = screen_size[1]
+            current_element = self.element.get_native()
+
+            if current_element is None:
+                return False
+            if current_element.get_attribute("displayed") != "true":
+                return False
+
+            element_location = current_element.location
+            element_size = current_element.size
+            return self._check_element_bounds(element_location, element_size, screen_width, screen_height)
+
+        except NoSuchElementException:
+            return False
+        except (NoSuchDriverException, InvalidSessionIdException, AttributeError) as error:
+            self.element.utilities.handle_driver_error(error)
+            return None
+        except StaleElementReferenceException as error:
+            self.logger.debug(error)
+            self.logger.warning("StaleElementReferenceException\nRe-acquire element")
+            self.element.native = None
+            self.element.get_native()
+            return None
+        except WebDriverException as error:
+            err_msg = str(error).lower()
+            if "instrumentation process is not running" in err_msg or "socket hang up" in err_msg:
+                self.element.utilities.handle_driver_error(error)
+                return None
+            raise
+    
+    def _check_element_bounds(self, element_location: dict, element_size: dict, screen_width: int,
+                              screen_height: int) -> bool:
+        """Check if element is within screen bounds."""
+        return not (
+                element_location["y"] + element_size["height"] > screen_height or
+                element_location["x"] + element_size["width"] > screen_width or
+                element_location["y"] < 0 or
+                element_location["x"] < 0
+        )

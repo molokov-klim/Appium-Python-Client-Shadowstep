@@ -2,23 +2,12 @@
 from __future__ import annotations
 
 import logging
-import time
 from typing import TYPE_CHECKING, Any, cast
 
 from appium.webdriver.webelement import WebElement
-from selenium.common import (
-    InvalidSessionIdException,
-    NoSuchDriverException,
-    NoSuchElementException,
-    StaleElementReferenceException,
-    TimeoutException,
-    WebDriverException,
-)
 from selenium.types import WaitExcTypes
 from selenium.webdriver.remote.shadowroot import ShadowRoot
-from selenium.webdriver.support.wait import WebDriverWait
 
-from shadowstep.element import conditions
 from shadowstep.element.actions import ElementActions
 from shadowstep.element.base import ElementBase
 from shadowstep.element.coordinates import ElementCoordinates
@@ -71,10 +60,6 @@ class Element(ElementBase):
 
     def __repr__(self):
         return f"Element(locator={self.locator!r}"
-
-    """
-    DOM
-    """
 
     def get_element(self,
                     locator: tuple[str, str] | dict[str, Any] | Element | UiSelector,
@@ -138,10 +123,6 @@ class Element(ElementBase):
     ) -> list[Element]:
         return self.dom.get_cousins(cousin_locator, depth_to_parent, timeout, poll_frequency, ignored_exceptions)
 
-    """
-    Actions
-    """
-
     # Override
     def send_keys(self, *value: str) -> Element:
         return self.actions.send_keys(*value)
@@ -161,10 +142,6 @@ class Element(ElementBase):
         self.logger.warning(
             f"Method {get_current_func_name()} is not implemented in UiAutomator2")
         return self.actions.submit()
-
-    """
-    Gestures
-    """
 
     def tap(self, duration: int | None = None) -> Element:
         return self.gestures.tap(duration)
@@ -253,10 +230,6 @@ class Element(ElementBase):
 
     def swipe(self, direction: str, percent: float = 0.75, speed: int = 5000) -> Element:
         return self.gestures.swipe(direction, percent, speed)
-
-    """
-    Properties
-    """
 
     # Override
     def get_attribute(self, name: str) -> str:  # type: ignore[override]
@@ -467,10 +440,6 @@ class Element(ElementBase):
         """
         return self.properties.accessible_name()
 
-    """
-    Coordinates
-    """
-
     def get_coordinates(self, element: WebElement | None = None) -> tuple[int, int, int, int]:
         return self.coordinates.get_coordinates(element)
 
@@ -487,10 +456,6 @@ class Element(ElementBase):
         self.logger.warning(
             f"Method {get_current_func_name()} is not implemented in UiAutomator2")
         return self.coordinates.location_once_scrolled_into_view()
-
-    """
-    Screenshots
-    """
 
     @property
     def screenshot_as_base64(self) -> str:
@@ -521,49 +486,8 @@ class Element(ElementBase):
         """
         return self.screenshots.save_screenshot(filename)
 
-    """
-    
-    """
-
-    def handle_driver_error(self, error: Exception) -> None:
-        self.logger.warning(f"{get_current_func_name()} {error}")
-        self.shadowstep.reconnect()
-        time.sleep(0.3)
-
-    def _build_xpath_attribute_condition(self, key: str, value: str) -> str:
-        """Build XPath attribute condition based on value content."""
-        if value is None or value == "null":
-            return f"[@{key}]"
-        if "'" in value and '"' not in value:
-            return f'[@{key}="{value}"]'
-        if '"' in value and "'" not in value:
-            return f"[@{key}='{value}']"
-        if "'" in value and '"' in value:
-            parts = value.split('"')
-            escaped = "concat(" + ", ".join(
-                f'"{part}"' if i % 2 == 0 else "'\"'" for i, part in enumerate(parts)) + ")"
-            return f"[@{key}={escaped}]"
-        return f"[@{key}='{value}']"
-
-    def build_xpath_from_attributes(self, attrs: dict[str, Any]) -> str:
-        """Build XPath from element attributes."""
-        xpath = "//"
-        element_type = attrs.get("class")
-        except_attrs = ["hint", "selection-start", "selection-end", "extras"]
-
-        # Start XPath with element class or wildcard
-        if element_type:
-            xpath += element_type
-        else:
-            xpath += "*"
-
-        for key, value in attrs.items():
-            if key in except_attrs:
-                continue
-            xpath += self._build_xpath_attribute_condition(key, value)
-        return xpath
-
-    def wait(self, timeout: int = 10, poll_frequency: float = 0.5, return_bool: bool = False) -> Element:  # noqa: C901
+    def wait(self, timeout: int = 10, poll_frequency: float = 0.5,
+             return_bool: bool = False) -> Element | bool:  # noqa: C901
         """Waits for the element to appear (present in DOM).
 
         Args:
@@ -574,65 +498,7 @@ class Element(ElementBase):
         Returns:
             bool: True if the element is found, False otherwise.
         """
-        self.logger.debug(f"{get_current_func_name()}")
-        start_time = time.time()
-        while time.time() - start_time < self.timeout:
-            try:
-                resolved_locator = self.converter.to_xpath(self.remove_null_value(self.locator))
-                if not resolved_locator:
-                    self.logger.error("Resolved locator is None or invalid")
-                    if return_bool:
-                        return False
-                    return self
-                WebDriverWait(self.shadowstep.driver, timeout, poll_frequency).until(
-                    conditions.present(resolved_locator)
-                )
-                if return_bool:
-                    return True
-                return self
-            except TimeoutException:
-                if return_bool:
-                    return False
-                return self
-            except NoSuchDriverException as error:
-                self.handle_driver_error(error)
-            except InvalidSessionIdException as error:
-                self.handle_driver_error(error)
-            except StaleElementReferenceException as error:
-                self.logger.debug(error)
-                self.logger.warning("StaleElementReferenceException\nRe-acquire element")
-                self.native = None
-                self.get_native()
-                continue
-            except WebDriverException as error:
-                self.handle_driver_error(error)
-            except Exception as error:
-                self.logger.error(f"{error}")
-                continue
-        return False
-
-    def _wait_for_visibility_with_locator(self, resolved_locator: tuple[str, str], timeout: int,
-                                          poll_frequency: float) -> bool:
-        """Wait for element visibility using resolved locator."""
-        try:
-            WebDriverWait(self.shadowstep.driver, timeout, poll_frequency).until(
-                conditions.visible(resolved_locator)
-            )
-            return True
-        except TimeoutException:
-            return False
-
-    def _handle_wait_visibility_errors(self, error: Exception) -> None:
-        """Handle errors during wait visibility operation."""
-        if isinstance(error, (NoSuchDriverException, InvalidSessionIdException, WebDriverException)):
-            self.handle_driver_error(error)
-        elif isinstance(error, StaleElementReferenceException):
-            self.logger.debug(error)
-            self.logger.warning("StaleElementReferenceException\nRe-acquire element")
-            self.native = None
-            self.get_native()
-        else:
-            self.logger.error(f"{error}")
+        return self.waiting.wait(timeout, poll_frequency=poll_frequency, return_bool=return_bool)
 
     def wait_visible(self, timeout: int = 10, poll_frequency: float = 0.5, return_bool: bool = False) -> Element | bool:
         """Waits until the element is visible.
@@ -645,48 +511,7 @@ class Element(ElementBase):
         Returns:
             bool: True if the element becomes visible, False otherwise.
         """
-        self.logger.debug(f"{get_current_func_name()}")
-        start_time = time.time()
-
-        while time.time() - start_time < self.timeout:
-            try:
-                resolved_locator = self.converter.to_xpath(self.remove_null_value(self.locator))
-                if not resolved_locator:
-                    self.logger.error("Resolved locator is None or invalid")
-                    return False if return_bool else self
-
-                if self._wait_for_visibility_with_locator(resolved_locator, timeout, poll_frequency):
-                    return True if return_bool else self
-
-            except Exception as error:
-                self._handle_wait_visibility_errors(error)
-                if isinstance(error, StaleElementReferenceException):
-                    continue
-
-        return False if return_bool else self
-
-    def _wait_for_clickability_with_locator(self, resolved_locator: tuple[str, str], timeout: int,
-                                            poll_frequency: float) -> bool:
-        """Wait for element clickability using resolved locator."""
-        try:
-            WebDriverWait(self.shadowstep.driver, timeout, poll_frequency).until(
-                conditions.clickable(resolved_locator)
-            )
-            return True
-        except TimeoutException:
-            return False
-
-    def _handle_wait_clickability_errors(self, error: Exception) -> None:
-        """Handle errors during wait clickability operation."""
-        if isinstance(error, (NoSuchDriverException, InvalidSessionIdException, WebDriverException)):
-            self.handle_driver_error(error)
-        elif isinstance(error, StaleElementReferenceException):
-            self.logger.debug(error)
-            self.logger.warning("StaleElementReferenceException\nRe-acquire element")
-            self.native = None
-            self.get_native()
-        else:
-            self.logger.error(f"{error}")
+        return self.waiting.wait_visible(timeout, poll_frequency=poll_frequency, return_bool=return_bool)
 
     def wait_clickable(self, timeout: int = 10, poll_frequency: float = 0.5,
                        return_bool: bool = False) -> Element | bool:
@@ -700,48 +525,7 @@ class Element(ElementBase):
         Returns:
             bool: True if the element becomes clickable, False otherwise.
         """
-        self.logger.debug(f"{get_current_func_name()}")
-        start_time = time.time()
-
-        while time.time() - start_time < self.timeout:
-            try:
-                resolved_locator = self.converter.to_xpath(self.remove_null_value(self.locator))
-                if not resolved_locator:
-                    self.logger.error("Resolved locator is None or invalid")
-                    return False if return_bool else self
-
-                if self._wait_for_clickability_with_locator(resolved_locator, timeout, poll_frequency):
-                    return True if return_bool else self
-
-            except Exception as error:
-                self._handle_wait_clickability_errors(error)
-                if isinstance(error, StaleElementReferenceException):
-                    continue
-
-        return False if return_bool else self
-
-    def _wait_for_not_present_with_locator(self, resolved_locator: tuple[str, str], timeout: int,
-                                           poll_frequency: float) -> bool:
-        """Wait for element to not be present using resolved locator."""
-        try:
-            WebDriverWait(self.shadowstep.driver, timeout, poll_frequency).until(
-                conditions.not_present(resolved_locator)
-            )
-            return True
-        except TimeoutException:
-            return False
-
-    def _handle_wait_for_not_errors(self, error: Exception) -> None:
-        """Handle errors during wait for not operation."""
-        if isinstance(error, (NoSuchDriverException, InvalidSessionIdException, WebDriverException)):
-            self.handle_driver_error(error)
-        elif isinstance(error, StaleElementReferenceException):
-            self.logger.debug(error)
-            self.logger.warning("StaleElementReferenceException\nRe-acquire element")
-            self.native = None
-            self.get_native()
-        else:
-            self.logger.error(f"{error}")
+        return self.waiting.wait_clickable(timeout, poll_frequency, return_bool)
 
     def wait_for_not(self, timeout: int = 10, poll_frequency: float = 0.5, return_bool: bool = False) -> Element | bool:
         """Waits until the element is no longer present in the DOM.
@@ -754,47 +538,7 @@ class Element(ElementBase):
         Returns:
             bool: True if the element disappears, False otherwise.
         """
-        self.logger.debug(f"{get_current_func_name()}")
-        start_time = time.time()
-
-        while time.time() - start_time < self.timeout:
-            try:
-                resolved_locator = self.converter.to_xpath(self.remove_null_value(self.locator))
-                if not resolved_locator:
-                    return False if return_bool else self
-
-                if self._wait_for_not_present_with_locator(resolved_locator, timeout, poll_frequency):
-                    return True if return_bool else self
-
-            except Exception as error:
-                self._handle_wait_for_not_errors(error)
-                if isinstance(error, StaleElementReferenceException):
-                    continue
-
-        return False
-
-    def _wait_for_not_visible_with_locator(self, resolved_locator: tuple[str, str], timeout: int,
-                                           poll_frequency: float) -> bool:
-        """Wait for element to not be visible using resolved locator."""
-        try:
-            WebDriverWait(self.shadowstep.driver, timeout, poll_frequency).until(
-                conditions.not_visible(resolved_locator)
-            )
-            return True
-        except TimeoutException:
-            return False
-
-    def _handle_wait_for_not_visible_errors(self, error: Exception) -> None:
-        """Handle errors during wait for not visible operation."""
-        if isinstance(error, (NoSuchDriverException, InvalidSessionIdException, WebDriverException)):  # noqa
-            self.handle_driver_error(error)
-        elif isinstance(error, StaleElementReferenceException):
-            self.logger.debug(error)
-            self.logger.warning("StaleElementReferenceException\nRe-acquire element")
-            self.native = None
-            self.get_native()
-        else:
-            self.logger.error(f"{error}")
+        return self.waiting.wait_for_not(timeout, poll_frequency=poll_frequency, return_bool=return_bool)
 
     def wait_for_not_visible(self, timeout: int = 10, poll_frequency: float = 0.5,
                              return_bool: bool = False) -> Element | bool:
@@ -808,47 +552,7 @@ class Element(ElementBase):
         Returns:
             bool: True if the element becomes invisible, False otherwise.
         """
-        self.logger.debug(f"{get_current_func_name()}")
-        start_time = time.time()
-
-        while time.time() - start_time < self.timeout:
-            try:
-                resolved_locator = self.converter.to_xpath(self.remove_null_value(self.locator))
-                if not resolved_locator:
-                    return False if return_bool else self
-
-                if self._wait_for_not_visible_with_locator(resolved_locator, timeout, poll_frequency):
-                    return True if return_bool else self
-
-            except Exception as error:
-                self._handle_wait_for_not_visible_errors(error)
-                if isinstance(error, StaleElementReferenceException):
-                    continue
-
-        return False if return_bool else self
-
-    def _wait_for_not_clickable_with_locator(self, resolved_locator: tuple[str, str], timeout: int,
-                                             poll_frequency: float) -> bool:
-        """Wait for element to not be clickable using resolved locator."""
-        try:
-            WebDriverWait(self.shadowstep.driver, timeout, poll_frequency).until(
-                conditions.not_clickable(resolved_locator)
-            )
-            return True
-        except TimeoutException:
-            return False
-
-    def _handle_wait_for_not_clickable_errors(self, error: Exception) -> None:
-        """Handle errors during wait for not clickable operation."""
-        if isinstance(error, (NoSuchDriverException, InvalidSessionIdException, WebDriverException)):  # noqa
-            self.handle_driver_error(error)
-        elif isinstance(error, StaleElementReferenceException):
-            self.logger.debug(error)
-            self.logger.warning("StaleElementReferenceException\nRe-acquire element")
-            self.native = None
-            self.get_native()
-        else:
-            self.logger.error(f"{error}")
+        return self.waiting.wait_for_not_visible(timeout, poll_frequency, return_bool)
 
     def wait_for_not_clickable(self, timeout: int = 10, poll_frequency: float = 0.5,
                                return_bool: bool = False) -> Element | bool:
@@ -862,31 +566,13 @@ class Element(ElementBase):
         Returns:
             bool: True if the element becomes not clickable, False otherwise.
         """
-        self.logger.debug(f"{get_current_func_name()}")
-        start_time = time.time()
-
-        while time.time() - start_time < self.timeout:
-            try:
-                resolved_locator = self.converter.to_xpath(self.remove_null_value(self.locator))
-                if not resolved_locator:
-                    self.logger.error("Resolved locator is None or invalid")
-                    return False if return_bool else self
-
-                if self._wait_for_not_clickable_with_locator(resolved_locator, timeout, poll_frequency):
-                    return True if return_bool else self
-
-            except Exception as error:
-                self._handle_wait_for_not_clickable_errors(error)
-                if isinstance(error, StaleElementReferenceException):
-                    continue
-
-        return False if return_bool else self
+        return self.waiting.wait_for_not_clickable(timeout, poll_frequency, return_bool)
 
     @property
     def should(self) -> Should:
         """Provides DSL-like assertions: element.should.have.text(...), etc."""
         from shadowstep.element.should import (
-            Should,  # import inside method to avoid circular dependency
+            Should,
         )
         return Should(self)
 
@@ -907,84 +593,3 @@ class Element(ElementBase):
             poll_frequency=self.poll_frequency,
             ignored_exceptions=self.ignored_exceptions
         )
-
-    def _check_element_bounds(self, element_location: dict, element_size: dict, screen_width: int,
-                              screen_height: int) -> bool:
-        """Check if element is within screen bounds."""
-        return not (
-                element_location["y"] + element_size["height"] > screen_height or
-                element_location["x"] + element_size["width"] > screen_width or
-                element_location["y"] < 0 or
-                element_location["x"] < 0
-        )
-
-    def _check_element_visibility(self) -> bool | None:
-        """Check if element is visible, handling exceptions."""
-        try:
-            screen_size = self.shadowstep.terminal.get_screen_resolution()
-            screen_width = screen_size[0]
-            screen_height = screen_size[1]
-            current_element = self.get_native()
-
-            if current_element is None:
-                return False
-            if current_element.get_attribute("displayed") != "true":
-                return False
-
-            element_location = current_element.location
-            element_size = current_element.size
-            return self._check_element_bounds(element_location, element_size, screen_width, screen_height)
-
-        except NoSuchElementException:
-            return False
-        except (NoSuchDriverException, InvalidSessionIdException, AttributeError) as error:
-            self.handle_driver_error(error)
-            return None
-        except StaleElementReferenceException as error:
-            self.logger.debug(error)
-            self.logger.warning("StaleElementReferenceException\nRe-acquire element")
-            self.native = None
-            self.get_native()
-            return None
-        except WebDriverException as error:
-            err_msg = str(error).lower()
-            if "instrumentation process is not running" in err_msg or "socket hang up" in err_msg:
-                self.handle_driver_error(error)
-                return None
-            raise
-
-    def _ensure_session_alive(self) -> None:
-        self.logger.debug(f"{get_current_func_name()}")
-        try:
-            self.get_driver()
-        except NoSuchDriverException:
-            self.logger.warning("Reconnecting driver due to session issue")
-            self.shadowstep.reconnect()
-        except InvalidSessionIdException:
-            self.logger.warning("Reconnecting driver due to session issue")
-            self.shadowstep.reconnect()
-
-    def _get_first_child_class(self, tries: int = 3) -> str:
-        self.logger.debug(f"{get_current_func_name()}")
-        for _ in range(tries):
-            try:
-                parent_element = self
-                parent_class = parent_element.get_attribute("class")
-                child_elements = parent_element.get_elements(("xpath", "//*[1]"))
-                for _i, child_element in enumerate(child_elements):
-                    child_class = child_element.get_attribute("class")
-                    if parent_class != child_class:
-                        return str(child_class)
-            except StaleElementReferenceException as error:
-                self.logger.debug(error)
-                self.logger.warning("StaleElementReferenceException\nRe-acquire element")
-                self.native = None
-                self.get_native()
-                continue
-            except WebDriverException as error:
-                err_msg = str(error).lower()
-                if "instrumentation process is not running" in err_msg or "socket hang up" in err_msg:
-                    self.handle_driver_error(error)
-                    continue
-                raise
-        return ""  # Return empty string if no child class found

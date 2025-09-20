@@ -1,6 +1,5 @@
 import os
 import subprocess
-import time
 
 from shadowstep.shadowstep import Shadowstep
 

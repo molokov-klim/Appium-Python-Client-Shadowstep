@@ -403,20 +403,11 @@ To tweak generated code structure, edit these files. (The generator uses the loc
 - `shadowstep/page_object/page_object_test_generator.py`
 
 ---
-## Known issues
-
-For some reason, jinja templates are not downloaded to the folder when installed via pip. 
-Insert them manually from this sources into .venv/Lib/site-packages/shadowstep/page_object/templates/ 
-I don't know how to solve this yet.
-
-start_logcat (mobile: startLogsBroadcast) is not working with my Selenium Grid now, need experiments with plugins.
-Solve it later
-
----
 
 ## Limitations
 
 - Android only (no iOS or Web)
+- Singleton session (for parallel testing need use different runners/containers)
 
 ---
 

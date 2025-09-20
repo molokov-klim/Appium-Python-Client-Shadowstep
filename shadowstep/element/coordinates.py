@@ -55,11 +55,11 @@ class ElementCoordinates:
                 left, top, right, bottom = map(int, bounds.strip("[]").replace("][", ",").split(","))  # type: ignore
                 return left, top, right, bottom
             except NoSuchDriverException as error:
-                self.element.handle_driver_error(error)
+                self.element.utilities.handle_driver_error(error)
             except InvalidSessionIdException as error:
-                self.element.handle_driver_error(error)
+                self.element.utilities.handle_driver_error(error)
             except AttributeError as error:
-                self.element.handle_driver_error(error)
+                self.element.utilities.handle_driver_error(error)
             except StaleElementReferenceException as error:
                 self.logger.debug(error)
                 self.logger.warning("StaleElementReferenceException\nRe-acquire element")
@@ -69,7 +69,7 @@ class ElementCoordinates:
             except WebDriverException as error:
                 err_msg = str(error).lower()
                 if "instrumentation process is not running" in err_msg or "socket hang up" in err_msg:
-                    self.element.handle_driver_error(error)
+                    self.element.utilities.handle_driver_error(error)
                     continue
                 raise
 
@@ -102,11 +102,11 @@ class ElementCoordinates:
                 y = int((top + bottom) / 2)
                 return x, y
             except NoSuchDriverException as error:
-                self.element.handle_driver_error(error)
+                self.element.utilities.handle_driver_error(error)
             except InvalidSessionIdException as error:
-                self.element.handle_driver_error(error)
+                self.element.utilities.handle_driver_error(error)
             except AttributeError as error:
-                self.element.handle_driver_error(error)
+                self.element.utilities.handle_driver_error(error)
             except StaleElementReferenceException as error:
                 self.logger.debug(error)
                 self.logger.warning("StaleElementReferenceException\nRe-acquire element")
@@ -116,7 +116,7 @@ class ElementCoordinates:
             except WebDriverException as error:
                 err_msg = str(error).lower()
                 if "instrumentation process is not running" in err_msg or "socket hang up" in err_msg:
-                    self.element.handle_driver_error(error)
+                    self.element.utilities.handle_driver_error(error)
                     continue
                 raise
 
@@ -143,11 +143,11 @@ class ElementCoordinates:
 
                 return current_element.location_in_view  # Appium WebElement property
             except NoSuchDriverException as error:
-                self.element.handle_driver_error(error)
+                self.element.utilities.handle_driver_error(error)
             except InvalidSessionIdException as error:
-                self.element.handle_driver_error(error)
+                self.element.utilities.handle_driver_error(error)
             except AttributeError as error:
-                self.element.handle_driver_error(error)
+                self.element.utilities.handle_driver_error(error)
             except StaleElementReferenceException as error:
                 self.logger.debug(error)
                 self.logger.warning("StaleElementReferenceException\nRe-acquire element")
@@ -157,7 +157,7 @@ class ElementCoordinates:
             except WebDriverException as error:
                 err_msg = str(error).lower()
                 if "instrumentation process is not running" in err_msg or "socket hang up" in err_msg:
-                    self.element.handle_driver_error(error)
+                    self.element.utilities.handle_driver_error(error)
                     continue
                 raise
         raise ShadowstepElementException(
@@ -190,13 +190,13 @@ class ElementCoordinates:
                 return current_element.location_once_scrolled_into_view
 
             except NoSuchDriverException as error:
-                self.element.handle_driver_error(error)
+                self.element.utilities.handle_driver_error(error)
             except InvalidSessionIdException as error:
-                self.element.handle_driver_error(error)
+                self.element.utilities.handle_driver_error(error)
             except AttributeError as error:
-                self.element.handle_driver_error(error)
+                self.element.utilities.handle_driver_error(error)
             except WebDriverException as error:
-                self.element.handle_driver_error(error)
+                self.element.utilities.handle_driver_error(error)
 
         raise ShadowstepElementException(
             msg=f"Failed to get location_once_scrolled_into_view within {self.element.timeout=}",
