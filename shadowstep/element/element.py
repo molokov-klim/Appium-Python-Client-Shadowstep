@@ -41,7 +41,16 @@ class Element(ElementBase):
                  poll_frequency: float = 0.5,
                  ignored_exceptions: WaitExcTypes | None = None,
                  native: WebElement | None = None):
-        # Convert Element to its locator if needed
+        """Initialize Element with locator and configuration.
+
+        Args:
+            locator: Element locator (tuple, dict, Element, or UiSelector).
+            shadowstep: Shadowstep instance for driver access.
+            timeout: Maximum time to wait for element (default: 30).
+            poll_frequency: Polling frequency in seconds (default: 0.5).
+            ignored_exceptions: Exceptions to ignore during waiting.
+            native: Pre-existing WebElement instance.
+        """
         if isinstance(locator, Element):
             locator = locator.locator
         elif isinstance(locator, UiSelector):
@@ -59,6 +68,11 @@ class Element(ElementBase):
         self.waiting = ElementWaiting(self)
 
     def __repr__(self):
+        """Return string representation of Element.
+
+        Returns:
+            str: String representation showing locator.
+        """
         return f"Element(locator={self.locator!r}"
 
     def get_element(self,
@@ -66,6 +80,17 @@ class Element(ElementBase):
                     timeout: int = 30,
                     poll_frequency: float = 0.5,
                     ignored_exceptions: WaitExcTypes | None = None) -> Element:
+        """Find a single element within this element's context.
+
+        Args:
+            locator: Element locator to search for.
+            timeout: Maximum time to wait for element (default: 30).
+            poll_frequency: Polling frequency in seconds (default: 0.5).
+            ignored_exceptions: Exceptions to ignore during waiting.
+
+        Returns:
+            Element: Found element instance.
+        """
         return self.dom.get_element(locator, timeout, poll_frequency, ignored_exceptions)
 
     def get_elements(
@@ -75,18 +100,49 @@ class Element(ElementBase):
             poll_frequency: float = 0.5,
             ignored_exceptions: WaitExcTypes | None = None
     ) -> list[Element]:
+        """Find multiple elements within this element's context.
+
+        Args:
+            locator: Element locator to search for.
+            timeout: Maximum time to wait for elements (default: 30).
+            poll_frequency: Polling frequency in seconds (default: 0.5).
+            ignored_exceptions: Exceptions to ignore during waiting.
+
+        Returns:
+            list[Element]: List of found element instances.
+        """
         return self.dom.get_elements(locator, timeout, poll_frequency, ignored_exceptions)
 
     def get_parent(self,
                    timeout: float = 30,
                    poll_frequency: float = 0.5,
                    ignored_exceptions: WaitExcTypes | None = None) -> Element:
+        """Get the parent element of this element.
+
+        Args:
+            timeout: Maximum time to wait for parent element (default: 30).
+            poll_frequency: Polling frequency in seconds (default: 0.5).
+            ignored_exceptions: Exceptions to ignore during waiting.
+
+        Returns:
+            Element: Parent element instance.
+        """
         return self.dom.get_parent(timeout, poll_frequency, ignored_exceptions)
 
     def get_parents(self,
                     timeout: float = 30,
                     poll_frequency: float = 0.5,
                     ignored_exceptions: WaitExcTypes | None = None) -> list[Element]:
+        """Get all parent elements of this element.
+
+        Args:
+            timeout: Maximum time to wait for parent elements (default: 30).
+            poll_frequency: Polling frequency in seconds (default: 0.5).
+            ignored_exceptions: Exceptions to ignore during waiting.
+
+        Returns:
+            list[Element]: List of parent element instances.
+        """
         return self.dom.get_parents(timeout, poll_frequency, ignored_exceptions)
 
     def get_sibling(self,
@@ -94,6 +150,17 @@ class Element(ElementBase):
                     timeout: float = 30,
                     poll_frequency: float = 0.5,
                     ignored_exceptions: WaitExcTypes | None = None) -> Element:
+        """Get a sibling element of this element.
+
+        Args:
+            locator: Element locator to search for.
+            timeout: Maximum time to wait for sibling element (default: 30).
+            poll_frequency: Polling frequency in seconds (default: 0.5).
+            ignored_exceptions: Exceptions to ignore during waiting.
+
+        Returns:
+            Element: Sibling element instance.
+        """
         return self.dom.get_sibling(locator, timeout, poll_frequency, ignored_exceptions)
 
     def get_siblings(self,
@@ -101,6 +168,17 @@ class Element(ElementBase):
                      timeout: float = 30.0,
                      poll_frequency: float = 0.5,
                      ignored_exceptions: WaitExcTypes | None = None) -> list[Element]:
+        """Get all sibling elements of this element.
+
+        Args:
+            locator: Element locator to search for.
+            timeout: Maximum time to wait for sibling elements (default: 30.0).
+            poll_frequency: Polling frequency in seconds (default: 0.5).
+            ignored_exceptions: Exceptions to ignore during waiting.
+
+        Returns:
+            list[Element]: List of sibling element instances.
+        """
         return self.dom.get_siblings(locator, timeout, poll_frequency, ignored_exceptions)
 
     def get_cousin(
@@ -111,6 +189,18 @@ class Element(ElementBase):
             poll_frequency: float = 0.5,
             ignored_exceptions: WaitExcTypes | None = None
     ) -> Element:
+        """Get a cousin element (sibling of parent) of this element.
+
+        Args:
+            cousin_locator: Element locator to search for.
+            depth_to_parent: Number of parent levels to go up (default: 1).
+            timeout: Maximum time to wait for cousin element (default: 30.0).
+            poll_frequency: Polling frequency in seconds (default: 0.5).
+            ignored_exceptions: Exceptions to ignore during waiting.
+
+        Returns:
+            Element: Cousin element instance.
+        """
         return self.dom.get_cousin(cousin_locator, depth_to_parent, timeout, poll_frequency, ignored_exceptions)
 
     def get_cousins(
@@ -121,29 +211,75 @@ class Element(ElementBase):
             poll_frequency: float = 0.5,
             ignored_exceptions: WaitExcTypes | None = None
     ) -> list[Element]:
+        """Get all cousin elements (siblings of parent) of this element.
+
+        Args:
+            cousin_locator: Element locator to search for.
+            depth_to_parent: Number of parent levels to go up (default: 1).
+            timeout: Maximum time to wait for cousin elements (default: 30.0).
+            poll_frequency: Polling frequency in seconds (default: 0.5).
+            ignored_exceptions: Exceptions to ignore during waiting.
+
+        Returns:
+            list[Element]: List of cousin element instances.
+        """
         return self.dom.get_cousins(cousin_locator, depth_to_parent, timeout, poll_frequency, ignored_exceptions)
 
     # Override
     def send_keys(self, *value: str) -> Element:
+        """Send keys to the element.
+
+        Args:
+            *value: String values to send to the element.
+
+        Returns:
+            Element: Self for method chaining.
+        """
         return self.actions.send_keys(*value)
 
     # Override
     def clear(self) -> Element:
+        """Clear the element's text content.
+
+        Returns:
+            Element: Self for method chaining.
+        """
         return self.actions.clear()
 
     # Override
     def set_value(self, value: str) -> Element:
+        """Set the value of the element.
+
+        Args:
+            value: Value to set.
+
+        Returns:
+            Element: Self for method chaining.
+        """
         self.logger.warning(
             f"Method {get_current_func_name()} is not implemented in UiAutomator2")
         return self.actions.set_value(value)
 
     # Override
     def submit(self) -> Element:
+        """Submit the element (e.g., form submission).
+
+        Returns:
+            Element: Self for method chaining.
+        """
         self.logger.warning(
             f"Method {get_current_func_name()} is not implemented in UiAutomator2")
         return self.actions.submit()
 
     def tap(self, duration: int | None = None) -> Element:
+        """Tap the element.
+
+        Args:
+            duration: Duration of the tap in milliseconds.
+
+        Returns:
+            Element: Self for method chaining.
+        """
         return self.gestures.tap(duration)
 
     def tap_and_move(
@@ -154,112 +290,341 @@ class Element(ElementBase):
             direction: int | None = None,
             distance: int | None = None,
     ) -> Element:
+        """Tap and move to another element or coordinates.
+
+        Args:
+            locator: Target element locator.
+            x: Target X coordinate.
+            y: Target Y coordinate.
+            direction: Direction vector for movement.
+            distance: Distance to move.
+
+        Returns:
+            Element: Self for method chaining.
+        """
         return self.gestures.tap_and_move(locator, x, y, direction, distance)
 
     def click(self, duration: int | None = None) -> Element:
+        """Click the element.
+
+        Args:
+            duration: Duration of the click in milliseconds.
+
+        Returns:
+            Element: Self for method chaining.
+        """
         return self.gestures.click(duration)
 
     def click_double(self) -> Element:
+        """Perform a double click on the element.
+
+        Returns:
+            Element: Self for method chaining.
+        """
         return self.gestures.click_double()
 
     def drag(self, end_x: int, end_y: int, speed: int = 2500) -> Element:
+        """Drag the element to target coordinates.
+
+        Args:
+            end_x: Target X coordinate.
+            end_y: Target Y coordinate.
+            speed: Drag speed in pixels per second (default: 2500).
+
+        Returns:
+            Element: Self for method chaining.
+        """
         return self.gestures.drag(end_x, end_y, speed)
 
     def fling_up(self, speed: int = 2500) -> Element:
+        """Perform a fling gesture upward on the element.
+
+        Args:
+            speed: Fling speed in pixels per second (default: 2500).
+
+        Returns:
+            Element: Self for method chaining.
+        """
         return self.fling(speed=speed, direction="up")
 
     def fling_down(self, speed: int = 2500) -> Element:
+        """Perform a fling gesture downward on the element.
+
+        Args:
+            speed: Fling speed in pixels per second (default: 2500).
+
+        Returns:
+            Element: Self for method chaining.
+        """
         return self.fling(speed=speed, direction="down")
 
     def fling_left(self, speed: int = 2500) -> Element:
+        """Perform a fling gesture leftward on the element.
+
+        Args:
+            speed: Fling speed in pixels per second (default: 2500).
+
+        Returns:
+            Element: Self for method chaining.
+        """
         return self.fling(speed=speed, direction="left")
 
     def fling_right(self, speed: int = 2500) -> Element:
+        """Perform a fling gesture rightward on the element.
+
+        Args:
+            speed: Fling speed in pixels per second (default: 2500).
+
+        Returns:
+            Element: Self for method chaining.
+        """
         return self.fling(speed=speed, direction="right")
 
     def fling(self, speed: int, direction: str) -> Element:
+        """Perform a fling gesture on the element.
+
+        Args:
+            speed: Fling speed in pixels per second.
+            direction: Direction of fling ("up", "down", "left", "right").
+
+        Returns:
+            Element: Self for method chaining.
+        """
         return self.gestures.fling(speed, direction)
 
     def scroll_down(self, percent: float = 0.7, speed: int = 2000, return_bool: bool = False) -> Element:
+        """Scroll down within the element.
+
+        Args:
+            percent: Scroll distance as percentage of element height (default: 0.7).
+            speed: Scroll speed in pixels per second (default: 2000).
+            return_bool: Whether to return boolean instead of Element (default: False).
+
+        Returns:
+            Element: Self for method chaining.
+        """
         return self.scroll(direction="down", percent=percent, speed=speed, return_bool=return_bool)
 
     def scroll_up(self, percent: float = 0.7, speed: int = 2000, return_bool: bool = False) -> Element:
+        """Scroll up within the element.
+
+        Args:
+            percent: Scroll distance as percentage of element height (default: 0.7).
+            speed: Scroll speed in pixels per second (default: 2000).
+            return_bool: Whether to return boolean instead of Element (default: False).
+
+        Returns:
+            Element: Self for method chaining.
+        """
         return self.scroll(direction="up", percent=percent, speed=speed, return_bool=return_bool)
 
     def scroll_left(self, percent: float = 0.7, speed: int = 2000, return_bool: bool = False) -> Element:
+        """Scroll left within the element.
+
+        Args:
+            percent: Scroll distance as percentage of element width (default: 0.7).
+            speed: Scroll speed in pixels per second (default: 2000).
+            return_bool: Whether to return boolean instead of Element (default: False).
+
+        Returns:
+            Element: Self for method chaining.
+        """
         return self.scroll(direction="left", percent=percent, speed=speed, return_bool=return_bool)
 
     def scroll_right(self, percent: float = 0.7, speed: int = 2000, return_bool: bool = False) -> Element:
+        """Scroll right within the element.
+
+        Args:
+            percent: Scroll distance as percentage of element width (default: 0.7).
+            speed: Scroll speed in pixels per second (default: 2000).
+            return_bool: Whether to return boolean instead of Element (default: False).
+
+        Returns:
+            Element: Self for method chaining.
+        """
         return self.scroll(direction="right", percent=percent, speed=speed, return_bool=return_bool)
 
     def scroll(self, direction: str, percent: float, speed: int, return_bool: bool) -> Element:
+        """Scroll within the element in specified direction.
+
+        Args:
+            direction: Scroll direction ("up", "down", "left", "right").
+            percent: Scroll distance as percentage of element size.
+            speed: Scroll speed in pixels per second.
+            return_bool: Whether to return boolean instead of Element.
+
+        Returns:
+            Element: Self for method chaining.
+        """
         return self.gestures.scroll(direction, percent, speed, return_bool)
 
     def scroll_to_bottom(self, percent: float = 0.7, speed: int = 8000) -> Element:
+        """Scroll to the bottom of the element.
+
+        Args:
+            percent: Scroll distance as percentage of element height (default: 0.7).
+            speed: Scroll speed in pixels per second (default: 8000).
+
+        Returns:
+            Element: Self for method chaining.
+        """
         return self.gestures.scroll_to_bottom(percent, speed)
 
     def scroll_to_top(self, percent: float = 0.7, speed: int = 8000) -> Element:
+        """Scroll to the top of the element.
+
+        Args:
+            percent: Scroll distance as percentage of element height (default: 0.7).
+            speed: Scroll speed in pixels per second (default: 8000).
+
+        Returns:
+            Element: Self for method chaining.
+        """
         return self.gestures.scroll_to_top(percent, speed)
 
     def scroll_to_element(self,
                           locator: tuple[str, str] | dict[str, Any] | Element | UiSelector,
                           max_swipes: int = 30) -> Element:
+        """Scroll to find and return a specific element.
+
+        Args:
+            locator: Element locator to search for.
+            max_swipes: Maximum number of swipe attempts (default: 30).
+
+        Returns:
+            Element: Found element instance.
+        """
         return self.gestures.scroll_to_element(locator, max_swipes)
 
     def zoom(self, percent: float = 0.75, speed: int = 2500) -> Element:
+        """Perform a zoom gesture on the element.
+
+        Args:
+            percent: Zoom scale as percentage (default: 0.75).
+            speed: Zoom speed in pixels per second (default: 2500).
+
+        Returns:
+            Element: Self for method chaining.
+        """
         return self.gestures.zoom(percent, speed)
 
     def unzoom(self, percent: float = 0.75, speed: int = 2500) -> Element:
+        """Perform an unzoom gesture on the element.
+
+        Args:
+            percent: Unzoom scale as percentage (default: 0.75).
+            speed: Unzoom speed in pixels per second (default: 2500).
+
+        Returns:
+            Element: Self for method chaining.
+        """
         return self.gestures.unzoom(percent, speed)
 
     def swipe_up(self, percent: float = 0.75, speed: int = 5000) -> Element:
-        """Performs a swipe up gesture on the current element."""
+        """Perform a swipe up gesture on the element.
+
+        Args:
+            percent: Swipe distance as percentage of element height (default: 0.75).
+            speed: Swipe speed in pixels per second (default: 5000).
+
+        Returns:
+            Element: Self for method chaining.
+        """
         return self.swipe(direction="up", percent=percent, speed=speed)
 
     def swipe_down(self, percent: float = 0.75, speed: int = 5000) -> Element:
-        """Performs a swipe down gesture on the current element."""
+        """Perform a swipe down gesture on the element.
+
+        Args:
+            percent: Swipe distance as percentage of element height (default: 0.75).
+            speed: Swipe speed in pixels per second (default: 5000).
+
+        Returns:
+            Element: Self for method chaining.
+        """
         return self.swipe(direction="down", percent=percent, speed=speed)
 
     def swipe_left(self, percent: float = 0.75, speed: int = 5000) -> Element:
-        """Performs a swipe left gesture on the current element."""
+        """Perform a swipe left gesture on the element.
+
+        Args:
+            percent: Swipe distance as percentage of element width (default: 0.75).
+            speed: Swipe speed in pixels per second (default: 5000).
+
+        Returns:
+            Element: Self for method chaining.
+        """
         return self.swipe(direction="left", percent=percent, speed=speed)
 
     def swipe_right(self, percent: float = 0.75, speed: int = 5000) -> Element:
-        """Performs a swipe right gesture on the current element."""
+        """Perform a swipe right gesture on the element.
+
+        Args:
+            percent: Swipe distance as percentage of element width (default: 0.75).
+            speed: Swipe speed in pixels per second (default: 5000).
+
+        Returns:
+            Element: Self for method chaining.
+        """
         return self.swipe(direction="right", percent=percent, speed=speed)
 
     def swipe(self, direction: str, percent: float = 0.75, speed: int = 5000) -> Element:
+        """Perform a swipe gesture on the element.
+
+        Args:
+            direction: Swipe direction ("up", "down", "left", "right").
+            percent: Swipe distance as percentage of element size (default: 0.75).
+            speed: Swipe speed in pixels per second (default: 5000).
+
+        Returns:
+            Element: Self for method chaining.
+        """
         return self.gestures.swipe(direction, percent, speed)
 
     # Override
     def get_attribute(self, name: str) -> str:  # type: ignore[override]
+        """Get the value of the specified attribute.
+
+        Args:
+            name: Name of the attribute to retrieve.
+
+        Returns:
+            str: Value of the attribute.
+        """
         return self.properties.get_attribute(name)
 
     def get_attributes(self) -> dict[str, Any]:
         """Fetch all XML attributes of the element by matching locator against page source.
 
         Returns:
-            Optional[dict[str, Any]]: Dictionary of all attributes, or None if not found.
+            dict[str, Any]: Dictionary of all attributes.
         """
         return self.properties.get_attributes()
 
     def get_property(self, name: str) -> Any:
+        """Get the value of the specified property.
+
+        Args:
+            name: Name of the property to retrieve.
+
+        Returns:
+            Any: Value of the property.
+        """
         self.logger.warning(
             f"Method {get_current_func_name()} is not implemented in UiAutomator2")
         return self.properties.get_property(name)
 
     def get_dom_attribute(self, name: str) -> str:
-        """Gets the given attribute of the element. Unlike
-        :func:`~selenium.webdriver.remote.BaseWebElement.get_attribute`, this
-        method only returns attributes declared in the element's HTML markup.
+        """Get the given attribute of the element from HTML markup.
 
-        :Args:
-            - name - Name of the attribute to retrieve.
+        Unlike get_attribute, this method only returns attributes declared
+        in the element's HTML markup.
 
-        :Usage:
-            ::
+        Args:
+            name: Name of the attribute to retrieve.
 
-                text_length = target_element.get_dom_attribute("class")
+        Returns:
+            str: Value of the DOM attribute.
         """
         return self.properties.get_dom_attribute(name)
 
@@ -273,6 +638,11 @@ class Element(ElementBase):
         return self.properties.is_displayed()
 
     def is_visible(self) -> bool:
+        """Check if the element is visible on screen.
+
+        Returns:
+            bool: True if element is visible, False otherwise.
+        """
         return self.properties.is_visible()
 
     def is_selected(self) -> bool:
@@ -286,7 +656,7 @@ class Element(ElementBase):
         return self.properties.is_selected()
 
     def is_enabled(self) -> bool:
-        """Returns whether the element is enabled.
+        """Check if the element is enabled.
 
         Returns:
             bool: True if the element is enabled.
@@ -296,190 +666,326 @@ class Element(ElementBase):
     def is_contains(self,
                     locator: tuple | dict[str, Any] | Element | UiSelector,
                     ) -> bool:
+        """Check if the element contains another element.
+
+        Args:
+            locator: Locator of the element to search for.
+
+        Returns:
+            bool: True if the element contains the specified element.
+        """
         return self.properties.is_contains(locator)
 
     @property
     def tag_name(self) -> str:
-        """This element's ``tagName`` property.
+        """Get the element's tag name.
 
         Returns:
-            Optional[str]: The tag name of the element, or None if not retrievable.
+            str: The tag name of the element.
         """
         return self.properties.tag_name()
 
     @property
     def attributes(self):
+        """Get all element attributes.
+
+        Returns:
+            dict[str, Any]: Dictionary of all element attributes.
+        """
         return self.get_attributes()
 
     @property
     def text(self) -> str:
+        """Get the text content of the element.
+
+        Returns:
+            str: Text content of the element.
+        """
         return self.properties.text()
 
     @property
     def resource_id(self) -> str:
+        """Get the resource ID of the element.
+
+        Returns:
+            str: Resource ID of the element.
+        """
         return self.properties.resource_id()
 
     @property
     def class_(self) -> str:  # 'class' is a reserved word, so class_name is better
+        """Get the class name of the element.
+
+        Returns:
+            str: Class name of the element.
+        """
         return self.properties.class_()
 
     @property
     def class_name(self) -> str:  # 'class' is a reserved word, so class_name is better
+        """Get the class name of the element.
+
+        Returns:
+            str: Class name of the element.
+        """
         return self.properties.class_name()
 
     @property
     def index(self) -> str:
+        """Get the index of the element.
+
+        Returns:
+            str: Index of the element.
+        """
         self.logger.warning(
             f"Method {get_current_func_name()} 'index' attribute is unknown for the element")
         return self.properties.index()
 
     @property
     def package(self) -> str:
+        """Get the package name of the element.
+
+        Returns:
+            str: Package name of the element.
+        """
         return self.properties.package()
 
     @property
     def bounds(self) -> str:
+        """Get the bounds of the element.
+
+        Returns:
+            str: Bounds of the element.
+        """
         return self.properties.bounds()
 
     @property
     def checked(self) -> str:
+        """Get the checked state of the element.
+
+        Returns:
+            str: Checked state of the element.
+        """
         return self.properties.checked()
 
     @property
     def checkable(self) -> str:
+        """Get the checkable state of the element.
+
+        Returns:
+            str: Checkable state of the element.
+        """
         return self.properties.checkable()
 
     @property
     def enabled(self) -> str:
+        """Get the enabled state of the element.
+
+        Returns:
+            str: Enabled state of the element.
+        """
         return self.properties.enabled()
 
     @property
     def focusable(self) -> str:
+        """Get the focusable state of the element.
+
+        Returns:
+            str: Focusable state of the element.
+        """
         return self.properties.focusable()
 
     @property
     def focused(self) -> str:
+        """Get the focused state of the element.
+
+        Returns:
+            str: Focused state of the element.
+        """
         return self.properties.focused()
 
     @property
     def long_clickable(self) -> str:
+        """Get the long clickable state of the element.
+
+        Returns:
+            str: Long clickable state of the element.
+        """
         return self.properties.long_clickable()
 
     @property
     def password(self) -> str:
+        """Get the password state of the element.
+
+        Returns:
+            str: Password state of the element.
+        """
         return self.properties.password()
 
     @property
     def scrollable(self) -> str:
+        """Get the scrollable state of the element.
+
+        Returns:
+            str: Scrollable state of the element.
+        """
         return self.properties.scrollable()
 
     @property
     def selected(self) -> str:
+        """Get the selected state of the element.
+
+        Returns:
+            str: Selected state of the element.
+        """
         return self.properties.selected()
 
     @property
     def displayed(self) -> str:
+        """Get the displayed state of the element.
+
+        Returns:
+            str: Displayed state of the element.
+        """
         return self.properties.displayed()
 
     @property
     def shadow_root(self) -> ShadowRoot:
+        """Get the shadow root of the element.
+
+        Returns:
+            ShadowRoot: Shadow root of the element.
+        """
         self.logger.warning(
             f"Method {get_current_func_name()} is not implemented in UiAutomator2")
         return self.properties.shadow_root()
 
     @property
     def size(self) -> dict:
-        """Returns the size of the element.
+        """Get the size of the element.
 
         Returns:
             dict: Dictionary with keys 'width' and 'height'.
-
-        Raises:
-            ShadowstepElementException: If size cannot be determined.
         """
         return self.properties.size()
 
     def value_of_css_property(self, property_name: str) -> str:
+        """Get the value of a CSS property.
+
+        Args:
+            property_name: Name of the CSS property.
+
+        Returns:
+            str: Value of the CSS property.
+        """
         self.logger.warning(
             f"Method {get_current_func_name()} is not implemented in UiAutomator2")
         return self.properties.value_of_css_property(property_name)
 
     @property
     def location(self) -> dict:
+        """Get the location of the element.
+
+        Returns:
+            dict: Location coordinates of the element.
+        """
         self.logger.warning(
             f"Method {get_current_func_name()} is not implemented in UiAutomator2")
         return self.properties.location()
 
     @property
     def rect(self) -> dict:
-        """A dictionary with the size and location of the element.
+        """Get the rectangle of the element.
 
         Returns:
             dict: Dictionary with keys 'x', 'y', 'width', 'height'.
-
-        Raises:
-            ShadowstepElementException: If rect could not be retrieved within timeout.
         """
         return self.properties.rect()
 
     @property
     def aria_role(self) -> str:
-        """Returns the ARIA role of the current web element.
+        """Get the ARIA role of the element.
 
         Returns:
-            str: The ARIA role of the element, or None if not found.
+            str: The ARIA role of the element.
         """
         return self.properties.aria_role()
 
     @property
     def accessible_name(self) -> str:
-        """Returns the ARIA Level (accessible name) of the current web element.
+        """Get the accessible name of the element.
 
         Returns:
-            Optional[str]: Accessible name or None if not found.
+            str: Accessible name of the element.
         """
         return self.properties.accessible_name()
 
     def get_coordinates(self, element: WebElement | None = None) -> tuple[int, int, int, int]:
+        """Get the coordinates of the element.
+
+        Args:
+            element: Optional WebElement to get coordinates for.
+
+        Returns:
+            tuple[int, int, int, int]: Coordinates as (x, y, width, height).
+        """
         return self.coordinates.get_coordinates(element)
 
     def get_center(self, element: WebElement | None = None) -> tuple[int, int]:
+        """Get the center coordinates of the element.
+
+        Args:
+            element: Optional WebElement to get center for.
+
+        Returns:
+            tuple[int, int]: Center coordinates as (x, y).
+        """
         return self.coordinates.get_center(element)
 
     # Override
     @property
     def location_in_view(self) -> dict[str, int]:
+        """Get the location of the element in view.
+
+        Returns:
+            dict[str, int]: Location coordinates in view.
+        """
         return self.coordinates.location_in_view()
 
     @property
     def location_once_scrolled_into_view(self) -> dict[str, int]:
+        """Get the location of the element once scrolled into view.
+
+        Returns:
+            dict[str, int]: Location coordinates once scrolled into view.
+        """
         self.logger.warning(
             f"Method {get_current_func_name()} is not implemented in UiAutomator2")
         return self.coordinates.location_once_scrolled_into_view()
 
     @property
     def screenshot_as_base64(self) -> str:
-        """Gets the screenshot of the current element as a base64 encoded string.
+        """Get the screenshot of the element as base64 encoded string.
 
         Returns:
-            Optional[str]: Base64-encoded screenshot string or None if failed.
+            str: Base64-encoded screenshot string.
         """
         return self.screenshots.screenshot_as_base64()
 
     @property
     def screenshot_as_png(self) -> bytes:
-        """Gets the screenshot of the current element as binary data.
+        """Get the screenshot of the element as binary data.
 
         Returns:
-            Optional[bytes]: PNG-encoded screenshot bytes or None if failed.
+            bytes: PNG-encoded screenshot bytes.
         """
         return self.screenshots.screenshot_as_png()
 
     def save_screenshot(self, filename: str) -> bool:
-        """Saves a screenshot of the current element to a PNG image file.
+        """Save a screenshot of the element to a PNG file.
 
         Args:
-            filename (str): The full path to save the screenshot. Should end with `.png`.
+            filename: The full path to save the screenshot. Should end with `.png`.
 
         Returns:
             bool: True if successful, False otherwise.
@@ -488,97 +994,105 @@ class Element(ElementBase):
 
     def wait(self, timeout: int = 10, poll_frequency: float = 0.5,
              return_bool: bool = False) -> Element | bool:  # noqa: C901
-        """Waits for the element to appear (present in DOM).
+        """Wait for the element to appear (present in DOM).
 
         Args:
-            timeout (int): Timeout in seconds.
-            poll_frequency (float): Frequency of polling.
-            return_bool (bool): If True - return bool, else return Element (self)
+            timeout: Timeout in seconds (default: 10).
+            poll_frequency: Frequency of polling (default: 0.5).
+            return_bool: If True - return bool, else return Element (self) (default: False).
 
         Returns:
-            bool: True if the element is found, False otherwise.
+            Element | bool: Element instance or True if found, False otherwise.
         """
         return self.waiting.wait(timeout, poll_frequency=poll_frequency, return_bool=return_bool)
 
     def wait_visible(self, timeout: int = 10, poll_frequency: float = 0.5, return_bool: bool = False) -> Element | bool:
-        """Waits until the element is visible.
+        """Wait until the element is visible.
 
         Args:
-            timeout (int): Timeout in seconds.
-            poll_frequency (float): Frequency of polling.
-            return_bool (bool): If True - return bool, else return Element (self)
+            timeout: Timeout in seconds (default: 10).
+            poll_frequency: Frequency of polling (default: 0.5).
+            return_bool: If True - return bool, else return Element (self) (default: False).
 
         Returns:
-            bool: True if the element becomes visible, False otherwise.
+            Element | bool: Element instance or True if visible, False otherwise.
         """
         return self.waiting.wait_visible(timeout, poll_frequency=poll_frequency, return_bool=return_bool)
 
     def wait_clickable(self, timeout: int = 10, poll_frequency: float = 0.5,
                        return_bool: bool = False) -> Element | bool:
-        """Waits until the element is clickable.
+        """Wait until the element is clickable.
 
         Args:
-            timeout (int): Timeout in seconds.
-            poll_frequency (float): Frequency of polling.
-            return_bool (bool): If True - return bool, else return Element (self)
+            timeout: Timeout in seconds (default: 10).
+            poll_frequency: Frequency of polling (default: 0.5).
+            return_bool: If True - return bool, else return Element (self) (default: False).
 
         Returns:
-            bool: True if the element becomes clickable, False otherwise.
+            Element | bool: Element instance or True if clickable, False otherwise.
         """
         return self.waiting.wait_clickable(timeout, poll_frequency, return_bool)
 
     def wait_for_not(self, timeout: int = 10, poll_frequency: float = 0.5, return_bool: bool = False) -> Element | bool:
-        """Waits until the element is no longer present in the DOM.
+        """Wait until the element is no longer present in the DOM.
 
         Args:
-            timeout (int): Timeout in seconds.
-            poll_frequency (float): Frequency of polling.
-            return_bool (bool): If True - return bool, else return Element (self)
+            timeout: Timeout in seconds (default: 10).
+            poll_frequency: Frequency of polling (default: 0.5).
+            return_bool: If True - return bool, else return Element (self) (default: False).
 
         Returns:
-            bool: True if the element disappears, False otherwise.
+            Element | bool: Element instance or True if disappears, False otherwise.
         """
         return self.waiting.wait_for_not(timeout, poll_frequency=poll_frequency, return_bool=return_bool)
 
     def wait_for_not_visible(self, timeout: int = 10, poll_frequency: float = 0.5,
                              return_bool: bool = False) -> Element | bool:
-        """Waits until the element becomes invisible.
+        """Wait until the element becomes invisible.
 
         Args:
-            timeout (int): Timeout in seconds.
-            poll_frequency (float): Polling frequency.
-            return_bool (bool): If True - return bool, else return Element (self)
+            timeout: Timeout in seconds (default: 10).
+            poll_frequency: Polling frequency (default: 0.5).
+            return_bool: If True - return bool, else return Element (self) (default: False).
 
         Returns:
-            bool: True if the element becomes invisible, False otherwise.
+            Element | bool: Element instance or True if invisible, False otherwise.
         """
         return self.waiting.wait_for_not_visible(timeout, poll_frequency, return_bool)
 
     def wait_for_not_clickable(self, timeout: int = 10, poll_frequency: float = 0.5,
                                return_bool: bool = False) -> Element | bool:
-        """Waits until the element becomes not clickable.
+        """Wait until the element becomes not clickable.
 
         Args:
-            timeout (int): Timeout in seconds.
-            poll_frequency (float): Polling frequency.
-            return_bool (bool): If True - return bool, else return Element (self)
+            timeout: Timeout in seconds (default: 10).
+            poll_frequency: Polling frequency (default: 0.5).
+            return_bool: If True - return bool, else return Element (self) (default: False).
 
         Returns:
-            bool: True if the element becomes not clickable, False otherwise.
+            Element | bool: Element instance or True if not clickable, False otherwise.
         """
         return self.waiting.wait_for_not_clickable(timeout, poll_frequency, return_bool)
 
     @property
     def should(self) -> Should:
-        """Provides DSL-like assertions: element.should.have.text(...), etc."""
+        """Get DSL-like assertions for the element.
+
+        Returns:
+            Should: DSL assertion object for chaining assertions.
+        """
         from shadowstep.element.should import (
             Should,
         )
         return Should(self)
 
     def get_native(self) -> WebElement:
-        """
+        """Get the native WebElement instance.
+
         Returns either the provided native element or resolves via locator.
+
+        Returns:
+            WebElement: Native WebElement instance.
         """
         if self.native:
             return self.native
