@@ -38,7 +38,7 @@ class Adb:
         # Define command to execute with adb to get list of devices
         command = ["adb", "devices"]
 
-        # Выполнение команды и получение вывода
+        # Execute command and get output
         response = str(subprocess.check_output(command))  # noqa: S603
 
             # Extract device list from output using regular expressions
@@ -602,7 +602,7 @@ class Adb:
         # Define command as string
         command = "adb shell netstat"
         try:
-            # Execute command и получаем вывод
+            # Execute command and get output
             output = subprocess.run(command, shell=True, capture_output=True, text=True, check=True)  # noqa: S602
 
             # Search for line
@@ -980,7 +980,7 @@ class Adb:
         command = ["adb", "shell", "screenrecord", f"{path}/{filename}"]
         try:
             # Start adb shell screenrecord command to begin video recording
-            subprocess.Popen(command)  # noqa: S603  # не добавлять with
+            subprocess.Popen(command)  # noqa: S603  # don't add with
             return True
         except subprocess.CalledProcessError as error:
             logger.error(f"{get_current_func_name()}: {error}")

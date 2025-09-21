@@ -48,14 +48,14 @@ class Adb:
         command = ["adb", "devices"]
 
         try:
-            # Выполнение команды и получение вывода
+            # Execute command and get output
             response = str(subprocess.check_output(command))  # noqa: S603
 
-            # Извлечение списка устройств из полученного вывода с использованием регулярных выражений
+            # Extract device list from output using regular expressions
             devices_list = re.findall(r"(\d+\.\d+\.\d+\.\d+:\d+|\d+)", response)
 
             try:
-                # Возвращение первого устройства из списка (UUID подключенного устройства Android)
+                # Return first device from list (UUID of connected Android device)
                 logger.info(f"{get_current_func_name()} > {devices_list}")
                 return devices_list
             except IndexError:
@@ -85,9 +85,9 @@ class Adb:
         logger.info(f"{get_current_func_name()} < {udid}")
         command = ["adb", "-s", f"{udid}", "shell", "getprop", "ro.product.model"] if udid else ["adb", "shell", "getprop", "ro.product.model"]
         try:
-            # Выполнение команды и получение вывода
+            # Execute command and get output
             model = subprocess.check_output(command)  # noqa: S603
-            # Преобразование байтовой строки в обычную строку и удаление пробельных символов и символов перевода строки
+            # Convert byte string to regular string and remove whitespace and newline characters
             model = model.decode().strip()
             logger.info(f"{get_current_func_name()} > {model}")
             return model
@@ -204,7 +204,7 @@ class Adb:
         command = "adb shell pm list packages"
         try:
             result = subprocess.check_output(command, shell=True).decode().strip()  # noqa: S602
-            # Фильтруем пакеты
+            # Filter packages
             if any(line.strip().endswith(package) for line in result.splitlines()):
                 logger.info("install() > True")
                 return True
@@ -279,34 +279,34 @@ class Adb:
             Union[str, None]
                 The name of the current activity if found, None otherwise.
         """
-        # Вывод информации о запуске функции в лог
+        # Log function start information
         logger.info("get_current_activity()")
 
-        # Команда для ADB для получения информации о текущих окнах
+        # ADB command to get current window information
         command = ["adb", "shell", "dumpsys", "window", "windows"]
 
         try:
-            # Выполнение команды и декодирование результата
+            # Execute command and decode result
             result = subprocess.check_output(command, shell=True).decode().strip()  # noqa: S602
 
-            # Определение паттерна для поиска нужной информации в результатах
+            # Define pattern to search for required information in results
             pattern = r"mCurrentFocus|mFocusedApp"
 
-            # Вызов функции grep_pattern для поиска соответствия паттерну
+            # Call grep_pattern function to search for pattern match
             matched_lines = grep_pattern(input_string=result, pattern=pattern)
 
-            # Если были найдены соответствующие строки
+            # If matching lines were found
             if matched_lines:
                 for line in matched_lines:
-                    # Поиск имени активити в строке
+                    # Search for activity name in line
                     match = re.search(r"\/([^\/}]*)", line)
                     if match:
-                        # Возвращаем найденное значение, исключая '/'
+                        # Return found value, excluding '/'
                         activity_name = match.group(1)
                         logger.info(f"get_current_activity() > {activity_name}")
                         return activity_name
 
-            # Если не удалось найти активити, возвращаем None
+            # If activity not found, return None
             logger.error("get_current_activity() > None")
             return ""
         except subprocess.CalledProcessError:
@@ -324,34 +324,34 @@ class Adb:
             Union[str, None]
                 The name of the current application package if found, None otherwise.
         """
-        # Вывод информации о запуске функции в лог
+        # Log function start information
         logger.info("get_current_app_package()")
 
-        # Команда для ADB для получения информации о текущих окнах
+        # ADB command to get current window information
         command = ["adb", "shell", "dumpsys", "window", "windows"]
 
         try:
-            # Выполнение команды и декодирование результата
+            # Execute command and decode result
             result = subprocess.check_output(command, shell=True).decode().strip()  # noqa: S602
 
-            # Определение паттерна для поиска нужной информации в результатах
+            # Define pattern to search for required information in results
             pattern = r"mCurrentFocus|mFocusedApp"
 
-            # Вызов функции grep_pattern для поиска соответствия паттерну
+            # Call grep_pattern function to search for pattern match
             matched_lines = grep_pattern(input_string=result, pattern=pattern)
 
-            # Если были найдены соответствующие строки
+            # If matching lines were found
             if matched_lines:
                 for line in matched_lines:
-                    # Поиск имени пакета в строке
+                    # Search for package name in line
                     match = re.search(r"u0\s(.+?)/", line)
                     if match:
-                        # Возвращаем найденное значение
+                        # Return found value
                         package_name = match.group(1)
                         logger.info(f"get_current_app_package() > {package_name}")
                         return package_name
 
-            # Если не удалось найти имя пакета, возвращаем None
+            # If package name not found, return None
             logger.error("get_current_app_package() > None")
             return ""
         except subprocess.CalledProcessError:
@@ -403,12 +403,12 @@ class Adb:
         """
         logger.info(f"reboot_app() < {package=}, {activity=}")
 
-        # Закрытие приложения
+        # Close application
         if not Adb.close_app(package=package):
             logger.error("reboot_app() > False")
             return False
 
-        # Запуск указанной активности
+        # Launch specified activity
         if not Adb.start_activity(package=package, activity=activity):
             logger.error("reboot_app() > False")
             return False
@@ -548,10 +548,10 @@ class Adb:
         """
         logger.info(f"input_text() < {text=}")
 
-        # Формируем команду для ввода текста с использованием ADB
+        # Form command for text input using ADB
         command = ["adb", "shell", "input", "text", text]
         try:
-            # Выполняем команду
+            # Execute command
             subprocess.run(command, check=True)  # noqa: S603
             logger.info("input_text() > True")
             return True
@@ -578,7 +578,7 @@ class Adb:
         """
         logger.info(f"tap() < {x=}, {y=}")
 
-        # Формируем команду для выполнения нажатия по указанным координатам с использованием ADB
+        # Form command for tap at specified coordinates using ADB
         command = ["adb", "shell", "input", "tap", str(x), str(y)]
         try:
             subprocess.run(command, check=True)  # noqa: S603
@@ -615,10 +615,10 @@ class Adb:
         """
         logger.info(f"swipe() < {start_x=}, {start_y=}, {end_x=}, {end_y=}, {duration=}")
 
-        # Формируем команду для выполнения свайпа с использованием ADB
+        # Form command for swipe using ADB
         command = ["adb", "shell", "input", "swipe", str(start_x), str(start_y), str(end_x), str(end_y), str(duration)]
         try:
-            # Выполняем команду
+            # Execute command
             subprocess.run(command, check=True)  # noqa: S603
             logger.info("swipe() > True")
             return True
@@ -646,7 +646,7 @@ class Adb:
         # Определяем команду в виде строки
         command = "adb shell netstat"
         try:
-            # Выполняем команду и получаем вывод
+            # Execute command и получаем вывод
             output = subprocess.run(command, shell=True, capture_output=True, text=True, check=True)  # noqa: S602
 
             # Поиск строки
