@@ -387,6 +387,22 @@ class Shadowstep(ShadowstepBase):
             ignored_exceptions: WaitExcTypes | None = None,
             max_swipes: int = 30,
     ) -> Element:
+        """Find and get an element by scrolling through scrollable elements.
+
+        Args:
+            locator: Locator tuple, dict, Element, or UiSelector to find element.
+            timeout: How long to wait for element to appear.
+            poll_frequency: How often to poll for element.
+            ignored_exceptions: Exceptions to ignore during waiting.
+            max_swipes: Maximum number of swipes to perform.
+
+        Returns:
+            Element: The found element.
+
+        Raises:
+            ShadowstepException: If element is not found in any scrollable element.
+
+        """
         self.logger.debug("%s", get_current_func_name())
         try:
             scrollables = self.get_elements(
@@ -426,7 +442,8 @@ class Shadowstep(ShadowstepBase):
             self.logger.warning("Failed to check visibility for text='%s': %s", text, e)
             return False
 
-    @fail_safe(raise_exception=ShadowstepException, exceptions=(NoSuchDriverException, InvalidSessionIdException))
+    @fail_safe(raise_exception=ShadowstepException,
+               exceptions=(NoSuchDriverException, InvalidSessionIdException))
     def scroll(  # noqa: PLR0913
             self,
             left: int,
