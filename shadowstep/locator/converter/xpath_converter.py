@@ -1,4 +1,3 @@
-# shadowstep/locator/xpath_converter.py
 from __future__ import annotations
 
 import logging
@@ -82,7 +81,7 @@ def _to_bool(val: Any) -> bool:
 
 
 def _to_number(val: Any) -> int:
-    if isinstance(val, (int, float)):  # noqa: UP038
+    if isinstance(val, (int, float)):
         return int(val)
     if isinstance(val, str) and val.isdigit():
         return int(val)
@@ -90,8 +89,7 @@ def _to_number(val: Any) -> int:
 
 
 class XPathConverter:
-    """
-    Convert xpath expression to UiSelector expression or Shadowstep Dict locator
+    """Convert xpath expression to UiSelector expression or Shadowstep Dict locator
     """
 
     def __init__(self):
@@ -198,7 +196,7 @@ class XPathConverter:
                 # create fromParent
                 shadowstep_dict[ShadowstepDictAttribute.FROM_PARENT.value] = self._build_shadowstep_dict(node_list[i + 1:], {})
                 return shadowstep_dict
-            
+
             # sibling
             if i < len(node_list) and isinstance(node_list[i], Step) and node_list[i].axis in (
                 "following-sibling",
@@ -233,8 +231,8 @@ class XPathConverter:
 
     def _ast_to_list(self, node: Any) -> list[AbbreviatedStep | Step]:    # type: ignore
         result = []
-                
-        if isinstance(node, (Step, AbbreviatedStep)):    # type: ignore  # noqa: UP038
+
+        if isinstance(node, (Step, AbbreviatedStep)):    # type: ignore
             result.append(node)
 
         elif isinstance(node, BinaryExpression):
@@ -300,7 +298,7 @@ class XPathConverter:
                 return
             raise ShadowstepConversionError(f"Unsupported function: {pred_expr.name}")
 
-        if isinstance(pred_expr, (int, float)):    # type: ignore  # noqa: UP038
+        if isinstance(pred_expr, (int, float)):    # type: ignore
             out[ShadowstepDictAttribute.INSTANCE.value] = int(pred_expr) - 1
             return
 
@@ -310,7 +308,7 @@ class XPathConverter:
                     and isinstance(pred_expr.left, FunctionCall)
                     and pred_expr.left.name == "position"
                     and not pred_expr.left.args
-                    and isinstance(pred_expr.right, (int, float))    # type: ignore  # noqa: UP038
+                    and isinstance(pred_expr.right, (int, float))    # type: ignore
             ):
                 out[ShadowstepDictAttribute.INDEX.value] = int(pred_expr.right) - 1
                 return
@@ -362,7 +360,7 @@ class XPathConverter:
                 return f'.{u[1].value}("{value}")'
             raise ShadowstepConversionError(f"Unsupported function: {kind}")
 
-        if isinstance(pred_expr, (int, float)):  # noqa: UP038
+        if isinstance(pred_expr, (int, float)):
             return f".{UiAttribute.INSTANCE.value}({int(pred_expr) - 1})"
 
         if isinstance(pred_expr, BinaryExpression):
@@ -371,7 +369,7 @@ class XPathConverter:
                     and isinstance(pred_expr.left, FunctionCall)
                     and pred_expr.left.name == "position"
                     and not pred_expr.left.args
-                    and isinstance(pred_expr.right, (int, float))  # noqa: UP038
+                    and isinstance(pred_expr.right, (int, float))
             ):
                 return f".{UiAttribute.INDEX.value}({int(pred_expr.right) - 1})"
             attr, value = self._parse_equality_comparison(pred_expr)
@@ -426,26 +424,26 @@ class XPathConverter:
 
     @staticmethod
     def _extract_literal(node: Any) -> Any:
-        if isinstance(node, (str, int, float, bool)):    # noqa: UP038
+        if isinstance(node, (str, int, float, bool)):
             return node
         if isinstance(node, FunctionCall) and node.name in ("true", "false") and not node.args:
             return node.name == "true"
         raise ShadowstepConversionError(f"Unsupported literal: {node!r}")
-    
+
     @staticmethod
     def _balance_parentheses(selector: str) -> str:
         open_count = 0
         close_count = 0
-    
+
         for ch in selector:
             if ch == "(":
                 open_count += 1
             elif ch == ")":
                 close_count += 1
-    
+
         if open_count == close_count:
             return selector
-    
+
         if close_count > open_count:
             # remove extra ')' on the right
             diff = close_count - open_count
@@ -455,10 +453,10 @@ class XPathConverter:
                 if selector[i] == ")":
                     diff -= 1
             return selector[:i] + selector[i+1:]
-    
+
         if open_count > close_count:
             raise ShadowstepConversionError(
-                f"Unbalanced UiSelector string: too many '(' in {selector}"
+                f"Unbalanced UiSelector string: too many '(' in {selector}",
             )
-    
+
         return selector

@@ -1,3 +1,4 @@
+# shadowstep/logcat/shadowstep_logcat.py
 """Logcat module for capturing Android device logs via WebSocket.
 
 This module provides functionality for streaming Android device logs through

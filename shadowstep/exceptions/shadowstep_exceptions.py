@@ -1,4 +1,3 @@
-# shadowstep/exceptions/shadowstep_exceptions.py
 from __future__ import annotations
 
 import datetime
@@ -17,7 +16,7 @@ class ShadowstepException(WebDriverException):
             self,
             msg: str | None = None,
             screen: str | None = None,
-            stacktrace: Sequence[str] | None = None
+            stacktrace: Sequence[str] | None = None,
     ) -> None:
         super().__init__(msg, screen, stacktrace)
 
@@ -75,27 +74,27 @@ class ShadowstepElementException(WebDriverException):
 
     def __init__(
             self, msg: str | None = None, screen: str | None = None,
-            stacktrace: Sequence[str] | None = None
+            stacktrace: Sequence[str] | None = None,
     ) -> None:
         super().__init__(msg, screen, stacktrace)
 
 
 class ShadowstepLocatorConverterError(Exception):
     """Base exception for locator conversion errors."""
-    pass
+
 
 
 class ShadowstepInvalidUiSelectorError(Exception):
     """Raised when UiSelector string is malformed."""
-    pass
+
 
 
 class ShadowstepConversionError(ShadowstepLocatorConverterError):
     """Raised when conversion between formats fails."""
-    pass
+
 
 
 class ShadowstepResolvingLocatorError(Exception):
     """Raised when locator resolving is failed (used in shadowstep.element.dom)."""
-    pass
+
 

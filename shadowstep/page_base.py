@@ -1,4 +1,3 @@
-# shadowstep/page_base.py
 """Base page class for Shadowstep framework.
 
 This module provides the abstract base class for all page objects in the

@@ -1,4 +1,3 @@
-# shadowstep/locator/ui_selector_converter_core/lexer.py
 from __future__ import annotations
 
 from dataclasses import dataclass
@@ -97,7 +96,7 @@ class Lexer:
                     if c == quote_char:
                         break
                     buf.append(c)
-                toks.append(Token(TokenType.STRING, "".join(cast(list[str], buf)), start))
+                toks.append(Token(TokenType.STRING, "".join(cast("list[str]", buf)), start))
                 continue
 
             if ch.isdigit():

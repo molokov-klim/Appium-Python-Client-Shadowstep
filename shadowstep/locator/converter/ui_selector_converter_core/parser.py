@@ -1,4 +1,3 @@
-# shadowstep/locator/ui_selector_converter_core/parser.py
 from __future__ import annotations
 
 from typing import Any, cast
@@ -12,9 +11,9 @@ from shadowstep.locator.converter.ui_selector_converter_core.lexer import (
 
 
 class Parser:
+    """Parser (finite automaton from left to right)
     """
-    Parser (finite automaton from left to right)
-    """
+
     def __init__(self, tokens: list[Token]):
         self.tokens = tokens
         self.i = 0
@@ -61,13 +60,13 @@ class Parser:
         if self._peek().type != TokenType.RPAREN:
             args.append(self._parse_arg())
         self._expect(TokenType.RPAREN)
-        return MethodCall(name=cast(str, name_tok.value), args=args)
+        return MethodCall(name=cast("str", name_tok.value), args=args)
 
     def _parse_arg(self) -> str | int | bool | Selector:
         tok = self._peek()
         if tok.type == TokenType.STRING:
             self._advance()
-            return cast(str, tok.value)
+            return cast("str", tok.value)
         if tok.type == TokenType.TRUE:
             self._advance()
             return True
@@ -76,12 +75,12 @@ class Parser:
             return False
         if tok.type == TokenType.NUMBER:
             self._advance()
-            return int(cast(str, tok.value))
+            return int(cast("str", tok.value))
         if tok.type == TokenType.NEW:
             return self._parse_nested_selector()
         if tok.type == TokenType.IDENT:
             self._advance()
-            return cast(str, tok.value)
+            return cast("str", tok.value)
         raise ParserError(f"Unexpected token in arg: {tok.type} at {tok.pos}")
 
     def _parse_nested_selector(self) -> Selector:

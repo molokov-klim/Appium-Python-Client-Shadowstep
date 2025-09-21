@@ -1,12 +1,15 @@
-# shadowstep/element/coordinates.py
+"""Element coordinates module for Shadowstep framework.
+
+This module provides coordinate-related functionality for elements,
+including getting bounds, center coordinates, and view locations.
+"""
 from __future__ import annotations
 
 import logging
 import time
 import traceback
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
-from appium.webdriver.webelement import WebElement
 from selenium.common import (
     InvalidSessionIdException,
     NoSuchDriverException,
@@ -15,18 +18,28 @@ from selenium.common import (
 )
 
 from shadowstep.decorators.decorators import log_debug
-from shadowstep.element.utilities import ElementUtilities
 from shadowstep.exceptions.shadowstep_exceptions import ShadowstepElementException
 from shadowstep.utils.utils import get_current_func_name
 
 if TYPE_CHECKING:
+    from appium.webdriver.webelement import WebElement
+
     from shadowstep.element.element import Element
+    from shadowstep.element.utilities import ElementUtilities
     from shadowstep.locator import LocatorConverter
     from shadowstep.shadowstep import Shadowstep
 
 
 class ElementCoordinates:
-    def __init__(self, element: Element):
+    """Element coordinates handler for Shadowstep framework."""
+
+    def __init__(self, element: Element) -> None:
+        """Initialize ElementCoordinates.
+
+        Args:
+            element: The element to get coordinates for.
+
+        """
         self.logger = logging.getLogger(__name__)
         self.element: Element = element
         self.shadowstep: Shadowstep = element.shadowstep
@@ -38,10 +51,11 @@ class ElementCoordinates:
         """Get the bounding box coordinates of the element.
 
         Args:
-            element (Optional[WebElement]): Element to get bounds from. If None, uses internal locator.
+            element: Element to get bounds from. If None, uses internal locator.
 
         Returns:
-            Optional[Tuple[int, int, int, int]]: (left, top, right, bottom) or None.
+            (left, top, right, bottom) or None.
+
         """
         start_time = time.time()
         while time.time() - start_time < self.element.timeout:
@@ -49,11 +63,13 @@ class ElementCoordinates:
                 self.element.get_driver()
                 if element is None:
                     element = self.element.get_native()
-                bounds = element.get_attribute("bounds")
+                bounds: Any = element.get_attribute("bounds")  # type: ignore[attr-defined]
                 if not bounds:
                     continue
-                left, top, right, bottom = map(int, bounds.strip("[]").replace("][", ",").split(","))  # type: ignore
-                return left, top, right, bottom
+                left, top, right, bottom = map(
+                    int, bounds.strip("[]").replace("][", ",").split(","),
+                )  # type: ignore[arg-type]
+                return left, top, right, bottom  # noqa: TRY300
             except NoSuchDriverException as error:
                 self.element.utilities.handle_driver_error(error)
             except InvalidSessionIdException as error:
@@ -68,14 +84,15 @@ class ElementCoordinates:
                 continue
             except WebDriverException as error:
                 err_msg = str(error).lower()
-                if "instrumentation process is not running" in err_msg or "socket hang up" in err_msg:
+                if ("instrumentation process is not running" in err_msg or
+                        "socket hang up" in err_msg):
                     self.element.utilities.handle_driver_error(error)
                     continue
                 raise
 
         raise ShadowstepElementException(
             msg=f"Failed to {get_current_func_name()} within {self.element.timeout=}",
-            stacktrace=traceback.format_stack()
+            stacktrace=traceback.format_stack(),
         )
 
     @log_debug()
@@ -83,10 +100,11 @@ class ElementCoordinates:
         """Get the center coordinates of the element.
 
         Args:
-            element (Optional[WebElement]): Optional direct WebElement. If not provided, uses current locator.
+            element: Optional direct WebElement. If not provided, uses current locator.
 
         Returns:
-            Optional[Tuple[int, int]]: (x, y) center point or None if element not found.
+            (x, y) center point or None if element not found.
+
         """
         start_time = time.time()
         while time.time() - start_time < self.element.timeout:
@@ -94,13 +112,13 @@ class ElementCoordinates:
                 self.element.get_driver()
                 if element is None:
                     element = self.element.get_native()
-                coords = self.get_coordinates(element)
-                if coords is None:
+                coordinates = self.get_coordinates(element)
+                if not coordinates:
                     continue
-                left, top, right, bottom = coords
+                left, top, right, bottom = coordinates
                 x = int((left + right) / 2)
                 y = int((top + bottom) / 2)
-                return x, y
+                return x, y  # noqa: TRY300
             except NoSuchDriverException as error:
                 self.element.utilities.handle_driver_error(error)
             except InvalidSessionIdException as error:
@@ -115,23 +133,25 @@ class ElementCoordinates:
                 continue
             except WebDriverException as error:
                 err_msg = str(error).lower()
-                if "instrumentation process is not running" in err_msg or "socket hang up" in err_msg:
+                if ("instrumentation process is not running" in err_msg or
+                        "socket hang up" in err_msg):
                     self.element.utilities.handle_driver_error(error)
                     continue
                 raise
 
         raise ShadowstepElementException(
             msg=f"Failed to {get_current_func_name()} within {self.element.timeout=}",
-            stacktrace=traceback.format_stack()
+            stacktrace=traceback.format_stack(),
         )
 
     # Override
     @log_debug()
-    def location_in_view(self) -> dict:
-        """Gets the location of an element relative to the view.
+    def location_in_view(self) -> dict[str, Any]:
+        """Get the location of an element relative to the view.
 
         Returns:
-            dict: Dictionary with keys 'x' and 'y', or None on failure.
+            Dictionary with keys 'x' and 'y', or None on failure.
+
         """
         start_time = time.time()
 
@@ -141,8 +161,8 @@ class ElementCoordinates:
 
                 current_element = self.element.get_native()
 
-                return current_element.location_in_view  # Appium WebElement property
-            except NoSuchDriverException as error:
+                return current_element.location_in_view  # type: ignore[attr-defined]  # Appium WebElement property  # noqa: TRY300
+            except NoSuchDriverException as error:  # noqa: PERF203
                 self.element.utilities.handle_driver_error(error)
             except InvalidSessionIdException as error:
                 self.element.utilities.handle_driver_error(error)
@@ -156,28 +176,32 @@ class ElementCoordinates:
                 continue
             except WebDriverException as error:
                 err_msg = str(error).lower()
-                if "instrumentation process is not running" in err_msg or "socket hang up" in err_msg:
+                if ("instrumentation process is not running" in err_msg or
+                        "socket hang up" in err_msg):
                     self.element.utilities.handle_driver_error(error)
                     continue
                 raise
         raise ShadowstepElementException(
             msg=f"Failed to get location_in_view within {self.element.timeout=}",
-            stacktrace=traceback.format_stack()
+            stacktrace=traceback.format_stack(),
         )
 
     @log_debug()
-    def location_once_scrolled_into_view(self) -> dict[str, int]:
-        """NOT IMPLEMENTED
-        Gets the top-left corner location of the element after scrolling it into view.
+    def location_once_scrolled_into_view(self) -> dict[str, Any]:
+        """Get the top-left corner location of the element after scrolling it into view.
+
+        NOT IMPLEMENTED
 
         Returns:
-            dict: Dictionary with keys 'x' and 'y' indicating location on screen.
+            Dictionary with keys 'x' and 'y' indicating location on screen.
 
         Raises:
-            ShadowstepElementException: If element could not be scrolled into view or location determined.
+            ShadowstepElementException: If element could not be scrolled into view or
+                location determined.
+
         """
         self.logger.warning(
-            f"Method {get_current_func_name()} is not implemented in UiAutomator2")
+            "Method %s is not implemented in UiAutomator2", get_current_func_name())
 
         start_time = time.time()
 
@@ -187,9 +211,9 @@ class ElementCoordinates:
 
                 current_element = self.element.get_native()
 
-                return current_element.location_once_scrolled_into_view
+                return current_element.location_once_scrolled_into_view  # type: ignore[attr-defined]  # noqa: TRY300
 
-            except NoSuchDriverException as error:
+            except NoSuchDriverException as error:  # noqa: PERF203
                 self.element.utilities.handle_driver_error(error)
             except InvalidSessionIdException as error:
                 self.element.utilities.handle_driver_error(error)
@@ -200,5 +224,5 @@ class ElementCoordinates:
 
         raise ShadowstepElementException(
             msg=f"Failed to get location_once_scrolled_into_view within {self.element.timeout=}",
-            stacktrace=traceback.format_stack()
+            stacktrace=traceback.format_stack(),
         )

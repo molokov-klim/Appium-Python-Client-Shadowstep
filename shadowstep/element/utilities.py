@@ -1,4 +1,8 @@
-# shadowstep/element/utilities.py
+"""Element utilities module for Shadowstep framework.
+
+This module provides utility functions for element operations,
+including XPath generation, attribute extraction, and error handling.
+"""
 from __future__ import annotations
 
 import logging
@@ -6,7 +10,7 @@ import re
 import time
 from typing import TYPE_CHECKING, Any
 
-from lxml import etree as etree
+from lxml import etree  # type: ignore[import]
 from selenium.common import (
     InvalidSessionIdException,
     NoSuchDriverException,
@@ -15,16 +19,24 @@ from selenium.common import (
 )
 
 from shadowstep.exceptions.shadowstep_exceptions import ShadowstepElementException
-from shadowstep.locator import UiSelector
 from shadowstep.utils.utils import get_current_func_name
 
 if TYPE_CHECKING:
     from shadowstep.element.element import Element
+    from shadowstep.locator import UiSelector
     from shadowstep.shadowstep import Shadowstep
 
 
 class ElementUtilities:
-    def __init__(self, element: Element):
+    """Element utilities for Shadowstep framework."""
+
+    def __init__(self, element: Element) -> None:
+        """Initialize ElementUtilities.
+
+        Args:
+            element: The element to provide utilities for.
+
+        """
         self.element: Element = element
         self.shadowstep: Shadowstep = element.shadowstep
         self.logger: logging.Logger = logging.getLogger(get_current_func_name())
@@ -32,7 +44,16 @@ class ElementUtilities:
     def remove_null_value(self,
                           locator: tuple[str, str] | dict[str, Any] | Element | UiSelector,
                           ) -> tuple[str, str] | dict[str, Any] | Element | UiSelector:
-        self.logger.debug(f"{get_current_func_name()}")
+        """Remove null values from locator.
+
+        Args:
+            locator: The locator to clean.
+
+        Returns:
+            The cleaned locator.
+
+        """
+        self.logger.debug("%s", get_current_func_name())
         if isinstance(locator, tuple):
             by, value = locator
             # Remove parts like [@attr='null']
@@ -44,54 +65,74 @@ class ElementUtilities:
         return locator
 
     def extract_el_attrs_from_source(
-            self, xpath_expr: str, page_source: str
+            self, xpath_expr: str, page_source: str,
     ) -> list[dict[str, Any]]:
         """Parse page source and extract attributes of all elements matching XPath."""
         try:
-            parser = etree.XMLParser(recover=True)
-            root = etree.fromstring(page_source.encode("utf-8"), parser=parser)
-            matches = root.xpath(self.remove_null_value(("xpath", xpath_expr)[1]))  # type: ignore
+            parser = etree.XMLParser(recover=True)  # type: ignore[attr-defined]
+            root = etree.fromstring(page_source.encode("utf-8"), parser=parser)  # type: ignore[attr-defined]
+            matches = root.xpath(self.remove_null_value(("xpath", xpath_expr)[1]))  # type: ignore[attr-defined]
             if not matches:
-                self.logger.warning(f"No matches found for XPath: {xpath_expr}")
+                self.logger.warning("No matches found for XPath: %s", xpath_expr)
                 return []
-            result = [
-                {**{k: str(v) for k, v in el.attrib.items()}}
-                for el in matches
+            result: list[dict[str, Any]] = [
+                {**{k: str(v) for k, v in el.attrib.items()}}  # type: ignore[attr-defined]
+                for el in matches  # type: ignore[reportUnknownVariableType]
             ]
-            self.logger.debug(f"Matched {len(result)} elements: {result}")
-            return result
-        except (etree.XPathEvalError, etree.XMLSyntaxError, UnicodeEncodeError) as error:
-            self.logger.error(f"Parsing error: {error}")
-            if isinstance(error, etree.XPathEvalError):
-                self.logger.error(f"XPath: {xpath_expr}")
-            raise ShadowstepElementException(f"Parsing error: {xpath_expr}") from error
+            self.logger.debug("Matched %d elements: %s", len(result), result)  # type: ignore[reportUnknownArgumentType]
+            return result  # type: ignore[reportUnknownVariableType]  # noqa: TRY300
+        except (etree.XPathEvalError, etree.XMLSyntaxError, UnicodeEncodeError) as error:  # type: ignore[attr-defined]
+            self.logger.exception("Parsing error")  # type: ignore[reportUnknownArgumentType]
+            if isinstance(error, etree.XPathEvalError):  # type: ignore[attr-defined]
+                self.logger.exception("XPath: %s", xpath_expr)
+            msg = f"Parsing error: {xpath_expr}"
+            raise ShadowstepElementException(msg) from error
 
     def get_xpath(self) -> str:
-        self.logger.debug(f"{get_current_func_name()}")
+        """Get XPath for the element.
+
+        Returns:
+            The XPath string.
+
+        """
+        self.logger.debug("%s", get_current_func_name())
         locator = self.remove_null_value(self.element.locator)
         if isinstance(locator, tuple):
             return locator[1]
         return self._get_xpath_by_driver()
 
     def _get_xpath_by_driver(self) -> str:
-        self.logger.debug(f"{get_current_func_name()}")
+        """Get XPath by driver.
+
+        Returns:
+            The XPath string.
+
+        """
+        self.logger.debug("%s", get_current_func_name())
         try:
             attrs = self.element.get_attributes()
             if not attrs:
-                raise ShadowstepElementException("Failed to retrieve attributes for XPath construction.")
+                msg = "Failed to retrieve attributes for XPath construction."
+                raise ShadowstepElementException(msg)
             return self.element.utilities.build_xpath_from_attributes(attrs)
-        except (AttributeError, KeyError, WebDriverException) as e:
-            self.logger.error(f"Error forming XPath: {str(e)}")
+        except (AttributeError, KeyError, WebDriverException):
+            self.logger.exception("Error forming XPath")
         return ""
 
     def handle_driver_error(self, error: Exception) -> None:
-        self.logger.warning(f"{get_current_func_name()} {error}")
+        """Handle driver errors.
+
+        Args:
+            error: The error to handle.
+
+        """
+        self.logger.warning("%s %s", get_current_func_name(), error)
         self.shadowstep.reconnect()
         time.sleep(0.3)
 
     def _build_xpath_attribute_condition(self, key: str, value: str) -> str:
         """Build XPath attribute condition based on value content."""
-        if value is None or value == "null":
+        if value is None or value == "null":  # type: ignore[reportUnnecessaryComparison]
             return f"[@{key}]"
         if "'" in value and '"' not in value:
             return f'[@{key}="{value}"]'
@@ -123,7 +164,8 @@ class ElementUtilities:
         return xpath
 
     def _ensure_session_alive(self) -> None:
-        self.logger.debug(f"{get_current_func_name()}")
+        """Ensure session is alive."""
+        self.logger.debug("%s", get_current_func_name())
         try:
             self.element.get_driver()
         except NoSuchDriverException:
@@ -134,7 +176,16 @@ class ElementUtilities:
             self.shadowstep.reconnect()
 
     def _get_first_child_class(self, tries: int = 3) -> str:
-        self.logger.debug(f"{get_current_func_name()}")
+        """Get first child class.
+
+        Args:
+            tries: Number of tries.
+
+        Returns:
+            The child class string.
+
+        """
+        self.logger.debug("%s", get_current_func_name())
         for _ in range(tries):
             try:
                 parent_element = self
@@ -144,7 +195,7 @@ class ElementUtilities:
                     child_class = child_element.get_attribute("class")
                     if parent_class != child_class:
                         return str(child_class)
-            except StaleElementReferenceException as error:
+            except StaleElementReferenceException as error:  # noqa: PERF203
                 self.logger.debug(error)
                 self.logger.warning("StaleElementReferenceException\nRe-acquire element")
                 self.element.native = None
@@ -152,7 +203,8 @@ class ElementUtilities:
                 continue
             except WebDriverException as error:
                 err_msg = str(error).lower()
-                if "instrumentation process is not running" in err_msg or "socket hang up" in err_msg:
+                if ("instrumentation process is not running" in err_msg or
+                        "socket hang up" in err_msg):
                     self.handle_driver_error(error)
                     continue
                 raise

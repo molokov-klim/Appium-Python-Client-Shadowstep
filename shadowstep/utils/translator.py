@@ -1,3 +1,4 @@
+# shadowstep/utils/translator.py
 import logging
 import os
 import re

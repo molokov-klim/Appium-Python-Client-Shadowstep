@@ -1,6 +1,4 @@
-# shadowstep/locator/dict_converter.py
-"""
-DictConverter for converting Shadowstep dictionary locators to other formats.
+"""DictConverter for converting Shadowstep dictionary locators to other formats.
 
 This module provides the main DictConverter class that handles conversion
 from Shadowstep dictionary format to XPath and UiSelector expressions.
@@ -39,9 +37,8 @@ HierarchicalValueType = Union[dict[str, Any], dict[ShadowstepDictAttribute, Any]
 T = TypeVar("T", bound=Any)
 
 
-class DictConverter(Generic[T]):  # noqa: UP046
-    """
-    Converter for Shadowstep dictionary locators to XPath and UiSelector formats.
+class DictConverter(Generic[T]):
+    """Converter for Shadowstep dictionary locators to XPath and UiSelector formats.
     
     This class provides methods to convert dictionary-based locators to various
     formats including XPath expressions and UiSelector strings.
@@ -52,8 +49,7 @@ class DictConverter(Generic[T]):  # noqa: UP046
         self.logger: logging.Logger = logging.getLogger(__name__)
 
     def dict_to_xpath(self, selector_dict: SelectorDict) -> str:
-        """
-        Convert Shadowstep dictionary locator to XPath expression.
+        """Convert Shadowstep dictionary locator to XPath expression.
         
         Args:
             selector_dict: Dictionary representation of the selector
@@ -63,6 +59,7 @@ class DictConverter(Generic[T]):  # noqa: UP046
             
         Raises:
             ShadowstepConversionError: If conversion fails
+
         """
         try:
             return self._dict_to_xpath_recursive(selector_dict)
@@ -70,8 +67,7 @@ class DictConverter(Generic[T]):  # noqa: UP046
             raise ShadowstepConversionError(f"Failed to convert dict to XPath: {e}") from e
 
     def dict_to_ui_selector(self, selector_dict: SelectorDict) -> str:
-        """
-        Convert Shadowstep dictionary locator to UiSelector string.
+        """Convert Shadowstep dictionary locator to UiSelector string.
         
         Args:
             selector_dict: Dictionary representation of the selector
@@ -81,6 +77,7 @@ class DictConverter(Generic[T]):  # noqa: UP046
             
         Raises:
             ShadowstepConversionError: If conversion fails
+
         """
         try:
             ui_selector = self._dict_to_ui_recursive(selector_dict)
@@ -92,7 +89,7 @@ class DictConverter(Generic[T]):  # noqa: UP046
             self,
             selector_dict: SelectorDict,
             base_xpath: str = "//*",
-    ) -> str:  # noqa: C901
+    ) -> str:
         if not selector_dict:
             return base_xpath
 
@@ -137,42 +134,42 @@ class DictConverter(Generic[T]):  # noqa: UP046
         for hierarchical_key, hierarchical_value in hierarchical_parts:
             if isinstance(hierarchical_value, dict):
                 nested_xpath: str = self._dict_to_xpath_recursive(
-                    hierarchical_value  # type: ignore[arg-type]
+                    hierarchical_value,  # type: ignore[arg-type]
                 )
                 hierarchical_attr: ShadowstepDictAttribute = ShadowstepDictAttribute(hierarchical_key)
                 xpath += get_xpath_for_hierarchical_attribute(
-                    hierarchical_attr, nested_xpath
+                    hierarchical_attr, nested_xpath,
                 )
             else:
                 self.logger.warning(
-                    f"Hierarchical attribute {hierarchical_key} requires dict value"
+                    f"Hierarchical attribute {hierarchical_key} requires dict value",
                 )
 
         return xpath
 
     def _dict_to_ui_recursive(self, selector_dict: SelectorDict) -> str:
-        """
-        Recursively convert dictionary to UiSelector method chain.
+        """Recursively convert dictionary to UiSelector method chain.
         
         Args:
             selector_dict: Dictionary representation of the selector
             
         Returns:
             UiSelector method chain string
+
         """
         if not selector_dict:
             return ""
 
         ui_parts: UIParts = []
         hierarchical_parts: HierarchicalParts = []
-        
+
         # Process regular attributes
         for key, value in selector_dict.items():
             if key in (ShadowstepDictAttribute.CHILD_SELECTOR, ShadowstepDictAttribute.FROM_PARENT, ShadowstepDictAttribute.SIBLING):
                 # Handle hierarchical attributes separately
                 hierarchical_parts.append((key, value))
                 continue
-                
+
             try:
                 # Map UiSelector keys to ShadowstepDictAttribute keys
                 key_mapping: dict[str, str] = {
@@ -219,47 +216,47 @@ class DictConverter(Generic[T]):  # noqa: UP046
         return ui_selector
 
     def validate_dict_selector(self, selector_dict: SelectorDict) -> None:
-        """
-        Validate dictionary selector for compatibility.
+        """Validate dictionary selector for compatibility.
         
         Args:
             selector_dict: Dictionary representation of the selector
             
         Raises:
             ValueError: If selector is invalid
+
         """
         if not isinstance(selector_dict, dict): # type: ignore
             raise ValueError("Selector must be a dictionary")
-        
+
         if not selector_dict:
             raise ValueError("Selector dictionary cannot be empty")
-        
+
         # Check for conflicting attributes
         text_attrs: list[ShadowstepDictAttribute] = [
             ShadowstepDictAttribute.TEXT,
             ShadowstepDictAttribute.TEXT_CONTAINS,
             ShadowstepDictAttribute.TEXT_STARTS_WITH,
-            ShadowstepDictAttribute.TEXT_MATCHES
+            ShadowstepDictAttribute.TEXT_MATCHES,
         ]
         desc_attrs: list[ShadowstepDictAttribute] = [
             ShadowstepDictAttribute.DESCRIPTION,
             ShadowstepDictAttribute.DESCRIPTION_CONTAINS,
             ShadowstepDictAttribute.DESCRIPTION_STARTS_WITH,
-            ShadowstepDictAttribute.DESCRIPTION_MATCHES
+            ShadowstepDictAttribute.DESCRIPTION_MATCHES,
         ]
-        
+
         found_text_attrs: list[ShadowstepDictAttribute] = [
             attr for attr in text_attrs if attr.value in selector_dict
         ]
         found_desc_attrs: list[ShadowstepDictAttribute] = [
             attr for attr in desc_attrs if attr.value in selector_dict
         ]
-        
+
         if len(found_text_attrs) > 1:
             raise ValueError(f"Conflicting text attributes: {found_text_attrs}")
         if len(found_desc_attrs) > 1:
             raise ValueError(f"Conflicting description attributes: {found_desc_attrs}")
-        
+
         # Validate hierarchical attributes
         for key, value in selector_dict.items():
             if key in (ShadowstepDictAttribute.CHILD_SELECTOR, ShadowstepDictAttribute.FROM_PARENT, ShadowstepDictAttribute.SIBLING):

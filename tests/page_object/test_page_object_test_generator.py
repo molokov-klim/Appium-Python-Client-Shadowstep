@@ -1,3 +1,4 @@
+# tests/page_object/test_page_object_test_generator.py
 """Tests for page_object_test_generator module."""
 
 import os

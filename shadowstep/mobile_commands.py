@@ -1,4 +1,3 @@
-# shadowstep/mobile_commands.py
 """Mobile commands for Appium automation.
 
 This module provides a comprehensive set of mobile commands for Appium automation,

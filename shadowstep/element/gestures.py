@@ -1,4 +1,8 @@
-# shadowstep/element/gestures.py
+"""Element gestures module for Shadowstep framework.
+
+This module provides gesture functionality for elements,
+including tap, click, drag, swipe, and other mobile gestures.
+"""
 from __future__ import annotations
 
 import inspect
@@ -19,18 +23,26 @@ from selenium.webdriver.common.actions.action_builder import ActionBuilder
 from selenium.webdriver.common.actions.pointer_input import PointerInput
 
 from shadowstep.decorators.decorators import log_debug
-from shadowstep.element.utilities import ElementUtilities
 from shadowstep.exceptions.shadowstep_exceptions import ShadowstepElementException
 from shadowstep.utils.utils import find_coordinates_by_vector, get_current_func_name
 
 if TYPE_CHECKING:
     from shadowstep.element.element import Element
+    from shadowstep.element.utilities import ElementUtilities
     from shadowstep.locator import LocatorConverter, UiSelector
     from shadowstep.shadowstep import Shadowstep
 
 
 class ElementGestures:
-    def __init__(self, element: Element):
+    """Element gestures handler for Shadowstep framework."""
+
+    def __init__(self, element: Element) -> None:
+        """Initialize ElementGestures.
+
+        Args:
+            element: The element to perform gestures on.
+
+        """
         self.logger = logging.getLogger(__name__)
         self.element: Element = element
         self.shadowstep: Shadowstep = element.shadowstep
@@ -39,15 +51,24 @@ class ElementGestures:
 
     @log_debug()
     def tap(self, duration: int | None = None) -> Element:
+        """Tap the element.
+
+        Args:
+            duration: Duration of the tap in milliseconds.
+
+        Returns:
+            The element for method chaining.
+
+        """
         start_time = time.time()
         while time.time() - start_time < self.element.timeout:
             try:
                 self.element.get_driver()
                 x, y = self.element.get_center()
-                if x is None or y is None:
+                if not x or not y:
                     continue
                 self.element.driver.tap(positions=[(x, y)], duration=duration)
-                return self.element
+                return self.element  # noqa: TRY300
             except NoSuchDriverException as error:
                 self.element.utilities.handle_driver_error(error)
                 continue
@@ -65,27 +86,43 @@ class ElementGestures:
                 continue
             except WebDriverException as error:
                 err_msg = str(error).lower()
-                if "instrumentation process is not running" in err_msg or "socket hang up" in err_msg:
+                if ("instrumentation process is not running" in err_msg or
+                        "socket hang up" in err_msg):
                     self.element.utilities.handle_driver_error(error)
                     continue
                 raise ShadowstepElementException(
-                    msg=f"Failed to {inspect.currentframe() if inspect.currentframe() else 'unknown'} within {self.element.timeout=}\n{duration}",
-                    stacktrace=traceback.format_stack()
+                    msg=(f"Failed to {inspect.currentframe() if inspect.currentframe() else 'unknown'} "  # noqa: E501  # noqa: E501
+                         f"within {self.element.timeout=}\n{duration}"),
+                    stacktrace=traceback.format_stack(),
                 ) from error
         raise ShadowstepElementException(
-            msg=f"Failed to {inspect.currentframe() if inspect.currentframe() else 'unknown'} within {self.element.timeout=}\n{duration}",
-            stacktrace=traceback.format_stack()
+            msg=(f"Failed to {inspect.currentframe() if inspect.currentframe() else 'unknown'} "
+                 f"within {self.element.timeout=}\n{duration}"),
+            stacktrace=traceback.format_stack(),
         )
 
     @log_debug()
     def tap_and_move(
-            self,
-            locator: tuple[str, str] | dict[str, Any] | Element | UiSelector | None = None,
-            x: int | None = None,
-            y: int | None = None,
-            direction: int | None = None,
-            distance: int | None = None,
+        self,
+        locator: tuple[str, str] | dict[str, Any] | Element | UiSelector | None = None,
+        x: int | None = None,
+        y: int | None = None,
+        direction: int | None = None,
+        distance: int | None = None,
     ) -> Element:
+        """Tap and move to a location or element.
+
+        Args:
+            locator: Target element locator.
+            x: Target x coordinate.
+            y: Target y coordinate.
+            direction: Direction vector for movement.
+            distance: Distance to move.
+
+        Returns:
+            The element for method chaining.
+
+        """
         start_time = time.time()
 
         while time.time() - start_time < self.element.timeout:
@@ -95,25 +132,35 @@ class ElementGestures:
             time.sleep(0.1)
 
         raise ShadowstepElementException(
-            msg=f"Failed to {inspect.currentframe() if inspect.currentframe() else 'unknown'} within {self.element.timeout=}\n{locator=}\n{x=}\n{y=}\n{direction}\n{distance}\n",
-            stacktrace=traceback.format_stack()
+            msg=(f"Failed to {inspect.currentframe() if inspect.currentframe() else 'unknown'} "
+                 f"within {self.element.timeout=}\n{locator=}\n{x=}\n{y=}\n{direction}\n{distance}\n"),  # noqa: E501
+            stacktrace=traceback.format_stack(),
         )
 
     @log_debug()
     def click(self, duration: int | None = None) -> Element:
+        """Click the element.
+
+        Args:
+            duration: Duration of the click in milliseconds.
+
+        Returns:
+            The element for method chaining.
+
+        """
         start_time = time.time()
         while time.time() - start_time < self.element.timeout:
             try:
                 self.element.get_driver()
-                self.element._get_web_element(locator=self.element.locator)
+                self.element._get_web_element(locator=self.element.locator)  # type: ignore[reportPrivateUsage]  # noqa: SLF001  # noqa: SLF001
                 if duration is None:
                     self._mobile_gesture("mobile: clickGesture",
                                          {"elementId": self.element.id})
                 else:
                     self._mobile_gesture("mobile: longClickGesture",
                                          {"elementId": self.element.id, "duration": duration})
-                return self.element
-            except NoSuchDriverException as error:
+                return self.element  # noqa: TRY300
+            except NoSuchDriverException as error:  # noqa: PERF203
                 self.element.utilities.handle_driver_error(error)
             except InvalidSessionIdException as error:
                 self.element.utilities.handle_driver_error(error)
@@ -127,29 +174,38 @@ class ElementGestures:
                 continue
             except WebDriverException as error:
                 err_msg = str(error).lower()
-                if "instrumentation process is not running" in err_msg or "socket hang up" in err_msg:
+                if ("instrumentation process is not running" in err_msg or
+                        "socket hang up" in err_msg):
                     self.element.utilities.handle_driver_error(error)
                     continue
                 raise ShadowstepElementException(
-                    msg=f"Failed to {inspect.currentframe() if inspect.currentframe() else 'unknown'} within {self.element.timeout=}\n{duration}",
-                    stacktrace=traceback.format_stack()
+                    msg=(f"Failed to {inspect.currentframe() if inspect.currentframe() else 'unknown'} "  # noqa: E501  # noqa: E501
+                         f"within {self.element.timeout=}\n{duration}"),
+                    stacktrace=traceback.format_stack(),
                 ) from error
         raise ShadowstepElementException(
-            msg=f"Failed to {inspect.currentframe() if inspect.currentframe() else 'unknown'} within {self.element.timeout=}\n{duration}",
-            stacktrace=traceback.format_stack()
+            msg=(f"Failed to {inspect.currentframe() if inspect.currentframe() else 'unknown'} "
+                 f"within {self.element.timeout=}\n{duration}"),
+            stacktrace=traceback.format_stack(),
         )
 
     @log_debug()
     def click_double(self) -> Element:
+        """Double-click the element.
+
+        Returns:
+            The element for method chaining.
+
+        """
         start_time = time.time()
         while time.time() - start_time < self.element.timeout:
             try:
                 self.element.get_driver()
-                self.element._get_web_element(locator=self.element.locator)
+                self.element._get_web_element(locator=self.element.locator)  # type: ignore[reportPrivateUsage]  # noqa: SLF001  # noqa: SLF001
                 self._mobile_gesture("mobile: doubleClickGesture",
                                      {"elementId": self.element.id})
-                return self.element
-            except NoSuchDriverException as error:
+                return self.element  # noqa: TRY300
+            except NoSuchDriverException as error:  # noqa: PERF203
                 self.element.utilities.handle_driver_error(error)
             except InvalidSessionIdException as error:
                 self.element.utilities.handle_driver_error(error)
@@ -163,32 +219,46 @@ class ElementGestures:
                 continue
             except WebDriverException as error:
                 err_msg = str(error).lower()
-                if "instrumentation process is not running" in err_msg or "socket hang up" in err_msg:
+                if ("instrumentation process is not running" in err_msg or
+                        "socket hang up" in err_msg):
                     self.element.utilities.handle_driver_error(error)
                     continue
                 raise ShadowstepElementException(
-                    msg=f"Failed to {inspect.currentframe() if inspect.currentframe() else 'unknown'} within {self.element.timeout=}",
-                    stacktrace=traceback.format_stack()
+                    msg=(f"Failed to {inspect.currentframe() if inspect.currentframe() else 'unknown'} "  # noqa: E501  # noqa: E501
+                         f"within {self.element.timeout=}"),
+                    stacktrace=traceback.format_stack(),
                 ) from error
         raise ShadowstepElementException(
-            msg=f"Failed to {inspect.currentframe() if inspect.currentframe() else 'unknown'} within {self.element.timeout=}",
-            stacktrace=traceback.format_stack()
+            msg=(f"Failed to {inspect.currentframe() if inspect.currentframe() else 'unknown'} "
+                 f"within {self.element.timeout=}"),
+            stacktrace=traceback.format_stack(),
         )
 
     @log_debug()
     def drag(self, end_x: int, end_y: int, speed: int = 2500) -> Element:
+        """Drag the element to specified coordinates.
+
+        Args:
+            end_x: Target x coordinate.
+            end_y: Target y coordinate.
+            speed: Speed of the drag gesture.
+
+        Returns:
+            The element for method chaining.
+
+        """
         start_time = time.time()
         while time.time() - start_time < self.element.timeout:
             try:
                 self.element.get_driver()
-                self.element._get_web_element(locator=self.element.locator)
+                self.element._get_web_element(locator=self.element.locator)  # type: ignore[reportPrivateUsage]  # noqa: SLF001  # noqa: SLF001
                 self._mobile_gesture("mobile: dragGesture",
                                      {"elementId": self.element.id,
                                       "endX": end_x,
                                       "endY": end_y,
                                       "speed": speed})
-                return self.element
-            except NoSuchDriverException as error:
+                return self.element  # noqa: TRY300
+            except NoSuchDriverException as error:  # noqa: PERF203
                 self.element.utilities.handle_driver_error(error)
             except InvalidSessionIdException as error:
                 self.element.utilities.handle_driver_error(error)
@@ -202,36 +272,51 @@ class ElementGestures:
                 continue
             except WebDriverException as error:
                 err_msg = str(error).lower()
-                if "instrumentation process is not running" in err_msg or "socket hang up" in err_msg:
+                if ("instrumentation process is not running" in err_msg or
+                        "socket hang up" in err_msg):
                     self.element.utilities.handle_driver_error(error)
                     continue
                 raise ShadowstepElementException(
-                    msg=f"Failed to {inspect.currentframe() if inspect.currentframe() else 'unknown'} within {self.element.timeout=}",
-                    stacktrace=traceback.format_stack()
+                    msg=(f"Failed to {inspect.currentframe() if inspect.currentframe() else 'unknown'} "  # noqa: E501  # noqa: E501
+                         f"within {self.element.timeout=}"),
+                    stacktrace=traceback.format_stack(),
                 ) from error
         raise ShadowstepElementException(
-            msg=f"Failed to {inspect.currentframe() if inspect.currentframe() else 'unknown'} within {self.element.timeout=}",
-            stacktrace=traceback.format_stack()
+            msg=(f"Failed to {inspect.currentframe() if inspect.currentframe() else 'unknown'} "
+                 f"within {self.element.timeout=}"),
+            stacktrace=traceback.format_stack(),
         )
 
     @log_debug()
     def fling(self, speed: int, direction: str) -> Element:
-        """
-        direction: Direction of the fling. Mandatory value. Acceptable values are: up, down, left and right (case insensitive)
-        speed: The speed at which to perform this gesture in pixels per second. The value must be greater than the minimum fling velocity for the given view (50 by default). The default value is 7500 * displayDensity
-        https://github.com/appium/appium-uiautomator2-driver/blob/master/docs/android-mobile-gestures.md#mobile-flinggesture
+        """Perform a fling gesture on the element.
+
+        Args:
+            speed: The speed at which to perform this gesture in pixels per second.
+                The value must be greater than the minimum fling velocity for the given view
+                (50 by default).
+                The default value is 7500 * displayDensity.
+            direction: Direction of the fling. Mandatory value. Acceptable values are:
+                up, down, left and right (case-insensitive).
+
+        Returns:
+            The element for method chaining.
+
+        Note:
+            https://github.com/appium/appium-uiautomator2-driver/blob/master/docs/android-mobile-gestures.md#mobile-flinggesture
+
         """
         start_time = time.time()
         while time.time() - start_time < self.element.timeout:
             try:
                 self.element.get_driver()
-                self.element._get_web_element(locator=self.element.locator)
+                self.element._get_web_element(locator=self.element.locator)  # type: ignore[reportPrivateUsage]  # noqa: SLF001  # noqa: SLF001
                 self._mobile_gesture("mobile: flingGesture",
                                      {"elementId": self.element.id,
                                       "direction": direction,
                                       "speed": speed})
-                return self.element
-            except NoSuchDriverException as error:
+                return self.element  # noqa: TRY300
+            except NoSuchDriverException as error:  # noqa: PERF203
                 self.element.utilities.handle_driver_error(error)
             except InvalidSessionIdException as error:
                 self.element.utilities.handle_driver_error(error)
@@ -245,32 +330,48 @@ class ElementGestures:
                 continue
             except WebDriverException as error:
                 err_msg = str(error).lower()
-                if "instrumentation process is not running" in err_msg or "socket hang up" in err_msg:
+                if ("instrumentation process is not running" in err_msg or
+                        "socket hang up" in err_msg):
                     self.element.utilities.handle_driver_error(error)
                     continue
                 raise ShadowstepElementException(
-                    msg=f"Failed to {inspect.currentframe() if inspect.currentframe() else 'unknown'} within {self.element.timeout=}",
-                    stacktrace=traceback.format_stack()
+                    msg=(f"Failed to {inspect.currentframe() if inspect.currentframe() else 'unknown'} "  # noqa: E501  # noqa: E501
+                         f"within {self.element.timeout=}"),
+                    stacktrace=traceback.format_stack(),
                 ) from error
         raise ShadowstepElementException(
-            msg=f"Failed to {inspect.currentframe() if inspect.currentframe() else 'unknown'} within {self.element.timeout=}",
-            stacktrace=traceback.format_stack()
+            msg=(f"Failed to {inspect.currentframe() if inspect.currentframe() else 'unknown'} "
+                 f"within {self.element.timeout=}"),
+            stacktrace=traceback.format_stack(),
         )
 
     @log_debug()
-    def scroll(self, direction: str, percent: float, speed: int, return_bool: bool) -> Element:
-        """
-        direction: Scrolling direction. Mandatory value. Acceptable values are: up, down, left and right (case insensitive)
-        percent: The size of the scroll as a percentage of the scrolling area size. Valid values must be float numbers greater than zero, where 1.0 is 100%. Mandatory value.
-        speed: The speed at which to perform this gesture in pixels per second. The value must not be negative. The default value is 5000 * displayDensity
-        return_bool: if true return bool else return self
+    def scroll(self, direction: str, percent: float, speed: int, return_bool: bool) -> Element:  # noqa: FBT001
+        """Perform a scroll gesture on the element.
+
+        Args:
+            direction: Scrolling direction. Mandatory value. Acceptable values are:
+                up, down, left and right (case-insensitive).
+            percent: The size of the scroll as a percentage of the scrolling area size.
+                Valid values must be float numbers greater than zero, where 1.0 is 100%.
+                Mandatory value.
+            speed: The speed at which to perform this gesture in pixels per second.
+                The value must not be negative. The default value is 5000 * displayDensity.
+            return_bool: If true return bool else return self.
+
+        Returns:
+            The element for method chaining.
+
+        Note:
+            https://github.com/appium/appium-uiautomator2-driver/blob/master/docs/android-mobile-gestures.md#mobile-scrollgesture
+
         """
         # https://github.com/appium/appium-uiautomator2-driver/blob/master/docs/android-mobile-gestures.md#mobile-scrollgesture
         start_time = time.time()
         while time.time() - start_time < self.element.timeout:
             try:
                 self.element.get_driver()
-                self.element._get_web_element(locator=self.element.locator)
+                self.element._get_web_element(locator=self.element.locator)  # type: ignore[reportPrivateUsage]  # noqa: SLF001  # noqa: SLF001
                 can_scroll = self._mobile_gesture("mobile: scrollGesture",
                                                   {"elementId": self.element.id,
                                                    "percent": percent,
@@ -278,8 +379,8 @@ class ElementGestures:
                                                    "speed": speed})
                 if return_bool:
                     return can_scroll
-                return self.element
-            except NoSuchDriverException as error:
+                return self.element  # noqa: TRY300
+            except NoSuchDriverException as error:  # noqa: PERF203
                 self.element.utilities.handle_driver_error(error)
             except InvalidSessionIdException as error:
                 self.element.utilities.handle_driver_error(error)
@@ -293,28 +394,41 @@ class ElementGestures:
                 continue
             except WebDriverException as error:
                 err_msg = str(error).lower()
-                if "instrumentation process is not running" in err_msg or "socket hang up" in err_msg:
+                if ("instrumentation process is not running" in err_msg or
+                        "socket hang up" in err_msg):
                     self.element.utilities.handle_driver_error(error)
                     continue
                 raise ShadowstepElementException(
-                    msg=f"Failed to {inspect.currentframe() if inspect.currentframe() else 'unknown'} within {self.element.timeout=}",
-                    stacktrace=traceback.format_stack()
+                    msg=(f"Failed to {inspect.currentframe() if inspect.currentframe() else 'unknown'} "  # noqa: E501  # noqa: E501
+                         f"within {self.element.timeout=}"),
+                    stacktrace=traceback.format_stack(),
                 ) from error
         raise ShadowstepElementException(
-            msg=f"Failed to {inspect.currentframe() if inspect.currentframe() else 'unknown'} within {self.element.timeout=}",
-            stacktrace=traceback.format_stack()
+            msg=(f"Failed to {inspect.currentframe() if inspect.currentframe() else 'unknown'} "
+                 f"within {self.element.timeout=}"),
+            stacktrace=traceback.format_stack(),
         )
 
     @log_debug()
     def scroll_to_bottom(self, percent: float = 0.7, speed: int = 8000) -> Element:
+        """Scroll to the bottom of the element.
+
+        Args:
+            percent: Scroll percentage (default: 0.7).
+            speed: Speed of the scroll gesture (default: 8000).
+
+        Returns:
+            The element for method chaining.
+
+        """
         start_time = time.time()
         while time.time() - start_time < self.element.timeout:
             try:
                 if not self.element.scroll_down(percent=percent, speed=speed, return_bool=True):
                     return self.element
                 self.element.scroll_down(percent=percent, speed=speed, return_bool=True)
-            except (
-                    NoSuchDriverException, InvalidSessionIdException, AttributeError
+            except (  # noqa: PERF203
+                NoSuchDriverException, InvalidSessionIdException, AttributeError,
             ) as error:
                 self.element.utilities.handle_driver_error(error)
             except StaleElementReferenceException as error:
@@ -325,28 +439,39 @@ class ElementGestures:
                 continue
             except WebDriverException as error:
                 err_msg = str(error).lower()
-                if "instrumentation process is not running" in err_msg or "socket hang up" in err_msg:
+                if ("instrumentation process is not running" in err_msg or
+                        "socket hang up" in err_msg):
                     self.element.utilities.handle_driver_error(error)
                     continue
                 raise ShadowstepElementException(
                     msg=f"Failed to scroll to bottom within {self.element.timeout=}",
-                    stacktrace=traceback.format_stack()
+                    stacktrace=traceback.format_stack(),
                 ) from error
         raise ShadowstepElementException(
             msg=f"Failed to scroll to bottom within {self.element.timeout=}",
-            stacktrace=traceback.format_stack()
+            stacktrace=traceback.format_stack(),
         )
 
     @log_debug()
     def scroll_to_top(self, percent: float = 0.7, speed: int = 8000) -> Element:
+        """Scroll to the top of the element.
+
+        Args:
+            percent: Scroll percentage (default: 0.7).
+            speed: Speed of the scroll gesture (default: 8000).
+
+        Returns:
+            The element for method chaining.
+
+        """
         start_time = time.time()
         while time.time() - start_time < self.element.timeout:
             try:
                 if not self.element.scroll_up(percent, speed, return_bool=True):
                     return self.element
                 self.element.scroll_up(percent=percent, speed=speed, return_bool=True)
-            except (
-                    NoSuchDriverException, InvalidSessionIdException, AttributeError) as error:
+            except (  # noqa: PERF203
+                NoSuchDriverException, InvalidSessionIdException, AttributeError) as error:
                 self.element.utilities.handle_driver_error(error)
             except StaleElementReferenceException as error:
                 self.logger.debug(error)
@@ -356,22 +481,33 @@ class ElementGestures:
                 continue
             except WebDriverException as error:
                 err_msg = str(error).lower()
-                if "instrumentation process is not running" in err_msg or "socket hang up" in err_msg:
+                if ("instrumentation process is not running" in err_msg or
+                        "socket hang up" in err_msg):
                     self.element.utilities.handle_driver_error(error)
                     continue
                 raise ShadowstepElementException(
                     msg=f"Failed to scroll to top within {self.element.timeout=}",
-                    stacktrace=traceback.format_stack()
+                    stacktrace=traceback.format_stack(),
                 ) from error
         raise ShadowstepElementException(
             msg=f"Failed to scroll to top within {self.element.timeout=}",
-            stacktrace=traceback.format_stack()
+            stacktrace=traceback.format_stack(),
         )
 
     @log_debug()
     def scroll_to_element(self,
                           locator: tuple[str, str] | dict[str, Any] | Element | UiSelector,
                           max_swipes: int = 30) -> Element:
+        """Scroll to find a specific element.
+
+        Args:
+            locator: Element locator to scroll to.
+            max_swipes: Maximum number of swipes to perform (default: 30).
+
+        Returns:
+            The element for method chaining.
+
+        """
         start_time = time.time()
 
         selector = self.converter.to_uiselector(locator)
@@ -380,7 +516,7 @@ class ElementGestures:
             try:
                 self._execute_scroll_script(selector, max_swipes)
                 return self.shadowstep.get_element(locator)
-            except (NoSuchDriverException, InvalidSessionIdException, AttributeError) as error:
+            except (NoSuchDriverException, InvalidSessionIdException, AttributeError) as error:  # noqa: PERF203
                 self.element.utilities.handle_driver_error(error)
                 continue
             except StaleElementReferenceException as error:
@@ -391,32 +527,43 @@ class ElementGestures:
                 continue
             except WebDriverException as error:
                 err_msg = str(error).lower()
-                if "instrumentation process is not running" in err_msg or "socket hang up" in err_msg:
+                if ("instrumentation process is not running" in err_msg or
+                        "socket hang up" in err_msg):
                     self.element.utilities.handle_driver_error(error)
                     continue
                 raise ShadowstepElementException(
                     msg=f"Failed to scroll to element with locator: {locator}",
-                    stacktrace=traceback.format_stack()
+                    stacktrace=traceback.format_stack(),
                 ) from error
         raise ShadowstepElementException(
             msg=f"Failed to scroll to element with locator: {locator}",
-            stacktrace=traceback.format_stack()
+            stacktrace=traceback.format_stack(),
         )
 
     @log_debug()
     def zoom(self, percent: float = 0.75, speed: int = 2500) -> Element:
+        """Perform a zoom gesture on the element.
+
+        Args:
+            percent: Zoom percentage (default: 0.75).
+            speed: Speed of the zoom gesture (default: 2500).
+
+        Returns:
+            The element for method chaining.
+
+        """
         start_time = time.time()
         while time.time() - start_time < self.element.timeout:
             try:
                 self.element.get_driver()
-                self.element._get_web_element(locator=self.element.locator)
+                self.element._get_web_element(locator=self.element.locator)  # type: ignore[reportPrivateUsage]  # noqa: SLF001  # noqa: SLF001
                 self._mobile_gesture("mobile: pinchOpenGesture", {
                     "elementId": self.element.id,
                     "percent": percent,
-                    "speed": speed
+                    "speed": speed,
                 })
-                return self.element
-            except NoSuchDriverException as error:
+                return self.element  # noqa: TRY300
+            except NoSuchDriverException as error:  # noqa: PERF203
                 self.element.utilities.handle_driver_error(error)
             except InvalidSessionIdException as error:
                 self.element.utilities.handle_driver_error(error)
@@ -430,32 +577,45 @@ class ElementGestures:
                 continue
             except WebDriverException as error:
                 err_msg = str(error).lower()
-                if "instrumentation process is not running" in err_msg or "socket hang up" in err_msg:
+                if ("instrumentation process is not running" in err_msg or
+                        "socket hang up" in err_msg):
                     self.element.utilities.handle_driver_error(error)
                     continue
                 raise ShadowstepElementException(
-                    msg=f"Failed to {inspect.currentframe() if inspect.currentframe() else 'unknown'} within {self.element.timeout=}",
-                    stacktrace=traceback.format_stack()
+                    msg=(f"Failed to {inspect.currentframe() if inspect.currentframe() else 'unknown'} "  # noqa: E501  # noqa: E501
+                         f"within {self.element.timeout=}"),
+                    stacktrace=traceback.format_stack(),
                 ) from error
         raise ShadowstepElementException(
-            msg=f"Failed to {inspect.currentframe() if inspect.currentframe() else 'unknown'} within {self.element.timeout=}",
-            stacktrace=traceback.format_stack()
+            msg=(f"Failed to {inspect.currentframe() if inspect.currentframe() else 'unknown'} "
+                 f"within {self.element.timeout=}"),
+            stacktrace=traceback.format_stack(),
         )
 
     @log_debug()
     def unzoom(self, percent: float = 0.75, speed: int = 2500) -> Element:
+        """Perform an unzoom gesture on the element.
+
+        Args:
+            percent: Unzoom percentage (default: 0.75).
+            speed: Speed of the unzoom gesture (default: 2500).
+
+        Returns:
+            The element for method chaining.
+
+        """
         start_time = time.time()
         while time.time() - start_time < self.element.timeout:
             try:
                 self.element.get_driver()
-                self.element._get_web_element(locator=self.element.locator)
+                self.element._get_web_element(locator=self.element.locator)  # type: ignore[reportPrivateUsage]  # noqa: SLF001  # noqa: SLF001
                 self._mobile_gesture("mobile: pinchCloseGesture", {
                     "elementId": self.element.id,
                     "percent": percent,
-                    "speed": speed
+                    "speed": speed,
                 })
-                return self.element
-            except NoSuchDriverException as error:
+                return self.element  # noqa: TRY300
+            except NoSuchDriverException as error:  # noqa: PERF203
                 self.element.utilities.handle_driver_error(error)
             except InvalidSessionIdException as error:
                 self.element.utilities.handle_driver_error(error)
@@ -469,33 +629,47 @@ class ElementGestures:
                 continue
             except WebDriverException as error:
                 err_msg = str(error).lower()
-                if "instrumentation process is not running" in err_msg or "socket hang up" in err_msg:
+                if ("instrumentation process is not running" in err_msg or
+                        "socket hang up" in err_msg):
                     self.element.utilities.handle_driver_error(error)
                     continue
                 raise ShadowstepElementException(
-                    msg=f"Failed to {inspect.currentframe() if inspect.currentframe() else 'unknown'} within {self.element.timeout=}",
-                    stacktrace=traceback.format_stack()
+                    msg=(f"Failed to {inspect.currentframe() if inspect.currentframe() else 'unknown'} "  # noqa: E501  # noqa: E501
+                         f"within {self.element.timeout=}"),
+                    stacktrace=traceback.format_stack(),
                 ) from error
         raise ShadowstepElementException(
-            msg=f"Failed to {inspect.currentframe() if inspect.currentframe() else 'unknown'} within {self.element.timeout=}",
-            stacktrace=traceback.format_stack()
+            msg=(f"Failed to {inspect.currentframe() if inspect.currentframe() else 'unknown'} "
+                 f"within {self.element.timeout=}"),
+            stacktrace=traceback.format_stack(),
         )
 
     @log_debug()
     def swipe(self, direction: str, percent: float = 0.75, speed: int = 5000) -> Element:
+        """Perform a swipe gesture on the element.
+
+        Args:
+            direction: Swipe direction (up, down, left, right).
+            percent: Swipe percentage (default: 0.75).
+            speed: Speed of the swipe gesture (default: 5000).
+
+        Returns:
+            The element for method chaining.
+
+        """
         start_time = time.time()
         while time.time() - start_time < self.element.timeout:
             try:
                 self.element.get_driver()
-                self.element._get_web_element(locator=self.element.locator)
+                self.element._get_web_element(locator=self.element.locator)  # type: ignore[reportPrivateUsage]  # noqa: SLF001  # noqa: SLF001
                 self._mobile_gesture("mobile: swipeGesture", {
                     "elementId": self.element.id,
                     "direction": direction.lower(),
                     "percent": percent,
-                    "speed": speed
+                    "speed": speed,
                 })
-                return self.element
-            except NoSuchDriverException as error:
+                return self.element  # noqa: TRY300
+            except NoSuchDriverException as error:  # noqa: PERF203
                 self.element.utilities.handle_driver_error(error)
             except InvalidSessionIdException as error:
                 self.element.utilities.handle_driver_error(error)
@@ -509,40 +683,58 @@ class ElementGestures:
                 continue
             except WebDriverException as error:
                 err_msg = str(error).lower()
-                if "instrumentation process is not running" in err_msg or "socket hang up" in err_msg:
+                if ("instrumentation process is not running" in err_msg or
+                        "socket hang up" in err_msg):
                     self.element.utilities.handle_driver_error(error)
                     continue
                 raise ShadowstepElementException(
-                    msg=f"Failed to {inspect.currentframe() if inspect.currentframe() else 'unknown'} within {self.element.timeout=} {direction=} {percent=}",
-                    stacktrace=traceback.format_stack()
+                    msg=f"Failed to {inspect.currentframe() if inspect.currentframe() else 'unknown'} within {self.element.timeout=} {direction=} {percent=}",  # noqa: E501
+                    stacktrace=traceback.format_stack(),
                 ) from error
         raise ShadowstepElementException(
-            msg=f"Failed to {inspect.currentframe() if inspect.currentframe() else 'unknown'} within {self.element.timeout=} {direction=} {percent=}",
-            stacktrace=traceback.format_stack()
+            msg=f"Failed to {inspect.currentframe() if inspect.currentframe() else 'unknown'} within {self.element.timeout=} {direction=} {percent=}",  # noqa: E501
+            stacktrace=traceback.format_stack(),
         )
 
     @log_debug()
     def _execute_scroll_script(self, selector: str, max_swipes: int) -> None:
-        """Execute mobile scroll script."""
+        """Execute mobile scroll script.
+
+        Args:
+            selector: UI selector string.
+            max_swipes: Maximum number of swipes to perform.
+
+        """
         # https://github.com/appium/appium-uiautomator2-driver?tab=readme-ov-file#mobile-scroll
         self.element.get_driver()
-        self.element._get_web_element(locator=self.element.locator)
-        self.element.driver.execute_script("mobile: scroll", {
-            # "elementId": self.element.id,  # some issue with this - "java.lang.IllegalArgumentException: The given origin element must be a valid scrollable UiObject"
+        self.element._get_web_element(locator=self.element.locator)  # type: ignore[reportPrivateUsage]  # noqa: SLF001
+        self.element.driver.execute_script("mobile: scroll", {  # type: ignore[reportUnknownMemberType]
             "strategy": "-android uiautomator",
             "selector": selector,
-            "maxSwipes": max_swipes
+            "maxSwipes": max_swipes,
         })
 
     @log_debug()
     def _perform_tap_and_move_action(self,
-                                     locator: tuple[str, str] | dict[str, Any] | Element | UiSelector | None = None,
+                                     locator: tuple[str, str] | dict[str, Any] | Element | UiSelector | None = None,  # noqa: E501
                                      x: int | None = None,
                                      y: int | None = None,
                                      direction: int | None = None,
                                      distance: int | None = None) -> Element | None:
-        """Perform tap and move action with error handling."""
-        from shadowstep.element.element import Element
+        """Perform tap and move action with error handling.
+
+        Args:
+            locator: Target element locator.
+            x: Target x coordinate.
+            y: Target y coordinate.
+            direction: Direction vector for movement.
+            distance: Distance to move.
+
+        Returns:
+            The element if successful, None otherwise.
+
+        """
+        from shadowstep.element.element import Element  # noqa: PLC0415
         start_time = time.time()
         while time.time() - start_time < self.element.timeout:
             try:
@@ -563,13 +755,13 @@ class ElementGestures:
 
                 # Move by direction vector
                 if direction is not None and distance is not None:
-                    return self._execute_tap_and_move_by_direction(actions, x1, y1, direction, distance)
+                    return self._execute_tap_and_move_by_direction(actions, x1, y1, direction, distance)  # noqa: E501
 
                 raise ShadowstepElementException(
-                    msg=f"Failed to {inspect.currentframe() if inspect.currentframe() else 'unknown'} within {self.element.timeout=} {direction=}",
-                    stacktrace=traceback.format_stack()
+                    msg=f"Failed to {inspect.currentframe() if inspect.currentframe() else 'unknown'} within {self.element.timeout=} {direction=}",  # noqa: E501
+                    stacktrace=traceback.format_stack(),
                 )
-            except (NoSuchDriverException, InvalidSessionIdException, AttributeError) as error:
+            except (NoSuchDriverException, InvalidSessionIdException, AttributeError) as error:  # noqa: PERF203
                 self.element.utilities.handle_driver_error(error)
                 continue
             except StaleElementReferenceException as error:
@@ -580,48 +772,99 @@ class ElementGestures:
                 continue
             except WebDriverException as error:
                 err_msg = str(error).lower()
-                if "instrumentation process is not running" in err_msg or "socket hang up" in err_msg:
+                if ("instrumentation process is not running" in err_msg or
+                        "socket hang up" in err_msg):
                     self.element.utilities.handle_driver_error(error)
                     continue
         raise ShadowstepElementException(
             msg=f"Failed to {get_current_func_name()} within {self.element.timeout=} {direction=}",
-            stacktrace=traceback.format_stack()
+            stacktrace=traceback.format_stack(),
         )
 
     @log_debug()
     def _create_touch_actions(self, x1: int, y1: int) -> ActionChains:
-        """Create touch action chain starting at given coordinates."""
+        """Create touch action chain starting at given coordinates.
+
+        Args:
+            x1: Starting x coordinate.
+            y1: Starting y coordinate.
+
+        Returns:
+            ActionChains object for touch actions.
+
+        """
         actions = ActionChains(self.element.driver)
-        actions.w3c_actions = ActionBuilder(self.element.driver, mouse=PointerInput(interaction.POINTER_TOUCH, "touch"))
-        actions.w3c_actions.pointer_action.move_to_location(x1, y1)
-        actions.w3c_actions.pointer_action.pointer_down()
+        actions.w3c_actions = ActionBuilder(self.element.driver, mouse=PointerInput(interaction.POINTER_TOUCH, "touch"))  # noqa: E501
+        actions.w3c_actions.pointer_action.move_to_location(x1, y1)  # type: ignore[reportUnknownMemberType]
+        actions.w3c_actions.pointer_action.pointer_down()  # type: ignore[reportUnknownMemberType]
         return actions
 
     @log_debug()
-    def _execute_tap_and_move_to_coordinates(self, actions: ActionChains, x: int, y: int) -> Element:
-        """Execute tap and move to specific coordinates."""
-        actions.w3c_actions.pointer_action.move_to_location(x, y)
-        actions.w3c_actions.pointer_action.pointer_up()
+    def _execute_tap_and_move_to_coordinates(self, actions: ActionChains, x: int, y: int) -> Element:  # noqa: E501
+        """Execute tap and move to specific coordinates.
+
+        Args:
+            actions: ActionChains object.
+            x: Target x coordinate.
+            y: Target y coordinate.
+
+        Returns:
+            The element for method chaining.
+
+        """
+        actions.w3c_actions.pointer_action.move_to_location(x, y)  # type: ignore[reportUnknownMemberType]
+        actions.w3c_actions.pointer_action.pointer_up()  # type: ignore[reportUnknownMemberType]
         actions.perform()
         return self.element
 
     @log_debug()
     def _execute_tap_and_move_to_element(self, actions: ActionChains,
-                                         locator: tuple[str, str] | dict[str, Any] | Element | UiSelector) -> Element:
-        """Execute tap and move to another element."""
-        target_element = self.element._get_web_element(locator=locator)
+                                         locator: tuple[str, str] | dict[str, Any] | Element | UiSelector) -> Element:  # noqa: E501
+        """Execute tap and move to another element.
+
+        Args:
+            actions: ActionChains object.
+            locator: Target element locator.
+
+        Returns:
+            The element for method chaining.
+
+        """
+        target_element = self.element._get_web_element(locator=locator)  # type: ignore[reportPrivateUsage]  # noqa: SLF001
         x, y = self.element.get_center(target_element)
         return self._execute_tap_and_move_to_coordinates(actions, x, y)
 
     @log_debug()
-    def _execute_tap_and_move_by_direction(self, actions: ActionChains, x1: int, y1: int, direction: int,
+    def _execute_tap_and_move_by_direction(self, actions: ActionChains, x1: int, y1: int, direction: int,  # noqa: E501
                                            distance: int) -> Element:
-        """Execute tap and move by direction vector."""
-        width, height = self.shadowstep.terminal.get_screen_resolution()
-        x2, y2 = find_coordinates_by_vector(width=width, height=height, direction=direction, distance=distance,
+        """Execute tap and move by direction vector.
+
+        Args:
+            actions: ActionChains object.
+            x1: Starting x coordinate.
+            y1: Starting y coordinate.
+            direction: Direction vector for movement.
+            distance: Distance to move.
+
+        Returns:
+            The element for method chaining.
+
+        """
+        width, height = self.shadowstep.terminal.get_screen_resolution()  # type: ignore[reportOptionalMemberAccess]
+        x2, y2 = find_coordinates_by_vector(width=width, height=height, direction=direction, distance=distance,  # noqa: E501
                                             start_x=x1, start_y=y1)
         return self._execute_tap_and_move_to_coordinates(actions, x2, y2)
 
-    def _mobile_gesture(self, name: str, params: dict[str, Any] | list[Any]) -> Any:
+    def _mobile_gesture(self, name: str, params: dict[str, Any] | list[Any]) -> Any:  # noqa: ANN401
+        """Execute a mobile gesture command.
+
+        Args:
+            name: Name of the mobile gesture command.
+            params: Parameters for the gesture.
+
+        Returns:
+            Result of the gesture execution.
+
+        """
         # https://github.com/appium/appium-uiautomator2-driver/blob/master/docs/android-mobile-gestures.md
-        return self.element.driver.execute_script(name, params)
+        return self.element.driver.execute_script(name, params)  # type: ignore[reportUnknownMemberType]

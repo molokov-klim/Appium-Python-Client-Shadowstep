@@ -1,4 +1,3 @@
-# shadowstep/__init__.py
 """Shadowstep - Appium Python Client with enhanced features.
 
 This package provides a comprehensive Appium Python client with additional

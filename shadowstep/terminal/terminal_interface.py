@@ -1,3 +1,4 @@
+# shadowstep/terminal/terminal_interface.py
 """
 Yes, you're right — current `Terminal` implementation is overloaded and violates Single Responsibility Principle (SRP from SOLID), because:
 

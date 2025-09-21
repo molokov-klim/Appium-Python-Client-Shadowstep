@@ -1,4 +1,3 @@
-# shadowstep/base.py
 """Base classes and utilities for Shadowstep framework.
 
 This module provides the core functionality for connecting to Appium servers,
