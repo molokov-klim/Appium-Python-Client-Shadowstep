@@ -5,7 +5,7 @@ from typing import Any
 from shadowstep.locator.types.shadowstep_dict import ShadowstepDictAttribute
 from shadowstep.locator.types.ui_selector import UiAttribute
 
-UI_TO_SHADOWSTEP_DICT: dict[UiAttribute, Callable[[Any], dict[str, Any]]] = {
+UI_TO_SHADOWSTEP_DICT: dict[UiAttribute, Callable[[str], dict[str, Any]]] = {
     # --- text-based ---
     UiAttribute.TEXT: lambda v: {ShadowstepDictAttribute.TEXT.value: v},
     UiAttribute.TEXT_CONTAINS: lambda v: {ShadowstepDictAttribute.TEXT_CONTAINS.value: v},

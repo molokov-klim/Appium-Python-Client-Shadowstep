@@ -13,6 +13,7 @@ import re
 import threading
 import time
 from collections.abc import Callable
+from typing import Any
 
 from appium.webdriver.webdriver import WebDriver
 from selenium.common import WebDriverException
@@ -66,17 +67,17 @@ class ShadowstepLogcat:
         self._filename: str | None = None
         self._ws: WebSocket | None = None
         self.port: int | None = None
-        self._filters = None
-        self._compiled_filter_pattern = None
-        self._filter_set = None
+        self._filters: list[str] | None = None
+        self._compiled_filter_pattern: re.Pattern[Any] | None = None
+        self._filter_set: set[str] | None = None
 
 
     @property
-    def filters(self):
+    def filters(self) -> list[str] | None:
         return self._filters
 
     @filters.setter
-    def filters(self, value):
+    def filters(self, value: list[str]) -> None:
         self._filters = value
         if value:
             import re
@@ -93,6 +94,9 @@ class ShadowstepLogcat:
 
         if not self._compiled_filter_pattern.search(line):
             return False
+        
+        if self._filters is None:
+            return False
 
         for filter_text in self._filters:
             if filter_text in line:
@@ -105,12 +109,12 @@ class ShadowstepLogcat:
                     tag_part = parts[i + 1]
                     if ":" in tag_part:
                         tag = tag_part.split(":", 1)[0]
-                        return tag in self._filter_set
+                        return tag in self._filter_set  # type: ignore
 
         return True
 
 
-    def __exit__(self, exc_type, exc_val, exc_tb):
+    def __exit__(self, exc_type: Any, exc_val: Any, exc_tb: Any):
         self.stop()
 
     def __del__(self):

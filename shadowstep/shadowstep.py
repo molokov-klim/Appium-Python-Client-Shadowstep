@@ -12,7 +12,6 @@ from types import ModuleType
 from typing import Any, cast
 
 import numpy as np
-from appium.webdriver import WebElement
 from appium.webdriver.webdriver import WebDriver
 from numpy._typing import NDArray
 from PIL import Image
@@ -153,7 +152,7 @@ class Shadowstep(ShadowstepBase):
 
     def get_elements(
             self,
-            locator: tuple[str, str] | dict[str, Any] | Element | UiSelector | WebElement,
+            locator: tuple[str, str] | dict[str, Any] | Element | UiSelector,
             timeout: int = 30,
             poll_frequency: float = 0.5,
             ignored_exceptions: WaitExcTypes | None = None
@@ -301,7 +300,7 @@ class Shadowstep(ShadowstepBase):
 
     def find_and_get_element(
             self,
-            locator: tuple[str, str] | dict[str, Any] | Element | UiSelector | WebElement,
+            locator: tuple[str, str] | dict[str, Any] | Element | UiSelector,
             timeout: int = 30,
             poll_frequency: float = 0.5,
             ignored_exceptions: WaitExcTypes | None = None,

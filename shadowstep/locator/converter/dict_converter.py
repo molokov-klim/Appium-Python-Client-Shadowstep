@@ -209,7 +209,7 @@ class DictConverter:
         Raises:
             ValueError: If selector is invalid
         """
-        if not isinstance(selector_dict, dict):
+        if not isinstance(selector_dict, dict): # type: ignore
             raise ValueError("Selector must be a dictionary")
         
         if not selector_dict:

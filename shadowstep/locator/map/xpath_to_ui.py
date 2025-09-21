@@ -32,7 +32,7 @@ def _handle_from_parent(parent_ui: str) -> str:
     return f".fromParent({parent_ui})"
 
 
-XPATH_TO_UI: dict[XPathAttribute, Callable[[Any], str]] = {
+XPATH_TO_UI: dict[XPathAttribute, Callable[[str], str]] = {
     # --- text-based ---
     XPathAttribute.TEXT: lambda v: f"{UiAttribute.TEXT.value}({v})",
     XPathAttribute.TEXT_CONTAINS: lambda v: f"{UiAttribute.TEXT_CONTAINS.value}({v})",
@@ -69,7 +69,6 @@ XPATH_TO_UI: dict[XPathAttribute, Callable[[Any], str]] = {
     XPathAttribute.CHILD_SELECTOR: lambda v: _handle_child_selector(v),
     XPathAttribute.FROM_PARENT: lambda v: _handle_from_parent(v),
 }
-
 
 
 def get_ui_for_method(method: XPathAttribute, value: Any) -> str:

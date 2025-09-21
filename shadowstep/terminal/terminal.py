@@ -47,7 +47,7 @@ class Terminal:
         self.driver: WebDriver = base.driver
 
     def __del__(self):
-        if self.transport is not None:
+        if self.transport is not None:  # type: ignore
             self.transport.ssh.close()
 
     def adb_shell(self, command: str, args: str = "", tries: int = 3) -> Any:

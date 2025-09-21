@@ -5,7 +5,7 @@ from typing import Any
 from shadowstep.locator.types.shadowstep_dict import ShadowstepDictAttribute
 from shadowstep.locator.types.xpath import XPathAttribute
 
-XPATH_TO_SHADOWSTEP_DICT: dict[XPathAttribute, Callable[[Any], dict[str, Any]]] = {
+XPATH_TO_SHADOWSTEP_DICT: dict[XPathAttribute, Callable[[str], dict[str, Any]]] = {
     # --- text-based ---
     XPathAttribute.TEXT: lambda v: {ShadowstepDictAttribute.TEXT.value: v},
     XPathAttribute.TEXT_CONTAINS: lambda v: {ShadowstepDictAttribute.TEXT_CONTAINS.value: v},

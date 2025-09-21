@@ -6,6 +6,7 @@ This module provides functions to convert Shadowstep dictionary locators
 to XPath expressions with proper attribute mapping and hierarchy handling.
 """
 
+from collections.abc import Callable
 from typing import Any
 
 from shadowstep.locator.types.shadowstep_dict import ShadowstepDictAttribute
@@ -40,7 +41,8 @@ def is_hierarchical_attribute(attr: ShadowstepDictAttribute) -> bool:
     Returns:
         True if attribute is hierarchical
     """
-    return attr in (ShadowstepDictAttribute.CHILD_SELECTOR, ShadowstepDictAttribute.FROM_PARENT, ShadowstepDictAttribute.SIBLING)
+    return attr in (ShadowstepDictAttribute.CHILD_SELECTOR, ShadowstepDictAttribute.FROM_PARENT,
+                    ShadowstepDictAttribute.SIBLING)
 
 
 def get_xpath_for_hierarchical_attribute(attr: ShadowstepDictAttribute, nested_xpath: str) -> str:
@@ -64,25 +66,25 @@ def get_xpath_for_hierarchical_attribute(attr: ShadowstepDictAttribute, nested_x
 
 
 # Mapping dictionary for quick lookup
-DICT_TO_XPATH_MAPPING = {  # type: ignore
+DICT_TO_XPATH_MAPPING: dict[ShadowstepDictAttribute, Callable[[str], str]] = {
     ShadowstepDictAttribute.TEXT: lambda v: f"@text='{v}'",
     ShadowstepDictAttribute.TEXT_CONTAINS: lambda v: f"contains(@text, '{v}')",
     ShadowstepDictAttribute.TEXT_STARTS_WITH: lambda v: f"starts-with(@text, '{v}')",
     ShadowstepDictAttribute.TEXT_MATCHES: lambda v: f"matches(@text, '{v}')",
-    
+
     ShadowstepDictAttribute.DESCRIPTION: lambda v: f"@content-desc='{v}'",
     ShadowstepDictAttribute.DESCRIPTION_CONTAINS: lambda v: f"contains(@content-desc, '{v}')",
     ShadowstepDictAttribute.DESCRIPTION_STARTS_WITH: lambda v: f"starts-with(@content-desc, '{v}')",
     ShadowstepDictAttribute.DESCRIPTION_MATCHES: lambda v: f"matches(@content-desc, '{v}')",
-    
+
     ShadowstepDictAttribute.RESOURCE_ID: lambda v: f"@resource-id='{v}'",
     ShadowstepDictAttribute.RESOURCE_ID_MATCHES: lambda v: f"matches(@resource-id, '{v}')",
     ShadowstepDictAttribute.PACKAGE_NAME: lambda v: f"@package='{v}'",
     ShadowstepDictAttribute.PACKAGE_NAME_MATCHES: lambda v: f"matches(@package, '{v}')",
-    
+
     ShadowstepDictAttribute.CLASS_NAME: lambda v: f"@class='{v}'",
     ShadowstepDictAttribute.CLASS_NAME_MATCHES: lambda v: f"matches(@class, '{v}')",
-    
+
     ShadowstepDictAttribute.CHECKABLE: lambda v: f"@checkable='{str(v).lower()}'",
     ShadowstepDictAttribute.CHECKED: lambda v: f"@checked='{str(v).lower()}'",
     ShadowstepDictAttribute.CLICKABLE: lambda v: f"@clickable='{str(v).lower()}'",
@@ -93,7 +95,7 @@ DICT_TO_XPATH_MAPPING = {  # type: ignore
     ShadowstepDictAttribute.SCROLLABLE: lambda v: f"@scrollable='{str(v).lower()}'",
     ShadowstepDictAttribute.SELECTED: lambda v: f"@selected='{str(v).lower()}'",
     ShadowstepDictAttribute.PASSWORD: lambda v: f"@password='{str(v).lower()}'",
-    
+
     # ShadowstepDictAttribute.INDEX: lambda v: f"position()={int(v) + 1}",
     ShadowstepDictAttribute.INDEX: lambda v: f"@index={v}",
     ShadowstepDictAttribute.INSTANCE: lambda v: f"[{int(v) + 1}]",
