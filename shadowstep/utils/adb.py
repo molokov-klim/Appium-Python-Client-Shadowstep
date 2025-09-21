@@ -35,17 +35,17 @@ class Adb:
         """
         logger.info(f"{get_current_func_name()}")
 
-        # Определение команды для выполнения с помощью adb для получения списка устройств
+        # Define command to execute with adb to get list of devices
         command = ["adb", "devices"]
 
         # Выполнение команды и получение вывода
         response = str(subprocess.check_output(command))  # noqa: S603
 
-        # Извлечение списка устройств из полученного вывода с использованием регулярных выражений
+            # Extract device list from output using regular expressions
         devices_list = re.findall(r"(\d+\.\d+\.\d+\.\d+:\d+|\d+)", response)
 
         try:
-            # Возвращение первого устройства из списка (UUID подключенного устройства Android)
+                # Return first device from list (UUID of connected Android device)
             logger.info(f"{get_current_func_name()} > {devices_list}")
             return devices_list
         except IndexError:
@@ -74,9 +74,9 @@ class Adb:
         s_udid = f"-s {udid}" if udid else ""
         command = [f"adb {s_udid}", "shell", "getprop", "ro.product.model"]
         try:
-            # Выполнение команды и получение вывода
+            # Execute command and get output
             model = subprocess.check_output(command)  # noqa: S603
-            # Преобразование байтовой строки в обычную строку и удаление пробельных символов и символов перевода строки
+            # Convert byte string to regular string and remove whitespace and newline characters
             model = model.decode().strip()
             logger.info(f"{get_current_func_name()} > {model}")
             return model
@@ -188,7 +188,7 @@ class Adb:
         command = "adb shell pm list packages"
         try:
             result = subprocess.check_output(command, shell=True).decode().strip()  # noqa: S602
-            # Фильтруем пакеты
+            # Filter packages
             if any(line.strip().endswith(package) for line in result.splitlines()):
                 logger.info("install() > True")
                 return True
@@ -257,34 +257,34 @@ class Adb:
             Union[str, None]
                 The name of the current activity if found, None otherwise.
         """
-        # Вывод информации о запуске функции в лог
+        # Log function start information
         logger.info("get_current_activity()")
 
-        # Команда для ADB для получения информации о текущих окнах
+        # ADB command to get current window information
         command = ["adb", "shell", "dumpsys", "window", "windows"]
 
         try:
-            # Выполнение команды и декодирование результата
+            # Execute command and decode result
             result = subprocess.check_output(command, shell=True).decode().strip()  # noqa: S602
 
-            # Определение паттерна для поиска нужной информации в результатах
+            # Define pattern to search for required information in results
             pattern = r"mCurrentFocus|mFocusedApp"
 
-            # Вызов функции grep_pattern для поиска соответствия паттерну
+            # Call grep_pattern function to search for pattern match
             matched_lines = grep_pattern(input_string=result, pattern=pattern)
 
-            # Если были найдены соответствующие строки
+            # If matching lines were found
             if matched_lines:
                 for line in matched_lines:
-                    # Поиск имени активити в строке
+                    # Search for activity name in line
                     match = re.search(r"\/([^\/}]*)", line)
                     if match:
-                        # Возвращаем найденное значение, исключая '/'
+                        # Return found value, excluding '/'
                         activity_name = match.group(1)
                         logger.info(f"get_current_activity() > {activity_name}")
                         return activity_name
 
-            # Если не удалось найти активити, возвращаем None
+            # If activity not found, return None
             logger.error(f"{get_current_func_name()} > None")
             return ""
         except subprocess.CalledProcessError as error:
@@ -300,34 +300,34 @@ class Adb:
             Union[str, None]
                 The name of the current application package if found, None otherwise.
         """
-        # Вывод информации о запуске функции в лог
+        # Log function start information
         logger.info("get_current_app_package()")
 
-        # Команда для ADB для получения информации о текущих окнах
+        # ADB command to get current window information
         command = ["adb", "shell", "dumpsys", "window", "windows"]
 
         try:
-            # Выполнение команды и декодирование результата
+            # Execute command and decode result
             result = subprocess.check_output(command, shell=True).decode().strip()  # noqa: S602
 
-            # Определение паттерна для поиска нужной информации в результатах
+            # Define pattern to search for required information in results
             pattern = r"mCurrentFocus|mFocusedApp"
 
-            # Вызов функции grep_pattern для поиска соответствия паттерну
+            # Call grep_pattern function to search for pattern match
             matched_lines = grep_pattern(input_string=result, pattern=pattern)
 
-            # Если были найдены соответствующие строки
+            # If matching lines were found
             if matched_lines:
                 for line in matched_lines:
-                    # Поиск имени пакета в строке
+                    # Search for package name in line
                     match = re.search(r"u0\s(.+?)/", line)
                     if match:
-                        # Возвращаем найденное значение
+                        # Return found value
                         package_name = match.group(1)
                         logger.info(f"get_current_app_package() > {package_name}")
                         return package_name
 
-            # Если не удалось найти имя пакета, возвращаем None
+            # If package name not found, return None
             logger.error("get_current_app_package() > None")
             return ""
         except subprocess.CalledProcessError as error:
@@ -375,12 +375,12 @@ class Adb:
         """
         logger.info(f"reboot_app() < {package=}, {activity=}")
 
-        # Закрытие приложения
+        # Close application
         if not Adb.close_app(package=package):
             logger.error("reboot_app() > False")
             return False
 
-        # Запуск указанной активности
+        # Launch specified activity
         if not Adb.start_activity(package=package, activity=activity):
             logger.error("reboot_app() > False")
             return False
@@ -510,10 +510,10 @@ class Adb:
         """
         logger.info(f"input_text() < {text=}")
 
-        # Формируем команду для ввода текста с использованием ADB
+        # Form command for text input using ADB
         command = ["adb", "shell", "input", "text", text]
         try:
-            # Выполняем команду
+            # Execute command
             subprocess.run(command, check=True)  # noqa: S603
             logger.info("input_text() > True")
             return True
@@ -538,7 +538,7 @@ class Adb:
         """
         logger.info(f"tap() < {x=}, {y=}")
 
-        # Формируем команду для выполнения нажатия по указанным координатам с использованием ADB
+        # Form command for tap at specified coordinates using ADB
         command = ["adb", "shell", "input", "tap", str(x), str(y)]
         try:
             subprocess.run(command, check=True)  # noqa: S603
@@ -573,10 +573,10 @@ class Adb:
         """
         logger.info(f"swipe() < {start_x=}, {start_y=}, {end_x=}, {end_y=}, {duration=}")
 
-        # Формируем команду для выполнения свайпа с использованием ADB
+        # Form command for swipe using ADB
         command = ["adb", "shell", "input", "swipe", str(start_x), str(start_y), str(end_x), str(end_y), str(duration)]
         try:
-            # Выполняем команду
+            # Execute command
             subprocess.run(command, check=True)  # noqa: S603
             logger.info("swipe() > True")
             return True
@@ -599,13 +599,13 @@ class Adb:
         """
         logger.info(f"check_vpn() < {ip_address=}")
 
-        # Определяем команду в виде строки
+        # Define command as string
         command = "adb shell netstat"
         try:
-            # Выполняем команду и получаем вывод
+            # Execute command и получаем вывод
             output = subprocess.run(command, shell=True, capture_output=True, text=True, check=True)  # noqa: S602
 
-            # Поиск строки
+            # Search for line
             lines = output.stdout.split("\n")
             for line in lines:
                 if "ESTABLISHED" in line and ip_address in line:
@@ -631,7 +631,7 @@ class Adb:
             logger.info("stop_logcat() > True")
             return True
         logger.error("stop_logcat() > False")
-        logger.info("stop_logcat() [Запущенного процесса logcat не обнаружено]")
+        logger.info("stop_logcat() [No running logcat process found]")
         return False
 
     @staticmethod
@@ -654,21 +654,21 @@ class Adb:
         except subprocess.CalledProcessError as error:
             logger.error(f"{get_current_func_name()}: {error}")
             return False
-        # Разделение вывода на строки и удаление пустых строк
+        # Split output into lines and remove empty lines
         lines = processes.strip().split("\n")
-        # Проход по каждой строке вывода, начиная с 2-й строки, игнорируя заголовки
+        # Go through each output line starting from 2nd line, ignoring headers
         for line in lines[1:]:
-            # Разделение строки на столбцы по пробелам
+            # Split line into columns by spaces
             columns = line.split()
-            # Проверка, что строка имеет не менее 9 столбцов
+            # Check that line has at least 9 columns
             if len(columns) >= 9:
-                # Извлечение PID и имени процесса из соответствующих столбцов
+                # Extract PID and process name from corresponding columns
                 _, process_name = columns[1], columns[8]
-                # Сравнение имени процесса с искомым именем
+                # Compare process name with searched name
                 if name == process_name:
                     logger.info("is_process_exist() > True")
                     return True
-        # Возврат None, если процесс с заданным именем не найден
+        # Return None if process with given name not found
         logger.info("is_process_exist() > False")
         return False
 
@@ -691,7 +691,7 @@ class Adb:
 
         command = f"{command} nohup > /dev/null 2>&1 &"
         try:
-            subprocess.Popen(command, stdout=subprocess.DEVNULL)  # noqa: S603  # не добавлять with
+            subprocess.Popen(command, stdout=subprocess.DEVNULL)  # noqa: S603  # don't add with
             if process != "":
                 time.sleep(1)
                 if not Adb.is_process_exist(name=process):
@@ -719,7 +719,7 @@ class Adb:
         except subprocess.CalledProcessError as error:
             logger.error(f"{get_current_func_name()}: {error}")
             return False
-        # Ожидаем некоторое время перед запуском adb-сервера
+        # Wait some time before starting adb server
         time.sleep(3)
         try:
             command = ["adb", "start-server"]
@@ -750,23 +750,23 @@ class Adb:
         except subprocess.CalledProcessError as error:
             logger.error(f"{get_current_func_name()}: {error}")
             return None
-        # Разделение вывода на строки и удаление пустых строк
+        # Split output into lines and remove empty lines
         lines = processes.strip().split("\n")
-        # Проход по каждой строке вывода, начиная с 2-й строки, игнорируя заголовки
+        # Go through each output line starting from 2nd line, ignoring headers
         for line in lines[1:]:
-            # Разделение строки на столбцы по пробелам
+            # Split line into columns by spaces
             columns = line.split()
-            # Проверка, что строка имеет не менее 9 столбцов
+            # Check that line has at least 9 columns
             if len(columns) >= 9:
-                # Извлечение PID и имени процесса из соответствующих столбцов
+                # Extract PID and process name from corresponding columns
                 pid, process_name = columns[1], columns[8]
-                # Сравнение имени процесса с искомым именем
+                # Compare process name with searched name
                 if name == process_name:
                     logger.info(f"know_pid() > {pid=}")
                     return int(pid)
-        # Возврат None, если процесс с заданным именем не найден
+        # Return None if process with given name not found
         logger.error("know_pid() > None")
-        logger.error("know_pid() [Процесс не обнаружен]")
+        logger.error("know_pid() [Process not found]")
         return None
 
     @staticmethod
@@ -951,7 +951,7 @@ class Adb:
 
         command = ["adb", "shell", "screenrecord", f"{path}/{filename}"]
         try:
-            # Запускаем команду adb shell screenrecord для начала записи видео
+            # Start adb shell screenrecord command to begin video recording
             return subprocess.Popen(command)  # noqa: S603
         except subprocess.CalledProcessError as error:
             logger.error(f"{get_current_func_name()}: {error}")
@@ -979,7 +979,7 @@ class Adb:
 
         command = ["adb", "shell", "screenrecord", f"{path}/{filename}"]
         try:
-            # Запускаем команду adb shell screenrecord для начала записи видео
+            # Start adb shell screenrecord command to begin video recording
             subprocess.Popen(command)  # noqa: S603  # не добавлять with
             return True
         except subprocess.CalledProcessError as error:
@@ -1039,9 +1039,9 @@ class Adb:
                 A list of package names installed on the device.
         """
         packages_raw = self.execute(command="shell pm list packages")
-        # Используем регулярное выражение для удаления "package:" из каждой строки
+        # Use regular expression to remove "package:" from each line
         packages_raw = re.sub(r"package:", "", packages_raw)
-        # Разбиваем строки на список и удаляем пустые элементы
+        # Split lines into list and remove empty elements
         return [package.strip() for package in packages_raw.split("\n") if package.strip()]
 
     @staticmethod

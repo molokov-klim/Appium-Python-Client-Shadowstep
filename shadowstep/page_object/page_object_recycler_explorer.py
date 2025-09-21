@@ -33,7 +33,7 @@ class PageObjectRecyclerExplorer:
             self.base.swipe(left=100, top=100,
                             width=width, height=height,
                             direction="down", percent=1.0,
-                            speed=10000)  # скроллим вверх
+                            speed=10000)  # scroll up
             self.base.terminal.adb_shell(
                 command="input",
                 args=f"swipe {x} {y_start} {x} {y_end}"
@@ -46,22 +46,22 @@ class PageObjectRecyclerExplorer:
 
         original_cls = self._load_class_from_file(original_page_path, original_page_class_name)
         if not original_cls:
-            self.logger.warning(f"Не удалось загрузить класс {original_page_class_name} из {original_page_path}")
+            self.logger.warning(f"Failed to load class {original_page_class_name} from {original_page_path}")
             return ""
 
         original_page = original_cls()
         if not hasattr(original_page, "recycler"):
-            self.logger.info(f"{original_page_class_name} не содержит свойства `recycler`")
+            self.logger.info(f"{original_page_class_name} does not contain `recycler` property")
             return ""
 
         recycler_el = original_page.recycler
         if not hasattr(recycler_el, "scroll_down"):
-            self.logger.warning("`recycler` не поддерживает scroll_down")
+            self.logger.warning("`recycler` does not support scroll_down")
             return ""
         prefix = 0
 
         while recycler_el.scroll_down(percent=0.5, speed=1000, return_bool=True):
-            # дерево изменилось!!! recycler_raw нужно переопределить
+            # tree changed!!! recycler_raw needs to be redefined
             prefix += 1
             tree = self.parser.parse(self.base.driver.page_source)
             page_path, page_class_name = self.generator.generate(tree, output_dir=output_dir,
@@ -76,7 +76,7 @@ class PageObjectRecyclerExplorer:
             self.base.swipe(left=100, top=100,
                             width=width, height=height,
                             direction="up", percent=1.0,
-                            speed=10000)  # скроллим вверх
+                            speed=10000)  # scroll up
             self.base.terminal.adb_shell(
                 command="input",
                 args=f"swipe {x} {y_start} {x} {y_end}"
@@ -97,7 +97,7 @@ class PageObjectRecyclerExplorer:
             self.base.swipe(left=100, top=100,
                             width=width, height=height,
                             direction="up", percent=1.0,
-                            speed=10000)  # скроллим вниз
+                            speed=10000)  # scroll down
 
         return output_path
 

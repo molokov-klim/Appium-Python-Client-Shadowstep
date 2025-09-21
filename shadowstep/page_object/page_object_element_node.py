@@ -110,7 +110,7 @@ class Jinja2Renderer(TemplateRenderer):
         self.logger.debug(f"{get_current_func_name()}")
         template = self.env.get_template(template_name)
 
-        # Конвертируем dataclass в словарь для передачи в шаблон
+        # Convert dataclass to dict for passing to template
         model_dict = {
             "class_name": model.class_name,
             "raw_title": model.raw_title,
