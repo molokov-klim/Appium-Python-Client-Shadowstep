@@ -93,10 +93,10 @@ class DictConverter:
                 continue
 
             try:
-                # пробуем Enum
+                # try Enum
                 attr = ShadowstepDictAttribute(key)
             except ValueError:
-                # fallback: ключа нет в ShadowstepDictAttribute → берём как есть
+                # fallback: key not in ShadowstepDictAttribute → take as is
                 xpath_parts.append(f"@{key}='{value}'")
                 continue
 
@@ -105,10 +105,10 @@ class DictConverter:
             elif attr in DICT_TO_XPATH_MAPPING:
                 xpath_parts.append(DICT_TO_XPATH_MAPPING[attr](value))
             else:
-                # fallback: есть Enum, но нет в DICT_TO_XPATH_MAPPING → всё равно юзаем raw
+                # fallback: Enum exists but not in DICT_TO_XPATH_MAPPING → still use raw
                 xpath_parts.append(f"@{attr.value}='{value}'")
 
-        # собираем XPath
+        # build XPath
         xpath = base_xpath
         for condition in xpath_parts:
             xpath = f"{xpath}[{condition}]"
@@ -209,7 +209,7 @@ class DictConverter:
         Raises:
             ValueError: If selector is invalid
         """
-        if not isinstance(selector_dict, dict):
+        if not isinstance(selector_dict, dict): # type: ignore
             raise ValueError("Selector must be a dictionary")
         
         if not selector_dict:

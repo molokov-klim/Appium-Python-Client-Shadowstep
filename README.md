@@ -10,6 +10,7 @@ Shadowstep is a modular UI automation framework for Android applications built o
 - DSL-style assertions for readable checks (`should.have`, `should.be`)
 - Image-based actions on screen
 
+[![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/molokov-klim/Appium-Python-Client-Shadowstep)
 ---
 
 ## Contents
@@ -338,14 +339,14 @@ from shadowstep.shadowstep import Shadowstep
 from shadowstep.page_object.page_object_parser import PageObjectParser
 from shadowstep.page_object.page_object_generator import PageObjectGenerator
 
-app = Shadowstep.get_instance()  # or Shadowstep()
+app = Shadowstep()
 xml = app.driver.page_source
 
 parser = PageObjectParser()
 tree = parser.parse(xml)
 
-pog = PageObjectGenerator()
-path, class_name = pog.generate(ui_element_tree=tree, output_dir="pages")
+generator = PageObjectGenerator()
+path, class_name = generator.generate(ui_element_tree=tree, output_dir="pages")
 print(path, class_name)
 ```
 
@@ -402,20 +403,11 @@ To tweak generated code structure, edit these files. (The generator uses the loc
 - `shadowstep/page_object/page_object_test_generator.py`
 
 ---
-## Known issues
-
-For some reason, jinja templates are not downloaded to the folder when installed via pip. 
-Insert them manually from this sources into .venv/Lib/site-packages/shadowstep/page_object/templates/ 
-I don't know how to solve this yet.
-
-start_logcat (mobile: startLogsBroadcast) is not working with my Selenium Grid now, need experiments with plugins.
-Solve it later
-
----
 
 ## Limitations
 
 - Android only (no iOS or Web)
+- Singleton session (for parallel testing need use different runners/containers)
 
 ---
 

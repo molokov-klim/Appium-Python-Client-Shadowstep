@@ -186,7 +186,7 @@ class LocatorConverter:
             # Basic XPath validation
             if not selector[1]:
                 raise ValueError("XPath string cannot be empty")
-        elif isinstance(selector, str):
+        elif isinstance(selector, str):  # type: ignore
             if not selector.strip():
                 raise ValueError("Selector string cannot be empty")
         else:

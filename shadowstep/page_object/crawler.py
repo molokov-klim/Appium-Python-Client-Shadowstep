@@ -1,56 +1,56 @@
 """
-Всё это в принципе реализуемо, но придётся учесть несколько нетривиальных нюансов и правильно разбить задачу на этапы:
+All this is in principle implementable, but you'll need to consider several non-trivial nuances and properly break down the task into stages:
 
-1. **Полное скроллирование**
+1. **Complete scrolling**
 
-   * Для каждого найденного scrollable-элемента нужно прогонять «скролл вниз» до тех пор, пока не появятся новые элементы — и при каждом шаге обновлять список, фильтруя по уже увиденным (хранить, скажем, по уникальным tuple (resource-id, bounds) или хешу).
-   * Важно не полагаться только на «скролл до конца» одного вызова: обычно сначала пробуют `scroll(локация, вниз)`, а потом, когда больше нет «движения», считают, что достигли низа.
+   * For each found scrollable element, you need to run "scroll down" until new elements appear — and at each step update the list, filtering by already seen ones (store, say, by unique tuple (resource-id, bounds) or hash).
+   * It's important not to rely only on "scroll to end" of one call: usually first try `scroll(location, down)`, and then when there's no more "movement", consider that the bottom is reached.
 
-2. **Генерация Python-файла PageObject**
+2. **Python PageObject file generation**
 
-   * Собрав полный набор элементов и их переходов, можно прогонять шаблон (например Jinja2) и на лету подставлять в него свойства: `@property def name/title/...`, методы переходов (`edges`) и импорт `Element`/`PageBaseShadowstep`.
-   * Дублирование кода свести к минимуму: в шаблоне описать только структуру, а все динамические атрибуты (имена элементов, локаторы, целевые страницы) передавать в рендер.
+   * Having collected the full set of elements and their transitions, you can run a template (e.g., Jinja2) and on the fly substitute properties: `@property def name/title/...`, transition methods (`edges`) and import `Element`/`PageBaseShadowstep`.
+   * Minimize code duplication: in the template describe only the structure, and pass all dynamic attributes (element names, locators, target pages) to the render.
 
-3. **Автоматический краул по всем экранам (граф переходов)**
+3. **Automatic crawl through all screens (transition graph)**
 
-   * Запускаете приложение, переходите в стартовый Activity и берёте `PageObjectExtractor` для текущего экрана.
-   * Для каждого интерактивного элемента (кроме тех, что уже были «прожаты» на этой странице) вызываете `element.tap()`, ждёте стабилизации UI и пытаетесь детектить, сменился ли экран:
+   * Launch the app, go to the starting Activity and take `PageObjectExtractor` for the current screen.
+   * For each interactive element (except those already "pressed" on this page) call `element.tap()`, wait for UI stabilization and try to detect if the screen has changed:
 
-     * С помощью `is_current_page()` старой страницы — если вернулся `False`, значит переход успешен.
-     * А новую страницу определяете или по контекстному Activity-набору, или по другому PageObject через серию `page.is_current_page()`.
-   * В таком случае в `self.edges[имя_старой]` добавляете запись: `locator -> имя_новой`.
-   * **Откат**: чтобы продолжить краул с исходной страницы, нужно явно возвращаться назад (Back) или перезапускать приложение до начального состояния.
+     * Using `is_current_page()` of the old page — if it returns `False`, the transition was successful.
+     * Determine the new page either by contextual Activity set, or by another PageObject through a series of `page.is_current_page()`.
+   * In this case, add a record to `self.edges[old_name]`: `locator -> new_name`.
+   * **Rollback**: to continue crawling from the original page, you need to explicitly go back (Back) or restart the app to the initial state.
 
-4. **Организация обхода**
+4. **Traversal organization**
 
-   * Стандартный BFS/DFS по графу: храните очередь экранов, которые ещё не «исследованы» (не пройдены по всем их элементам).
-   * Для предотвращения бесконечных циклов и дублей — отмечайте посещённые пары («страница + уже нажатый элемент»).
-   * Отдельно храните «уже сгенерированные» PageObject-файлы, чтобы не перезаписывать их лишний раз.
-
----
-
-### Основные сложности и на что обратить внимание
-
-* **Нестабильность UI**: анимации, всплывающие диалоги, асинхронные загрузки — нужно выжидать устойчивое состояние экрана.
-* **Параметризованные страницы**: один и тот же макет может содержать разный контент (списки товаров, списки сообщений). Код-генератор должен уметь либо обобщать такие страницы, либо различать их по «ключевым» элементам.
-* **Логи и отладка**: при крауле вы будете сталкиваться с неожиданными диалогами (пермиссии, рекламу и т.д.). Рекомендуется снабдить каждый шаг режима «safe tap» — кликать только после уверенного обнаружения элемента.
-* **Длительность**: полный обход может занять десятки и сотни кликов. Нужны таймауты и, возможно, «точки возобновления» (чтобы не начинать всё заново при падении).
+   * Standard BFS/DFS through the graph: store a queue of screens that haven't been "explored" yet (not passed through all their elements).
+   * To prevent infinite loops and duplicates — mark visited pairs ("page + already pressed element").
+   * Separately store "already generated" PageObject files to avoid overwriting them unnecessarily.
 
 ---
 
-### Итоговое мнение
+### Main difficulties and what to pay attention to
 
-Идея «скроллить, извлечь, сгенерить PageObject, автоматом тыкать по всему и строить граф переходов» — вполне жизнеспособна и в итоге даст вам полный «снифер» структуры вашего Android-приложения. При этом:
+* **UI instability**: animations, popup dialogs, asynchronous loads — need to wait for stable screen state.
+* **Parameterized pages**: the same layout can contain different content (product lists, message lists). The code generator should be able to either generalize such pages, or distinguish them by "key" elements.
+* **Logs and debugging**: during crawling you'll encounter unexpected dialogs (permissions, ads, etc.). It's recommended to equip each step with "safe tap" mode — click only after confident element detection.
+* **Duration**: full traversal can take dozens and hundreds of clicks. Need timeouts and possibly "resume points" (to not start everything over on failure).
 
-* Код получится довольно сложным, и желательно модульно организовать:
+---
 
-  1. Обход и сбор локаторов
-  2. Фильтрация и скроллирование
-  3. Генерация кода
-  4. Алгоритм обхода графа
-* На первом этапе лучше ограничиться одним Activity или одним разделом, отладить логику скролла и код-генерации, а уже потом масштабировать на всю иерархию.
+### Final opinion
 
-В общем — **вполне возможно**, просто придётся заложить автоматизацию «краулинга» и «крауд-кода» аккуратно и протестировать на примерах, чтобы ловить все тонкости смены экранов и динамических элементов.
+The idea of "scroll, extract, generate PageObject, automatically tap everything and build transition graph" — is quite viable and will ultimately give you a complete "sniffer" of your Android app structure. At the same time:
+
+* The code will be quite complex, and it's advisable to organize it modularly:
+
+  1. Traversal and locator collection
+  2. Filtering and scrolling
+  3. Code generation
+  4. Graph traversal algorithm
+* At the first stage, it's better to limit yourself to one Activity or one section, debug scroll logic and code generation, and then scale to the entire hierarchy.
+
+In general — **quite possible**, just need to lay out "crawling" and "crowd-code" automation carefully and test on examples to catch all the nuances of screen changes and dynamic elements.
 
 """
 

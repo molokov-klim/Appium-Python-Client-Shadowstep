@@ -133,11 +133,11 @@ class ElementBase:
         self.logger.debug(f"{get_current_func_name()}")
         if isinstance(locator, tuple):
             by, value = locator
-            # Удаляем части типа [@attr='null']
+            # Remove parts like [@attr='null']
             value = re.sub(r"\[@[\w\-]+='null']", "", value)
             return by, value
         if isinstance(locator, dict):
-            # Удаляем ключи, у которых значение == 'null'
+            # Remove keys where value == 'null'
             return {k: v for k, v in locator.items() if v != "null"}
         return locator
 

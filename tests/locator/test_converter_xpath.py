@@ -17,10 +17,10 @@ class TestXPathConverter:
         "xpath, expected",  # noqa: PT006
         [  # pyright: ignore [reportUnknownArgumentType]
             # --- text-based ---
-            ('//*[@text="Привет"]', {ShadowstepDictAttribute.TEXT: "Привет"}),
+            ('//*[@text="Hello"]', {ShadowstepDictAttribute.TEXT: "Hello"}),
             ('//*[contains(@text,"Hello")]', {ShadowstepDictAttribute.TEXT_CONTAINS: "Hello"}),
-            ('//*[starts-with(@text,"Оплат")]', {ShadowstepDictAttribute.TEXT_STARTS_WITH: "Оплат"}),
-            ('//*[matches(@text,".*Тест.*")]', {ShadowstepDictAttribute.TEXT_MATCHES: ".*Тест.*"}),
+            ('//*[starts-with(@text,"Pay")]', {ShadowstepDictAttribute.TEXT_STARTS_WITH: "Pay"}),
+            ('//*[matches(@text,".*Test.*")]', {ShadowstepDictAttribute.TEXT_MATCHES: ".*Test.*"}),
 
             # --- description ---
             ('//*[@content-desc="desc"]', {ShadowstepDictAttribute.DESCRIPTION: "desc"}),
@@ -55,8 +55,8 @@ class TestXPathConverter:
             ("//*[6]", {ShadowstepDictAttribute.INSTANCE: 5}),
 
             # --- hierarchy ---
-            ('//*[@content-desc="Подтвердить"]/*[@class="android.widget.ImageView"]',
-             {ShadowstepDictAttribute.DESCRIPTION: "Подтвердить",
+            ('//*[@content-desc="Confirm"]/*[@class="android.widget.ImageView"]',
+             {ShadowstepDictAttribute.DESCRIPTION: "Confirm",
               ShadowstepDictAttribute.CHILD_SELECTOR: {"class": "android.widget.ImageView"}}),
             ('//*[@class="android.widget.RadioButton"]/..//*[@resource-id="ru.figma.app.debug:id/paymentMethods"]',
              {ShadowstepDictAttribute.CLASS_NAME: "android.widget.RadioButton",
@@ -88,9 +88,9 @@ class TestXPathConverter:
                     },
             ),
             (
-                    '//*[contains(@text, "Подтвердить")][@clickable="true"]',
+                    '//*[contains(@text, "Confirm")][@clickable="true"]',
                     {
-                        ShadowstepDictAttribute.TEXT_CONTAINS: "Подтвердить",
+                        ShadowstepDictAttribute.TEXT_CONTAINS: "Confirm",
                         ShadowstepDictAttribute.CLICKABLE: True,
                     },
             ),
@@ -102,9 +102,9 @@ class TestXPathConverter:
                     },
             ),
             (
-                    '//*[starts-with(@text, "Нач")][@package="ru.app"][@focusable="true"]',
+                    '//*[starts-with(@text, "Start")][@package="ru.app"][@focusable="true"]',
                     {
-                        ShadowstepDictAttribute.TEXT_STARTS_WITH: "Нач",
+                        ShadowstepDictAttribute.TEXT_STARTS_WITH: "Start",
                         ShadowstepDictAttribute.PACKAGE_NAME: "ru.app",
                         ShadowstepDictAttribute.FOCUSABLE: True,
                     },
@@ -118,9 +118,9 @@ class TestXPathConverter:
                     },
             ),
             (
-                    '//*[matches(@text, ".*Тест.*")][@scrollable="false"]',
+                    '//*[matches(@text, ".*Test.*")][@scrollable="false"]',
                     {
-                        ShadowstepDictAttribute.TEXT_MATCHES: ".*Тест.*",
+                        ShadowstepDictAttribute.TEXT_MATCHES: ".*Test.*",
                         ShadowstepDictAttribute.SCROLLABLE: False,
                     },
             ),
@@ -157,10 +157,10 @@ class TestXPathConverter:
                     },
             ),
             (
-                    '//*[matches(@resource-id, ".*btn.*")][contains(@text, "Отправить")][@enabled="true"]',
+                    '//*[matches(@resource-id, ".*btn.*")][contains(@text, "Send")][@enabled="true"]',
                     {
                         ShadowstepDictAttribute.RESOURCE_ID_MATCHES: ".*btn.*",
-                        ShadowstepDictAttribute.TEXT_CONTAINS: "Отправить",
+                        ShadowstepDictAttribute.TEXT_CONTAINS: "Send",
                         ShadowstepDictAttribute.ENABLED: True,
                     },
             ),
@@ -241,9 +241,9 @@ class TestXPathConverter:
                     },
             ),
             (
-                    '//*[@text="Оплатить"]/*[@class="android.widget.ImageView"]',
+                    '//*[@text="Pay"]/*[@class="android.widget.ImageView"]',
                     {
-                        ShadowstepDictAttribute.TEXT: "Оплатить",
+                        ShadowstepDictAttribute.TEXT: "Pay",
                         ShadowstepDictAttribute.CHILD_SELECTOR: {
                             ShadowstepDictAttribute.CLASS_NAME: "android.widget.ImageView",
                         },
@@ -268,10 +268,10 @@ class TestXPathConverter:
                     },
             ),
             (
-                    '//*[@class="android.widget.Button"][starts-with(@text,"Дал")]/*[@content-desc="icon"]',
+                    '//*[@class="android.widget.Button"][starts-with(@text,"Give")]/*[@content-desc="icon"]',
                     {
                         ShadowstepDictAttribute.CLASS_NAME: "android.widget.Button",
-                        ShadowstepDictAttribute.TEXT_STARTS_WITH: "Дал",
+                        ShadowstepDictAttribute.TEXT_STARTS_WITH: "Give",
                         ShadowstepDictAttribute.CHILD_SELECTOR: {
                             ShadowstepDictAttribute.DESCRIPTION: "icon",
                         },
@@ -305,7 +305,7 @@ class TestXPathConverter:
     @pytest.mark.parametrize(
         "xpath, expected",  # noqa: PT006
         [  # pyright: ignore [reportUnknownArgumentType]
-            # 1) Твой исходный пример (базовый sanity)
+            # 1) Your original example (basic sanity)
             (
                     '//*[@text="Settings"][@class="android.widget.Button"]/../*[@class="android.widget.FrameLayout"]/*[@resource-id="ru.app:id/switch"]',
                     {
@@ -320,7 +320,7 @@ class TestXPathConverter:
                     },
             ),
 
-            # 2) Два шага вверх, затем два шага вниз по классам и ресурс-id в конце
+            # 2) Two steps up, then two steps down by classes and resource-id at the end
             (
                     '//*[@text="Root"]/../../*[@class="L1"]/*[@class="L2"]/*[@resource-id="app:id/toggle"]',
                     {
@@ -339,7 +339,7 @@ class TestXPathConverter:
                     },
             ),
 
-            # 3) Один шаг вверх, далее длинная цепочка вниз (5 уровней)
+            # 3) One step up, then long chain down (5 levels)
             (
                     '//*[@text="Deep"]/../*[@class="A"]/*[@class="B"]/*[@class="C"]/*[@class="D"]/*[@resource-id="pkg:id/end"]',
                     {
@@ -362,7 +362,7 @@ class TestXPathConverter:
                     },
             ),
 
-            # 4) Три шага вверх, затем два вниз
+            # 4) Three steps up, then two down
             (
                     '//*[@text="T"]/../../../*[@class="P1"]/*[@class="P2"]/*[@resource-id="pkg:id/final"]',
                     {
@@ -383,11 +383,11 @@ class TestXPathConverter:
                     },
             ),
 
-            # 5) Глубокая чисто нисходящая цепочка (без ..), 6 уровней
+            # 5) Deep purely descending chain (without ..), 6 levels
             (
                     '//*[*[@text="Anchor"]]/*[@class="L1"]/*[@class="L2"]/*[@class="L3"]/*[@class="L4"]/*[@class="L5"]/*[@resource-id="app:id/leaf"]',
                     {
-                        # Поскольку в корне у нас предикат по text(), он попадёт в верхний уровень
+                        # Since at root we have predicate by text(), it will go to top level
                         ShadowstepDictAttribute.TEXT: "Anchor",
                         ShadowstepDictAttribute.CHILD_SELECTOR: {
                             ShadowstepDictAttribute.CLASS_NAME: "L1",
@@ -410,18 +410,18 @@ class TestXPathConverter:
                     },
             ),
 
-            # 6) Смешанный: вверх, вниз, опять вниз через двойной слэш (// трактуется как / в сборке дерева)
+            # 6) Mixed: up, down, down again via double slash (// treated as / in tree building)
             (
                     '//*[@text="Mixed"]/..//*[@class="C1"]/*[@class="C2"]//*[@resource-id="pkg:id/x"]',
                     {
                         ShadowstepDictAttribute.TEXT: "Mixed",
                         ShadowstepDictAttribute.FROM_PARENT: {
-                            # После '..' первый нисходящий шаг
+                            # After '..' first descending step
                             ShadowstepDictAttribute.CLASS_NAME: "C1",
                             ShadowstepDictAttribute.CHILD_SELECTOR: {
                                 ShadowstepDictAttribute.CLASS_NAME: "C2",
                                 ShadowstepDictAttribute.CHILD_SELECTOR: {
-                                    # ещё один нисходящий шаг через //
+                                    # another descending step via //
                                     ShadowstepDictAttribute.RESOURCE_ID: "pkg:id/x",
                                 },
                             },
@@ -429,7 +429,7 @@ class TestXPathConverter:
                     },
             ),
 
-            # 7) Максимально «сумасшедшая» матрёшка: вверх x3, затем вниз x6
+            # 7) Maximum "crazy" nesting: up x3, then down x6
             (
                     '//*[@text="Mega"]/../../../*[@class="L1"]/*[@class="L2"]/*[@class="L3"]/*[@class="L4"]/*[@class="L5"]/*[@class="L6"]/*[@resource-id="pkg:id/the_end"]',
                     {
@@ -515,7 +515,7 @@ class TestXPathConverter:
                     },
             ),
 
-            # 4) Комбо: text, затем contains, потом starts-with и в конце matches
+            # 4) Combo: text, then contains, then starts-with and finally matches
             (
                     '//*[@text="Anchor"]/../*[contains(@text, "foo")]/child::*[starts-with(@content-desc, "bar")]/*[matches(@class, ".*Layout")]',
                     {
@@ -532,7 +532,7 @@ class TestXPathConverter:
                     },
             ),
 
-            # 5) Супер-вложенность: 2 раза вверх, потом цепочка из contains → starts-with → matches → resource-id
+            # 5) Super nesting: 2 times up, then chain from contains → starts-with → matches → resource-id
             (
                     '//*[@text="Mega"]/../../*[contains(@text, "deep")]/child::*[starts-with(@content-desc, "zzz")]/*[matches(@package, "com\\..*")]/*[@resource-id="pkg:id/the_end"]',
                     {
@@ -569,7 +569,7 @@ class TestXPathConverter:
     @pytest.mark.parametrize(
         "xpath, expected",  # noqa: PT006
         [  # pyright: ignore [reportUnknownArgumentType]
-            # простой sibling по классу
+            # simple sibling by class
             (
                     '//*[@text="Anchor"]/following-sibling::*[@class="android.widget.FrameLayout"]',
                     {
@@ -608,7 +608,7 @@ class TestXPathConverter:
                         },
                     },
             ),
-            # sibling со starts-with
+            # sibling with starts-with
             (
                     '//*[@text="Btn"]/following-sibling::*[starts-with(@content-desc,"prefix")]',
                     {
@@ -618,7 +618,7 @@ class TestXPathConverter:
                         },
                     },
             ),
-            # sibling с matches
+            # sibling with matches
             (
                     '//*[@class="android.widget.LinearLayout"]/following-sibling::*[matches(@resource-id,".*button.*")]',
                     {
@@ -628,7 +628,7 @@ class TestXPathConverter:
                         },
                     },
             ),
-            # глубокая вложенность: sibling → sibling → child
+            # deep nesting: sibling → sibling → child
             (
                     '//*[@text="Mega"]/following-sibling::*[@class="android.widget.FrameLayout"]/following-sibling::*[matches(@package,"com.example")]/child::*[@content-desc="leaf"]',
                     {
@@ -655,10 +655,10 @@ class TestXPathConverter:
         "xpath, expected",  # noqa: PT006
         [
             # --- text-based ---
-            ('//*[@text="Привет"]', 'new UiSelector().text("Привет");'),
+            ('//*[@text="Hello"]', 'new UiSelector().text("Hello");'),
             ('//*[contains(@text,"Hello")]', 'new UiSelector().textContains("Hello");'),
-            ('//*[starts-with(@text,"Оплат")]', 'new UiSelector().textStartsWith("Оплат");'),
-            ('//*[matches(@text,".*Тест.*")]', 'new UiSelector().textMatches(".*Тест.*");'),
+            ('//*[starts-with(@text,"Pay")]', 'new UiSelector().textStartsWith("Pay");'),
+            ('//*[matches(@text,".*Test.*")]', 'new UiSelector().textMatches(".*Test.*");'),
 
             # --- description ---
             ('//*[@content-desc="desc"]', 'new UiSelector().description("desc");'),
@@ -708,8 +708,8 @@ class TestXPathConverter:
         "xpath, expected",  # noqa: PT006
         [
             (
-                    '//*[starts-with(@text,"Оплат")][@class="android.widget.Button"]/*[@class="android.widget.ImageView"]',
-                    'new UiSelector().textStartsWith("Оплат").className("android.widget.Button").childSelector(new UiSelector().className("android.widget.ImageView"));',
+                    '//*[starts-with(@text,"Pay")][@class="android.widget.Button"]/*[@class="android.widget.ImageView"]',
+                    'new UiSelector().textStartsWith("Pay").className("android.widget.Button").childSelector(new UiSelector().className("android.widget.ImageView"));',
             ),
             (
                     '//*[@class="android.widget.EditText"][@focused="true"][1]',
@@ -720,8 +720,8 @@ class TestXPathConverter:
                     'new UiSelector().packageName("ru.figma.app.debug").resourceIdMatches(".*:id/btn.*");',
             ),
             (
-                    '//*[contains(@content-desc,"Карта")][@clickable="true"]',
-                    'new UiSelector().descriptionContains("Карта").clickable(true);',
+                    '//*[contains(@content-desc,"Map")][@clickable="true"]',
+                    'new UiSelector().descriptionContains("Map").clickable(true);',
             ),
             (
                     '//*[@class="androidx.appcompat.app.ActionBar$Tab"][position()=3]',
@@ -740,28 +740,28 @@ class TestXPathConverter:
                     'new UiSelector().descriptionMatches("[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}");',
             ),
             (
-                    '//*[@scrollable="true"]/*[@text="История"]',
-                    'new UiSelector().scrollable(true).childSelector(new UiSelector().text("История"));',
+                    '//*[@scrollable="true"]/*[@text="History"]',
+                    'new UiSelector().scrollable(true).childSelector(new UiSelector().text("History"));',
             ),
             (
                     '//*[@class="android.widget.CheckBox"][@checkable="true"][@checked="false"][3]',
                     'new UiSelector().className("android.widget.CheckBox").checkable(true).checked(false).instance(2);',
             ),
             (
-                    '//*[starts-with(@text,"Оплат")][contains(@text,"Карт")][@enabled="true"]',
-                    'new UiSelector().textStartsWith("Оплат").textContains("Карт").enabled(true);',
+                    '//*[starts-with(@text,"Pay")][contains(@text,"Card")][@enabled="true"]',
+                    'new UiSelector().textStartsWith("Pay").textContains("Card").enabled(true);',
             ),
             (
                     '//*[matches(@class,"android\\.widget\\..*Button")][2]',
                     'new UiSelector().classNameMatches("android\\.widget\\..*Button").instance(1);',
             ),
             (
-                    '//*[@content-desc="Подтвердить"][@clickable="true"]/*[@class="android.widget.ImageView"]',
-                    'new UiSelector().description("Подтвердить").clickable(true).childSelector(new UiSelector().className("android.widget.ImageView"));',
+                    '//*[@content-desc="Confirm"][@clickable="true"]/*[@class="android.widget.ImageView"]',
+                    'new UiSelector().description("Confirm").clickable(true).childSelector(new UiSelector().className("android.widget.ImageView"));',
             ),
             (
-                    '//*[@class="android.widget.LinearLayout"]/*[@class="android.widget.FrameLayout"]/*[@text="Список"]',
-                    'new UiSelector().className("android.widget.LinearLayout").childSelector(new UiSelector().className("android.widget.FrameLayout").childSelector(new UiSelector().text("Список")));',
+                    '//*[@class="android.widget.LinearLayout"]/*[@class="android.widget.FrameLayout"]/*[@text="List"]',
+                    'new UiSelector().className("android.widget.LinearLayout").childSelector(new UiSelector().className("android.widget.FrameLayout").childSelector(new UiSelector().text("List")));',
             ),
             (
                     '//*[@class="android.widget.TextView"]/..//*[@class="android.widget.LinearLayout"][@enabled="true"][position()=1]',
@@ -772,12 +772,12 @@ class TestXPathConverter:
                     "new UiSelector().scrollable(false).clickable(false).instance(2);",
             ),
             (
-                    '//*[contains(@text,"карт")][@resource-id="ru.figma.app.debug:id/card_number"]',
-                    'new UiSelector().textContains("карт").resourceId("ru.figma.app.debug:id/card_number");',
+                    '//*[contains(@text,"card")][@resource-id="ru.figma.app.debug:id/card_number"]',
+                    'new UiSelector().textContains("card").resourceId("ru.figma.app.debug:id/card_number");',
             ),
             (
-                    '//*[@text="Оплатить"][@long-clickable="false"]',
-                    'new UiSelector().text("Оплатить").longClickable(false);',
+                    '//*[@text="Pay"][@long-clickable="false"]',
+                    'new UiSelector().text("Pay").longClickable(false);',
             ),
             (
                     '//*[@class="android.widget.Button"][@selected="true"]',
@@ -820,8 +820,8 @@ class TestXPathConverter:
                     "new UiSelector().focusable(true).password(true);",
             ),
             (
-                    '//*[contains(@text, "секция")][@class="android.widget.TextView"]',
-                    'new UiSelector().textContains("секция").className("android.widget.TextView");',
+                    '//*[contains(@text, "section")][@class="android.widget.TextView"]',
+                    'new UiSelector().textContains("section").className("android.widget.TextView");',
             ),
             (
                     '//*[matches(@text, "\\d{3}-\\d{2}-\\d{4}")]',
@@ -887,7 +887,7 @@ class TestXPathConverter:
                 '//*[@text="T"]/../../../*[@class="P1"]/*[@class="P2"]/*[@resource-id="pkg:id/final"]',
                 'new UiSelector().text("T").fromParent(new UiSelector().fromParent(new UiSelector().fromParent(new UiSelector().className("P1").childSelector(new UiSelector().className("P2").childSelector(new UiSelector().resourceId("pkg:id/final"))))));'
             ),
-            # Добавьте другие глубокие вложенные сценарии если нужно
+            # Add other deep nested scenarios if needed
         ],
     )
     def test_xpath_to_ui_deep_nesting(self, xpath: str, expected: str):
@@ -923,7 +923,7 @@ class TestXPathConverter:
                 '//*[@text="Mega"]/../../*[contains(@text, "deep")]/child::*[starts-with(@content-desc, "zzz")]/*[matches(@package, "com\\..*")]/*[@resource-id="pkg:id/the_end"]',
                 'new UiSelector().text("Mega").fromParent(new UiSelector().fromParent(new UiSelector().textContains("deep").childSelector(new UiSelector().descriptionStartsWith("zzz").childSelector(new UiSelector().packageNameMatches("com\\..*").childSelector(new UiSelector().resourceId("pkg:id/the_end"))))));'
             ),
-            # Можно добавить другие варианты функций для покрытия
+            # Can add other function variants for coverage
         ],
     )
     def test_xpath_to_ui_with_functions(self, xpath: str, expected: str):
@@ -939,7 +939,7 @@ class TestXPathConverter:
     @pytest.mark.parametrize(
         "xpath, expected",  # noqa: PT006
         [
-            # простой sibling по классу
+            # simple sibling by class
             (
                 '//*[@text="Anchor"]/following-sibling::*[@class="android.widget.FrameLayout"]',
                 'new UiSelector().text("Anchor").fromParent(new UiSelector().className("android.widget.FrameLayout"));'
@@ -954,17 +954,17 @@ class TestXPathConverter:
                 '//*[@text="Anchor"]/following-sibling::*[@class="android.widget.FrameLayout"]/child::*[@resource-id="pkg:id/target"]/following-sibling::*[contains(@content-desc,"final")]',
                 'new UiSelector().text("Anchor").fromParent(new UiSelector().className("android.widget.FrameLayout").childSelector(new UiSelector().resourceId("pkg:id/target").fromParent(new UiSelector().descriptionContains("final"))));'
             ),
-            # sibling со starts-with
+            # sibling with starts-with
             (
                 '//*[@text="Btn"]/following-sibling::*[starts-with(@content-desc,"prefix")]',
                 'new UiSelector().text("Btn").fromParent(new UiSelector().descriptionStartsWith("prefix"));'
             ),
-            # sibling с matches
+            # sibling with matches
             (
                 '//*[@class="android.widget.LinearLayout"]/following-sibling::*[matches(@resource-id,".*button.*")]',
                 'new UiSelector().className("android.widget.LinearLayout").fromParent(new UiSelector().resourceIdMatches(".*button.*"));'
             ),
-            # глубокая вложенность: sibling → sibling → child
+            # deep nesting: sibling → sibling → child
             (
                 '//*[@text="Mega"]/following-sibling::*[@class="android.widget.FrameLayout"]/following-sibling::*[matches(@package,"com.example")]/child::*[@content-desc="leaf"]',
                 'new UiSelector().text("Mega").fromParent(new UiSelector().className("android.widget.FrameLayout").fromParent(new UiSelector().packageNameMatches("com.example").childSelector(new UiSelector().description("leaf"))));'

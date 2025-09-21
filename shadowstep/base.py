@@ -64,10 +64,10 @@ class WebDriverSingleton(WebDriver):
 
     @classmethod
     def clear_instance(cls) -> None:
-        """Удаляет текущий экземпляр и очищает ресурсы WebDriverSingleton."""
+        """Remove current instance and clean up WebDriverSingleton resources."""
         logger.debug(f"{get_current_func_name()}")
         cls._driver = None
-        cls._instance = None  # Убирает ссылку на экземпляр для высвобождения памяти
+        cls._instance = None  # Remove reference to instance for memory release
         gc.collect()
 
     @classmethod
@@ -582,7 +582,7 @@ class ShadowstepBase:
     def _get_ignored_dirs(self) -> set[str]:
         self.logger.debug(get_current_func_name())
 
-        # базовые пути, которые считаем "системными"
+        # Base paths that we consider "system"
         system_base = Path(sys.base_prefix).resolve()
         site_packages = {Path(p).resolve() for p in site.getsitepackages() if Path(p).exists()}
         stdlib = system_base / "lib"
@@ -593,8 +593,8 @@ class ShadowstepBase:
             except Exception:
                 return False
             return (
-                    str(path).startswith(str(system_base))  # внутри python установки / venv
-                    or any(str(path).startswith(str(s)) for s in site_packages)  # внутри site-packages
+                    str(path).startswith(str(system_base))  # inside python installation / venv
+                    or any(str(path).startswith(str(s)) for s in site_packages)  # inside site-packages
                     or str(path).startswith(str(stdlib))  # stdlib
             )
 

@@ -1,7 +1,7 @@
 # shadowstep/page_base.py
 from abc import ABC, abstractmethod
 from collections.abc import Callable
-from typing import TYPE_CHECKING, Any, TypeVar, cast
+from typing import TYPE_CHECKING, Any, TypeVar
 
 T = TypeVar("T", bound="PageBase")      # type: ignore  # noqa: F821
 
@@ -21,7 +21,7 @@ class PageBaseShadowstep(ABC):
         if cls not in cls._instances:
             from shadowstep.shadowstep import Shadowstep
             instance = super().__new__(cls)
-            instance.shadowstep = cast(Shadowstep, Shadowstep.get_instance())
+            instance.shadowstep = Shadowstep.get_instance()
             cls._instances[cls] = instance
         return cls._instances[cls]
 

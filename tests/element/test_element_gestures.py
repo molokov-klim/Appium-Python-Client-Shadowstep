@@ -67,11 +67,11 @@ class TestElementGestures:
         pass  # don't know how to catch
 
     @pytest.mark.parametrize("params", [
-        {"x": 100, "y": 500},  # Прямые координаты
+        {"x": 100, "y": 500},  # Direct coordinates
         {"locator": {"package": "com.android.quicksearchbox",
                      "class": "android.widget.TextView",
-                     "resource-id": "com.android.quicksearchbox:id/search_widget_text"}},  # Локатор
-        {"direction": 0, "distance": 1000},  # Вверх
+                     "resource-id": "com.android.quicksearchbox:id/search_widget_text"}},  # Locator
+        {"direction": 0, "distance": 1000},  # Up
     ])
     def test_tap_and_move(self, app: Shadowstep, press_home: None, stability: None, params: Any):
         element = app.get_element(locator={"content-desc": "Phone"})

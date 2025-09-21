@@ -276,7 +276,7 @@ class UiSelector:
             if key in [UiAttribute.CHILD_SELECTOR, UiAttribute.FROM_PARENT, UiAttribute.SIBLING]:
                 # Handle hierarchical attributes
                 if isinstance(value, dict):
-                    child_selector = cls.from_dict(value)
+                    child_selector = cls.from_dict(value) # type: ignore
                     if key == UiAttribute.CHILD_SELECTOR:
                         selector.childSelector(child_selector)
                     elif key == UiAttribute.FROM_PARENT:

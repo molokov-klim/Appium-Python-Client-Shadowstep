@@ -33,7 +33,7 @@ class TestPageObjectextractor:
         assert page_path == os.path.join("pages","page_settings.py")  # type: ignore  # noqa: W605, S101
         assert page_class_name == "PageSettings"  # noqa: S101
         file_path = Path(page_path)
-        assert file_path.exists(), f"Файл {file_path} не найден"  # noqa: S101
+        assert file_path.exists(), f"File {file_path} not found"  # noqa: S101
 
     def test_explorer(self, app: Shadowstep, press_home: None, android_settings_open_close: None, cleanup_pages: None):
         translator = YandexTranslate(folder_id="b1ghf7n3imfg7foodstv")
@@ -43,4 +43,4 @@ class TestPageObjectextractor:
         assert page_path == os.path.join("mergedpages", "page_settings.py")    # type: ignore  # noqa: W605, S101  # noqa: S101
 
         file_path = Path(page_path)
-        assert file_path.exists(), f"Файл {file_path} не найден"  # noqa: S101  # noqa: S101
+        assert file_path.exists(), f"File {file_path} not found"  # noqa: S101  # noqa: S101

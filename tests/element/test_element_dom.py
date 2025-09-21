@@ -202,7 +202,7 @@ class TestGetElements:
         inner_elements = android_settings_recycler.get_elements(locator=locator)
         elapsed = time.perf_counter() - start
 
-        app.logger.info(f"Время выполнения get_elements: {elapsed:.4f} сек")
+        app.logger.info(f"get_elements execution time: {elapsed:.4f} sec")
         actual_text_list = []
         expected_text_list = ["Network & internet", "Connected devices", "Apps", "Notifications", "Battery"]
 
@@ -212,7 +212,7 @@ class TestGetElements:
 
         assert actual_text_list == expected_text_list  # noqa: S101
 
-        app.logger.info(f"Время выполнения get_elements: {elapsed:.4f} сек")
+        app.logger.info(f"get_elements execution time: {elapsed:.4f} sec")
 
 
 class TestGetParent:
@@ -271,7 +271,7 @@ class TestGetParent:
                          child):
         parents = app.get_element(child).get_parents()
         assert len(parents) == 12  # noqa: S101
-        assert isinstance(parents, list) and parents, "Список родителей пуст"  # noqa: S101, PT018
+        assert isinstance(parents, list) and parents, "Parent list is empty"  # noqa: S101, PT018
         assert all(isinstance(p, Element) for p in parents)  # noqa: S101
 
         brokens = []

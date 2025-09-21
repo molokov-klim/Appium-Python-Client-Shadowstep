@@ -194,7 +194,7 @@ class TestUiSelectorDSLIntegration:
 
     def test_ui_selector_unicode_support(self):
         """Test UiSelector with unicode characters."""
-        selector = UiSelector().text("Привет мир! 🌍").description("Special chars: @#$%^&*()")
+        selector = UiSelector().text("Hello world! 🌍").description("Special chars: @#$%^&*()")
         
         # Test all conversions
         selector_dict = self.converter.to_dict(selector)
@@ -202,9 +202,9 @@ class TestUiSelectorDSLIntegration:
         uiselector_string = self.converter.to_uiselector(selector)
         
         # Verify unicode is preserved
-        assert selector_dict["text"] == "Привет мир! 🌍"  # noqa: S101
+        assert selector_dict["text"] == "Hello world! 🌍"  # noqa: S101
         assert selector_dict["content-desc"] == "Special chars: @#$%^&*()"  # noqa: S101
-        assert "Привет мир! 🌍" in uiselector_string  # noqa: S101
+        assert "Hello world! 🌍" in uiselector_string  # noqa: S101
 
     def test_ui_selector_regex_patterns(self):
         """Test UiSelector with regex patterns."""

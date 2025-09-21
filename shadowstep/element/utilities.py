@@ -3,10 +3,16 @@ from __future__ import annotations
 
 import logging
 import re
+import time
 from typing import TYPE_CHECKING, Any
 
 from lxml import etree as etree
-from selenium.common import WebDriverException
+from selenium.common import (
+    InvalidSessionIdException,
+    NoSuchDriverException,
+    StaleElementReferenceException,
+    WebDriverException,
+)
 
 from shadowstep.exceptions.shadowstep_exceptions import ShadowstepElementException
 from shadowstep.locator import UiSelector
@@ -29,11 +35,11 @@ class ElementUtilities:
         self.logger.debug(f"{get_current_func_name()}")
         if isinstance(locator, tuple):
             by, value = locator
-            # Удаляем части типа [@attr='null']
+            # Remove parts like [@attr='null']
             value = re.sub(r"\[@[\w\-]+='null']", "", value)
             return by, value
         if isinstance(locator, dict):
-            # Удаляем ключи, у которых значение == 'null'
+            # Remove keys where value == 'null'
             return {k: v for k, v in locator.items() if v != "null"}
         return locator
 
@@ -73,7 +79,81 @@ class ElementUtilities:
             attrs = self.element.get_attributes()
             if not attrs:
                 raise ShadowstepElementException("Failed to retrieve attributes for XPath construction.")
-            return self.element.build_xpath_from_attributes(attrs)
+            return self.element.utilities.build_xpath_from_attributes(attrs)
         except (AttributeError, KeyError, WebDriverException) as e:
             self.logger.error(f"Error forming XPath: {str(e)}")
         return ""
+
+    def handle_driver_error(self, error: Exception) -> None:
+        self.logger.warning(f"{get_current_func_name()} {error}")
+        self.shadowstep.reconnect()
+        time.sleep(0.3)
+
+    def _build_xpath_attribute_condition(self, key: str, value: str) -> str:
+        """Build XPath attribute condition based on value content."""
+        if value is None or value == "null":
+            return f"[@{key}]"
+        if "'" in value and '"' not in value:
+            return f'[@{key}="{value}"]'
+        if '"' in value and "'" not in value:
+            return f"[@{key}='{value}']"
+        if "'" in value and '"' in value:
+            parts = value.split('"')
+            escaped = "concat(" + ", ".join(
+                f'"{part}"' if i % 2 == 0 else "'\"'" for i, part in enumerate(parts)) + ")"
+            return f"[@{key}={escaped}]"
+        return f"[@{key}='{value}']"
+
+    def build_xpath_from_attributes(self, attrs: dict[str, Any]) -> str:
+        """Build XPath from element attributes."""
+        xpath = "//"
+        element_type = attrs.get("class")
+        except_attrs = ["hint", "selection-start", "selection-end", "extras"]
+
+        # Start XPath with element class or wildcard
+        if element_type:
+            xpath += element_type
+        else:
+            xpath += "*"
+
+        for key, value in attrs.items():
+            if key in except_attrs:
+                continue
+            xpath += self._build_xpath_attribute_condition(key, value)
+        return xpath
+
+    def _ensure_session_alive(self) -> None:
+        self.logger.debug(f"{get_current_func_name()}")
+        try:
+            self.element.get_driver()
+        except NoSuchDriverException:
+            self.logger.warning("Reconnecting driver due to session issue")
+            self.shadowstep.reconnect()
+        except InvalidSessionIdException:
+            self.logger.warning("Reconnecting driver due to session issue")
+            self.shadowstep.reconnect()
+
+    def _get_first_child_class(self, tries: int = 3) -> str:
+        self.logger.debug(f"{get_current_func_name()}")
+        for _ in range(tries):
+            try:
+                parent_element = self
+                parent_class = parent_element.element.get_attribute("class")
+                child_elements = parent_element.element.get_elements(("xpath", "//*[1]"))
+                for _i, child_element in enumerate(child_elements):
+                    child_class = child_element.get_attribute("class")
+                    if parent_class != child_class:
+                        return str(child_class)
+            except StaleElementReferenceException as error:
+                self.logger.debug(error)
+                self.logger.warning("StaleElementReferenceException\nRe-acquire element")
+                self.element.native = None
+                self.element.get_native()
+                continue
+            except WebDriverException as error:
+                err_msg = str(error).lower()
+                if "instrumentation process is not running" in err_msg or "socket hang up" in err_msg:
+                    self.handle_driver_error(error)
+                    continue
+                raise
+        return ""  # Return empty string if no child class found
