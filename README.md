@@ -339,14 +339,14 @@ from shadowstep.shadowstep import Shadowstep
 from shadowstep.page_object.page_object_parser import PageObjectParser
 from shadowstep.page_object.page_object_generator import PageObjectGenerator
 
-app = Shadowstep.get_instance()  # or Shadowstep()
+app = Shadowstep()
 xml = app.driver.page_source
 
 parser = PageObjectParser()
 tree = parser.parse(xml)
 
-pog = PageObjectGenerator()
-path, class_name = pog.generate(ui_element_tree=tree, output_dir="pages")
+generator = PageObjectGenerator()
+path, class_name = generator.generate(ui_element_tree=tree, output_dir="pages")
 print(path, class_name)
 ```
 
