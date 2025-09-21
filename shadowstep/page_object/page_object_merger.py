@@ -75,16 +75,16 @@ class PageObjectMerger:
 
     def get_class_name(self, page: str) -> str:
         """
-        Возвращает строку с первым объявлением класса.
+        Return string with first class declaration.
 
         Args:
-            page (str): Исходный код Python-файла.
+            page (str): Python file source code.
 
         Returns:
-            str: Полная строка class-определения, включая наследование.
+            str: Full class definition string including inheritance.
 
         Raises:
-            ValueError: Если не найдено определение класса.
+            ValueError: If class definition not found.
         """
         self.logger.info(f"{get_current_func_name()}")
         for line in page.splitlines():
@@ -97,13 +97,13 @@ class PageObjectMerger:
 
     def get_methods(self, page: str) -> dict[str, Any]:
         """
-        Извлекает методы и property-блоки через \n\n-разделение, с нормализацией отступов.
+        Extract methods and property blocks via \n\n separation with indentation normalization.
 
         Args:
-            page (str): Исходник PageObject-а.
+            page (str): PageObject source code.
 
         Returns:
-            dict: имя_метода -> текст_метода
+            dict: method_name -> method_text
         """
         self.logger.debug(f"{get_current_func_name()}")
 
@@ -111,7 +111,7 @@ class PageObjectMerger:
         blocks = page.split("\n\n")
 
         for block in blocks:
-            block = textwrap.dedent(block)  # <<< ВАЖНО: УБИРАЕМ ЛИШНИЕ ВЛОЖЕННОСТИ
+            block = textwrap.dedent(block)  # <<< IMPORTANT: REMOVE EXCESS NESTING
             stripped = block.strip()
 
             if not stripped.startswith("def ") and not stripped.startswith("@property") and not stripped.startswith(
@@ -149,7 +149,7 @@ class PageObjectMerger:
             if name not in unique_methods:
                 unique_methods[name] = body
             elif unique_methods[name].strip() == body.strip():
-                continue  # дубликат — игнорируем
+                continue  # duplicate — ignore
             else:
                 self.logger.warning(f"Method conflict on '{name}', skipping version from second file.")
 
@@ -169,22 +169,22 @@ class PageObjectMerger:
         for name, body in unique_methods.items():
             if name == "recycler" or name == "is_current_page":
                 continue
-            clean_body = textwrap.dedent(body)  # убрать вложенные отступы
-            method_lines = textwrap.indent(clean_body, "    ")  # вложить внутрь класса
+            clean_body = textwrap.dedent(body)  # remove nested indentation
+            method_lines = textwrap.indent(clean_body, "    ")  # nest inside class
             lines.append(method_lines)
-            lines.append("")  # Пустая строка между методами
+            lines.append("")  # Empty line between methods
 
         if "recycler" in unique_methods:
             body = unique_methods["recycler"]
-            clean_body = textwrap.dedent(body)  # убрать вложенные отступы
-            method_lines = textwrap.indent(clean_body, "    ")  # вложить внутрь класса
+            clean_body = textwrap.dedent(body)  # remove nested indentation
+            method_lines = textwrap.indent(clean_body, "    ")  # nest inside class
             lines.append(method_lines)
-            lines.append("")  # Пустая строка между методами
+            lines.append("")  # Empty line between methods
             body = unique_methods["is_current_page"]
-            clean_body = textwrap.dedent(body)  # убрать вложенные отступы
-            method_lines = textwrap.indent(clean_body, "    ")  # вложить внутрь класса
+            clean_body = textwrap.dedent(body)  # remove nested indentation
+            method_lines = textwrap.indent(clean_body, "    ")  # nest inside class
             lines.append(method_lines)
-            lines.append("")  # Пустая строка между методами
+            lines.append("")  # Empty line between methods
 
         content = "\n".join(lines).rstrip() + "\n"
 
