@@ -1,5 +1,4 @@
-"""
-Decorators package for Shadowstep framework.
+"""Decorators package for Shadowstep framework.
 
 This package provides decorators for method enhancement including retry logic,
 logging, timing, and Allure reporting integration.
