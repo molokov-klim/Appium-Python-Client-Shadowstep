@@ -51,7 +51,7 @@ class TestElements:
             for el in sample_elements
         ]
 
-        # Проверяем уникальность через преобразование в set (нужен hashable тип → frozenset)
+        # Check uniqueness via conversion to set (needs hashable type → frozenset)
         unique_attrs = {frozenset(attr.items()) for attr in attrs}
 
-        assert len(unique_attrs) == len(attrs), "Найдены дубликаты элементов"  # noqa: S101
+        assert len(unique_attrs) == len(attrs), "Duplicate elements found"  # noqa: S101

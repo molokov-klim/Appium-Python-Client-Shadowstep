@@ -305,7 +305,7 @@ class TestXPathConverter:
     @pytest.mark.parametrize(
         "xpath, expected",  # noqa: PT006
         [  # pyright: ignore [reportUnknownArgumentType]
-            # 1) Твой исходный пример (базовый sanity)
+            # 1) Your original example (basic sanity)
             (
                     '//*[@text="Settings"][@class="android.widget.Button"]/../*[@class="android.widget.FrameLayout"]/*[@resource-id="ru.app:id/switch"]',
                     {
@@ -320,7 +320,7 @@ class TestXPathConverter:
                     },
             ),
 
-            # 2) Два шага вверх, затем два шага вниз по классам и ресурс-id в конце
+            # 2) Two steps up, then two steps down by classes and resource-id at the end
             (
                     '//*[@text="Root"]/../../*[@class="L1"]/*[@class="L2"]/*[@resource-id="app:id/toggle"]',
                     {
@@ -339,7 +339,7 @@ class TestXPathConverter:
                     },
             ),
 
-            # 3) Один шаг вверх, далее длинная цепочка вниз (5 уровней)
+            # 3) One step up, then long chain down (5 levels)
             (
                     '//*[@text="Deep"]/../*[@class="A"]/*[@class="B"]/*[@class="C"]/*[@class="D"]/*[@resource-id="pkg:id/end"]',
                     {
@@ -362,7 +362,7 @@ class TestXPathConverter:
                     },
             ),
 
-            # 4) Три шага вверх, затем два вниз
+            # 4) Three steps up, then two down
             (
                     '//*[@text="T"]/../../../*[@class="P1"]/*[@class="P2"]/*[@resource-id="pkg:id/final"]',
                     {
@@ -383,11 +383,11 @@ class TestXPathConverter:
                     },
             ),
 
-            # 5) Глубокая чисто нисходящая цепочка (без ..), 6 уровней
+            # 5) Deep purely descending chain (without ..), 6 levels
             (
                     '//*[*[@text="Anchor"]]/*[@class="L1"]/*[@class="L2"]/*[@class="L3"]/*[@class="L4"]/*[@class="L5"]/*[@resource-id="app:id/leaf"]',
                     {
-                        # Поскольку в корне у нас предикат по text(), он попадёт в верхний уровень
+                        # Since at root we have predicate by text(), it will go to top level
                         ShadowstepDictAttribute.TEXT: "Anchor",
                         ShadowstepDictAttribute.CHILD_SELECTOR: {
                             ShadowstepDictAttribute.CLASS_NAME: "L1",
@@ -410,18 +410,18 @@ class TestXPathConverter:
                     },
             ),
 
-            # 6) Смешанный: вверх, вниз, опять вниз через двойной слэш (// трактуется как / в сборке дерева)
+            # 6) Mixed: up, down, down again via double slash (// treated as / in tree building)
             (
                     '//*[@text="Mixed"]/..//*[@class="C1"]/*[@class="C2"]//*[@resource-id="pkg:id/x"]',
                     {
                         ShadowstepDictAttribute.TEXT: "Mixed",
                         ShadowstepDictAttribute.FROM_PARENT: {
-                            # После '..' первый нисходящий шаг
+                            # After '..' first descending step
                             ShadowstepDictAttribute.CLASS_NAME: "C1",
                             ShadowstepDictAttribute.CHILD_SELECTOR: {
                                 ShadowstepDictAttribute.CLASS_NAME: "C2",
                                 ShadowstepDictAttribute.CHILD_SELECTOR: {
-                                    # ещё один нисходящий шаг через //
+                                    # another descending step via //
                                     ShadowstepDictAttribute.RESOURCE_ID: "pkg:id/x",
                                 },
                             },
@@ -429,7 +429,7 @@ class TestXPathConverter:
                     },
             ),
 
-            # 7) Максимально «сумасшедшая» матрёшка: вверх x3, затем вниз x6
+            # 7) Maximum "crazy" nesting: up x3, then down x6
             (
                     '//*[@text="Mega"]/../../../*[@class="L1"]/*[@class="L2"]/*[@class="L3"]/*[@class="L4"]/*[@class="L5"]/*[@class="L6"]/*[@resource-id="pkg:id/the_end"]',
                     {
@@ -515,7 +515,7 @@ class TestXPathConverter:
                     },
             ),
 
-            # 4) Комбо: text, затем contains, потом starts-with и в конце matches
+            # 4) Combo: text, then contains, then starts-with and finally matches
             (
                     '//*[@text="Anchor"]/../*[contains(@text, "foo")]/child::*[starts-with(@content-desc, "bar")]/*[matches(@class, ".*Layout")]',
                     {
@@ -532,7 +532,7 @@ class TestXPathConverter:
                     },
             ),
 
-            # 5) Супер-вложенность: 2 раза вверх, потом цепочка из contains → starts-with → matches → resource-id
+            # 5) Super nesting: 2 times up, then chain from contains → starts-with → matches → resource-id
             (
                     '//*[@text="Mega"]/../../*[contains(@text, "deep")]/child::*[starts-with(@content-desc, "zzz")]/*[matches(@package, "com\\..*")]/*[@resource-id="pkg:id/the_end"]',
                     {
@@ -569,7 +569,7 @@ class TestXPathConverter:
     @pytest.mark.parametrize(
         "xpath, expected",  # noqa: PT006
         [  # pyright: ignore [reportUnknownArgumentType]
-            # простой sibling по классу
+            # simple sibling by class
             (
                     '//*[@text="Anchor"]/following-sibling::*[@class="android.widget.FrameLayout"]',
                     {
@@ -608,7 +608,7 @@ class TestXPathConverter:
                         },
                     },
             ),
-            # sibling со starts-with
+            # sibling with starts-with
             (
                     '//*[@text="Btn"]/following-sibling::*[starts-with(@content-desc,"prefix")]',
                     {
@@ -618,7 +618,7 @@ class TestXPathConverter:
                         },
                     },
             ),
-            # sibling с matches
+            # sibling with matches
             (
                     '//*[@class="android.widget.LinearLayout"]/following-sibling::*[matches(@resource-id,".*button.*")]',
                     {
@@ -628,7 +628,7 @@ class TestXPathConverter:
                         },
                     },
             ),
-            # глубокая вложенность: sibling → sibling → child
+            # deep nesting: sibling → sibling → child
             (
                     '//*[@text="Mega"]/following-sibling::*[@class="android.widget.FrameLayout"]/following-sibling::*[matches(@package,"com.example")]/child::*[@content-desc="leaf"]',
                     {
@@ -887,7 +887,7 @@ class TestXPathConverter:
                 '//*[@text="T"]/../../../*[@class="P1"]/*[@class="P2"]/*[@resource-id="pkg:id/final"]',
                 'new UiSelector().text("T").fromParent(new UiSelector().fromParent(new UiSelector().fromParent(new UiSelector().className("P1").childSelector(new UiSelector().className("P2").childSelector(new UiSelector().resourceId("pkg:id/final"))))));'
             ),
-            # Добавьте другие глубокие вложенные сценарии если нужно
+            # Add other deep nested scenarios if needed
         ],
     )
     def test_xpath_to_ui_deep_nesting(self, xpath: str, expected: str):
@@ -923,7 +923,7 @@ class TestXPathConverter:
                 '//*[@text="Mega"]/../../*[contains(@text, "deep")]/child::*[starts-with(@content-desc, "zzz")]/*[matches(@package, "com\\..*")]/*[@resource-id="pkg:id/the_end"]',
                 'new UiSelector().text("Mega").fromParent(new UiSelector().fromParent(new UiSelector().textContains("deep").childSelector(new UiSelector().descriptionStartsWith("zzz").childSelector(new UiSelector().packageNameMatches("com\\..*").childSelector(new UiSelector().resourceId("pkg:id/the_end"))))));'
             ),
-            # Можно добавить другие варианты функций для покрытия
+            # Can add other function variants for coverage
         ],
     )
     def test_xpath_to_ui_with_functions(self, xpath: str, expected: str):
@@ -939,7 +939,7 @@ class TestXPathConverter:
     @pytest.mark.parametrize(
         "xpath, expected",  # noqa: PT006
         [
-            # простой sibling по классу
+            # simple sibling by class
             (
                 '//*[@text="Anchor"]/following-sibling::*[@class="android.widget.FrameLayout"]',
                 'new UiSelector().text("Anchor").fromParent(new UiSelector().className("android.widget.FrameLayout"));'
@@ -954,17 +954,17 @@ class TestXPathConverter:
                 '//*[@text="Anchor"]/following-sibling::*[@class="android.widget.FrameLayout"]/child::*[@resource-id="pkg:id/target"]/following-sibling::*[contains(@content-desc,"final")]',
                 'new UiSelector().text("Anchor").fromParent(new UiSelector().className("android.widget.FrameLayout").childSelector(new UiSelector().resourceId("pkg:id/target").fromParent(new UiSelector().descriptionContains("final"))));'
             ),
-            # sibling со starts-with
+            # sibling with starts-with
             (
                 '//*[@text="Btn"]/following-sibling::*[starts-with(@content-desc,"prefix")]',
                 'new UiSelector().text("Btn").fromParent(new UiSelector().descriptionStartsWith("prefix"));'
             ),
-            # sibling с matches
+            # sibling with matches
             (
                 '//*[@class="android.widget.LinearLayout"]/following-sibling::*[matches(@resource-id,".*button.*")]',
                 'new UiSelector().className("android.widget.LinearLayout").fromParent(new UiSelector().resourceIdMatches(".*button.*"));'
             ),
-            # глубокая вложенность: sibling → sibling → child
+            # deep nesting: sibling → sibling → child
             (
                 '//*[@text="Mega"]/following-sibling::*[@class="android.widget.FrameLayout"]/following-sibling::*[matches(@package,"com.example")]/child::*[@content-desc="leaf"]',
                 'new UiSelector().text("Mega").fromParent(new UiSelector().className("android.widget.FrameLayout").fromParent(new UiSelector().packageNameMatches("com.example").childSelector(new UiSelector().description("leaf"))));'

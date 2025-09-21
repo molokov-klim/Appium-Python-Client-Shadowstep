@@ -20,7 +20,7 @@ uv run pytest -svl --log-cli-level INFO --tb=short --setup-show  tests/base/test
 class TestBase:
 
     def test_webdriver_singleton_creation(self, app: Shadowstep):
-        """Тест создания и повторного использования WebDriverSingleton"""
+        """Test WebDriverSingleton creation and reuse"""
         app2 = Shadowstep()
         app2.connect(server_ip=APPIUM_IP,
                      server_port=APPIUM_PORT,
@@ -28,18 +28,18 @@ class TestBase:
         assert app2.driver == app.driver  # noqa: S101
 
     def test_reconnect_after_session_disruption(self, app: Shadowstep):
-        """Тест автоматического переподключения при разорванной сессии"""
-        app.reconnect()  # Переподключение
+        """Test automatic reconnection on broken session"""
+        app.reconnect()  # Reconnection
         try:
-            app.driver.get_screenshot_as_png()  # Попытка выполнить команду
-            assert app.driver.session_id is not None, "Не удалось переподключиться"  # noqa: S101
+            app.driver.get_screenshot_as_png()  # Attempt to execute command
+            assert app.driver.session_id is not None, "Failed to reconnect"  # noqa: S101
         except NoSuchDriverException as error:
-            raise AssertionError("Ошибка: не удалось инициализировать WebDriver после переподключения") from error
+            raise AssertionError("Error: failed to initialize WebDriver after reconnection") from error
         except InvalidSessionIdException as error:
-            raise AssertionError("Ошибка: не удалось инициализировать WebDriver после переподключения") from error
+            raise AssertionError("Error: failed to initialize WebDriver after reconnection") from error
 
     def test_disconnect_on_invalid_session_exception(self, app: Shadowstep):
-        """Тест обработки InvalidSessionIdException при разрыве сессии в disconnect"""
+        """Test InvalidSessionIdException handling on session break in disconnect"""
         app.disconnect()
         CAPABILITIES["appium:newCommandTimeout"] = 10
         app.connect(server_ip=APPIUM_IP,
@@ -57,33 +57,33 @@ class TestBase:
             return True
         except Exception as error:
             logger.error(error)
-            raise AssertionError(f"Неизвестная ошибка: {type(error)}") from error
-        raise AssertionError("Ошибка логики теста, ожидался разрыв сессии")
+            raise AssertionError(f"Unknown error: {type(error)}") from error
+        raise AssertionError("Test logic error, expected session break")
 
     def test_reconnect_without_active_session(self, app: Shadowstep):
-        """Тест вызова reconnect при отсутствии активной сессии"""
+        """Test reconnect call when no active session"""
         app.disconnect()
         app.reconnect()
-        assert app.driver is not None, "Сессия не была создана при переподключении"  # noqa: S101
+        assert app.driver is not None, "Session was not created on reconnection"  # noqa: S101
         assert app.driver.session_id is not None, "Сессия не была создана при переподключении"  # noqa: S101
 
     def test_session_state_before_command_execution(self, app: Shadowstep):
-        """Тест состояния сессии перед выполнением WebDriver команд"""
+        """Test session state before executing WebDriver commands"""
         if app.driver.session_id is None:
-            app.reconnect()  # Переподключение при отсутствии активной сессии
+            app.reconnect()  # Reconnection при отсутствии активной сессии
         try:
             app.driver.get_screenshot_as_png()
         except WebDriverException as error:
-            raise AssertionError(f"Ошибка выполнения команды: {error}") from error
+            raise AssertionError(f"Command execution error: {error}") from error
 
     def test_handling_of_capabilities_option(self, app: Shadowstep):
-        """Тест корректной обработки параметров capabilities"""
-        app.disconnect()  # Завершаем текущую сессию для проверки новых настроек
+        """Test correct capabilities parameter handling"""
+        app.disconnect()  # End current session to check new settings
         new_caps = CAPABILITIES.copy()
-        new_caps["appium:autoGrantPermissions"] = False  # Изменяем capabilities
+        new_caps["appium:autoGrantPermissions"] = False  # Change capabilities
         app.connect(server_ip="127.0.0.1", server_port=4723, capabilities=new_caps)
-        assert app.driver is not None, "Сессия не была создана с новыми параметрами capabilities"  # noqa: S101
-        assert app.options.auto_grant_permissions is False, "Параметр autoGrantPermissions не применился"  # noqa: S101
+        assert app.driver is not None, "Session was not created with new capabilities parameters"  # noqa: S101
+        assert app.options.auto_grant_permissions is False, "autoGrantPermissions parameter was not applied"  # noqa: S101
         app.connect(server_ip="127.0.0.1", server_port=4723, capabilities=CAPABILITIES)
 
     def test_is_connected_when_connected(self, app: Shadowstep):

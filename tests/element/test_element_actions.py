@@ -33,7 +33,7 @@ class TestElementActions:
     @pytest.mark.skip(reason="Method is not implemented in UiAutomator2")
     def test_submit(self, app: Shadowstep, stability: None):
         el = app.get_element({"resource-id": "com.android.quicksearchbox:id/search_widget_text"})
-        el.submit()  # Не всегда валидно, но для теста вызова достаточно
+        el.submit()  # Not always valid, but sufficient for test call
 
     @pytest.mark.skip(reason="Method is not implemented in UiAutomator2")
     def test_set_value(self, app: Shadowstep, stability: None):
