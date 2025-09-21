@@ -25,8 +25,8 @@ if TYPE_CHECKING:
 
 
 class ElementWaiting:
-    def __init__(self, element: Element):
-        self.logger = logging.getLogger(__name__)
+    def __init__(self, element: Element) -> None:
+        self.logger: logging.Logger = logging.getLogger(__name__)
         self.element: Element = element
         self.shadowstep: Shadowstep = element.shadowstep
         self.converter: LocatorConverter = element.converter
@@ -35,10 +35,10 @@ class ElementWaiting:
     @log_debug()
     def wait(self, timeout: int = 10, poll_frequency: float = 0.5,  # noqa: C901
              return_bool: bool = False) -> Element | bool:  # noqa: C901
-        start_time = time.time()
+        start_time: float = time.time()
         while time.time() - start_time < self.element.timeout:
             try:
-                resolved_locator = self.converter.to_xpath(self.element.remove_null_value(self.element.locator))
+                resolved_locator: tuple[str, str] | None = self.converter.to_xpath(self.element.remove_null_value(self.element.locator))
                 if not resolved_locator:
                     self.logger.error("Resolved locator is None or invalid")
                     if return_bool:
@@ -73,11 +73,11 @@ class ElementWaiting:
 
     @log_debug()
     def wait_visible(self, timeout: int = 10, poll_frequency: float = 0.5, return_bool: bool = False) -> Element | bool:
-        start_time = time.time()
+        start_time: float = time.time()
 
         while time.time() - start_time < self.element.timeout:
             try:
-                resolved_locator = self.converter.to_xpath(self.element.remove_null_value(self.element.locator))
+                resolved_locator: tuple[str, str] | None = self.converter.to_xpath(self.element.remove_null_value(self.element.locator))
                 if not resolved_locator:
                     self.logger.error("Resolved locator is None or invalid")
                     return True if return_bool else self.element
@@ -95,11 +95,11 @@ class ElementWaiting:
     @log_debug()
     def wait_clickable(self, timeout: int = 10, poll_frequency: float = 0.5,
                        return_bool: bool = False) -> Element | bool:
-        start_time = time.time()
+        start_time: float = time.time()
 
         while time.time() - start_time < self.element.timeout:
             try:
-                resolved_locator = self.converter.to_xpath(self.element.remove_null_value(self.element.locator))
+                resolved_locator: tuple[str, str] | None = self.converter.to_xpath(self.element.remove_null_value(self.element.locator))
                 if not resolved_locator:
                     self.logger.error("Resolved locator is None or invalid")
                     return True if return_bool else self.element
@@ -116,11 +116,11 @@ class ElementWaiting:
 
     @log_debug()
     def wait_for_not(self, timeout: int = 10, poll_frequency: float = 0.5, return_bool: bool = False) -> Element | bool:
-        start_time = time.time()
+        start_time: float = time.time()
 
         while time.time() - start_time < self.element.timeout:
             try:
-                resolved_locator = self.converter.to_xpath(self.element.remove_null_value(self.element.locator))
+                resolved_locator: tuple[str, str] | None = self.converter.to_xpath(self.element.remove_null_value(self.element.locator))
                 if not resolved_locator:
                     return True if return_bool else self.element
 
@@ -137,11 +137,11 @@ class ElementWaiting:
     @log_debug()
     def wait_for_not_visible(self, timeout: int = 10, poll_frequency: float = 0.5,
                              return_bool: bool = False) -> Element | bool:
-        start_time = time.time()
+        start_time: float = time.time()
 
         while time.time() - start_time < self.element.timeout:
             try:
-                resolved_locator = self.converter.to_xpath(self.element.remove_null_value(self.element.locator))
+                resolved_locator: tuple[str, str] | None = self.converter.to_xpath(self.element.remove_null_value(self.element.locator))
                 if not resolved_locator:
                     return True if return_bool else self.element
 
@@ -158,11 +158,11 @@ class ElementWaiting:
     @log_debug()
     def wait_for_not_clickable(self, timeout: int = 10, poll_frequency: float = 0.5,
                                return_bool: bool = False) -> Element | bool:
-        start_time = time.time()
+        start_time: float = time.time()
 
         while time.time() - start_time < self.element.timeout:
             try:
-                resolved_locator = self.converter.to_xpath(self.element.remove_null_value(self.element.locator))
+                resolved_locator: tuple[str, str] | None = self.converter.to_xpath(self.element.remove_null_value(self.element.locator))
                 if not resolved_locator:
                     self.logger.error("Resolved locator is None or invalid")
                     return True if return_bool else self.element

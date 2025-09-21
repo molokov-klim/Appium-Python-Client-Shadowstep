@@ -28,7 +28,8 @@ dependencies = [
     "jinja2>=3.1.6", # page object generator
     "unidecode>=1.4.0", # page object generator
     "eulxml>=1.1.3", # ast parsing xpath
-    "setuptools==80.9.0",   # nessecary dependency for eulxml
+    "setuptools==80.9.0", # nessecary dependency for eulxml
+    "pyright>=1.1.405",
 ]
 
 keywords = ["appium", "testing", "uiautomator2", "android", "automation", "framework"]
@@ -75,38 +76,11 @@ dev-dependencies = [
 # ---------- RUFF ----------
 [tool.ruff]
 # Общие настройки
-target-version = "py313"
+target-version = "py39"
 line-length = 100
 
 [tool.ruff.lint]
-# "Строгий" режим Ruff: берем все доступные проверки (включая модули flake8/pylint/pyupgrade и т.п.)
-# select = ["ALL"]
-select = [
-    "E", # Ошибки синтаксиса и базовые ошибки Python (flake8 E*). Например, E302 — отсутствует пустая строка после функции/класса.
-    "F", # Ошибки импорта и несуществующих переменных (flake8 F*). Например, F401 — импортирован модуль, но не используется.
-    "UP", # Правила для обновления кода под новые версии Python (pyupgrade). Например, UP001 — устаревший синтаксис, который можно заменить.
-    "W", # Ворнинги и потенциально проблемный код (flake8 W*). Например, W291 — лишние пробелы в конце строки.
-    "B", # Правила безопасности из flake8-bugbear. Например, B001 — assert используется вне тестов.
-    "C", # Статические проверки кода, производительность, оптимизации (flake8-comprehensions и др.).
-    "SIM", # Простейшие стилистические проверки. Например, дублирование кода, простые паттерны.
-    "I", # Правила для импорта и организации импорта (isort/flake8-import-order). Например, порядок стандартных и сторонних библиотек.
-    "N", # Naming conventions (naming). Именование переменных, функций, классов.
-    "S", # Security (bandit). Потенциально небезопасный код.
-    "R", # Refactoring suggestions. Возможные улучшения и упрощения кода.
-    "PT", # Performance tweaks. Проверка кода на производительность.
-    "Q", # Complexity (radon, cognitive complexity). Сложность функций/методов.
-]
-# "D",   - Docstring и документация (pydocstyle). Проверка стиля docstring.
-# "T",   - Type-checking (pyright/mypy). Проверка аннотаций типов.
-# "ANN", - Type annotations. Проверка наличия и корректности аннотаций типов.
-
-ignore = [
-    "E203", # пробел перед ":" в срезах
-    "D203", # пустые строки вокруг docstring
-    "D212", # пустые строки в блоках docstring
-    "E501", # строка слишком длинная
-    "W293", # пустые строки содержат пробелы
-]
+select = ["ALL"]
 
 exclude = [
     "**/__pycache__",

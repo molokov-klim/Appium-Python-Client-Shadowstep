@@ -1,4 +1,4 @@
-# Shadowstep (in development)
+# Shadowstep
 
 Shadowstep is a modular UI automation framework for Android applications built on top of Appium.
 
@@ -345,7 +345,7 @@ xml = app.driver.page_source
 parser = PageObjectParser()
 tree = parser.parse(xml)
 
-generator = PageObjectGenerator()
+generator = PageObjectGenerator(translator=None)
 path, class_name = generator.generate(ui_element_tree=tree, output_dir="pages")
 print(path, class_name)
 ```
@@ -359,6 +359,10 @@ explorer = PageObjectRecyclerExplorer(base=app, translator=None)
 merged_path = explorer.explore(output_dir="pages")
 print(merged_path)
 ```
+
+Method/property names are formed from extracted values from text/content-desc/class. 
+If the language is not English, the default transliteration is used. 
+If you can pass an object with the `def translate(text: str) -> str:` method, they will be translated.
 
 3) Generate a test for the page
 

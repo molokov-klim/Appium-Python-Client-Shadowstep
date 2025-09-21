@@ -8,15 +8,6 @@
     "tests"
   ],
   "typeCheckingMode": "strict",
-  "reportMissingFunctionReturnType": true,
-  "reportMissingTypeArgument": true,
-  "reportUnknownArgumentType": true,
-  "reportUnknownMemberType": false,
-  "reportUnknownVariableType": false,
-  "reportUnknownParameterType": false,
-  "reportMissingTypeStubs": false,
-  "reportAttributeAccessIssue": false,
-  "reportPrivateUsage": false,
   "venvPath": ".",
   "venv": ".venv",
   "pythonVersion": "3.9"

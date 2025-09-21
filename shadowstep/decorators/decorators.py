@@ -50,7 +50,7 @@ def fail_safe(  # noqa: C901
         log_args: bool = False,
 ) -> Callable[[F], F]:
     """
-    Decorator that retries a method call on specified exceptions.
+    Retry a method call on specified exceptions.
 
     Args:
         retries: Number of retry attempts.
@@ -68,6 +68,7 @@ def fail_safe(  # noqa: C901
         def my_method(self):
             # This method will be retried up to 3 times
             pass
+
     """
 
     def decorator(func: F) -> F:  # noqa: C901
@@ -144,7 +145,7 @@ def fail_safe(  # noqa: C901
 
 def retry(max_retries: int = 3, delay: float = 1.0) -> Callable[[F], F]:
     """
-    Retry decorator factory that repeats method execution if it returns False or None.
+    Create a retry decorator that repeats method execution if it returns False or None.
 
     Args:
         max_retries: Number of attempts (default: 3).
@@ -152,6 +153,7 @@ def retry(max_retries: int = 3, delay: float = 1.0) -> Callable[[F], F]:
 
     Returns:
         A decorator that adds retry logic to a function.
+
     """
 
     def decorator(func: F) -> F:
@@ -172,13 +174,14 @@ def retry(max_retries: int = 3, delay: float = 1.0) -> Callable[[F], F]:
 
 def time_it(func: F) -> F:  # noqa: UP047
     """
-    Decorator that measures method execution time.
+    Measure method execution time.
 
     Args:
         func: Function to decorate.
 
     Returns:
         Decorated function that prints execution time.
+
     """
 
     @wraps(func)
@@ -200,7 +203,7 @@ def step_info(
     Callable[Concatenate[SelfT, P], T],
 ]:
     """
-    Decorator for logging and allure reports with screenshot and video capture.
+    Log method execution and create Allure reports with screenshot and video capture.
 
     This decorator provides comprehensive logging, screenshot capture, and video
     recording for method execution. It automatically captures screenshots before
@@ -218,6 +221,7 @@ def step_info(
         def click_login(self):
             # Method implementation
             pass
+
     """
 
     def func_decorator(
@@ -308,7 +312,7 @@ def current_page() -> Callable[
     Callable[Concatenate[SelfT, P], T],
 ]:
     """
-    Decorator for PageObject is_current_page method with enhanced logging.
+    Add enhanced logging to PageObject is_current_page method.
 
     This decorator provides detailed logging for page verification methods,
     showing method entry and exit with the page object representation.
@@ -321,6 +325,7 @@ def current_page() -> Callable[
         def is_current_page(self):
             # Page verification logic
             return True
+
     """
 
     def func_decorator(
@@ -342,7 +347,7 @@ def current_page() -> Callable[
 
 def log_info() -> Callable[[Callable[P, T]], Callable[P, T]]:
     """
-    Decorator for logging method entry/exit with type hints preserved.
+    Log method entry/exit with type hints preserved.
 
     This decorator automatically logs method entry with arguments and exit with
     return value. It preserves type hints and works with any callable function.
@@ -355,6 +360,7 @@ def log_info() -> Callable[[Callable[P, T]], Callable[P, T]]:
         def my_function(arg1: str, arg2: int) -> bool:
             # Function implementation
             return True
+
     """
 
     def decorator(func: Callable[P, T]) -> Callable[P, T]:
@@ -375,7 +381,7 @@ def log_info() -> Callable[[Callable[P, T]], Callable[P, T]]:
 
 def log_debug() -> Callable[[Callable[P, T]], Callable[P, T]]:
     """
-    Decorator for logging method entry/exit with type hints preserved.
+    Log method entry/exit with type hints preserved.
 
     This decorator automatically logs method entry with arguments and exit with
     return value. It preserves type hints and works with any callable function.
@@ -384,10 +390,11 @@ def log_debug() -> Callable[[Callable[P, T]], Callable[P, T]]:
         Decorator function that wraps the target method.
 
     Example:
-        @log_info()
+        @log_debug()
         def my_function(arg1: str, arg2: int) -> bool:
             # Function implementation
             return True
+
     """
 
     def decorator(func: Callable[P, T]) -> Callable[P, T]:

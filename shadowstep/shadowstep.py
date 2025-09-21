@@ -1,4 +1,9 @@
-# shadowstep/shadowstep.py
+"""Main Shadowstep framework module.
+
+This module provides the core Shadowstep class for mobile automation testing
+with Appium, including page object management, element interaction, and
+gesture controls.
+"""
 from __future__ import annotations
 
 import base64
@@ -8,76 +13,103 @@ import logging
 import os
 import sys
 from pathlib import Path
-from types import ModuleType
-from typing import Any, cast
+from typing import TYPE_CHECKING, Any, ClassVar
 
-import numpy as np
-from appium.webdriver.webdriver import WebDriver
-from numpy._typing import NDArray
-from PIL import Image
 from selenium.common import (
     InvalidSessionIdException,
     NoSuchDriverException,
     StaleElementReferenceException,
     WebDriverException,
 )
-from selenium.types import WaitExcTypes
+from typing_extensions import Self
 
 from shadowstep.base import ShadowstepBase, WebDriverSingleton
 from shadowstep.decorators.decorators import fail_safe
 from shadowstep.element.element import Element
 from shadowstep.exceptions.shadowstep_exceptions import ShadowstepException
 from shadowstep.image.image import ShadowstepImage
-from shadowstep.locator import UiSelector
 from shadowstep.logcat.shadowstep_logcat import ShadowstepLogcat
 from shadowstep.mobile_commands import MobileCommands
 from shadowstep.navigator.navigator import PageNavigator
 from shadowstep.page_base import PageBaseShadowstep
-from shadowstep.scheduled_actions.action_history import ActionHistory
-from shadowstep.scheduled_actions.action_step import ActionStep
 from shadowstep.utils.utils import get_current_func_name
 
+if TYPE_CHECKING:
+    from types import ModuleType
+
+    import numpy as np
+    from numpy._typing import NDArray
+    from PIL import Image
+    from selenium.types import WaitExcTypes
+
+    from shadowstep.locator import UiSelector
+    from shadowstep.scheduled_actions.action_history import ActionHistory
+    from shadowstep.scheduled_actions.action_step import ActionStep
+
 # Configure the root logger (basic configuration)
-logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s")
+logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s")  # noqa: E501
 logger = logging.getLogger(__name__)
 
 
 class Shadowstep(ShadowstepBase):
-    pages: dict[str, type[PageBaseShadowstep]] = {}
+    """Main Shadowstep framework class for mobile automation testing.
+
+    This class provides a singleton instance for managing mobile app testing
+    with Appium, including page object discovery, element interaction,
+    gesture controls, and logging capabilities.
+    """
+
+    pages: ClassVar[dict[str, type[PageBaseShadowstep]]] = {}
     _instance: Shadowstep | None = None
     _pages_discovered: bool = False
 
-    def __new__(cls, *args: Any, **kwargs: Any):
+    def __new__(cls, *args: Any, **kwargs: Any) -> Self:  # noqa: ARG004, ANN401
+        """Create a new instance or return existing singleton instance.
+
+        Returns:
+            Shadowstep: The singleton instance of the Shadowstep class.
+
+        """
         if cls._instance is None:
             cls._instance = super().__new__(cls)
-        return cls._instance
+        return cls._instance  # type: ignore[return-value]
 
     @classmethod
     def get_instance(cls) -> Shadowstep:
+        """Get the singleton instance of Shadowstep.
+
+        Returns:
+            Shadowstep: The singleton instance of the Shadowstep class.
+
+        """
         if cls._instance is None:
             cls._instance = cls()
         return cls._instance
 
-    def __init__(self):
+    def __init__(self) -> None:
+        """Initialize the Shadowstep instance.
+
+        Sets up logging, page discovery, and initializes core components.
+        """
         if getattr(self, "_initialized", False):
             return
         super().__init__()
 
-        self._logcat: ShadowstepLogcat = ShadowstepLogcat(driver_getter=WebDriverSingleton.get_driver)
+        self._logcat: ShadowstepLogcat = ShadowstepLogcat(driver_getter=WebDriverSingleton.get_driver)  # noqa: E501
         self.navigator: PageNavigator = PageNavigator(self)
         self.mobile_commands: MobileCommands = MobileCommands(self)
         self.logger = logging.getLogger(f"{__name__}.{self.__class__.__name__}")
         self._auto_discover_pages()
         self._initialized = True
 
-    def _auto_discover_pages(self):
-        """Automatically import and register all PageBase subclasses from all 'pages' directories in sys.path."""
-        self.logger.debug(f"📂 {get_current_func_name()}: {list(set(sys.path))}")
+    def _auto_discover_pages(self) -> None:
+        """Automatically import and register all PageBase subclasses from all 'pages' directories in sys.path."""  # noqa: E501
+        self.logger.debug("📂 %s: %s", get_current_func_name(), list(set(sys.path)))
         if self._pages_discovered:
             return
         self._pages_discovered = True
         for base_path in map(Path, list(set(sys.path))):
-            base_str = os.path.basename(str(base_path).lower())
+            base_str = base_path.name.lower()
             if base_str in self._ignored_base_path_parts:
                 continue
             if not base_path.exists() or not base_path.is_dir():
@@ -96,10 +128,10 @@ class Shadowstep(ShadowstepBase):
                             module_name = ".".join(rel_path.parts)
                             module = importlib.import_module(module_name)
                             self._register_pages_from_module(module)
-                        except Exception as e:
-                            self.logger.warning(f"⚠️ Import error {file}: {e}")
+                        except Exception as e:  # noqa: BLE001
+                            self.logger.warning("⚠️ Import error %s: %s", file, e)
 
-    def _register_pages_from_module(self, module: ModuleType):
+    def _register_pages_from_module(self, module: ModuleType) -> None:
         try:
             members = inspect.getmembers(module)
             for name, obj in members:
@@ -115,35 +147,73 @@ class Shadowstep(ShadowstepBase):
                 page_instance = obj()
                 edges = page_instance.edges
                 edge_names = list(edges.keys())
-                self.logger.info(f"✅ register page: {page_instance} with edges {edge_names}")
+                self.logger.info("✅ register page: %s with edges %s", page_instance, edge_names)
                 self.navigator.add_page(page_instance, edges)
-        except Exception as e:
-            self.logger.error(f"❌ Error page register from module {module.__name__}: {e}")
+        except Exception:
+            self.logger.exception("❌ Error page register from module %s", module.__name__)
 
     def list_registered_pages(self) -> None:
         """Log all registered page classes."""
         self.logger.info("=== Registered Pages ===")
         for name, cls in self.pages.items():
-            self.logger.info(f"{name}: {cls.__module__}.{cls.__name__}")
+            self.logger.info("%s: %s.%s", name, cls.__module__, cls.__name__)
 
     def get_page(self, name: str) -> PageBaseShadowstep:
+        """Get a page instance by name.
+
+        Args:
+            name: The name of the page to retrieve.
+
+        Returns:
+            PageBaseShadowstep: An instance of the requested page.
+
+        Raises:
+            ValueError: If the page is not found in registered pages.
+
+        """
         cls = self.pages.get(name)
         if not cls:
-            raise ValueError(f"Page '{name}' not found in registered pages.")
+            msg = f"Page '{name}' not found in registered pages."
+            raise ValueError(msg)
         return cls()
 
     def resolve_page(self, name: str) -> PageBaseShadowstep:
+        """Resolve a page instance by name.
+
+        Args:
+            name: The name of the page to resolve.
+
+        Returns:
+            PageBaseShadowstep: An instance of the requested page.
+
+        Raises:
+            ValueError: If the page is not found.
+
+        """
         cls = self.pages.get(name)
         if cls:
             return cls()
-        raise ValueError(f"Page '{name}' not found.")
+        msg = f"Page '{name}' not found."
+        raise ValueError(msg)
 
     def get_element(self,
                     locator: tuple[str, str] | dict[str, Any] | Element | UiSelector,
                     timeout: int = 30,
                     poll_frequency: float = 0.5,
                     ignored_exceptions: WaitExcTypes | None = None) -> Element:
-        self.logger.debug(f"{get_current_func_name()}")
+        """Get a single element by locator.
+
+        Args:
+            locator: Locator tuple, dict, Element, or UiSelector to find element.
+            timeout: How long to wait for element to appear.
+            poll_frequency: How often to poll for element.
+            ignored_exceptions: Exceptions to ignore during waiting.
+
+        Returns:
+            Element: The found element.
+
+        """
+        self.logger.debug("%s", get_current_func_name())
         return Element(locator=locator,
                        timeout=timeout,
                        poll_frequency=poll_frequency,
@@ -155,11 +225,11 @@ class Shadowstep(ShadowstepBase):
             locator: tuple[str, str] | dict[str, Any] | Element | UiSelector,
             timeout: int = 30,
             poll_frequency: float = 0.5,
-            ignored_exceptions: WaitExcTypes | None = None
+            ignored_exceptions: WaitExcTypes | None = None,
     ) -> list[Element]:
-        """
-        Find multiple elements matching the given locator across the whole page.
-        method is greedy
+        """Find multiple elements matching the given locator across the whole page.
+
+        method is greedy.
 
         Args:
             locator: Locator tuple or dict to search elements.
@@ -170,14 +240,15 @@ class Shadowstep(ShadowstepBase):
 
         Returns:
             Elements: Lazy iterable of Element instances.
+
         """
-        self.logger.debug(f"{get_current_func_name()}")
+        self.logger.debug("%s", get_current_func_name())
         root = Element(
             locator=("xpath", "//*"),
             shadowstep=self,
             timeout=timeout,
             poll_frequency=poll_frequency,
-            ignored_exceptions=ignored_exceptions
+            ignored_exceptions=ignored_exceptions,
         )
         return root.get_elements(locator=locator,
                                  timeout=timeout,
@@ -188,54 +259,55 @@ class Shadowstep(ShadowstepBase):
             self,
             image: bytes | NDArray[np.uint8] | Image.Image | str,
             threshold: float = 0.5,
-            timeout: float = 5.0
+            timeout: float = 5.0,
     ) -> ShadowstepImage:
-        """
-        Return a lazy ShadowstepImage wrapper for the given template.
+        """Return a lazy ShadowstepImage wrapper for the given template.
 
         Args:
             image: template (bytes, ndarray, PIL.Image or path)
-            threshold: matching threshold [0–1]
+            threshold: matching threshold [0-1]  # noqa: RUF002
             timeout: max seconds to search
 
         Returns:
             ShadowstepImage: Lazy object for image-actions.
+
         """
-        self.logger.debug(f"{get_current_func_name()}")
+        self.logger.debug("%s", get_current_func_name())
         return ShadowstepImage(
             image=image,
             base=self,
             threshold=threshold,
-            timeout=timeout
+            timeout=timeout,
         )
 
     def get_images(
             self,
             image: bytes | NDArray[np.uint8] | Image.Image | str,
             threshold: float = 0.5,
-            timeout: float = 5.0
+            timeout: float = 5.0,
     ) -> list[ShadowstepImage]:
         """Return a list of ShadowstepImage wrappers for the given template.
-        
+
         Args:
             image: template (bytes, ndarray, PIL.Image or path)
-            threshold: matching threshold [0–1]
+            threshold: matching threshold [0-1]  # noqa: RUF002
             timeout: max seconds to search
-            
+
         Returns:
             list[ShadowstepImage]: List of lazy objects for image-actions.
+
         """
-        self.logger.debug(f"{get_current_func_name()}")
+        self.logger.debug("%s", get_current_func_name())
         # For now, return a single image wrapped in a list
-        # TODO: Implement multiple image matching
+        # TODO: Implement multiple image matching  # noqa: TD002, TD003, FIX002
         return [ShadowstepImage(
             image=image,
             base=self,
             threshold=threshold,
-            timeout=timeout
+            timeout=timeout,
         )]
 
-    def schedule_action(
+    def schedule_action(  # noqa: PLR0913
             self,
             name: str,
             steps: list[ActionStep],
@@ -243,10 +315,9 @@ class Shadowstep(ShadowstepBase):
             times: int = 1,
             max_pass: int | None = None,
             max_fail: int | None = None,
-            max_history_items: int = 20
+            max_history_items: int = 20,
     ) -> Shadowstep:
-        """
-        Schedule a server-side action sequence.
+        """Schedule a server-side action sequence.
 
         Args:
             name: unique action name.
@@ -256,46 +327,56 @@ class Shadowstep(ShadowstepBase):
             max_pass: Stop after N successful runs.
             max_fail: Stop after N failures.
             max_history_items: How many records to keep in history.
+
         Returns:
             self — for convenient chaining.
+
         """
         # shadowstep/scheduled_actions
         raise NotImplementedError
 
     def get_action_history(self, name: str) -> ActionHistory:
-        """
-        Fetch the execution history for the named action.
+        """Fetch the execution history for the named action.
 
         Args:
             name: Same name as used in schedule_action.
+
         Returns:
             ActionHistory — convenient wrapper over JSON response.
+
         """
         # shadowstep/scheduled_actions
         raise NotImplementedError
 
     def unschedule_action(self, name: str) -> ActionHistory:
-        """
-        Unschedule the action and return its final history.
+        """Unschedule the action and return its final history.
 
         Args:
             name: Same name as used in schedule_action.
+
         Returns:
             ActionHistory — history of all executions until cancellation.
+
         """
         # shadowstep/scheduled_actions
         raise NotImplementedError
 
-    def start_logcat(self, filename: str, port: int | None = None, filters: list[str] | None = None) -> None:
-        """
-        filename: log file name
-        port: port of Appium server instance, provide if you use grid
+    def start_logcat(self, filename: str, port: int | None = None,
+                     filters: list[str] | None = None) -> None:
+        """filename: log file name.
+
+        port: port of Appium server instance, provide if you use grid.
         """
         if filters is not None:
             self._logcat.filters = filters
         self._logcat.start(filename, port)
 
     def stop_logcat(self) -> None:
+        """Stop the logcat recording.
+
+        This method stops the currently running logcat recording process.
+
+        """
         self._logcat.stop()
 
     def find_and_get_element(
@@ -304,29 +385,28 @@ class Shadowstep(ShadowstepBase):
             timeout: int = 30,
             poll_frequency: float = 0.5,
             ignored_exceptions: WaitExcTypes | None = None,
-            contains: bool = False,
-            max_swipes: int = 30
+            max_swipes: int = 30,
     ) -> Element:
-        self.logger.debug(f"{get_current_func_name()}")
+        self.logger.debug("%s", get_current_func_name())
         try:
             scrollables = self.get_elements(
                 locator={"scrollable": "true"},
                 timeout=timeout,
                 poll_frequency=poll_frequency,
-                ignored_exceptions=ignored_exceptions
+                ignored_exceptions=ignored_exceptions,
             )
             for scrollable in scrollables:
                 try:
                     scrollable: Element
                     return scrollable.scroll_to_element(locator=locator, max_swipes=max_swipes)
-                except Exception as e:  # FIXME use specified exception
-                    self.logger.debug(f"Scroll attempt failed on scrollable element: {e}")
+                except Exception as e:  # noqa: BLE001, PERF203
+                    self.logger.debug("Scroll attempt failed on scrollable element: %s", e)
                     continue
-            raise ShadowstepException(f"Element with locator {locator} not found in any scrollable element")
-        except Exception as e:  # FIXME use specified exception
-            self.logger.error(f"Failed to find scrollable elements: {e}")
+            error_msg = f"Element with locator {locator} not found in any scrollable element"
+            raise ShadowstepException(error_msg)  # noqa: TRY301
+        except Exception as e:
+            self.logger.error("Failed to find scrollable elements: %s", e)  # noqa: TRY400
             raise
-
 
     def is_text_visible(self, text: str) -> bool:
         """Check if an element with the given text is visible.
@@ -336,22 +416,18 @@ class Shadowstep(ShadowstepBase):
 
         Returns:
             bool: True if element is found and visible, False otherwise.
+
         """
-        self.logger.debug(f"{get_current_func_name()}")
+        self.logger.debug("%s", get_current_func_name())
         try:
             element = Element(locator={"text": text}, shadowstep=self)
             return element.is_visible()
-        except Exception as e:
-            self.logger.warning(f"Failed to check visibility for text='{text}': {e}")
+        except Exception as e:  # noqa: BLE001
+            self.logger.warning("Failed to check visibility for text='%s': %s", text, e)
             return False
 
-    @fail_safe(
-        retries=3,
-        delay=0.5,
-        raise_exception=ShadowstepException,
-        exceptions=(NoSuchDriverException, InvalidSessionIdException)
-    )
-    def scroll(
+    @fail_safe(raise_exception=ShadowstepException, exceptions=(NoSuchDriverException, InvalidSessionIdException))
+    def scroll(  # noqa: PLR0913
             self,
             left: int,
             top: int,
@@ -359,11 +435,11 @@ class Shadowstep(ShadowstepBase):
             height: int,
             direction: str,
             percent: float,
-            speed: int
+            speed: int,
     ) -> Shadowstep:
-        """
-        https://github.com/appium/appium-uiautomator2-driver/blob/61abedddcde2d606394acfa0f0c2bac395a0e14c/docs/android-mobile-gestures.md#mobile-scrollgesture
-        Perform a scroll gesture in the specified area.
+        """Perform a scroll gesture in the specified area.
+
+        Documentation: https://github.com/appium/appium-uiautomator2-driver/blob/61abedddcde2d606394acfa0f0c2bac395a0e14c/docs/android-mobile-gestures.md#mobile-scrollgesture
 
         Args:
             left (int): Left coordinate of the scroll area.
@@ -378,28 +454,37 @@ class Shadowstep(ShadowstepBase):
             Shadowstep: Self for method chaining.
 
         origin:
-        Supported arguments
-        elementId: The id of the element to be scrolled. If the element id is missing then scroll bounding area must be provided. If both the element id and the scroll bounding area are provided then this area is effectively ignored.
-        left: The left coordinate of the scroll bounding area
-        top: The top coordinate of the scroll bounding area
-        width: The width of the scroll bounding area
-        height: The height of the scroll bounding area
-        direction: Scrolling direction. Mandatory value. Acceptable values are: up, down, left and right (case insensitive)
-        percent: The size of the scroll as a percentage of the scrolling area size. Valid values must be float numbers greater than zero, where 1.0 is 100%. Mandatory value.
-        speed: The speed at which to perform this gesture in pixels per second. The value must not be negative. The default value is 5000 * displayDensity
+        Supported arguments:
+        elementId: The id of the element to be scrolled. If the element id is missing
+            then scroll bounding area must be provided. If both the element id and
+            the scroll bounding area are provided then this area is effectively ignored.
+        left: The left coordinate of the scroll bounding area.
+        top: The top coordinate of the scroll bounding area.
+        width: The width of the scroll bounding area.
+        height: The height of the scroll bounding area.
+        direction: Scrolling direction. Mandatory value. Acceptable values are:
+            up, down, left and right (case insensitive).
+        percent: The size of the scroll as a percentage of the scrolling area size.
+            Valid values must be float numbers greater than zero, where 1.0 is 100%.
+            Mandatory value.
+        speed: The speed at which to perform this gesture in pixels per second.
+            The value must not be negative. The default value is 5000 * displayDensity.
+
         """
-        self.logger.debug(f"{get_current_func_name()}")
-        self.driver: WebDriver = WebDriverSingleton.get_driver()
+        self.logger.debug("%s", get_current_func_name())
 
         # Defensive validation (optional, to fail early on bad input)
         if direction.lower() not in {"up", "down", "left", "right"}:
-            raise ValueError(f"Invalid direction '{direction}', must be one of: up, down, left, right")
+            msg = f"Invalid direction '{direction}', must be one of: up, down, left, right"
+            raise ValueError(msg)
 
         if not (0.0 < percent <= 1.0):
-            raise ValueError(f"Percent must be between 0 and 1, got {percent}")
+            error_msg = f"Percent must be between 0 and 1, got {percent}"
+            raise ValueError(error_msg)
 
         if speed < 0:
-            raise ValueError(f"Speed must be non-negative, got {speed}")
+            error_msg = f"Speed must be non-negative, got {speed}"
+            raise ValueError(error_msg)
 
         self._execute(
             "mobile: scrollGesture",
@@ -410,21 +495,17 @@ class Shadowstep(ShadowstepBase):
                 "height": height,
                 "direction": direction.lower(),
                 "percent": percent,
-                "speed": speed
-            }
+                "speed": speed,
+            },
         )
         return self
 
-    @fail_safe(
-        retries=3,
-        delay=0.5,
-        raise_exception=ShadowstepException,
-        exceptions=(NoSuchDriverException, InvalidSessionIdException)
-    )
+    @fail_safe(raise_exception=ShadowstepException,
+               exceptions=(NoSuchDriverException, InvalidSessionIdException))
     def long_click(self, x: int, y: int, duration: int) -> Shadowstep:
-        """
-        https://github.com/appium/appium-uiautomator2-driver/blob/61abedddcde2d606394acfa0f0c2bac395a0e14c/docs/android-mobile-gestures.md#mobile-longclickgesture
-        Perform a long click gesture at the given coordinates.
+        """Perform a long click gesture at the given coordinates.
+
+        Documentation: https://github.com/appium/appium-uiautomator2-driver/blob/61abedddcde2d606394acfa0f0c2bac395a0e14c/docs/android-mobile-gestures.md#mobile-longclickgesture
 
         Args:
             x (int): X-coordinate of the click.
@@ -435,35 +516,38 @@ class Shadowstep(ShadowstepBase):
             Shadowstep: Self for method chaining.
 
         origin:
-        Supported arguments
-        elementId: The id of the element to be clicked. If the element is missing then both click offset coordinates must be provided. If both the element id and offset are provided then the coordinates are parsed as relative offsets from the top left corner of the element.
-        x: The x-offset coordinate
-        y: The y-offset coordinate
-        duration: Click duration in milliseconds. 500 by default. The value must not be negative
-        locator: The map containing strategy and selector items to make it possible to click dynamic elements.
+        Supported arguments:
+        elementId: The id of the element to be clicked. If the element is missing
+            then both click offset coordinates must be provided. If both the element
+            id and offset are provided then the coordinates are parsed as relative
+            offsets from the top left corner of the element.
+        x: The x-offset coordinate.
+        y: The y-offset coordinate.
+        duration: Click duration in milliseconds. 500 by default. The value must
+            not be negative.
+        locator: The map containing strategy and selector items to make it possible
+            to click dynamic elements.
+
         """
-        self.logger.debug(f"{get_current_func_name()}")
+        self.logger.debug("%s", get_current_func_name())
 
         if duration < 0:
-            raise ValueError(f"Duration must be non-negative, got {duration}")
+            msg = f"Duration must be non-negative, got {duration}"
+            raise ValueError(msg)
 
-        self.driver = WebDriverSingleton.get_driver()
         self._execute(
             "mobile: longClickGesture",
-            {"x": x, "y": y, "duration": duration}
+            {"x": x, "y": y, "duration": duration},
         )
         return self
 
-    @fail_safe(
-        retries=3,
-        delay=0.5,
-        raise_exception=ShadowstepException,
-        exceptions=(NoSuchDriverException, InvalidSessionIdException, StaleElementReferenceException)
-    )
+    @fail_safe(raise_exception=ShadowstepException,
+               exceptions=(NoSuchDriverException, InvalidSessionIdException,
+                           StaleElementReferenceException))
     def double_click(self, x: int, y: int) -> Shadowstep:
-        """
-        https://github.com/appium/appium-uiautomator2-driver/blob/61abedddcde2d606394acfa0f0c2bac395a0e14c/docs/android-mobile-gestures.md#mobile-doubleclickgesture
-        Perform a double click gesture at the given coordinates.
+        """Perform a double click gesture at the given coordinates.
+
+        Documentation: https://github.com/appium/appium-uiautomator2-driver/blob/61abedddcde2d606394acfa0f0c2bac395a0e14c/docs/android-mobile-gestures.md#mobile-doubleclickgesture
 
         Args:
             x (int): X-coordinate of the click.
@@ -474,30 +558,31 @@ class Shadowstep(ShadowstepBase):
 
         origin:
         Supported arguments
-        elementId: The id of the element to be clicked. If the element is missing then both click offset coordinates must be provided. If both the element id and offset are provided then the coordinates are parsed as relative offsets from the top left corner of the element.
+        elementId: The id of the element to be clicked. If the element is missing
+            then both click offset coordinates must be provided. If both the element
+            id and offset are provided then the coordinates are parsed as relative
+            offsets from the top left corner of the element.
         x: The x-offset coordinate
         y: The y-offset coordinate
-        locator: The map containing strategy and selector items to make it possible to click dynamic elements.
-        """
-        self.logger.debug(f"{get_current_func_name()}")
+        locator: The map containing strategy and selector items to make it possible
+            to click dynamic elements.
 
-        self.driver = WebDriverSingleton.get_driver()
+        """
+        self.logger.debug("%s", get_current_func_name())
+
         self._execute(
             "mobile: doubleClickGesture",
-            {"x": x, "y": y}
+            {"x": x, "y": y},
         )
         return self
 
-    @fail_safe(
-        retries=3,
-        delay=0.5,
-        raise_exception=ShadowstepException,
-        exceptions=(NoSuchDriverException, InvalidSessionIdException, StaleElementReferenceException)
-    )
+    @fail_safe(raise_exception=ShadowstepException,
+               exceptions=(NoSuchDriverException, InvalidSessionIdException,
+                           StaleElementReferenceException))
     def click(self, x: int, y: int) -> Shadowstep:
-        """
-        https://github.com/appium/appium-uiautomator2-driver/blob/61abedddcde2d606394acfa0f0c2bac395a0e14c/docs/android-mobile-gestures.md#mobile-clickgesture
-        Perform a click gesture at the given coordinates.
+        """Perform a click gesture at the given coordinates.
+
+        Documentation: https://github.com/appium/appium-uiautomator2-driver/blob/61abedddcde2d606394acfa0f0c2bac395a0e14c/docs/android-mobile-gestures.md#mobile-clickgesture
 
         Args:
             x (int): X-coordinate of the click.
@@ -508,37 +593,38 @@ class Shadowstep(ShadowstepBase):
 
         origin:
         Supported arguments
-        elementId: The id of the element to be clicked. If the element is missing then both click offset coordinates must be provided. If both the element id and offset are provided then the coordinates are parsed as relative offsets from the top left corner of the element.
+        elementId: The id of the element to be clicked. If the element is missing
+            then both click offset coordinates must be provided. If both the element
+            id and offset are provided then the coordinates are parsed as relative
+            offsets from the top left corner of the element.
         x: The x-offset coordinate
         y: The y-offset coordinate
-        locator: The map containing strategy and selector items to make it possible to click dynamic elements.
-        """
-        self.logger.debug(f"{get_current_func_name()}")
+        locator: The map containing strategy and selector items to make it possible
+            to click dynamic elements.
 
-        self.driver = WebDriverSingleton.get_driver()
+        """
+        self.logger.debug("%s", get_current_func_name())
+
         self._execute(
             "mobile: clickGesture",
-            {"x": x, "y": y}
+            {"x": x, "y": y},
         )
         return self
 
-    @fail_safe(
-        retries=3,
-        delay=0.5,
-        raise_exception=ShadowstepException,
-        exceptions=(NoSuchDriverException, InvalidSessionIdException, StaleElementReferenceException)
-    )
+    @fail_safe(raise_exception=ShadowstepException,
+               exceptions=(NoSuchDriverException, InvalidSessionIdException,
+                           StaleElementReferenceException))
     def drag(
             self,
             start_x: int,
             start_y: int,
             end_x: int,
             end_y: int,
-            speed: int
+            speed: int,
     ) -> Shadowstep:
-        """
-        https://github.com/appium/appium-uiautomator2-driver/blob/61abedddcde2d606394acfa0f0c2bac395a0e14c/docs/android-mobile-gestures.md#mobile-draggesture
-        Perform a drag gesture from one point to another.
+        """Perform a drag gesture from one point to another.
+
+        Documentation: https://github.com/appium/appium-uiautomator2-driver/blob/61abedddcde2d606394acfa0f0c2bac395a0e14c/docs/android-mobile-gestures.md#mobile-draggesture
 
         Args:
             start_x (int): Starting X coordinate.
@@ -552,19 +638,24 @@ class Shadowstep(ShadowstepBase):
 
         origin:
         Supported arguments
-        elementId: The id of the element to be dragged. If the element id is missing then both start coordinates must be provided. If both the element id and the start coordinates are provided then these coordinates are considered as offsets from the top left element corner.
+        elementId: The id of the element to be dragged. If the element id is missing
+            then both start coordinates must be provided. If both the element id and
+            the start coordinates are provided then these coordinates are considered
+            as offsets from the top left element corner.
         startX: The x-start coordinate
         startY: The y-start coordinate
         endX: The x-end coordinate. Mandatory argument
         endY: The y-end coordinate. Mandatory argument
-        speed: The speed at which to perform this gesture in pixels per second. The value must not be negative. The default value is 2500 * displayDensity
+        speed: The speed at which to perform this gesture in pixels per second.
+            The value must not be negative. The default value is 2500 * displayDensity.
+
         """
-        self.logger.debug(f"{get_current_func_name()}")
+        self.logger.debug("%s", get_current_func_name())
 
         if speed < 0:
-            raise ValueError(f"Speed must be non-negative, got {speed}")
+            error_msg = f"Speed must be non-negative, got {speed}"
+            raise ValueError(error_msg)
 
-        self.driver = WebDriverSingleton.get_driver()
         self._execute(
             "mobile: dragGesture",
             {
@@ -572,29 +663,26 @@ class Shadowstep(ShadowstepBase):
                 "startY": start_y,
                 "endX": end_x,
                 "endY": end_y,
-                "speed": speed
-            }
+                "speed": speed,
+            },
         )
         return self
 
-    @fail_safe(
-        retries=3,
-        delay=0.5,
-        raise_exception=ShadowstepException,
-        exceptions=(NoSuchDriverException, InvalidSessionIdException, StaleElementReferenceException)
-    )
-    def fling(
+    @fail_safe(raise_exception=ShadowstepException,
+               exceptions=(NoSuchDriverException, InvalidSessionIdException,
+                           StaleElementReferenceException))
+    def fling(  # noqa: PLR0913
             self,
             left: int,
             top: int,
             width: int,
             height: int,
             direction: str,
-            speed: int
+            speed: int,
     ) -> Shadowstep:
-        """
-        https://github.com/appium/appium-uiautomator2-driver/blob/61abedddcde2d606394acfa0f0c2bac395a0e14c/docs/android-mobile-gestures.md#mobile-flinggesture
-        Perform a fling gesture in the specified area.
+        """Perform a fling gesture in the specified area.
+
+        Documentation: https://github.com/appium/appium-uiautomator2-driver/blob/61abedddcde2d606394acfa0f0c2bac395a0e14c/docs/android-mobile-gestures.md#mobile-flinggesture
 
         Args:
             left (int): Left coordinate of the fling area.
@@ -609,22 +697,29 @@ class Shadowstep(ShadowstepBase):
 
         origin:
         Supported arguments
-        elementId: The id of the element to be flinged. If the element id is missing then fling bounding area must be provided. If both the element id and the fling bounding area are provided then this area is effectively ignored.
+        elementId: The id of the element to be flinged. If the element id is missing
+            then fling bounding area must be provided. If both the element id and
+            the fling bounding area are provided then this area is effectively ignored.
         left: The left coordinate of the fling bounding area
         top: The top coordinate of the fling bounding area
         width: The width of the fling bounding area
         height: The height of the fling bounding area
-        direction: Direction of the fling. Mandatory value. Acceptable values are: up, down, left and right (case insensitive)
-        speed: The speed at which to perform this gesture in pixels per second. The value must be greater than the minimum fling velocity for the given view (50 by default). The default value is 7500 * displayDensity
+        direction: Direction of the fling. Mandatory value. Acceptable values are:
+            up, down, left and right (case insensitive).
+        speed: The speed at which to perform this gesture in pixels per second.
+            The value must be greater than the minimum fling velocity for the given
+            view (50 by default). The default value is 7500 * displayDensity.
+
         """
-        self.logger.debug(f"{get_current_func_name()}")
+        self.logger.debug("%s", get_current_func_name())
 
         if direction.lower() not in {"up", "down", "left", "right"}:
-            raise ValueError("Invalid direction: {direction}")
+            msg = "Invalid direction: {direction}"
+            raise ValueError(msg)
         if speed <= 0:
-            raise ValueError(f"Speed must be > 0, got {speed}")
+            msg = f"Speed must be > 0, got {speed}"
+            raise ValueError(msg)
 
-        self.driver = WebDriverSingleton.get_driver()
         self._execute(
             "mobile: flingGesture",
             {
@@ -633,29 +728,26 @@ class Shadowstep(ShadowstepBase):
                 "width": width,
                 "height": height,
                 "direction": direction.lower(),
-                "speed": speed
-            }
+                "speed": speed,
+            },
         )
         return self
 
-    @fail_safe(
-        retries=3,
-        delay=0.5,
-        raise_exception=ShadowstepException,
-        exceptions=(NoSuchDriverException, InvalidSessionIdException, StaleElementReferenceException)
-    )
-    def pinch_open(
+    @fail_safe(raise_exception=ShadowstepException,
+               exceptions=(NoSuchDriverException, InvalidSessionIdException,
+                           StaleElementReferenceException))
+    def pinch_open(  # noqa: PLR0913
             self,
             left: int,
             top: int,
             width: int,
             height: int,
             percent: float,
-            speed: int
+            speed: int,
     ) -> Shadowstep:
-        """
-        https://github.com/appium/appium-uiautomator2-driver/blob/61abedddcde2d606394acfa0f0c2bac395a0e14c/docs/android-mobile-gestures.md#mobile-pinchopengesture
-        Perform a pinch-open gesture in the given bounding area.
+        """Perform a pinch-open gesture in the given bounding area.
+
+        Documentation: https://github.com/appium/appium-uiautomator2-driver/blob/61abedddcde2d606394acfa0f0c2bac395a0e14c/docs/android-mobile-gestures.md#mobile-pinchopengesture
 
         Args:
             left (int): Left coordinate of the bounding box.
@@ -670,22 +762,29 @@ class Shadowstep(ShadowstepBase):
 
         origin:
         Supported arguments
-        elementId: The id of the element to be pinched. If the element id is missing then pinch bounding area must be provided. If both the element id and the pinch bounding area are provided then the area is effectively ignored.
+        elementId: The id of the element to be pinched. If the element id is missing
+            then pinch bounding area must be provided. If both the element id and
+            the pinch bounding area are provided then the area is effectively ignored.
         left: The left coordinate of the pinch bounding area
         top: The top coordinate of the pinch bounding area
         width: The width of the pinch bounding area
         height: The height of the pinch bounding area
-        percent: The size of the pinch as a percentage of the pinch area size. Valid values must be float numbers in range 0..1, where 1.0 is 100%. Mandatory value.
-        speed: The speed at which to perform this gesture in pixels per second. The value must not be negative. The default value is 2500 * displayDensity
+        percent: The size of the pinch as a percentage of the pinch area size.
+            Valid values must be float numbers in range 0..1, where 1.0 is 100%.
+            Mandatory value.
+        speed: The speed at which to perform this gesture in pixels per second.
+            The value must not be negative. The default value is 2500 * displayDensity.
+
         """
-        self.logger.debug(f"{get_current_func_name()}")
+        self.logger.debug("%s", get_current_func_name())
 
         if not (0.0 < percent <= 1.0):
-            raise ValueError(f"Percent must be between 0 and 1, got {percent}")
+            error_msg = f"Percent must be between 0 and 1, got {percent}"
+            raise ValueError(error_msg)
         if speed < 0:
-            raise ValueError(f"Speed must be non-negative, got {speed}")
+            error_msg = f"Speed must be non-negative, got {speed}"
+            raise ValueError(error_msg)
 
-        self.driver = WebDriverSingleton.get_driver()
         self._execute(
             "mobile: pinchOpenGesture",
             {
@@ -694,28 +793,27 @@ class Shadowstep(ShadowstepBase):
                 "width": width,
                 "height": height,
                 "percent": percent,
-                "speed": speed
-            }
+                "speed": speed,
+            },
         )
         return self
 
-    @fail_safe(retries=3, delay=0.5,
-               raise_exception=ShadowstepException,
+    @fail_safe(raise_exception=ShadowstepException,
                exceptions=(NoSuchDriverException,
                            InvalidSessionIdException,
                            StaleElementReferenceException))
-    def pinch_close(
+    def pinch_close(  # noqa: PLR0913
             self,
             left: int,
             top: int,
             width: int,
             height: int,
             percent: float,
-            speed: int
+            speed: int,
     ) -> Shadowstep:
-        """
-        https://github.com/appium/appium-uiautomator2-driver/blob/61abedddcde2d606394acfa0f0c2bac395a0e14c/docs/android-mobile-gestures.md#mobile-pinchclosegesture
-        Perform a pinch-close gesture in the given bounding area.
+        """Perform a pinch-close gesture in the given bounding area.
+
+        Documentation: https://github.com/appium/appium-uiautomator2-driver/blob/61abedddcde2d606394acfa0f0c2bac395a0e14c/docs/android-mobile-gestures.md#mobile-pinchclosegesture
 
         Args:
             left (int): Left coordinate of the bounding box.
@@ -730,22 +828,29 @@ class Shadowstep(ShadowstepBase):
 
         origin:
         Supported arguments
-        elementId: The id of the element to be pinched. If the element id is missing then pinch bounding area must be provided. If both the element id and the pinch bounding area are provided then the area is effectively ignored.
+        elementId: The id of the element to be pinched. If the element id is missing
+            then pinch bounding area must be provided. If both the element id and
+            the pinch bounding area are provided then the area is effectively ignored.
         left: The left coordinate of the pinch bounding area
         top: The top coordinate of the pinch bounding area
         width: The width of the pinch bounding area
         height: The height of the pinch bounding area
-        percent: The size of the pinch as a percentage of the pinch area size. Valid values must be float numbers in range 0..1, where 1.0 is 100%. Mandatory value.
-        speed: The speed at which to perform this gesture in pixels per second. The value must not be negative. The default value is 2500 * displayDensity
+        percent: The size of the pinch as a percentage of the pinch area size.
+            Valid values must be float numbers in range 0..1, where 1.0 is 100%.
+            Mandatory value.
+        speed: The speed at which to perform this gesture in pixels per second.
+            The value must not be negative. The default value is 2500 * displayDensity.
+
         """
-        self.logger.debug(f"{get_current_func_name()}")
+        self.logger.debug("%s", get_current_func_name())
 
         if not (0.0 < percent <= 1.0):
-            raise ValueError(f"Percent must be between 0 and 1, got {percent}")
+            error_msg = f"Percent must be between 0 and 1, got {percent}"
+            raise ValueError(error_msg)
         if speed < 0:
-            raise ValueError(f"Speed must be non-negative, got {speed}")
+            error_msg = f"Speed must be non-negative, got {speed}"
+            raise ValueError(error_msg)
 
-        self.driver = WebDriverSingleton.get_driver()
         self._execute(
             "mobile: pinchCloseGesture",
             {
@@ -754,18 +859,15 @@ class Shadowstep(ShadowstepBase):
                 "width": width,
                 "height": height,
                 "percent": percent,
-                "speed": speed
-            }
+                "speed": speed,
+            },
         )
         return self
 
-    @fail_safe(
-        retries=3,
-        delay=0.5,
-        raise_exception=ShadowstepException,
-        exceptions=(NoSuchDriverException, InvalidSessionIdException, StaleElementReferenceException)
-    )
-    def swipe(
+    @fail_safe(raise_exception=ShadowstepException,
+               exceptions=(NoSuchDriverException, InvalidSessionIdException,
+                           StaleElementReferenceException))
+    def swipe(  # noqa: PLR0913
             self,
             left: int,
             top: int,
@@ -773,11 +875,11 @@ class Shadowstep(ShadowstepBase):
             height: int,
             direction: str,
             percent: float,
-            speed: int
+            speed: int,
     ) -> Shadowstep:
-        """
-        https://github.com/appium/appium-uiautomator2-driver/blob/61abedddcde2d606394acfa0f0c2bac395a0e14c/docs/android-mobile-gestures.md#mobile-swipegesture
-        Perform a swipe gesture within the specified bounding box.
+        """Perform a swipe gesture within the specified bounding box.
+
+        Documentation: https://github.com/appium/appium-uiautomator2-driver/blob/61abedddcde2d606394acfa0f0c2bac395a0e14c/docs/android-mobile-gestures.md#mobile-swipegesture
 
         Args:
             left (int): Left coordinate of the swipe area.
@@ -793,25 +895,34 @@ class Shadowstep(ShadowstepBase):
 
         origin:
         Supported arguments
-        elementId: The id of the element to be swiped. If the element id is missing then swipe bounding area must be provided. If both the element id and the swipe bounding area are provided then the area is effectively ignored.
+        elementId: The id of the element to be swiped. If the element id is missing
+            then swipe bounding area must be provided. If both the element id and
+            the swipe bounding area are provided then the area is effectively ignored.
         left: The left coordinate of the swipe bounding area
         top: The top coordinate of the swipe bounding area
         width: The width of the swipe bounding area
         height: The height of the swipe bounding area
-        direction: Swipe direction. Mandatory value. Acceptable values are: up, down, left and right (case insensitive)
-        percent: The size of the swipe as a percentage of the swipe area size. Valid values must be float numbers in range 0..1, where 1.0 is 100%. Mandatory value.
-        speed: The speed at which to perform this gesture in pixels per second. The value must not be negative. The default value is 5000 * displayDensity
+        direction: Swipe direction. Mandatory value. Acceptable values are:
+            up, down, left and right (case insensitive).
+        percent: The size of the swipe as a percentage of the swipe area size.
+            Valid values must be float numbers in range 0..1, where 1.0 is 100%.
+            Mandatory value.
+        speed: The speed at which to perform this gesture in pixels per second.
+            The value must not be negative. The default value is 5000 * displayDensity.
+
         """
-        self.logger.debug(f"{get_current_func_name()}")
+        self.logger.debug("%s", get_current_func_name())
 
         if direction.lower() not in {"up", "down", "left", "right"}:
-            raise ValueError(f"Invalid direction '{direction}' — must be one of: up, down, left, right")
+            error_msg = f"Invalid direction '{direction}' — must be one of: up, down, left, right"
+            raise ValueError(error_msg)
         if not (0.0 < percent <= 1.0):
-            raise ValueError(f"Percent must be between 0 and 1, got {percent}")
+            error_msg = f"Percent must be between 0 and 1, got {percent}"
+            raise ValueError(error_msg)
         if speed < 0:
-            raise ValueError(f"Speed must be non-negative, got {speed}")
+            error_msg = f"Speed must be non-negative, got {speed}"
+            raise ValueError(error_msg)
 
-        self.driver = WebDriverSingleton.get_driver()
         self._execute(
             "mobile: swipeGesture",
             {
@@ -821,29 +932,26 @@ class Shadowstep(ShadowstepBase):
                 "height": height,
                 "direction": direction.lower(),
                 "percent": percent,
-                "speed": speed
-            }
+                "speed": speed,
+            },
         )
         return self
 
-    @fail_safe(
-        retries=3,
-        delay=0.5,
-        raise_exception=ShadowstepException,
-        exceptions=(NoSuchDriverException, InvalidSessionIdException)
-    )
+    @fail_safe(raise_exception=ShadowstepException,
+               exceptions=(NoSuchDriverException, InvalidSessionIdException))
     def swipe_right_to_left(self) -> Shadowstep:
         """Perform a full-width horizontal swipe from right to left.
 
         Returns:
             Shadowstep: Self for method chaining.
-        """
-        self.logger.debug(f"{get_current_func_name()}")
 
-        self.driver = WebDriverSingleton.get_driver()
-        size = self.driver.get_window_size()
-        width = cast(int, size["width"])
-        height = cast(int, size["height"])
+        """
+        self.logger.debug("%s", get_current_func_name())
+
+        driver = WebDriverSingleton.get_driver()
+        size: dict[str, int] = driver.get_window_size()  # type: ignore[return-value]
+        width = size["width"]
+        height = size["height"]
 
         return self.swipe(
             left=0,
@@ -852,27 +960,25 @@ class Shadowstep(ShadowstepBase):
             height=height // 3,
             direction="left",
             percent=1.0,
-            speed=1000
+            speed=1000,
         )
 
-    @fail_safe(
-        retries=3,
-        delay=0.5,
-        raise_exception=ShadowstepException,
-        exceptions=(NoSuchDriverException, InvalidSessionIdException, StaleElementReferenceException)
-    )
+    @fail_safe(raise_exception=ShadowstepException,
+               exceptions=(NoSuchDriverException, InvalidSessionIdException,
+                           StaleElementReferenceException))
     def swipe_left_to_right(self) -> Shadowstep:
         """Perform a full-width horizontal swipe from left to right.
 
         Returns:
             Shadowstep: Self for method chaining.
-        """
-        self.logger.debug(f"{get_current_func_name()}")
 
-        self.driver = WebDriverSingleton.get_driver()
-        size = self.driver.get_window_size()
-        width = cast(int, size["width"])
-        height = cast(int, size["height"])
+        """
+        self.logger.debug("%s", get_current_func_name())
+
+        driver = WebDriverSingleton.get_driver()
+        size: dict[str, int] = driver.get_window_size()  # type: ignore[return-value]
+        width = size["width"]
+        height = size["height"]
 
         return self.swipe(
             left=0,
@@ -881,27 +987,25 @@ class Shadowstep(ShadowstepBase):
             height=height // 3,
             direction="right",
             percent=1.0,
-            speed=1000
+            speed=1000,
         )
 
-    @fail_safe(
-        retries=3,
-        delay=0.5,
-        raise_exception=ShadowstepException,
-        exceptions=(NoSuchDriverException, InvalidSessionIdException, StaleElementReferenceException)
-    )
+    @fail_safe(raise_exception=ShadowstepException,
+               exceptions=(NoSuchDriverException, InvalidSessionIdException,
+                           StaleElementReferenceException))
     def swipe_top_to_bottom(self, percent: float = 1.0, speed: int = 5000) -> Shadowstep:
         """Perform a full-height vertical swipe from top to bottom.
 
         Returns:
             Shadowstep: Self for method chaining.
-        """
-        self.logger.debug(f"{get_current_func_name()}")
 
-        self.driver = WebDriverSingleton.get_driver()
-        size = self.driver.get_window_size()
-        width = cast(int, size["width"])
-        height = cast(int, size["height"])
+        """
+        self.logger.debug("%s", get_current_func_name())
+
+        driver = WebDriverSingleton.get_driver()
+        size: dict[str, int] = driver.get_window_size()  # type: ignore[return-value]
+        width = size["width"]
+        height = size["height"]
 
         return self.swipe(
             left=width // 2,
@@ -910,27 +1014,25 @@ class Shadowstep(ShadowstepBase):
             height=height,
             direction="down",
             percent=percent,
-            speed=speed
+            speed=speed,
         )
 
-    @fail_safe(
-        retries=3,
-        delay=0.5,
-        raise_exception=ShadowstepException,
-        exceptions=(NoSuchDriverException, InvalidSessionIdException, StaleElementReferenceException)
-    )
+    @fail_safe(raise_exception=ShadowstepException,
+               exceptions=(NoSuchDriverException, InvalidSessionIdException,
+                           StaleElementReferenceException))
     def swipe_bottom_to_top(self, percent: float = 1.0, speed: int = 5000) -> Shadowstep:
         """Perform a full-height vertical swipe from bottom to top.
 
         Returns:
             Shadowstep: Self for method chaining.
-        """
-        self.logger.debug(f"{get_current_func_name()}")
 
-        self.driver = WebDriverSingleton.get_driver()
-        size = self.driver.get_window_size()
-        width = cast(int, size["width"])
-        height = cast(int, size["height"])
+        """
+        self.logger.debug("%s", get_current_func_name())
+
+        driver = WebDriverSingleton.get_driver()
+        size: dict[str, int] = driver.get_window_size()  # type: ignore[return-value]
+        width = size["width"]
+        height = size["height"]
 
         return self.swipe(
             left=width // 2,
@@ -939,64 +1041,106 @@ class Shadowstep(ShadowstepBase):
             height=height,
             direction="up",
             percent=percent,
-            speed=speed
+            speed=speed,
         )
 
-    @fail_safe(retries=3, delay=0.5,
-               raise_exception=ShadowstepException,
+    @fail_safe(raise_exception=ShadowstepException,
                exceptions=(NoSuchDriverException,
                            InvalidSessionIdException,
                            WebDriverException,
                            StaleElementReferenceException))
     def save_screenshot(self, path: str = "", filename: str = "screenshot.png") -> bool:
-        self.logger.debug(f"{get_current_func_name()}")
-        path_to_file = os.path.join(path, filename)
-        with open(path_to_file, "wb") as f:
+        """Save a screenshot to file.
+
+        Args:
+            path: Directory path to save the screenshot.
+            filename: Name of the screenshot file.
+
+        Returns:
+            bool: True if successful.
+
+        """
+        self.logger.debug("%s", get_current_func_name())
+        path_to_file = Path(path) / filename
+        with path_to_file.open("wb") as f:
             f.write(self.get_screenshot())
         return True
 
-    @fail_safe(retries=3, delay=0.5,
-               raise_exception=ShadowstepException,
+    @fail_safe(raise_exception=ShadowstepException,
                exceptions=(NoSuchDriverException,
                            InvalidSessionIdException))
-    def get_screenshot(self):
-        self.logger.debug(f"{get_current_func_name()}")
+    def get_screenshot(self) -> bytes:
+        """Get screenshot as bytes.
+
+        Returns:
+            bytes: Screenshot data in binary format.
+
+        """
+        self.logger.debug("%s", get_current_func_name())
+        if self.driver is None:
+            error_msg = "Driver is not initialized"
+            raise RuntimeError(error_msg)
         screenshot = self.driver.get_screenshot_as_base64().encode("utf-8")
         return base64.b64decode(screenshot)
 
-    @fail_safe(retries=3, delay=0.5,
-               raise_exception=ShadowstepException,
+    @fail_safe(raise_exception=ShadowstepException,
                exceptions=(NoSuchDriverException,
                            InvalidSessionIdException))
     def save_source(self, path: str = "", filename: str = "screenshot.png") -> bool:
-        self.logger.debug(f"{get_current_func_name()}")
-        path_to_file = os.path.join(path, filename)
-        with open(path_to_file, "wb") as f:
+        """Save page source to file.
+
+        Args:
+            path: Directory path to save the file.
+            filename: Name of the file to save.
+
+        Returns:
+            bool: True if successful.
+
+        """
+        self.logger.debug("%s", get_current_func_name())
+        path_to_file = Path(path) / filename
+        with path_to_file.open("wb") as f:
+            if self.driver is None:
+                error_msg = "Driver is not initialized"
+                raise RuntimeError(error_msg)
             f.write(self.driver.page_source.encode("utf-8"))
         return True
 
-    @fail_safe(retries=3, delay=0.5,
-               raise_exception=ShadowstepException,
+    @fail_safe(raise_exception=ShadowstepException,
                exceptions=(NoSuchDriverException,
                            InvalidSessionIdException,
                            StaleElementReferenceException))
     def tap(self, x: int, y: int, duration: int | None = None) -> Shadowstep:
-        self.logger.debug(f"{get_current_func_name()}")
+        """Tap at specified coordinates.
+
+        Args:
+            x: X coordinate.
+            y: Y coordinate.
+            duration: Tap duration in milliseconds.
+
+        Returns:
+            Shadowstep: Self for method chaining.
+
+        """
+        self.logger.debug("%s", get_current_func_name())
+        if self.driver is None:
+            error_msg = "Driver is not initialized"
+            raise RuntimeError(error_msg)
         self.driver.tap([(x, y)], duration or 100)
         return self
 
-
-    @fail_safe(retries=3, delay=0.5,
-               raise_exception=ShadowstepException,
+    @fail_safe(raise_exception=ShadowstepException,
                exceptions=(NoSuchDriverException,
                            InvalidSessionIdException))
     def start_recording_screen(self) -> None:
         """Start screen recording using Appium driver."""
-        self.logger.debug(f"{get_current_func_name()}")
+        self.logger.debug("%s", get_current_func_name())
+        if self.driver is None:
+            error_msg = "Driver is not initialized"
+            raise RuntimeError(error_msg)
         self.driver.start_recording_screen()
 
-    @fail_safe(retries=3, delay=0.5,
-               raise_exception=ShadowstepException,
+    @fail_safe(raise_exception=ShadowstepException,
                exceptions=(NoSuchDriverException,
                            InvalidSessionIdException))
     def stop_recording_screen(self) -> bytes:
@@ -1004,72 +1148,55 @@ class Shadowstep(ShadowstepBase):
 
         Returns:
             bytes: Video recording in base64-decoded format.
+
         """
-        self.logger.debug(f"{get_current_func_name()}")
+        self.logger.debug("%s", get_current_func_name())
+        if self.driver is None:
+            error_msg = "Driver is not initialized"
+            raise RuntimeError(error_msg)
         encoded = self.driver.stop_recording_screen()
         return base64.b64decode(encoded)
 
-    @fail_safe(retries=3, delay=0.5,
-               raise_exception=ShadowstepException,
+    @fail_safe(raise_exception=ShadowstepException,
                exceptions=(NoSuchDriverException,
                            InvalidSessionIdException))
     def push(self, source_file_path: str, destination_file_path: str) -> Shadowstep:
-        with open(os.path.join(source_file_path), "rb") as file:
+        """Push file to device.
+
+        Args:
+            source_file_path: Local file path to push.
+            destination_file_path: Destination path on device.
+
+        Returns:
+            Shadowstep: Self for method chaining.
+
+        """
+        with Path(source_file_path).open("rb") as file:
             file_data = file.read()
             base64data = base64.b64encode(file_data).decode("utf-8")
+        if self.driver is None:
+            error_msg = "Driver is not initialized"
+            raise RuntimeError(error_msg)
         self.driver.push_file(
             destination_path=destination_file_path,
-            base64data=base64data
+            base64data=base64data,
         )
         return self
 
-    def update_settings(self):
-        """
-        # TODO move to separate class with transparent settings selection (enum?)
-        self.driver.update_settings(settings={'enableMultiWindows': True})
+    def update_settings(self) -> None:
+        """Update Appium driver settings.
 
+        This method updates various Appium driver settings for UiAutomator2.
+        For detailed documentation, see:
         https://github.com/appium/appium-uiautomator2-driver/blob/61abedddcde2d606394acfa0f0c2bac395a0e14c/README.md?plain=1#L304
-        ## Settings API
 
-        UiAutomator2 driver supports Appium [Settings API](https://appium.io/docs/en/latest/guides/settings/).
-        Along with the common settings the following driver-specific settings are currently available:
-
-        Name | Type | Description
-        --- | --- | ---
-        actionAcknowledgmentTimeout | long | Maximum number of milliseconds to wait for an acknowledgment of generic uiautomator actions, such as clicks, text setting, and menu presses. The acknowledgment is an[AccessibilityEvent](http://developer.android.com/reference/android/view/accessibility/AccessibilityEvent.html") corresponding to an action, that lets the framework determine if the action was successful. Generally, this timeout should not be modified. `3000` ms by default
-        allowInvisibleElements | boolean | Whether to include elements that are not visible to the user (e. g. whose `displayed` attribute is `false`) to the XML source tree. `false` by default
-        ignoreUnimportantViews | boolean | Enables or disables layout hierarchy compression. If compression is enabled, the layout hierarchy derived from the Acessibility framework will only contain nodes that are important for uiautomator testing. Any unnecessary surrounding layout nodes that make viewing and searching the hierarchy inefficient are removed. `false` by default
-        elementResponseAttributes | string | Comma-separated list of element attribute names to be included into findElement response. By default only element UUID is present there, but it is also possible to add the following items: `name`, `text`, `rect`, `enabled`, `displayed`, `selected`, `attribute/<element_attribute_name>`. It is required that `shouldUseCompactResponses` setting is set to `false` in order for this one to apply.
-        enableMultiWindows | boolean | Whether to include all windows that the user can interact with (for example an on-screen keyboard) while building the XML page source (`true`). By default it is `false` and only the single active application window is included to the page source.
-        enableTopmostWindowFromActivePackage | boolean | Whether to limit the window with the highest Z-order from the active package for interactions and page source retrieval. By default it is `false` and the active application window, which may not necessarily have this order, is included to the page source.
-        enableNotificationListener | boolean | Whether to enable (`true`) toast notifications listener to listen for new toast notifications. By default this listener is enabled and UiAutomator2 server includes the text of toast messages to the generated XML page source, but not for longer than `3500` ms after the corresponding notification expires.
-        keyInjectionDelay | long | Delay in milliseconds between key presses when injecting text input. 0 ms by default
-        scrollAcknowledgmentTimeout | long | Timeout for waiting for an acknowledgement of an uiautomator scroll swipe action. The acknowledgment is an [AccessibilityEvent](http://developer.android.com/reference/android/view/accessibility/AccessibilityEvent.html), corresponding to the scroll action, that lets the framework determine if the scroll action was successful. Generally, this timeout should not be modified. `200` ms by default
-        shouldUseCompactResponses | boolean | Used in combination with `elementResponseAttributes` setting. If set to `false` then the findElement response is going to include the items enumerated in `elementResponseAttributes` setting. `true` by default
-        waitForIdleTimeout | long | Timeout used for waiting for the user interface to go into an idle state. By default, all core uiautomator objects except UiDevice will perform this wait before starting to search for the widget specified by the object's locator. Once the idle state is detected or the timeout elapses (whichever occurs first), the object will start to wait for the selector to find a match. Consider lowering the value of this setting if you experience long delays while interacting with accessibility elements in your test. `10000` ms by default.
-        waitForSelectorTimeout | long | Timeout for waiting for a widget to become visible in the user interface so that it can be matched by a selector. Because user interface content is dynamic, sometimes a widget may not be visible immediately and won't be detected by a selector. This timeout allows the uiautomator framework to wait for a match to be found, up until the timeout elapses. This timeout is only applied to `android uiautomator` location strategy. `10000` ms by default
-        normalizeTagNames | boolean | Being set to `true` applies unicode-to-ascii normalization of element class names used as tag names in the page source XML document. This is necessary if the application under test has some Unicode class names, which cannot be used as XML tag names by default due to known bugs in Android's XML DOM parser implementation. `false` by default
-        shutdownOnPowerDisconnect | boolean | Whether to shutdown the server if the device under test is disconnected from a power source (e. g. stays on battery power). `true` by default.
-        simpleBoundsCalculation | boolean | Whether to calculate element bounds as absolute values (`true`) or check if the element is covered by other elements and thus partially hidden (`false`, the default behaviour). Setting this setting to `true` helps to improve the performance of XML page source generation, but decreases bounds preciseness. Use with care.
-        trackScrollEvents | boolean | Whether to apply scroll events tracking (`true`, the default value), so the server could calculate the value of `contentSize` attribute. Having this setting enabled may add delays to all scrolling actions.
-        wakeLockTimeout | long | The timeout in milliseconds of wake lock that UiAutomator2 server acquires by default to prevent the device under test going to sleep while an automated test is running. By default the server acquires the lock for 24 hours. Setting this value to zero forces the server to release the wake lock.
-        serverPort | int | The number of the port on the remote device to start UiAutomator2 server on. Do not mix this with `systemPort`, which is acquired on the host machine. Must be in range 1024..65535. `6790` by default
-        mjpegServerPort | int | The number of the port on the remote device to start MJPEG screenshots broadcaster on. Must be in range 1024..65535. `7810` by default
-        mjpegServerFramerate | int | The maximum count of screenshots per second taken by the MJPEG screenshots broadcaster. Must be in range 1..60. `10` by default
-        mjpegScalingFactor | int | The percentage value used to apply downscaling on the screenshots generated by the MJPEG screenshots broadcaster. Must be in range 1..100. `50` is by default, which means that screenshots are downscaled to the half of their original size keeping their original proportions.
-        mjpegServerScreenshotQuality | int | The percentage value used to apply lossy JPEG compression on the screenshots generated by the MJPEG screenshots broadcaster. Must be in range 1..100. `50` is by default, which means that screenshots are compressed to the half of their original quality.
-        mjpegBilinearFiltering | boolean | Controls whether (`true`) or not (`false`, the default value) to apply bilinear filtering to MJPEG screenshots broadcaster resize algorithm. Enabling this flag may improve the quality of the resulting scaled bitmap, but may introduce a small performance hit.
-        useResourcesForOrientationDetection | boolean | Defines the strategy used by UiAutomator2 server to detect the original device orientation. By default (`false` value) the server uses device rotation value for this purpose. Although, this approach may not work for some devices and a portrait orientation may erroneously be detected as the landscape one (and vice versa). In such case it makes sense to play with this setting.
-        enforceXPath1 | boolean | Since UiAutomator2 driver version `4.25.0` XPath2 is set as the default and the recommended interpreter for the corresponding element locators. This interpreter is based on [Psychopath XPath2](https://wiki.eclipse.org/PsychoPathXPathProcessor) implementation, which is now a part of the Eclipse foundation. In most of the cases XPath1 locators are also valid XPath2 locators, so there should be no issues while locating elements. Although, since the XPath2 standard is much more advanced in comparison to the previous version, some [issues](https://github.com/appium/appium/issues/16142) are possible for more sophisticated locators, which cannot be fixed easily, as we depend on the third-party library mentioned above. Then try to workaround such issues by enforcing XPath1 usage (whose implementation is a part of the Android platform itself) and assigning this setting to `true`. Note, this setting is actually applied at the time when the element lookup by XPath is executed, so you could switch it on or off whenever needed throughout your automated testing session.
-        limitXPathContextScope | boolean | Due to historical reasons UiAutomator2 driver limits scopes of element context-based searches to the parent element. This means a request like `findElement(By.xpath, "//root").findElement(By.xpath, "./..")` would always fail, because the driver only collects descendants of the `root` element for the destination XML source. The `limitXPathContextScope` setting being set to `false` changes that default behavior, so the collected page source includes the whole page source XML where `root` node is set as the search context. With that setting disabled the search query above should not fail anymore. Although, you must still be careful while building XPath requests for context-based searches with the `limitXPathContextScope` setting set to `false`. A request like `findElement(By.xpath, "//root").findElement(By.xpath, "//element")` would ignore the current context and search for `element` trough the whole page source. Use `.` notation to correct that behavior and only find `element` nodes which are descendants of the `root` node: `findElement(By.xpath, "//root").findElement(By.xpath, ".//element")`.
-        disableIdLocatorAutocompletion | boolean | According to internal Android standards it is expected that each resource identifier is prefixed with `<packageName>:id/` string. This should guarantee uniqueness of each identifier. Although some application development frameworks ignore this rule and don't add such prefix automatically or, rather, let it up to the developer to decide how to represent their application identifiers. For example, [testTag modifier attribute in the Jetpack Compose](https://developer.android.com/reference/kotlin/androidx/compose/ui/platform/package-summary#(androidx.compose.ui.Modifier).testTag(kotlin.String)) with [testTagsAsResourceId](https://developer.android.com/reference/kotlin/androidx/compose/ui/semantics/package-summary#(androidx.compose.ui.semantics.SemanticsPropertyReceiver).testTagsAsResourceId()) allows developers to set an arbitrary string without the prefix rule. [Interoperability with UiAutomator](https://developer.android.com/jetpack/compose/testing) also explains how to set it. By default UIA2 driver adds the above prefixes automatically to all resource id locators if they are not prefixed, but in case of such "special" apps this feature might be disabled by assigning the setting to `true`.
-        includeExtrasInPageSource | boolean | Whether to include `extras` element attribute in the XML page source result. Then, XPath locator can find the element by the extras. Its value consists of combined [getExtras](https://developer.android.com/reference/android/view/accessibility/AccessibilityNodeInfo#getExtras()) as `keys=value` pair separated by a semicolon (`;`), thus you may need to find the element with partial matching like `contains` e.g. `driver.find_element :xpath, '//*[contains(@extras, "AccessibilityNodeInfo.roleDescription=")]'`. The value could be huge if elements in the XML page source have large `extras`. It could affect the performance of XML page source generation.
-        includeA11yActionsInPageSource | boolean | Whether to include `actions` element attribute in the XML page source result. Its value consists of names of available accessibility actions from [getActionList](https://developer.android.com/reference/android/view/accessibility/AccessibilityNodeInfo#getActionList()), separated by a comma. The value could be huge if elements in the XML page source have a lot of actions and could affect the performance of XML page source generation.
-        snapshotMaxDepth | int | The number of maximum depth for the source tree snapshot. The default value is `70`. This number should be in range [1, 500]. A part of the elements source tree might be lost if the value is too low. Also, StackOverflowError might be caused if the value is too high (Issues [12545](https://github.com/appium/appium/issues/12545), [12892](https://github.com/appium/appium/issues/12892)). The available driver version is `2.27.0` or higher.
-        currentDisplayId | int | The id of the display that should be used when finding elements, taking screenshots, etc. It can be found in the output of `adb shell dumpsys display` (search for `mDisplayId`). The default value is [Display.DEFAULT_DISPLAY](https://developer.android.com/reference/android/view/Display#DEFAULT_DISPLAY). **Please note that it is different from the physical display id, reported by `adb shell dumpsys SurfaceFlinger --display-id`**. **Additionally, please note that `-android uiautomator` (e.g., `UiSelector`) doesn't work predictably with multiple displays, as this is an Android limitation.** **Multi-display support is only available since Android R (30 API level).**
+        Note: This docstring contains long lines due to API documentation requirements.
         """
+        # TODO move to separate class with transparent settings selection (enum?)  # noqa: TD002, TD003, TD004, FIX002, E501
+        if self.driver is not None:
+            self.driver.update_settings(settings={"enableMultiWindows": True})
         raise NotImplementedError
 
     def _execute(self, name: str, params: dict[Any, Any] | list[Any]) -> None:
         # https://github.com/appium/appium-uiautomator2-driver/blob/master/docs/android-mobile-gestures.md
-        self.driver.execute_script(name, params)
+        self.driver.execute_script(name, params)  # type: ignore[arg-type]
