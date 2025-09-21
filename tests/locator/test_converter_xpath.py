@@ -17,10 +17,10 @@ class TestXPathConverter:
         "xpath, expected",  # noqa: PT006
         [  # pyright: ignore [reportUnknownArgumentType]
             # --- text-based ---
-            ('//*[@text="Привет"]', {ShadowstepDictAttribute.TEXT: "Привет"}),
+            ('//*[@text="Hello"]', {ShadowstepDictAttribute.TEXT: "Hello"}),
             ('//*[contains(@text,"Hello")]', {ShadowstepDictAttribute.TEXT_CONTAINS: "Hello"}),
-            ('//*[starts-with(@text,"Оплат")]', {ShadowstepDictAttribute.TEXT_STARTS_WITH: "Оплат"}),
-            ('//*[matches(@text,".*Тест.*")]', {ShadowstepDictAttribute.TEXT_MATCHES: ".*Тест.*"}),
+            ('//*[starts-with(@text,"Pay")]', {ShadowstepDictAttribute.TEXT_STARTS_WITH: "Pay"}),
+            ('//*[matches(@text,".*Test.*")]', {ShadowstepDictAttribute.TEXT_MATCHES: ".*Test.*"}),
 
             # --- description ---
             ('//*[@content-desc="desc"]', {ShadowstepDictAttribute.DESCRIPTION: "desc"}),
@@ -55,8 +55,8 @@ class TestXPathConverter:
             ("//*[6]", {ShadowstepDictAttribute.INSTANCE: 5}),
 
             # --- hierarchy ---
-            ('//*[@content-desc="Подтвердить"]/*[@class="android.widget.ImageView"]',
-             {ShadowstepDictAttribute.DESCRIPTION: "Подтвердить",
+            ('//*[@content-desc="Confirm"]/*[@class="android.widget.ImageView"]',
+             {ShadowstepDictAttribute.DESCRIPTION: "Confirm",
               ShadowstepDictAttribute.CHILD_SELECTOR: {"class": "android.widget.ImageView"}}),
             ('//*[@class="android.widget.RadioButton"]/..//*[@resource-id="ru.figma.app.debug:id/paymentMethods"]',
              {ShadowstepDictAttribute.CLASS_NAME: "android.widget.RadioButton",
@@ -88,9 +88,9 @@ class TestXPathConverter:
                     },
             ),
             (
-                    '//*[contains(@text, "Подтвердить")][@clickable="true"]',
+                    '//*[contains(@text, "Confirm")][@clickable="true"]',
                     {
-                        ShadowstepDictAttribute.TEXT_CONTAINS: "Подтвердить",
+                        ShadowstepDictAttribute.TEXT_CONTAINS: "Confirm",
                         ShadowstepDictAttribute.CLICKABLE: True,
                     },
             ),
@@ -102,9 +102,9 @@ class TestXPathConverter:
                     },
             ),
             (
-                    '//*[starts-with(@text, "Нач")][@package="ru.app"][@focusable="true"]',
+                    '//*[starts-with(@text, "Start")][@package="ru.app"][@focusable="true"]',
                     {
-                        ShadowstepDictAttribute.TEXT_STARTS_WITH: "Нач",
+                        ShadowstepDictAttribute.TEXT_STARTS_WITH: "Start",
                         ShadowstepDictAttribute.PACKAGE_NAME: "ru.app",
                         ShadowstepDictAttribute.FOCUSABLE: True,
                     },
@@ -118,9 +118,9 @@ class TestXPathConverter:
                     },
             ),
             (
-                    '//*[matches(@text, ".*Тест.*")][@scrollable="false"]',
+                    '//*[matches(@text, ".*Test.*")][@scrollable="false"]',
                     {
-                        ShadowstepDictAttribute.TEXT_MATCHES: ".*Тест.*",
+                        ShadowstepDictAttribute.TEXT_MATCHES: ".*Test.*",
                         ShadowstepDictAttribute.SCROLLABLE: False,
                     },
             ),
@@ -157,10 +157,10 @@ class TestXPathConverter:
                     },
             ),
             (
-                    '//*[matches(@resource-id, ".*btn.*")][contains(@text, "Отправить")][@enabled="true"]',
+                    '//*[matches(@resource-id, ".*btn.*")][contains(@text, "Send")][@enabled="true"]',
                     {
                         ShadowstepDictAttribute.RESOURCE_ID_MATCHES: ".*btn.*",
-                        ShadowstepDictAttribute.TEXT_CONTAINS: "Отправить",
+                        ShadowstepDictAttribute.TEXT_CONTAINS: "Send",
                         ShadowstepDictAttribute.ENABLED: True,
                     },
             ),
@@ -241,9 +241,9 @@ class TestXPathConverter:
                     },
             ),
             (
-                    '//*[@text="Оплатить"]/*[@class="android.widget.ImageView"]',
+                    '//*[@text="Pay"]/*[@class="android.widget.ImageView"]',
                     {
-                        ShadowstepDictAttribute.TEXT: "Оплатить",
+                        ShadowstepDictAttribute.TEXT: "Pay",
                         ShadowstepDictAttribute.CHILD_SELECTOR: {
                             ShadowstepDictAttribute.CLASS_NAME: "android.widget.ImageView",
                         },
@@ -268,10 +268,10 @@ class TestXPathConverter:
                     },
             ),
             (
-                    '//*[@class="android.widget.Button"][starts-with(@text,"Дал")]/*[@content-desc="icon"]',
+                    '//*[@class="android.widget.Button"][starts-with(@text,"Give")]/*[@content-desc="icon"]',
                     {
                         ShadowstepDictAttribute.CLASS_NAME: "android.widget.Button",
-                        ShadowstepDictAttribute.TEXT_STARTS_WITH: "Дал",
+                        ShadowstepDictAttribute.TEXT_STARTS_WITH: "Give",
                         ShadowstepDictAttribute.CHILD_SELECTOR: {
                             ShadowstepDictAttribute.DESCRIPTION: "icon",
                         },
@@ -655,10 +655,10 @@ class TestXPathConverter:
         "xpath, expected",  # noqa: PT006
         [
             # --- text-based ---
-            ('//*[@text="Привет"]', 'new UiSelector().text("Привет");'),
+            ('//*[@text="Hello"]', 'new UiSelector().text("Hello");'),
             ('//*[contains(@text,"Hello")]', 'new UiSelector().textContains("Hello");'),
-            ('//*[starts-with(@text,"Оплат")]', 'new UiSelector().textStartsWith("Оплат");'),
-            ('//*[matches(@text,".*Тест.*")]', 'new UiSelector().textMatches(".*Тест.*");'),
+            ('//*[starts-with(@text,"Pay")]', 'new UiSelector().textStartsWith("Pay");'),
+            ('//*[matches(@text,".*Test.*")]', 'new UiSelector().textMatches(".*Test.*");'),
 
             # --- description ---
             ('//*[@content-desc="desc"]', 'new UiSelector().description("desc");'),
@@ -708,8 +708,8 @@ class TestXPathConverter:
         "xpath, expected",  # noqa: PT006
         [
             (
-                    '//*[starts-with(@text,"Оплат")][@class="android.widget.Button"]/*[@class="android.widget.ImageView"]',
-                    'new UiSelector().textStartsWith("Оплат").className("android.widget.Button").childSelector(new UiSelector().className("android.widget.ImageView"));',
+                    '//*[starts-with(@text,"Pay")][@class="android.widget.Button"]/*[@class="android.widget.ImageView"]',
+                    'new UiSelector().textStartsWith("Pay").className("android.widget.Button").childSelector(new UiSelector().className("android.widget.ImageView"));',
             ),
             (
                     '//*[@class="android.widget.EditText"][@focused="true"][1]',
@@ -720,8 +720,8 @@ class TestXPathConverter:
                     'new UiSelector().packageName("ru.figma.app.debug").resourceIdMatches(".*:id/btn.*");',
             ),
             (
-                    '//*[contains(@content-desc,"Карта")][@clickable="true"]',
-                    'new UiSelector().descriptionContains("Карта").clickable(true);',
+                    '//*[contains(@content-desc,"Map")][@clickable="true"]',
+                    'new UiSelector().descriptionContains("Map").clickable(true);',
             ),
             (
                     '//*[@class="androidx.appcompat.app.ActionBar$Tab"][position()=3]',
@@ -740,28 +740,28 @@ class TestXPathConverter:
                     'new UiSelector().descriptionMatches("[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}");',
             ),
             (
-                    '//*[@scrollable="true"]/*[@text="История"]',
-                    'new UiSelector().scrollable(true).childSelector(new UiSelector().text("История"));',
+                    '//*[@scrollable="true"]/*[@text="History"]',
+                    'new UiSelector().scrollable(true).childSelector(new UiSelector().text("History"));',
             ),
             (
                     '//*[@class="android.widget.CheckBox"][@checkable="true"][@checked="false"][3]',
                     'new UiSelector().className("android.widget.CheckBox").checkable(true).checked(false).instance(2);',
             ),
             (
-                    '//*[starts-with(@text,"Оплат")][contains(@text,"Карт")][@enabled="true"]',
-                    'new UiSelector().textStartsWith("Оплат").textContains("Карт").enabled(true);',
+                    '//*[starts-with(@text,"Pay")][contains(@text,"Card")][@enabled="true"]',
+                    'new UiSelector().textStartsWith("Pay").textContains("Card").enabled(true);',
             ),
             (
                     '//*[matches(@class,"android\\.widget\\..*Button")][2]',
                     'new UiSelector().classNameMatches("android\\.widget\\..*Button").instance(1);',
             ),
             (
-                    '//*[@content-desc="Подтвердить"][@clickable="true"]/*[@class="android.widget.ImageView"]',
-                    'new UiSelector().description("Подтвердить").clickable(true).childSelector(new UiSelector().className("android.widget.ImageView"));',
+                    '//*[@content-desc="Confirm"][@clickable="true"]/*[@class="android.widget.ImageView"]',
+                    'new UiSelector().description("Confirm").clickable(true).childSelector(new UiSelector().className("android.widget.ImageView"));',
             ),
             (
-                    '//*[@class="android.widget.LinearLayout"]/*[@class="android.widget.FrameLayout"]/*[@text="Список"]',
-                    'new UiSelector().className("android.widget.LinearLayout").childSelector(new UiSelector().className("android.widget.FrameLayout").childSelector(new UiSelector().text("Список")));',
+                    '//*[@class="android.widget.LinearLayout"]/*[@class="android.widget.FrameLayout"]/*[@text="List"]',
+                    'new UiSelector().className("android.widget.LinearLayout").childSelector(new UiSelector().className("android.widget.FrameLayout").childSelector(new UiSelector().text("List")));',
             ),
             (
                     '//*[@class="android.widget.TextView"]/..//*[@class="android.widget.LinearLayout"][@enabled="true"][position()=1]',
@@ -772,12 +772,12 @@ class TestXPathConverter:
                     "new UiSelector().scrollable(false).clickable(false).instance(2);",
             ),
             (
-                    '//*[contains(@text,"карт")][@resource-id="ru.figma.app.debug:id/card_number"]',
-                    'new UiSelector().textContains("карт").resourceId("ru.figma.app.debug:id/card_number");',
+                    '//*[contains(@text,"card")][@resource-id="ru.figma.app.debug:id/card_number"]',
+                    'new UiSelector().textContains("card").resourceId("ru.figma.app.debug:id/card_number");',
             ),
             (
-                    '//*[@text="Оплатить"][@long-clickable="false"]',
-                    'new UiSelector().text("Оплатить").longClickable(false);',
+                    '//*[@text="Pay"][@long-clickable="false"]',
+                    'new UiSelector().text("Pay").longClickable(false);',
             ),
             (
                     '//*[@class="android.widget.Button"][@selected="true"]',
@@ -820,8 +820,8 @@ class TestXPathConverter:
                     "new UiSelector().focusable(true).password(true);",
             ),
             (
-                    '//*[contains(@text, "секция")][@class="android.widget.TextView"]',
-                    'new UiSelector().textContains("секция").className("android.widget.TextView");',
+                    '//*[contains(@text, "section")][@class="android.widget.TextView"]',
+                    'new UiSelector().textContains("section").className("android.widget.TextView");',
             ),
             (
                     '//*[matches(@text, "\\d{3}-\\d{2}-\\d{4}")]',

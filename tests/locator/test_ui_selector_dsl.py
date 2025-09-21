@@ -291,20 +291,20 @@ class TestUiSelectorDSL:
         # Build a complex selector similar to the user's example
         image_view = UiSelector().className("android.widget.ImageView")
         selector = (UiSelector()
-                   .description("Подтвердить")
+                   .description("Confirm")
                    .clickable(True)
                    .childSelector(image_view))
         
         result = str(selector)
-        expected = ('new UiSelector().description("Подтвердить").clickable(true)'
+        expected = ('new UiSelector().description("Confirm").clickable(true)'
                    '.childSelector(new UiSelector().className("android.widget.ImageView"));')
         assert result == expected  # noqa: S101
 
     def test_unicode_and_special_characters(self):
         """Test unicode and special characters."""
-        selector = UiSelector().text("Привет мир! 🌍").description("Special chars: @#$%^&*()")
+        selector = UiSelector().text("Hello world! 🌍").description("Special chars: @#$%^&*()")
         result = str(selector)
-        expected = 'new UiSelector().text("Привет мир! 🌍").description("Special chars: @#$%^&*()");'
+        expected = 'new UiSelector().text("Hello world! 🌍").description("Special chars: @#$%^&*()");'
         assert result == expected  # noqa: S101
 
     def test_regex_patterns(self):

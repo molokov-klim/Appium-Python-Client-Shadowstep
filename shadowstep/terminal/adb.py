@@ -643,13 +643,13 @@ class Adb:
         """
         logger.info(f"check_vpn() < {ip_address=}")
 
-        # Определяем команду в виде строки
+        # Define command as string
         command = "adb shell netstat"
         try:
-            # Execute command и получаем вывод
+            # Execute command and get output
             output = subprocess.run(command, shell=True, capture_output=True, text=True, check=True)  # noqa: S602
 
-            # Поиск строки
+            # Search for line
             lines = output.stdout.split("\n")
             for line in lines:
                 if "ESTABLISHED" in line and ip_address in line:
@@ -677,7 +677,7 @@ class Adb:
             logger.info("stop_logcat() > True")
             return True
         logger.error("stop_logcat() > False")
-        logger.info("stop_logcat() [Запущенного процесса logcat не обнаружено]")
+        logger.info("stop_logcat() [No running logcat process found]")
         return False
 
     @staticmethod
@@ -702,21 +702,21 @@ class Adb:
             traceback_info = "".join(traceback.format_tb(sys.exc_info()[2]))
             logger.error(f"{sys.exc_info()[0]}\n{traceback_info}{sys.exc_info()[1]}")
             return False
-        # Разделение вывода на строки и удаление пустых строк
+        # Split output into lines and remove empty lines
         lines = processes.strip().split("\n")
-        # Проход по каждой строке вывода, начиная с 2-й строки, игнорируя заголовки
+        # Iterate through each output line, starting from 2nd line, ignoring headers
         for line in lines[1:]:
-            # Разделение строки на столбцы по пробелам
+            # Split line into columns by spaces
             columns = line.split()
-            # Проверка, что строка имеет не менее 9 столбцов
+            # Check that line has at least 9 columns
             if len(columns) >= 9:
-                # Извлечение PID и имени процесса из соответствующих столбцов
+                # Extract PID and process name from corresponding columns
                 _, process_name = columns[1], columns[8]
-                # Сравнение имени процесса с искомым именем
+                # Compare process name with searched name
                 if name == process_name:
                     logger.info("is_process_exist() > True")
                     return True
-        # Возврат None, если процесс с заданным именем не найден
+        # Return None if process with given name not found
         logger.info("is_process_exist() > False")
         return False
 
@@ -739,7 +739,7 @@ class Adb:
 
         command = f"{command} nohup > /dev/null 2>&1 &"
         try:
-            subprocess.Popen(command, stdout=subprocess.DEVNULL)  # noqa: S603  # не добавлять with
+            subprocess.Popen(command, stdout=subprocess.DEVNULL)  # noqa: S603  # do not add with
             if process != "":
                 time.sleep(1)
                 if not Adb.is_process_exist(name=process):
@@ -771,7 +771,7 @@ class Adb:
             traceback_info = "".join(traceback.format_tb(sys.exc_info()[2]))
             logger.error(f"{sys.exc_info()[0]}\n{traceback_info}{sys.exc_info()[1]}")
             return False
-        # Ожидаем некоторое время перед запуском adb-сервера
+        # Wait some time before starting adb server
         time.sleep(3)
         try:
             command = ["adb", "start-server"]
@@ -806,23 +806,23 @@ class Adb:
             traceback_info = "".join(traceback.format_tb(sys.exc_info()[2]))
             logger.error(f"{sys.exc_info()[0]}\n{traceback_info}{sys.exc_info()[1]}")
             return None
-        # Разделение вывода на строки и удаление пустых строк
+        # Split output into lines and remove empty lines
         lines = processes.strip().split("\n")
-        # Проход по каждой строке вывода, начиная с 2-й строки, игнорируя заголовки
+        # Iterate through each output line, starting from 2nd line, ignoring headers
         for line in lines[1:]:
-            # Разделение строки на столбцы по пробелам
+            # Split line into columns by spaces
             columns = line.split()
-            # Проверка, что строка имеет не менее 9 столбцов
+            # Check that line has at least 9 columns
             if len(columns) >= 9:
-                # Извлечение PID и имени процесса из соответствующих столбцов
+                # Extract PID and process name from corresponding columns
                 pid, process_name = columns[1], columns[8]
-                # Сравнение имени процесса с искомым именем
+                # Compare process name with searched name
                 if name == process_name:
                     logger.info(f"know_pid() > {pid=}")
                     return int(pid)
-        # Возврат None, если процесс с заданным именем не найден
+        # Return None if process with given name not found
         logger.error("know_pid() > None")
-        logger.error("know_pid() [Процесс не обнаружен]")
+        logger.error("know_pid() [Process not found]")
         return None
 
     @staticmethod
@@ -1024,7 +1024,7 @@ class Adb:
 
         command = ["adb", "shell", "screenrecord", f"{path}/{filename}"]
         try:
-            # Запускаем команду adb shell screenrecord для начала записи видео
+            # Start adb shell screenrecord command to begin video recording
             return subprocess.Popen(command)  # noqa: S603
         except subprocess.CalledProcessError:
             logger.error(f"{get_current_func_name()} > None")
@@ -1054,8 +1054,8 @@ class Adb:
 
         command = ["adb", "shell", "screenrecord", f"{path}/{filename}"]
         try:
-            # Запускаем команду adb shell screenrecord для начала записи видео
-            subprocess.Popen(command)  # noqa: S603  # не добавлять with
+            # Start adb shell screenrecord command to begin video recording
+            subprocess.Popen(command)  # noqa: S603  # do not add with
             return True
         except subprocess.CalledProcessError:
             logger.error(f"{get_current_func_name()} > None")
@@ -1120,9 +1120,9 @@ class Adb:
                 A list of package names installed on the device.
         """
         packages_raw = self.execute(command="shell pm list packages")
-        # Используем регулярное выражение для удаления "package:" из каждой строки
+        # Use regular expression to remove "package:" from each line
         packages_raw = re.sub(r"package:", "", packages_raw)
-        # Разбиваем строки на список и удаляем пустые элементы
+        # Split lines into list and remove empty elements
         return [package.strip() for package in packages_raw.split("\n") if package.strip()]
 
     @staticmethod

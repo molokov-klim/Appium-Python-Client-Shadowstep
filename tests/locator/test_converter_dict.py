@@ -569,7 +569,7 @@ class TestDictConverterComplex:
     def test_unicode_and_special_characters(self):
         """Test selector with unicode and special characters."""
         unicode_selector = {
-            "text": "Привет мир! 🌍",
+            "text": "Hello world! 🌍",
             "content-desc": "Special chars: @#$%^&*()",
             "resource-id": "com.example:id/button_with_underscore",
             "class": "android.widget.Button"
@@ -581,8 +581,8 @@ class TestDictConverterComplex:
         logger.info(f"Unicode XPath: {xpath_result}")
         logger.info(f"Unicode UiSelector: {ui_result}")
 
-        assert "Привет мир! 🌍" in xpath_result  # noqa: S101
-        assert "Привет мир! 🌍" in ui_result  # noqa: S101
+        assert "Hello world! 🌍" in xpath_result  # noqa: S101
+        assert "Hello world! 🌍" in ui_result  # noqa: S101
         assert "Special chars: @#$%^&*()" in xpath_result  # noqa: S101
         assert "Special chars: @#$%^&*()" in ui_result  # noqa: S101
 

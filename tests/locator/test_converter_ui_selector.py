@@ -16,10 +16,10 @@ class TestUiSelectorConverter:
         "method_name, arg, expected_xpath_part",  # noqa: PT006
         [
             # --- text-based ---
-            (UiAttribute.TEXT, "Привет", "@text='Привет'"),
+            (UiAttribute.TEXT, "Hello", "@text='Hello'"),
             (UiAttribute.TEXT_CONTAINS, "Hello", "contains(@text, 'Hello')"),
-            (UiAttribute.TEXT_STARTS_WITH, "Оплат", "starts-with(@text, 'Оплат')"),
-            (UiAttribute.TEXT_MATCHES, ".*Тест.*", "matches(@text, '.*Тест.*')"),
+            (UiAttribute.TEXT_STARTS_WITH, "Pay", "starts-with(@text, 'Pay')"),
+            (UiAttribute.TEXT_MATCHES, ".*Test.*", "matches(@text, '.*Test.*')"),
 
             # --- description ---
             (UiAttribute.DESCRIPTION, "desc", "@content-desc='desc'"),
@@ -74,9 +74,9 @@ class TestUiSelectorConverter:
         "selector_str, expected_xpath",  # noqa: PT006
         [
             (
-                    'new UiSelector().textStartsWith("Оплат").className("android.widget.Button")'
+                    'new UiSelector().textStartsWith("Pay").className("android.widget.Button")'
                     '.childSelector(new UiSelector().className("android.widget.ImageView"));',
-                    "//*[starts-with(@text,'Оплат')][@class='android.widget.Button']/*[@class='android.widget.ImageView']"
+                    "//*[starts-with(@text,'Pay')][@class='android.widget.Button']/*[@class='android.widget.ImageView']"
             ),
             (
                     'new UiSelector().className("android.widget.EditText").focused(true).instance(0);',
@@ -87,8 +87,8 @@ class TestUiSelectorConverter:
                     "//*[@package='ru.figma.app.debug'][matches(@resource-id,'.*:id/btn.*')]"
             ),
             (
-                    'new UiSelector().descriptionContains("Карта").clickable(true);',
-                    "//*[contains(@content-desc,'Карта')][@clickable='true']"
+                    'new UiSelector().descriptionContains("Map").clickable(true);',
+                    "//*[contains(@content-desc,'Map')][@clickable='true']"
             ),
             (
                     'new UiSelector().className("androidx.appcompat.app.ActionBar$Tab").index(2);',
@@ -107,31 +107,31 @@ class TestUiSelectorConverter:
                     "//*[matches(@content-desc,'[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}')]"
             ),
             (
-                    'new UiSelector().scrollable(true).childSelector(new UiSelector().text("История"));',
-                    "//*[@scrollable='true']/*[@text='История']"
+                    'new UiSelector().scrollable(true).childSelector(new UiSelector().text("History"));',
+                    "//*[@scrollable='true']/*[@text='History']"
             ),
             (
                     'new UiSelector().className("android.widget.CheckBox").checkable(true).checked(false).instance(2);',
                     "//*[@class='android.widget.CheckBox'][@checkable='true'][@checked='false'][3]"
             ),
             (
-                    'new UiSelector().textStartsWith("Оплат").textContains("Карт").enabled(true);',
-                    "//*[starts-with(@text,'Оплат')][contains(@text,'Карт')][@enabled='true']"
+                    'new UiSelector().textStartsWith("Pay").textContains("Card").enabled(true);',
+                    "//*[starts-with(@text,'Pay')][contains(@text,'Card')][@enabled='true']"
             ),
             (
                     'new UiSelector().classNameMatches("android\\.widget\\..*Button").instance(1);',
                     "//*[matches(@class,'android\\.widget\\..*Button')][2]"
             ),
             (
-                    'new UiSelector().description("Подтвердить").clickable(true)'
+                    'new UiSelector().description("Confirm").clickable(true)'
                     '.childSelector(new UiSelector().className("android.widget.ImageView"));',
-                    "//*[@content-desc='Подтвердить'][@clickable='true']/*[@class='android.widget.ImageView']"
+                    "//*[@content-desc='Confirm'][@clickable='true']/*[@class='android.widget.ImageView']"
             ),
             (
                     'new UiSelector().className("android.widget.LinearLayout")'
                     '.childSelector(new UiSelector().className("android.widget.FrameLayout")'
-                    '.childSelector(new UiSelector().text("Список")))',
-                    "//*[@class='android.widget.LinearLayout']/*[@class='android.widget.FrameLayout']/*[@text='Список']"
+                    '.childSelector(new UiSelector().text("List")))',
+                    "//*[@class='android.widget.LinearLayout']/*[@class='android.widget.FrameLayout']/*[@text='List']"
             ),
             (
                     'new UiSelector().className("android.widget.TextView").fromParent('
@@ -143,12 +143,12 @@ class TestUiSelectorConverter:
                     "//*[@scrollable='false'][@clickable='false'][3]"
             ),
             (
-                    'new UiSelector().textContains("карт").resourceId("ru.figma.app.debug:id/card_number");',
-                    "//*[contains(@text,'карт')][@resource-id='ru.figma.app.debug:id/card_number']"
+                    'new UiSelector().textContains("card").resourceId("ru.figma.app.debug:id/card_number");',
+                    "//*[contains(@text,'card')][@resource-id='ru.figma.app.debug:id/card_number']"
             ),
             (
-                    'new UiSelector().text("Оплатить").longClickable(false);',
-                    "//*[@text='Оплатить'][@long-clickable='false']"
+                    'new UiSelector().text("Pay").longClickable(false);',
+                    "//*[@text='Pay'][@long-clickable='false']"
             ),
             (
                     'new UiSelector().className("android.widget.Button").selected(true);',
@@ -191,8 +191,8 @@ class TestUiSelectorConverter:
                     "//*[@focusable='true'][@password='true']"
             ),
             (
-                    'new UiSelector().textContains("секция").className("android.widget.TextView");',
-                    "//*[contains(@text,'секция')][@class='android.widget.TextView']"
+                    'new UiSelector().textContains("section").className("android.widget.TextView");',
+                    "//*[contains(@text,'section')][@class='android.widget.TextView']"
             ),
             (
                     'new UiSelector().textMatches("\\\\d{3}-\\\\d{2}-\\\\d{4}");',
@@ -314,8 +314,8 @@ class TestUiSelectorConverter:
                     {"class": "android.widget.Button", "enabled": False, "instance": 1}
             ),
             (
-                    'new UiSelector().descriptionContains("Карта").scrollable(true);',
-                    {"content-descContains": "Карта", "scrollable": True}
+                    'new UiSelector().descriptionContains("Map").scrollable(true);',
+                    {"content-descContains": "Map", "scrollable": True}
             ),
             (
                     'new UiSelector().packageName("com.example.app").resourceIdMatches(".*btn.*");',
@@ -355,8 +355,8 @@ class TestUiSelectorConverter:
         "selector_str, expected_dict",  # noqa: PT006
         [
             (
-                    'new UiSelector().textStartsWith("Оплат").textContains("Карт").enabled(true);',
-                    {"textStartsWith": "Оплат", "textContains": "Карт", "enabled": True}
+                    'new UiSelector().textStartsWith("Pay").textContains("Card").enabled(true);',
+                    {"textStartsWith": "Pay", "textContains": "Card", "enabled": True}
             ),
         ]
     )

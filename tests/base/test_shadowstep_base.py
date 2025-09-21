@@ -65,12 +65,12 @@ class TestBase:
         app.disconnect()
         app.reconnect()
         assert app.driver is not None, "Session was not created on reconnection"  # noqa: S101
-        assert app.driver.session_id is not None, "Сессия не была создана при переподключении"  # noqa: S101
+        assert app.driver.session_id is not None, "Session was not created on reconnection"  # noqa: S101
 
     def test_session_state_before_command_execution(self, app: Shadowstep):
         """Test session state before executing WebDriver commands"""
         if app.driver.session_id is None:
-            app.reconnect()  # Reconnection при отсутствии активной сессии
+            app.reconnect()  # Reconnection when no active session
         try:
             app.driver.get_screenshot_as_png()
         except WebDriverException as error:

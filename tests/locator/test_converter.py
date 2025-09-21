@@ -221,14 +221,14 @@ class TestUnifiedLocatorConverter:
     def test_unicode_and_special_characters(self):
         """Test conversion with unicode and special characters."""
         unicode_dict: dict[str, Any] = {
-            "text": "Привет мир! 🌍",
+            "text": "Hello world! 🌍",
             "content-desc": "Special chars: @#$%^&*()"
         }
         
         xpath_tuple = self.converter.to_xpath(unicode_dict)
         ui_selector = self.converter.to_uiselector(unicode_dict)
         
-        assert "Привет мир! 🌍" in xpath_tuple[1]  # noqa: S101
-        assert "Привет мир! 🌍" in ui_selector  # noqa: S101
+        assert "Hello world! 🌍" in xpath_tuple[1]  # noqa: S101
+        assert "Hello world! 🌍" in ui_selector  # noqa: S101
         assert "Special chars: @#$%^&*()" in xpath_tuple[1]  # noqa: S101
         assert "Special chars: @#$%^&*()" in ui_selector  # noqa: S101
