@@ -86,12 +86,13 @@ class ElementProperties:
 
     @log_debug()
     def get_attributes(self) -> dict[str, Any]:
-        """Get all element attributes."""
         xpath_expr = self._resolve_xpath_for_attributes()
         if not xpath_expr:
             return {}
-        return self.utilities.extract_el_attrs_from_source(
-            xpath_expr, self.shadowstep.driver.page_source)[0]  # type: ignore[reportOptionalMemberAccess]
+        extracted_attributes = self.utilities.extract_el_attrs_from_source(xpath_expr, self.shadowstep.driver.page_source)
+        if any(extracted_attributes):
+            return extracted_attributes[0]
+        return {}
 
     @log_debug()
     def get_property(self, name: str) -> Any:  # noqa: ANN401
