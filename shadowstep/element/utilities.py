@@ -74,7 +74,8 @@ class ElementUtilities:
             matches = root.xpath(self.remove_null_value(("xpath", xpath_expr)[1]))  # type: ignore[attr-defined]
             if not matches:
                 self.logger.warning("No matches found for XPath: %s", xpath_expr)
-                return []
+                msg = "No matches found for XPath: %s"
+                raise ShadowstepElementException(msg, xpath_expr)
             result: list[dict[str, Any]] = [
                 {**{k: str(v) for k, v in el.attrib.items()}}  # type: ignore[attr-defined]
                 for el in matches  # type: ignore[reportUnknownVariableType]

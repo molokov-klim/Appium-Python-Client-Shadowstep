@@ -135,7 +135,7 @@ class ElementDOM:
             List of found child elements.
 
         Raises:
-            ShadowstepElementException: If xpath resolution fails.
+            ShadowstepElementException: If xpath resolution fails or any element not found.
 
         """
         if isinstance(locator, Element):  # type: ignore[arg-type]
