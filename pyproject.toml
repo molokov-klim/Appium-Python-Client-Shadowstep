@@ -1,12 +1,8 @@
-[build-system]
-requires = ["setuptools", "wheel"]
-build-backend = "setuptools.build_meta"
-
 [project]
 name = "appium-python-client-shadowstep"
 version = "0.34.164"
 description = "UI Testing Framework powered by Appium Python Client"
-authors = [{ name = "Klim Molokov", email = "klim.molokov@yandex.ru" }]
+authors = [{ name = "Molokov Klim", email = "ultrakawaii9654449192@gmail.com" }]
 license = "MIT"
 readme = "README.md"
 requires-python = ">=3.9"
@@ -16,7 +12,7 @@ dependencies = [
     "selenium>=4.12", # webdriver
     "websocket-client>=1.8.0", # logcat
     "requests>=2.31.0", # http
-    "opencv-python>=4.8.0.74", # image
+    "opencv-python>=4.12.0.88", # image
     "numpy>=2.0.0", # image
     "Pillow>=11.3.0", # image
     "pytesseract>=0.3.10", # image (ocr)
@@ -29,7 +25,6 @@ dependencies = [
     "unidecode>=1.4.0", # page object generator
     "eulxml>=1.1.3", # ast parsing xpath
     "setuptools==80.9.0", # nessecary dependency for eulxml
-    "pyright>=1.1.405",
 ]
 
 keywords = ["appium", "testing", "uiautomator2", "android", "automation", "framework"]
@@ -44,16 +39,10 @@ classifiers = [
 
 [project.optional-dependencies]
 dev = [
-    "ruff>=0.5.0",
-    "pyright>=1.1.377",
-    "pytest>=7.4.0",
-    "pytest-cov>=4.1.0",
-    "setuptools",
-    "icecream",
-]
-docs = [
-    "sphinx>=7.2.0",
-    "myst-parser>=2.0.0",
+    "ruff",
+    "pyright",
+    "pytest",
+    "pytest-cov",
 ]
 
 [project.urls]
@@ -84,25 +73,78 @@ select = ["ALL"]
 
 exclude = [
     "**/__pycache__",
+    ".bzr",
+    ".direnv",
+    ".eggs",
+    ".git",
+    ".git-rewrite",
+    ".hg",
+    ".ipynb_checkpoints",
+    ".mypy_cache",
+    ".nox",
+    ".pants.d",
+    ".pyenv",
+    ".pytest_cache",
+    ".pytype",
+    ".ruff_cache",
+    ".svn",
+    ".tox",
+    ".venv",
+    ".vscode",
+    "__pypackages__",
+    "_build",
+    "buck-out",
+    "build",
+    "dist",
+    "node_modules",
+    "site-packages",
+    "venv",
+    "build",
+    "dist",
+    "debug*",
+    "tests",
+    "tests/*",
+    "**/tests",
+    "**/tests/*",
+]
+
+# Optional auto-fix:
+[tool.ruff.format]
+preview = true
+
+
+# ---------- PYRIGHT ----------
+
+[tool.pyright]
+include = ["."]
+exclude = [
+    "**/__pycache__",
     ".venv",
     "build",
     "dist",
-    "debug*.py",
-    "tests"
+    "debug*",
+    "tests",
+    "tests/*",
+    "**/tests",
+    "**/tests/*",
 ]
+typeCheckingMode = "strict"
 
-# Опционально авто-правки:
-[tool.ruff.format]
-preview = true
+venvPath = "."
+venv = ".venv"
+
 
 # ---------- PYTEST ----------
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 addopts = "-svl --log-cli-level INFO --tb=short --setup-show"
-#-v (или --verbose) — включает подробный вывод, показывая названия тестов и их статус (PASSED, FAILED и т. д.).
-#--tb=short — настраивает формат трассировки ошибок (traceback):
-#short — выводит укороченный traceback, только ключевые строки с ошибкой (меньше "шума" по сравнению с полным выводом).
-#Другие варианты: --tb=auto (по умолчанию), --tb=long, --tb=line, --tb=native, --tb=no (вообще не показывать).
+
+
+# ---------- BUILD ----------
+[build-system]
+requires = ["setuptools", "wheel"]
+build-backend = "setuptools.build_meta"
+
 
 # ---------- DEPLOY ----------
 [tool.setuptools.packages.find]
