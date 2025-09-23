@@ -89,7 +89,8 @@ class ElementProperties:
         xpath_expr = self._resolve_xpath_for_attributes()
         if not xpath_expr:
             return {}
-        extracted_attributes = self.utilities.extract_el_attrs_from_source(xpath_expr, self.shadowstep.driver.page_source)
+        extracted_attributes = self.utilities.extract_el_attrs_from_source(xpath_expr,
+                                                                           self.shadowstep.driver.page_source)
         if any(extracted_attributes):
             return extracted_attributes[0]
         return {}

@@ -110,6 +110,7 @@ class WebDriverSingleton(WebDriver):
         logger.debug("%s", get_current_func_name())
         return cast("WebDriver", cls._driver)
 
+_sentinel: Any = object()
 
 class ShadowstepBase:
     """Base class for Shadowstep framework providing Appium connectivity."""
@@ -117,19 +118,19 @@ class ShadowstepBase:
     def __init__(self) -> None:
         """Initialize the ShadowstepBase instance."""
         self.logger: logging.Logger = logger
-        self.driver: WebDriver | None = None
-        self.server_ip: str | None = None
-        self.server_port: int | None = None
-        self.capabilities: dict[str, Any] | None = None
-        self.options: UiAutomator2Options | None = None
-        self.extensions: list[WebDriver] | None = None
-        self.ssh_password: str | None = None
-        self.ssh_user: str | None = None
+        self.driver: WebDriver = _sentinel
+        self.server_ip: str = _sentinel
+        self.server_port: int = _sentinel
+        self.capabilities: dict[str, Any] = _sentinel
+        self.options: UiAutomator2Options = _sentinel
+        self.extensions: list[WebDriver] = _sentinel
+        self.ssh_password: str = _sentinel
+        self.ssh_user: str = _sentinel
         self.ssh_port: int = 22
-        self.command_executor: str | None = None
-        self.transport: Transport | None = None
-        self.terminal: Terminal | None = None
-        self.adb: Adb | None = None
+        self.command_executor: str = _sentinel
+        self.transport: Transport = _sentinel
+        self.terminal: Terminal = _sentinel
+        self.adb: Adb = _sentinel
         self._ignored_auto_discover_dirs: set[str] = {
             "__pycache__", ".venv", "venv", "site-packages", "dist-packages", ".git",
             "build", "dist", ".idea", ".pytest_cache", "results",
@@ -140,11 +141,11 @@ class ShadowstepBase:
                 capabilities: dict[str, Any],
                 server_ip: str = "127.0.0.1",
                 server_port: int = 4723,
-                options: (AppiumOptions | list[AppiumOptions]) | None = None,
-                extensions: list[WebDriver] | None = None,
-                ssh_user: str | None = None,
-                ssh_password: str | None = None,
-                command_executor: str | None = None,
+                options: (AppiumOptions | list[AppiumOptions]) = _sentinel,
+                extensions: list[WebDriver] = _sentinel,
+                ssh_user: str = _sentinel,
+                ssh_password: str = _sentinel,
+                command_executor: str = _sentinel,
                 ) -> None:
         """Connect to a device using the Appium server and initialize the driver.
 
@@ -181,7 +182,7 @@ class ShadowstepBase:
         self.command_executor = command_executor
 
         self._capabilities_to_options()
-        if self.command_executor is None:
+        if self.command_executor is _sentinel:
             self.command_executor = f"http://{server_ip}:{server_port!s}/wd/hub"
 
         self.logger.info("Connecting to server: %s", self.command_executor)
@@ -210,14 +211,14 @@ class ShadowstepBase:
         """
         self.logger.debug("%s", get_current_func_name())
         try:
-            if self.driver is not None:
+            if self.driver is not _sentinel:
                 response = requests.delete(
                     f"{self.command_executor}/session/{self.driver.session_id}",
                     timeout=30,
                 )
                 self.logger.info("Response: %s", response)
                 self.driver.quit()
-                self.driver = None
+                self.driver = _sentinel
                 WebDriverSingleton.clear_instance()
         except InvalidSessionIdException:
             self.logger.debug("%s InvalidSessionIdException", get_current_func_name())
@@ -234,9 +235,9 @@ class ShadowstepBase:
         self.logger.debug("%s", get_current_func_name())
         self.disconnect()
         WebDriverSingleton.clear_instance()
-        if (self.server_ip is not None and
-            self.server_port is not None and
-            self.capabilities is not None):
+        if (self.server_ip is not _sentinel and
+            self.server_port is not _sentinel and
+            self.capabilities is not _sentinel):
             self.connect(command_executor=self.command_executor,
                          server_ip=self.server_ip,
                          server_port=self.server_port,
@@ -299,7 +300,7 @@ class ShadowstepBase:
                     if not session:
                         continue
                     session_id = session.get("sessionId")
-                    if self.driver is not None and session_id == self.driver.session_id:
+                    if self.driver is not _sentinel and session_id == self.driver.session_id:
                         self.logger.debug("Session found in Grid: %s", session_id)
                         return True
 
@@ -326,7 +327,7 @@ class ShadowstepBase:
             for node in nodes:
                 session_id = node.get("id", None)
                 node.get("ready", False)
-                if self.driver is not None and self.driver.session_id == session_id:
+                if self.driver is not _sentinel and self.driver.session_id == session_id:
                     self.logger.debug("Found session_id on standalone: %s", session_id)
                     return True
             return False  # noqa: TRY300
@@ -350,7 +351,7 @@ class ShadowstepBase:
             for node in nodes:
                 session_id = node.get("id", None)
                 node.get("ready", False)
-                if self.driver is not None and self.driver.session_id == session_id:
+                if self.driver is not _sentinel and self.driver.session_id == session_id:
                     self.logger.debug("Found session_id on standalone: %s", session_id)
                     return True
             return False  # noqa: TRY300
@@ -384,7 +385,7 @@ class ShadowstepBase:
     def _capabilities_to_options(self) -> None:  # noqa: C901, PLR0912, PLR0915
         # if provided caps instead options, redeclare caps to options
         # see https://github.com/appium/appium-uiautomator2-driver
-        if self.capabilities is not None and self.options is None:
+        if self.capabilities is not _sentinel and self.options is _sentinel:
             self.options = UiAutomator2Options()
 
             # General

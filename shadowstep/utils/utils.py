@@ -16,7 +16,7 @@ def find_coordinates_by_vector(
     direction: int,
     distance: int,
     start_x: int,
-    start_y: int
+    start_y: int,
 ) -> tuple[int, int]:
     angle_radians = direction * (math.pi / 180)
     dy = abs(distance * math.cos(angle_radians))
@@ -38,19 +38,6 @@ def get_current_func_name(depth: int = 1) -> str:
     return frame.f_code.co_name
 
 def grep_pattern(input_string: str, pattern: str) -> list[str]:
-    """
-    Search for lines matching a specified pattern within an input string.
-
-    Args:
-        input_string : str
-            The input string containing multiple lines to be searched.
-        pattern : str
-            The regular expression pattern to match against each line.
-
-    Returns:
-        List[str]
-            A list of lines that contain matches for the specified pattern.
-    """
     lines = input_string.split("\n")  # Split the input string into lines
     regex = re.compile(pattern)  # Compile the regex pattern
     return [line for line in lines if regex.search(line)]  # Filter lines matching the pattern
