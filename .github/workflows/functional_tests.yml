@@ -126,13 +126,7 @@ jobs:
           sleep 10
           
           # Check if server is running
-          if curl -s http://127.0.0.1:4723/status > /dev/null; then
-            echo "✅ Appium server is running"
-            curl -s http://127.0.0.1:4723/status
-          else
-            echo "❌ Appium server failed to start"
-            cat appium.log
-          fi
+          if curl -s http://127.0.0.1:4723/status > /dev/null; then echo "✅ Appium server is running"; curl -s http://127.0.0.1:4723/status; else echo "❌ Appium server failed to start"; cat appium.log; fi
           
           # Kill Appium server
           kill $APPIUM_PID || true
