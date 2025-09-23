@@ -33,6 +33,11 @@ class TestShadowstep:
         assert element.timeout == 29  # noqa: S101
         assert element.poll_frequency == 0.7  # noqa: S101
         assert element.ignored_exceptions == [TimeoutError]  # noqa: S101
+        print("+++++++")
+        print(element)
+        print(app.driver.page_source)
+        print(element)
+        print("+++++++")
         element.tap()
         assert element.driver is not None  # noqa: S101
 
