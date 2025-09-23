@@ -1,4 +1,4 @@
-name: Functional Tests
+name: Shadowstep Functional Tests
 
 on:
   # Manual trigger for functional tests
@@ -56,10 +56,14 @@ jobs:
 
     # Skip matrix jobs based on input
     if: |
-      github.event.inputs.test_suite == 'all' || 
-      github.event.inputs.test_suite == matrix.test_target.name ||
       github.event_name == 'push' ||
-      github.event_name == 'schedule'
+      github.event_name == 'schedule' ||
+      github.event.inputs.test_suite == 'all' ||
+      (github.event.inputs.test_suite == 'element' && contains(matrix.test_target.name, 'element')) ||
+      (github.event.inputs.test_suite == 'page_object' && contains(matrix.test_target.name, 'page_object')) ||
+      (github.event.inputs.test_suite == 'terminal' && contains(matrix.test_target.name, 'terminal')) ||
+      (github.event.inputs.test_suite == 'navigator' && contains(matrix.test_target.name, 'navigator')) ||
+      (github.event.inputs.test_suite == 'locator' && contains(matrix.test_target.name, 'locator'))
 
     env:
       # Based on your conftest.py configuration
