@@ -15,9 +15,11 @@ Shadowstep is a modular UI automation framework for Android applications built o
 [![PyPI version](https://badge.fury.io/py/appium-python-client-shadowstep.svg)](https://badge.fury.io/py/appium-python-client-shadowstep)
 [![Downloads](https://pepy.tech/badge/appium-python-client-shadowstep)](https://pepy.tech/project/appium-python-client-shadowstep)
 
-[![Pylint Tests](https://github.com/molokov-klim/Appium-Python-Client-Shadowstep/actions/workflows/pylint.yml/badge.svg)](https://github.com/molokov-klim/Appium-Python-Client-Shadowstep/actions/workflows/pylint.yml)
-[![Pyright Tests](https://github.com/molokov-klim/Appium-Python-Client-Shadowstep/actions/workflows/pyright.yml/badge.svg)](https://github.com/molokov-klim/Appium-Python-Client-Shadowstep/actions/workflows/pyright.yml)
-[![Ruff Tests](https://github.com/molokov-klim/Appium-Python-Client-Shadowstep/actions/workflows/ruff.yml/badge.svg)](https://github.com/molokov-klim/Appium-Python-Client-Shadowstep/actions/workflows/ruff.yml)
+[![Tests](https://github.com/molokov-klim/Appium-Python-Client-Shadowstep/actions/workflows/pylint.yml/badge.svg)](https://github.com/molokov-klim/Appium-Python-Client-Shadowstep/actions/workflows/pylint.yml)
+[![Tests](https://github.com/molokov-klim/Appium-Python-Client-Shadowstep/actions/workflows/pyright.yml/badge.svg)](https://github.com/molokov-klim/Appium-Python-Client-Shadowstep/actions/workflows/pyright.yml)
+[![Tests](https://github.com/molokov-klim/Appium-Python-Client-Shadowstep/actions/workflows/ruff.yml/badge.svg)](https://github.com/molokov-klim/Appium-Python-Client-Shadowstep/actions/workflows/ruff.yml)
+
+[![Tests](https://github.com/molokov-klim/Appium-Python-Client-Shadowstep/actions/workflows/functional_tests.yml/badge.svg)](https://github.com/molokov-klim/Appium-Python-Client-Shadowstep/actions/workflows/functional_tests.yml)
 
 
 ---
