@@ -1,7 +1,6 @@
 name: Functional Tests
 
 on:
-  workflow_dispatch:
   push:
     branches: [ develop, main ]
   pull_request:
