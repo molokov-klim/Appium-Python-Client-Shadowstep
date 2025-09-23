@@ -27,10 +27,10 @@ jobs:
     - name: Test basic functionality
       run: |
         echo "Testing basic imports..."
-        uv run python -c "import shadowstep; print('✅ Shadowstep imports successfully')"
+        PYTHONPATH=$PWD uv run python -c "import shadowstep; print('✅ Shadowstep imports successfully')"
         
         echo "Running simple tests..."
-        uv run pytest tests/decorators/ -v --tb=short || true
+        PYTHONPATH=$PWD uv run pytest tests/decorators/ -v --tb=short || true
         
         echo "✅ Basic functional test completed"
 
@@ -38,6 +38,7 @@ jobs:
     runs-on: ubuntu-latest
 
     env:
+      CI: true
       API_LEVEL: 29
       ARCH: x86_64
 
@@ -93,6 +94,9 @@ jobs:
         emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
         disable-animations: false
         script: echo "Generated AVD snapshot for caching."
+
+    - name: Debug CI
+      run: echo "CI=$CI"
 
     - name: Run Android tests
       uses: reactivecircus/android-emulator-runner@v2
