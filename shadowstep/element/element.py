@@ -8,11 +8,10 @@ from __future__ import annotations
 import logging
 from typing import TYPE_CHECKING, Any, cast
 
+from shadowstep.element import ElementDOM
 from shadowstep.element.actions import ElementActions
 from shadowstep.element.base import ElementBase
 from shadowstep.element.coordinates import ElementCoordinates
-
-# ElementDOM imported in TYPE_CHECKING block to avoid circular import
 from shadowstep.element.gestures import ElementGestures
 from shadowstep.element.properties import ElementProperties
 from shadowstep.element.screenshots import ElementScreenshots
@@ -66,16 +65,14 @@ class Element(ElementBase):
         super().__init__(locator, shadowstep, timeout, poll_frequency, ignored_exceptions, native)
         self.logger = logging.getLogger(f"{__name__}.{self.__class__.__name__}")
         self.logger.debug("Initialized Element with locator: %s", self.locator)
-        self.utilities = ElementUtilities(self)
-        self.properties = ElementProperties(self)
-        # Import ElementDOM here to avoid circular import
-        from shadowstep.element.dom import ElementDOM  # noqa: PLC0415
-        self.dom = ElementDOM(self)
-        self.actions = ElementActions(self)
-        self.gestures = ElementGestures(self)
-        self.coordinates = ElementCoordinates(self)
-        self.screenshots = ElementScreenshots(self)
-        self.waiting = ElementWaiting(self)
+        self.utilities: ElementUtilities = ElementUtilities(self)
+        self.properties: ElementProperties = ElementProperties(self)
+        self.dom: ElementDOM = ElementDOM(self)
+        self.actions: ElementActions = ElementActions(self)
+        self.gestures: ElementGestures = ElementGestures(self)
+        self.coordinates: ElementCoordinates = ElementCoordinates(self)
+        self.screenshots: ElementScreenshots = ElementScreenshots(self)
+        self.waiting: ElementWaiting = ElementWaiting(self)
 
     def __repr__(self) -> str:
         """Return string representation of Element.

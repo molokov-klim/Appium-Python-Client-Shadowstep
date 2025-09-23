@@ -3,6 +3,7 @@
 This module provides DOM-related functionality for elements,
 including getting child elements, parents, siblings, and cousins.
 """
+
 from __future__ import annotations
 
 import logging
@@ -19,7 +20,6 @@ from selenium.webdriver.support import expected_conditions
 from selenium.webdriver.support.wait import WebDriverWait
 
 from shadowstep.decorators.decorators import log_debug
-from shadowstep.element.element import Element
 from shadowstep.exceptions.shadowstep_exceptions import (
     ShadowstepElementException,
     ShadowstepResolvingLocatorError,
@@ -30,6 +30,7 @@ from shadowstep.locator.types.shadowstep_dict import ShadowstepDictAttribute
 if TYPE_CHECKING:
     from selenium.types import WaitExcTypes
 
+    from shadowstep.element.element import Element
     from shadowstep.element.utilities import ElementUtilities
     from shadowstep.locator import LocatorConverter
     from shadowstep.shadowstep import Shadowstep
@@ -52,11 +53,13 @@ class ElementDOM:
         self.utilities: ElementUtilities = element.utilities
 
     @log_debug()
-    def get_element(self,
-                    locator: tuple[str, str] | dict[str, Any] | Element | UiSelector,
-                    timeout: int = 30,
-                    poll_frequency: float = 0.5,
-                    ignored_exceptions: WaitExcTypes | None = None) -> Element:
+    def get_element(
+        self,
+        locator: tuple[str, str] | dict[str, Any] | Element | UiSelector,
+        timeout: int = 30,
+        poll_frequency: float = 0.5,
+        ignored_exceptions: WaitExcTypes | None = None,
+    ) -> Element:
         """Get a child element relative to the current element.
 
         Args:
@@ -72,6 +75,8 @@ class ElementDOM:
             ShadowstepResolvingLocatorError: If locator resolution fails.
 
         """
+        from shadowstep.element.element import Element  # noqa: PLC0415
+
         resolved_locator = None
         if isinstance(locator, Element):  # type: ignore[arg-type]
             locator = locator.locator
@@ -109,19 +114,21 @@ class ElementDOM:
             msg = "Failed to resolve locator"
             raise ShadowstepResolvingLocatorError(msg)
 
-        return Element(locator=resolved_locator,  # type: ignore[return-value]
-                       shadowstep=self.shadowstep,
-                       timeout=timeout,
-                       poll_frequency=poll_frequency,
-                       ignored_exceptions=ignored_exceptions)
+        return Element(
+            locator=resolved_locator,  # type: ignore[return-value]
+            shadowstep=self.shadowstep,
+            timeout=timeout,
+            poll_frequency=poll_frequency,
+            ignored_exceptions=ignored_exceptions,
+        )
 
     @log_debug()
     def get_elements(
-            self,
-            locator: tuple[str, str] | dict[str, Any] | Element | UiSelector,
-            timeout: float = 30,
-            poll_frequency: float = 0.5,
-            ignored_exceptions: WaitExcTypes | None = None,
+        self,
+        locator: tuple[str, str] | dict[str, Any] | Element | UiSelector,
+        timeout: float = 30,
+        poll_frequency: float = 0.5,
+        ignored_exceptions: WaitExcTypes | None = None,
     ) -> list[Element]:
         """Get multiple child elements relative to the current element.
 
@@ -138,6 +145,8 @@ class ElementDOM:
             ShadowstepElementException: If xpath resolution fails or any element not found.
 
         """
+        from shadowstep.element.element import Element  # noqa: PLC0415
+
         if isinstance(locator, Element):  # type: ignore[arg-type]
             locator = locator.locator
 
@@ -185,18 +194,22 @@ class ElementDOM:
                 continue
             except WebDriverException as error:
                 err_msg = str(error).lower()
-                if ("instrumentation process is not running" in err_msg or
-                        "socket hang up" in err_msg):
+                if (
+                    "instrumentation process is not running" in err_msg
+                    or "socket hang up" in err_msg
+                ):
                     self.element.utilities.handle_driver_error(error)
                     continue
                 raise
         return []
 
     @log_debug()
-    def get_parent(self,
-                   timeout: float = 30.0,
-                   poll_frequency: float = 0.5,
-                   ignored_exceptions: WaitExcTypes | None = None) -> Element:
+    def get_parent(
+        self,
+        timeout: float = 30.0,
+        poll_frequency: float = 0.5,
+        ignored_exceptions: WaitExcTypes | None = None,
+    ) -> Element:
         """Get the parent element of the current element.
 
         Args:
@@ -208,20 +221,26 @@ class ElementDOM:
             The parent element.
 
         """
+        from shadowstep.element.element import Element  # noqa: PLC0415
+
         clean_locator = self.utilities.remove_null_value(self.element.locator)
         xpath = self.converter.to_xpath(clean_locator)
         xpath = (xpath[0], xpath[1] + "/..")
-        return Element(locator=xpath,  # type: ignore[return-value]
-                       shadowstep=self.shadowstep,
-                       timeout=timeout,
-                       poll_frequency=poll_frequency,
-                       ignored_exceptions=ignored_exceptions)
+        return Element(
+            locator=xpath,  # type: ignore[return-value]
+            shadowstep=self.shadowstep,
+            timeout=timeout,
+            poll_frequency=poll_frequency,
+            ignored_exceptions=ignored_exceptions,
+        )
 
     @log_debug()
-    def get_parents(self,
-                    timeout: float = 30.0,
-                    poll_frequency: float = 0.5,
-                    ignored_exceptions: WaitExcTypes | None = None) -> list[Element]:
+    def get_parents(
+        self,
+        timeout: float = 30.0,
+        poll_frequency: float = 0.5,
+        ignored_exceptions: WaitExcTypes | None = None,
+    ) -> list[Element]:
         """Get all ancestor elements of the current element.
 
         Args:
@@ -242,11 +261,13 @@ class ElementDOM:
         return parents
 
     @log_debug()
-    def get_sibling(self,
-                    locator: tuple[str, str] | dict[str, Any] | Element | UiSelector,
-                    timeout: float = 30.0,
-                    poll_frequency: float = 0.5,
-                    ignored_exceptions: WaitExcTypes | None = None) -> Element:
+    def get_sibling(
+        self,
+        locator: tuple[str, str] | dict[str, Any] | Element | UiSelector,
+        timeout: float = 30.0,
+        poll_frequency: float = 0.5,
+        ignored_exceptions: WaitExcTypes | None = None,
+    ) -> Element:
         """Get a sibling element of the current element.
 
         Args:
@@ -259,6 +280,8 @@ class ElementDOM:
             The found sibling element.
 
         """
+        from shadowstep.element.element import Element  # noqa: PLC0415
+
         clean_locator = self.utilities.remove_null_value(self.element.locator)
         base_xpath = self.converter.to_xpath(clean_locator)[1]
         sibling_locator = self.utilities.remove_null_value(locator)
@@ -274,11 +297,13 @@ class ElementDOM:
         )
 
     @log_debug()
-    def get_siblings(self,
-                     locator: tuple[str, str] | dict[str, Any] | Element | UiSelector,
-                     timeout: float = 30.0,
-                     poll_frequency: float = 0.5,
-                     ignored_exceptions: WaitExcTypes | None = None) -> list[Element]:
+    def get_siblings(
+        self,
+        locator: tuple[str, str] | dict[str, Any] | Element | UiSelector,
+        timeout: float = 30.0,
+        poll_frequency: float = 0.5,
+        ignored_exceptions: WaitExcTypes | None = None,
+    ) -> list[Element]:
         """Get all sibling elements of the current element.
 
         Args:
@@ -301,12 +326,13 @@ class ElementDOM:
 
     @log_debug()
     def get_cousin(
-            self,
-            cousin_locator: tuple[str, str] | dict[str, Any] | Element | UiSelector,
-            depth_to_parent: int = 1,
-            timeout: float = 30.0,
-            poll_frequency: float = 0.5,
-            ignored_exceptions: WaitExcTypes | None = None) -> Element:
+        self,
+        cousin_locator: tuple[str, str] | dict[str, Any] | Element | UiSelector,
+        depth_to_parent: int = 1,
+        timeout: float = 30.0,
+        poll_frequency: float = 0.5,
+        ignored_exceptions: WaitExcTypes | None = None,
+    ) -> Element:
         """Get a cousin element of the current element.
 
         Args:
@@ -320,6 +346,8 @@ class ElementDOM:
             The found cousin element.
 
         """
+        from shadowstep.element.element import Element  # noqa: PLC0415
+
         depth_to_parent += 1
         clean_base_locator = self.utilities.remove_null_value(self.element.locator)
         current_xpath = self.converter.to_xpath(clean_base_locator)[1]
@@ -339,12 +367,14 @@ class ElementDOM:
         )
 
     @log_debug()
-    def get_cousins(self,
-                    cousin_locator: tuple[str, str] | dict[str, Any] | Element | UiSelector,
-                    depth_to_parent: int = 1,
-                    timeout: float = 30.0,
-                    poll_frequency: float = 0.5,
-                    ignored_exceptions: WaitExcTypes | None = None) -> list[Element]:
+    def get_cousins(
+        self,
+        cousin_locator: tuple[str, str] | dict[str, Any] | Element | UiSelector,
+        depth_to_parent: int = 1,
+        timeout: float = 30.0,
+        poll_frequency: float = 0.5,
+        ignored_exceptions: WaitExcTypes | None = None,
+    ) -> list[Element]:
         """Get all cousin elements of the current element.
 
         Args:
