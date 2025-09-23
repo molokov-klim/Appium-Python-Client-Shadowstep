@@ -129,7 +129,7 @@ jobs:
           if curl -s http://127.0.0.1:4723/status > /dev/null; then echo "✅ Appium server is running"; curl -s http://127.0.0.1:4723/status; else echo "❌ Appium server failed to start"; cat appium.log; fi
           
           # Run tests if Appium server is working
-          if curl -s http://127.0.0.1:4723/status > /dev/null; then echo "Running tests..."; uv run pytest tests/test_shadowstep/ -v --tb=short || echo "Tests failed but continuing"; else echo "Skipping tests - Appium server not ready"; fi
+          if curl -s http://127.0.0.1:4723/status > /dev/null; then echo "Running tests..."; PYTHONPATH=$PWD uv run pytest tests/test_shadowstep/ -v --tb=short || echo "Tests failed but continuing"; else echo "Skipping tests - Appium server not ready"; fi
           
           # Kill Appium server
           kill $APPIUM_PID || true
