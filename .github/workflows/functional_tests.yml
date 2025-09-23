@@ -1,6 +1,5 @@
 name: Functional Tests
 
-
 on:
   push:
     branches: [ develop, main ]
@@ -69,9 +68,6 @@ jobs:
         emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
         disable-animations: false
         script: echo "Generated AVD snapshot for caching."
-
-    - name: Debug CI
-      run: echo "CI=$CI"
 
     - name: Run Android tests
       uses: reactivecircus/android-emulator-runner@v2
