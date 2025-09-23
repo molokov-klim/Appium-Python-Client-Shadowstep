@@ -1,5 +1,4 @@
-"""
-Decorators module for Shadowstep framework.
+"""Decorators module for Shadowstep framework.
 
 This module provides various decorators for enhancing method functionality
 including retry logic, logging, timing, and Allure reporting integration.
@@ -25,7 +24,7 @@ from selenium.common import (
     NoSuchDriverException,
     StaleElementReferenceException,
 )
-from typing_extensions import Concatenate, ParamSpec  # noqa: UP035
+from typing_extensions import Concatenate, ParamSpec
 
 # Type variables for better type safety
 P = ParamSpec("P")
@@ -41,16 +40,15 @@ DEFAULT_EXCEPTIONS: tuple[type[Exception], ...] = (
 )
 
 
-def fail_safe(  # noqa: C901
+def fail_safe(  # noqa: C901, PLR0913
         retries: int = 3,
         delay: float = 0.5,
         raise_exception: type[Exception] | None = None,
-        fallback: Any = None,
+        fallback: Any = None,  # noqa: ANN401
         exceptions: tuple[type[Exception], ...] = DEFAULT_EXCEPTIONS,
-        log_args: bool = False,
+        log_args: bool = False,  # noqa: FBT001, FBT002
 ) -> Callable[[F], F]:
-    """
-    Decorator that retries a method call on specified exceptions.
+    """Retry a method call on specified exceptions.
 
     Args:
         retries: Number of retry attempts.
@@ -68,83 +66,95 @@ def fail_safe(  # noqa: C901
         def my_method(self):
             # This method will be retried up to 3 times
             pass
+
     """
 
     def decorator(func: F) -> F:  # noqa: C901
         @functools.wraps(func)
-        def wrapper(self: Any, *args: Any, **kwargs: Any) -> Any:  # noqa: C901
+        def wrapper(self: Any, *args: Any, **kwargs: Any) -> Any:  # noqa: C901, ANN401
             last_exc: Exception | None = None
             for attempt in range(1, retries + 1):
                 try:
                     if not self.is_connected():
                         self.logger.warning(
-                            f"[fail_safe] Not connected before {func.__name__}(), reconnecting..."
+                            "[fail_safe] Not connected before %s(), reconnecting...",
+                            func.__name__,
                         )
-                        self.logger.warning(f"{last_exc=}")
+                        self.logger.warning("last_exc=%s", last_exc)
                         self.reconnect()
                     return func(self, *args, **kwargs)
-                except exceptions as e:
+                except exceptions as e:  # noqa: PERF203
                     last_exc = e
                     method = func.__name__
                     self.logger.warning(
-                        f"[fail_safe] {method} failed on attempt {attempt}: "
-                        f"{type(e).__name__} – {e}"
+                        "[fail_safe] %s failed on attempt %s: %s - %s",
+                        method,
+                        attempt,
+                        type(e).__name__,
+                        e,
                     )
                     if log_args:
-                        def format_arg(arg: Any) -> str:
+                        def format_arg(arg: Any) -> str:  # noqa: ANN401
                             if arg is self:
                                 return f"<{self.__class__.__name__} id={id(self)}>"
                             arg_repr = repr(arg)
-                            return (arg_repr[:197] + "...") if len(arg_repr) > 200 else arg_repr
+                            max_repr_length = 200
+                            if len(arg_repr) > max_repr_length:
+                                return arg_repr[:max_repr_length-3] + "..."
+                            return arg_repr
 
                         formatted_args = [format_arg(self)] + [format_arg(a) for a in args]
                         formatted_args += [f"{k}={format_arg(v)}" for k, v in kwargs.items()]
-                        self.logger.debug(f"[fail_safe] args: {formatted_args}")
+                        self.logger.debug("[fail_safe] args: %s", formatted_args)
                     self.logger.debug(
-                        f"[fail_safe] stack:\n{''.join(traceback.format_stack(limit=5))}"
+                        "[fail_safe] stack:\n%s",
+                        "".join(traceback.format_stack(limit=5)),
                     )
                     if not self.is_connected():
                         self.logger.warning(
-                            f"[fail_safe] Disconnected after exception in {method}, reconnecting..."
+                            "[fail_safe] Disconnected after exception in %s, reconnecting...",
+                            method,
                         )
                         self.reconnect()
                     time.sleep(delay)
-                except Exception as e:
-                    self.logger.error(
-                        f"[fail_safe] Unexpected error in {func.__name__}: "
-                        f"{type(e).__name__} – {e}"
+                except Exception as e:  # noqa: BLE001
+                    self.logger.error(  # noqa: TRY400
+                        "[fail_safe] Unexpected error in %s: %s - %s",
+                        func.__name__,
+                        type(e).__name__,
+                        e,
                     )
-                    self.logger.debug("Stack:\n" + "".join(traceback.format_stack(limit=5)))
+                    self.logger.debug("Stack:\n%s", "".join(traceback.format_stack(limit=5)))
                     last_exc = e
                     break
-            self.logger.error(f"[fail_safe] {func.__name__} failed after {retries} attempts")
+            self.logger.error("[fail_safe] %s failed after %s attempts", func.__name__, retries)
             if last_exc:
                 tb = "".join(
                     traceback.format_exception(
-                        type(last_exc), last_exc, last_exc.__traceback__
-                    )
+                        type(last_exc), last_exc, last_exc.__traceback__,
+                    ),
                 )
-                self.logger.error(f"[fail_safe] Final exception:\n{tb}")
+                self.logger.error("[fail_safe] Final exception:\n%s", tb)
             if raise_exception and last_exc:
-                raise raise_exception(
-                    f"{func.__name__} failed after {retries} attempts"
-                ) from last_exc
+                error_msg = f"{func.__name__} failed after {retries} attempts"
+                raise raise_exception(error_msg) from last_exc
             if raise_exception:
-                raise raise_exception(f"{func.__name__} failed after {retries} attempts")
+                error_msg = f"{func.__name__} failed after {retries} attempts"
+                raise raise_exception(error_msg)
             if fallback is not None:
                 return fallback
             if last_exc:
                 raise last_exc
-            raise RuntimeError(f"{func.__name__} failed after {retries} attempts")
+            error_msg = f"{func.__name__} failed after {retries} attempts"
+            raise RuntimeError(error_msg)
 
-        return cast(F, wrapper)
+        return cast("F", wrapper)
 
     return decorator
 
 
 def retry(max_retries: int = 3, delay: float = 1.0) -> Callable[[F], F]:
-    """
-    Retry decorator factory that repeats method execution if it returns False or None.
+    """Create a retry decorator that repeats method execution if it returns False or None.
 
     Args:
         max_retries: Number of attempts (default: 3).
@@ -152,11 +162,12 @@ def retry(max_retries: int = 3, delay: float = 1.0) -> Callable[[F], F]:
 
     Returns:
         A decorator that adds retry logic to a function.
+
     """
 
     def decorator(func: F) -> F:
         @wraps(func)
-        def wrapper(*args: Any, **kwargs: Any) -> Any:
+        def wrapper(*args: Any, **kwargs: Any) -> Any:  # noqa: ANN401
             result: Any = None
             for _ in range(max_retries):
                 result = func(*args, **kwargs)
@@ -165,32 +176,32 @@ def retry(max_retries: int = 3, delay: float = 1.0) -> Callable[[F], F]:
                 time.sleep(delay)
             return result
 
-        return cast(F, wrapper)
+        return cast("F", wrapper)
 
     return decorator
 
 
-def time_it(func: F) -> F:  # noqa: UP047
-    """
-    Decorator that measures method execution time.
+def time_it(func: F) -> F:
+    """Measure method execution time.
 
     Args:
         func: Function to decorate.
 
     Returns:
         Decorated function that prints execution time.
+
     """
 
     @wraps(func)
-    def wrapper(*args: Any, **kwargs: Any) -> Any:
+    def wrapper(*args: Any, **kwargs: Any) -> Any:  # noqa: ANN401
         start_time = time.time()
         result = func(*args, **kwargs)
         end_time = time.time()
         execution_time = end_time - start_time
-        print(f"Execution time of {func.__name__}: {execution_time:.2f} seconds")
+        print(f"Execution time of {func.__name__}: {execution_time:.2f} seconds")  # noqa: T201
         return result
 
-    return cast(F, wrapper)
+    return cast("F", wrapper)
 
 
 def step_info(
@@ -198,9 +209,8 @@ def step_info(
 ) -> Callable[
     [Callable[Concatenate[SelfT, P], T]],
     Callable[Concatenate[SelfT, P], T],
-]:
-    """
-    Decorator for logging and allure reports with screenshot and video capture.
+   ]:
+    """Log method execution and create Allure reports with screenshot and video capture.
 
     This decorator provides comprehensive logging, screenshot capture, and video
     recording for method execution. It automatically captures screenshots before
@@ -218,6 +228,7 @@ def step_info(
         def click_login(self):
             # Method implementation
             pass
+
     """
 
     def func_decorator(
@@ -225,43 +236,48 @@ def step_info(
     ) -> Callable[Concatenate[SelfT, P], T]:
         # @allure.step(my_str)
         @wraps(func)
-        def wrapper(self: Any, *args: P.args, **kwargs: P.kwargs) -> T:
+        def wrapper(self: Any, *args: P.args, **kwargs: P.kwargs) -> T:  # noqa: ANN401
             method_name = func.__name__
             class_name = self.__class__.__name__
 
-            self.logger.info(f"[{class_name}.{method_name}]")
-            self.logger.info(f"🔵🔵🔵 -> {my_str} < args={args}, kwargs={kwargs}")
+            self.logger.info("[%s.%s]", class_name, method_name)
+            self.logger.info("🔵🔵🔵 -> %s < args=%s, kwargs=%s", my_str, args, kwargs)
             screenshot = self.shadowstep.get_screenshot()
-            timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+            timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")  # noqa: DTZ005
             screenshot_name_begin = f"screenshot_begin_{timestamp}.png"
 
             try:
                 self.shadowstep.driver.start_recording_screen()
-                self.logger.debug(f"[{class_name}.{method_name}] Screen recording started")
-            except Exception as error:
-                self.logger.error(
-                    f"[{class_name}.{method_name}] Error starting screen recording: {error}"
+                self.logger.debug("[%s.%s] Screen recording started", class_name, method_name)
+            except Exception as error:  # noqa: BLE001
+                self.logger.error(  # noqa: TRY400
+                    "[%s.%s] Error starting screen recording: %s",
+                    class_name,
+                    method_name,
+                    error,
                 )
 
             try:
                 result: T = func(self, *args, **kwargs)
-            except Exception as error:
-                result = cast(T, False)
-                self.logger.error(error)
+            except Exception as error:  # noqa: BLE001
+                result = cast("T", False)  # noqa: FBT003
+                self.logger.error("Error in %s: %s", func.__name__, error)  # noqa: TRY400
                 # Screenshots
                 allure.attach(
                     screenshot,
                     name=screenshot_name_begin,
                     attachment_type=allure.attachment_type.PNG,
                 )
-                text = f"before {class_name}.{method_name} \n < args={args}, kwargs={kwargs} \n[{my_str}]"
+                text = (f"before {class_name}.{method_name} \n "
+                       f"< args={args}, kwargs={kwargs} \n[{my_str}]")
                 screenshot_end = self.shadowstep.get_screenshot()
                 allure.attach(
                     screenshot_end,
                     name=text,
                     attachment_type=allure.attachment_type.PNG,
                 )
-                text = f"after {class_name}.{method_name} \n < args={args}, kwargs={kwargs} \n[{my_str}]"
+                text = (f"after {class_name}.{method_name} \n "
+                       f"< args={args}, kwargs={kwargs} \n[{my_str}]")
 
                 # Video
                 try:
@@ -271,9 +287,9 @@ def step_info(
                         name=text,
                         attachment_type=allure.attachment_type.MP4,
                     )
-                except Exception as error_video:
-                    self.logger.warning(f"⚠️ [{class_name}.{method_name}] Video not attached")
-                    self.logger.error(error_video)
+                except Exception as error_video:  # noqa: BLE001
+                    self.logger.warning("⚠️ [%s.%s] Video not attached", class_name, method_name)
+                    self.logger.error("Video error: %s", error_video)  # noqa: TRY400
                     self.telegram.send_message(f"Telegram error with send video: {error_video}")
 
                 # Error and traceback
@@ -285,17 +301,17 @@ def step_info(
                     f"  error={error} \n"
                     f"  traceback=\n {traceback_info}"
                 )
-                self.logger.info(f"[{class_name}.{method_name}]")
-                self.logger.info(f"❌❌❌ -> {my_str} > {result}")
-                self.logger.error(error_details)
+                self.logger.info("[%s.%s]", class_name, method_name)
+                self.logger.info("❌❌❌ -> %s > %s", my_str, result)
+                self.logger.error("Error details: %s", error_details)  # noqa: TRY400
                 allure.attach(
-                    error_details, name="Traceback", attachment_type=allure.attachment_type.TEXT
+                    error_details, name="Traceback", attachment_type=allure.attachment_type.TEXT,
                 )
-            self.logger.info(f"[{class_name}.{method_name}]")
+            self.logger.info("[%s.%s]", class_name, method_name)
             if result:
-                self.logger.info(f"✅✅✅ -> {my_str} > {result}")
+                self.logger.info("✅✅✅ -> %s > %s", my_str, result)
             else:
-                self.logger.info(f"❌❌❌ -> {my_str} > {result}")
+                self.logger.info("❌❌❌ -> %s > %s", my_str, result)
             return result
 
         return wrapper
@@ -306,9 +322,8 @@ def step_info(
 def current_page() -> Callable[
     [Callable[Concatenate[SelfT, P], T]],
     Callable[Concatenate[SelfT, P], T],
-]:
-    """
-    Decorator for PageObject is_current_page method with enhanced logging.
+   ]:
+    """Add enhanced logging to PageObject is_current_page method.
 
     This decorator provides detailed logging for page verification methods,
     showing method entry and exit with the page object representation.
@@ -321,18 +336,19 @@ def current_page() -> Callable[
         def is_current_page(self):
             # Page verification logic
             return True
+
     """
 
     def func_decorator(
             func: Callable[Concatenate[SelfT, P], T],
     ) -> Callable[Concatenate[SelfT, P], T]:
         @wraps(func)
-        def wrapper(self: Any, *args: P.args, **kwargs: P.kwargs) -> T:
+        def wrapper(self: Any, *args: P.args, **kwargs: P.kwargs) -> T:  # noqa: ANN401
             method_name = func.__name__
 
-            self.logger.info(f"{method_name}() < {self!r}")
+            self.logger.info("%s() < %r", method_name, self)
             result = func(self, *args, **kwargs)
-            self.logger.info(f"{method_name}() > {result}")
+            self.logger.info("%s() > %s", method_name, result)
             return result
 
         return wrapper
@@ -341,8 +357,7 @@ def current_page() -> Callable[
 
 
 def log_info() -> Callable[[Callable[P, T]], Callable[P, T]]:
-    """
-    Decorator for logging method entry/exit with type hints preserved.
+    """Log method entry/exit with type hints preserved.
 
     This decorator automatically logs method entry with arguments and exit with
     return value. It preserves type hints and works with any callable function.
@@ -355,17 +370,18 @@ def log_info() -> Callable[[Callable[P, T]], Callable[P, T]]:
         def my_function(arg1: str, arg2: int) -> bool:
             # Function implementation
             return True
+
     """
 
     def decorator(func: Callable[P, T]) -> Callable[P, T]:
         @wraps(func)
         def wrapper(*args: P.args, **kwargs: P.kwargs) -> T:
             method_name = func.__name__
-            module = cast(ModuleType, inspect.getmodule(func))
+            module = cast(ModuleType, inspect.getmodule(func))  # noqa: TC006
             logger = logging.getLogger(module.__name__)
-            logger.info(f"{method_name}() < args={args}, kwargs={kwargs}")
+            logger.info("%s() < args=%s, kwargs=%s", method_name, args, kwargs)
             result: T = func(*args, **kwargs)
-            logger.info(f"{method_name}() > {result}")
+            logger.info("%s() > %s", method_name, result)
             return result
 
         return wrapper
@@ -374,8 +390,7 @@ def log_info() -> Callable[[Callable[P, T]], Callable[P, T]]:
 
 
 def log_debug() -> Callable[[Callable[P, T]], Callable[P, T]]:
-    """
-    Decorator for logging method entry/exit with type hints preserved.
+    """Log method entry/exit with type hints preserved.
 
     This decorator automatically logs method entry with arguments and exit with
     return value. It preserves type hints and works with any callable function.
@@ -384,21 +399,22 @@ def log_debug() -> Callable[[Callable[P, T]], Callable[P, T]]:
         Decorator function that wraps the target method.
 
     Example:
-        @log_info()
+        @log_debug()
         def my_function(arg1: str, arg2: int) -> bool:
             # Function implementation
             return True
+
     """
 
     def decorator(func: Callable[P, T]) -> Callable[P, T]:
         @wraps(func)
         def wrapper(*args: P.args, **kwargs: P.kwargs) -> T:
             method_name = func.__name__
-            module = cast(ModuleType, inspect.getmodule(func))
+            module = cast(ModuleType, inspect.getmodule(func))  # noqa: TC006
             logger = logging.getLogger(module.__name__)
-            logger.debug(f"{method_name}() < args={args}, kwargs={kwargs}")
+            logger.debug("%s() < args=%s, kwargs=%s", method_name, args, kwargs)
             result: T = func(*args, **kwargs)
-            logger.debug(f"{method_name}() > {result}")
+            logger.debug("%s() > %s", method_name, result)
             return result
 
         return wrapper

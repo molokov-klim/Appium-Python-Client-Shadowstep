@@ -1,10 +1,21 @@
-# shadowstep/__init__.py
+"""Shadowstep - Appium Python Client with enhanced features.
+
+This package provides a comprehensive Appium Python client with additional
+functionality for mobile automation testing.
+"""
 import logging
 import sys
+from typing import ClassVar
 
 
 class LoguruStyleFormatter(logging.Formatter):
-    COLORS = {
+    """Custom logging formatter that mimics Loguru's colorful output style.
+
+    This formatter provides colored output for different log levels,
+    similar to the Loguru library's default formatting.
+    """
+
+    COLORS: ClassVar[dict[str, str]] = {
         "DEBUG": "\033[38;5;81m",      # Light blue (like loguru DEBUG)
         "INFO": "\033[38;5;34m",       # Green (like loguru INFO)
         "WARNING": "\033[38;5;220m",   # Yellow
@@ -14,6 +25,15 @@ class LoguruStyleFormatter(logging.Formatter):
     RESET = "\033[0m"
 
     def format(self, record: logging.LogRecord) -> str:
+        """Format a log record with colors and styling.
+
+        Args:
+            record: The log record to format.
+
+        Returns:
+            Formatted log message string with colors.
+
+        """
         # Color for log level
         level_color = self.COLORS.get(record.levelname, "")
         levelname = f"{level_color}{record.levelname:<8}{self.RESET}"
@@ -29,7 +49,12 @@ class LoguruStyleFormatter(logging.Formatter):
 
         return f"{time} | {levelname} | {name} | {message}"
 
-def configure_logging():
+def configure_logging() -> None:
+    """Configure logging for the shadowstep package.
+
+    Sets up a custom formatter with colors and configures both the
+    shadowstep logger and root logger.
+    """
     logger = logging.getLogger("shadowstep")
     logger.setLevel(logging.INFO)
 

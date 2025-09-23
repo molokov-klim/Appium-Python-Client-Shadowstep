@@ -11,17 +11,16 @@ from shadowstep.utils.utils import get_current_func_name
 if TYPE_CHECKING:
     from shadowstep.shadowstep import Shadowstep
 
+
 class ShadowstepImage:
-    """
-    Lazy wrapper for image-based interactions
-    """
+    """Lazy wrapper for image-based interactions"""
 
     def __init__(
         self,
         image: bytes | np.ndarray[Any, Any] | PILImage.Image | str,
         base: Shadowstep,
         threshold: float = 0.5,
-        timeout: float = 5.0
+        timeout: float = 5.0,
     ):
         self._image = image
         self._base: Shadowstep = base
@@ -97,7 +96,7 @@ class ShadowstepImage:
         # self._base.zoom(x, y, percent=percent, steps=steps)
         # return self
         raise NotImplementedError
-        
+
     def unzoom(self, percent: float = 0.5, steps: int = 10) -> ShadowstepImage:
         # self.logger.debug(f"{get_current_func_name()}")
         # self._ensure_visible()
@@ -129,7 +128,7 @@ class ShadowstepImage:
         #     time.sleep(0.5)
         # return False
         raise NotImplementedError
-    
+
     def is_visible(self) -> bool:
         # self.logger.debug(f"{get_current_func_name()} {self.threshold=}")
         # try:
@@ -157,11 +156,11 @@ class ShadowstepImage:
         raise NotImplementedError
 
     def scroll_down(
-            self,
-            from_percent: float = 0.5,
-            to_percent: float = 0.1,
-            max_attempts: int = 10,
-            step_delay: float = 0.5
+        self,
+        from_percent: float = 0.5,
+        to_percent: float = 0.1,
+        max_attempts: int = 10,
+        step_delay: float = 0.5,
     ) -> ShadowstepImage:
         # self.logger.debug(f"{get_current_func_name()}")
         #
@@ -286,7 +285,9 @@ class ShadowstepImage:
         self.logger.debug(f"{get_current_func_name()}")
         raise NotImplementedError
 
-    def to_ndarray(self, image: bytes | np.ndarray[Any, Any] | PILImage.Image | str) -> np.ndarray[Any, Any]:
+    def to_ndarray(
+        self, image: bytes | np.ndarray[Any, Any] | PILImage.Image | str,
+    ) -> np.ndarray[Any, Any]:
         # self.logger.debug(f"{get_current_func_name()}")
         # if isinstance(image, np.ndarray):
         #     return image
@@ -318,8 +319,9 @@ class ShadowstepImage:
         # return cv2.GaussianBlur(enhanced, (3, 3), 0)
         raise NotImplementedError
 
-    def multi_scale_matching(self, full_image: np.ndarray[Any, Any],
-                             template_image: np.ndarray[Any, Any]) -> tuple[float, tuple[int, int]]:
+    def multi_scale_matching(
+        self, full_image: np.ndarray[Any, Any], template_image: np.ndarray[Any, Any],
+    ) -> tuple[float, tuple[int, int]]:
         # self.logger.debug(f"{get_current_func_name()}")
         # full_image = self._enhance_image(full_image)
         # template_image = self._enhance_image(template_image)

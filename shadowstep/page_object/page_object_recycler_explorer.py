@@ -3,7 +3,7 @@ from __future__ import annotations
 
 import importlib.util
 import logging
-from typing import Any, cast
+from typing import cast
 
 from shadowstep.page_object.page_object_generator import PageObjectGenerator
 from shadowstep.page_object.page_object_merger import PageObjectMerger
@@ -14,7 +14,7 @@ from shadowstep.utils.utils import get_current_func_name
 
 class PageObjectRecyclerExplorer:
 
-    def __init__(self, base: Any, translator: Any):
+    def __init__(self, base, translator):
         self.base: Shadowstep = base
         self.logger = logging.getLogger(__name__)
         self.parser = PageObjectParser()
@@ -36,7 +36,7 @@ class PageObjectRecyclerExplorer:
                             speed=10000)  # scroll up
             self.base.terminal.adb_shell(
                 command="input",
-                args=f"swipe {x} {y_start} {x} {y_end}"
+                args=f"swipe {x} {y_start} {x} {y_end}",
             )
 
         pages = []
@@ -79,7 +79,7 @@ class PageObjectRecyclerExplorer:
                             speed=10000)  # scroll up
             self.base.terminal.adb_shell(
                 command="input",
-                args=f"swipe {x} {y_start} {x} {y_end}"
+                args=f"swipe {x} {y_start} {x} {y_end}",
             )
         prefix += 1
         tree = self.parser.parse(self.base.driver.page_source)
@@ -87,11 +87,11 @@ class PageObjectRecyclerExplorer:
         pages.append((page_path, page_class_name))
 
         output_path = "merged" + original_page_path
-        self.merger.merge(original_page_path, cast(str, pages[0][0]), output_path)
+        self.merger.merge(original_page_path, cast("str", pages[0][0]), output_path)
 
         for page_tuple in pages:
             page_path, page_class_name = page_tuple
-            self.merger.merge(output_path, cast(str, page_path), output_path)
+            self.merger.merge(output_path, cast("str", page_path), output_path)
 
         for _ in range(5):
             self.base.swipe(left=100, top=100,

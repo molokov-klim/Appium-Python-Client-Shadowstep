@@ -1,7 +1,10 @@
+# debug.py
+# type: ignore
+# noqa
 import json
 import logging
 import requests
-from lxml import etree  # type: ignore
+from lxml import etree
 
 from shadowstep.element.element import Element
 from shadowstep.page_object.page_object_generator import PageObjectGenerator
@@ -19,4 +22,4 @@ app.connect(server_ip=APPIUM_IP,
 
 page_source = app.driver.page_source
 parser = etree.XMLParser(recover=True)
-root = etree.fromstring(page_source.encode("utf-8"), parser=parser)
+root = etree.fromstring(page_source.encode(), parser=parser)

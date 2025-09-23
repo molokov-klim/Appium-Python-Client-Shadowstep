@@ -1,3 +1,4 @@
+# tests/locator/test_locator.py
 """Tests for the locator module.
 
 This module contains comprehensive tests for the locator conversion functionality,
