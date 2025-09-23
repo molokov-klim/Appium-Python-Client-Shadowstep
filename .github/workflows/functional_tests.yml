@@ -54,16 +54,12 @@ jobs:
             path: tests/locator/
             description: "Locator and selector tests"
 
-    # Skip matrix jobs based on input
+    # Run all matrix jobs for push/schedule, or filter based on manual input
     if: |
       github.event_name == 'push' ||
       github.event_name == 'schedule' ||
       github.event.inputs.test_suite == 'all' ||
-      (github.event.inputs.test_suite == 'element' && contains(matrix.test_target.name, 'element')) ||
-      (github.event.inputs.test_suite == 'page_object' && contains(matrix.test_target.name, 'page_object')) ||
-      (github.event.inputs.test_suite == 'terminal' && contains(matrix.test_target.name, 'terminal')) ||
-      (github.event.inputs.test_suite == 'navigator' && contains(matrix.test_target.name, 'navigator')) ||
-      (github.event.inputs.test_suite == 'locator' && contains(matrix.test_target.name, 'locator'))
+      github.event.inputs.test_suite == ''
 
     env:
       # Based on your conftest.py configuration
@@ -155,6 +151,18 @@ jobs:
           
           # Install dependencies
           uv sync --dev
+          
+          # Check if we should run this specific test suite
+          SUITE_INPUT="${{ github.event.inputs.test_suite }}"
+          TEST_NAME="${{ matrix.test_target.name }}"
+          
+          # Skip if manual dispatch and specific suite doesn't match
+          if [[ "${{ github.event_name }}" == "workflow_dispatch" ]] && \
+             [[ "$SUITE_INPUT" != "all" ]] && [[ "$SUITE_INPUT" != "" ]] && \
+             [[ "$TEST_NAME" != *"$SUITE_INPUT"* ]]; then
+            echo "Skipping $TEST_NAME (requested: $SUITE_INPUT)"
+            exit 0
+          fi
           
           # Run specific test suite
           uv run pytest ${{ matrix.test_target.path }} \
