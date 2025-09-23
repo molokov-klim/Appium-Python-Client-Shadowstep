@@ -11,6 +11,10 @@ Shadowstep is a modular UI automation framework for Android applications built o
 - Image-based actions on screen
 
 [![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/molokov-klim/Appium-Python-Client-Shadowstep)
+
+[![PyPI version](https://badge.fury.io/py/appium-python-client-shadowstep.svg)](https://badge.fury.io/py/appium-python-client-shadowstep)
+[![Downloads](https://pepy.tech/badge/appium-python-client-shadowstep)](https://pepy.tech/project/appium-python-client-shadowstep)
+
 ---
 
 ## Contents
