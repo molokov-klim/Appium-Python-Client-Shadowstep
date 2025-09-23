@@ -1,4 +1,5 @@
-# tests/conftest_ci.py
+# noqa
+# type: ignore
 """CI-specific configuration for Shadowstep tests.
 
 This module provides CI-optimized fixtures and configurations
