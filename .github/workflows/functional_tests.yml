@@ -1,5 +1,6 @@
 name: Functional Tests
 
+
 on:
   push:
     branches: [ develop, main ]
