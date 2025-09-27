@@ -268,7 +268,7 @@ class ModelBuilder:
         """
         property_models: list[PropertyModel] = []
         for prop in properties:
-            property_models.append(PropertyModel(
+            property_models.append(PropertyModel(  # noqa: PERF401
                 name=prop["name"],
                 locator=prop["locator"],
                 anchor_name=prop.get("anchor_name"),

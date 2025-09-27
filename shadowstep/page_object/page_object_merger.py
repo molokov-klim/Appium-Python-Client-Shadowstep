@@ -167,7 +167,7 @@ class PageObjectMerger:
         unique_methods = {}
 
         for name, body in methods1.items():
-            unique_methods[name] = body
+            unique_methods[name] = body  # noqa: PERF403
 
         for name, body in methods2.items():
             if name not in unique_methods:

@@ -181,7 +181,7 @@ class XPathConverter:
         if isinstance(node, Step):
             # add predicates (e.g. @class, @resource-id)
             for predicate in node.predicates:
-                parts.append(self._predicate_to_ui(predicate))    # type: ignore[arg-type]
+                parts.append(self._predicate_to_ui(predicate))    # type: ignore[arg-type]  # noqa: PERF401
 
             if len(node_list) > 1:
                 next_node = node_list[1]
@@ -323,7 +323,7 @@ class XPathConverter:
         if isinstance(pred_expr, Step):
             nested = self._build_shadowstep_dict([pred_expr], {})
             for k, v in nested.items():
-                out[k] = v
+                out[k] = v  # noqa: PERF403
             return
 
         if isinstance(pred_expr, FunctionCall):

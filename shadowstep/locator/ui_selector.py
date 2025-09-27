@@ -174,7 +174,7 @@ class UiSelector:
 
         # Add regular methods
         for method_name, value in self._methods:
-            result[method_name] = value
+            result[method_name] = value  # noqa: PERF403
 
         # Add hierarchical methods
         for method_name, child_selector in self._hierarchical_methods:

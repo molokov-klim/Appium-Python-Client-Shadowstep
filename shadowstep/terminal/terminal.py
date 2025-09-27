@@ -94,7 +94,7 @@ class Terminal:
         for _ in range(tries):
             try:
                 return self.driver.execute_script("mobile: shell", {"command": command, "args": [args]})
-            except NoSuchDriverException:
+            except NoSuchDriverException:  # noqa: PERF203
                 self.base.reconnect()
             except InvalidSessionIdException:
                 self.base.reconnect()
@@ -701,7 +701,7 @@ class Terminal:
         """Reboot the device safely. If adb connection drops, ignores the error."""
         try:
             self.adb_shell(command="reboot")
-        except Exception as e:
+        except Exception as e:  # noqa: BLE001
             logger.warning("Reboot likely initiated. Caught exception: %s", e)
         return True
 
@@ -730,7 +730,7 @@ class Terminal:
             try:
                 self.driver.set_clipboard_text(text=text)
                 self.input_keycode("279")
-            except NoSuchDriverException:
+            except NoSuchDriverException:  # noqa: PERF203
                 self.base.reconnect()
             except InvalidSessionIdException:
                 self.base.reconnect()
@@ -751,7 +751,7 @@ class Terminal:
                 key = key.strip()[1:-1]
                 value = value.strip()[1:-1]
                 result_dict[key] = value
-            except ValueError:
+            except ValueError:  # noqa: PERF203
                 continue
         return result_dict
 
