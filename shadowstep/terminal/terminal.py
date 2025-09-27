@@ -95,7 +95,7 @@ class Terminal:
                 self.base.reconnect()
             except InvalidSessionIdException:
                 self.base.reconnect()
-            except KeyError as e:
+            except KeyError:
                 logger.exception("KeyError in get_page_source")
                 traceback_info = "".join(traceback.format_tb(sys.exc_info()[2]))
                 logger.exception(traceback_info)
@@ -131,7 +131,7 @@ class Terminal:
         except InvalidSessionIdException:
             self.base.reconnect()
             return False
-        except OSError as e:
+        except OSError:
             logger.exception("push()")
             return False
         else:
@@ -165,7 +165,7 @@ class Terminal:
         except InvalidSessionIdException:
             self.base.reconnect()
             return False
-        except OSError as e:
+        except OSError:
             logger.exception("appium_extended_terminal.pull")
             return False
         else:
@@ -181,7 +181,7 @@ class Terminal:
         """
         try:
             self.adb_shell(command="am", args=f"start -n {package}/{activity}")
-        except KeyError as e:
+        except KeyError:
             logger.exception("appium_extended_terminal.start_activity()")
             return False
         else:
@@ -200,7 +200,7 @@ class Terminal:
                     matches = re.search(r"(([A-Za-z]{1}[A-Za-z\d_]*\.)+([A-Za-z][A-Za-z\d_]*)/)", line)
                     if matches:
                         return matches.group(1)[:-1]  # removing trailing slash
-        except KeyError as e:
+        except KeyError:
             logger.exception("appium_extended_terminal.get_current_app_package()")
             return ""
         else:
@@ -215,7 +215,7 @@ class Terminal:
         """
         try:
             self.adb_shell(command="am", args=f"force-stop {package}")
-        except KeyError as e:
+        except KeyError:
             logger.exception("appium_extended_terminal.close_app()")
             return False
         else:
@@ -255,7 +255,7 @@ class Terminal:
                 logger.error(f"{get_current_func_name()} {output=}")
                 return False
             logger.debug(f"{get_current_func_name()} {output=}")
-        except OSError as e:
+        except OSError:
             logger.exception("appium_extended_terminal.push()")
             return False
         else:
@@ -275,7 +275,7 @@ class Terminal:
                 logger.debug("is_app_installed() > True")
                 return True
             logger.debug("is_app_installed() > False")
-        except KeyError as e:
+        except KeyError:
             logger.exception("appium_extended_terminal.is_app_installed() > False")
             return False
         else:
@@ -295,7 +295,7 @@ class Terminal:
         except InvalidSessionIdException:
             self.base.reconnect()
             return False
-        except KeyError as e:
+        except KeyError:
             logger.exception("appium_extended_terminal.uninstall_app()")
             return False
         else:
@@ -308,7 +308,7 @@ class Terminal:
         """
         try:
             self.input_keycode(keycode="KEYCODE_HOME")
-        except KeyError as e:
+        except KeyError:
             logger.exception("appium_extended_terminal.press_home()")
             return False
         else:
@@ -321,7 +321,7 @@ class Terminal:
         """
         try:
             self.input_keycode(keycode="KEYCODE_BACK")
-        except KeyError as e:
+        except KeyError:
             logger.exception("appium_extended_terminal.press_back()")
             return False
         else:
@@ -334,7 +334,7 @@ class Terminal:
         """
         try:
             self.input_keycode(keycode="KEYCODE_MENU")
-        except KeyError as e:
+        except KeyError:
             logger.exception("appium_extended_terminal.press_menu()")
             return False
         else:
@@ -350,7 +350,7 @@ class Terminal:
         """
         try:
             self.adb_shell(command="input", args=f"keyevent KEYCODE_NUMPAD_{num}")
-        except KeyError as e:
+        except KeyError:
             logger.exception("appium_extended_terminal.input_keycode_num_()")
             return False
         else:
@@ -364,7 +364,7 @@ class Terminal:
         """
         try:
             self.adb_shell(command="input", args=f"keyevent {keycode}")
-        except KeyError as e:
+        except KeyError:
             logger.exception("appium_extended_terminal.input_keycode()")
             return False
         else:
@@ -378,7 +378,7 @@ class Terminal:
         """
         try:
             self.adb_shell(command="input", args=f"text {text}")
-        except KeyError as e:
+        except KeyError:
             logger.exception("appium_extended_terminal.input_text()")
             return False
         else:
@@ -393,7 +393,7 @@ class Terminal:
         """
         try:
             self.adb_shell(command="input", args=f"tap {x!s} {y!s}")
-        except KeyError as e:
+        except KeyError:
             logger.exception("appium_extended_terminal.tap()")
             return False
         else:
@@ -413,7 +413,7 @@ class Terminal:
         try:
             self.adb_shell(command="input",
                            args=f"swipe {start_x!s} {start_y!s} {end_x!s} {end_y!s} {duration!s}")
-        except KeyError as e:
+        except KeyError:
             logger.exception("appium_extended_terminal.swipe()")
             return False
         else:
@@ -499,7 +499,7 @@ class Terminal:
                     logger.debug("check_VPN() True")
                     return True
             logger.debug("check_VPN() False")
-        except KeyError as e:
+        except KeyError:
             logger.exception("appium_extended_terminal.check_VPN")
             return False
         else:
@@ -512,7 +512,7 @@ class Terminal:
         """
         try:
             process_list = self.adb_shell(command="ps", args="")
-        except KeyError as e:
+        except KeyError:
             logger.exception("appium_extended_terminal.stop_logcat")
             return False
         for process in process_list.splitlines():
@@ -520,7 +520,7 @@ class Terminal:
                 pid = process.split()[1]
                 try:
                     self.adb_shell(command="kill", args=f"-SIGINT {pid!s}")
-                except KeyError as e:
+                except KeyError:
                     logger.exception("appium_extended_terminal.stop_logcat")
                     traceback_info = "".join(traceback.format_tb(sys.exc_info()[2]))
                     logger.exception(traceback_info)
@@ -585,7 +585,7 @@ class Terminal:
                 time.sleep(1)
                 if not self.is_process_exist(name=process):
                     return False
-        except KeyError as e:
+        except KeyError:
             logger.exception("KeyError in is_app_installed")
             return False
         else:
@@ -599,7 +599,7 @@ class Terminal:
         """
         try:
             self.adb_shell(command="kill", args=f"-s SIGINT {pid!s}")
-        except KeyError as e:
+        except KeyError:
             logger.exception("KeyError in kill_by_pid")
             return False
         return True
@@ -613,7 +613,7 @@ class Terminal:
         logger.debug(f"kill_by_name() < {name=}")
         try:
             self.adb_shell(command="pkill", args=f"-l SIGINT {name!s}")
-        except KeyError as e:
+        except KeyError:
             logger.exception("kill_by_name() > False")
             return False
         logger.debug("kill_by_name() > True")
@@ -627,7 +627,7 @@ class Terminal:
         """
         try:
             self.adb_shell(command="pkill", args=f"-f {name!s}")
-        except KeyError as e:
+        except KeyError:
             logger.exception("appium_extended_terminal.kill_all")
             return False
         return True
@@ -640,7 +640,7 @@ class Terminal:
         """
         try:
             self.adb_shell(command="rm", args=f"-rf {path}*")
-        except KeyError as e:
+        except KeyError:
             logger.exception("appium_extended_terminal.delete_files_from_internal_storage")
             return False
         return True
@@ -655,7 +655,7 @@ class Terminal:
         try:
             path = path.removesuffix("/")
             self.adb_shell(command="rm", args=f"-rf {path}/{filename}")
-        except KeyError as e:
+        except KeyError:
             logger.exception("appium_extended_terminal.delete_file_from_internal_storage")
             return False
         return True
@@ -672,7 +672,7 @@ class Terminal:
             self.base.reconnect()
         except InvalidSessionIdException:
             self.base.reconnect()
-        except KeyError as e:
+        except KeyError:
             logger.exception("appium_extended_terminal.record_video")
             return False
         return True
@@ -690,7 +690,7 @@ class Terminal:
             self.base.reconnect()
         except InvalidSessionIdException:
             self.base.reconnect()
-        except KeyError as e:
+        except KeyError:
             logger.exception("appium_extended_terminal.stop_video")
             return None
 
@@ -715,7 +715,7 @@ class Terminal:
                 width, height = resolution_str.split("x")
                 return int(width), int(height)
             logger.warning(f"{get_current_func_name()}: Physical size not in output")
-        except Exception as e:
+        except Exception:
             logger.exception("Exception in get_screen_size")
             raise
         else:

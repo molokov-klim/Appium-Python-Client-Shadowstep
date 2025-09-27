@@ -12,8 +12,8 @@ import textwrap
 from pathlib import Path
 from typing import Any
 
-from shadowstep.utils.utils import get_current_func_name
 from shadowstep.exceptions.shadowstep_exceptions import ShadowstepNoClassDefinitionFoundError
+from shadowstep.utils.utils import get_current_func_name
 
 
 class PageObjectMerger:
@@ -59,7 +59,7 @@ class PageObjectMerger:
             with open(file, encoding="utf-8") as f:
                 # self.logger.info(f"{content=}")
                 return f.read()
-        except Exception as e:
+        except Exception:
             self.logger.exception(f"Failed to read {file}")
             raise
 

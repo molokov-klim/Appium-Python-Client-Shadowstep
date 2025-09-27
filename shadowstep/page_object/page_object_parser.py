@@ -12,9 +12,9 @@ from typing import Any, cast
 
 from lxml import etree
 
+from shadowstep.exceptions.shadowstep_exceptions import ShadowstepRootNodeFilteredOutError
 from shadowstep.page_object.page_object_element_node import UiElementNode
 from shadowstep.utils.utils import get_current_func_name
-from shadowstep.exceptions.shadowstep_exceptions import ShadowstepRootNodeFilteredOutError
 
 # Type aliases for better readability
 ElementAttributes = dict[str, Any]

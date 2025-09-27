@@ -17,15 +17,15 @@ from typing import Any, cast
 from jinja2 import Environment, FileSystemLoader
 from unidecode import unidecode
 
-from shadowstep.page_object.page_object_element_node import UiElementNode
-from shadowstep.utils.utils import get_current_func_name
 from shadowstep.exceptions.shadowstep_exceptions import (
-    ShadowstepTitleNotFoundError,
+    ShadowstepFailedToNormalizeScreenNameError,
     ShadowstepNameCannotBeEmptyError,
     ShadowstepPageClassNameCannotBeEmptyError,
     ShadowstepTitleNodeNoUsableNameError,
-    ShadowstepFailedToNormalizeScreenNameError,
+    ShadowstepTitleNotFoundError,
 )
+from shadowstep.page_object.page_object_element_node import UiElementNode
+from shadowstep.utils.utils import get_current_func_name
 
 
 class PageObjectGenerator:

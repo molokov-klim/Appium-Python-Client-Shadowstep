@@ -20,13 +20,13 @@ from networkx.exception import NetworkXException
 from selenium.common import WebDriverException
 
 from shadowstep.exceptions.shadowstep_exceptions import (
-    ShadowstepPageCannotBeNoneError,
     ShadowstepFromPageCannotBeNoneError,
-    ShadowstepToPageCannotBeNoneError,
-    ShadowstepTimeoutMustBeNonNegativeError,
+    ShadowstepNavigationFailedError,
+    ShadowstepPageCannotBeNoneError,
     ShadowstepPathCannotBeEmptyError,
     ShadowstepPathMustContainAtLeastTwoPagesError,
-    ShadowstepNavigationFailedError,
+    ShadowstepTimeoutMustBeNonNegativeError,
+    ShadowstepToPageCannotBeNoneError,
 )
 from shadowstep.page_base import PageBaseShadowstep
 
@@ -123,7 +123,7 @@ class PageNavigator:
         try:
             self.perform_navigation(cast("list[PageBaseShadowstep]", path), timeout)
             self.logger.info(f"✅ Successfully navigated to {to_page}")
-        except WebDriverException as error:
+        except WebDriverException:
             self.logger.exception(f"❗ WebDriverException during dom from {from_page} to {to_page}")
             self.logger.debug("📌 Full traceback:\n" + "".join(traceback.format_stack()))
             return False
@@ -150,7 +150,7 @@ class PageNavigator:
             path = self.graph_manager.find_shortest_path(start, target)
             if path:
                 return path
-        except NetworkXException as error:
+        except NetworkXException:
             self.logger.exception("NetworkX error in find_shortest_path")
 
         # Fallback: BFS traversal

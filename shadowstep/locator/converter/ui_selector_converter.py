@@ -9,15 +9,14 @@ import logging
 from typing import Any, cast
 
 from shadowstep.exceptions.shadowstep_exceptions import (
-    ShadowstepConversionError,
-    ShadowstepInvalidUiSelectorError,
-    ShadowstepUiSelectorConversionError,
-    ShadowstepInvalidUiSelectorStringError,
-    ShadowstepSelectorToXPathError,
-    ShadowstepMethodRequiresArgumentError,
     ShadowstepConflictingMethodsError,
-    ShadowstepUnsupportedNestedSelectorError,
+    ShadowstepInvalidUiSelectorError,
+    ShadowstepInvalidUiSelectorStringError,
+    ShadowstepMethodRequiresArgumentError,
+    ShadowstepSelectorToXPathError,
+    ShadowstepUiSelectorConversionError,
     ShadowstepUiSelectorMethodArgumentError,
+    ShadowstepUnsupportedNestedSelectorError,
 )
 from shadowstep.locator.converter.ui_selector_converter_core.ast import Selector
 from shadowstep.locator.converter.ui_selector_converter_core.lexer import Lexer

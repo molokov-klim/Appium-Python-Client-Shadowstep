@@ -11,11 +11,11 @@ import re
 
 import requests
 
-from shadowstep.utils.utils import get_current_func_name
 from shadowstep.exceptions.shadowstep_exceptions import (
     ShadowstepMissingYandexTokenError,
     ShadowstepTranslationFailedError,
 )
+from shadowstep.utils.utils import get_current_func_name
 
 
 class YandexTranslate:

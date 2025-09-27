@@ -15,13 +15,12 @@ import logging
 from typing import TYPE_CHECKING, Any, cast
 
 from shadowstep.exceptions.shadowstep_exceptions import (
-    ShadowstepConversionError,
-    ShadowstepUnsupportedSelectorFormatError,
     ShadowstepConversionFailedError,
-    ShadowstepUnsupportedTupleFormatError,
-    ShadowstepEmptyXPathError,
     ShadowstepEmptySelectorStringError,
+    ShadowstepEmptyXPathError,
+    ShadowstepUnsupportedSelectorFormatError,
     ShadowstepUnsupportedSelectorTypeError,
+    ShadowstepUnsupportedTupleFormatError,
 )
 from shadowstep.locator.converter.dict_converter import DictConverter
 from shadowstep.locator.converter.ui_selector_converter import UiSelectorConverter
@@ -57,6 +56,7 @@ class LocatorConverter:
             
         Raises:
             ShadowstepUnsupportedSelectorFormatError: Always raised
+
         """
         raise ShadowstepUnsupportedSelectorFormatError(selector)
 

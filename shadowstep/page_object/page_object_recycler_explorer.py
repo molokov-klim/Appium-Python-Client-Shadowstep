@@ -13,12 +13,12 @@ import importlib.util
 import logging
 from typing import cast
 
+from shadowstep.exceptions.shadowstep_exceptions import ShadowstepTerminalNotInitializedError
 from shadowstep.page_object.page_object_generator import PageObjectGenerator
 from shadowstep.page_object.page_object_merger import PageObjectMerger
 from shadowstep.page_object.page_object_parser import PageObjectParser
 from shadowstep.shadowstep import Shadowstep
 from shadowstep.utils.utils import get_current_func_name
-from shadowstep.exceptions.shadowstep_exceptions import ShadowstepTerminalNotInitializedError
 
 
 class PageObjectRecyclerExplorer:

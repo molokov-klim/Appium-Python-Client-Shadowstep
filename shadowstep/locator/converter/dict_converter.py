@@ -10,14 +10,12 @@ from collections.abc import Callable
 from typing import Any, Generic, TypeVar, Union
 
 from shadowstep.exceptions.shadowstep_exceptions import (
-    ShadowstepConversionError,
-    ShadowstepDictConversionError,
-    ShadowstepValidationError,
-    ShadowstepSelectorTypeError,
-    ShadowstepEmptySelectorError,
-    ShadowstepConflictingTextAttributesError,
     ShadowstepConflictingDescriptionAttributesError,
+    ShadowstepConflictingTextAttributesError,
+    ShadowstepDictConversionError,
+    ShadowstepEmptySelectorError,
     ShadowstepHierarchicalAttributeError,
+    ShadowstepSelectorTypeError,
 )
 from shadowstep.locator.map.dict_to_ui import (
     DICT_TO_UI_MAPPING,

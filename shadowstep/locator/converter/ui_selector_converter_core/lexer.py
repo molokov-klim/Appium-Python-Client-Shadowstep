@@ -12,10 +12,10 @@ from enum import Enum, auto
 from typing import cast
 
 from shadowstep.exceptions.shadowstep_exceptions import (
-    ShadowstepLexerError,
-    ShadowstepUnterminatedStringError,
     ShadowstepBadEscapeError,
+    ShadowstepLexerError,
     ShadowstepUnexpectedCharError,
+    ShadowstepUnterminatedStringError,
 )
 
 

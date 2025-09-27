@@ -21,9 +21,9 @@ from selenium.common import WebDriverException
 from websocket import WebSocket, WebSocketConnectionClosedException, create_connection
 
 from shadowstep.exceptions.shadowstep_exceptions import (
-    ShadowstepPollIntervalError,
     ShadowstepEmptyFilenameError,
     ShadowstepLogcatConnectionError,
+    ShadowstepPollIntervalError,
 )
 
 logger = logging.getLogger(__name__)
@@ -85,6 +85,7 @@ class ShadowstepLogcat:
         
         Raises:
             ShadowstepLogcatConnectionError: Always raised
+
         """
         raise ShadowstepLogcatConnectionError()
 
@@ -308,7 +309,7 @@ class ShadowstepLogcat:
                         logger.error(f"Logcat stream error, retry in {self._poll_interval}s: {inner!r}", exc_info=True)
                         time.sleep(self._poll_interval)
 
-        except Exception as e:
+        except Exception:
             logger.exception(f"Cannot open logcat file '{self._filename}'")
         finally:
             logger.info("Logcat thread terminated, file closed")

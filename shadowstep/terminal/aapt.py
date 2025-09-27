@@ -44,7 +44,7 @@ class Aapt:
             # Extract package name
             package_name = output[start_index:end_index]
 
-        except subprocess.CalledProcessError as e:
+        except subprocess.CalledProcessError:
             logger.exception("Could not extract package name")
             raise  # Re-raise exception
 
@@ -78,7 +78,7 @@ class Aapt:
 
             # Return activity name as string
             logger.info(f"{get_current_func_name()} > {launchable_activity}")
-        except subprocess.CalledProcessError as e:
+        except subprocess.CalledProcessError:
             logger.exception("Could not extract launchable activity")
         except StopIteration:
             logger.exception("Could not find 'launchable-activity' line in aapt output.")

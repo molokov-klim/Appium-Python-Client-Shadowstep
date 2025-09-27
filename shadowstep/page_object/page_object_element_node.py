@@ -16,8 +16,8 @@ from typing import Any
 
 from jinja2 import Environment, FileSystemLoader
 
-from shadowstep.utils.utils import get_current_func_name
 from shadowstep.exceptions.shadowstep_exceptions import ShadowstepUnsupportedRendererTypeError
+from shadowstep.utils.utils import get_current_func_name
 
 
 @dataclass
