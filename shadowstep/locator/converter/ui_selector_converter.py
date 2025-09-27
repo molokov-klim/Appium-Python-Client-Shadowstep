@@ -158,10 +158,10 @@ class UiSelectorConverter:
 
     def _selector_to_dict(self, sel: dict[str, Any]) -> dict[str, Any]:
         """Convert parsed selector dictionary to Shadowstep dict format.
-        
+
         Args:
             sel: Parsed selector dictionary
-            
+
         Returns:
             Shadowstep dict representation
 

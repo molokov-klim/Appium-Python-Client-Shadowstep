@@ -39,7 +39,7 @@ T = TypeVar("T", bound=Any)
 
 class DictConverter(Generic[T]):
     """Converter for Shadowstep dictionary locators to XPath and UiSelector formats.
-    
+
     This class provides methods to convert dictionary-based locators to various
     formats including XPath expressions and UiSelector strings.
     """
@@ -50,13 +50,13 @@ class DictConverter(Generic[T]):
 
     def dict_to_xpath(self, selector_dict: SelectorDict) -> str:
         """Convert Shadowstep dictionary locator to XPath expression.
-        
+
         Args:
             selector_dict: Dictionary representation of the selector
-            
+
         Returns:
             XPath expression string
-            
+
         Raises:
             ShadowstepConversionError: If conversion fails
 
@@ -68,13 +68,13 @@ class DictConverter(Generic[T]):
 
     def dict_to_ui_selector(self, selector_dict: SelectorDict) -> str:
         """Convert Shadowstep dictionary locator to UiSelector string.
-        
+
         Args:
             selector_dict: Dictionary representation of the selector
-            
+
         Returns:
             UiSelector string
-            
+
         Raises:
             ShadowstepConversionError: If conversion fails
 
@@ -149,10 +149,10 @@ class DictConverter(Generic[T]):
 
     def _dict_to_ui_recursive(self, selector_dict: SelectorDict) -> str:
         """Recursively convert dictionary to UiSelector method chain.
-        
+
         Args:
             selector_dict: Dictionary representation of the selector
-            
+
         Returns:
             UiSelector method chain string
 
@@ -217,10 +217,10 @@ class DictConverter(Generic[T]):
 
     def validate_dict_selector(self, selector_dict: SelectorDict) -> None:
         """Validate dictionary selector for compatibility.
-        
+
         Args:
             selector_dict: Dictionary representation of the selector
-            
+
         Raises:
             ValueError: If selector is invalid
 

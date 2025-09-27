@@ -73,7 +73,7 @@ class Terminal:
 
     def __del__(self):
         """Destructor to ensure SSH connection is closed on object deletion.
-        
+
         This method ensures that the SSH connection is properly closed
         when the Terminal object is garbage collected.
         """

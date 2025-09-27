@@ -17,11 +17,11 @@ from shadowstep.locator.types.ui_selector import UiAttribute
 
 class UiSelector:
     """Fluent DSL for building UiSelector locators.
-    
+
     This class provides a fluent API for building UiSelector locators in a
     more readable way than string concatenation. It supports all UiAttribute
     methods and hierarchical relationships.
-    
+
     Example:
         selector = UiSelector().text("OK").clickable(True).className("Button")
         selector_str = str(selector)  # "new UiSelector().text("OK").clickable(true).className("Button");"
@@ -170,15 +170,15 @@ class UiSelector:
     def to_dict(self) -> dict[str, Any]:
         """Convert UiSelector to dictionary format."""
         result = {}
-        
+
         # Add regular methods
         for method_name, value in self._methods:
             result[method_name] = value
-        
+
         # Add hierarchical methods
         for method_name, child_selector in self._hierarchical_methods:
             result[method_name] = child_selector.to_dict()
-        
+
         return result
 
     def __str__(self) -> str:
@@ -192,7 +192,7 @@ class UiSelector:
     def _build_selector_string(self, is_nested: bool = False) -> str:
         """Build the final UiSelector string."""
         parts = ["new UiSelector()"]
-        
+
         # Add regular methods
         for method_name, value in self._methods:
             if isinstance(value, str):
@@ -203,18 +203,18 @@ class UiSelector:
                 parts.append(f".{method_name}({str(value).lower()})")
             else:
                 parts.append(f".{method_name}({value})")
-        
+
         # Add hierarchical methods
         for method_name, child_selector in self._hierarchical_methods:
             child_str = child_selector._build_selector_string(is_nested=True)
             parts.append(f".{method_name}({child_str})")
-        
+
         result = "".join(parts)
-        
+
         # Only add semicolon if not nested
         if not is_nested:
             result += ";"
-        
+
         return result
 
     def __eq__(self, other: Any) -> bool:
@@ -238,13 +238,13 @@ class UiSelector:
     @classmethod
     def from_string(cls, selector_str: str) -> UiSelector:
         """Create UiSelector from string representation.
-        
+
         Args:
             selector_str: UiSelector string like "new UiSelector().text('OK');"
-            
+
         Returns:
             UiSelector instance
-            
+
         Raises:
             ValueError: If string format is invalid
 
@@ -253,7 +253,7 @@ class UiSelector:
         # to use the existing UiSelectorConverter to parse the string
         if not selector_str.strip().startswith("new UiSelector()"):
             raise ValueError("Invalid UiSelector string format")
-        
+
         # For now, we'll create an empty selector and let the user build it
         # In a full implementation, you'd parse the string and extract methods
         return cls()
@@ -261,16 +261,16 @@ class UiSelector:
     @classmethod
     def from_dict(cls, selector_dict: dict[str, Any]) -> UiSelector:
         """Create UiSelector from dictionary representation.
-        
+
         Args:
             selector_dict: Dictionary with selector attributes
-            
+
         Returns:
             UiSelector instance
 
         """
         selector = cls()
-        
+
         for key, value in selector_dict.items():
             if key in [UiAttribute.CHILD_SELECTOR, UiAttribute.FROM_PARENT, UiAttribute.SIBLING]:
                 # Handle hierarchical attributes
@@ -290,5 +290,5 @@ class UiSelector:
                     method(value)
                 else:
                     selector.logger.warning(f"Unknown method: {method_name}")
-        
+
         return selector

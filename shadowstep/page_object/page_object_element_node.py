@@ -62,7 +62,7 @@ class UiElementNode:
 
     def __repr__(self) -> str:
         """Return string representation of the UI element node.
-        
+
         Returns:
             str: Tree-like string representation showing element hierarchy.
 

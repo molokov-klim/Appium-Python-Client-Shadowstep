@@ -87,7 +87,7 @@ class ShadowstepNoSuchElementError(NoSuchElementException):
 
     def __str__(self):
         """Return string representation of the exception with locator and context info.
-        
+
         Returns:
             str: Formatted string containing locator, message, and stacktrace.
 
@@ -121,7 +121,7 @@ class ShadowstepTimeoutException(TimeoutException):
 
     def __str__(self):
         """Return string representation of the timeout exception with detailed context.
-        
+
         Returns:
             str: Formatted string containing timestamp, message, locator, URL, and stacktrace.
 

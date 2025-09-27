@@ -29,7 +29,7 @@ if TYPE_CHECKING:
 
 class LocatorConverter:
     """Unified converter for all locator formats.
-    
+
     This class provides a single interface for converting between different
     locator formats, replacing the deprecated DeprecatedLocatorConverter.
     """
@@ -43,13 +43,13 @@ class LocatorConverter:
 
     def to_dict(self, selector: tuple[str, str] | dict[str, Any] | Element | UiSelector | str) -> dict[str, Any]:
         """Convert any selector format to dictionary format.
-        
+
         Args:
             selector: Selector in any supported format
-            
+
         Returns:
             Dictionary representation of the selector
-            
+
         Raises:
             ShadowstepConversionError: If conversion fails
 
@@ -74,13 +74,13 @@ class LocatorConverter:
 
     def to_xpath(self, selector: tuple[str, str] | dict[str, Any] | Element | UiSelector) -> tuple[str, str]:
         """Convert any selector format to XPath tuple format.
-        
+
         Args:
             selector: Selector in any supported format
-            
+
         Returns:
             Tuple in format ("xpath", "//*[@text='OK']")
-            
+
         Raises:
             ShadowstepConversionError: If conversion fails
 
@@ -105,13 +105,13 @@ class LocatorConverter:
 
     def to_uiselector(self, selector: tuple[str, str] | dict[str, Any] | Element | UiSelector) -> str:
         """Convert any selector format to UiSelector string.
-        
+
         Args:
             selector: Selector in any supported format
-            
+
         Returns:
             UiSelector string in format "new UiSelector().text('OK');"
-            
+
         Raises:
             ShadowstepConversionError: If conversion fails
 
@@ -165,10 +165,10 @@ class LocatorConverter:
 
     def validate_selector(self, selector: dict[str, Any] | tuple[str, str] | str | UiSelector) -> None:
         """Validate selector format and content.
-        
+
         Args:
             selector: Selector to validate
-            
+
         Raises:
             ValueError: If selector is invalid
 

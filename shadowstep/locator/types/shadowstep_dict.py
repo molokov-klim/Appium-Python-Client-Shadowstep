@@ -63,7 +63,7 @@ class ShadowstepDictAttribute(str, Enum):
 
     def __str__(self) -> str:
         """Return the string value of the attribute.
-        
+
         Returns:
             str: The string value of the enum attribute.
 
@@ -72,7 +72,7 @@ class ShadowstepDictAttribute(str, Enum):
 
     def __repr__(self) -> str:
         """Return the official string representation of the enum attribute.
-        
+
         Returns:
             str: String representation in format 'ClassName.ATTRIBUTE_NAME'.
 
@@ -81,10 +81,10 @@ class ShadowstepDictAttribute(str, Enum):
 
     def __eq__(self, other: Any) -> bool:
         """Check equality with string or other enum values.
-        
+
         Args:
             other: Object to compare with.
-            
+
         Returns:
             bool: True if equal, False otherwise.
 
@@ -95,7 +95,7 @@ class ShadowstepDictAttribute(str, Enum):
 
     def __hash__(self):
         """Return hash value based on the enum value.
-        
+
         Returns:
             int: Hash value of the enum's string value.
 

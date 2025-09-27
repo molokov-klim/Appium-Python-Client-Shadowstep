@@ -32,10 +32,10 @@ DEFAULT_NAVIGATION_TIMEOUT = 55
 
 class PageNavigator:
     """Manages dom between pages using graph-based pathfinding.
-    
+
     This class provides methods to navigate between different pages in the application
     by finding optimal paths through a graph of page transitions.
-    
+
     Attributes:
         shadowstep: The main Shadowstep instance for page resolution.
         graph_manager: Manages the page transition graph.
@@ -45,10 +45,10 @@ class PageNavigator:
 
     def __init__(self, shadowstep: Shadowstep) -> None:
         """Initialize the PageNavigator.
-        
+
         Args:
             shadowstep: The main Shadowstep instance.
-            
+
         Raises:
             TypeError: If shadowstep is None.
 
@@ -61,11 +61,11 @@ class PageNavigator:
 
     def add_page(self, page: Any, edges: dict[str, Any]) -> None:
         """Add a page and its transitions to the dom graph.
-        
+
         Args:
             page: The page object to add.
             edges: Dictionary mapping target page names to transition methods.
-            
+
         Raises:
             TypeError: If page is None or edges is not a dictionary.
 
@@ -86,7 +86,7 @@ class PageNavigator:
 
         Returns:
             True if dom succeeded, False otherwise.
-            
+
         Raises:
             TypeError: If from_page or to_page is None.
             ValueError: If timeout is negative.
@@ -122,11 +122,11 @@ class PageNavigator:
 
     def find_path(self, start: Any, target: Any) -> list[Any] | None:
         """Find a path from start page to target page.
-        
+
         Args:
             start: Starting page (can be string or page object).
             target: Target page (can be string or page object).
-            
+
         Returns:
             List of pages representing the path, or None if no path exists.
 
@@ -148,11 +148,11 @@ class PageNavigator:
 
     def _find_path_bfs(self, start: Any, target: Any) -> list[Any] | None:
         """Find path using breadth-first search as fallback.
-        
+
         Args:
             start: Starting page.
             target: Target page.
-            
+
         Returns:
             List of pages representing the path, or None if no path exists.
 
@@ -177,7 +177,7 @@ class PageNavigator:
         Args:
             path: List of page objects to traverse.
             timeout: Timeout for each dom step.
-            
+
         Raises:
             ValueError: If path is empty or has only one element.
             AssertionError: If dom to next page fails.
@@ -202,10 +202,10 @@ class PageNavigator:
 
 class PageGraph:
     """Manages the graph of page transitions.
-    
+
     This class maintains both a simple dictionary-based graph and a NetworkX
     directed graph for efficient pathfinding operations.
-    
+
     Attributes:
         graph: Dictionary-based graph for backward compatibility.
         nx_graph: NetworkX directed graph for advanced operations.
@@ -219,11 +219,11 @@ class PageGraph:
 
     def add_page(self, page: Any, edges: Any) -> None:
         """Add a page and its edges to both graph representations.
-        
+
         Args:
             page: The page object to add.
             edges: Dictionary or list of target pages/names.
-            
+
         Raises:
             TypeError: If page is None.
 
@@ -241,10 +241,10 @@ class PageGraph:
 
     def get_edges(self, page: Any) -> list[Any]:
         """Get edges for a given page.
-        
+
         Args:
             page: The page to get edges for.
-            
+
         Returns:
             List of target pages/names, empty list if page not found.
 
@@ -253,11 +253,11 @@ class PageGraph:
 
     def is_valid_edge(self, from_page: Any, to_page: Any) -> bool:
         """Check if there's a valid edge between two pages.
-        
+
         Args:
             from_page: Source page.
             to_page: Target page.
-            
+
         Returns:
             True if edge exists, False otherwise.
 
@@ -267,11 +267,11 @@ class PageGraph:
 
     def has_path(self, from_page: Any, to_page: Any) -> bool:
         """Check if there's a path between two pages.
-        
+
         Args:
             from_page: Source page.
             to_page: Target page.
-            
+
         Returns:
             True if path exists, False otherwise.
 
@@ -283,11 +283,11 @@ class PageGraph:
 
     def find_shortest_path(self, from_page: Any, to_page: Any) -> list[Any] | None:
         """Find the shortest path between two pages.
-        
+
         Args:
             from_page: Source page.
             to_page: Target page.
-            
+
         Returns:
             List of pages representing the shortest path, or None if no path exists.
 

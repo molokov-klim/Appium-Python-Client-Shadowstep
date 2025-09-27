@@ -26,7 +26,7 @@ def find_coordinates_by_vector(
     start_y: int,
 ) -> tuple[int, int]:
     """Calculate end coordinates based on vector from start point.
-    
+
     Args:
         width: Screen width in pixels.
         height: Screen height in pixels.
@@ -34,7 +34,7 @@ def find_coordinates_by_vector(
         distance: Distance to move in pixels.
         start_x: Starting X coordinate.
         start_y: Starting Y coordinate.
-        
+
     Returns:
         tuple[int, int]: End coordinates (x, y) clamped to screen bounds.
 
@@ -50,10 +50,10 @@ def find_coordinates_by_vector(
 
 def get_current_func_name(depth: int = 1) -> str:
     """Get the name of the calling function.
-    
+
     Args:
         depth: Stack depth to look up (1 = caller, 2 = caller's caller, etc.).
-        
+
     Returns:
         str: Name of the function at the specified depth, or "<unknown>" if not found.
 
@@ -69,11 +69,11 @@ def get_current_func_name(depth: int = 1) -> str:
 
 def grep_pattern(input_string: str, pattern: str) -> list[str]:
     """Filter lines from input string that match the given regex pattern.
-    
+
     Args:
         input_string: Multi-line string to search in.
         pattern: Regular expression pattern to match.
-        
+
     Returns:
         list[str]: List of lines that match the pattern.
 
@@ -84,10 +84,10 @@ def grep_pattern(input_string: str, pattern: str) -> list[str]:
 
 def is_camel_case(text: str) -> bool:
     """Check if the given text is in camelCase format.
-    
+
     Args:
         text: String to validate.
-        
+
     Returns:
         bool: True if text is in camelCase format, False otherwise.
 

@@ -14,14 +14,14 @@ from shadowstep.locator.types.ui_selector import UiAttribute
 
 def dict_to_ui_attribute(attr: ShadowstepDictAttribute, value: Any) -> str:
     """Convert a single dictionary attribute to UiSelector method call.
-    
+
     Args:
         attr: Dictionary attribute enum
         value: Attribute value
-        
+
     Returns:
         UiSelector method call string
-        
+
     Raises:
         ValueError: If attribute is not supported
 
@@ -33,10 +33,10 @@ def dict_to_ui_attribute(attr: ShadowstepDictAttribute, value: Any) -> str:
 
 def is_hierarchical_attribute(attr: ShadowstepDictAttribute) -> bool:
     """Check if attribute represents hierarchical relationship.
-    
+
     Args:
         attr: Dictionary attribute enum
-        
+
     Returns:
         True if attribute is hierarchical
 
@@ -47,10 +47,10 @@ def is_hierarchical_attribute(attr: ShadowstepDictAttribute) -> bool:
 
 def get_ui_method_for_hierarchical_attribute(attr: ShadowstepDictAttribute) -> str:
     """Get UiSelector method name for hierarchical attributes.
-    
+
     Args:
         attr: Hierarchical attribute enum
-        
+
     Returns:
         UiSelector method name
 

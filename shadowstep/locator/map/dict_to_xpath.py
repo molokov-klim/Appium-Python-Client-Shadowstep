@@ -13,14 +13,14 @@ from shadowstep.locator.types.shadowstep_dict import ShadowstepDictAttribute
 
 def dict_to_xpath_attribute(attr: ShadowstepDictAttribute, value: Any) -> str:
     """Convert a single dictionary attribute to XPath expression.
-    
+
     Args:
         attr: Dictionary attribute enum
         value: Attribute value
-        
+
     Returns:
         XPath expression for the attribute
-        
+
     Raises:
         ValueError: If attribute is not supported
 
@@ -32,10 +32,10 @@ def dict_to_xpath_attribute(attr: ShadowstepDictAttribute, value: Any) -> str:
 
 def is_hierarchical_attribute(attr: ShadowstepDictAttribute) -> bool:
     """Check if attribute represents hierarchical relationship.
-    
+
     Args:
         attr: Dictionary attribute enum
-        
+
     Returns:
         True if attribute is hierarchical
 
@@ -46,11 +46,11 @@ def is_hierarchical_attribute(attr: ShadowstepDictAttribute) -> bool:
 
 def get_xpath_for_hierarchical_attribute(attr: ShadowstepDictAttribute, nested_xpath: str) -> str:
     """Get XPath expression for hierarchical attributes.
-    
+
     Args:
         attr: Hierarchical attribute enum
         nested_xpath: XPath expression for nested selector
-        
+
     Returns:
         XPath expression with hierarchy
 

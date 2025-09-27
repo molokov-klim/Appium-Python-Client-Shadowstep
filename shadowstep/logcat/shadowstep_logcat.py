@@ -29,11 +29,11 @@ WEBSOCKET_TIMEOUT = 5
 
 class ShadowstepLogcat:
     """Android device logcat capture via WebSocket connection.
-    
+
     This class provides functionality to capture Android device logs through
     WebSocket connections to Appium server. It supports automatic reconnection,
     file output, and graceful shutdown.
-    
+
     Attributes:
         _driver_getter: Function that returns the current WebDriver instance.
         _poll_interval: Interval between reconnection attempts in seconds.
@@ -50,18 +50,18 @@ class ShadowstepLogcat:
             poll_interval: float = DEFAULT_POLL_INTERVAL
     ) -> None:
         """Initialize ShadowstepLogcat.
-        
+
         Args:
             driver_getter: Function that returns the current WebDriver instance.
             poll_interval: Interval between reconnection attempts in seconds.
-            
+
         Raises:
             ValueError: If poll_interval is negative.
 
         """
         if poll_interval < 0:
             raise ValueError("poll_interval must be non-negative")
-            
+
         self._driver_getter = driver_getter
         self._poll_interval = poll_interval
 
@@ -103,7 +103,7 @@ class ShadowstepLogcat:
 
         if not self._compiled_filter_pattern.search(line):
             return False
-        
+
         if self._filters is None:
             return False
 
@@ -125,7 +125,7 @@ class ShadowstepLogcat:
 
     def __exit__(self, exc_type: Any, exc_val: Any, exc_tb: Any):
         """Context manager exit method to stop logcat capture.
-        
+
         Args:
             exc_type: Exception type if any.
             exc_val: Exception value if any.
@@ -136,7 +136,7 @@ class ShadowstepLogcat:
 
     def __del__(self):
         """Destructor to ensure logcat capture is stopped on object deletion.
-        
+
         Suppresses any exceptions during cleanup to prevent issues during
         garbage collection.
         """
@@ -145,11 +145,11 @@ class ShadowstepLogcat:
 
     def start(self, filename: str, port: int | None = None) -> None:
         """Start logcat capture to specified file.
-        
+
         Args:
             filename: Path to the output file for logcat data.
             port: port of Appium server instance
-            
+
         Raises:
             ValueError: If filename is empty.
 
@@ -157,7 +157,7 @@ class ShadowstepLogcat:
         self.port = port
         if not filename:
             raise ValueError("filename cannot be empty")
-            
+
         if self._thread and self._thread.is_alive():
             logger.info("Logcat already running")
             return
@@ -174,7 +174,7 @@ class ShadowstepLogcat:
 
     def stop(self) -> None:
         """Stop logcat capture and cleanup resources.
-        
+
         This method performs graceful shutdown by:
         1. Setting stop event to signal thread termination
         2. Closing WebSocket connection to interrupt blocking recv()
@@ -207,7 +207,7 @@ class ShadowstepLogcat:
 
     def _run(self) -> None:  # noqa: C901
         """Run main logcat capture loop in background thread.
-        
+
         This method handles the complete logcat capture workflow:
         1. Opens output file
         2. Establishes WebSocket connection to Appium
@@ -232,7 +232,7 @@ class ShadowstepLogcat:
 
                         # Build shadowstep WebSocket URL
                         session_id = driver.session_id
-                        
+
                         http_url = self._get_http_url(driver)
                         match = re.search(r":(\d+)$", http_url)
                         old_port = int(match.group(1)) if match else None
@@ -303,10 +303,10 @@ class ShadowstepLogcat:
 
     def _get_http_url(self, driver: WebDriver) -> str:
         """Extract HTTP URL from WebDriver command executor.
-        
+
         Args:
             driver: WebDriver instance to extract URL from.
-            
+
         Returns:
             HTTP URL string for the WebDriver command executor.
 

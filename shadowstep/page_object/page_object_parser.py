@@ -58,10 +58,10 @@ DEFAULT_CONTAINER_WHITELIST: tuple[str, ...] = (
 
 class PageObjectParser:
     """Parser for Android UI XML that builds element trees for Page Object generation.
-    
+
     This class parses XML output from uiautomator2 and builds a tree structure
     of UI elements, filtering them based on configurable white/black lists.
-    
+
     Attributes:
         WHITE_LIST_CLASSES: Classes that are always allowed
         BLACK_LIST_CLASSES: Classes that are always filtered out
@@ -80,7 +80,7 @@ class PageObjectParser:
         container_whitelist: tuple[str, ...] = DEFAULT_CONTAINER_WHITELIST,
     ) -> None:
         """Initialize the PageObjectParser with filtering configuration.
-        
+
         Args:
             white_list_classes: Classes that are always allowed through filtering
             black_list_classes: Classes that are always filtered out
@@ -102,13 +102,13 @@ class PageObjectParser:
 
     def parse(self, xml: str) -> UiElementNode:
         """Parse XML string and build element tree.
-        
+
         Args:
             xml: XML string to parse (typically from uiautomator2 page_source)
-            
+
         Returns:
             Root node of the parsed element tree
-            
+
         Raises:
             etree.XMLSyntaxError: If XML parsing fails
             ValueError: If root node is filtered out and has no valid children
@@ -125,13 +125,13 @@ class PageObjectParser:
 
     def _build_tree(self, root_et: etree._Element) -> UiElementNode:  # noqa: C901
         """Build element tree from XML element.
-        
+
         Args:
             root_et: Root XML element to build tree from
-            
+
         Returns:
             Root node of the built tree
-            
+
         Raises:
             ValueError: If root node is filtered out and has no valid children
 
@@ -145,13 +145,13 @@ class PageObjectParser:
             depth: int
         ) -> UiElementNode | None:
             """Recursively build tree nodes from XML elements.
-            
+
             Args:
                 el: Current XML element to process
                 parent: Parent node in the tree
                 scroll_stack: Stack of scrollable parent IDs
                 depth: Current depth in the tree
-                
+
             Returns:
                 Built node or None if filtered out
 
@@ -170,7 +170,7 @@ class PageObjectParser:
                 child_node = _recurse(cast(Any, child_et), None, new_scroll_stack, depth + 1)
                 if child_node:
                     children_nodes.append(child_node)
-                    
+
             if self._is_element_allowed(attrib):
                 node = UiElementNode(
                     id=el_id,
@@ -212,10 +212,10 @@ class PageObjectParser:
 
     def _is_element_allowed(self, attrib: ElementAttributes) -> bool:
         """Check if element should be allowed based on its attributes.
-        
+
         Args:
             attrib: Element attributes dictionary
-            
+
         Returns:
             True if element should be allowed, False otherwise
 
