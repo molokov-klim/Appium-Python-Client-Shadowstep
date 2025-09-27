@@ -294,7 +294,8 @@ class TestTerminal:
         mock_file.__exit__ = Mock(return_value=None)
         mock_file.write = Mock()
 
-        with patch("builtins.open", return_value=mock_file):
+        with patch("pathlib.Path.open", return_value=mock_file), \
+             patch("pathlib.Path.mkdir") as mock_mkdir:
             # Act
             result = self.terminal.pull(source, destination)
 

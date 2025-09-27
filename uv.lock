@@ -74,7 +74,7 @@ wheels = [
 
 [[package]]
 name = "appium-python-client-shadowstep"
-version = "0.34.164"
+version = "0.34.165"
 source = { editable = "." }
 dependencies = [
     { name = "allure-pytest", marker = "sys_platform == 'linux' or sys_platform == 'win32' or sys_platform == 'windows'" },
@@ -92,13 +92,11 @@ dependencies = [
     { name = "pillow", marker = "sys_platform == 'linux' or sys_platform == 'win32' or sys_platform == 'windows'" },
     { name = "pytesseract", marker = "sys_platform == 'linux' or sys_platform == 'win32' or sys_platform == 'windows'" },
     { name = "requests", marker = "sys_platform == 'linux' or sys_platform == 'win32' or sys_platform == 'windows'" },
-    { name = "ruff", marker = "sys_platform == 'linux' or sys_platform == 'win32' or sys_platform == 'windows'" },
     { name = "scp", marker = "sys_platform == 'linux' or sys_platform == 'win32' or sys_platform == 'windows'" },
     { name = "selenium", marker = "sys_platform == 'linux' or sys_platform == 'win32' or sys_platform == 'windows'" },
     { name = "setuptools", marker = "sys_platform == 'linux' or sys_platform == 'win32' or sys_platform == 'windows'" },
     { name = "unidecode", marker = "sys_platform == 'linux' or sys_platform == 'win32' or sys_platform == 'windows'" },
     { name = "websocket-client", marker = "sys_platform == 'linux' or sys_platform == 'win32' or sys_platform == 'windows'" },
-    { name = "wheel", marker = "sys_platform == 'linux' or sys_platform == 'win32' or sys_platform == 'windows'" },
 ]
 
 [package.optional-dependencies]
@@ -133,14 +131,12 @@ requires-dist = [
     { name = "pytest", marker = "extra == 'dev'" },
     { name = "pytest-cov", marker = "extra == 'dev'" },
     { name = "requests", specifier = ">=2.31.0" },
-    { name = "ruff", specifier = ">=0.13.0" },
     { name = "ruff", marker = "extra == 'dev'" },
     { name = "scp", specifier = ">=0.14.5" },
     { name = "selenium", specifier = ">=4.12" },
     { name = "setuptools", specifier = "==80.9.0" },
     { name = "unidecode", specifier = ">=1.4.0" },
     { name = "websocket-client", specifier = ">=1.8.0" },
-    { name = "wheel", specifier = ">=0.45.1" },
 ]
 provides-extras = ["dev"]
 
@@ -1542,15 +1538,6 @@ source = { registry = "https://pypi.org/simple" }
 sdist = { url = "https://files.pythonhosted.org/packages/e6/30/fba0d96b4b5fbf5948ed3f4681f7da2f9f64512e1d303f94b4cc174c24a5/websocket_client-1.8.0.tar.gz", hash = "sha256:3239df9f44da632f96012472805d40a23281a991027ce11d2f45a6f24ac4c3da", size = 54648, upload-time = "2024-04-23T22:16:16.976Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/5a/84/44687a29792a70e111c5c477230a72c4b957d88d16141199bf9acb7537a3/websocket_client-1.8.0-py3-none-any.whl", hash = "sha256:17b44cc997f5c498e809b22cdf2d9c7a9e71c02c8cc2b6c56e7c2d1239bfa526", size = 58826, upload-time = "2024-04-23T22:16:14.422Z" },
-]
-
-[[package]]
-name = "wheel"
-version = "0.45.1"
-source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/8a/98/2d9906746cdc6a6ef809ae6338005b3f21bb568bea3165cfc6a243fdc25c/wheel-0.45.1.tar.gz", hash = "sha256:661e1abd9198507b1409a20c02106d9670b2576e916d58f520316666abca6729", size = 107545, upload-time = "2024-11-23T00:18:23.513Z" }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/0b/2c/87f3254fd8ffd29e4c02732eee68a83a1d3c346ae39bc6822dcbcb697f2b/wheel-0.45.1-py3-none-any.whl", hash = "sha256:708e7481cc80179af0e556bbf0cc00b8444c7321e2700b8d8580231d13017248", size = 72494, upload-time = "2024-11-23T00:18:21.207Z" },
 ]
 
 [[package]]

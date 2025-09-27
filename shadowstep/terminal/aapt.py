@@ -9,6 +9,7 @@ package names and launchable activities.
 import logging
 import os
 import subprocess
+from pathlib import Path
 
 from shadowstep.utils.utils import get_current_func_name
 
@@ -31,7 +32,7 @@ class Aapt:
         """
         logger.info(f"{get_current_func_name()} < {path_to_apk}")
 
-        command = ["aapt", "dump", "badging", os.path.join(path_to_apk)]
+        command = ["aapt", "dump", "badging", str(Path(path_to_apk))]
 
         try:
             # Execute command and get output

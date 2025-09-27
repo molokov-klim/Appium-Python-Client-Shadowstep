@@ -15,6 +15,7 @@ import subprocess
 import sys
 import time
 import traceback
+from pathlib import Path
 from typing import TYPE_CHECKING, Any
 
 from appium.webdriver.webdriver import WebDriver
@@ -112,8 +113,8 @@ class Terminal:
         :return: True if the file was successfully pushed, False otherwise.
         """
         try:
-            source_file_path = os.path.join(source_path, filename)
-            remote_file_path = os.path.join(remote_server_path, filename)
+            source_file_path = Path(source_path) / filename
+            remote_file_path = Path(remote_server_path) / filename
             destination_file_path = f"{destination}/{filename}"
             self.transport.scp.put(files=source_file_path, remote_path=remote_file_path)
             _, stdout, _ = self.transport.ssh.exec_command(
@@ -150,14 +151,14 @@ class Terminal:
         try:
             if not destination:
                 # If path not specified, save in current directory
-                destination = os.path.join(os.getcwd(), os.path.basename(source))
+                destination = Path.cwd() / Path(source).name
 
             file_contents_base64 = self.driver.assert_extension_exists("mobile: pullFile"). \
                 execute_script("mobile: pullFile", {"remotePath": source})
             if not file_contents_base64:
                 return False
             decoded_contents = base64.b64decode(file_contents_base64)
-            with open(destination, "wb") as file:
+            with Path(destination).open("wb") as file:
                 file.write(decoded_contents)
         except NoSuchDriverException:
             self.base.reconnect()
@@ -243,8 +244,8 @@ class Terminal:
         :raises NotProvideCredentialsError: If the transport credentials are not provided.
         """
         try:
-            source_filepath = os.path.join(source, filename)
-            destination_filepath = os.path.join(remote_server_path, filename)
+            source_filepath = Path(source) / filename
+            destination_filepath = Path(remote_server_path) / filename
             self.transport.scp.put(files=source_filepath, remote_path=destination_filepath)
             _, stdout, _ = self.transport.ssh.exec_command(
                 f"adb -s {udid} install -r {destination_filepath}")
@@ -824,7 +825,7 @@ class Terminal:
         package_path = self.get_package_path(package=package)
         if not filename.endswith("._apk"):
             filename = f"{filename}._apk"
-        self.pull(source=package_path, destination=os.path.join(path, filename))
+        self.pull(source=package_path, destination=str(Path(path) / filename))
 
     def get_package_manifest(self, package: str) -> dict[str, Any]:
         """Retrieve the manifest of the specified package from the device.
@@ -832,13 +833,14 @@ class Terminal:
         :param package: The package name of the app.
         :return: A dictionary representing the package manifest.
         """
-        if not os.path.exists("test"):
-            os.makedirs(name="test")
+        test_path = Path("test")
+        if not test_path.exists():
+            test_path.mkdir(parents=True)
 
         self.pull_package(package=package, path="test",
                           filename="temp._apk")
 
-        command = ["aapt", "dump", "badging", os.path.join("test", "temp._apk")]
+        command = ["aapt", "dump", "badging", str(Path("test") / "temp._apk")]
         try:
             output: str = str(subprocess.check_output(command)).strip()  # noqa: S603
         except subprocess.CalledProcessError:
@@ -855,6 +857,6 @@ class Terminal:
                 continue
             result[current_key].append(element.replace("'", ""))
 
-        os.remove(os.path.join("test", "temp._apk"))
+        (Path("test") / "temp._apk").unlink()
 
         return result

@@ -9,6 +9,7 @@ import ast
 import logging
 import os
 import re
+from pathlib import Path
 
 from jinja2 import Environment, FileSystemLoader
 
@@ -55,7 +56,7 @@ class PageObjectTestGenerator:
     def __init__(self):
         """Initialize the PageObjectTestGenerator."""
         self.logger = logging.getLogger(__name__)
-        templates_dir = os.path.join(os.path.dirname(__file__), "templates")
+        templates_dir = Path(__file__).parent / "templates"
         self.env = Environment(
             loader=FileSystemLoader(templates_dir),
             autoescape=True,
@@ -86,7 +87,7 @@ class PageObjectTestGenerator:
 
         step = "Extracting properties from file"
         self.logger.debug(f"[{step}] started")
-        with open(input_path, encoding="utf-8") as f:
+        with Path(input_path).open(encoding="utf-8") as f:
             source = f.read()
         properties = self._extract_properties(source)
 
@@ -104,11 +105,11 @@ class PageObjectTestGenerator:
         step = "Forming test path"
         self.logger.debug(f"[{step}] started")
         test_file_name = f"test_{self._camel_to_snake(class_name)}.py"
-        test_path = os.path.join(output_dir, test_file_name)
+        test_path = Path(output_dir) / test_file_name
 
         step = "Writing file"
         self.logger.debug(f"[{step}] started")
-        with open(test_path, "w", encoding="utf-8") as f:
+        with test_path.open("w", encoding="utf-8") as f:
             f.write(rendered)
 
         self.logger.info(f"Generated test → {test_path}")

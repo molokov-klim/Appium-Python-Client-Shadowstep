@@ -12,6 +12,7 @@ import os
 import re
 import subprocess
 import time
+from pathlib import Path
 from typing import TYPE_CHECKING
 
 from shadowstep.utils.utils import get_current_func_name, grep_pattern
@@ -124,7 +125,7 @@ class Adb:
         """
         logger.info(f"{get_current_func_name()} < {source=}, {destination=}")
 
-        if not os.path.exists(source):
+        if not Path(source).exists():
             logger.error(f"Source path does not exist: {source=}")
             return False
         command = ["adb", "-s", f"{udid}", "push", f"{source}", f"{destination}"] if udid else ["adb", "push", f"{source}", f"{destination}"]

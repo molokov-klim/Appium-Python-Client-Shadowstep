@@ -11,6 +11,7 @@ import os
 import re
 import subprocess
 import time
+from pathlib import Path
 
 from shadowstep.utils.utils import get_current_func_name, grep_pattern
 
@@ -104,7 +105,7 @@ class Adb:
         """
         logger.info(f"{get_current_func_name()} < {source=}, {destination=}")
 
-        if not os.path.exists(source):
+        if not Path(source).exists():
             logger.exception(f"Source path does not exist: {source=}")
             return False
         s_udid = f"-s {udid}" if udid else ""

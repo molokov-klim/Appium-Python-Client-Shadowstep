@@ -119,7 +119,7 @@ class TestAdb:
         destination = "/remote/file.txt"
         udid = "emulator-5554"
 
-        with patch("os.path.exists", return_value=True), patch("subprocess.run") as mock_subprocess:
+        with patch("pathlib.Path.exists", return_value=True), patch("subprocess.run") as mock_subprocess:
             # Act
             result = Adb.push(source, destination, udid)
 
@@ -135,7 +135,7 @@ class TestAdb:
         source = "/local/file.txt"
         destination = "/remote/file.txt"
 
-        with patch("os.path.exists", return_value=True), patch("subprocess.run") as mock_subprocess:
+        with patch("pathlib.Path.exists", return_value=True), patch("subprocess.run") as mock_subprocess:
             # Act
             result = Adb.push(source, destination, "")
 

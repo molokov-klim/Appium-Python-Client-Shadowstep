@@ -16,6 +16,10 @@ import pytest
 from selenium.common import WebDriverException
 from websocket import WebSocketConnectionClosedException
 
+from shadowstep.exceptions.shadowstep_exceptions import (
+    ShadowstepPollIntervalError,
+    ShadowstepEmptyFilenameError,
+)
 from shadowstep.logcat.shadowstep_logcat import (
     DEFAULT_POLL_INTERVAL,
     WEBSOCKET_TIMEOUT,
@@ -115,12 +119,12 @@ class TestShadowstepLogcat:
     
     def test_init_negative_poll_interval_raises_error(self, mock_driver_getter: Callable[[], MockWebDriver | None]) -> None:
         """Test that negative poll interval raises ValueError."""
-        with pytest.raises(ValueError, match="poll_interval must be non-negative"):
+        with pytest.raises(ShadowstepPollIntervalError, match="poll_interval must be non-negative"):
             ShadowstepLogcat(mock_driver_getter, poll_interval=-1.0)  # type: ignore
     
     def test_start_empty_filename_raises_error(self, logcat: ShadowstepLogcat) -> None:
         """Test that starting with empty filename raises ValueError."""
-        with pytest.raises(ValueError, match="filename cannot be empty"):
+        with pytest.raises(ShadowstepEmptyFilenameError, match="filename cannot be empty"):
             logcat.start("")
     
     def test_start_already_running(self, logcat: ShadowstepLogcat, temp_file: str) -> None:

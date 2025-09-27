@@ -5,6 +5,7 @@ Tests for shadowstep.terminal.aapt module.
 
 import os
 import subprocess
+from pathlib import Path
 from unittest.mock import patch
 
 import pytest
@@ -124,20 +125,18 @@ application: label='App' icon=''"""
             # Assert
             assert result == expected_activity  # noqa: S101
 
-    def test_get_package_name_with_os_path_join(self):
-        """Test that os.path.join is used correctly in get_package_name."""
+    def test_get_package_name_with_path_construction(self):
+        """Test that Path is used correctly in get_package_name."""
         # Arrange
         mock_output = b"package: name='com.example.app' versionCode='1' versionName='1.0'"
         apk_path = "app._apk"
-        expected_path = os.path.join(apk_path)
+        expected_path = str(Path(apk_path))
 
-        with patch("subprocess.check_output", return_value=mock_output) as mock_subprocess, \
-             patch("os.path.join", return_value=expected_path) as mock_join:
+        with patch("subprocess.check_output", return_value=mock_output) as mock_subprocess:
                 # Act
                 Aapt.get_package_name(apk_path)
 
                 # Assert
-                mock_join.assert_called_once_with(apk_path)
                 mock_subprocess.assert_called_once_with(["aapt", "dump", "badging", expected_path])
 
     def test_get_launchable_activity_direct_path(self):

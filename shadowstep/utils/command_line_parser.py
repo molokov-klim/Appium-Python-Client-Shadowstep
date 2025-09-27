@@ -9,6 +9,7 @@ parameters used by the Shadowstep automation framework.
 import logging
 import os
 import sys
+from pathlib import Path
 
 from shadowstep.utils.utils import get_current_func_name
 
@@ -108,4 +109,4 @@ def root_dir():
         if "--rootdir" in i:
             root_dir_path = i.split("=")[1]
             break
-    return os.path.abspath(root_dir_path)
+    return str(Path(root_dir_path).resolve())

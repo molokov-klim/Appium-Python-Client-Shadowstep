@@ -11,9 +11,10 @@ import logging
 import math
 import os
 import re
+from pathlib import Path
 
-START_DIR = os.getcwd()
-PROJECT_ROOT_DIR = os.path.dirname(__file__)
+START_DIR = Path.cwd()
+PROJECT_ROOT_DIR = Path(__file__).parent
 logger = logging.getLogger(__name__)
 
 

@@ -12,6 +12,7 @@ import keyword
 import logging
 import os
 import re
+from pathlib import Path
 from typing import Any, cast
 
 from jinja2 import Environment, FileSystemLoader
@@ -77,10 +78,7 @@ class PageObjectGenerator:
         self._anchor_name_map = None
 
         # Initialize Jinja2
-        templates_dir = os.path.join(
-            os.path.dirname(__file__),
-            "templates",
-        )
+        templates_dir = Path(__file__).parent / "templates"
         self.env = Environment(
             loader=FileSystemLoader(templates_dir),  # where to load templates from (directory with .j2 files)
             autoescape=False,  # noqa: S701
@@ -216,9 +214,9 @@ class PageObjectGenerator:
 
         step = "Writing to file"
         self.logger.debug(step)
-        path = os.path.join(output_dir, file_name)
-        os.makedirs(os.path.dirname(path), exist_ok=True)
-        with open(path, "w", encoding="utf-8") as f:
+        path = Path(output_dir) / file_name
+        path.parent.mkdir(parents=True, exist_ok=True)
+        with path.open("w", encoding="utf-8") as f:
             f.write(rendered)
 
         self.logger.debug(f"Generated PageObject → {path}")

@@ -14,6 +14,7 @@ import re
 import threading
 import time
 from collections.abc import Callable
+from pathlib import Path
 from typing import Any
 
 from appium.webdriver.webdriver import WebDriver
@@ -233,7 +234,7 @@ class ShadowstepLogcat:
             return
 
         try:
-            with open(self._filename, "a", buffering=1, encoding="utf-8") as f:
+            with Path(self._filename).open("a", buffering=1, encoding="utf-8") as f:
                 while not self._stop_evt.is_set():
                     try:
                         # Start broadcast

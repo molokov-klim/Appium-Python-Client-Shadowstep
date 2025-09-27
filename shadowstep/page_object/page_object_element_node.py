@@ -12,6 +12,7 @@ import os
 from abc import ABC, abstractmethod
 from collections.abc import Generator
 from dataclasses import dataclass, field
+from pathlib import Path
 from typing import Any
 
 from jinja2 import Environment, FileSystemLoader
@@ -198,8 +199,8 @@ class Jinja2Renderer(TemplateRenderer):
 
         """
         self.logger.debug(f"{get_current_func_name()}")
-        os.makedirs(os.path.dirname(os.path.abspath(path)), exist_ok=True)
-        with open(path, "w", encoding="utf-8") as f:
+        Path(path).resolve().parent.mkdir(parents=True, exist_ok=True)
+        with Path(path).open("w", encoding="utf-8") as f:
             f.write(content)
 
     @staticmethod
@@ -237,7 +238,7 @@ class PageObjectRendererFactory:
 
         """
         if renderer_type.lower() == "jinja2":
-            templates_dir = os.path.join(os.path.dirname(__file__), "templates")
+            templates_dir = Path(__file__).parent / "templates"
             return Jinja2Renderer(templates_dir)
         raise ShadowstepUnsupportedRendererTypeError(renderer_type)
 
