@@ -25,8 +25,7 @@ class Aapt:
 
     @staticmethod
     def get_package_name(path_to_apk: str) -> str:
-        """
-        Get APK file package name using aapt command.
+        """Get APK file package name using aapt command.
 
         Returns package name.
         """
@@ -59,8 +58,7 @@ class Aapt:
 
     @staticmethod
     def get_launchable_activity(path_to_apk: str) -> str:
-        """
-        Get launchable activity name from APK file using aapt command.
+        """Get launchable activity name from APK file using aapt command.
 
         Returns activity name as string.
         """

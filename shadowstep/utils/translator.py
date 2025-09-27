@@ -18,8 +18,7 @@ class YandexTranslate:
     """Provide functionality to authenticate and translate text using Yandex Cloud Translate API."""
 
     def __init__(self, folder_id: str):
-        """
-        Initializes the YandexTranslate instance with the specified folder ID.
+        """Initializes the YandexTranslate instance with the specified folder ID.
 
         Args:
             folder_id (str): The Yandex Cloud folder ID used for translations.
@@ -29,8 +28,7 @@ class YandexTranslate:
         self._iam_token = self._get_iam_token()
 
     def _get_iam_token(self) -> str:
-        """
-        Retrieves the IAM token using the OAuth token from the environment.
+        """Retrieves the IAM token using the OAuth token from the environment.
 
         Returns:
             str: The IAM token.
@@ -45,8 +43,7 @@ class YandexTranslate:
         return response.json()["iamToken"]
 
     def _contains_cyrillic(self, text: str) -> bool:
-        """
-        Checks if the given text contains any Cyrillic characters.
+        """Checks if the given text contains any Cyrillic characters.
 
         Args:
             text (str): Text to analyze.
@@ -57,8 +54,7 @@ class YandexTranslate:
         return bool(re.search(r"[а-яА-Я]", text))
 
     def translate(self, text: str) -> str:
-        """
-        Translates a single text string from Russian to English if it contains Cyrillic.
+        """Translates a single text string from Russian to English if it contains Cyrillic.
 
         Args:
             text (str): The string to translate.

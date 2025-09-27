@@ -1,6 +1,5 @@
 # shadowstep/utils/adb.py
-"""
-LegacyAdb
+"""LegacyAdb
 
 This module is deprecated and kept for backward compatibility with external systems.
 Please use `DeviceInterface` and the new `Adb` or `Terminal` implementations instead.
@@ -19,16 +18,14 @@ logger = logging.getLogger(__name__)
 
 
 class Adb:
-    """
-    A class to interact with Android Debug Bridge (ADB) for device management.
+    """A class to interact with Android Debug Bridge (ADB) for device management.
 
     Use only if Appium server is running locally where the test is being performed
     """
 
     @staticmethod
     def get_devices() -> list[str]:
-        """
-        Retrieve a list of connected devices via ADB.
+        """Retrieve a list of connected devices via ADB.
 
         Returns:
             Union[List[str], None]
@@ -59,8 +56,7 @@ class Adb:
 
     @staticmethod
     def get_device_model(udid: str) -> str:
-        """
-        Retrieve the model of the connected device using ADB.
+        """Retrieve the model of the connected device using ADB.
 
         Args:
             udid : str, optional
@@ -87,8 +83,7 @@ class Adb:
 
     @staticmethod
     def push(source: str, destination: str, udid: str) -> bool:
-        """
-        Push a file from the local machine to the connected device using ADB.
+        """Push a file from the local machine to the connected device using ADB.
 
         Args:
             source : str
@@ -119,8 +114,7 @@ class Adb:
 
     @staticmethod
     def pull(source: str, destination: str, udid: str) -> bool:
-        """
-        Pull a file from the connected device to the local machine using ADB.
+        """Pull a file from the connected device to the local machine using ADB.
 
         Args:
             source : str
@@ -147,8 +141,7 @@ class Adb:
 
     @staticmethod
     def install_app(source: str, udid: str) -> bool:
-        """
-        Install an application on the connected device using ADB.
+        """Install an application on the connected device using ADB.
 
         Args:
             source : str
@@ -173,8 +166,7 @@ class Adb:
 
     @staticmethod
     def is_app_installed(package: str) -> bool:
-        """
-        Check if the specified package is installed on the connected device.
+        """Check if the specified package is installed on the connected device.
 
         Args:
             package : str
@@ -201,8 +193,7 @@ class Adb:
 
     @staticmethod
     def uninstall_app(package: str) -> bool:
-        """
-        Removes the specified package using ADB.
+        """Removes the specified package using ADB.
 
         Args:
             package : str
@@ -225,8 +216,7 @@ class Adb:
 
     @staticmethod
     def start_activity(package: str, activity: str) -> bool:
-        """
-        Starts the specified activity of the application on the device using ADB.
+        """Starts the specified activity of the application on the device using ADB.
 
         Args:
             package : str
@@ -251,8 +241,7 @@ class Adb:
 
     @staticmethod
     def get_current_activity() -> str:
-        """
-        Retrieve the name of the current activity running on the device.
+        """Retrieve the name of the current activity running on the device.
 
         Returns:
             Union[str, None]
@@ -294,8 +283,7 @@ class Adb:
 
     @staticmethod
     def get_current_package() -> str:
-        """
-        Retrieve the name of the current application package running on the device.
+        """Retrieve the name of the current application package running on the device.
 
         Returns:
             Union[str, None]
@@ -337,8 +325,7 @@ class Adb:
 
     @staticmethod
     def close_app(package: str) -> bool:
-        """
-        Close the specified application on the device using ADB.
+        """Close the specified application on the device using ADB.
 
         Args:
             package : str
@@ -361,8 +348,7 @@ class Adb:
 
     @staticmethod
     def reboot_app(package: str, activity: str) -> bool:
-        """
-        Reboot the specified application by closing and then starting its activity.
+        """Reboot the specified application by closing and then starting its activity.
 
         Args:
             package : str
@@ -390,8 +376,7 @@ class Adb:
 
     @staticmethod
     def press_home() -> bool:
-        """
-        Simulate pressing the home button on the device using ADB.
+        """Simulate pressing the home button on the device using ADB.
 
         Returns:
             bool
@@ -410,8 +395,7 @@ class Adb:
 
     @staticmethod
     def press_back() -> bool:
-        """
-        Simulate pressing the back button on the device using ADB.
+        """Simulate pressing the back button on the device using ADB.
 
         Returns:
             bool
@@ -430,8 +414,7 @@ class Adb:
 
     @staticmethod
     def press_menu() -> bool:
-        """
-        Simulate pressing the menu button on the device using ADB.
+        """Simulate pressing the menu button on the device using ADB.
 
         Returns:
             bool
@@ -450,8 +433,7 @@ class Adb:
 
     @staticmethod
     def input_keycode_num_(num: int) -> bool:
-        """
-        Simulate pressing a number key on the device's numpad using ADB.
+        """Simulate pressing a number key on the device's numpad using ADB.
 
         Args:
             num : int
@@ -474,8 +456,7 @@ class Adb:
 
     @staticmethod
     def input_keycode(keycode: str) -> bool:
-        """
-        Simulate pressing a specified key on the device using ADB.
+        """Simulate pressing a specified key on the device using ADB.
 
         Args:
             keycode : str
@@ -498,8 +479,7 @@ class Adb:
 
     @staticmethod
     def input_text(text: str) -> bool:
-        """
-        Input the specified text on the device using ADB.
+        """Input the specified text on the device using ADB.
 
         Args:
             text : str
@@ -524,8 +504,7 @@ class Adb:
 
     @staticmethod
     def tap(x: str | int, y: str | int) -> bool:
-        """
-        Simulate a tap at the specified screen coordinates on the device using ADB.
+        """Simulate a tap at the specified screen coordinates on the device using ADB.
 
         Args:
             x : Union[str, int]
@@ -553,8 +532,7 @@ class Adb:
     def swipe(start_x: str | int, start_y: str | int,
               end_x: str | int, end_y: str | int,
               duration: int = 300) -> bool:
-        """
-        Simulate a swipe gesture from the starting coordinates to the ending coordinates on the device using ADB.
+        """Simulate a swipe gesture from the starting coordinates to the ending coordinates on the device using ADB.
 
         Args:
             start_x : Union[str, int]
@@ -587,8 +565,7 @@ class Adb:
 
     @staticmethod
     def check_vpn(ip_address: str = "") -> bool:
-        """
-        Check if a VPN connection is established with the specified IP address.
+        """Check if a VPN connection is established with the specified IP address.
 
         Args:
             ip_address : str, optional
@@ -620,8 +597,7 @@ class Adb:
 
     @staticmethod
     def stop_logcat() -> bool:
-        """
-        Stop the logcat process if it is currently running.
+        """Stop the logcat process if it is currently running.
 
         Returns:
             bool
@@ -637,8 +613,7 @@ class Adb:
 
     @staticmethod
     def is_process_exist(name: str) -> bool:
-        """
-        Check if a process with the specified name is currently running on the device.
+        """Check if a process with the specified name is currently running on the device.
 
         Args:
             name : str
@@ -675,8 +650,7 @@ class Adb:
 
     @staticmethod
     def run_background_process(command: str, process: str = "") -> bool:
-        """
-        Run a specified command as a background process.
+        """Run a specified command as a background process.
 
         Args:
             command : str
@@ -705,8 +679,7 @@ class Adb:
 
     @staticmethod
     def reload_adb() -> bool:
-        """
-        Reload the ADB server by killing and then starting it again.
+        """Reload the ADB server by killing and then starting it again.
 
         Returns:
             bool
@@ -733,8 +706,7 @@ class Adb:
 
     @staticmethod
     def know_pid(name: str) -> int | None:
-        """
-        Retrieve the process ID (PID) of a running process with the specified name.
+        """Retrieve the process ID (PID) of a running process with the specified name.
 
         Args:
             name : str
@@ -772,8 +744,7 @@ class Adb:
 
     @staticmethod
     def kill_by_pid(pid: str | int) -> bool:
-        """
-        Terminate a process with the specified PID using ADB.
+        """Terminate a process with the specified PID using ADB.
 
         Args:
             pid : Union[str, int]
@@ -796,8 +767,7 @@ class Adb:
 
     @staticmethod
     def kill_by_name(name: str) -> bool:
-        """
-        Terminate processes with the specified name using ADB.
+        """Terminate processes with the specified name using ADB.
 
         Args:
             name : str
@@ -820,8 +790,7 @@ class Adb:
 
     @staticmethod
     def kill_all(name: str) -> bool:
-        """
-        Terminate all processes with the specified name using ADB.
+        """Terminate all processes with the specified name using ADB.
 
         Args:
             name : str
@@ -844,8 +813,7 @@ class Adb:
 
     @staticmethod
     def delete_files_from_internal_storage(path: str) -> bool:
-        """
-        Delete all files from the specified internal storage path on the device using ADB.
+        """Delete all files from the specified internal storage path on the device using ADB.
 
         Args:
             path : str
@@ -868,8 +836,7 @@ class Adb:
 
     @staticmethod
     def pull_video(source: str, destination: str = ".", delete: bool = True) -> bool:
-        """
-        Pull videos from the specified source directory on the device to the destination directory on the local machine.
+        """Pull videos from the specified source directory on the device to the destination directory on the local machine.
 
         Args:
             source : str
@@ -911,8 +878,7 @@ class Adb:
 
     @staticmethod
     def stop_video() -> bool:
-        """
-        Stop the video recording on the device by terminating the screenrecord process using ADB.
+        """Stop the video recording on the device by terminating the screenrecord process using ADB.
 
         Returns:
             bool
@@ -931,8 +897,7 @@ class Adb:
 
     @staticmethod
     def record_video(path: str = "sdcard/Movies/", filename: str = "screenrecord.mp4") -> subprocess.Popen[bytes] | None:
-        """
-        Start recording a video on the device using ADB.
+        """Start recording a video on the device using ADB.
 
         Args:
             path : str, optional
@@ -960,8 +925,7 @@ class Adb:
 
     @staticmethod
     def start_record_video(path: str = "sdcard/Movies/", filename: str = "screenrecord.mp4") -> bool:
-        """
-        Start recording a video on the device using ADB.
+        """Start recording a video on the device using ADB.
 
         Args:
             path : str, optional
@@ -989,8 +953,7 @@ class Adb:
 
     @staticmethod
     def reboot() -> bool:
-        """
-        Reboot the device using ADB.
+        """Reboot the device using ADB.
 
         Returns:
             bool
@@ -1009,8 +972,7 @@ class Adb:
 
     @staticmethod
     def get_screen_resolution() -> tuple[int, int] | None:
-        """
-        Retrieve the screen resolution of the connected device.
+        """Retrieve the screen resolution of the connected device.
 
         Returns:
             Union[Tuple[int, int], None]
@@ -1032,8 +994,7 @@ class Adb:
         return None
 
     def get_packages_list(self) -> list[str]:
-        """
-        Retrieve a list of all installed packages on the device.
+        """Retrieve a list of all installed packages on the device.
 
         Returns:
             list
@@ -1047,8 +1008,7 @@ class Adb:
 
     @staticmethod
     def execute(command: str):
-        """
-        Execute a specified ADB command and return the output.
+        """Execute a specified ADB command and return the output.
 
         Args:
             command : str

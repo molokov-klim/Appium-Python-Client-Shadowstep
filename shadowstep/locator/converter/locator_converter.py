@@ -28,8 +28,7 @@ if TYPE_CHECKING:
 
 
 class LocatorConverter:
-    """
-    Unified converter for all locator formats.
+    """Unified converter for all locator formats.
     
     This class provides a single interface for converting between different
     locator formats, replacing the deprecated DeprecatedLocatorConverter.
@@ -43,8 +42,7 @@ class LocatorConverter:
         self.xpath_converter = XPathConverter()
 
     def to_dict(self, selector: tuple[str, str] | dict[str, Any] | Element | UiSelector | str) -> dict[str, Any]:
-        """
-        Convert any selector format to dictionary format.
+        """Convert any selector format to dictionary format.
         
         Args:
             selector: Selector in any supported format
@@ -74,8 +72,7 @@ class LocatorConverter:
             raise ShadowstepConversionError(f"{get_current_func_name()} failed to convert selector: {selector}. {e}") from e
 
     def to_xpath(self, selector: tuple[str, str] | dict[str, Any] | Element | UiSelector) -> tuple[str, str]:
-        """
-        Convert any selector format to XPath tuple format.
+        """Convert any selector format to XPath tuple format.
         
         Args:
             selector: Selector in any supported format
@@ -105,8 +102,7 @@ class LocatorConverter:
             raise ShadowstepConversionError(f"{get_current_func_name()} failed to convert selector: {selector}. {e}") from e
 
     def to_uiselector(self, selector: tuple[str, str] | dict[str, Any] | Element | UiSelector) -> str:
-        """
-        Convert any selector format to UiSelector string.
+        """Convert any selector format to UiSelector string.
         
         Args:
             selector: Selector in any supported format
@@ -165,8 +161,7 @@ class LocatorConverter:
         return self.dict_converter.dict_to_xpath(selector_dict)
 
     def validate_selector(self, selector: dict[str, Any] | tuple[str, str] | str | UiSelector) -> None:
-        """
-        Validate selector format and content.
+        """Validate selector format and content.
         
         Args:
             selector: Selector to validate

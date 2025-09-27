@@ -1,6 +1,5 @@
 # shadowstep/locator/map/dict_to_xpath.py
-"""
-Mapping from Shadowstep Dict format to XPath expressions.
+"""Mapping from Shadowstep Dict format to XPath expressions.
 
 This module provides functions to convert Shadowstep dictionary locators
 to XPath expressions with proper attribute mapping and hierarchy handling.
@@ -13,8 +12,7 @@ from shadowstep.locator.types.shadowstep_dict import ShadowstepDictAttribute
 
 
 def dict_to_xpath_attribute(attr: ShadowstepDictAttribute, value: Any) -> str:
-    """
-    Convert a single dictionary attribute to XPath expression.
+    """Convert a single dictionary attribute to XPath expression.
     
     Args:
         attr: Dictionary attribute enum
@@ -32,8 +30,7 @@ def dict_to_xpath_attribute(attr: ShadowstepDictAttribute, value: Any) -> str:
 
 
 def is_hierarchical_attribute(attr: ShadowstepDictAttribute) -> bool:
-    """
-    Check if attribute represents hierarchical relationship.
+    """Check if attribute represents hierarchical relationship.
     
     Args:
         attr: Dictionary attribute enum
@@ -46,8 +43,7 @@ def is_hierarchical_attribute(attr: ShadowstepDictAttribute) -> bool:
 
 
 def get_xpath_for_hierarchical_attribute(attr: ShadowstepDictAttribute, nested_xpath: str) -> str:
-    """
-    Get XPath expression for hierarchical attributes.
+    """Get XPath expression for hierarchical attributes.
     
     Args:
         attr: Hierarchical attribute enum

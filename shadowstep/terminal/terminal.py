@@ -50,8 +50,7 @@ class NotProvideCredentialsError(Exception):
 
 
 class Terminal:
-    """
-    Allows you to perform adb actions using the appium server. Useful for remote connections.
+    """Allows you to perform adb actions using the appium server. Useful for remote connections.
 
     Required ssh
     """
@@ -80,8 +79,7 @@ class Terminal:
             self.transport.ssh.close()
 
     def adb_shell(self, command: str, args: str = "", tries: int = 3) -> Any:
-        """
-        Method for executing commands via ADB on a mobile device.
+        """Method for executing commands via ADB on a mobile device.
 
         :param command: The command to execute.
         :param args: Additional arguments for the command (optional).
@@ -102,8 +100,7 @@ class Terminal:
         return None
 
     def push(self, source_path: str, remote_server_path: str, filename: str, destination: str, udid: str) -> bool:
-        """
-        Method for pushing files from a local source to a remote destination on a mobile device via ADB.
+        """Method for pushing files from a local source to a remote destination on a mobile device via ADB.
 
         :param source_path: The local path of the file to push.
         :param remote_server_path: The remote path on the server where the file will be pushed.
@@ -141,8 +138,7 @@ class Terminal:
             return False
 
     def pull(self, source: str, destination: str) -> bool:
-        """
-        Method for pulling a file from a mobile device to a local destination.
+        """Method for pulling a file from a mobile device to a local destination.
 
         :param source: The path of the file on the mobile device to pull.
         :param destination: The local path where the pulled file will be saved.
@@ -178,8 +174,7 @@ class Terminal:
             return False
 
     def start_activity(self, package: str, activity: str) -> bool:
-        """
-        Starts activity on the device.
+        """Starts activity on the device.
 
         :param package: The package name of the application.
         :param activity: The activity to start.
@@ -197,8 +192,7 @@ class Terminal:
             return False
 
     def get_current_app_package(self) -> str:
-        """
-        Retrieves the package name of the currently focused application on the device.
+        """Retrieves the package name of the currently focused application on the device.
 
         :return: The package name of the currently focused application, or None if it cannot be determined.
         """
@@ -219,8 +213,7 @@ class Terminal:
             return ""
 
     def close_app(self, package: str) -> bool:
-        """
-        Closes the specified application on the device.
+        """Closes the specified application on the device.
 
         :param package: The package name of the application to close.
         :return: True if the application was closed successfully, False otherwise.
@@ -237,8 +230,7 @@ class Terminal:
             return False
 
     def reboot_app(self, package: str, activity: str) -> bool:
-        """
-        Restarts the specified application on the device by closing it and then starting it again.
+        """Restarts the specified application on the device by closing it and then starting it again.
 
         :param package: The package name of the application to reboot.
         :param activity: The activity to start after rebooting the application.
@@ -249,8 +241,7 @@ class Terminal:
         return self.start_activity(package=package, activity=activity)
 
     def install_app(self, source: str, remote_server_path: str, filename: str, udid: str) -> bool:
-        """
-        Installs an application on the specified mobile device.
+        """Installs an application on the specified mobile device.
 
         :param source: The local path of the application file to install.
         :param remote_server_path: The remote path on the server where the application file will be stored temporarily.
@@ -281,8 +272,7 @@ class Terminal:
             return False
 
     def is_app_installed(self, package: str) -> bool:
-        """
-        Checks if the specified application package is installed on the device.
+        """Checks if the specified application package is installed on the device.
 
         :param package: The package name of the application to check.
         :return: True if the application is installed, False otherwise.
@@ -304,8 +294,7 @@ class Terminal:
             return False
 
     def uninstall_app(self, package: str) -> bool:
-        """
-        Uninstalls the specified application from the device.
+        """Uninstalls the specified application from the device.
 
         :param package: The package name of the application to uninstall.
         :return: True if the application was successfully uninstalled, False otherwise.
@@ -327,8 +316,7 @@ class Terminal:
             return False
 
     def press_home(self) -> bool:
-        """
-        Simulates pressing the home button on the device.
+        """Simulates pressing the home button on the device.
 
         :return: True if the home button press was successfully simulated, False otherwise.
         """
@@ -343,8 +331,7 @@ class Terminal:
             return False
 
     def press_back(self) -> bool:
-        """
-        Simulates pressing the back button on the device.
+        """Simulates pressing the back button on the device.
 
         :return: True if the back button press was successfully simulated, False otherwise.
         """
@@ -359,8 +346,7 @@ class Terminal:
             return False
 
     def press_menu(self) -> bool:
-        """
-        Simulates pressing the menu button on the device.
+        """Simulates pressing the menu button on the device.
 
         :return: True if the menu button press was successfully simulated, False otherwise.
         """
@@ -375,8 +361,7 @@ class Terminal:
             return False
 
     def input_keycode_num_(self, num: int) -> bool:
-        """
-        Sends a numeric key event to the device using ADB.
+        """Sends a numeric key event to the device using ADB.
 
         0-9, ADD, COMMA, DIVIDE, DOT, ENTER, EQUALS (read https://developer.android.com/reference/android/view/KeyEvent)
 
@@ -394,8 +379,7 @@ class Terminal:
             return False
 
     def input_keycode(self, keycode: str) -> bool:
-        """
-        Sends a key event to the device using ADB.
+        """Sends a key event to the device using ADB.
 
         :param keycode: The keycode to send to the device.
         :return: True if the command was executed successfully, False otherwise.
@@ -411,8 +395,7 @@ class Terminal:
             return False
 
     def input_text(self, text: str) -> bool:
-        """
-        Inputs text on the device.
+        """Inputs text on the device.
 
         :param text: The text to input.
         :return: True if the text was successfully inputted, False otherwise.
@@ -428,8 +411,7 @@ class Terminal:
             return False
 
     def tap(self, x: int, y: int) -> bool:
-        """
-        Simulates tapping at the specified coordinates on the device's screen.
+        """Simulates tapping at the specified coordinates on the device's screen.
 
         :param x: The x-coordinate of the tap.
         :param y: The y-coordinate of the tap.
@@ -447,8 +429,7 @@ class Terminal:
 
     def swipe(self, start_x: str | int, start_y: str | int,
               end_x: str | int, end_y: str | int, duration: int = 300) -> bool:
-        """
-        Simulates a swipe gesture from one point to another on the device's screen.
+        """Simulates a swipe gesture from one point to another on the device's screen.
 
         :param start_x: The x-coordinate of the starting point of the swipe.
         :param start_y: The y-coordinate of the starting point of the swipe.
@@ -469,8 +450,7 @@ class Terminal:
             return False
 
     def swipe_right_to_left(self, duration: int = 300) -> bool:
-        """
-        Simulates a swipe gesture from right to left on the device's screen.
+        """Simulates a swipe gesture from right to left on the device's screen.
 
         :param duration: The duration of the swipe in milliseconds (default is 300).
         :return: True if the swipe was successful, False otherwise.
@@ -487,8 +467,7 @@ class Terminal:
                           duration=duration)
 
     def swipe_left_to_right(self, duration: int = 300) -> bool:
-        """
-        Simulates a swipe gesture from left to right on the device's screen.
+        """Simulates a swipe gesture from left to right on the device's screen.
 
         :param duration: The duration of the swipe in milliseconds (default is 300).
         :return: True if the swipe was successful, False otherwise.
@@ -505,8 +484,7 @@ class Terminal:
                           duration=duration)
 
     def swipe_top_to_bottom(self, duration: int = 300) -> bool:
-        """
-        Simulates a swipe gesture from top to bottom on the device's screen.
+        """Simulates a swipe gesture from top to bottom on the device's screen.
 
         :param duration: The duration of the swipe in milliseconds (default is 300).
         :return: True if the swipe was successful, False otherwise.
@@ -522,8 +500,7 @@ class Terminal:
                           duration=duration)
 
     def swipe_bottom_to_top(self, duration: int = 300) -> bool:
-        """
-        Simulates a swipe gesture from bottom to top on the device's screen.
+        """Simulates a swipe gesture from bottom to top on the device's screen.
 
         :param duration: The duration of the swipe in milliseconds (default is 300).
         :return: True if the swipe was successful, False otherwise.
@@ -539,8 +516,7 @@ class Terminal:
                           duration=duration)
 
     def check_vpn(self, ip_address: str = "") -> bool:
-        """
-        Checks if a VPN connection is established on the device.
+        """Checks if a VPN connection is established on the device.
 
         :param ip_address: Optional IP address to check for VPN connection (default is '').
         :return: True if a VPN connection is established, False otherwise.
@@ -562,8 +538,7 @@ class Terminal:
             return False
 
     def stop_logcat(self) -> bool:
-        """
-        Stops the logcat process running on the device.
+        """Stops the logcat process running on the device.
 
         :return: True if the logcat process was successfully stopped, False otherwise.
         """
@@ -589,8 +564,7 @@ class Terminal:
         return True
 
     def know_pid(self, name: str) -> int | None:
-        """
-        Retrieves the process ID (PID) of the specified process name.
+        """Retrieves the process ID (PID) of the specified process name.
 
         :param name: The name of the process.
         :return: The PID of the process if found, None otherwise.
@@ -611,8 +585,7 @@ class Terminal:
         return None
 
     def is_process_exist(self, name: str) -> bool:
-        """
-        Checks if a process with the specified name exists.
+        """Checks if a process with the specified name exists.
 
         :param name: The name of the process.
         :return: True if the process exists, False otherwise.
@@ -633,8 +606,7 @@ class Terminal:
         return False
 
     def run_background_process(self, command: str, args: str = "", process: str = "") -> bool:
-        """
-        Runs a background process on the device using the specified command.
+        """Runs a background process on the device using the specified command.
 
         :param command: The command to run.
         :param args: Additional arguments for the command (default is "").
@@ -657,8 +629,7 @@ class Terminal:
             return False
 
     def kill_by_pid(self, pid: int) -> bool:
-        """
-        Kills the process with the specified PID.
+        """Kills the process with the specified PID.
 
         :param pid: The process ID (PID) of the process to kill.
         :return: True if the process was successfully killed, False otherwise.
@@ -673,8 +644,7 @@ class Terminal:
         return True
 
     def kill_by_name(self, name: str) -> bool:
-        """
-        Kills the process with the specified name.
+        """Kills the process with the specified name.
 
         :param name: The name of the process to kill.
         :return: True if the process was successfully killed, False otherwise.
@@ -692,8 +662,7 @@ class Terminal:
         return True
 
     def kill_all(self, name: str) -> bool:
-        """
-        Kills all processes with the specified name.
+        """Kills all processes with the specified name.
 
         :param name: The name of the processes to kill.
         :return: True if the processes were successfully killed, False otherwise.
@@ -709,8 +678,7 @@ class Terminal:
         return True
 
     def delete_files_from_internal_storage(self, path: str) -> bool:
-        """
-        Deletes files from the internal storage of the device.
+        """Deletes files from the internal storage of the device.
 
         :param path: The path of the files to delete.
         :return: True if the files were successfully deleted, False otherwise.
@@ -726,8 +694,7 @@ class Terminal:
         return True
 
     def delete_file_from_internal_storage(self, path: str, filename: str) -> bool:
-        """
-        Deletes a file from the internal storage of the device.
+        """Deletes a file from the internal storage of the device.
 
         :param path: The path of the file's directory.
         :param filename: The name of the file to delete.
@@ -746,8 +713,7 @@ class Terminal:
         return True
 
     def record_video(self, **options: Any) -> bool:
-        """
-        Records a video of the device screen (3 MIN MAX).
+        """Records a video of the device screen (3 MIN MAX).
 
         :param options: Additional options for video recording.
         :return: True if the video recording started successfully, False otherwise.
@@ -767,8 +733,7 @@ class Terminal:
         return True
 
     def stop_video(self, **options: Any) -> bytes | None:
-        """
-        Stops the video recording of the device screen and returns the recorded video data (Base64 bytes).
+        """Stops the video recording of the device screen and returns the recorded video data (Base64 bytes).
 
         :param options: Additional options for stopping the video recording.
         :return: The recorded video data as bytes if the recording stopped successfully, None otherwise.
@@ -797,8 +762,7 @@ class Terminal:
             return True
 
     def get_screen_resolution(self) -> tuple[int, int]:
-        """
-        Retrieves the screen resolution of the device.
+        """Retrieves the screen resolution of the device.
 
         :return: A tuple containing the width and height of the screen in pixels if successful,
                  or None if the resolution couldn't be retrieved.
@@ -830,8 +794,7 @@ class Terminal:
                 self.base.reconnect()
 
     def get_prop(self) -> dict[str, Any]:
-        """
-        Retrieves system properties from the device.
+        """Retrieves system properties from the device.
 
         :return: A dictionary containing the system properties as key-value pairs.
         """
@@ -849,56 +812,49 @@ class Terminal:
         return result_dict
 
     def get_prop_hardware(self) -> str:
-        """
-        Retrieves the hardware information from the system properties of the device.
+        """Retrieves the hardware information from the system properties of the device.
 
         :return: A string representing the hardware information.
         """
         return self.get_prop()["ro.boot.hardware"]
 
     def get_prop_model(self) -> str:
-        """
-        Retrieves the model name of the device from the system properties.
+        """Retrieves the model name of the device from the system properties.
 
         :return: A string representing the model name of the device.
         """
         return self.get_prop()["ro.product.model"]
 
     def get_prop_serial(self) -> str:
-        """
-        Retrieves the serial number of the device from the system properties.
+        """Retrieves the serial number of the device from the system properties.
 
         :return: A string representing the serial number of the device.
         """
         return self.get_prop()["ro.serialno"]
 
     def get_prop_build(self) -> str:
-        """
-        Retrieves the build description from the system properties.
+        """Retrieves the build description from the system properties.
 
         :return: A string representing the build description of the device.
         """
         return self.get_prop()["ro.build.description"]
 
     def get_prop_device(self) -> str:
-        """
-        Retrieves the device name from the system properties.
+        """Retrieves the device name from the system properties.
 
         :return: A string representing the device name.
         """
         return self.get_prop()["ro.product.device"]
 
     def get_prop_uin(self) -> str:
-        """
-        Retrieves the unique identification number (UIN) from the system properties.
+        """Retrieves the unique identification number (UIN) from the system properties.
 
         :return: A string representing the unique identification number.
         """
         return self.get_prop()["sys.atol.uin"]
 
     def get_packages(self) -> list[str]:
-        """
-        Retrieves the list of installed packages on the device.
+        """Retrieves the list of installed packages on the device.
 
         :return: A list of package names.
         """
@@ -907,8 +863,7 @@ class Terminal:
         return [line.split(":")[-1].replace("\r", "") for line in lines]
 
     def get_package_path(self, package: str) -> str:
-        """
-        Retrieves the path to the APK file associated with the given package.
+        """Retrieves the path to the APK file associated with the given package.
 
         :param package: The name of the package.
         :return: The path to the APK file.
@@ -919,8 +874,7 @@ class Terminal:
             replace("\n", "")
 
     def pull_package(self, package: str, path: str = "", filename: str = "temp._apk"):
-        """
-        Pulls the APK file of the specified package from the device to the local machine.
+        """Pulls the APK file of the specified package from the device to the local machine.
 
         :param package: The package name of the app.
         :param path: The local path where the APK file will be saved. Default is current directory.
@@ -932,8 +886,7 @@ class Terminal:
         self.pull(source=package_path, destination=os.path.join(path, filename))
 
     def get_package_manifest(self, package: str) -> dict[str, Any]:
-        """
-        Retrieves the manifest of the specified package from the device.
+        """Retrieves the manifest of the specified package from the device.
 
         :param package: The package name of the app.
         :return: A dictionary representing the package manifest.

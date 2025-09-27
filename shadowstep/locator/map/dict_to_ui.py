@@ -1,6 +1,5 @@
 # shadowstep/locator/map/dict_to_ui.py
-"""
-Mapping from Shadowstep Dict format to UiSelector expressions.
+"""Mapping from Shadowstep Dict format to UiSelector expressions.
 
 This module provides functions to convert Shadowstep dictionary locators
 to UiSelector method calls with proper attribute mapping and hierarchy handling.
@@ -14,8 +13,7 @@ from shadowstep.locator.types.ui_selector import UiAttribute
 
 
 def dict_to_ui_attribute(attr: ShadowstepDictAttribute, value: Any) -> str:
-    """
-    Convert a single dictionary attribute to UiSelector method call.
+    """Convert a single dictionary attribute to UiSelector method call.
     
     Args:
         attr: Dictionary attribute enum
@@ -33,8 +31,7 @@ def dict_to_ui_attribute(attr: ShadowstepDictAttribute, value: Any) -> str:
 
 
 def is_hierarchical_attribute(attr: ShadowstepDictAttribute) -> bool:
-    """
-    Check if attribute represents hierarchical relationship.
+    """Check if attribute represents hierarchical relationship.
     
     Args:
         attr: Dictionary attribute enum
@@ -47,8 +44,7 @@ def is_hierarchical_attribute(attr: ShadowstepDictAttribute) -> bool:
 
 
 def get_ui_method_for_hierarchical_attribute(attr: ShadowstepDictAttribute) -> str:
-    """
-    Get UiSelector method name for hierarchical attributes.
+    """Get UiSelector method name for hierarchical attributes.
     
     Args:
         attr: Hierarchical attribute enum

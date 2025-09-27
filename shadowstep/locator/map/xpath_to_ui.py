@@ -13,8 +13,7 @@ from shadowstep.locator.types.xpath import XPathAttribute
 
 
 def _handle_child_selector(child_ui: str) -> str:
-    """
-    Handle childSelector method by appending child UiSelector.
+    """Handle childSelector method by appending child UiSelector.
 
     Args:
         child_ui: The UiSelector string for the child selector
@@ -26,8 +25,7 @@ def _handle_child_selector(child_ui: str) -> str:
 
 
 def _handle_from_parent(parent_ui: str) -> str:
-    """
-    Handle fromParent method by going to parent and then to specified element.
+    """Handle fromParent method by going to parent and then to specified element.
 
     Args:
         parent_ui: The UiSelector string for the parent selector
@@ -78,8 +76,7 @@ XPATH_TO_UI: dict[XPathAttribute, Callable[[str], str]] = {
 
 
 def get_ui_for_method(method: XPathAttribute, value: Any) -> str:
-    """
-    Get UiSelector method call for a specific XPath attribute and value.
+    """Get UiSelector method call for a specific XPath attribute and value.
 
     Args:
         method: The XPath attribute
@@ -98,8 +95,7 @@ def get_ui_for_method(method: XPathAttribute, value: Any) -> str:
 
 
 def is_hierarchical_xpath(method: XPathAttribute) -> bool:
-    """
-    Check if a method requires special hierarchical handling.
+    """Check if a method requires special hierarchical handling.
 
     Args:
         method: The XPath attribute to check
@@ -111,8 +107,7 @@ def is_hierarchical_xpath(method: XPathAttribute) -> bool:
 
 
 def get_supported_attributes() -> list[XPathAttribute]:
-    """
-    Get list of all supported XPath attributes.
+    """Get list of all supported XPath attributes.
 
     Returns:
         List of supported XPathAttribute enum values

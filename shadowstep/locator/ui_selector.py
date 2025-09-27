@@ -1,6 +1,5 @@
 # shadowstep/locator/ui_selector.py
-"""
-UiSelector DSL for fluent API locator building.
+"""UiSelector DSL for fluent API locator building.
 
 This module provides a fluent DSL for building UiSelector locators in a more
 readable and maintainable way, similar to the original UiSelector API but with
@@ -17,8 +16,7 @@ from shadowstep.locator.types.ui_selector import UiAttribute
 
 
 class UiSelector:
-    """
-    Fluent DSL for building UiSelector locators.
+    """Fluent DSL for building UiSelector locators.
     
     This class provides a fluent API for building UiSelector locators in a
     more readable way than string concatenation. It supports all UiAttribute
@@ -238,8 +236,7 @@ class UiSelector:
 
     @classmethod
     def from_string(cls, selector_str: str) -> UiSelector:
-        """
-        Create UiSelector from string representation.
+        """Create UiSelector from string representation.
         
         Args:
             selector_str: UiSelector string like "new UiSelector().text('OK');"
@@ -261,8 +258,7 @@ class UiSelector:
 
     @classmethod
     def from_dict(cls, selector_dict: dict[str, Any]) -> UiSelector:
-        """
-        Create UiSelector from dictionary representation.
+        """Create UiSelector from dictionary representation.
         
         Args:
             selector_dict: Dictionary with selector attributes

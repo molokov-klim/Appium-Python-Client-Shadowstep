@@ -18,8 +18,7 @@ logger = logging.getLogger(__name__)
 
 
 class Transport:
-    """
-    Allows you to connect to the server and execute terminal commands via ssh.
+    """Allows you to connect to the server and execute terminal commands via ssh.
 
     And also copy files to the server and from server.
     Uses the paramiko and scp libraries for this
