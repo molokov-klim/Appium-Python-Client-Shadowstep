@@ -32,7 +32,6 @@ class ActionStep:
             ActionStep: Click action step.
 
         """
-        ...
 
     @staticmethod
     def gesture_long_click(name: str, locator: tuple[str, str] | dict[str, Any] | Element) -> ActionStep:
@@ -46,7 +45,6 @@ class ActionStep:
             ActionStep: Long click action step.
 
         """
-        ...
 
     @staticmethod
     def gesture_double_click(name: str, element_id: str, x: int, y: int) -> ActionStep:
@@ -62,7 +60,6 @@ class ActionStep:
             ActionStep: Double click action step.
 
         """
-        ...
 
     @staticmethod
     def source(name: str) -> ActionStep:
@@ -75,7 +72,6 @@ class ActionStep:
             ActionStep: Source action step.
 
         """
-        ...
 
     @staticmethod
     def screenshot(name: str) -> ActionStep:
@@ -88,4 +84,3 @@ class ActionStep:
             ActionStep: Screenshot action step.
 
         """
-        ...

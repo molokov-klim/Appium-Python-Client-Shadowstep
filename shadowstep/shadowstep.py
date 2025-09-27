@@ -47,7 +47,7 @@ if TYPE_CHECKING:
     from shadowstep.scheduled_actions.action_step import ActionStep
 
 # Configure the root logger (basic configuration)
-logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s")  # noqa: E501
+logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s")
 logger = logging.getLogger(__name__)
 
 
@@ -63,7 +63,7 @@ class Shadowstep(ShadowstepBase):
     _instance: Shadowstep | None = None
     _pages_discovered: bool = False
 
-    def __new__(cls, *args: Any, **kwargs: Any) -> Self:  # noqa: ARG004, ANN401
+    def __new__(cls, *args: Any, **kwargs: Any) -> Self:  # noqa: ARG004
         """Create a new instance or return existing singleton instance.
 
         Returns:
@@ -95,7 +95,7 @@ class Shadowstep(ShadowstepBase):
             return
         super().__init__()
 
-        self._logcat: ShadowstepLogcat = ShadowstepLogcat(driver_getter=WebDriverSingleton.get_driver)  # noqa: E501
+        self._logcat: ShadowstepLogcat = ShadowstepLogcat(driver_getter=WebDriverSingleton.get_driver)
         self.navigator: PageNavigator = PageNavigator(self)
         self.mobile_commands: MobileCommands = MobileCommands(self)
         self.logger = logging.getLogger(f"{__name__}.{self.__class__.__name__}")
@@ -103,7 +103,7 @@ class Shadowstep(ShadowstepBase):
         self._initialized = True
 
     def _auto_discover_pages(self) -> None:
-        """Automatically import and register all PageBase subclasses from all 'pages' directories in sys.path."""  # noqa: E501
+        """Automatically import and register all PageBase subclasses from all 'pages' directories in sys.path."""
         self.logger.debug("📂 %s: %s", get_current_func_name(), list(set(sys.path)))
         if self._pages_discovered:
             return
@@ -306,7 +306,7 @@ class Shadowstep(ShadowstepBase):
             timeout=timeout,
         )]
 
-    def schedule_action(  # noqa: PLR0913
+    def schedule_action(
             self,
             name: str,
             steps: list[ActionStep],
@@ -443,7 +443,7 @@ class Shadowstep(ShadowstepBase):
 
     @fail_safe(raise_exception=ShadowstepException,
                exceptions=(NoSuchDriverException, InvalidSessionIdException))
-    def scroll(  # noqa: PLR0913
+    def scroll(
             self,
             left: int,
             top: int,
@@ -687,7 +687,7 @@ class Shadowstep(ShadowstepBase):
     @fail_safe(raise_exception=ShadowstepException,
                exceptions=(NoSuchDriverException, InvalidSessionIdException,
                            StaleElementReferenceException))
-    def fling(  # noqa: PLR0913
+    def fling(
             self,
             left: int,
             top: int,
@@ -752,7 +752,7 @@ class Shadowstep(ShadowstepBase):
     @fail_safe(raise_exception=ShadowstepException,
                exceptions=(NoSuchDriverException, InvalidSessionIdException,
                            StaleElementReferenceException))
-    def pinch_open(  # noqa: PLR0913
+    def pinch_open(
             self,
             left: int,
             top: int,
@@ -818,7 +818,7 @@ class Shadowstep(ShadowstepBase):
                exceptions=(NoSuchDriverException,
                            InvalidSessionIdException,
                            StaleElementReferenceException))
-    def pinch_close(  # noqa: PLR0913
+    def pinch_close(
             self,
             left: int,
             top: int,
@@ -883,7 +883,7 @@ class Shadowstep(ShadowstepBase):
     @fail_safe(raise_exception=ShadowstepException,
                exceptions=(NoSuchDriverException, InvalidSessionIdException,
                            StaleElementReferenceException))
-    def swipe(  # noqa: PLR0913
+    def swipe(
             self,
             left: int,
             top: int,
@@ -1208,7 +1208,7 @@ class Shadowstep(ShadowstepBase):
 
         Note: This docstring contains long lines due to API documentation requirements.
         """
-        # TODO move to separate class with transparent settings selection (enum?)  # noqa: TD002, TD003, TD004, FIX002, E501
+        # TODO move to separate class with transparent settings selection (enum?)  # noqa: TD002, TD003, TD004, FIX002
         if self.driver is not self._SENTINEL:
             self.driver.update_settings(settings={"enableMultiWindows": True})
         raise NotImplementedError

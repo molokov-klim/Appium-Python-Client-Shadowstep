@@ -20,6 +20,12 @@ from appium.webdriver.webdriver import WebDriver
 from selenium.common import WebDriverException
 from websocket import WebSocket, WebSocketConnectionClosedException, create_connection
 
+from shadowstep.exceptions.shadowstep_exceptions import (
+    ShadowstepPollIntervalError,
+    ShadowstepEmptyFilenameError,
+    ShadowstepLogcatConnectionError,
+)
+
 logger = logging.getLogger(__name__)
 
 # Constants
@@ -47,7 +53,7 @@ class ShadowstepLogcat:
     def __init__(
             self,
             driver_getter: Callable[[], WebDriver | None],
-            poll_interval: float = DEFAULT_POLL_INTERVAL
+            poll_interval: float = DEFAULT_POLL_INTERVAL,
     ) -> None:
         """Initialize ShadowstepLogcat.
 
@@ -60,7 +66,7 @@ class ShadowstepLogcat:
 
         """
         if poll_interval < 0:
-            raise ValueError("poll_interval must be non-negative")
+            raise ShadowstepPollIntervalError()
 
         self._driver_getter = driver_getter
         self._poll_interval = poll_interval
@@ -156,7 +162,7 @@ class ShadowstepLogcat:
         """
         self.port = port
         if not filename:
-            raise ValueError("filename cannot be empty")
+            raise ShadowstepEmptyFilenameError()
 
         if self._thread and self._thread.is_alive():
             logger.info("Logcat already running")
@@ -167,7 +173,7 @@ class ShadowstepLogcat:
         self._thread = threading.Thread(
             target=self._run,
             daemon=True,
-            name="ShadowstepLogcat"
+            name="ShadowstepLogcat",
         )
         self._thread.start()
         logger.info(f"Started logcat to '{filename}'")
@@ -242,8 +248,7 @@ class ShadowstepLogcat:
                         scheme, rest = http_url.split("://", 1)
                         ws_scheme = "ws" if scheme == "http" else "wss"
                         base_ws = f"{ws_scheme}://{rest}"
-                        if base_ws.endswith("/wd/hub"):
-                            base_ws = base_ws[:-7]  # Remove "/wd/hub"
+                        base_ws = base_ws.removesuffix("/wd/hub")  # Remove "/wd/hub"
 
                         # Try both endpoints
                         endpoints = [
@@ -259,7 +264,7 @@ class ShadowstepLogcat:
                             except Exception as ex:
                                 logger.debug(f"Cannot connect to {url}: {ex!r}")
                         if not ws:
-                            raise RuntimeError("Cannot connect to any logcat WS endpoint")
+                            raise ShadowstepLogcatConnectionError()
 
                         # Store ws reference so stop() can close it
                         self._ws = ws
@@ -297,7 +302,7 @@ class ShadowstepLogcat:
                         time.sleep(self._poll_interval)
 
         except Exception as e:
-            logger.error(f"Cannot open logcat file '{self._filename}': {e!r}")
+            logger.exception(f"Cannot open logcat file '{self._filename}'")
         finally:
             logger.info("Logcat thread terminated, file closed")
 

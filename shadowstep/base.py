@@ -61,7 +61,7 @@ class WebDriverSingleton(WebDriver):
     _driver = None
     _command_executor = None
 
-    def __new__(cls, *args: Any, **kwargs: Any) -> WebDriver:  # noqa: ANN401
+    def __new__(cls, *args: Any, **kwargs: Any) -> WebDriver:
         """Create or return existing WebDriver instance.
 
         Args:
@@ -79,7 +79,7 @@ class WebDriverSingleton(WebDriver):
         return cls._driver  # type: ignore[return-value]
 
     @classmethod
-    def _get_session_id(cls, kwargs: Any) -> str:  # noqa: ANN401
+    def _get_session_id(cls, kwargs: Any) -> str:
         logger.debug("%s", get_current_func_name())
         res = requests.get(kwargs["command_executor"] + "/sessions", timeout=30)
         res_json = json.loads(res.text)
@@ -136,7 +136,7 @@ class ShadowstepBase:
         }
         self._ignored_base_path_parts: set[str] = self._get_ignored_dirs()
 
-    def connect(self,  # noqa: PLR0913
+    def connect(self,
                 capabilities: dict[str, Any],
                 server_ip: str = "127.0.0.1",
                 server_port: int = 4723,

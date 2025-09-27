@@ -11,6 +11,13 @@ from typing import Any, cast
 from shadowstep.exceptions.shadowstep_exceptions import (
     ShadowstepConversionError,
     ShadowstepInvalidUiSelectorError,
+    ShadowstepUiSelectorConversionError,
+    ShadowstepInvalidUiSelectorStringError,
+    ShadowstepSelectorToXPathError,
+    ShadowstepMethodRequiresArgumentError,
+    ShadowstepConflictingMethodsError,
+    ShadowstepUnsupportedNestedSelectorError,
+    ShadowstepUiSelectorMethodArgumentError,
 )
 from shadowstep.locator.converter.ui_selector_converter_core.ast import Selector
 from shadowstep.locator.converter.ui_selector_converter_core.lexer import Lexer
@@ -56,7 +63,7 @@ class UiSelectorConverter:
         except ShadowstepInvalidUiSelectorError:
             raise
         except Exception as e:
-            raise ShadowstepConversionError(f"Failed to convert UiSelector to XPath: {e}") from e
+            raise ShadowstepUiSelectorConversionError("XPath", str(e)) from e
 
     def selector_to_dict(self, selector_str: str) -> dict[str, Any]:
         """Convert UiSelector string to dictionary format.
@@ -74,7 +81,7 @@ class UiSelectorConverter:
         except ShadowstepInvalidUiSelectorError:
             raise
         except Exception as e:
-            raise ShadowstepConversionError(f"Failed to convert UiSelector to XPath: {e}") from e
+            raise ShadowstepUiSelectorConversionError("XPath", str(e)) from e
 
     def parse_selector_string(self, selector_str: str) -> dict[str, Any]:
         """Parse UiSelector string into dictionary format.
@@ -102,8 +109,8 @@ class UiSelectorConverter:
             return self._selector_to_parsed_dict(selector)
 
         except Exception as e:
-            self.logger.error(f"Failed to parse UiSelector string: {e}")
-            raise ShadowstepInvalidUiSelectorError(f"Invalid UiSelector string: {e}") from e
+            self.logger.exception("Failed to parse UiSelector string")
+            raise ShadowstepInvalidUiSelectorStringError(str(e)) from e
 
     def _selector_to_xpath(self, sel: dict[str, Any], base_xpath: str = "//*") -> str:
         """Convert a parsed selector dictionary to XPath.
@@ -154,7 +161,7 @@ class UiSelectorConverter:
             return xpath
 
         except Exception as e:
-            raise ShadowstepConversionError(f"Failed to convert selector to XPath: {e}") from e
+            raise ShadowstepSelectorToXPathError(str(e)) from e
 
     def _selector_to_dict(self, sel: dict[str, Any]) -> dict[str, Any]:
         """Convert parsed selector dictionary to Shadowstep dict format.
@@ -190,7 +197,7 @@ class UiSelectorConverter:
             else:
                 converter = UI_TO_SHADOWSTEP_DICT[method_name]
                 if not args:
-                    raise ValueError(f"Method '{method_name}' requires an argument")
+                    raise ShadowstepMethodRequiresArgumentError(method_name)
 
                 converted = converter(args[0])
                 result.update(converted)
@@ -216,11 +223,7 @@ class UiSelectorConverter:
                 for existing in existing_methods:
                     if (existing in group_methods and existing != new_method and
                             group_name in ["text", "description", "resource", "class"]):
-                            raise ValueError(
-                                f"Conflicting methods: '{existing}' and '{new_method}' "
-                                f"belong to the same group '{group_name}'. "
-                                f"Only one method per group is allowed.",
-                            )
+                            raise ShadowstepConflictingMethodsError(existing, new_method, group_name)
                 break
 
     def _build_compatibility_groups(self) -> dict[str, list[str]]:
@@ -251,7 +254,7 @@ class UiSelectorConverter:
             # Handle Selector AST object
             parsed_dict = self._selector_to_parsed_dict(nested_sel)
             return self._selector_to_xpath(parsed_dict, base_xpath="*")  # type: ignore
-        raise ShadowstepConversionError(f"Unsupported nested selector type: {type(nested_sel)}")
+        raise ShadowstepUnsupportedNestedSelectorError(type(nested_sel))
 
     def _selector_to_parsed_dict(self, sel: Selector) -> dict[str, Any]:
         """Convert Selector AST object to dictionary format.
@@ -307,7 +310,7 @@ class UiSelectorConverter:
             args = method_data.get("args", [])
 
             if len(args) > 1:
-                raise ShadowstepConversionError(f"UiSelector methods typically take 0-1 arguments, got {len(args)}")
+                raise ShadowstepUiSelectorMethodArgumentError(len(args))
 
             arg_str = format_arg(args[0]) if args else ""
             parts.append(f".{method_name}({arg_str})")

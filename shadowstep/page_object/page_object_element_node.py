@@ -17,6 +17,7 @@ from typing import Any
 from jinja2 import Environment, FileSystemLoader
 
 from shadowstep.utils.utils import get_current_func_name
+from shadowstep.exceptions.shadowstep_exceptions import ShadowstepUnsupportedRendererTypeError
 
 
 @dataclass
@@ -132,12 +133,10 @@ class TemplateRenderer(ABC):
     @abstractmethod
     def render(self, model: Any, template_name: str) -> str:
         """Render a model using the specified template."""
-        pass
 
     @abstractmethod
     def save(self, content: str, path: str) -> None:
         """Save rendered content to a file."""
-        pass
 
 
 class Jinja2Renderer(TemplateRenderer):
@@ -157,10 +156,10 @@ class Jinja2Renderer(TemplateRenderer):
         self.logger = logging.getLogger(__name__)
         self.env = Environment(
             loader=FileSystemLoader(templates_dir),
-            autoescape=True,  # noqa: S701
+            autoescape=True,
             keep_trailing_newline=True,
             trim_blocks=True,
-            lstrip_blocks=True
+            lstrip_blocks=True,
         )
         self.env.filters["pretty_dict"] = self._pretty_dict
 
@@ -208,7 +207,7 @@ class Jinja2Renderer(TemplateRenderer):
         lines = ["{"]
         indent = " " * base_indent
         for i, (k, v) in enumerate(d.items()):
-            line = f"{indent!s}{repr(k)}: {repr(v)}"
+            line = f"{indent!s}{k!r}: {v!r}"
             if i < len(d) - 1:
                 line += ","
             lines.append(line)
@@ -240,7 +239,7 @@ class PageObjectRendererFactory:
         if renderer_type.lower() == "jinja2":
             templates_dir = os.path.join(os.path.dirname(__file__), "templates")
             return Jinja2Renderer(templates_dir)
-        raise ValueError(f"Unsupported renderer type: {renderer_type}")
+        raise ShadowstepUnsupportedRendererTypeError(renderer_type)
 
 
 class ModelBuilder:
@@ -277,7 +276,7 @@ class ModelBuilder:
                 base_name=prop.get("base_name"),
                 sibling=prop.get("sibling", False),
                 via_recycler=prop.get("via_recycler", False),
-                summary_id=prop.get("summary_id")
+                summary_id=prop.get("summary_id"),
             ))
 
         raw_title = ui_element_tree.attrs.get("text") or ui_element_tree.attrs.get("content-desc") or ""
@@ -289,7 +288,7 @@ class ModelBuilder:
             title_locator=title_locator,
             properties=property_models,
             need_recycler=recycler_locator is not None,
-            recycler_locator=recycler_locator
+            recycler_locator=recycler_locator,
         )
 
 

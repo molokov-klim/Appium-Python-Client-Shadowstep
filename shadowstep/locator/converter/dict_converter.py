@@ -9,7 +9,16 @@ import logging
 from collections.abc import Callable
 from typing import Any, Generic, TypeVar, Union
 
-from shadowstep.exceptions.shadowstep_exceptions import ShadowstepConversionError
+from shadowstep.exceptions.shadowstep_exceptions import (
+    ShadowstepConversionError,
+    ShadowstepDictConversionError,
+    ShadowstepValidationError,
+    ShadowstepSelectorTypeError,
+    ShadowstepEmptySelectorError,
+    ShadowstepConflictingTextAttributesError,
+    ShadowstepConflictingDescriptionAttributesError,
+    ShadowstepHierarchicalAttributeError,
+)
 from shadowstep.locator.map.dict_to_ui import (
     DICT_TO_UI_MAPPING,
     get_ui_method_for_hierarchical_attribute,
@@ -64,7 +73,7 @@ class DictConverter(Generic[T]):
         try:
             return self._dict_to_xpath_recursive(selector_dict)
         except Exception as e:
-            raise ShadowstepConversionError(f"Failed to convert dict to XPath: {e}") from e
+            raise ShadowstepDictConversionError("XPath", str(e)) from e
 
     def dict_to_ui_selector(self, selector_dict: SelectorDict) -> str:
         """Convert Shadowstep dictionary locator to UiSelector string.
@@ -83,7 +92,7 @@ class DictConverter(Generic[T]):
             ui_selector = self._dict_to_ui_recursive(selector_dict)
             return f"new UiSelector(){ui_selector};"
         except Exception as e:
-            raise ShadowstepConversionError(f"Failed to convert dict to UiSelector: {e}") from e
+            raise ShadowstepDictConversionError("UiSelector", str(e)) from e
 
     def _dict_to_xpath_recursive(  # noqa: C901
             self,
@@ -226,10 +235,10 @@ class DictConverter(Generic[T]):
 
         """
         if not isinstance(selector_dict, dict): # type: ignore
-            raise ValueError("Selector must be a dictionary")
+            raise ShadowstepSelectorTypeError()
 
         if not selector_dict:
-            raise ValueError("Selector dictionary cannot be empty")
+            raise ShadowstepEmptySelectorError()
 
         # Check for conflicting attributes
         text_attrs: list[ShadowstepDictAttribute] = [
@@ -253,14 +262,14 @@ class DictConverter(Generic[T]):
         ]
 
         if len(found_text_attrs) > 1:
-            raise ValueError(f"Conflicting text attributes: {found_text_attrs}")
+            raise ShadowstepConflictingTextAttributesError(found_text_attrs)
         if len(found_desc_attrs) > 1:
-            raise ValueError(f"Conflicting description attributes: {found_desc_attrs}")
+            raise ShadowstepConflictingDescriptionAttributesError(found_desc_attrs)
 
         # Validate hierarchical attributes
         for key, value in selector_dict.items():
             if key in (ShadowstepDictAttribute.CHILD_SELECTOR, ShadowstepDictAttribute.FROM_PARENT, ShadowstepDictAttribute.SIBLING):
                 if not isinstance(value, dict):
-                    raise ValueError(f"Hierarchical attribute {key} must have dict value")
+                    raise ShadowstepHierarchicalAttributeError(key)
                 # Recursive validation with proper type casting
                 self.validate_dict_selector(value)  # type: ignore[arg-type]

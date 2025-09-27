@@ -7,7 +7,6 @@ numeric, and hierarchical attributes with their XPath syntax.
 """
 # shadowstep/locator/types/xpath.py
 from enum import Enum
-from typing import Any
 
 
 class XPathAttribute(str, Enum):
@@ -80,7 +79,7 @@ class XPathAttribute(str, Enum):
         """
         return f"{self.__class__.__name__}.{self.name}"
 
-    def __eq__(self, other: Any) -> bool:
+    def __eq__(self, other: object) -> bool:
         """Check equality with string or other enum values.
 
         Args:

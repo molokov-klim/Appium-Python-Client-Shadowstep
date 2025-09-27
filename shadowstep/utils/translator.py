@@ -12,6 +12,10 @@ import re
 import requests
 
 from shadowstep.utils.utils import get_current_func_name
+from shadowstep.exceptions.shadowstep_exceptions import (
+    ShadowstepMissingYandexTokenError,
+    ShadowstepTranslationFailedError,
+)
 
 
 class YandexTranslate:
@@ -37,10 +41,10 @@ class YandexTranslate:
         """
         oauth_token = os.getenv("yandexPassportOauthToken")  # noqa: SIM112
         if not oauth_token:
-            raise RuntimeError("Missing yandexPassportOauthToken environment variable")
+            raise ShadowstepMissingYandexTokenError()
 
         url = "https://iam.api.cloud.yandex.net/iam/v1/tokens"
-        response = requests.post(url, json={"yandexPassportOauthToken": oauth_token}, timeout=30)  # noqa: S113
+        response = requests.post(url, json={"yandexPassportOauthToken": oauth_token}, timeout=30)
         response.raise_for_status()
         return response.json()["iamToken"]
 
@@ -74,22 +78,22 @@ class YandexTranslate:
         url = "https://translate.api.cloud.yandex.net/translate/v2/translate"
         headers = {
             "Content-Type": "application/json",
-            "Authorization": f"Bearer {self._iam_token}"
+            "Authorization": f"Bearer {self._iam_token}",
         }
         body = {
             "folderId": self.folder_id,
             "texts": [text],
             "sourceLanguageCode": "ru",
-            "targetLanguageCode": "en"
+            "targetLanguageCode": "en",
         }
 
-        response = requests.post(url, headers=headers, json=body, timeout=30)  # noqa: S113
+        response = requests.post(url, headers=headers, json=body, timeout=30)
         self.logger.debug(f"{response.text=}")
         response.raise_for_status()
         translations = response.json().get("translations", [])
 
         if not translations:
-            raise RuntimeError("Translation failed: empty response")
+            raise ShadowstepTranslationFailedError()
 
         translated = translations[0]["text"]
         self.logger.debug(f"{translated=}")

@@ -96,9 +96,9 @@ class Terminal:
             except InvalidSessionIdException:
                 self.base.reconnect()
             except KeyError as e:
-                logger.error(e)
+                logger.exception("KeyError in get_page_source")
                 traceback_info = "".join(traceback.format_tb(sys.exc_info()[2]))
-                logger.error(traceback_info)
+                logger.exception(traceback_info)
         return None
 
     def push(self, source_path: str, remote_server_path: str, filename: str, destination: str, udid: str) -> bool:
@@ -133,10 +133,7 @@ class Terminal:
             self.base.reconnect()
             return False
         except OSError as e:
-            logger.error("push()")
-            logger.error(e)
-            traceback_info = "".join(traceback.format_tb(sys.exc_info()[2]))
-            logger.error(traceback_info)
+            logger.exception("push()")
             return False
 
     def pull(self, source: str, destination: str) -> bool:
@@ -169,10 +166,7 @@ class Terminal:
             self.base.reconnect()
             return False
         except OSError as e:
-            logger.error("appium_extended_terminal.pull")
-            logger.error(e)
-            traceback_info = "".join(traceback.format_tb(sys.exc_info()[2]))
-            logger.error(traceback_info)
+            logger.exception("appium_extended_terminal.pull")
             return False
 
     def start_activity(self, package: str, activity: str) -> bool:
@@ -187,10 +181,7 @@ class Terminal:
             self.adb_shell(command="am", args=f"start -n {package}/{activity}")
             return True
         except KeyError as e:
-            logger.error("appium_extended_terminal.start_activity()")
-            logger.error(e)
-            traceback_info = "".join(traceback.format_tb(sys.exc_info()[2]))
-            logger.error(traceback_info)
+            logger.exception("appium_extended_terminal.start_activity()")
             return False
 
     def get_current_app_package(self) -> str:
@@ -208,10 +199,7 @@ class Terminal:
                         return matches.group(1)[:-1]  # removing trailing slash
             return ""
         except KeyError as e:
-            logger.error("appium_extended_terminal.get_current_app_package()")
-            logger.error(e)
-            traceback_info = "".join(traceback.format_tb(sys.exc_info()[2]))
-            logger.error(traceback_info)
+            logger.exception("appium_extended_terminal.get_current_app_package()")
             return ""
 
     def close_app(self, package: str) -> bool:
@@ -225,10 +213,7 @@ class Terminal:
             self.adb_shell(command="am", args=f"force-stop {package}")
             return True
         except KeyError as e:
-            logger.error("appium_extended_terminal.close_app()")
-            logger.error(e)
-            traceback_info = "".join(traceback.format_tb(sys.exc_info()[2]))
-            logger.error(traceback_info)
+            logger.exception("appium_extended_terminal.close_app()")
             return False
 
     def reboot_app(self, package: str, activity: str) -> bool:
@@ -267,10 +252,7 @@ class Terminal:
             logger.debug(f"{get_current_func_name()} {output=}")
             return True
         except OSError as e:
-            logger.error("appium_extended_terminal.push()")
-            logger.error(e)
-            traceback_info = "".join(traceback.format_tb(sys.exc_info()[2]))
-            logger.error(traceback_info)
+            logger.exception("appium_extended_terminal.push()")
             return False
 
     def is_app_installed(self, package: str) -> bool:
@@ -289,10 +271,7 @@ class Terminal:
             logger.debug("is_app_installed() > False")
             return False
         except KeyError as e:
-            logger.error("appium_extended_terminal.is_app_installed() > False")
-            logger.error(e)
-            traceback_info = "".join(traceback.format_tb(sys.exc_info()[2]))
-            logger.error(traceback_info)
+            logger.exception("appium_extended_terminal.is_app_installed() > False")
             return False
 
     def uninstall_app(self, package: str) -> bool:
@@ -311,10 +290,7 @@ class Terminal:
             self.base.reconnect()
             return False
         except KeyError as e:
-            logger.error("appium_extended_terminal.uninstall_app()")
-            logger.error(e)
-            traceback_info = "".join(traceback.format_tb(sys.exc_info()[2]))
-            logger.error(traceback_info)
+            logger.exception("appium_extended_terminal.uninstall_app()")
             return False
 
     def press_home(self) -> bool:
@@ -326,10 +302,7 @@ class Terminal:
             self.input_keycode(keycode="KEYCODE_HOME")
             return True
         except KeyError as e:
-            logger.error("appium_extended_terminal.press_home()")
-            logger.error(e)
-            traceback_info = "".join(traceback.format_tb(sys.exc_info()[2]))
-            logger.error(traceback_info)
+            logger.exception("appium_extended_terminal.press_home()")
             return False
 
     def press_back(self) -> bool:
@@ -341,10 +314,7 @@ class Terminal:
             self.input_keycode(keycode="KEYCODE_BACK")
             return True
         except KeyError as e:
-            logger.error("appium_extended_terminal.press_back()")
-            logger.error(e)
-            traceback_info = "".join(traceback.format_tb(sys.exc_info()[2]))
-            logger.error(traceback_info)
+            logger.exception("appium_extended_terminal.press_back()")
             return False
 
     def press_menu(self) -> bool:
@@ -356,10 +326,7 @@ class Terminal:
             self.input_keycode(keycode="KEYCODE_MENU")
             return True
         except KeyError as e:
-            logger.error("appium_extended_terminal.press_menu()")
-            logger.error(e)
-            traceback_info = "".join(traceback.format_tb(sys.exc_info()[2]))
-            logger.error(traceback_info)
+            logger.exception("appium_extended_terminal.press_menu()")
             return False
 
     def input_keycode_num_(self, num: int) -> bool:
@@ -374,10 +341,7 @@ class Terminal:
             self.adb_shell(command="input", args=f"keyevent KEYCODE_NUMPAD_{num}")
             return True
         except KeyError as e:
-            logger.error("appium_extended_terminal.input_keycode_num_()")
-            logger.error(e)
-            traceback_info = "".join(traceback.format_tb(sys.exc_info()[2]))
-            logger.error(traceback_info)
+            logger.exception("appium_extended_terminal.input_keycode_num_()")
             return False
 
     def input_keycode(self, keycode: str) -> bool:
@@ -390,10 +354,7 @@ class Terminal:
             self.adb_shell(command="input", args=f"keyevent {keycode}")
             return True
         except KeyError as e:
-            logger.error("appium_extended_terminal.input_keycode()")
-            logger.error(e)
-            traceback_info = "".join(traceback.format_tb(sys.exc_info()[2]))
-            logger.error(traceback_info)
+            logger.exception("appium_extended_terminal.input_keycode()")
             return False
 
     def input_text(self, text: str) -> bool:
@@ -406,10 +367,7 @@ class Terminal:
             self.adb_shell(command="input", args=f"text {text}")
             return True
         except KeyError as e:
-            logger.error("appium_extended_terminal.input_text()")
-            logger.error(e)
-            traceback_info = "".join(traceback.format_tb(sys.exc_info()[2]))
-            logger.error(traceback_info)
+            logger.exception("appium_extended_terminal.input_text()")
             return False
 
     def tap(self, x: int, y: int) -> bool:
@@ -420,13 +378,10 @@ class Terminal:
         :return: True if the tap was successful, False otherwise.
         """
         try:
-            self.adb_shell(command="input", args=f"tap {str(x)} {str(y)}")
+            self.adb_shell(command="input", args=f"tap {x!s} {y!s}")
             return True
         except KeyError as e:
-            logger.error("appium_extended_terminal.tap()")
-            logger.error(e)
-            traceback_info = "".join(traceback.format_tb(sys.exc_info()[2]))
-            logger.error(traceback_info)
+            logger.exception("appium_extended_terminal.tap()")
             return False
 
     def swipe(self, start_x: str | int, start_y: str | int,
@@ -442,13 +397,10 @@ class Terminal:
         """
         try:
             self.adb_shell(command="input",
-                           args=f"swipe {str(start_x)} {str(start_y)} {str(end_x)} {str(end_y)} {str(duration)}")
+                           args=f"swipe {start_x!s} {start_y!s} {end_x!s} {end_y!s} {duration!s}")
             return True
         except KeyError as e:
-            logger.error("appium_extended_terminal.swipe()")
-            logger.error(e)
-            traceback_info = "".join(traceback.format_tb(sys.exc_info()[2]))
-            logger.error(traceback_info)
+            logger.exception("appium_extended_terminal.swipe()")
             return False
 
     def swipe_right_to_left(self, duration: int = 300) -> bool:
@@ -533,10 +485,7 @@ class Terminal:
             logger.debug("check_VPN() False")
             return False
         except KeyError as e:
-            logger.error("appium_extended_terminal.check_VPN")
-            logger.error(e)
-            traceback_info = "".join(traceback.format_tb(sys.exc_info()[2]))
-            logger.error(traceback_info)
+            logger.exception("appium_extended_terminal.check_VPN")
             return False
 
     def stop_logcat(self) -> bool:
@@ -547,21 +496,17 @@ class Terminal:
         try:
             process_list = self.adb_shell(command="ps", args="")
         except KeyError as e:
-            logger.error("appium_extended_terminal.stop_logcat")
-            logger.error(e)
-            traceback_info = "".join(traceback.format_tb(sys.exc_info()[2]))
-            logger.error(traceback_info)
+            logger.exception("appium_extended_terminal.stop_logcat")
             return False
         for process in process_list.splitlines():
             if "logcat" in process:
                 pid = process.split()[1]
                 try:
-                    self.adb_shell(command="kill", args=f"-SIGINT {str(pid)}")
+                    self.adb_shell(command="kill", args=f"-SIGINT {pid!s}")
                 except KeyError as e:
-                    logger.error("appium_extended_terminal.stop_logcat")
-                    logger.error(e)
+                    logger.exception("appium_extended_terminal.stop_logcat")
                     traceback_info = "".join(traceback.format_tb(sys.exc_info()[2]))
-                    logger.error(traceback_info)
+                    logger.exception(traceback_info)
                     return False
         return True
 
@@ -573,7 +518,7 @@ class Terminal:
         """
         processes = self.adb_shell(command="ps")
         if name not in processes:
-            logger.error("know_pid() [Process not found]")
+            logger.exception("know_pid() [Process not found]")
             return None
         lines = processes.strip().split("\n")
         for line in lines[1:]:
@@ -581,9 +526,9 @@ class Terminal:
             if len(columns) >= 9:
                 pid, process_name = columns[1], columns[8]
                 if name == process_name:
-                    logger.debug(f"know_pid() > {str(pid)}")
+                    logger.debug(f"know_pid() > {pid!s}")
                     return int(pid)
-        logger.error("know_pid() [Process not found]")
+        logger.exception("know_pid() [Process not found]")
         return None
 
     def is_process_exist(self, name: str) -> bool:
@@ -625,9 +570,7 @@ class Terminal:
                     return False
             return True
         except KeyError as e:
-            logger.error(e)
-            traceback_info = "".join(traceback.format_tb(sys.exc_info()[2]))
-            logger.error(traceback_info)
+            logger.exception("KeyError in is_app_installed")
             return False
 
     def kill_by_pid(self, pid: int) -> bool:
@@ -637,11 +580,9 @@ class Terminal:
         :return: True if the process was successfully killed, False otherwise.
         """
         try:
-            self.adb_shell(command="kill", args=f"-s SIGINT {str(pid)}")
+            self.adb_shell(command="kill", args=f"-s SIGINT {pid!s}")
         except KeyError as e:
-            logger.error(e)
-            traceback_info = "".join(traceback.format_tb(sys.exc_info()[2]))
-            logger.error(traceback_info)
+            logger.exception("KeyError in kill_by_pid")
             return False
         return True
 
@@ -653,12 +594,9 @@ class Terminal:
         """
         logger.debug(f"kill_by_name() < {name=}")
         try:
-            self.adb_shell(command="pkill", args=f"-l SIGINT {str(name)}")
+            self.adb_shell(command="pkill", args=f"-l SIGINT {name!s}")
         except KeyError as e:
-            logger.error("kill_by_name() > False")
-            logger.error(e)
-            traceback_info = "".join(traceback.format_tb(sys.exc_info()[2]))
-            logger.error(traceback_info)
+            logger.exception("kill_by_name() > False")
             return False
         logger.debug("kill_by_name() > True")
         return True
@@ -670,12 +608,9 @@ class Terminal:
         :return: True if the processes were successfully killed, False otherwise.
         """
         try:
-            self.adb_shell(command="pkill", args=f"-f {str(name)}")
+            self.adb_shell(command="pkill", args=f"-f {name!s}")
         except KeyError as e:
-            logger.error("appium_extended_terminal.kill_all")
-            logger.error(e)
-            traceback_info = "".join(traceback.format_tb(sys.exc_info()[2]))
-            logger.error(traceback_info)
+            logger.exception("appium_extended_terminal.kill_all")
             return False
         return True
 
@@ -688,10 +623,7 @@ class Terminal:
         try:
             self.adb_shell(command="rm", args=f"-rf {path}*")
         except KeyError as e:
-            logger.error("appium_extended_terminal.delete_files_from_internal_storage")
-            logger.error(e)
-            traceback_info = "".join(traceback.format_tb(sys.exc_info()[2]))
-            logger.error(traceback_info)
+            logger.exception("appium_extended_terminal.delete_files_from_internal_storage")
             return False
         return True
 
@@ -703,14 +635,10 @@ class Terminal:
         :return: True if the file was successfully deleted, False otherwise.
         """
         try:
-            if path.endswith("/"):
-                path = path[:-1]
+            path = path.removesuffix("/")
             self.adb_shell(command="rm", args=f"-rf {path}/{filename}")
         except KeyError as e:
-            logger.error("appium_extended_terminal.delete_file_from_internal_storage")
-            logger.error(e)
-            traceback_info = "".join(traceback.format_tb(sys.exc_info()[2]))
-            logger.error(traceback_info)
+            logger.exception("appium_extended_terminal.delete_file_from_internal_storage")
             return False
         return True
 
@@ -727,10 +655,7 @@ class Terminal:
         except InvalidSessionIdException:
             self.base.reconnect()
         except KeyError as e:
-            logger.error("appium_extended_terminal.record_video")
-            logger.error(e)
-            traceback_info = "".join(traceback.format_tb(sys.exc_info()[2]))
-            logger.error(traceback_info)
+            logger.exception("appium_extended_terminal.record_video")
             return False
         return True
 
@@ -748,10 +673,7 @@ class Terminal:
         except InvalidSessionIdException:
             self.base.reconnect()
         except KeyError as e:
-            logger.error("appium_extended_terminal.stop_video")
-            logger.error(e)
-            traceback_info = "".join(traceback.format_tb(sys.exc_info()[2]))
-            logger.error(traceback_info)
+            logger.exception("appium_extended_terminal.stop_video")
             return None
 
     def reboot(self) -> bool:
@@ -778,9 +700,7 @@ class Terminal:
             logger.warning(f"{get_current_func_name()}: Physical size not in output")
             return 0, 0
         except Exception as e:
-            logger.error(e)
-            traceback_info = "".join(traceback.format_tb(sys.exc_info()[2]))
-            logger.error(traceback_info)
+            logger.exception("Exception in get_screen_size")
             raise
 
     def past_text(self, text: str, tries: int = 3) -> None:

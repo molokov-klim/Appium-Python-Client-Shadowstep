@@ -48,11 +48,11 @@ class Adb:
             logger.info(f"{get_current_func_name()} > {devices_list}")
             return devices_list
         except IndexError:
-            logger.error(f"{get_current_func_name()} > None")
-            logger.error("No connected devices")
+            logger.exception(f"{get_current_func_name()} > None")
+            logger.exception("No connected devices")
             return []
-        except subprocess.CalledProcessError as error:
-            logger.error(f"{get_current_func_name()}: {error}")
+        except subprocess.CalledProcessError:
+            logger.exception(f"{get_current_func_name()}")
             return []
 
     @staticmethod
@@ -79,8 +79,8 @@ class Adb:
             model = model.decode().strip()
             logger.info(f"{get_current_func_name()} > {model}")
             return model
-        except subprocess.CalledProcessError as error:
-            logger.error(f"{get_current_func_name()}: {error}")
+        except subprocess.CalledProcessError:
+            logger.exception(f"{get_current_func_name()}")
             return ""
 
     @staticmethod
@@ -103,7 +103,7 @@ class Adb:
         logger.info(f"{get_current_func_name()} < {source=}, {destination=}")
 
         if not os.path.exists(source):
-            logger.error(f"Source path does not exist: {source=}")
+            logger.exception(f"Source path does not exist: {source=}")
             return False
         s_udid = f"-s {udid}" if udid else ""
         command = f"adb {s_udid} push {source} {destination}"
@@ -111,8 +111,8 @@ class Adb:
             subprocess.run(command, check=True)  # noqa: S603
             logger.info(f"{get_current_func_name()} > True")
             return True
-        except subprocess.CalledProcessError as error:
-            logger.error(f"{get_current_func_name()}: {error}")
+        except subprocess.CalledProcessError:
+            logger.exception(f"{get_current_func_name()}")
             return False
 
     @staticmethod
@@ -139,8 +139,8 @@ class Adb:
             subprocess.run(command, check=True)  # noqa: S603
             logger.info(f"{get_current_func_name()} > True")
             return True
-        except subprocess.CalledProcessError as error:
-            logger.error(f"{get_current_func_name()}: {error}")
+        except subprocess.CalledProcessError:
+            logger.exception(f"{get_current_func_name()}")
             return False
 
     @staticmethod
@@ -165,8 +165,8 @@ class Adb:
             subprocess.run(command, check=True)  # noqa: S603
             logger.info("install() > True")
             return True
-        except subprocess.CalledProcessError as error:
-            logger.error(f"{get_current_func_name()}: {error}")
+        except subprocess.CalledProcessError:
+            logger.exception(f"{get_current_func_name()}")
             return False
 
     @staticmethod
@@ -193,8 +193,8 @@ class Adb:
                 return True
             logger.info("install() > False")
             return False
-        except subprocess.CalledProcessError as error:
-            logger.error(f"{get_current_func_name()}: {error}")
+        except subprocess.CalledProcessError:
+            logger.exception(f"{get_current_func_name()}")
             return False
 
     @staticmethod
@@ -217,8 +217,8 @@ class Adb:
             subprocess.run(command, check=True)  # noqa: S603
             logger.info("uninstall_app() > True")
             return True
-        except subprocess.CalledProcessError as error:
-            logger.error(f"{get_current_func_name()}: {error}")
+        except subprocess.CalledProcessError:
+            logger.exception(f"{get_current_func_name()}")
             return False
 
     @staticmethod
@@ -243,8 +243,8 @@ class Adb:
             subprocess.check_output(command)  # noqa: S603
             logger.info("start_activity() > True")
             return True
-        except subprocess.CalledProcessError as error:
-            logger.error(f"{get_current_func_name()}: {error}")
+        except subprocess.CalledProcessError:
+            logger.exception(f"{get_current_func_name()}")
             return False
 
     @staticmethod
@@ -284,10 +284,10 @@ class Adb:
                         return activity_name
 
             # If activity not found, return None
-            logger.error(f"{get_current_func_name()} > None")
+            logger.exception(f"{get_current_func_name()} > None")
             return ""
-        except subprocess.CalledProcessError as error:
-            logger.error(f"{get_current_func_name()}: {error}")
+        except subprocess.CalledProcessError:
+            logger.exception(f"{get_current_func_name()}")
             return ""
 
     @staticmethod
@@ -327,10 +327,10 @@ class Adb:
                         return package_name
 
             # If package name not found, return None
-            logger.error("get_current_app_package() > None")
+            logger.exception("get_current_app_package() > None")
             return ""
-        except subprocess.CalledProcessError as error:
-            logger.error(f"{get_current_func_name()}: {error}")
+        except subprocess.CalledProcessError:
+            logger.exception(f"{get_current_func_name()}")
             return ""
 
     @staticmethod
@@ -353,8 +353,8 @@ class Adb:
             subprocess.run(command, check=True)  # noqa: S603
             logger.info("close_app() > True")
             return True
-        except subprocess.CalledProcessError as error:
-            logger.error(f"{get_current_func_name()}: {error}")
+        except subprocess.CalledProcessError:
+            logger.exception(f"{get_current_func_name()}")
             return False
 
     @staticmethod
@@ -376,12 +376,12 @@ class Adb:
 
         # Close application
         if not Adb.close_app(package=package):
-            logger.error("reboot_app() > False")
+            logger.exception("reboot_app() > False")
             return False
 
         # Launch specified activity
         if not Adb.start_activity(package=package, activity=activity):
-            logger.error("reboot_app() > False")
+            logger.exception("reboot_app() > False")
             return False
         logger.info("reboot_app() > True")
         return True
@@ -402,8 +402,8 @@ class Adb:
             subprocess.run(command, check=True)  # noqa: S603
             logger.info("press_home() > True")
             return True
-        except subprocess.CalledProcessError as error:
-            logger.error(f"{get_current_func_name()}: {error}")
+        except subprocess.CalledProcessError:
+            logger.exception(f"{get_current_func_name()}")
             return False
 
     @staticmethod
@@ -422,8 +422,8 @@ class Adb:
             subprocess.run(command, check=True)  # noqa: S603
             logger.info("press_back() > True")
             return True
-        except subprocess.CalledProcessError as error:
-            logger.error(f"{get_current_func_name()}: {error}")
+        except subprocess.CalledProcessError:
+            logger.exception(f"{get_current_func_name()}")
             return False
 
     @staticmethod
@@ -442,8 +442,8 @@ class Adb:
             subprocess.run(command, check=True)  # noqa: S603
             logger.info("press_menu() > True")
             return True
-        except subprocess.CalledProcessError as error:
-            logger.error(f"{get_current_func_name()}: {error}")
+        except subprocess.CalledProcessError:
+            logger.exception(f"{get_current_func_name()}")
             return False
 
     @staticmethod
@@ -466,8 +466,8 @@ class Adb:
             subprocess.run(command, check=True)  # noqa: S603
             logger.info("input_keycode_num_() > True")
             return True
-        except subprocess.CalledProcessError as error:
-            logger.error(f"{get_current_func_name()}: {error}")
+        except subprocess.CalledProcessError:
+            logger.exception(f"{get_current_func_name()}")
             return False
 
     @staticmethod
@@ -490,8 +490,8 @@ class Adb:
             subprocess.run(command, check=True)  # noqa: S603
             logger.info("input_keycode() > True")
             return True
-        except subprocess.CalledProcessError as error:
-            logger.error(f"{get_current_func_name()}: {error}")
+        except subprocess.CalledProcessError:
+            logger.exception(f"{get_current_func_name()}")
             return False
 
     @staticmethod
@@ -516,8 +516,8 @@ class Adb:
             subprocess.run(command, check=True)  # noqa: S603
             logger.info("input_text() > True")
             return True
-        except subprocess.CalledProcessError as error:
-            logger.error(f"{get_current_func_name()}: {error}")
+        except subprocess.CalledProcessError:
+            logger.exception(f"{get_current_func_name()}")
             return False
 
     @staticmethod
@@ -543,8 +543,8 @@ class Adb:
             subprocess.run(command, check=True)  # noqa: S603
             logger.info("tap() > True")
             return True
-        except subprocess.CalledProcessError as error:
-            logger.error(f"{get_current_func_name()}: {error}")
+        except subprocess.CalledProcessError:
+            logger.exception(f"{get_current_func_name()}")
             return False
 
     @staticmethod
@@ -578,10 +578,11 @@ class Adb:
             # Execute command
             subprocess.run(command, check=True)  # noqa: S603
             logger.info("swipe() > True")
-            return True
-        except subprocess.CalledProcessError as error:
-            logger.error(f"{get_current_func_name()}: {error}")
+        except subprocess.CalledProcessError:
+            logger.exception(f"{get_current_func_name()}")
             return False
+        else:
+            return True
 
     @staticmethod
     def check_vpn(ip_address: str = "") -> bool:
@@ -612,8 +613,8 @@ class Adb:
                     return True
             logger.info("check_vpn() False")
             return False
-        except subprocess.CalledProcessError as error:
-            logger.error(f"{get_current_func_name()}: {error}")
+        except subprocess.CalledProcessError:
+            logger.exception(f"{get_current_func_name()}")
             return False
 
     @staticmethod
@@ -629,7 +630,7 @@ class Adb:
         if Adb.is_process_exist(name="logcat") and Adb.kill_all(name="logcat"):
             logger.info("stop_logcat() > True")
             return True
-        logger.error("stop_logcat() > False")
+        logger.exception("stop_logcat() > False")
         logger.info("stop_logcat() [No running logcat process found]")
         return False
 
@@ -650,8 +651,8 @@ class Adb:
         command = ["adb", "shell", "ps"]
         try:
             processes = subprocess.check_output(command, shell=True).decode().strip()  # noqa: S602
-        except subprocess.CalledProcessError as error:
-            logger.error(f"{get_current_func_name()}: {error}")
+        except subprocess.CalledProcessError:
+            logger.exception(f"{get_current_func_name()}")
             return False
         # Split output into lines and remove empty lines
         lines = processes.strip().split("\n")
@@ -697,8 +698,8 @@ class Adb:
                     return False
             logger.info("run_background_process() > True")
             return True
-        except subprocess.CalledProcessError as error:
-            logger.error(f"{get_current_func_name()}: {error}")
+        except subprocess.CalledProcessError:
+            logger.exception(f"{get_current_func_name()}")
             return False
 
     @staticmethod
@@ -715,16 +716,16 @@ class Adb:
         try:
             command = ["adb", "kill-server"]
             subprocess.run(command, check=True)  # noqa: S603
-        except subprocess.CalledProcessError as error:
-            logger.error(f"{get_current_func_name()}: {error}")
+        except subprocess.CalledProcessError:
+            logger.exception(f"{get_current_func_name()}")
             return False
         # Wait some time before starting adb server
         time.sleep(3)
         try:
             command = ["adb", "start-server"]
             subprocess.run(command, check=True)  # noqa: S603
-        except subprocess.CalledProcessError as error:
-            logger.error(f"{get_current_func_name()}: {error}")
+        except subprocess.CalledProcessError:
+            logger.exception(f"{get_current_func_name()}")
             return False
         logger.info("reload_adb() > True")
         return True
@@ -746,8 +747,8 @@ class Adb:
         command = ["adb", "shell", "ps"]
         try:
             processes = subprocess.check_output(command, shell=True).decode().strip()  # noqa: S602
-        except subprocess.CalledProcessError as error:
-            logger.error(f"{get_current_func_name()}: {error}")
+        except subprocess.CalledProcessError:
+            logger.exception(f"{get_current_func_name()}")
             return None
         # Split output into lines and remove empty lines
         lines = processes.strip().split("\n")
@@ -764,8 +765,8 @@ class Adb:
                     logger.info(f"know_pid() > {pid=}")
                     return int(pid)
         # Return None if process with given name not found
-        logger.error("know_pid() > None")
-        logger.error("know_pid() [Process not found]")
+        logger.exception("know_pid() > None")
+        logger.exception("know_pid() [Process not found]")
         return None
 
     @staticmethod
@@ -786,8 +787,8 @@ class Adb:
         command = ["adb", "shell", "kill", "-s", "SIGINT", str(pid)]
         try:
             subprocess.call(command)  # noqa: S603
-        except subprocess.CalledProcessError as error:
-            logger.error(f"{get_current_func_name()}: {error}")
+        except subprocess.CalledProcessError:
+            logger.exception(f"{get_current_func_name()}")
             return False
         logger.info("kill_by_pid() > True")
         return True
@@ -810,8 +811,8 @@ class Adb:
         command = ["adb", "shell", "pkill", "-l", "SIGINT", str(name)]
         try:
             subprocess.call(command)  # noqa: S603
-        except subprocess.CalledProcessError as error:
-            logger.error(f"{get_current_func_name()}: {error}")
+        except subprocess.CalledProcessError:
+            logger.exception(f"{get_current_func_name()}")
             return False
         logger.info("kill_by_name() > True")
         return True
@@ -834,8 +835,8 @@ class Adb:
         command = ["adb", "shell", "pkill", "-f", str(name)]
         try:
             subprocess.run(command, check=True)  # noqa: S603
-        except subprocess.CalledProcessError as error:
-            logger.error(f"{get_current_func_name()}: {error}")
+        except subprocess.CalledProcessError:
+            logger.exception(f"{get_current_func_name()}")
             return False
         logger.info("kill_all() > True")
         return True
@@ -858,8 +859,8 @@ class Adb:
         command = ["adb", "shell", "rm", "-rf", f"{path}*"]
         try:
             subprocess.run(command, check=True)  # noqa: S603
-        except subprocess.CalledProcessError as error:
-            logger.error(f"{get_current_func_name()}: {error}")
+        except subprocess.CalledProcessError:
+            logger.exception(f"{get_current_func_name()}")
             return False
         logger.info("delete_files_from_internal_storage() > True")
         return True
@@ -892,16 +893,16 @@ class Adb:
         command = ["adb", "pull", f"{source}", f"{destination}"]
         try:
             subprocess.run(command, check=True)  # noqa: S603
-        except subprocess.CalledProcessError as error:
-            logger.error(f"{get_current_func_name()}: {error}")
+        except subprocess.CalledProcessError:
+            logger.exception(f"{get_current_func_name()}")
             return False
 
         if delete:
             command = ["adb", "shell", "rm", "-rf", f"{source}*"]
             try:
                 subprocess.run(command, check=True)  # noqa: S603
-            except subprocess.CalledProcessError as error:
-                logger.error(f"{get_current_func_name()}: {error}")
+            except subprocess.CalledProcessError:
+                logger.exception(f"{get_current_func_name()}")
                 return False
 
             logger.info("pull_video() > True")
@@ -921,8 +922,8 @@ class Adb:
         command = ["adb", "shell", "pkill", "-l", "SIGINT", "screenrecord"]
         try:
             subprocess.call(command)  # noqa: S603
-        except subprocess.CalledProcessError as error:
-            logger.error(f"{get_current_func_name()}: {error}")
+        except subprocess.CalledProcessError:
+            logger.exception(f"{get_current_func_name()}")
             return False
         logger.info("stop_video() > True")
         return True
@@ -943,8 +944,7 @@ class Adb:
 
         """
         logger.info(f"record_video() < {filename}")
-        if path.endswith("/"):
-            path = path[:-1]
+        path = path.removesuffix("/")
         if filename.endswith(".mp4"):
             filename = filename + ".mp4"
 
@@ -952,8 +952,8 @@ class Adb:
         try:
             # Start adb shell screenrecord command to begin video recording
             return subprocess.Popen(command)  # noqa: S603
-        except subprocess.CalledProcessError as error:
-            logger.error(f"{get_current_func_name()}: {error}")
+        except subprocess.CalledProcessError:
+            logger.exception(f"{get_current_func_name()}")
             return None
 
     @staticmethod
@@ -971,8 +971,7 @@ class Adb:
                 True if the video recording was successfully started, False otherwise.
 
         """
-        if path.endswith("/"):
-            path = path[:-1]
+        path = path.removesuffix("/")
         if not filename.endswith(".mp4"):
             filename = filename + ".mp4"
 
@@ -981,8 +980,8 @@ class Adb:
             # Start adb shell screenrecord command to begin video recording
             subprocess.Popen(command)  # noqa: S603  # don't add with
             return True
-        except subprocess.CalledProcessError as error:
-            logger.error(f"{get_current_func_name()}: {error}")
+        except subprocess.CalledProcessError:
+            logger.exception(f"{get_current_func_name()}")
             return False
 
     @staticmethod
@@ -999,8 +998,8 @@ class Adb:
         command = ["adb", "shell", "reboot"]
         try:
             subprocess.call(command)  # noqa: S603
-        except subprocess.CalledProcessError as error:
-            logger.error(f"{get_current_func_name()}: {error}")
+        except subprocess.CalledProcessError:
+            logger.exception(f"{get_current_func_name()}")
             return False
         logger.info("reboot() > True")
         return True
@@ -1024,9 +1023,9 @@ class Adb:
                 width, height = resolution_str.split("x")
                 logger.info(f"get_screen_resolution() > {width=}, {height=}")
                 return int(width), int(height)
-            logger.error(f"Unexpected output from adb: {output}")
-        except (subprocess.CalledProcessError, ValueError) as error:
-            logger.error(f"{get_current_func_name()}: {error}")
+            logger.exception(f"Unexpected output from adb: {output}")
+        except (subprocess.CalledProcessError, ValueError):
+            logger.exception(f"{get_current_func_name()}")
         return None
 
     def get_packages_list(self) -> list[str]:

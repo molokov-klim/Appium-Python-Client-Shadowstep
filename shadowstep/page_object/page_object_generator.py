@@ -19,6 +19,13 @@ from unidecode import unidecode
 
 from shadowstep.page_object.page_object_element_node import UiElementNode
 from shadowstep.utils.utils import get_current_func_name
+from shadowstep.exceptions.shadowstep_exceptions import (
+    ShadowstepTitleNotFoundError,
+    ShadowstepNameCannotBeEmptyError,
+    ShadowstepPageClassNameCannotBeEmptyError,
+    ShadowstepTitleNodeNoUsableNameError,
+    ShadowstepFailedToNormalizeScreenNameError,
+)
 
 
 class PageObjectGenerator:
@@ -108,21 +115,21 @@ class PageObjectGenerator:
         self.logger.debug(step)
         title = self._get_title_property(ui_element_tree)
         if title is None:
-            raise ValueError("Can't find title")
+            raise ShadowstepTitleNotFoundError()
         self.logger.debug(f"{title.attrs=}")
 
         step = "Forming name property"
         self.logger.debug(step)
         name = self._get_name_property(title)
         if name == "":
-            raise ValueError("Name cannot be empty")
+            raise ShadowstepNameCannotBeEmptyError()
         self.logger.debug(f"{name=}")
 
         step = "Forming class name"
         self.logger.debug(step)
         page_class_name = self._normilize_to_camel_case(name)
         if page_class_name == "":
-            raise ValueError("page_class_name cannot be empty")
+            raise ShadowstepPageClassNameCannotBeEmptyError()
         self.logger.debug(f"{page_class_name=}")
 
         step = "Forming recycler property"
@@ -266,7 +273,7 @@ class PageObjectGenerator:
         raw_name = title.attrs.get("text") or title.attrs.get("content-desc") or ""
         raw_name = raw_name.strip()
         if not raw_name:
-            raise ValueError("Title node does not contain usable name")
+            raise ShadowstepTitleNodeNoUsableNameError()
         if raw_name in keyword.kwlist:
             raw_name = raw_name + "_"
         return raw_name
@@ -491,7 +498,7 @@ class PageObjectGenerator:
         camel_case = "".join(word.capitalize() for word in normalized.split())
 
         if not camel_case:
-            raise ValueError(f"Failed to normalize screen name from '{text}'")
+            raise ShadowstepFailedToNormalizeScreenNameError(text)
         if not camel_case.startswith("Page"):
             camel_case = "Page" + camel_case
         return camel_case

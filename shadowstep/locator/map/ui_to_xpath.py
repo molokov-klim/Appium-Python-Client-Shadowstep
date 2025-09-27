@@ -8,6 +8,7 @@ predicates with proper value formatting and hierarchical handling.
 from collections.abc import Callable
 from typing import Any
 
+from shadowstep.exceptions.shadowstep_exceptions import ShadowstepUnsupportedUiSelectorMethodError
 from shadowstep.locator.types.ui_selector import UiAttribute
 from shadowstep.locator.types.xpath import XPathAttribute
 
@@ -98,7 +99,7 @@ def get_xpath_for_method(method: UiAttribute, value: Any) -> str:
 
     """
     if method not in UI_TO_XPATH:
-        raise KeyError(f"Unsupported UiSelector method: {method}")
+        raise ShadowstepUnsupportedUiSelectorMethodError(method)
 
     return UI_TO_XPATH[method](value)
 

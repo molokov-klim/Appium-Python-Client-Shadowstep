@@ -39,7 +39,7 @@ class Transport:
 
         """
         self.ssh = self._create_ssh_client(server=server, port=port, user=user, password=password)
-        self.scp = SCPClient(cast(paramiko.Transport, self.ssh.get_transport()))
+        self.scp = SCPClient(cast("paramiko.Transport", self.ssh.get_transport()))
 
     @staticmethod
     def _create_ssh_client(server: str, port: int, user: str, password: str):

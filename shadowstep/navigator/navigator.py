@@ -19,6 +19,15 @@ from networkx.classes import DiGraph
 from networkx.exception import NetworkXException
 from selenium.common import WebDriverException
 
+from shadowstep.exceptions.shadowstep_exceptions import (
+    ShadowstepPageCannotBeNoneError,
+    ShadowstepFromPageCannotBeNoneError,
+    ShadowstepToPageCannotBeNoneError,
+    ShadowstepTimeoutMustBeNonNegativeError,
+    ShadowstepPathCannotBeEmptyError,
+    ShadowstepPathMustContainAtLeastTwoPagesError,
+    ShadowstepNavigationFailedError,
+)
 from shadowstep.page_base import PageBaseShadowstep
 
 logger = logging.getLogger(__name__)
@@ -71,7 +80,7 @@ class PageNavigator:
 
         """
         if page is None:
-            raise TypeError("page cannot be None")
+            raise ShadowstepPageCannotBeNoneError()
         # edges is already typed as dict[str, Any], so isinstance check is unnecessary
 
         self.graph_manager.add_page(page=page, edges=edges)
@@ -93,11 +102,11 @@ class PageNavigator:
 
         """
         if from_page is None:
-            raise TypeError("from_page cannot be None")
+            raise ShadowstepFromPageCannotBeNoneError()
         if to_page is None:
-            raise TypeError("to_page cannot be None")
+            raise ShadowstepToPageCannotBeNoneError()
         if timeout < 0:
-            raise ValueError("timeout must be non-negative")
+            raise ShadowstepTimeoutMustBeNonNegativeError()
         if from_page == to_page:
             self.logger.info(f"⏭️ Already on target page: {to_page}")
             return True
@@ -108,15 +117,15 @@ class PageNavigator:
             return False
 
         self.logger.info(
-            f"🚀 Navigating: {from_page} ➡ {to_page} via path: {[repr(page) for page in path]}"
+            f"🚀 Navigating: {from_page} ➡ {to_page} via path: {[repr(page) for page in path]}",
         )
 
         try:
-            self.perform_navigation(cast(list["PageBaseShadowstep"], path), timeout)
+            self.perform_navigation(cast("list[PageBaseShadowstep]", path), timeout)
             self.logger.info(f"✅ Successfully navigated to {to_page}")
             return True
         except WebDriverException as error:
-            self.logger.error(f"❗ WebDriverException during dom from {from_page} to {to_page}: {error}")
+            self.logger.exception(f"❗ WebDriverException during dom from {from_page} to {to_page}")
             self.logger.debug("📌 Full traceback:\n" + "".join(traceback.format_stack()))
             return False
 
@@ -141,7 +150,7 @@ class PageNavigator:
             if path:
                 return path
         except NetworkXException as error:
-            self.logger.error(f"NetworkX error in find_shortest_path: {error}")
+            self.logger.exception("NetworkX error in find_shortest_path")
 
         # Fallback: BFS traversal
         return self._find_path_bfs(start, target)
@@ -164,7 +173,7 @@ class PageNavigator:
             visited.add(current_page)
             transitions = self.graph_manager.get_edges(current_page)
             for next_page_name in transitions:
-                next_page = self.shadowstep.resolve_page(cast(str, next_page_name))
+                next_page = self.shadowstep.resolve_page(cast("str", next_page_name))
                 if next_page == target:
                     return path + [current_page, next_page]
                 if next_page not in visited:
@@ -184,9 +193,9 @@ class PageNavigator:
 
         """
         if not path:
-            raise ValueError("path cannot be empty")
+            raise ShadowstepPathCannotBeEmptyError()
         if len(path) < 2:
-            raise ValueError("path must contain at least 2 pages for dom")
+            raise ShadowstepPathMustContainAtLeastTwoPagesError()
 
         for i in range(len(path) - 1):
             current_page = path[i]
@@ -194,10 +203,7 @@ class PageNavigator:
             transition_method = current_page.edges[next_page.__class__.__name__]
             transition_method()
             if not next_page.is_current_page():
-                raise AssertionError(
-                    f"Navigation error: failed to navigate from {current_page} to {next_page} "
-                    f"using method {transition_method}"
-                )
+                raise ShadowstepNavigationFailedError(current_page, next_page, transition_method)
 
 
 class PageGraph:
@@ -229,13 +235,13 @@ class PageGraph:
 
         """
         if page is None:
-            raise TypeError("page cannot be None")
+            raise ShadowstepPageCannotBeNoneError()
 
         self.graph[page] = edges
 
         # Add vertex and edges to NetworkX graph
         self.nx_graph.add_node(page)
-        if isinstance(edges, (dict, list, tuple)):  # noqa
+        if isinstance(edges, (dict, list, tuple)):
             for target_name in edges:
                 self.nx_graph.add_edge(page, target_name)
 

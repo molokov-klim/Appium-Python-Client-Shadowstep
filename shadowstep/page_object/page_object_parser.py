@@ -10,10 +10,11 @@ from __future__ import annotations
 import logging
 from typing import Any, cast
 
-from lxml import etree  # noqa: N812
+from lxml import etree
 
 from shadowstep.page_object.page_object_element_node import UiElementNode
 from shadowstep.utils.utils import get_current_func_name
+from shadowstep.exceptions.shadowstep_exceptions import ShadowstepRootNodeFilteredOutError
 
 # Type aliases for better readability
 ElementAttributes = dict[str, Any]
@@ -26,7 +27,7 @@ DEFAULT_WHITE_LIST_CLASSES: tuple[str, ...] = (
     "android.widget.SeekBar",
     "android.widget.ProgressBar",
     "androidx.recyclerview.widget.RecyclerView",
-    "android.widget.ScrollView"
+    "android.widget.ScrollView",
 )
 
 DEFAULT_BLACK_LIST_CLASSES: tuple[str, ...] = (
@@ -37,22 +38,22 @@ DEFAULT_BLACK_LIST_CLASSES: tuple[str, ...] = (
     "android.widget.GridLayout",
     "android.widget.TableLayout",
     "android.widget.ImageView",
-    "android.widget.RelativeLayout"
+    "android.widget.RelativeLayout",
 )
 
 DEFAULT_WHITE_LIST_RESOURCE_ID: tuple[str, ...] = (
     "button", "btn", "edit", "input",
     "search", "list", "recycler", "nav",
-    "menu", "scrollable", "checkbox", "switch", "toggle"
+    "menu", "scrollable", "checkbox", "switch", "toggle",
 )
 
 DEFAULT_BLACK_LIST_RESOURCE_ID: tuple[str, ...] = (
-    "decor", "divider", "wrapper"
+    "decor", "divider", "wrapper",
 )
 
 # Important containers that are allowed even if they contain 'container'
 DEFAULT_CONTAINER_WHITELIST: tuple[str, ...] = (
-    "main", "dialog", "scrollable"
+    "main", "dialog", "scrollable",
 )
 
 
@@ -142,7 +143,7 @@ class PageObjectParser:
             el: etree._Element,
             parent: UiElementNode | None,
             scroll_stack: ScrollStack,
-            depth: int
+            depth: int,
         ) -> UiElementNode | None:
             """Recursively build tree nodes from XML elements.
 
@@ -157,7 +158,7 @@ class PageObjectParser:
 
             """
             nonlocal id_counter
-            attrib = dict(cast(Any, el.attrib))
+            attrib = dict(cast("Any", el.attrib))
             el_id = f"el_{id_counter}"
             id_counter += 1
 
@@ -167,19 +168,19 @@ class PageObjectParser:
 
             children_nodes: list[UiElementNode] = []
             for child_et in el:
-                child_node = _recurse(cast(Any, child_et), None, new_scroll_stack, depth + 1)
+                child_node = _recurse(cast("Any", child_et), None, new_scroll_stack, depth + 1)
                 if child_node:
                     children_nodes.append(child_node)
 
             if self._is_element_allowed(attrib):
                 node = UiElementNode(
                     id=el_id,
-                    tag=cast(Any, el.tag),
+                    tag=cast("Any", el.tag),
                     attrs=attrib,
                     parent=parent,
                     depth=depth,
                     scrollable_parents=new_scroll_stack,
-                    children=[]
+                    children=[],
                 )
                 for child in children_nodes:
                     child.parent = node
@@ -190,7 +191,7 @@ class PageObjectParser:
                 return None
             virtual = UiElementNode(
                 id=el_id,
-                tag=cast(Any, el.tag),
+                tag=cast("Any", el.tag),
                 attrs=attrib,
                 parent=parent,
                 depth=depth,
@@ -203,11 +204,11 @@ class PageObjectParser:
             return virtual
 
         if root_et.tag == "hierarchy":
-            root_et = next(iter(cast(Any, root_et)))
+            root_et = next(iter(cast("Any", root_et)))
 
-        root_node = _recurse(cast(Any, root_et), None, [], 0)
+        root_node = _recurse(cast("Any", root_et), None, [], 0)
         if not root_node:
-            raise ValueError("Root node was filtered out and has no valid children.")
+            raise ShadowstepRootNodeFilteredOutError()
         return root_node
 
     def _is_element_allowed(self, attrib: ElementAttributes) -> bool:

@@ -12,6 +12,7 @@ from __future__ import annotations
 import logging
 from typing import Any
 
+from shadowstep.exceptions.shadowstep_exceptions import ShadowstepInvalidUiSelectorStringFormatError
 from shadowstep.locator.types.ui_selector import UiAttribute
 
 
@@ -217,7 +218,7 @@ class UiSelector:
 
         return result
 
-    def __eq__(self, other: Any) -> bool:
+    def __eq__(self, other: object) -> bool:
         """Check equality with another UiSelector."""
         if not isinstance(other, UiSelector):
             return False
@@ -252,7 +253,7 @@ class UiSelector:
         # This is a simplified parser - in a real implementation you might want
         # to use the existing UiSelectorConverter to parse the string
         if not selector_str.strip().startswith("new UiSelector()"):
-            raise ValueError("Invalid UiSelector string format")
+            raise ShadowstepInvalidUiSelectorStringFormatError()
 
         # For now, we'll create an empty selector and let the user build it
         # In a full implementation, you'd parse the string and extract methods

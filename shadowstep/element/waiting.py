@@ -97,7 +97,7 @@ class ElementWaiting:
         return False
 
     @log_debug()
-    def wait_visible(self, timeout: int = 10, poll_frequency: float = 0.5, return_bool: bool = False) -> Element | bool:  # noqa: FBT001, FBT002, E501
+    def wait_visible(self, timeout: int = 10, poll_frequency: float = 0.5, return_bool: bool = False) -> Element | bool:  # noqa: FBT001, FBT002
         """Wait for element to be visible.
 
         Args:
@@ -170,7 +170,7 @@ class ElementWaiting:
         return True if return_bool else self.element
 
     @log_debug()
-    def wait_for_not(self, timeout: int = 10, poll_frequency: float = 0.5, return_bool: bool = False) -> Element | bool:  # noqa: FBT001, FBT002, E501, ARG002
+    def wait_for_not(self, timeout: int = 10, poll_frequency: float = 0.5, return_bool: bool = False) -> Element | bool:  # noqa: FBT001, FBT002, ARG002
         """Wait for element to not be present.
 
         Args:

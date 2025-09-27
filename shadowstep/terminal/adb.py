@@ -11,16 +11,14 @@ import logging
 import os
 import re
 import subprocess
-import sys
 import time
-import traceback
 from typing import TYPE_CHECKING
-
-from appium.webdriver.webdriver import WebDriver
 
 from shadowstep.utils.utils import get_current_func_name, grep_pattern
 
 if TYPE_CHECKING:
+    from appium.webdriver.webdriver import WebDriver
+
     from shadowstep.base import ShadowstepBase
 
 logger = logging.getLogger(__name__)
@@ -71,13 +69,11 @@ class Adb:
                 logger.info(f"{get_current_func_name()} > {devices_list}")
                 return devices_list
             except IndexError:
-                logger.error(f"{get_current_func_name()} > None")
-                logger.error("No connected devices")
+                logger.exception(f"{get_current_func_name()} > None")
+                logger.exception("No connected devices")
                 return []
         except subprocess.CalledProcessError:
-            logger.error(f"{get_current_func_name()} > None")
-            traceback_info = "".join(traceback.format_tb(sys.exc_info()[2]))
-            logger.error(f"{sys.exc_info()[0]}\n{traceback_info}{sys.exc_info()[1]}")
+            logger.exception(f"{get_current_func_name()} > None")
             return []
 
     @staticmethod
@@ -104,9 +100,7 @@ class Adb:
             logger.info(f"{get_current_func_name()} > {model}")
             return model
         except subprocess.CalledProcessError:
-            logger.error(f"{get_current_func_name()} > None")
-            traceback_info = "".join(traceback.format_tb(sys.exc_info()[2]))
-            logger.error(f"{sys.exc_info()[0]}\n{traceback_info}{sys.exc_info()[1]}")
+            logger.exception(f"{get_current_func_name()} > None")
             return ""
 
     @staticmethod
@@ -137,9 +131,7 @@ class Adb:
             logger.info(f"{get_current_func_name()} > True")
             return True
         except subprocess.CalledProcessError:
-            logger.error(f"{get_current_func_name()} > None")
-            traceback_info = "".join(traceback.format_tb(sys.exc_info()[2]))
-            logger.error(f"{sys.exc_info()[0]}\n{traceback_info}{sys.exc_info()[1]}")
+            logger.exception(f"{get_current_func_name()} > None")
             return False
 
     @staticmethod
@@ -166,9 +158,7 @@ class Adb:
             logger.info(f"{get_current_func_name()} > True")
             return True
         except subprocess.CalledProcessError:
-            logger.error(f"{get_current_func_name()} > None")
-            traceback_info = "".join(traceback.format_tb(sys.exc_info()[2]))
-            logger.error(f"{sys.exc_info()[0]}\n{traceback_info}{sys.exc_info()[1]}")
+            logger.exception(f"{get_current_func_name()} > None")
             return False
 
     @staticmethod
@@ -193,9 +183,7 @@ class Adb:
             logger.info("install() > True")
             return True
         except subprocess.CalledProcessError:
-            logger.error(f"{get_current_func_name()} > None")
-            traceback_info = "".join(traceback.format_tb(sys.exc_info()[2]))
-            logger.error(f"{sys.exc_info()[0]}\n{traceback_info}{sys.exc_info()[1]}")
+            logger.exception(f"{get_current_func_name()} > None")
             return False
 
     @staticmethod
@@ -223,9 +211,7 @@ class Adb:
             logger.info("install() > False")
             return False
         except subprocess.CalledProcessError:
-            logger.error(f"{get_current_func_name()} > None")
-            traceback_info = "".join(traceback.format_tb(sys.exc_info()[2]))
-            logger.error(f"{sys.exc_info()[0]}\n{traceback_info}{sys.exc_info()[1]}")
+            logger.exception(f"{get_current_func_name()} > None")
             return False
 
     @staticmethod
@@ -249,9 +235,7 @@ class Adb:
             logger.info("uninstall_app() > True")
             return True
         except subprocess.CalledProcessError:
-            logger.error(f"{get_current_func_name()} > None")
-            traceback_info = "".join(traceback.format_tb(sys.exc_info()[2]))
-            logger.error(f"{sys.exc_info()[0]}\n{traceback_info}{sys.exc_info()[1]}")
+            logger.exception(f"{get_current_func_name()} > None")
             return False
 
     @staticmethod
@@ -277,9 +261,7 @@ class Adb:
             logger.info("start_activity() > True")
             return True
         except subprocess.CalledProcessError:
-            logger.error(f"{get_current_func_name()} > None")
-            traceback_info = "".join(traceback.format_tb(sys.exc_info()[2]))
-            logger.error(f"{sys.exc_info()[0]}\n{traceback_info}{sys.exc_info()[1]}")
+            logger.exception(f"{get_current_func_name()} > None")
             return False
 
     @staticmethod
@@ -322,9 +304,7 @@ class Adb:
             logger.error("get_current_activity() > None")
             return ""
         except subprocess.CalledProcessError:
-            logger.error(f"{get_current_func_name()} > None")
-            traceback_info = "".join(traceback.format_tb(sys.exc_info()[2]))
-            logger.error(f"{sys.exc_info()[0]}\n{traceback_info}{sys.exc_info()[1]}")
+            logger.exception(f"{get_current_func_name()} > None")
             return ""
 
     @staticmethod
@@ -367,9 +347,7 @@ class Adb:
             logger.error("get_current_app_package() > None")
             return ""
         except subprocess.CalledProcessError:
-            logger.error(f"{get_current_func_name()} > None")
-            traceback_info = "".join(traceback.format_tb(sys.exc_info()[2]))
-            logger.error(f"{sys.exc_info()[0]}\n{traceback_info}{sys.exc_info()[1]}")
+            logger.exception(f"{get_current_func_name()} > None")
             return ""
 
     @staticmethod
@@ -393,9 +371,7 @@ class Adb:
             logger.info("close_app() > True")
             return True
         except subprocess.CalledProcessError:
-            logger.error(f"{get_current_func_name()} > None")
-            traceback_info = "".join(traceback.format_tb(sys.exc_info()[2]))
-            logger.error(f"{sys.exc_info()[0]}\n{traceback_info}{sys.exc_info()[1]}")
+            logger.exception(f"{get_current_func_name()} > None")
             return False
 
     @staticmethod
@@ -444,9 +420,7 @@ class Adb:
             logger.info("press_home() > True")
             return True
         except subprocess.CalledProcessError:
-            logger.error(f"{get_current_func_name()} > None")
-            traceback_info = "".join(traceback.format_tb(sys.exc_info()[2]))
-            logger.error(f"{sys.exc_info()[0]}\n{traceback_info}{sys.exc_info()[1]}")
+            logger.exception(f"{get_current_func_name()} > None")
             return False
 
     @staticmethod
@@ -466,9 +440,7 @@ class Adb:
             logger.info("press_back() > True")
             return True
         except subprocess.CalledProcessError:
-            logger.error(f"{get_current_func_name()} > None")
-            traceback_info = "".join(traceback.format_tb(sys.exc_info()[2]))
-            logger.error(f"{sys.exc_info()[0]}\n{traceback_info}{sys.exc_info()[1]}")
+            logger.exception(f"{get_current_func_name()} > None")
             return False
 
     @staticmethod
@@ -488,9 +460,7 @@ class Adb:
             logger.info("press_menu() > True")
             return True
         except subprocess.CalledProcessError:
-            logger.error(f"{get_current_func_name()} > None")
-            traceback_info = "".join(traceback.format_tb(sys.exc_info()[2]))
-            logger.error(f"{sys.exc_info()[0]}\n{traceback_info}{sys.exc_info()[1]}")
+            logger.exception(f"{get_current_func_name()} > None")
             return False
 
     @staticmethod
@@ -514,9 +484,7 @@ class Adb:
             logger.info("input_keycode_num_() > True")
             return True
         except subprocess.CalledProcessError:
-            logger.error(f"{get_current_func_name()} > None")
-            traceback_info = "".join(traceback.format_tb(sys.exc_info()[2]))
-            logger.error(f"{sys.exc_info()[0]}\n{traceback_info}{sys.exc_info()[1]}")
+            logger.exception(f"{get_current_func_name()} > None")
             return False
 
     @staticmethod
@@ -540,9 +508,7 @@ class Adb:
             logger.info("input_keycode() > True")
             return True
         except subprocess.CalledProcessError:
-            logger.error(f"{get_current_func_name()} > None")
-            traceback_info = "".join(traceback.format_tb(sys.exc_info()[2]))
-            logger.error(f"{sys.exc_info()[0]}\n{traceback_info}{sys.exc_info()[1]}")
+            logger.exception(f"{get_current_func_name()} > None")
             return False
 
     @staticmethod
@@ -568,9 +534,7 @@ class Adb:
             logger.info("input_text() > True")
             return True
         except subprocess.CalledProcessError:
-            logger.error(f"{get_current_func_name()} > None")
-            traceback_info = "".join(traceback.format_tb(sys.exc_info()[2]))
-            logger.error(f"{sys.exc_info()[0]}\n{traceback_info}{sys.exc_info()[1]}")
+            logger.exception(f"{get_current_func_name()} > None")
             return False
 
     @staticmethod
@@ -597,9 +561,7 @@ class Adb:
             logger.info("tap() > True")
             return True
         except subprocess.CalledProcessError:
-            logger.error(f"{get_current_func_name()} > None")
-            traceback_info = "".join(traceback.format_tb(sys.exc_info()[2]))
-            logger.error(f"{sys.exc_info()[0]}\n{traceback_info}{sys.exc_info()[1]}")
+            logger.exception(f"{get_current_func_name()} > None")
             return False
 
     @staticmethod
@@ -635,9 +597,7 @@ class Adb:
             logger.info("swipe() > True")
             return True
         except subprocess.CalledProcessError:
-            logger.error(f"{get_current_func_name()} > None")
-            traceback_info = "".join(traceback.format_tb(sys.exc_info()[2]))
-            logger.error(f"{sys.exc_info()[0]}\n{traceback_info}{sys.exc_info()[1]}")
+            logger.exception(f"{get_current_func_name()} > None")
             return False
 
     @staticmethod
@@ -670,9 +630,7 @@ class Adb:
             logger.info("check_vpn() False")
             return False
         except subprocess.CalledProcessError:
-            logger.error(f"{get_current_func_name()} > None")
-            traceback_info = "".join(traceback.format_tb(sys.exc_info()[2]))
-            logger.error(f"{sys.exc_info()[0]}\n{traceback_info}{sys.exc_info()[1]}")
+            logger.exception(f"{get_current_func_name()} > None")
             return False
 
     @staticmethod
@@ -710,9 +668,7 @@ class Adb:
         try:
             processes = subprocess.check_output(command, shell=True).decode().strip()  # noqa: S602
         except subprocess.CalledProcessError:
-            logger.error(f"{get_current_func_name()} > None")
-            traceback_info = "".join(traceback.format_tb(sys.exc_info()[2]))
-            logger.error(f"{sys.exc_info()[0]}\n{traceback_info}{sys.exc_info()[1]}")
+            logger.exception(f"{get_current_func_name()} > None")
             return False
         # Split output into lines and remove empty lines
         lines = processes.strip().split("\n")
@@ -759,9 +715,7 @@ class Adb:
             logger.info("run_background_process() > True")
             return True
         except subprocess.CalledProcessError:
-            logger.error(f"{get_current_func_name()} > None")
-            traceback_info = "".join(traceback.format_tb(sys.exc_info()[2]))
-            logger.error(f"{sys.exc_info()[0]}\n{traceback_info}{sys.exc_info()[1]}")
+            logger.exception(f"{get_current_func_name()} > None")
             return False
 
     @staticmethod
@@ -779,9 +733,7 @@ class Adb:
             command = ["adb", "kill-server"]
             subprocess.run(command, check=True)  # noqa: S603
         except subprocess.CalledProcessError:
-            logger.error(f"{get_current_func_name()} > None")
-            traceback_info = "".join(traceback.format_tb(sys.exc_info()[2]))
-            logger.error(f"{sys.exc_info()[0]}\n{traceback_info}{sys.exc_info()[1]}")
+            logger.exception(f"{get_current_func_name()} > None")
             return False
         # Wait some time before starting adb server
         time.sleep(3)
@@ -789,9 +741,7 @@ class Adb:
             command = ["adb", "start-server"]
             subprocess.run(command, check=True)  # noqa: S603
         except subprocess.CalledProcessError:
-            logger.error(f"{get_current_func_name()} > None")
-            traceback_info = "".join(traceback.format_tb(sys.exc_info()[2]))
-            logger.error(f"{sys.exc_info()[0]}\n{traceback_info}{sys.exc_info()[1]}")
+            logger.exception(f"{get_current_func_name()} > None")
             return False
         logger.info("reload_adb() > True")
         return True
@@ -814,9 +764,7 @@ class Adb:
         try:
             processes = subprocess.check_output(command, shell=True).decode().strip()  # noqa: S602
         except subprocess.CalledProcessError:
-            logger.error(f"{get_current_func_name()} > None")
-            traceback_info = "".join(traceback.format_tb(sys.exc_info()[2]))
-            logger.error(f"{sys.exc_info()[0]}\n{traceback_info}{sys.exc_info()[1]}")
+            logger.exception(f"{get_current_func_name()} > None")
             return None
         # Split output into lines and remove empty lines
         lines = processes.strip().split("\n")
@@ -856,9 +804,7 @@ class Adb:
         try:
             subprocess.call(command)  # noqa: S603
         except subprocess.CalledProcessError:
-            logger.error(f"{get_current_func_name()} > None")
-            traceback_info = "".join(traceback.format_tb(sys.exc_info()[2]))
-            logger.error(f"{sys.exc_info()[0]}\n{traceback_info}{sys.exc_info()[1]}")
+            logger.exception(f"{get_current_func_name()} > None")
             return False
         logger.info("kill_by_pid() > True")
         return True
@@ -882,9 +828,7 @@ class Adb:
         try:
             subprocess.call(command)  # noqa: S603
         except subprocess.CalledProcessError:
-            logger.error(f"{get_current_func_name()} > None")
-            traceback_info = "".join(traceback.format_tb(sys.exc_info()[2]))
-            logger.error(f"{sys.exc_info()[0]}\n{traceback_info}{sys.exc_info()[1]}")
+            logger.exception(f"{get_current_func_name()} > None")
             return False
         logger.info("kill_by_name() > True")
         return True
@@ -908,9 +852,7 @@ class Adb:
         try:
             subprocess.run(command, check=True)  # noqa: S603
         except subprocess.CalledProcessError:
-            logger.error(f"{get_current_func_name()} > None")
-            traceback_info = "".join(traceback.format_tb(sys.exc_info()[2]))
-            logger.error(f"{sys.exc_info()[0]}\n{traceback_info}{sys.exc_info()[1]}")
+            logger.exception(f"{get_current_func_name()} > None")
             return False
         logger.info("kill_all() > True")
         return True
@@ -934,9 +876,7 @@ class Adb:
         try:
             subprocess.run(command, check=True)  # noqa: S603
         except subprocess.CalledProcessError:
-            logger.error(f"{get_current_func_name()} > None")
-            traceback_info = "".join(traceback.format_tb(sys.exc_info()[2]))
-            logger.error(f"{sys.exc_info()[0]}\n{traceback_info}{sys.exc_info()[1]}")
+            logger.exception(f"{get_current_func_name()} > None")
             return False
         logger.info("delete_files_from_internal_storage() > True")
         return True
@@ -972,9 +912,7 @@ class Adb:
         try:
             subprocess.run(command, check=True)  # noqa: S603
         except subprocess.CalledProcessError:
-            logger.error(f"{get_current_func_name()} > None")
-            traceback_info = "".join(traceback.format_tb(sys.exc_info()[2]))
-            logger.error(f"{sys.exc_info()[0]}\n{traceback_info}{sys.exc_info()[1]}")
+            logger.exception(f"{get_current_func_name()} > None")
             return False
 
         if delete:
@@ -982,9 +920,7 @@ class Adb:
             try:
                 subprocess.run(command, check=True)  # noqa: S603
             except subprocess.CalledProcessError:
-                logger.error(f"{get_current_func_name()} > None")
-                traceback_info = "".join(traceback.format_tb(sys.exc_info()[2]))
-                logger.error(f"{sys.exc_info()[0]}\n{traceback_info}{sys.exc_info()[1]}")
+                logger.exception(f"{get_current_func_name()} > None")
                 return False
 
             logger.info("pull_video() > True")
@@ -1005,9 +941,7 @@ class Adb:
         try:
             subprocess.call(command)  # noqa: S603
         except subprocess.CalledProcessError:
-            logger.error(f"{get_current_func_name()} > None")
-            traceback_info = "".join(traceback.format_tb(sys.exc_info()[2]))
-            logger.error(f"{sys.exc_info()[0]}\n{traceback_info}{sys.exc_info()[1]}")
+            logger.exception(f"{get_current_func_name()} > None")
             return False
         logger.info("stop_video() > True")
         return True
@@ -1029,8 +963,7 @@ class Adb:
 
         """
         logger.info(f"record_video() < {filename}")
-        if path.endswith("/"):
-            path = path[:-1]
+        path = path.removesuffix("/")
         if filename.endswith(".mp4"):
             filename = filename + ".mp4"
 
@@ -1039,9 +972,7 @@ class Adb:
             # Start adb shell screenrecord command to begin video recording
             return subprocess.Popen(command)  # noqa: S603
         except subprocess.CalledProcessError:
-            logger.error(f"{get_current_func_name()} > None")
-            traceback_info = "".join(traceback.format_tb(sys.exc_info()[2]))
-            logger.error(f"{sys.exc_info()[0]}\n{traceback_info}{sys.exc_info()[1]}")
+            logger.exception(f"{get_current_func_name()} > None")
             return None
 
     @staticmethod
@@ -1059,8 +990,7 @@ class Adb:
                 True if the video recording was successfully started, False otherwise.
 
         """
-        if path.endswith("/"):
-            path = path[:-1]
+        path = path.removesuffix("/")
         if not filename.endswith(".mp4"):
             filename = filename + ".mp4"
 
@@ -1070,9 +1000,7 @@ class Adb:
             subprocess.Popen(command)  # noqa: S603  # do not add with
             return True
         except subprocess.CalledProcessError:
-            logger.error(f"{get_current_func_name()} > None")
-            traceback_info = "".join(traceback.format_tb(sys.exc_info()[2]))
-            logger.error(f"{sys.exc_info()[0]}\n{traceback_info}{sys.exc_info()[1]}")
+            logger.exception(f"{get_current_func_name()} > None")
             return False
 
     @staticmethod
@@ -1090,9 +1018,7 @@ class Adb:
         try:
             subprocess.call(command)  # noqa: S603
         except subprocess.CalledProcessError:
-            logger.error(f"{get_current_func_name()} > None")
-            traceback_info = "".join(traceback.format_tb(sys.exc_info()[2]))
-            logger.error(f"{sys.exc_info()[0]}\n{traceback_info}{sys.exc_info()[1]}")
+            logger.exception(f"{get_current_func_name()} > None")
             return False
         logger.info("reboot() > True")
         return True
@@ -1118,9 +1044,7 @@ class Adb:
                 return int(width), int(height)
             logger.error(f"Unexpected output from adb: {output}")
         except (subprocess.CalledProcessError, ValueError):
-            logger.error(f"{get_current_func_name()} > None")
-            traceback_info = "".join(traceback.format_tb(sys.exc_info()[2]))
-            logger.error(f"{sys.exc_info()[0]}\n{traceback_info}{sys.exc_info()[1]}")
+            logger.exception(f"{get_current_func_name()} > None")
         return None
 
     def get_packages_list(self) -> list[str]:

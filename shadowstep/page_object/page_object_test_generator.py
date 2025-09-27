@@ -13,6 +13,7 @@ import re
 from jinja2 import Environment, FileSystemLoader
 
 from shadowstep.utils.utils import get_current_func_name
+from shadowstep.exceptions.shadowstep_exceptions import ShadowstepNoClassDefinitionFoundInTreeError
 
 
 class PageObjectTestGenerator:
@@ -57,10 +58,10 @@ class PageObjectTestGenerator:
         templates_dir = os.path.join(os.path.dirname(__file__), "templates")
         self.env = Environment(
             loader=FileSystemLoader(templates_dir),
-            autoescape=True,  # noqa: S701
+            autoescape=True,
             keep_trailing_newline=True,
             trim_blocks=True,
-            lstrip_blocks=True
+            lstrip_blocks=True,
         )
 
     def generate_test(self, input_path: str, class_name: str, output_dir: str) -> tuple[str, str]:
@@ -97,7 +98,7 @@ class PageObjectTestGenerator:
             module_path=module_path,
             class_name=class_name,
             test_class_name=test_class_name,
-            properties=properties
+            properties=properties,
         )
 
         step = "Forming test path"
@@ -118,7 +119,7 @@ class PageObjectTestGenerator:
         tree = ast.parse(source)
         class_node = next((n for n in tree.body if isinstance(n, ast.ClassDef)), None)
         if not class_node:
-            raise ValueError("No class definition found")
+            raise ShadowstepNoClassDefinitionFoundInTreeError()
 
         ignore = {"name", "edges", "title", "recycler", "is_current_page"}
         return [

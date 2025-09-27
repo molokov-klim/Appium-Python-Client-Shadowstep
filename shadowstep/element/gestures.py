@@ -91,7 +91,7 @@ class ElementGestures:
                     self.element.utilities.handle_driver_error(error)
                     continue
                 raise ShadowstepElementException(
-                    msg=(f"Failed to {inspect.currentframe() if inspect.currentframe() else 'unknown'} "  # noqa: E501  # noqa: E501
+                    msg=(f"Failed to {inspect.currentframe() if inspect.currentframe() else 'unknown'} "
                          f"within {self.element.timeout=}\n{duration}"),
                     stacktrace=traceback.format_stack(),
                 ) from error
@@ -133,7 +133,7 @@ class ElementGestures:
 
         raise ShadowstepElementException(
             msg=(f"Failed to {inspect.currentframe() if inspect.currentframe() else 'unknown'} "
-                 f"within {self.element.timeout=}\n{locator=}\n{x=}\n{y=}\n{direction}\n{distance}\n"),  # noqa: E501
+                 f"within {self.element.timeout=}\n{locator=}\n{x=}\n{y=}\n{direction}\n{distance}\n"),
             stacktrace=traceback.format_stack(),
         )
 
@@ -179,7 +179,7 @@ class ElementGestures:
                     self.element.utilities.handle_driver_error(error)
                     continue
                 raise ShadowstepElementException(
-                    msg=(f"Failed to {inspect.currentframe() if inspect.currentframe() else 'unknown'} "  # noqa: E501  # noqa: E501
+                    msg=(f"Failed to {inspect.currentframe() if inspect.currentframe() else 'unknown'} "
                          f"within {self.element.timeout=}\n{duration}"),
                     stacktrace=traceback.format_stack(),
                 ) from error
@@ -224,7 +224,7 @@ class ElementGestures:
                     self.element.utilities.handle_driver_error(error)
                     continue
                 raise ShadowstepElementException(
-                    msg=(f"Failed to {inspect.currentframe() if inspect.currentframe() else 'unknown'} "  # noqa: E501  # noqa: E501
+                    msg=(f"Failed to {inspect.currentframe() if inspect.currentframe() else 'unknown'} "
                          f"within {self.element.timeout=}"),
                     stacktrace=traceback.format_stack(),
                 ) from error
@@ -277,7 +277,7 @@ class ElementGestures:
                     self.element.utilities.handle_driver_error(error)
                     continue
                 raise ShadowstepElementException(
-                    msg=(f"Failed to {inspect.currentframe() if inspect.currentframe() else 'unknown'} "  # noqa: E501  # noqa: E501
+                    msg=(f"Failed to {inspect.currentframe() if inspect.currentframe() else 'unknown'} "
                          f"within {self.element.timeout=}"),
                     stacktrace=traceback.format_stack(),
                 ) from error
@@ -335,7 +335,7 @@ class ElementGestures:
                     self.element.utilities.handle_driver_error(error)
                     continue
                 raise ShadowstepElementException(
-                    msg=(f"Failed to {inspect.currentframe() if inspect.currentframe() else 'unknown'} "  # noqa: E501  # noqa: E501
+                    msg=(f"Failed to {inspect.currentframe() if inspect.currentframe() else 'unknown'} "
                          f"within {self.element.timeout=}"),
                     stacktrace=traceback.format_stack(),
                 ) from error
@@ -399,7 +399,7 @@ class ElementGestures:
                     self.element.utilities.handle_driver_error(error)
                     continue
                 raise ShadowstepElementException(
-                    msg=(f"Failed to {inspect.currentframe() if inspect.currentframe() else 'unknown'} "  # noqa: E501  # noqa: E501
+                    msg=(f"Failed to {inspect.currentframe() if inspect.currentframe() else 'unknown'} "
                          f"within {self.element.timeout=}"),
                     stacktrace=traceback.format_stack(),
                 ) from error
@@ -582,7 +582,7 @@ class ElementGestures:
                     self.element.utilities.handle_driver_error(error)
                     continue
                 raise ShadowstepElementException(
-                    msg=(f"Failed to {inspect.currentframe() if inspect.currentframe() else 'unknown'} "  # noqa: E501  # noqa: E501
+                    msg=(f"Failed to {inspect.currentframe() if inspect.currentframe() else 'unknown'} "
                          f"within {self.element.timeout=}"),
                     stacktrace=traceback.format_stack(),
                 ) from error
@@ -634,7 +634,7 @@ class ElementGestures:
                     self.element.utilities.handle_driver_error(error)
                     continue
                 raise ShadowstepElementException(
-                    msg=(f"Failed to {inspect.currentframe() if inspect.currentframe() else 'unknown'} "  # noqa: E501  # noqa: E501
+                    msg=(f"Failed to {inspect.currentframe() if inspect.currentframe() else 'unknown'} "
                          f"within {self.element.timeout=}"),
                     stacktrace=traceback.format_stack(),
                 ) from error
@@ -688,11 +688,11 @@ class ElementGestures:
                     self.element.utilities.handle_driver_error(error)
                     continue
                 raise ShadowstepElementException(
-                    msg=f"Failed to {inspect.currentframe() if inspect.currentframe() else 'unknown'} within {self.element.timeout=} {direction=} {percent=}",  # noqa: E501
+                    msg=f"Failed to {inspect.currentframe() if inspect.currentframe() else 'unknown'} within {self.element.timeout=} {direction=} {percent=}",
                     stacktrace=traceback.format_stack(),
                 ) from error
         raise ShadowstepElementException(
-            msg=f"Failed to {inspect.currentframe() if inspect.currentframe() else 'unknown'} within {self.element.timeout=} {direction=} {percent=}",  # noqa: E501
+            msg=f"Failed to {inspect.currentframe() if inspect.currentframe() else 'unknown'} within {self.element.timeout=} {direction=} {percent=}",
             stacktrace=traceback.format_stack(),
         )
 
@@ -716,7 +716,7 @@ class ElementGestures:
 
     @log_debug()
     def _perform_tap_and_move_action(self,
-                                     locator: tuple[str, str] | dict[str, Any] | Element | UiSelector | None = None,  # noqa: E501
+                                     locator: tuple[str, str] | dict[str, Any] | Element | UiSelector | None = None,
                                      x: int | None = None,
                                      y: int | None = None,
                                      direction: int | None = None,
@@ -755,10 +755,10 @@ class ElementGestures:
 
                 # Move by direction vector
                 if direction is not None and distance is not None:
-                    return self._execute_tap_and_move_by_direction(actions, x1, y1, direction, distance)  # noqa: E501
+                    return self._execute_tap_and_move_by_direction(actions, x1, y1, direction, distance)
 
                 raise ShadowstepElementException(
-                    msg=f"Failed to {inspect.currentframe() if inspect.currentframe() else 'unknown'} within {self.element.timeout=} {direction=}",  # noqa: E501
+                    msg=f"Failed to {inspect.currentframe() if inspect.currentframe() else 'unknown'} within {self.element.timeout=} {direction=}",
                     stacktrace=traceback.format_stack(),
                 )
             except (NoSuchDriverException, InvalidSessionIdException, AttributeError) as error:  # noqa: PERF203
@@ -794,13 +794,13 @@ class ElementGestures:
 
         """
         actions = ActionChains(self.element.driver)
-        actions.w3c_actions = ActionBuilder(self.element.driver, mouse=PointerInput(interaction.POINTER_TOUCH, "touch"))  # noqa: E501
+        actions.w3c_actions = ActionBuilder(self.element.driver, mouse=PointerInput(interaction.POINTER_TOUCH, "touch"))
         actions.w3c_actions.pointer_action.move_to_location(x1, y1)  # type: ignore[reportUnknownMemberType]
         actions.w3c_actions.pointer_action.pointer_down()  # type: ignore[reportUnknownMemberType]
         return actions
 
     @log_debug()
-    def _execute_tap_and_move_to_coordinates(self, actions: ActionChains, x: int, y: int) -> Element:  # noqa: E501
+    def _execute_tap_and_move_to_coordinates(self, actions: ActionChains, x: int, y: int) -> Element:
         """Execute tap and move to specific coordinates.
 
         Args:
@@ -819,7 +819,7 @@ class ElementGestures:
 
     @log_debug()
     def _execute_tap_and_move_to_element(self, actions: ActionChains,
-                                         locator: tuple[str, str] | dict[str, Any] | Element | UiSelector) -> Element:  # noqa: E501
+                                         locator: tuple[str, str] | dict[str, Any] | Element | UiSelector) -> Element:
         """Execute tap and move to another element.
 
         Args:
@@ -835,7 +835,7 @@ class ElementGestures:
         return self._execute_tap_and_move_to_coordinates(actions, x, y)
 
     @log_debug()
-    def _execute_tap_and_move_by_direction(self, actions: ActionChains, x1: int, y1: int, direction: int,  # noqa: E501
+    def _execute_tap_and_move_by_direction(self, actions: ActionChains, x1: int, y1: int, direction: int,
                                            distance: int) -> Element:
         """Execute tap and move by direction vector.
 
@@ -851,11 +851,11 @@ class ElementGestures:
 
         """
         width, height = self.shadowstep.terminal.get_screen_resolution()  # type: ignore[reportOptionalMemberAccess]
-        x2, y2 = find_coordinates_by_vector(width=width, height=height, direction=direction, distance=distance,  # noqa: E501
+        x2, y2 = find_coordinates_by_vector(width=width, height=height, direction=direction, distance=distance,
                                             start_x=x1, start_y=y1)
         return self._execute_tap_and_move_to_coordinates(actions, x2, y2)
 
-    def _mobile_gesture(self, name: str, params: dict[str, Any] | list[Any]) -> Any:  # noqa: ANN401
+    def _mobile_gesture(self, name: str, params: dict[str, Any] | list[Any]) -> Any:
         """Execute a mobile gesture command.
 
         Args:

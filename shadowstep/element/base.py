@@ -41,7 +41,7 @@ if TYPE_CHECKING:
 class ElementBase:
     """A shadowstep class for interacting with web elements in the Shadowstep application."""
 
-    def __init__(self,  # noqa: PLR0913
+    def __init__(self,
                  locator: tuple[str, str] | dict[str, Any] | Element | UiSelector,
                  shadowstep: Shadowstep,
                  timeout: float = 30,

@@ -11,6 +11,13 @@ from dataclasses import dataclass
 from enum import Enum, auto
 from typing import cast
 
+from shadowstep.exceptions.shadowstep_exceptions import (
+    ShadowstepLexerError,
+    ShadowstepUnterminatedStringError,
+    ShadowstepBadEscapeError,
+    ShadowstepUnexpectedCharError,
+)
+
 
 class TokenType(Enum):
     """Enumeration of token types for UiSelector lexical analysis.
@@ -46,7 +53,7 @@ class Token:
     pos: int = -1
 
 
-class LexerError(Exception):
+class LexerError(ShadowstepLexerError):
     """Raised when lexical analysis encounters an error.
 
     This exception is raised when the lexer encounters invalid
@@ -126,11 +133,11 @@ class Lexer:
                 buf = []
                 while True:
                     if self.i >= self.n:
-                        raise LexerError(f"Unterminated string at {start}")
+                        raise ShadowstepUnterminatedStringError(start)
                     c = self._advance()
                     if c == "\\":
                         if self.i >= self.n:
-                            raise LexerError(f"Bad escape at {self.i}")
+                            raise ShadowstepBadEscapeError(self.i)
                         nxt = self._advance()
                         if nxt in (quote_char, "\\"):
                             buf.append(nxt)
@@ -172,7 +179,7 @@ class Lexer:
                     toks.append(Token(TokenType.IDENT, ident, start))
                 continue
 
-            raise LexerError(f"Unexpected char {ch!r} at {self.i}")
+            raise ShadowstepUnexpectedCharError(ch, self.i)
 
         toks.append(Token(TokenType.EOF, None, self.i))
         return toks

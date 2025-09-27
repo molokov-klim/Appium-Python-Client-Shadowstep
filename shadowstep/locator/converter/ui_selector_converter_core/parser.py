@@ -9,9 +9,13 @@ from __future__ import annotations
 
 from typing import Any, cast
 
+from shadowstep.exceptions.shadowstep_exceptions import (
+    ShadowstepParserError,
+    ShadowstepExpectedTokenError,
+    ShadowstepUnexpectedTokenError,
+)
 from shadowstep.locator.converter.ui_selector_converter_core.ast import MethodCall, Selector
 from shadowstep.locator.converter.ui_selector_converter_core.lexer import (
-    ParserError,
     Token,
     TokenType,
 )
@@ -41,7 +45,7 @@ class Parser:
     def _expect(self, ttype: TokenType) -> Token:
         tok = self._peek()
         if tok.type != ttype:
-            raise ParserError(f"Expected {ttype}, got {tok.type} at {tok.pos}")
+            raise ShadowstepExpectedTokenError(str(ttype), str(tok.type), tok.pos)
         return self._advance()
 
     def parse(self) -> Selector:
@@ -99,7 +103,7 @@ class Parser:
         if tok.type == TokenType.IDENT:
             self._advance()
             return cast("str", tok.value)
-        raise ParserError(f"Unexpected token in arg: {tok.type} at {tok.pos}")
+        raise ShadowstepUnexpectedTokenError(str(tok.type), tok.pos)
 
     def _parse_nested_selector(self) -> Selector:
         # Mandatory “new UiSelector()”

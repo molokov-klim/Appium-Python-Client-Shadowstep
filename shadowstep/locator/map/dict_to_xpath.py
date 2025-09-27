@@ -8,6 +8,10 @@ to XPath expressions with proper attribute mapping and hierarchy handling.
 from collections.abc import Callable
 from typing import Any
 
+from shadowstep.exceptions.shadowstep_exceptions import (
+    ShadowstepUnsupportedAttributeForXPathError,
+    ShadowstepUnsupportedHierarchicalAttributeError,
+)
 from shadowstep.locator.types.shadowstep_dict import ShadowstepDictAttribute
 
 
@@ -27,7 +31,7 @@ def dict_to_xpath_attribute(attr: ShadowstepDictAttribute, value: Any) -> str:
     """
     if attr in DICT_TO_XPATH_MAPPING:
         return DICT_TO_XPATH_MAPPING[attr](value)
-    raise ValueError(f"Unsupported attribute for XPath conversion: {attr}")
+    raise ShadowstepUnsupportedAttributeForXPathError(attr)
 
 
 def is_hierarchical_attribute(attr: ShadowstepDictAttribute) -> bool:
@@ -61,7 +65,7 @@ def get_xpath_for_hierarchical_attribute(attr: ShadowstepDictAttribute, nested_x
         return f"/..//{nested_xpath.lstrip('/')}"
     if attr == ShadowstepDictAttribute.SIBLING:
         return f"/following-sibling::{nested_xpath.lstrip('/')}"
-    raise ValueError(f"Unsupported hierarchical attribute: {attr}")
+    raise ShadowstepUnsupportedHierarchicalAttributeError(attr)
 
 
 # Mapping dictionary for quick lookup

@@ -13,6 +13,7 @@ from pathlib import Path
 from typing import Any
 
 from shadowstep.utils.utils import get_current_func_name
+from shadowstep.exceptions.shadowstep_exceptions import ShadowstepNoClassDefinitionFoundError
 
 
 class PageObjectMerger:
@@ -59,7 +60,7 @@ class PageObjectMerger:
                 # self.logger.info(f"{content=}")
                 return f.read()
         except Exception as e:
-            self.logger.error(f"Failed to read {file}: {e}")
+            self.logger.exception(f"Failed to read {file}")
             raise
 
     def get_imports(self, page: str) -> str:
@@ -106,7 +107,7 @@ class PageObjectMerger:
             if stripped.startswith("class "):
                 self.logger.info(f"finded class {stripped=}")
                 return line.rstrip()
-        raise ValueError("No class definition found in the given source.")
+        raise ShadowstepNoClassDefinitionFoundError()
 
     def get_methods(self, page: str) -> dict[str, Any]:
         r"""Extract methods and property blocks via \n\n separation with indentation normalization.
@@ -184,7 +185,7 @@ class PageObjectMerger:
             imports: str,
             class_name: str,
             unique_methods: dict[str, Any],
-            encoding: str = "utf-8"
+            encoding: str = "utf-8",
     ) -> None:
         """Write merged page object to file.
 

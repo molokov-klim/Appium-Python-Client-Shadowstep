@@ -8,6 +8,7 @@ method calls with proper value formatting and hierarchical handling.
 from collections.abc import Callable
 from typing import Any
 
+from shadowstep.exceptions.shadowstep_exceptions import ShadowstepUnsupportedXPathAttributeError
 from shadowstep.locator.types.ui_selector import UiAttribute
 from shadowstep.locator.types.xpath import XPathAttribute
 
@@ -92,7 +93,7 @@ def get_ui_for_method(method: XPathAttribute, value: Any) -> str:
 
     """
     if method not in XPATH_TO_UI:
-        raise KeyError(f"Unsupported XPath attribute: {method}")
+        raise ShadowstepUnsupportedXPathAttributeError(method)
 
     return XPATH_TO_UI[method](value)
 

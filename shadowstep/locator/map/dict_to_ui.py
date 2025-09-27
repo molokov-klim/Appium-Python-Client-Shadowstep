@@ -8,6 +8,10 @@ to UiSelector method calls with proper attribute mapping and hierarchy handling.
 from collections.abc import Callable
 from typing import Any
 
+from shadowstep.exceptions.shadowstep_exceptions import (
+    ShadowstepUnsupportedAttributeForUiSelectorError,
+    ShadowstepUnsupportedHierarchicalAttributeError,
+)
 from shadowstep.locator.types.shadowstep_dict import ShadowstepDictAttribute
 from shadowstep.locator.types.ui_selector import UiAttribute
 
@@ -28,7 +32,7 @@ def dict_to_ui_attribute(attr: ShadowstepDictAttribute, value: Any) -> str:
     """
     if attr in DICT_TO_UI_MAPPING:
         return DICT_TO_UI_MAPPING[attr](value)
-    raise ValueError(f"Unsupported attribute for UiSelector conversion: {attr}")
+    raise ShadowstepUnsupportedAttributeForUiSelectorError(attr)
 
 
 def is_hierarchical_attribute(attr: ShadowstepDictAttribute) -> bool:
@@ -61,7 +65,7 @@ def get_ui_method_for_hierarchical_attribute(attr: ShadowstepDictAttribute) -> s
         return UiAttribute.FROM_PARENT.value
     if attr == ShadowstepDictAttribute.SIBLING:
         return UiAttribute.SIBLING.value
-    raise ValueError(f"Unsupported hierarchical attribute: {attr}")
+    raise ShadowstepUnsupportedHierarchicalAttributeError(attr)
 
 
 # Mapping dictionary for quick lookup

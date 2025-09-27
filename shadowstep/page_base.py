@@ -24,7 +24,7 @@ class PageBaseShadowstep(ABC):
     _instances: ClassVar[dict[type, "PageBaseShadowstep"]] = {}
 
 
-    def __new__(cls, *args: Any, **kwargs: Any) -> "PageBaseShadowstep":  # noqa: ARG004, ANN401
+    def __new__(cls, *args: Any, **kwargs: Any) -> "PageBaseShadowstep":  # noqa: ARG004
         """Create a new instance or return existing singleton instance.
 
         Args:

@@ -18,6 +18,7 @@ from shadowstep.page_object.page_object_merger import PageObjectMerger
 from shadowstep.page_object.page_object_parser import PageObjectParser
 from shadowstep.shadowstep import Shadowstep
 from shadowstep.utils.utils import get_current_func_name
+from shadowstep.exceptions.shadowstep_exceptions import ShadowstepTerminalNotInitializedError
 
 
 class PageObjectRecyclerExplorer:
@@ -57,7 +58,7 @@ class PageObjectRecyclerExplorer:
         """
         self.logger.info(f"{get_current_func_name()}")
         if self.base.terminal is None:  # type: ignore
-            raise ValueError("Terminal is not initialized")
+            raise ShadowstepTerminalNotInitializedError()
         width, height = self.base.terminal.get_screen_resolution()
         x = width // 2
         y_start = int(height * 0.2)
