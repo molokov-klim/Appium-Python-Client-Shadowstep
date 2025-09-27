@@ -119,10 +119,11 @@ class PageObjectParser:
         try:
             self._tree = etree.fromstring(xml.encode("utf-8"))
             self.ui_element_tree = self._build_tree(self._tree)
-            return self.ui_element_tree
         except etree.XMLSyntaxError:
             self.logger.exception("Failed to parse XML")
             raise
+        else:
+            return self.ui_element_tree
 
     def _build_tree(self, root_et: etree._Element) -> UiElementNode:  # noqa: C901
         """Build element tree from XML element.

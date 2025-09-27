@@ -67,11 +67,12 @@ class Adb:
             try:
                 # Return first device from list (UUID of connected Android device)
                 logger.info(f"{get_current_func_name()} > {devices_list}")
-                return devices_list
             except IndexError:
                 logger.exception(f"{get_current_func_name()} > None")
                 logger.exception("No connected devices")
                 return []
+            else:
+                return devices_list
         except subprocess.CalledProcessError:
             logger.exception(f"{get_current_func_name()} > None")
             return []
@@ -98,10 +99,11 @@ class Adb:
             # Convert byte string to regular string and remove whitespace and newline characters
             model = model.decode().strip()
             logger.info(f"{get_current_func_name()} > {model}")
-            return model
         except subprocess.CalledProcessError:
             logger.exception(f"{get_current_func_name()} > None")
             return ""
+        else:
+            return model
 
     @staticmethod
     def push(source: str, destination: str, udid: str) -> bool:
@@ -129,10 +131,11 @@ class Adb:
         try:
             subprocess.run(command, check=True)  # noqa: S603
             logger.info(f"{get_current_func_name()} > True")
-            return True
         except subprocess.CalledProcessError:
             logger.exception(f"{get_current_func_name()} > None")
             return False
+        else:
+            return True
 
     @staticmethod
     def pull(source: str, destination: str, udid: str) -> bool:
@@ -156,10 +159,11 @@ class Adb:
         try:
             subprocess.run(command, check=True)  # noqa: S603
             logger.info(f"{get_current_func_name()} > True")
-            return True
         except subprocess.CalledProcessError:
             logger.exception(f"{get_current_func_name()} > None")
             return False
+        else:
+            return True
 
     @staticmethod
     def install_app(source: str, udid: str) -> bool:
@@ -181,10 +185,11 @@ class Adb:
         try:
             subprocess.run(command, check=True)  # noqa: S603
             logger.info("install() > True")
-            return True
         except subprocess.CalledProcessError:
             logger.exception(f"{get_current_func_name()} > None")
             return False
+        else:
+            return True
 
     @staticmethod
     def is_app_installed(package: str) -> bool:
@@ -209,9 +214,10 @@ class Adb:
                 logger.info("install() > True")
                 return True
             logger.info("install() > False")
-            return False
         except subprocess.CalledProcessError:
             logger.exception(f"{get_current_func_name()} > None")
+            return False
+        else:
             return False
 
     @staticmethod
@@ -233,10 +239,11 @@ class Adb:
         try:
             subprocess.run(command, check=True)  # noqa: S603
             logger.info("uninstall_app() > True")
-            return True
         except subprocess.CalledProcessError:
             logger.exception(f"{get_current_func_name()} > None")
             return False
+        else:
+            return True
 
     @staticmethod
     def start_activity(package: str, activity: str) -> bool:
@@ -259,10 +266,11 @@ class Adb:
         try:
             subprocess.check_output(command)  # noqa: S603
             logger.info("start_activity() > True")
-            return True
         except subprocess.CalledProcessError:
             logger.exception(f"{get_current_func_name()} > None")
             return False
+        else:
+            return True
 
     @staticmethod
     def get_current_activity() -> str:
@@ -302,9 +310,10 @@ class Adb:
 
             # If activity not found, return None
             logger.error("get_current_activity() > None")
-            return ""
         except subprocess.CalledProcessError:
             logger.exception(f"{get_current_func_name()} > None")
+            return ""
+        else:
             return ""
 
     @staticmethod
@@ -345,9 +354,10 @@ class Adb:
 
             # If package name not found, return None
             logger.error("get_current_app_package() > None")
-            return ""
         except subprocess.CalledProcessError:
             logger.exception(f"{get_current_func_name()} > None")
+            return ""
+        else:
             return ""
 
     @staticmethod
@@ -369,10 +379,11 @@ class Adb:
         try:
             subprocess.run(command, check=True)  # noqa: S603
             logger.info("close_app() > True")
-            return True
         except subprocess.CalledProcessError:
             logger.exception(f"{get_current_func_name()} > None")
             return False
+        else:
+            return True
 
     @staticmethod
     def reboot_app(package: str, activity: str) -> bool:
@@ -418,10 +429,11 @@ class Adb:
         try:
             subprocess.run(command, check=True)  # noqa: S603
             logger.info("press_home() > True")
-            return True
         except subprocess.CalledProcessError:
             logger.exception(f"{get_current_func_name()} > None")
             return False
+        else:
+            return True
 
     @staticmethod
     def press_back() -> bool:
@@ -438,10 +450,11 @@ class Adb:
         try:
             subprocess.run(command, check=True)  # noqa: S603
             logger.info("press_back() > True")
-            return True
         except subprocess.CalledProcessError:
             logger.exception(f"{get_current_func_name()} > None")
             return False
+        else:
+            return True
 
     @staticmethod
     def press_menu() -> bool:
@@ -458,10 +471,11 @@ class Adb:
         try:
             subprocess.run(command, check=True)  # noqa: S603
             logger.info("press_menu() > True")
-            return True
         except subprocess.CalledProcessError:
             logger.exception(f"{get_current_func_name()} > None")
             return False
+        else:
+            return True
 
     @staticmethod
     def input_keycode_num_(num: int) -> bool:
@@ -482,10 +496,11 @@ class Adb:
         try:
             subprocess.run(command, check=True)  # noqa: S603
             logger.info("input_keycode_num_() > True")
-            return True
         except subprocess.CalledProcessError:
             logger.exception(f"{get_current_func_name()} > None")
             return False
+        else:
+            return True
 
     @staticmethod
     def input_keycode(keycode: str) -> bool:
@@ -506,10 +521,11 @@ class Adb:
         try:
             subprocess.run(command, check=True)  # noqa: S603
             logger.info("input_keycode() > True")
-            return True
         except subprocess.CalledProcessError:
             logger.exception(f"{get_current_func_name()} > None")
             return False
+        else:
+            return True
 
     @staticmethod
     def input_text(text: str) -> bool:
@@ -532,10 +548,11 @@ class Adb:
             # Execute command
             subprocess.run(command, check=True)  # noqa: S603
             logger.info("input_text() > True")
-            return True
         except subprocess.CalledProcessError:
             logger.exception(f"{get_current_func_name()} > None")
             return False
+        else:
+            return True
 
     @staticmethod
     def tap(x: str | int, y: str | int) -> bool:
@@ -559,10 +576,11 @@ class Adb:
         try:
             subprocess.run(command, check=True)  # noqa: S603
             logger.info("tap() > True")
-            return True
         except subprocess.CalledProcessError:
             logger.exception(f"{get_current_func_name()} > None")
             return False
+        else:
+            return True
 
     @staticmethod
     def swipe(start_x: str | int, start_y: str | int,
@@ -595,10 +613,11 @@ class Adb:
             # Execute command
             subprocess.run(command, check=True)  # noqa: S603
             logger.info("swipe() > True")
-            return True
         except subprocess.CalledProcessError:
             logger.exception(f"{get_current_func_name()} > None")
             return False
+        else:
+            return True
 
     @staticmethod
     def check_vpn(ip_address: str = "") -> bool:
@@ -628,9 +647,10 @@ class Adb:
                     logger.info("check_vpn() True")
                     return True
             logger.info("check_vpn() False")
-            return False
         except subprocess.CalledProcessError:
             logger.exception(f"{get_current_func_name()} > None")
+            return False
+        else:
             return False
 
     @staticmethod
@@ -713,10 +733,11 @@ class Adb:
                 if not Adb.is_process_exist(name=process):
                     return False
             logger.info("run_background_process() > True")
-            return True
         except subprocess.CalledProcessError:
             logger.exception(f"{get_current_func_name()} > None")
             return False
+        else:
+            return True
 
     @staticmethod
     def reload_adb() -> bool:
@@ -998,10 +1019,11 @@ class Adb:
         try:
             # Start adb shell screenrecord command to begin video recording
             subprocess.Popen(command)  # noqa: S603  # do not add with
-            return True
         except subprocess.CalledProcessError:
             logger.exception(f"{get_current_func_name()} > None")
             return False
+        else:
+            return True
 
     @staticmethod
     def reboot() -> bool:

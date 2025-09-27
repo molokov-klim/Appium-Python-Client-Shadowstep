@@ -90,9 +90,10 @@ class DictConverter(Generic[T]):
         """
         try:
             ui_selector = self._dict_to_ui_recursive(selector_dict)
-            return f"new UiSelector(){ui_selector};"
         except Exception as e:
             raise ShadowstepDictConversionError("UiSelector", str(e)) from e
+        else:
+            return f"new UiSelector(){ui_selector};"
 
     def _dict_to_xpath_recursive(  # noqa: C901
             self,

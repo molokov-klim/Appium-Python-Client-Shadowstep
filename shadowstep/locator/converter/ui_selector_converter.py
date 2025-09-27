@@ -158,10 +158,10 @@ class UiSelectorConverter:
                 else:
                     self.logger.warning(f"Method '{method}' not supported in XPath conversion")
 
-            return xpath
-
         except Exception as e:
             raise ShadowstepSelectorToXPathError(str(e)) from e
+        else:
+            return xpath
 
     def _selector_to_dict(self, sel: dict[str, Any]) -> dict[str, Any]:
         """Convert parsed selector dictionary to Shadowstep dict format.

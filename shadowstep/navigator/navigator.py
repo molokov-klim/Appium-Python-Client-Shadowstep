@@ -123,11 +123,12 @@ class PageNavigator:
         try:
             self.perform_navigation(cast("list[PageBaseShadowstep]", path), timeout)
             self.logger.info(f"✅ Successfully navigated to {to_page}")
-            return True
         except WebDriverException as error:
             self.logger.exception(f"❗ WebDriverException during dom from {from_page} to {to_page}")
             self.logger.debug("📌 Full traceback:\n" + "".join(traceback.format_stack()))
             return False
+        else:
+            return True
 
     def find_path(self, start: Any, target: Any) -> list[Any] | None:
         """Find a path from start page to target page.

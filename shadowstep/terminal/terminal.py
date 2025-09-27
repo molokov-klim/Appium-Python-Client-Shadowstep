@@ -125,7 +125,6 @@ class Terminal:
                 logger.error(f"{get_current_func_name()} {output=}")
                 return False
             logger.debug(f"{get_current_func_name()} {output=}")
-            return True
         except NoSuchDriverException:
             self.base.reconnect()
             return False
@@ -135,6 +134,8 @@ class Terminal:
         except OSError as e:
             logger.exception("push()")
             return False
+        else:
+            return True
 
     def pull(self, source: str, destination: str) -> bool:
         """Pull a file from a mobile device to a local destination.
@@ -158,7 +159,6 @@ class Terminal:
             decoded_contents = base64.b64decode(file_contents_base64)
             with open(destination, "wb") as file:
                 file.write(decoded_contents)
-            return True
         except NoSuchDriverException:
             self.base.reconnect()
             return False
@@ -168,6 +168,8 @@ class Terminal:
         except OSError as e:
             logger.exception("appium_extended_terminal.pull")
             return False
+        else:
+            return True
 
     def start_activity(self, package: str, activity: str) -> bool:
         """Start activity on the device.
@@ -179,10 +181,11 @@ class Terminal:
         """
         try:
             self.adb_shell(command="am", args=f"start -n {package}/{activity}")
-            return True
         except KeyError as e:
             logger.exception("appium_extended_terminal.start_activity()")
             return False
+        else:
+            return True
 
     def get_current_app_package(self) -> str:
         """Retrieve the package name of the currently focused application on the device.
@@ -197,9 +200,10 @@ class Terminal:
                     matches = re.search(r"(([A-Za-z]{1}[A-Za-z\d_]*\.)+([A-Za-z][A-Za-z\d_]*)/)", line)
                     if matches:
                         return matches.group(1)[:-1]  # removing trailing slash
-            return ""
         except KeyError as e:
             logger.exception("appium_extended_terminal.get_current_app_package()")
+            return ""
+        else:
             return ""
 
     def close_app(self, package: str) -> bool:
@@ -211,10 +215,11 @@ class Terminal:
         """
         try:
             self.adb_shell(command="am", args=f"force-stop {package}")
-            return True
         except KeyError as e:
             logger.exception("appium_extended_terminal.close_app()")
             return False
+        else:
+            return True
 
     def reboot_app(self, package: str, activity: str) -> bool:
         """Restarts the specified application on the device by closing it and then starting it again.
@@ -250,10 +255,11 @@ class Terminal:
                 logger.error(f"{get_current_func_name()} {output=}")
                 return False
             logger.debug(f"{get_current_func_name()} {output=}")
-            return True
         except OSError as e:
             logger.exception("appium_extended_terminal.push()")
             return False
+        else:
+            return True
 
     def is_app_installed(self, package: str) -> bool:
         """Check if the specified application package is installed on the device.
@@ -269,9 +275,10 @@ class Terminal:
                 logger.debug("is_app_installed() > True")
                 return True
             logger.debug("is_app_installed() > False")
-            return False
         except KeyError as e:
             logger.exception("appium_extended_terminal.is_app_installed() > False")
+            return False
+        else:
             return False
 
     def uninstall_app(self, package: str) -> bool:
@@ -282,7 +289,6 @@ class Terminal:
         """
         try:
             self.driver.remove_app(app_id=package)
-            return True
         except NoSuchDriverException:
             self.base.reconnect()
             return False
@@ -292,6 +298,8 @@ class Terminal:
         except KeyError as e:
             logger.exception("appium_extended_terminal.uninstall_app()")
             return False
+        else:
+            return True
 
     def press_home(self) -> bool:
         """Simulate pressing the home button on the device.
@@ -300,10 +308,11 @@ class Terminal:
         """
         try:
             self.input_keycode(keycode="KEYCODE_HOME")
-            return True
         except KeyError as e:
             logger.exception("appium_extended_terminal.press_home()")
             return False
+        else:
+            return True
 
     def press_back(self) -> bool:
         """Simulate pressing the back button on the device.
@@ -312,10 +321,11 @@ class Terminal:
         """
         try:
             self.input_keycode(keycode="KEYCODE_BACK")
-            return True
         except KeyError as e:
             logger.exception("appium_extended_terminal.press_back()")
             return False
+        else:
+            return True
 
     def press_menu(self) -> bool:
         """Simulate pressing the menu button on the device.
@@ -324,10 +334,11 @@ class Terminal:
         """
         try:
             self.input_keycode(keycode="KEYCODE_MENU")
-            return True
         except KeyError as e:
             logger.exception("appium_extended_terminal.press_menu()")
             return False
+        else:
+            return True
 
     def input_keycode_num_(self, num: int) -> bool:
         """Send a numeric key event to the device using ADB.
@@ -339,10 +350,11 @@ class Terminal:
         """
         try:
             self.adb_shell(command="input", args=f"keyevent KEYCODE_NUMPAD_{num}")
-            return True
         except KeyError as e:
             logger.exception("appium_extended_terminal.input_keycode_num_()")
             return False
+        else:
+            return True
 
     def input_keycode(self, keycode: str) -> bool:
         """Send a key event to the device using ADB.
@@ -352,10 +364,11 @@ class Terminal:
         """
         try:
             self.adb_shell(command="input", args=f"keyevent {keycode}")
-            return True
         except KeyError as e:
             logger.exception("appium_extended_terminal.input_keycode()")
             return False
+        else:
+            return True
 
     def input_text(self, text: str) -> bool:
         """Input text on the device.
@@ -365,10 +378,11 @@ class Terminal:
         """
         try:
             self.adb_shell(command="input", args=f"text {text}")
-            return True
         except KeyError as e:
             logger.exception("appium_extended_terminal.input_text()")
             return False
+        else:
+            return True
 
     def tap(self, x: int, y: int) -> bool:
         """Simulate tapping at the specified coordinates on the device's screen.
@@ -379,10 +393,11 @@ class Terminal:
         """
         try:
             self.adb_shell(command="input", args=f"tap {x!s} {y!s}")
-            return True
         except KeyError as e:
             logger.exception("appium_extended_terminal.tap()")
             return False
+        else:
+            return True
 
     def swipe(self, start_x: str | int, start_y: str | int,
               end_x: str | int, end_y: str | int, duration: int = 300) -> bool:
@@ -398,10 +413,11 @@ class Terminal:
         try:
             self.adb_shell(command="input",
                            args=f"swipe {start_x!s} {start_y!s} {end_x!s} {end_y!s} {duration!s}")
-            return True
         except KeyError as e:
             logger.exception("appium_extended_terminal.swipe()")
             return False
+        else:
+            return True
 
     def swipe_right_to_left(self, duration: int = 300) -> bool:
         """Simulate a swipe gesture from right to left on the device's screen.
@@ -483,9 +499,10 @@ class Terminal:
                     logger.debug("check_VPN() True")
                     return True
             logger.debug("check_VPN() False")
-            return False
         except KeyError as e:
             logger.exception("appium_extended_terminal.check_VPN")
+            return False
+        else:
             return False
 
     def stop_logcat(self) -> bool:
@@ -568,10 +585,11 @@ class Terminal:
                 time.sleep(1)
                 if not self.is_process_exist(name=process):
                     return False
-            return True
         except KeyError as e:
             logger.exception("KeyError in is_app_installed")
             return False
+        else:
+            return True
 
     def kill_by_pid(self, pid: int) -> bool:
         """Kills the process with the specified PID.
@@ -680,10 +698,9 @@ class Terminal:
         """Reboot the device safely. If adb connection drops, ignores the error."""
         try:
             self.adb_shell(command="reboot")
-            return True
         except Exception as e:
             logger.warning(f"Reboot likely initiated. Caught exception: {e}")
-            return True
+        return True
 
     def get_screen_resolution(self) -> tuple[int, int]:
         """Retrieve the screen resolution of the device.
@@ -698,10 +715,11 @@ class Terminal:
                 width, height = resolution_str.split("x")
                 return int(width), int(height)
             logger.warning(f"{get_current_func_name()}: Physical size not in output")
-            return 0, 0
         except Exception as e:
             logger.exception("Exception in get_screen_size")
             raise
+        else:
+            return 0, 0
 
     def past_text(self, text: str, tries: int = 3) -> None:
         """Place given text in clipboard, then paste it."""
@@ -709,11 +727,12 @@ class Terminal:
             try:
                 self.driver.set_clipboard_text(text=text)
                 self.input_keycode("279")
-                return
             except NoSuchDriverException:
                 self.base.reconnect()
             except InvalidSessionIdException:
                 self.base.reconnect()
+            else:
+                return
 
     def get_prop(self) -> dict[str, Any]:
         """Retrieve system properties from the device.

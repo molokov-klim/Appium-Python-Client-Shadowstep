@@ -78,10 +78,11 @@ class Aapt:
 
             # Return activity name as string
             logger.info(f"{get_current_func_name()} > {launchable_activity}")
-            return launchable_activity
         except subprocess.CalledProcessError as e:
             logger.exception("Could not extract launchable activity")
         except StopIteration:
             logger.exception("Could not find 'launchable-activity' line in aapt output.")
+        else:
+            return launchable_activity
 
         return ""
