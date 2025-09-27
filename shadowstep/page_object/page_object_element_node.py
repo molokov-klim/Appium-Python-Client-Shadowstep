@@ -26,6 +26,7 @@ class UiElementNode:
     This class represents a single UI element with its attributes,
     parent-child relationships, and metadata for page object generation.
     """
+
     id: str
     tag: str
     attrs: dict[str, Any]
@@ -91,6 +92,7 @@ class PropertyModel:
     This class contains information about a UI element property
     including its name, locator, and metadata for page object generation.
     """
+
     name: str
     locator: dict[str, Any]
     anchor_name: str | None
@@ -108,6 +110,7 @@ class PageObjectModel:
     This class contains all the information needed to generate a page object
     including the class name, title, locators, and properties.
     """
+
     class_name: str
     raw_title: str
     title_locator: dict[str, Any]

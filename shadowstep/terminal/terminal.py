@@ -51,9 +51,11 @@ class NotProvideCredentialsError(Exception):
 
 class Terminal:
     """
-    Allows you to perform adb actions using the appium server. Useful for remote connections
+    Allows you to perform adb actions using the appium server. Useful for remote connections.
+
     Required ssh
     """
+
     base: ShadowstepBase
     transport: Transport
     driver: WebDriver
@@ -346,7 +348,6 @@ class Terminal:
 
         :return: True if the back button press was successfully simulated, False otherwise.
         """
-
         try:
             self.input_keycode(keycode="KEYCODE_BACK")
             return True
@@ -363,7 +364,6 @@ class Terminal:
 
         :return: True if the menu button press was successfully simulated, False otherwise.
         """
-
         try:
             self.input_keycode(keycode="KEYCODE_MENU")
             return True
@@ -377,6 +377,7 @@ class Terminal:
     def input_keycode_num_(self, num: int) -> bool:
         """
         Sends a numeric key event to the device using ADB.
+
         0-9, ADD, COMMA, DIVIDE, DOT, ENTER, EQUALS (read https://developer.android.com/reference/android/view/KeyEvent)
 
         :param num: The numeric value of the key to press.
@@ -787,9 +788,7 @@ class Terminal:
             return None
 
     def reboot(self) -> bool:
-        """
-        Reboots the device safely. If adb connection drops, ignores the error.
-        """
+        """Reboot the device safely. If adb connection drops, ignores the error."""
         try:
             self.adb_shell(command="reboot")
             return True
@@ -819,9 +818,7 @@ class Terminal:
             raise
 
     def past_text(self, text: str, tries: int = 3) -> None:
-        """
-        Places given text in clipboard, then pastes it
-        """
+        """Place given text in clipboard, then paste it."""
         for _ in range(tries):
             try:
                 self.driver.set_clipboard_text(text=text)

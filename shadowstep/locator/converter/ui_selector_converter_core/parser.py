@@ -18,8 +18,7 @@ from shadowstep.locator.converter.ui_selector_converter_core.lexer import (
 
 
 class Parser:
-    """Parser (finite automaton from left to right)
-    """
+    """Parser (finite automaton from left to right)."""
 
     def __init__(self, tokens: list[Token]):
         """Initialize the Parser.

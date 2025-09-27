@@ -29,6 +29,7 @@ logger = logging.getLogger(__name__)
 class Adb:
     """
     A class to interact with Android Debug Bridge (ADB) for device management.
+
     Use only if Appium server is running locally where the test is being performed
     """
 

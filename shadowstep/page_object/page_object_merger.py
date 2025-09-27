@@ -28,9 +28,7 @@ class PageObjectMerger:
         self.logger = logging.getLogger(__name__)
 
     def merge(self, file1: str, file2: str, output_path: str) -> str:
-        """
-        merge pages
-        """
+        """Merge pages."""
         self.logger.info(f"{get_current_func_name()}")
         page1 = self.parse(file1)
         page2 = self.parse(file2)

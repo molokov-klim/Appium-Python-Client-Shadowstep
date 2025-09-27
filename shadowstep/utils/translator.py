@@ -15,9 +15,7 @@ from shadowstep.utils.utils import get_current_func_name
 
 
 class YandexTranslate:
-    """
-    Provides functionality to authenticate and translate text using Yandex Cloud Translate API.
-    """
+    """Provide functionality to authenticate and translate text using Yandex Cloud Translate API."""
 
     def __init__(self, folder_id: str):
         """

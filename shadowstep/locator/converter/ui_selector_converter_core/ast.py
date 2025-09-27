@@ -16,6 +16,7 @@ class MethodCall:
     This class represents a single method call with its name and arguments
     in the parsed UiSelector expression tree.
     """
+
     name: str
     args: list[str | int | bool | Selector] = field(default_factory=list)
 
@@ -26,4 +27,5 @@ class Selector:
     This class represents a UiSelector expression as a collection of
     method calls that can be chained together to form complex selectors.
     """
+
     methods: list[MethodCall] = field(default_factory=list)

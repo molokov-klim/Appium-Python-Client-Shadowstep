@@ -9,5 +9,6 @@ Shadowstep automation framework.
 
 class ActionHistory:
     """Tracks the history of scheduled actions for debugging and analysis."""
+
     ...
 

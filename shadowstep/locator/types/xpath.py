@@ -18,6 +18,7 @@ class XPathAttribute(str, Enum):
     text-based, description, resource ID, class, boolean, numeric,
     and hierarchical attributes.
     """
+
     # --- text-based ---
     TEXT = "@text="
     TEXT_CONTAINS = "contains(@text, "

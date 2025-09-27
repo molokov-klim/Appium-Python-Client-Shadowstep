@@ -18,6 +18,7 @@ class TokenType(Enum):
     This enum defines all possible token types that can be generated
     by the lexer when parsing UiSelector expressions.
     """
+
     DOT = auto()
     IDENT = auto()
     LPAREN = auto()
@@ -39,6 +40,7 @@ class Token:
     This class holds information about a token including its type,
     value, and position in the source text.
     """
+
     type: TokenType
     value: str | None = None
     pos: int = -1

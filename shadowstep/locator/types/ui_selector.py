@@ -18,6 +18,7 @@ class UiAttribute(str, Enum):
     text-based, description, resource ID, class, boolean, numeric,
     and hierarchical attributes.
     """
+
     # https://developer.android.com/reference/androidx/test/uiautomator/UiSelector
     # --- text-based ---
     TEXT = "text"

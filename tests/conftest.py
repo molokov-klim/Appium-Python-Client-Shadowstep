@@ -69,7 +69,9 @@ def udid():
 @pytest.fixture(autouse=False)
 def press_home(app: Shadowstep):
     app.terminal.press_home()
+    app.terminal.press_home()
     yield
+    app.terminal.press_home()
     app.terminal.press_home()
 
 
@@ -88,7 +90,7 @@ def android_settings_open_close(app: Shadowstep):
 
 @pytest.fixture
 def stability(press_home: None):
-    time.sleep(3)
+    time.sleep(8)
     return
 
 

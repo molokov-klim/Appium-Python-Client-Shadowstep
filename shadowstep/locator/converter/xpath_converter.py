@@ -95,8 +95,7 @@ def _to_number(val: Any) -> int:
 
 
 class XPathConverter:
-    """Convert xpath expression to UiSelector expression or Shadowstep Dict locator
-    """
+    """Convert xpath expression to UiSelector expression or Shadowstep Dict locator."""
 
     def __init__(self):
         """Initialize the XPathConverter."""

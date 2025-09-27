@@ -17,6 +17,7 @@ class ShadowstepDictAttribute(str, Enum):
     in Shadowstep dictionary locators, including text-based, description,
     resource ID, class, boolean, numeric, and hierarchical attributes.
     """
+
     # --- text-based ---
     TEXT = "text"
     TEXT_CONTAINS = "textContains"

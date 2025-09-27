@@ -27,6 +27,7 @@ class Aapt:
     def get_package_name(path_to_apk: str) -> str:
         """
         Get APK file package name using aapt command.
+
         Returns package name.
         """
         logger.info(f"{get_current_func_name()} < {path_to_apk}")
@@ -60,6 +61,7 @@ class Aapt:
     def get_launchable_activity(path_to_apk: str) -> str:
         """
         Get launchable activity name from APK file using aapt command.
+
         Returns activity name as string.
         """
         logger.info(f"{get_current_func_name()} < {path_to_apk}")

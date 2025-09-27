@@ -19,6 +19,7 @@ class ActionStep:
     action steps that can be scheduled and executed in the Shadowstep
     automation framework.
     """
+
     @staticmethod
     def gesture_click(name: str, locator: tuple[str, str] | dict[str, Any] | Element) -> ActionStep:
         """Create click gesture action step.

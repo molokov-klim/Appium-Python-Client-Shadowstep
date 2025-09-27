@@ -112,8 +112,6 @@ class TestElementGestures:
         assert "some_text" in search_src_text.get_attribute("text")  # noqa: S101  # noqa: S101
 
     def test_drag(self, app: Shadowstep, press_home: None, stability: None):
-        app.terminal.press_home()
-        time.sleep(10)
         messaging_1 = app.get_element(locator={"content-desc": "Messaging"})
         messaging_1.timeout = 1
         m1_center_x, m1_center_y, = messaging_1.get_center()
