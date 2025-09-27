@@ -233,7 +233,7 @@ class DictConverter(Generic[T]):
             ValueError: If selector is invalid
 
         """
-        if not isinstance(selector_dict, dict): # type: ignore
+        if not isinstance(selector_dict, dict): # type: ignore[arg-type]
             raise ShadowstepSelectorTypeError()
 
         if not selector_dict:

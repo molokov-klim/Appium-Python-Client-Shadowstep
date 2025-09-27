@@ -168,7 +168,7 @@ class PageNavigator:
 
         """
         visited = set()
-        queue = deque([(start, [])])  # type: ignore
+        queue = deque([(start, [])])  # type: ignore[arg-type]
         while queue:
             current_page, path = queue.popleft()
             visited.add(current_page)

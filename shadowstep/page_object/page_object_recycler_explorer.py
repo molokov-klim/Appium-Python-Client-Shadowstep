@@ -57,7 +57,7 @@ class PageObjectRecyclerExplorer:
 
         """
         self.logger.info(f"{get_current_func_name()}")
-        if self.base.terminal is None:  # type: ignore
+        if self.base.terminal is None:  # type: ignore[comparison-overlap]
             raise ShadowstepTerminalNotInitializedError()
         width, height = self.base.terminal.get_screen_resolution()
         x = width // 2

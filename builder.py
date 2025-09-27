@@ -6,10 +6,10 @@ parsing, and recycler exploration.
 """
 
 # builder.py
-import json  # type: ignore  # noqa: F401
-import logging  # type: ignore  # noqa: F401
+import json  # type: ignore[import-untyped]  # noqa: F401
+import logging  # type: ignore[import-untyped]  # noqa: F401
 
-import requests  # type: ignore  # noqa: F401
+import requests  # type: ignore[import-untyped]  # noqa: F401
 
 from shadowstep.page_object.page_object_generator import PageObjectGenerator
 from shadowstep.page_object.page_object_parser import PageObjectParser

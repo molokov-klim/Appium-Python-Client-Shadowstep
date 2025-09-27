@@ -12,6 +12,15 @@ import networkx as nx
 import pytest
 from selenium.common import WebDriverException
 
+from shadowstep.exceptions.shadowstep_exceptions import (
+    ShadowstepPageCannotBeNoneError,
+    ShadowstepFromPageCannotBeNoneError,
+    ShadowstepToPageCannotBeNoneError,
+    ShadowstepTimeoutMustBeNonNegativeError,
+    ShadowstepPathCannotBeEmptyError,
+    ShadowstepPathMustContainAtLeastTwoPagesError,
+    ShadowstepNavigationFailedError,
+)
 from shadowstep.navigator.navigator import DEFAULT_NAVIGATION_TIMEOUT, PageGraph, PageNavigator
 
 
@@ -131,7 +140,7 @@ class TestPageGraph:
         graph = PageGraph()
         edges = {"page2": lambda: None}
         
-        with pytest.raises(TypeError, match="page cannot be None"):
+        with pytest.raises(ShadowstepPageCannotBeNoneError, match="page cannot be None"):
             graph.add_page(None, edges)
     
     def test_get_edges_existing_page(self) -> None:
@@ -272,7 +281,7 @@ class TestPageNavigator:
         """Test that adding None page raises TypeError."""
         edges = {"page2": lambda: None}
         
-        with pytest.raises(TypeError, match="page cannot be None"):
+        with pytest.raises(ShadowstepPageCannotBeNoneError, match="page cannot be None"):
             navigator.add_page(None, edges)
     
     def test_navigate_same_page(self, navigator: PageNavigator) -> None:
@@ -287,14 +296,14 @@ class TestPageNavigator:
         """Test that navigating with None from_page raises TypeError."""
         to_page = MockPage("page2")
         
-        with pytest.raises(TypeError, match="from_page cannot be None"):
+        with pytest.raises(ShadowstepFromPageCannotBeNoneError, match="from_page cannot be None"):
             navigator.navigate(None, to_page)
     
     def test_navigate_none_to_page_raises_error(self, navigator: PageNavigator) -> None:
         """Test that navigating with None to_page raises TypeError."""
         from_page = MockPage("page1")
         
-        with pytest.raises(TypeError, match="to_page cannot be None"):
+        with pytest.raises(ShadowstepToPageCannotBeNoneError, match="to_page cannot be None"):
             navigator.navigate(from_page, None)
     
     def test_navigate_negative_timeout_raises_error(self, navigator: PageNavigator) -> None:
@@ -302,7 +311,7 @@ class TestPageNavigator:
         from_page = MockPage("page1")
         to_page = MockPage("page2")
         
-        with pytest.raises(ValueError, match="timeout must be non-negative"):
+        with pytest.raises(ShadowstepTimeoutMustBeNonNegativeError, match="timeout must be non-negative"):
             navigator.navigate(from_page, to_page, timeout=-1)
     
     def test_find_path_with_strings(self, navigator: PageNavigator) -> None:
@@ -373,14 +382,14 @@ class TestPageNavigator:
     
     def test_perform_navigation_empty_path_raises_error(self, navigator: PageNavigator) -> None:
         """Test that performing dom with empty path raises ValueError."""
-        with pytest.raises(ValueError, match="path cannot be empty"):
+        with pytest.raises(ShadowstepPathCannotBeEmptyError, match="path cannot be empty"):
             navigator.perform_navigation([])
     
     def test_perform_navigation_single_page_raises_error(self, navigator: PageNavigator) -> None:
         """Test that performing dom with single page raises ValueError."""
         page = MockPageBase("page1")
         
-        with pytest.raises(ValueError, match="path must contain at least 2 pages"):
+        with pytest.raises(ShadowstepPathMustContainAtLeastTwoPagesError, match="path must contain at least 2 pages"):
             navigator.perform_navigation([page])
     
     def test_perform_navigation_failure_raises_assertion_error(self, navigator: PageNavigator) -> None:
@@ -396,7 +405,7 @@ class TestPageNavigator:
         
         path = [page1, page2]
         
-        with pytest.raises(AssertionError, match="Navigation error"):
+        with pytest.raises(ShadowstepNavigationFailedError, match="Navigation error"):
             navigator.perform_navigation(path)
     
     def test_navigate_successful_path(self, navigator: PageNavigator) -> None:

@@ -78,7 +78,7 @@ class Terminal:
         This method ensures that the SSH connection is properly closed
         when the Terminal object is garbage collected.
         """
-        if self.transport is not None:  # type: ignore
+        if self.transport is not None:  # type: ignore[comparison-overlap]
             self.transport.ssh.close()
 
     def adb_shell(self, command: str, args: str = "", tries: int = 3) -> Any:

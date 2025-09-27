@@ -133,7 +133,7 @@ class ShadowstepLogcat:
                     tag_part = parts[i + 1]
                     if ":" in tag_part:
                         tag = tag_part.split(":", 1)[0]
-                        return tag in self._filter_set  # type: ignore
+                        return tag in self._filter_set  # type: ignore[arg-type]
 
         return True
 

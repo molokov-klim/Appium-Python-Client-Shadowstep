@@ -204,7 +204,7 @@ class LocatorConverter:
             # Basic XPath validation
             if not selector[1]:
                 raise ShadowstepEmptyXPathError()
-        elif isinstance(selector, str):  # type: ignore
+        elif isinstance(selector, str):  # type: ignore[arg-type]
             if not selector.strip():
                 raise ShadowstepEmptySelectorStringError()
         else:

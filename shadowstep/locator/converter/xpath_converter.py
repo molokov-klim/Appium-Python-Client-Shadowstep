@@ -148,7 +148,7 @@ class XPathConverter:
         """
         self._validate_xpath(xpath_str)
         node = parse(xpath_str)
-        node_list = self._ast_to_list(node.relative)    # type: ignore
+        node_list = self._ast_to_list(node.relative)    # type: ignore[arg-type]
         return self._ast_to_dict(node_list)
 
     def xpath_to_ui_selector(self, xpath_str: str) -> str:
@@ -163,13 +163,13 @@ class XPathConverter:
         """
         self._validate_xpath(xpath_str)
         node = parse(xpath_str)
-        node_list = self._ast_to_list(node.relative)    # type: ignore
+        node_list = self._ast_to_list(node.relative)    # type: ignore[arg-type]
         result = self._balance_parentheses(self._ast_to_ui_selector(node_list))
         return "new UiSelector()" + result + ";"
 
     # ========== AST traversal ==========
 
-    def _ast_to_ui_selector(self, node_list: list[AbbreviatedStep | Step]) -> str:  # noqa: C901    # type: ignore
+    def _ast_to_ui_selector(self, node_list: list[AbbreviatedStep | Step]) -> str:  # noqa: C901    # type: ignore[return-any]
         if not node_list:
             return ""
         node = node_list[0]
@@ -177,7 +177,7 @@ class XPathConverter:
         if isinstance(node, Step):
             # add predicates (e.g. @class, @resource-id)
             for predicate in node.predicates:
-                parts.append(self._predicate_to_ui(predicate))    # type: ignore
+                parts.append(self._predicate_to_ui(predicate))    # type: ignore[arg-type]
 
             if len(node_list) > 1:
                 next_node = node_list[1]
@@ -204,7 +204,7 @@ class XPathConverter:
                         # default: child
                         parts.append(f".childSelector(new UiSelector(){child_str})")
 
-        elif isinstance(node, AbbreviatedStep):    # type: ignore
+        elif isinstance(node, AbbreviatedStep):    # type: ignore[arg-type]
             if node.abbr == "..":
                 if len(node_list) > 1:
                     child_str = self._ast_to_ui_selector(node_list[1:])
@@ -224,7 +224,7 @@ class XPathConverter:
 
     def _build_shadowstep_dict(
             self,
-            node_list: list[AbbreviatedStep | Step],    # type: ignore
+            node_list: list[AbbreviatedStep | Step],    # type: ignore[arg-type]
             shadowstep_dict: dict[str, Any],
     ) -> dict[str, Any]:
         if not node_list:
@@ -234,7 +234,7 @@ class XPathConverter:
 
         if isinstance(node, Step):
             for predicate in node.predicates:
-                self._apply_predicate_to_dict(predicate, shadowstep_dict)    # type: ignore
+                self._apply_predicate_to_dict(predicate, shadowstep_dict)    # type: ignore[arg-type]
 
             i = 1
             # ".."
@@ -256,7 +256,7 @@ class XPathConverter:
                 shadowstep_dict[ShadowstepDictAttribute.CHILD_SELECTOR.value] = self._build_shadowstep_dict(node_list[i:], {})
             return shadowstep_dict
 
-        if isinstance(node, AbbreviatedStep) and node.abbr == "..":    # type: ignore
+        if isinstance(node, AbbreviatedStep) and node.abbr == "..":    # type: ignore[arg-type]
             # count ".."
             depth = 1
             while depth < len(node_list) and isinstance(node_list[depth], AbbreviatedStep) and node_list[
@@ -275,10 +275,10 @@ class XPathConverter:
 
         raise ShadowstepUnsupportedASTNodeBuildError(node)
 
-    def _ast_to_list(self, node: Any) -> list[AbbreviatedStep | Step]:    # type: ignore
+    def _ast_to_list(self, node: Any) -> list[AbbreviatedStep | Step]:    # type: ignore[return-any]
         result = []
 
-        if isinstance(node, (Step, AbbreviatedStep)):    # type: ignore
+        if isinstance(node, (Step, AbbreviatedStep)):    # type: ignore[arg-type]
             result.append(node)
 
         elif isinstance(node, BinaryExpression):
@@ -328,23 +328,23 @@ class XPathConverter:
                 d_attr = _CONTAINS_ATTRS.get(attr)
                 if not d_attr:
                     raise ShadowstepContainsNotSupportedError(attr)
-                out[d_attr[0].value] = value    # type: ignore
+                out[d_attr[0].value] = value    # type: ignore[assignment]
                 return
             if kind == "starts-with":
                 d_attr = _STARTS_ATTRS.get(attr)
                 if not d_attr:
                     raise ShadowstepStartsWithNotSupportedError(attr)
-                out[d_attr[0].value] = value    # type: ignore
+                out[d_attr[0].value] = value    # type: ignore[assignment]
                 return
             if kind == "matches":
                 d_attr = _MATCHES_ATTRS.get(attr)
                 if not d_attr:
                     raise ShadowstepMatchesNotSupportedError(attr)
-                out[d_attr[0].value] = value    # type: ignore
+                out[d_attr[0].value] = value    # type: ignore[assignment]
                 return
             raise ShadowstepUnsupportedFunctionError(pred_expr.name)
 
-        if isinstance(pred_expr, (int, float)):    # type: ignore
+        if isinstance(pred_expr, (int, float)):    # type: ignore[arg-type]
             out[ShadowstepDictAttribute.INSTANCE.value] = int(pred_expr) - 1
             return
 
@@ -354,7 +354,7 @@ class XPathConverter:
                     and isinstance(pred_expr.left, FunctionCall)
                     and pred_expr.left.name == "position"
                     and not pred_expr.left.args
-                    and isinstance(pred_expr.right, (int, float))    # type: ignore
+                    and isinstance(pred_expr.right, (int, float))    # type: ignore[arg-type]
             ):
                 out[ShadowstepDictAttribute.INDEX.value] = int(pred_expr.right) - 1
                 return
@@ -363,13 +363,13 @@ class XPathConverter:
                 raise ShadowstepUnsupportedComparisonOperatorError(pred_expr.op)
             attr, value = self._parse_equality_comparison(pred_expr)
             if attr in _EQ_ATTRS:
-                out[_EQ_ATTRS[attr][0].value] = value    # type: ignore
+                out[_EQ_ATTRS[attr][0].value] = value    # type: ignore[assignment]
                 return
             if attr in _BOOL_ATTRS:
-                out[_BOOL_ATTRS[attr][0].value] = _to_bool(value)    # type: ignore
+                out[_BOOL_ATTRS[attr][0].value] = _to_bool(value)    # type: ignore[assignment]
                 return
             if attr in _NUM_ATTRS:
-                out[_NUM_ATTRS[attr][0].value] = _to_number(value)    # type: ignore
+                out[_NUM_ATTRS[attr][0].value] = _to_number(value)    # type: ignore[assignment]
                 return
             raise ShadowstepUnsupportedAttributeError(attr)
 
@@ -377,7 +377,7 @@ class XPathConverter:
         if isinstance(pred_expr, Step) and pred_expr.axis == "@" and isinstance(pred_expr.node_test, NameTest):
             attr = pred_expr.node_test.name
             if attr in _BOOL_ATTRS:
-                out[_BOOL_ATTRS[attr][0].value] = True    # type: ignore
+                out[_BOOL_ATTRS[attr][0].value] = True    # type: ignore[assignment]
                 return
             raise ShadowstepAttributePresenceNotSupportedError(attr)
 
@@ -432,7 +432,7 @@ class XPathConverter:
         name = func.name
         if name not in ("contains", "starts-with", "matches"):
             raise ShadowstepUnsupportedFunctionError(name)
-        if len(func.args) != 2:    # type: ignore
+        if len(func.args) != 2:    # type: ignore[arg-type]
             raise ShadowstepFunctionArgumentCountError(name, 2)
         lhs, rhs = func.args
         attr = self._extract_attr_name(lhs)
@@ -452,7 +452,7 @@ class XPathConverter:
             return "text", self._extract_literal(bexpr.left)
         raise ShadowstepEqualityComparisonError()
 
-    def _maybe_attr(self, node: Any) -> str | None:    # type: ignore
+    def _maybe_attr(self, node: Any) -> str | None:    # type: ignore[return-any]
         try:
             return self._extract_attr_name(node)
         except ShadowstepConversionError:

@@ -58,7 +58,7 @@ class UiSelectorConverter:
         """
         try:
             parsed_dict = self.parse_selector_string(selector_str)
-            return self._selector_to_xpath(parsed_dict)  # type: ignore
+            return self._selector_to_xpath(parsed_dict)  # type: ignore[return-any]
         except ShadowstepInvalidUiSelectorError:
             raise
         except Exception as e:
@@ -76,7 +76,7 @@ class UiSelectorConverter:
         """
         try:
             parsed_dict = self.parse_selector_string(selector_str)
-            return self._selector_to_dict(parsed_dict)  # type: ignore
+            return self._selector_to_dict(parsed_dict)  # type: ignore[return-any]
         except ShadowstepInvalidUiSelectorError:
             raise
         except Exception as e:
@@ -185,7 +185,7 @@ class UiSelectorConverter:
             if method_name not in UI_TO_SHADOWSTEP_DICT:
                 raise NotImplementedError(f"Method '{method_name}' is not supported")
 
-            self._validate_method_compatibility(method_name, result.keys())     # type: ignore
+            self._validate_method_compatibility(method_name, result.keys())     # type: ignore[arg-type]
 
             if method_name in [UiAttribute.CHILD_SELECTOR, UiAttribute.FROM_PARENT]:
                 if args and isinstance(args[0], dict):
@@ -248,11 +248,11 @@ class UiSelectorConverter:
 
         """
         if isinstance(nested_sel, dict):
-            return self._selector_to_xpath(nested_sel, base_xpath="*")  # type: ignore
+            return self._selector_to_xpath(nested_sel, base_xpath="*")  # type: ignore[return-any]
         if hasattr(nested_sel, "methods"):
             # Handle Selector AST object
             parsed_dict = self._selector_to_parsed_dict(nested_sel)
-            return self._selector_to_xpath(parsed_dict, base_xpath="*")  # type: ignore
+            return self._selector_to_xpath(parsed_dict, base_xpath="*")  # type: ignore[return-any]
         raise ShadowstepUnsupportedNestedSelectorError(type(nested_sel))
 
     def _selector_to_parsed_dict(self, sel: Selector) -> dict[str, Any]:

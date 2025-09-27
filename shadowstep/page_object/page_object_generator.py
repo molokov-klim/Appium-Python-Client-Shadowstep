@@ -477,8 +477,8 @@ class PageObjectGenerator:
             if locator_frozen in used_locators:
                 continue
 
-            if element.tag == "androidx.recyclerview.widget.RecyclerView" and recycler.id and element.id != recycler.id:  # type: ignore
-                self.logger.debug(f"Skipping redundant recycler view: id={recycler.id}")  # type: ignore
+            if element.tag == "androidx.recyclerview.widget.RecyclerView" and recycler.id and element.id != recycler.id:  # type: ignore[comparison-overlap]
+                self.logger.debug(f"Skipping redundant recycler view: id={recycler.id}")  # type: ignore[arg-type]
                 continue
 
             self.logger.debug(f"Regular element accepted: {element.id}, locator={locator}")
