@@ -44,7 +44,7 @@ class PageObjectMerger:
         return output_path
 
     def parse(self, file: str | Path) -> str:
-        """Reads and returns the full content of a Python file as a UTF-8 string.
+        """Read and return the full content of a Python file as a UTF-8 string.
 
         Args:
             file (str or Path): Path to the Python file.
@@ -63,7 +63,7 @@ class PageObjectMerger:
             raise
 
     def get_imports(self, page: str) -> str:
-        """Extracts all import statements from the given source code.
+        """Extract all import statements from the given source code.
 
         Args:
             page (str): Raw text of a Python file.
@@ -109,7 +109,7 @@ class PageObjectMerger:
         raise ValueError("No class definition found in the given source.")
 
     def get_methods(self, page: str) -> dict[str, Any]:
-        """Extract methods and property blocks via \n\n separation with indentation normalization.
+        r"""Extract methods and property blocks via \n\n separation with indentation normalization.
 
         Args:
             page (str): PageObject source code.

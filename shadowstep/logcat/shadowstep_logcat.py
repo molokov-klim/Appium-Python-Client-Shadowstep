@@ -206,7 +206,7 @@ class ShadowstepLogcat:
         logger.info("Logcat thread terminated, file closed")
 
     def _run(self) -> None:  # noqa: C901
-        """Main logcat capture loop running in background thread.
+        """Run main logcat capture loop in background thread.
         
         This method handles the complete logcat capture workflow:
         1. Opens output file

@@ -39,13 +39,13 @@ class UiElementNode:
     _signature_fields: tuple[str, ...] = field(default=("resource-id", "text", "class"), repr=False)
 
     def walk(self) -> Generator[UiElementNode]:
-        """DFS traversal of all nodes in the tree"""
+        """DFS traversal of all nodes in the tree."""
         yield self
         for child in self.children:
             yield from child.walk()
 
     def find(self, **kwargs: Any) -> list[UiElementNode]:
-        """Find nodes by matching attrs"""
+        """Find nodes by matching attrs."""
         return [el for el in self.walk() if all(el.attrs.get(k) == v for k, v in kwargs.items())]
 
     def get_attr(self, key: str) -> str:

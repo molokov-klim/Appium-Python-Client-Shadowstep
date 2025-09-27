@@ -1,5 +1,5 @@
 # shadowstep/utils/adb.py
-"""LegacyAdb
+"""LegacyAdb.
 
 This module is deprecated and kept for backward compatibility with external systems.
 Please use `DeviceInterface` and the new `Adb` or `Terminal` implementations instead.
@@ -199,7 +199,7 @@ class Adb:
 
     @staticmethod
     def uninstall_app(package: str) -> bool:
-        """Removes the specified package using ADB.
+        """Remove the specified package using ADB.
 
         Args:
             package : str
@@ -223,7 +223,7 @@ class Adb:
 
     @staticmethod
     def start_activity(package: str, activity: str) -> bool:
-        """Starts the specified activity of the application on the device using ADB.
+        """Start the specified activity of the application on the device using ADB.
 
         Args:
             package : str

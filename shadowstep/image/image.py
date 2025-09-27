@@ -20,7 +20,7 @@ if TYPE_CHECKING:
 
 
 class ShadowstepImage:
-    """Lazy wrapper for image-based interactions"""
+    """Lazy wrapper for image-based interactions."""
 
     def __init__(
         self,

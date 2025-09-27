@@ -1,5 +1,5 @@
 # shadowstep/page_object/crawler.py
-"""All this is in principle implementable, but you'll need to consider several non-trivial nuances and properly break down the task into stages:
+"""All this is in principle implementable, but you'll need to consider several non-trivial nuances and properly break down the task into stages.
 
 1. **Complete scrolling**
 

@@ -1,5 +1,5 @@
 # shadowstep/terminal/terminal_interface.py
-"""Yes, you're right — current `Terminal` implementation is overloaded and violates Single Responsibility Principle (SRP from SOLID), because:
+"""Yes, you're right — current `Terminal` implementation is overloaded and violates Single Responsibility Principle (SRP from SOLID), because.
 
 - some methods use **Appium driver (`self.driver`)**, which doesn't require any `transport`;
 - other part (e.g., `push`, `install_app`) uses **`self.transport` and SSH**, which brings dependencies and mandatory SSH connection requirement.

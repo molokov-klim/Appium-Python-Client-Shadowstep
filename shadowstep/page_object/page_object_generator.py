@@ -218,7 +218,7 @@ class PageObjectGenerator:
         return path, class_name
 
     def _get_title_property(self, ui_element_tree: UiElementNode) -> UiElementNode | None:
-        """Returns the most likely title node from the tree.
+        """Return the most likely title node from the tree.
 
         Args:
             ui_element_tree (UiElementNode): Root node of the parsed UI tree.
@@ -253,7 +253,7 @@ class PageObjectGenerator:
         return None
 
     def _get_name_property(self, title: UiElementNode) -> str:
-        """Extracts screen name from title node for use as PageObject class name.
+        """Extract screen name from title node for use as PageObject class name.
 
         Args:
             title (UiElementNode): UI node considered the screen title.
@@ -272,7 +272,7 @@ class PageObjectGenerator:
         return raw_name
 
     def _get_recycler_property(self, ui_element_tree: UiElementNode) -> UiElementNode | None:
-        """Returns the first scrollable parent found in the tree (used as recycler).
+        """Return the first scrollable parent found in the tree (used as recycler).
 
         Args:
             ui_element_tree (UiElementNode): Root of parsed UI tree.
@@ -347,7 +347,7 @@ class PageObjectGenerator:
     def _get_siblings_or_cousins(self,
                                  ancestor: UiElementNode,
                                  target: UiElementNode) -> list[UiElementNode]:
-        """Returns list of sibling or cousin nodes at same depth as target, excluding target itself.
+        """Return list of sibling or cousin nodes at same depth as target, excluding target itself.
 
         Args:
             ancestor (UiElementNode): Common ancestor of nodes.
@@ -388,7 +388,7 @@ class PageObjectGenerator:
         return node1.depth == node2.depth
 
     def _is_anchor_like(self, node: UiElementNode, target_anchor: tuple[str, ...] = ("text", "content-desc")) -> bool:
-        """Checks if the node has any of the specified attributes used to identify anchor elements.
+        """Check if the node has any of the specified attributes used to identify anchor elements.
 
         Args:
             node (UiElementNode): Node to check.
@@ -441,11 +441,12 @@ class PageObjectGenerator:
             used_elements: list[tuple[UiElementNode, UiElementNode]],
             recycler: UiElementNode | None = None,
     ) -> list[UiElementNode]:
-        """Returns all elements that are not part of used_elements, filtering by locator to avoid duplicates.
+        """Return all elements that are not part of used_elements, filtering by locator to avoid duplicates.
 
         Args:
             ui_element_tree (UiElementNode): UI tree root
             used_elements (List[Tuple[UiElementNode, UiElementNode]]): Already used pairs (anchor, target)
+            recycler (UiElementNode | None): Optional recycler element to filter out
 
         Returns:
             List[UiElementNode]: List of unused, unique-locator elements
@@ -539,7 +540,7 @@ class PageObjectGenerator:
         }
 
     def _node_to_locator(self, node: UiElementNode, only_id: bool = False) -> dict[str, Any]:
-        """Converts UiElementNode to a locator dictionary for template.
+        """Convert UiElementNode to a locator dictionary for template.
 
         Args:
             node (UiElementNode): Node to convert
@@ -570,7 +571,7 @@ class PageObjectGenerator:
             summary_anchor_pairs: list[tuple[UiElementNode, UiElementNode]],
             recycler_id: str | None,
     ) -> list[dict[str, Any]]:
-        """Transforms property nodes into template-compatible property dictionaries.
+        """Transform property nodes into template-compatible property dictionaries.
 
         Args:
             regular_properties (List[UiElementNode]): Regular UI elements
@@ -706,7 +707,7 @@ class PageObjectGenerator:
         return properties
 
     def _is_scrollable_by(self, node: UiElementNode, recycler_id: str | None) -> bool:
-        """Checks if the node is scrollable by the given recycler.
+        """Check if the node is scrollable by the given recycler.
 
         Args:
             node (UiElementNode): Node to check
@@ -722,7 +723,7 @@ class PageObjectGenerator:
         return recycler_id in node.scrollable_parents
 
     def _calculate_depth(self, anchor: UiElementNode, target: UiElementNode) -> int:
-        """Calculates parent traversal depth between anchor and target.
+        """Calculate parent traversal depth between anchor and target.
 
         Args:
             anchor (UiElementNode): Anchor node
@@ -763,7 +764,7 @@ class PageObjectGenerator:
             suffix: str = "",
             anchor_base: str | None = None,
     ) -> str:
-        """Generates a clean, unique property name for a node.
+        """Generate a clean, unique property name for a node.
 
         Args:
             node (UiElementNode): UI node.
@@ -802,7 +803,7 @@ class PageObjectGenerator:
         return name
 
     def _slug_words(self, s: str) -> list[str]:
-        """Breaks a string into lowercase slug words.
+        """Break a string into lowercase slug words.
 
         Args:
             s (str): Input string
@@ -816,7 +817,7 @@ class PageObjectGenerator:
         return [p.lower() for p in parts if p]
 
     def _strip_package_prefix(self, resource_id: str) -> str:
-        """Strips package prefix from resource ID.
+        """Strip package prefix from resource ID.
 
         Args:
             resource_id (str): Full resource ID
@@ -829,7 +830,7 @@ class PageObjectGenerator:
         return resource_id.split("/", 1)[-1] if "/" in resource_id else resource_id
 
     def _sanitize_name(self, raw_name: str) -> str:
-        """Creates a valid Python property name.
+        """Create a valid Python property name.
 
         Args:
             raw_name (str): Raw property name
@@ -845,7 +846,7 @@ class PageObjectGenerator:
         return name
 
     def _class_name_to_file_name(self, class_name: str) -> str:
-        """Converts CamelCase class name to snake_case file name.
+        """Convert CamelCase class name to snake_case file name.
 
         Args:
             class_name (str): Class name in CamelCase
@@ -862,7 +863,7 @@ class PageObjectGenerator:
         return f"{file_name}.py"
 
     def _is_need_recycler(self, recycler: UiElementNode | None, regular_properties: list[UiElementNode]) -> bool:
-        """Determines if recycler is needed by checking if any regular properties use it.
+        """Determine if recycler is needed by checking if any regular properties use it.
 
         Args:
             recycler (Optional[UiElementNode]): Recycler node if found
@@ -888,7 +889,7 @@ class PageObjectGenerator:
             title_id: str | None,
             recycler_id: str | None,
     ) -> list[dict[str, Any]]:
-        """Filters out redundant properties, but preserves title and recycler.
+        """Filter out redundant properties, but preserve title and recycler.
 
         Args:
             properties (List[Dict[str, Any]]): Raw property list.
@@ -928,7 +929,7 @@ class PageObjectGenerator:
         return final
 
     def _filter_class_only_properties(self, properties: list[dict[str, Any]]) -> list[dict[str, Any]]:
-        """Removes properties where the locator contains only 'class' and no other meaningful attributes.
+        """Remove properties where the locator contains only 'class' and no other meaningful attributes.
 
         Args:
             properties (List[Dict[str, Any]]): List of property dictionaries.
@@ -950,7 +951,7 @@ class PageObjectGenerator:
         return filtered
 
     def _filter_structural_containers(self, properties: list[dict[str, Any]]) -> list[dict[str, Any]]:
-        """Removes non-interactive structural container elements like FrameLayout, LinearLayout, etc.
+        """Remove non-interactive structural container elements like FrameLayout, LinearLayout, etc.
 
         Args:
             properties (List[Dict[str, Any]]): List of property dictionaries.
