@@ -80,6 +80,13 @@ class ShadowstepLogcat:
         self._compiled_filter_pattern: re.Pattern[Any] | None = None
         self._filter_set: set[str] | None = None
 
+    def _raise_logcat_connection_error(self) -> None:
+        """Raise ShadowstepLogcatConnectionError for WebSocket connection failure.
+        
+        Raises:
+            ShadowstepLogcatConnectionError: Always raised
+        """
+        raise ShadowstepLogcatConnectionError()
 
     @property
     def filters(self) -> list[str] | None:
@@ -264,7 +271,7 @@ class ShadowstepLogcat:
                             except Exception as ex:
                                 logger.debug(f"Cannot connect to {url}: {ex!r}")
                         if not ws:
-                            raise ShadowstepLogcatConnectionError()
+                            self._raise_logcat_connection_error()
 
                         # Store ws reference so stop() can close it
                         self._ws = ws

@@ -49,6 +49,17 @@ class LocatorConverter:
         self.ui_selector_converter = UiSelectorConverter()
         self.xpath_converter = XPathConverter()
 
+    def _raise_unsupported_selector_format_error(self, selector: Any) -> None:
+        """Raise ShadowstepUnsupportedSelectorFormatError for unsupported selector format.
+        
+        Args:
+            selector: The unsupported selector
+            
+        Raises:
+            ShadowstepUnsupportedSelectorFormatError: Always raised
+        """
+        raise ShadowstepUnsupportedSelectorFormatError(selector)
+
     def to_dict(self, selector: tuple[str, str] | dict[str, Any] | Element | UiSelector | str) -> dict[str, Any]:
         """Convert any selector format to dictionary format.
 
@@ -76,7 +87,7 @@ class LocatorConverter:
                 return self.xpath_to_dict(selector)
             if isinstance(selector, UiSelector):
                 return self.uiselector_to_dict(selector.__str__())
-            raise ShadowstepUnsupportedSelectorFormatError(selector)
+            self._raise_unsupported_selector_format_error(selector)
         except Exception as e:
             raise ShadowstepConversionFailedError(get_current_func_name(), selector, str(e)) from e
 
@@ -107,7 +118,7 @@ class LocatorConverter:
                 return "xpath", selector
             if isinstance(selector, UiSelector):
                 return "xpath", self.uiselector_to_xpath(selector.__str__())
-            raise ShadowstepUnsupportedSelectorFormatError(selector)
+            self._raise_unsupported_selector_format_error(selector)
         except Exception as e:
             raise ShadowstepConversionFailedError(get_current_func_name(), selector, str(e)) from e
 
@@ -140,7 +151,7 @@ class LocatorConverter:
                 return self.xpath_to_uiselector(selector)
             if isinstance(selector, UiSelector):
                 return selector.__str__()
-            raise ShadowstepUnsupportedSelectorFormatError(selector)
+            self._raise_unsupported_selector_format_error(selector)
         except Exception as e:
             raise ShadowstepConversionFailedError(get_current_func_name(), selector, str(e)) from e
 
