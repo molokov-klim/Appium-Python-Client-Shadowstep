@@ -84,7 +84,7 @@ from appium.webdriver.webdriver import WebDriver
 from selenium.common import NoSuchDriverException, InvalidSessionIdException
 
 class TerminalInterface:
-    def __init__(self, driver: WebDriver, shadowstep=None):
+    def __init__(self, driver: WebDriver, shadowstep=None) -> None:
         self.driver = driver
         self.shadowstep = shadowstep
 
@@ -108,7 +108,7 @@ from .terminal_interface import TerminalInterface
 from .terminal import Transport  # or however you define transport
 
 class RemoteTerminal(TerminalInterface):
-    def __init__(self, driver, transport: Transport, shadowstep=None):
+    def __init__(self, driver, transport: Transport, shadowstep=None) -> None:
         super().__init__(driver, shadowstep)
         self.transport = transport
 

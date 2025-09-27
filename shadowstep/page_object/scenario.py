@@ -51,7 +51,7 @@ Navigator is a dumb route bus. You say "go to SettingsPage" — it goes.
 
 ```python
 class Scenario:
-    def __init__(self, name: str):
+    def __init__(self, name: str) -> None:
         self.steps = []
         self.name = name
 

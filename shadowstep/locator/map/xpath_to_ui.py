@@ -78,7 +78,7 @@ XPATH_TO_UI: dict[XPathAttribute, Callable[[str], str]] = {
 }
 
 
-def get_ui_for_method(method: XPathAttribute, value: Any) -> str:
+def get_ui_for_method(method: XPathAttribute, value: str | int | float | bool) -> str:
     """Get UiSelector method call for a specific XPath attribute and value.
 
     Args:

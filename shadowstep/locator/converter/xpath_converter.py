@@ -96,7 +96,7 @@ _MATCHES_ATTRS = {
 }
 
 
-def _to_bool(val: Any) -> bool:
+def _to_bool(val: str | int | float | bool) -> bool:
     if isinstance(val, bool):
         return val
     if isinstance(val, str):
@@ -108,7 +108,7 @@ def _to_bool(val: Any) -> bool:
     raise ShadowstepBooleanLiteralError(val)
 
 
-def _to_number(val: Any) -> int:
+def _to_number(val: str | int | float) -> int:
     if isinstance(val, (int, float)):
         return int(val)
     if isinstance(val, str) and val.isdigit():
@@ -123,7 +123,7 @@ FUNCTION_ARGUMENT_COUNT = 2
 class XPathConverter:
     """Convert xpath expression to UiSelector expression or Shadowstep Dict locator."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Initialize the XPathConverter."""
         self.logger = logging.getLogger(__name__)
 
@@ -279,7 +279,7 @@ class XPathConverter:
 
         raise ShadowstepUnsupportedASTNodeBuildError(node)
 
-    def _ast_to_list(self, node: Any) -> list[AbbreviatedStep | Step]:    # type: ignore[return-any]
+    def _ast_to_list(self, node: Step | AbbreviatedStep | BinaryExpression) -> list[AbbreviatedStep | Step]:    # type: ignore[return-any]
         result = []
 
         if isinstance(node, (Step, AbbreviatedStep)):    # type: ignore[arg-type]
@@ -294,7 +294,7 @@ class XPathConverter:
 
         return result
 
-    def _collect_predicates(self, node: Any) -> Iterable[Any]:
+    def _collect_predicates(self, node: AbsolutePath | PredicatedExpression) -> Iterable[Step | FunctionCall | BinaryExpression | int | float]:
         if isinstance(node, AbsolutePath):
             if node.relative is not None:
                 yield from self._collect_predicates(node.relative)
@@ -319,7 +319,7 @@ class XPathConverter:
 
     # ========== predicate handlers (DICT) ==========
 
-    def _apply_predicate_to_dict(self, pred_expr: Any, out: dict[str, Any]) -> None:  # noqa: C901, PLR0912, PLR0911
+    def _apply_predicate_to_dict(self, pred_expr: Step | FunctionCall | BinaryExpression | int | float, out: dict[str, Any]) -> None:  # noqa: C901, PLR0912, PLR0911
         if isinstance(pred_expr, Step):
             nested = self._build_shadowstep_dict([pred_expr], {})
             for k, v in nested.items():
@@ -390,7 +390,7 @@ class XPathConverter:
 
     # ========== predicate handlers (UI SELECTOR) ==========
 
-    def _predicate_to_ui(self, pred_expr: Any) -> str:  # noqa: C901, PLR0912, PLR0911
+    def _predicate_to_ui(self, pred_expr: Step | FunctionCall | BinaryExpression | int | float) -> str:  # noqa: C901, PLR0912, PLR0911
         if isinstance(pred_expr, FunctionCall):
             attr, kind, value = self._parse_function_predicate(pred_expr)
             if kind == "contains":
@@ -456,14 +456,14 @@ class XPathConverter:
             return "text", self._extract_literal(bexpr.left)
         raise ShadowstepEqualityComparisonError
 
-    def _maybe_attr(self, node: Any) -> str | None:    # type: ignore[return-any]
+    def _maybe_attr(self, node: Step | FunctionCall | NodeType) -> str | None:    # type: ignore[return-any]
         try:
             return self._extract_attr_name(node)
         except ShadowstepConversionError:
             return None
 
     @staticmethod
-    def _extract_attr_name(node: Any) -> str:
+    def _extract_attr_name(node: Step | FunctionCall | NodeType) -> str:
         if isinstance(node, Step) and node.axis == "@" and isinstance(node.node_test, NameTest):
             return node.node_test.name
         if isinstance(node, FunctionCall) and node.name == "text":
@@ -473,7 +473,7 @@ class XPathConverter:
         raise ShadowstepUnsupportedAttributeExpressionError(node)
 
     @staticmethod
-    def _extract_literal(node: Any) -> Any:
+    def _extract_literal(node: str | int | float | bool | FunctionCall) -> str | int | float | bool:
         if isinstance(node, (str, int, float, bool)):
             return node
         if isinstance(node, FunctionCall) and node.name in ("true", "false") and not node.args:

@@ -45,7 +45,7 @@ class UiElementNode:
         for child in self.children:
             yield from child.walk()
 
-    def find(self, **kwargs: Any) -> list[UiElementNode]:
+    def find(self, **kwargs: str | int | float | bool) -> list[UiElementNode]:
         """Find nodes by matching attrs."""
         return [el for el in self.walk() if all(el.attrs.get(k) == v for k, v in kwargs.items())]
 
@@ -131,7 +131,7 @@ class TemplateRenderer(ABC):
     """
 
     @abstractmethod
-    def render(self, model: Any, template_name: str) -> str:
+    def render(self, model: dict, template_name: str) -> str:
         """Render a model using the specified template."""
 
     @abstractmethod
@@ -146,7 +146,7 @@ class Jinja2Renderer(TemplateRenderer):
     templating engine to render page object models into Python code.
     """
 
-    def __init__(self, templates_dir: str):
+    def __init__(self, templates_dir: str) -> None:
         """Initialize the Jinja2TemplateRenderer.
 
         Args:
@@ -299,7 +299,7 @@ class PageObjectRenderer:
     models into Python code files using the configured template renderer.
     """
 
-    def __init__(self, renderer_type: str = "jinja2"):
+    def __init__(self, renderer_type: str = "jinja2") -> None:
         """Initialize the PageObjectRenderer.
 
         Args:

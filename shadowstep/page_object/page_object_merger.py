@@ -24,7 +24,7 @@ class PageObjectMerger:
     and method deduplication.
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Initialize the PageObjectMerger."""
         self.logger = logging.getLogger(__name__)
 

@@ -4,9 +4,9 @@
 This module provides functions to convert Shadowstep dictionary locators
 to UiSelector method calls with proper attribute mapping and hierarchy handling.
 """
+from __future__ import annotations
 
 from collections.abc import Callable
-from typing import Any
 
 from shadowstep.exceptions.shadowstep_exceptions import (
     ShadowstepUnsupportedAttributeForUiSelectorError,
@@ -16,7 +16,7 @@ from shadowstep.locator.types.shadowstep_dict import ShadowstepDictAttribute
 from shadowstep.locator.types.ui_selector import UiAttribute
 
 
-def dict_to_ui_attribute(attr: ShadowstepDictAttribute, value: Any) -> str:
+def dict_to_ui_attribute(attr: ShadowstepDictAttribute, value: str | float | bool | dict) -> str:
     """Convert a single dictionary attribute to UiSelector method call.
 
     Args:

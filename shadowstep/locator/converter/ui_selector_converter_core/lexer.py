@@ -77,7 +77,7 @@ class Lexer:
     including identifiers, strings, numbers, booleans, and punctuation.
     """
 
-    def __init__(self, text: str):
+    def __init__(self, text: str) -> None:
         """Initialize the Lexer.
 
         Args:

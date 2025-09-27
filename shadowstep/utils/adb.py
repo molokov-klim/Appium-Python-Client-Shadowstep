@@ -1067,7 +1067,7 @@ class Adb:
         return [package.strip() for package in packages_raw.split("\n") if package.strip()]
 
     @staticmethod
-    def execute(command: str):
+    def execute(command: str) -> str:
         """Execute a specified ADB command and return the output.
 
         Args:

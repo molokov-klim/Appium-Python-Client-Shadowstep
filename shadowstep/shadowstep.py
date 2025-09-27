@@ -63,7 +63,7 @@ class Shadowstep(ShadowstepBase):
     _instance: Shadowstep | None = None
     _pages_discovered: bool = False
 
-    def __new__(cls, *args: Any, **kwargs: Any) -> Self:  # noqa: ARG004
+    def __new__(cls, *args: object, **kwargs: object) -> Self:  # noqa: ARG004
         """Create a new instance or return existing singleton instance.
 
         Returns:

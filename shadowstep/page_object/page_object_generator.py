@@ -36,7 +36,7 @@ class PageObjectGenerator:
     generation, and template-based rendering.
     """
 
-    def __init__(self, translator: Any = None):
+    def __init__(self, translator: "YandexTranslate | None" = None) -> None:
         """Initialize the PageObjectGenerator.
 
         Args:

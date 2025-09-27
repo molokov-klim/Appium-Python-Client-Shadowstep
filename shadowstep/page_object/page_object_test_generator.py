@@ -53,7 +53,7 @@ class PageObjectTestGenerator:
 
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Initialize the PageObjectTestGenerator."""
         self.logger = logging.getLogger(__name__)
         templates_dir = Path(__file__).parent / "templates"

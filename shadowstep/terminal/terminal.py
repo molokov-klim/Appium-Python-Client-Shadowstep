@@ -42,7 +42,7 @@ class NotProvideCredentialsError(Exception):
     """
 
     def __init__(self, message: str = "Not provided credentials for ssh connection "
-                                      "in connect() method (ssh_username, ssh_password)"):
+                                      "in connect() method (ssh_username, ssh_password)") -> None:
         """Initialize the TerminalCredentialsError.
 
         Args:
@@ -63,7 +63,7 @@ class Terminal:
     transport: Transport
     driver: WebDriver
 
-    def __init__(self, base: ShadowstepBase):
+    def __init__(self, base: ShadowstepBase) -> None:
         """Initialize the Terminal.
 
         Args:
@@ -74,7 +74,7 @@ class Terminal:
         self.transport: Transport = base.transport
         self.driver: WebDriver = base.driver
 
-    def __del__(self):
+    def __del__(self) -> None:
         """Destructor to ensure SSH connection is closed on object deletion.
 
         This method ensures that the SSH connection is properly closed
@@ -83,7 +83,7 @@ class Terminal:
         if self.transport is not None:  # type: ignore[comparison-overlap]
             self.transport.ssh.close()
 
-    def adb_shell(self, command: str, args: str = "", tries: int = 3) -> Any:
+    def adb_shell(self, command: str, args: str = "", tries: int = 3) -> str | None:
         """Execute commands via ADB on a mobile device.
 
         :param command: The command to execute.
@@ -663,7 +663,7 @@ class Terminal:
             return False
         return True
 
-    def record_video(self, **options: Any) -> bool:
+    def record_video(self, **options: str | int | float | bool) -> bool:
         """Record a video of the device screen (3 MIN MAX).
 
         :param options: Additional options for video recording.
@@ -680,7 +680,7 @@ class Terminal:
             return False
         return True
 
-    def stop_video(self, **options: Any) -> bytes | None:
+    def stop_video(self, **options: str | int | float | bool) -> bytes | None:
         """Stop the video recording of the device screen and returns the recorded video data (Base64 bytes).
 
         :param options: Additional options for stopping the video recording.
@@ -817,7 +817,7 @@ class Terminal:
             replace("\r", ""). \
             replace("\n", "")
 
-    def pull_package(self, package: str, path: str = "", filename: str = "temp._apk"):
+    def pull_package(self, package: str, path: str = "", filename: str = "temp._apk") -> None:
         """Pull the APK file of the specified package from the device to the local machine.
 
         :param package: The package name of the app.

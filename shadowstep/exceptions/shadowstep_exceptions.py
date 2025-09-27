@@ -44,7 +44,7 @@ class ShadowstepElementError(ShadowstepException):
 
     def __init__(self,
                  message: str | None = None,
-                 original_exception: Exception | None = None):
+                 original_exception: Exception | None = None) -> None:
         """Initialize the ShadowstepElementError.
 
         Args:
@@ -68,8 +68,8 @@ class ShadowstepNoSuchElementError(NoSuchElementException):
     def __init__(self,
                  msg: str | None = None,
                  screen: str | None = None,
-                 stacktrace: list[Any] | None = None,
-                 locator: Any = None):
+                 stacktrace: list[str] | None = None,
+                 locator: str | dict | None = None) -> None:
         """Initialize the ShadowstepNoSuchElementError.
 
         Args:
@@ -85,7 +85,7 @@ class ShadowstepNoSuchElementError(NoSuchElementException):
         self.screen = screen
         self.stacktrace = stacktrace
 
-    def __str__(self):
+    def __str__(self) -> str:
         """Return string representation of the exception with locator and context info.
 
         Returns:
@@ -101,9 +101,9 @@ class ShadowstepTimeoutException(TimeoutException):
     def __init__(self,
                  msg: str | None = None,
                  screen: str | None = None,
-                 stacktrace: list[Any] | None = None,
-                 locator: Any = None,
-                 driver: WebDriver | None = None):
+                 stacktrace: list[str] | None = None,
+                 locator: str | dict | None = None,
+                 driver: WebDriver | None = None) -> None:
         """Initialize the ShadowstepTimeoutException.
 
         Args:
@@ -119,7 +119,7 @@ class ShadowstepTimeoutException(TimeoutException):
         self.driver = driver
         self.timestamp = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
 
-    def __str__(self):
+    def __str__(self) -> str:
         """Return string representation of the timeout exception with detailed context.
 
         Returns:
@@ -169,7 +169,7 @@ class ShadowstepConversionError(ShadowstepLocatorConverterError):
 class ShadowstepDictConversionError(ShadowstepConversionError):
     """Raised when dictionary conversion fails."""
 
-    def __init__(self, operation: str, details: str = ""):
+    def __init__(self, operation: str, details: str = "") -> None:
         """Initialize with operation and optional details.
         
         Args:
@@ -186,7 +186,7 @@ class ShadowstepDictConversionError(ShadowstepConversionError):
 class ShadowstepValidationError(ValueError):
     """Raised when validation fails."""
 
-    def __init__(self, message: str):
+    def __init__(self, message: str) -> None:
         """Initialize with validation message.
         
         Args:
@@ -199,7 +199,7 @@ class ShadowstepValidationError(ValueError):
 class ShadowstepSelectorTypeError(ShadowstepValidationError):
     """Raised when selector is not a dictionary."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Initialize with predefined message."""
         super().__init__("Selector must be a dictionary")
 
@@ -207,7 +207,7 @@ class ShadowstepSelectorTypeError(ShadowstepValidationError):
 class ShadowstepEmptySelectorError(ShadowstepValidationError):
     """Raised when selector dictionary is empty."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Initialize with predefined message."""
         super().__init__("Selector dictionary cannot be empty")
 
@@ -215,7 +215,7 @@ class ShadowstepEmptySelectorError(ShadowstepValidationError):
 class ShadowstepConflictingTextAttributesError(ShadowstepValidationError):
     """Raised when conflicting text attributes are found."""
 
-    def __init__(self, attributes):
+    def __init__(self, attributes: list[str]) -> None:
         """Initialize with conflicting attributes.
         
         Args:
@@ -228,7 +228,7 @@ class ShadowstepConflictingTextAttributesError(ShadowstepValidationError):
 class ShadowstepConflictingDescriptionAttributesError(ShadowstepValidationError):
     """Raised when conflicting description attributes are found."""
 
-    def __init__(self, attributes):
+    def __init__(self, attributes: list[str]) -> None:
         """Initialize with conflicting attributes.
         
         Args:
@@ -241,7 +241,7 @@ class ShadowstepConflictingDescriptionAttributesError(ShadowstepValidationError)
 class ShadowstepHierarchicalAttributeError(ShadowstepValidationError):
     """Raised when hierarchical attribute has wrong type."""
 
-    def __init__(self, key):
+    def __init__(self, key: str) -> None:
         """Initialize with attribute key.
         
         Args:
@@ -254,7 +254,7 @@ class ShadowstepHierarchicalAttributeError(ShadowstepValidationError):
 class ShadowstepUnsupportedSelectorFormatError(ShadowstepConversionError):
     """Raised when selector format is not supported."""
 
-    def __init__(self, selector):
+    def __init__(self, selector: str) -> None:
         """Initialize with unsupported selector.
         
         Args:
@@ -267,7 +267,7 @@ class ShadowstepUnsupportedSelectorFormatError(ShadowstepConversionError):
 class ShadowstepConversionFailedError(ShadowstepConversionError):
     """Raised when conversion fails with context."""
 
-    def __init__(self, function_name, selector, details):
+    def __init__(self, function_name: str, selector: str, details: str) -> None:
         """Initialize with conversion context.
         
         Args:
@@ -282,7 +282,7 @@ class ShadowstepConversionFailedError(ShadowstepConversionError):
 class ShadowstepUnsupportedTupleFormatError(ShadowstepValidationError):
     """Raised when tuple format is not supported."""
 
-    def __init__(self, format_type):
+    def __init__(self, format_type: str) -> None:
         """Initialize with unsupported format type.
         
         Args:
@@ -295,7 +295,7 @@ class ShadowstepUnsupportedTupleFormatError(ShadowstepValidationError):
 class ShadowstepEmptyXPathError(ShadowstepValidationError):
     """Raised when XPath string is empty."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Initialize with predefined message."""
         super().__init__("XPath string cannot be empty")
 
@@ -303,7 +303,7 @@ class ShadowstepEmptyXPathError(ShadowstepValidationError):
 class ShadowstepEmptySelectorStringError(ShadowstepValidationError):
     """Raised when selector string is empty."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Initialize with predefined message."""
         super().__init__("Selector string cannot be empty")
 
@@ -311,7 +311,7 @@ class ShadowstepEmptySelectorStringError(ShadowstepValidationError):
 class ShadowstepUnsupportedSelectorTypeError(ShadowstepValidationError):
     """Raised when selector type is not supported."""
 
-    def __init__(self, selector_type):
+    def __init__(self, selector_type: str) -> None:
         """Initialize with unsupported selector type.
         
         Args:
@@ -324,7 +324,7 @@ class ShadowstepUnsupportedSelectorTypeError(ShadowstepValidationError):
 class ShadowstepUiSelectorConversionError(ShadowstepConversionError):
     """Raised when UiSelector conversion fails."""
 
-    def __init__(self, operation: str, details: str = ""):
+    def __init__(self, operation: str, details: str = "") -> None:
         """Initialize with operation and optional details.
         
         Args:
@@ -341,7 +341,7 @@ class ShadowstepUiSelectorConversionError(ShadowstepConversionError):
 class ShadowstepInvalidUiSelectorStringError(ShadowstepInvalidUiSelectorError):
     """Raised when UiSelector string is invalid."""
 
-    def __init__(self, details: str = ""):
+    def __init__(self, details: str = "") -> None:
         """Initialize with error details.
         
         Args:
@@ -357,7 +357,7 @@ class ShadowstepInvalidUiSelectorStringError(ShadowstepInvalidUiSelectorError):
 class ShadowstepSelectorToXPathError(ShadowstepConversionError):
     """Raised when selector to XPath conversion fails."""
 
-    def __init__(self, details: str = ""):
+    def __init__(self, details: str = "") -> None:
         """Initialize with error details.
         
         Args:
@@ -373,7 +373,7 @@ class ShadowstepSelectorToXPathError(ShadowstepConversionError):
 class ShadowstepMethodRequiresArgumentError(ShadowstepValidationError):
     """Raised when method requires an argument but none provided."""
 
-    def __init__(self, method_name: str):
+    def __init__(self, method_name: str) -> None:
         """Initialize with method name.
         
         Args:
@@ -386,7 +386,7 @@ class ShadowstepMethodRequiresArgumentError(ShadowstepValidationError):
 class ShadowstepConflictingMethodsError(ShadowstepValidationError):
     """Raised when conflicting methods are found."""
 
-    def __init__(self, existing: str, new_method: str, group_name: str):
+    def __init__(self, existing: str, new_method: str, group_name: str) -> None:
         """Initialize with conflicting methods.
         
         Args:
@@ -405,7 +405,7 @@ class ShadowstepConflictingMethodsError(ShadowstepValidationError):
 class ShadowstepUnsupportedNestedSelectorError(ShadowstepConversionError):
     """Raised when nested selector type is not supported."""
 
-    def __init__(self, selector_type):
+    def __init__(self, selector_type: str) -> None:
         """Initialize with unsupported selector type.
         
         Args:
@@ -418,7 +418,7 @@ class ShadowstepUnsupportedNestedSelectorError(ShadowstepConversionError):
 class ShadowstepUiSelectorMethodArgumentError(ShadowstepConversionError):
     """Raised when UiSelector method has wrong number of arguments."""
 
-    def __init__(self, arg_count: int):
+    def __init__(self, arg_count: int) -> None:
         """Initialize with argument count.
         
         Args:
@@ -431,7 +431,7 @@ class ShadowstepUiSelectorMethodArgumentError(ShadowstepConversionError):
 class ShadowstepLexerError(Exception):
     """Raised when lexical analysis encounters an error."""
 
-    def __init__(self, message: str):
+    def __init__(self, message: str) -> None:
         """Initialize with error message.
         
         Args:
@@ -444,7 +444,7 @@ class ShadowstepLexerError(Exception):
 class ShadowstepUnterminatedStringError(ShadowstepLexerError):
     """Raised when string is not properly terminated."""
 
-    def __init__(self, position: int):
+    def __init__(self, position: int) -> None:
         """Initialize with position.
         
         Args:
@@ -457,7 +457,7 @@ class ShadowstepUnterminatedStringError(ShadowstepLexerError):
 class ShadowstepBadEscapeError(ShadowstepLexerError):
     """Raised when escape sequence is invalid."""
 
-    def __init__(self, position: int):
+    def __init__(self, position: int) -> None:
         """Initialize with position.
         
         Args:
@@ -470,7 +470,7 @@ class ShadowstepBadEscapeError(ShadowstepLexerError):
 class ShadowstepUnexpectedCharError(ShadowstepLexerError):
     """Raised when unexpected character is encountered."""
 
-    def __init__(self, char: str, position: int):
+    def __init__(self, char: str, position: int) -> None:
         """Initialize with character and position.
         
         Args:
@@ -484,7 +484,7 @@ class ShadowstepUnexpectedCharError(ShadowstepLexerError):
 class ShadowstepParserError(Exception):
     """Raised when parsing encounters an error."""
 
-    def __init__(self, message: str):
+    def __init__(self, message: str) -> None:
         """Initialize with error message.
         
         Args:
@@ -497,7 +497,7 @@ class ShadowstepParserError(Exception):
 class ShadowstepExpectedTokenError(ShadowstepParserError):
     """Raised when expected token is not found."""
 
-    def __init__(self, expected: str, got: str, position: int):
+    def __init__(self, expected: str, got: str, position: int) -> None:
         """Initialize with expected and got tokens.
         
         Args:
@@ -512,7 +512,7 @@ class ShadowstepExpectedTokenError(ShadowstepParserError):
 class ShadowstepUnexpectedTokenError(ShadowstepParserError):
     """Raised when unexpected token is encountered."""
 
-    def __init__(self, token_type: str, position: int):
+    def __init__(self, token_type: str, position: int) -> None:
         """Initialize with token type and position.
         
         Args:
@@ -526,7 +526,7 @@ class ShadowstepUnexpectedTokenError(ShadowstepParserError):
 class ShadowstepXPathConversionError(ShadowstepConversionError):
     """Raised when XPath conversion fails."""
 
-    def __init__(self, message: str):
+    def __init__(self, message: str) -> None:
         """Initialize with error message.
         
         Args:
@@ -539,7 +539,7 @@ class ShadowstepXPathConversionError(ShadowstepConversionError):
 class ShadowstepBooleanLiteralError(ShadowstepXPathConversionError):
     """Raised when boolean literal is invalid."""
 
-    def __init__(self, value):
+    def __init__(self, value: str | int | float | bool) -> None:
         """Initialize with invalid value.
         
         Args:
@@ -552,7 +552,7 @@ class ShadowstepBooleanLiteralError(ShadowstepXPathConversionError):
 class ShadowstepNumericLiteralError(ShadowstepXPathConversionError):
     """Raised when numeric literal is invalid."""
 
-    def __init__(self, value):
+    def __init__(self, value: str | int | float | bool) -> None:
         """Initialize with invalid value.
         
         Args:
@@ -565,7 +565,7 @@ class ShadowstepNumericLiteralError(ShadowstepXPathConversionError):
 class ShadowstepLogicalOperatorsNotSupportedError(ShadowstepXPathConversionError):
     """Raised when logical operators are not supported."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Initialize with predefined message."""
         super().__init__("Logical operators (and/or) are not supported")
 
@@ -573,7 +573,7 @@ class ShadowstepLogicalOperatorsNotSupportedError(ShadowstepXPathConversionError
 class ShadowstepInvalidXPathError(ShadowstepXPathConversionError):
     """Raised when XPath is invalid."""
 
-    def __init__(self, details: str = ""):
+    def __init__(self, details: str = "") -> None:
         """Initialize with error details.
         
         Args:
@@ -589,7 +589,7 @@ class ShadowstepInvalidXPathError(ShadowstepXPathConversionError):
 class ShadowstepUnsupportedAbbreviatedStepError(ShadowstepXPathConversionError):
     """Raised when abbreviated step is not supported."""
 
-    def __init__(self, step):
+    def __init__(self, step: str) -> None:
         """Initialize with unsupported step.
         
         Args:
@@ -602,7 +602,7 @@ class ShadowstepUnsupportedAbbreviatedStepError(ShadowstepXPathConversionError):
 class ShadowstepUnsupportedASTNodeError(ShadowstepXPathConversionError):
     """Raised when AST node is not supported."""
 
-    def __init__(self, node):
+    def __init__(self, node: object) -> None:
         """Initialize with unsupported node.
         
         Args:
@@ -615,7 +615,7 @@ class ShadowstepUnsupportedASTNodeError(ShadowstepXPathConversionError):
 class ShadowstepUnsupportedASTNodeBuildError(ShadowstepXPathConversionError):
     """Raised when AST node is not supported in build."""
 
-    def __init__(self, node):
+    def __init__(self, node: object) -> None:
         """Initialize with unsupported node.
         
         Args:
@@ -628,7 +628,7 @@ class ShadowstepUnsupportedASTNodeBuildError(ShadowstepXPathConversionError):
 class ShadowstepContainsNotSupportedError(ShadowstepXPathConversionError):
     """Raised when contains() is not supported for attribute."""
 
-    def __init__(self, attr: str):
+    def __init__(self, attr: str) -> None:
         """Initialize with attribute.
         
         Args:
@@ -641,7 +641,7 @@ class ShadowstepContainsNotSupportedError(ShadowstepXPathConversionError):
 class ShadowstepStartsWithNotSupportedError(ShadowstepXPathConversionError):
     """Raised when starts-with() is not supported for attribute."""
 
-    def __init__(self, attr: str):
+    def __init__(self, attr: str) -> None:
         """Initialize with attribute.
         
         Args:
@@ -654,7 +654,7 @@ class ShadowstepStartsWithNotSupportedError(ShadowstepXPathConversionError):
 class ShadowstepMatchesNotSupportedError(ShadowstepXPathConversionError):
     """Raised when matches() is not supported for attribute."""
 
-    def __init__(self, attr: str):
+    def __init__(self, attr: str) -> None:
         """Initialize with attribute.
         
         Args:
@@ -667,7 +667,7 @@ class ShadowstepMatchesNotSupportedError(ShadowstepXPathConversionError):
 class ShadowstepUnsupportedFunctionError(ShadowstepXPathConversionError):
     """Raised when function is not supported."""
 
-    def __init__(self, func_name: str):
+    def __init__(self, func_name: str) -> None:
         """Initialize with function name.
         
         Args:
@@ -680,7 +680,7 @@ class ShadowstepUnsupportedFunctionError(ShadowstepXPathConversionError):
 class ShadowstepUnsupportedComparisonOperatorError(ShadowstepXPathConversionError):
     """Raised when comparison operator is not supported."""
 
-    def __init__(self, operator: str):
+    def __init__(self, operator: str) -> None:
         """Initialize with operator.
         
         Args:
@@ -693,7 +693,7 @@ class ShadowstepUnsupportedComparisonOperatorError(ShadowstepXPathConversionErro
 class ShadowstepUnsupportedAttributeError(ShadowstepXPathConversionError):
     """Raised when attribute is not supported."""
 
-    def __init__(self, attr: str):
+    def __init__(self, attr: str) -> None:
         """Initialize with attribute.
         
         Args:
@@ -706,7 +706,7 @@ class ShadowstepUnsupportedAttributeError(ShadowstepXPathConversionError):
 class ShadowstepAttributePresenceNotSupportedError(ShadowstepXPathConversionError):
     """Raised when attribute presence predicate is not supported."""
 
-    def __init__(self, attr: str):
+    def __init__(self, attr: str) -> None:
         """Initialize with attribute.
         
         Args:
@@ -719,7 +719,7 @@ class ShadowstepAttributePresenceNotSupportedError(ShadowstepXPathConversionErro
 class ShadowstepUnsupportedPredicateError(ShadowstepXPathConversionError):
     """Raised when predicate is not supported."""
 
-    def __init__(self, predicate):
+    def __init__(self, predicate: object) -> None:
         """Initialize with predicate.
         
         Args:
@@ -732,7 +732,7 @@ class ShadowstepUnsupportedPredicateError(ShadowstepXPathConversionError):
 class ShadowstepUnsupportedAttributeExpressionError(ShadowstepXPathConversionError):
     """Raised when attribute expression is not supported."""
 
-    def __init__(self, node):
+    def __init__(self, node: object) -> None:
         """Initialize with node.
         
         Args:
@@ -745,7 +745,7 @@ class ShadowstepUnsupportedAttributeExpressionError(ShadowstepXPathConversionErr
 class ShadowstepUnsupportedLiteralError(ShadowstepXPathConversionError):
     """Raised when literal is not supported."""
 
-    def __init__(self, node):
+    def __init__(self, node: object) -> None:
         """Initialize with node.
         
         Args:
@@ -758,7 +758,7 @@ class ShadowstepUnsupportedLiteralError(ShadowstepXPathConversionError):
 class ShadowstepUnbalancedUiSelectorError(ShadowstepXPathConversionError):
     """Raised when UiSelector string is unbalanced."""
 
-    def __init__(self, selector: str):
+    def __init__(self, selector: str) -> None:
         """Initialize with selector.
         
         Args:
@@ -771,7 +771,7 @@ class ShadowstepUnbalancedUiSelectorError(ShadowstepXPathConversionError):
 class ShadowstepEqualityComparisonError(ShadowstepXPathConversionError):
     """Raised when equality comparison is invalid."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Initialize with predefined message."""
         super().__init__("Equality must compare @attribute or text() with a literal")
 
@@ -779,7 +779,7 @@ class ShadowstepEqualityComparisonError(ShadowstepXPathConversionError):
 class ShadowstepFunctionArgumentCountError(ShadowstepXPathConversionError):
     """Raised when function has wrong number of arguments."""
 
-    def __init__(self, func_name: str, arg_count: int):
+    def __init__(self, func_name: str, arg_count: int) -> None:
         """Initialize with function name and argument count.
         
         Args:
@@ -793,7 +793,7 @@ class ShadowstepFunctionArgumentCountError(ShadowstepXPathConversionError):
 class ShadowstepUnsupportedAttributeForUiSelectorError(ShadowstepValidationError):
     """Raised when attribute is not supported for UiSelector conversion."""
 
-    def __init__(self, attr):
+    def __init__(self, attr: str) -> None:
         """Initialize with attribute.
         
         Args:
@@ -806,7 +806,7 @@ class ShadowstepUnsupportedAttributeForUiSelectorError(ShadowstepValidationError
 class ShadowstepUnsupportedHierarchicalAttributeError(ShadowstepValidationError):
     """Raised when hierarchical attribute is not supported."""
 
-    def __init__(self, attr):
+    def __init__(self, attr: str) -> None:
         """Initialize with attribute.
         
         Args:
@@ -819,7 +819,7 @@ class ShadowstepUnsupportedHierarchicalAttributeError(ShadowstepValidationError)
 class ShadowstepUnsupportedAttributeForXPathError(ShadowstepValidationError):
     """Raised when attribute is not supported for XPath conversion."""
 
-    def __init__(self, attr):
+    def __init__(self, attr: str) -> None:
         """Initialize with attribute.
         
         Args:
@@ -832,7 +832,7 @@ class ShadowstepUnsupportedAttributeForXPathError(ShadowstepValidationError):
 class ShadowstepUnsupportedUiSelectorMethodError(ShadowstepValidationError):
     """Raised when UiSelector method is not supported."""
 
-    def __init__(self, method):
+    def __init__(self, method: str) -> None:
         """Initialize with method.
         
         Args:
@@ -845,7 +845,7 @@ class ShadowstepUnsupportedUiSelectorMethodError(ShadowstepValidationError):
 class ShadowstepUnsupportedXPathAttributeError(ShadowstepValidationError):
     """Raised when XPath attribute is not supported."""
 
-    def __init__(self, method):
+    def __init__(self, method: str) -> None:
         """Initialize with method.
         
         Args:
@@ -858,7 +858,7 @@ class ShadowstepUnsupportedXPathAttributeError(ShadowstepValidationError):
 class ShadowstepInvalidUiSelectorStringFormatError(ShadowstepValidationError):
     """Raised when UiSelector string format is invalid."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Initialize with predefined message."""
         super().__init__("Invalid UiSelector string format")
 
@@ -866,7 +866,7 @@ class ShadowstepInvalidUiSelectorStringFormatError(ShadowstepValidationError):
 class ShadowstepLogcatError(Exception):
     """Raised when logcat operation fails."""
 
-    def __init__(self, message: str):
+    def __init__(self, message: str) -> None:
         """Initialize with error message.
         
         Args:
@@ -879,7 +879,7 @@ class ShadowstepLogcatError(Exception):
 class ShadowstepPollIntervalError(ShadowstepLogcatError):
     """Raised when poll interval is invalid."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Initialize with predefined message."""
         super().__init__("poll_interval must be non-negative")
 
@@ -887,7 +887,7 @@ class ShadowstepPollIntervalError(ShadowstepLogcatError):
 class ShadowstepEmptyFilenameError(ShadowstepLogcatError):
     """Raised when filename is empty."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Initialize with predefined message."""
         super().__init__("filename cannot be empty")
 
@@ -895,7 +895,7 @@ class ShadowstepEmptyFilenameError(ShadowstepLogcatError):
 class ShadowstepLogcatConnectionError(ShadowstepLogcatError):
     """Raised when logcat WebSocket connection fails."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Initialize with predefined message."""
         super().__init__("Cannot connect to any logcat WS endpoint")
 
@@ -903,7 +903,7 @@ class ShadowstepLogcatConnectionError(ShadowstepLogcatError):
 class ShadowstepNavigatorError(Exception):
     """Raised when navigation operation fails."""
 
-    def __init__(self, message: str):
+    def __init__(self, message: str) -> None:
         """Initialize with error message.
         
         Args:
@@ -916,7 +916,7 @@ class ShadowstepNavigatorError(Exception):
 class ShadowstepPageCannotBeNoneError(ShadowstepNavigatorError):
     """Raised when page is None."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Initialize with predefined message."""
         super().__init__("page cannot be None")
 
@@ -924,7 +924,7 @@ class ShadowstepPageCannotBeNoneError(ShadowstepNavigatorError):
 class ShadowstepFromPageCannotBeNoneError(ShadowstepNavigatorError):
     """Raised when from_page is None."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Initialize with predefined message."""
         super().__init__("from_page cannot be None")
 
@@ -932,7 +932,7 @@ class ShadowstepFromPageCannotBeNoneError(ShadowstepNavigatorError):
 class ShadowstepToPageCannotBeNoneError(ShadowstepNavigatorError):
     """Raised when to_page is None."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Initialize with predefined message."""
         super().__init__("to_page cannot be None")
 
@@ -940,7 +940,7 @@ class ShadowstepToPageCannotBeNoneError(ShadowstepNavigatorError):
 class ShadowstepTimeoutMustBeNonNegativeError(ShadowstepNavigatorError):
     """Raised when timeout is negative."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Initialize with predefined message."""
         super().__init__("timeout must be non-negative")
 
@@ -948,7 +948,7 @@ class ShadowstepTimeoutMustBeNonNegativeError(ShadowstepNavigatorError):
 class ShadowstepPathCannotBeEmptyError(ShadowstepNavigatorError):
     """Raised when path is empty."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Initialize with predefined message."""
         super().__init__("path cannot be empty")
 
@@ -956,7 +956,7 @@ class ShadowstepPathCannotBeEmptyError(ShadowstepNavigatorError):
 class ShadowstepPathMustContainAtLeastTwoPagesError(ShadowstepNavigatorError):
     """Raised when path has less than 2 pages."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Initialize with predefined message."""
         super().__init__("path must contain at least 2 pages for dom")
 
@@ -964,7 +964,7 @@ class ShadowstepPathMustContainAtLeastTwoPagesError(ShadowstepNavigatorError):
 class ShadowstepNavigationFailedError(ShadowstepNavigatorError):
     """Raised when navigation fails."""
 
-    def __init__(self, from_page, to_page, method):
+    def __init__(self, from_page: str, to_page: str, method: str) -> None:
         """Initialize with navigation context.
         
         Args:
@@ -982,7 +982,7 @@ class ShadowstepNavigationFailedError(ShadowstepNavigatorError):
 class ShadowstepPageObjectError(Exception):
     """Raised when page object operation fails."""
 
-    def __init__(self, message: str):
+    def __init__(self, message: str) -> None:
         """Initialize with error message.
         
         Args:
@@ -995,7 +995,7 @@ class ShadowstepPageObjectError(Exception):
 class ShadowstepUnsupportedRendererTypeError(ShadowstepPageObjectError):
     """Raised when renderer type is not supported."""
 
-    def __init__(self, renderer_type):
+    def __init__(self, renderer_type: str) -> None:
         """Initialize with renderer type.
         
         Args:
@@ -1008,7 +1008,7 @@ class ShadowstepUnsupportedRendererTypeError(ShadowstepPageObjectError):
 class ShadowstepTitleNotFoundError(ShadowstepPageObjectError):
     """Raised when title is not found."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Initialize with predefined message."""
         super().__init__("Can't find title")
 
@@ -1016,7 +1016,7 @@ class ShadowstepTitleNotFoundError(ShadowstepPageObjectError):
 class ShadowstepNameCannotBeEmptyError(ShadowstepPageObjectError):
     """Raised when name is empty."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Initialize with predefined message."""
         super().__init__("Name cannot be empty")
 
@@ -1024,7 +1024,7 @@ class ShadowstepNameCannotBeEmptyError(ShadowstepPageObjectError):
 class ShadowstepPageClassNameCannotBeEmptyError(ShadowstepPageObjectError):
     """Raised when page class name is empty."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Initialize with predefined message."""
         super().__init__("page_class_name cannot be empty")
 
@@ -1032,7 +1032,7 @@ class ShadowstepPageClassNameCannotBeEmptyError(ShadowstepPageObjectError):
 class ShadowstepTitleNodeNoUsableNameError(ShadowstepPageObjectError):
     """Raised when title node has no usable name."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Initialize with predefined message."""
         super().__init__("Title node does not contain usable name")
 
@@ -1040,7 +1040,7 @@ class ShadowstepTitleNodeNoUsableNameError(ShadowstepPageObjectError):
 class ShadowstepFailedToNormalizeScreenNameError(ShadowstepPageObjectError):
     """Raised when screen name normalization fails."""
 
-    def __init__(self, text):
+    def __init__(self, text: str) -> None:
         """Initialize with text.
         
         Args:
@@ -1053,7 +1053,7 @@ class ShadowstepFailedToNormalizeScreenNameError(ShadowstepPageObjectError):
 class ShadowstepNoClassDefinitionFoundError(ShadowstepPageObjectError):
     """Raised when no class definition is found."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Initialize with predefined message."""
         super().__init__("No class definition found in the given source.")
 
@@ -1061,7 +1061,7 @@ class ShadowstepNoClassDefinitionFoundError(ShadowstepPageObjectError):
 class ShadowstepRootNodeFilteredOutError(ShadowstepPageObjectError):
     """Raised when root node is filtered out."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Initialize with predefined message."""
         super().__init__("Root node was filtered out and has no valid children.")
 
@@ -1069,7 +1069,7 @@ class ShadowstepRootNodeFilteredOutError(ShadowstepPageObjectError):
 class ShadowstepTerminalNotInitializedError(ShadowstepPageObjectError):
     """Raised when terminal is not initialized."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Initialize with predefined message."""
         super().__init__("Terminal is not initialized")
 
@@ -1077,7 +1077,7 @@ class ShadowstepTerminalNotInitializedError(ShadowstepPageObjectError):
 class ShadowstepNoClassDefinitionFoundInTreeError(ShadowstepPageObjectError):
     """Raised when no class definition is found in AST tree."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Initialize with predefined message."""
         super().__init__("No class definition found")
 
@@ -1085,7 +1085,7 @@ class ShadowstepNoClassDefinitionFoundInTreeError(ShadowstepPageObjectError):
 class ShadowstepTranslatorError(Exception):
     """Raised when translation operation fails."""
 
-    def __init__(self, message: str):
+    def __init__(self, message: str) -> None:
         """Initialize with error message.
         
         Args:
@@ -1098,7 +1098,7 @@ class ShadowstepTranslatorError(Exception):
 class ShadowstepMissingYandexTokenError(ShadowstepTranslatorError):
     """Raised when Yandex token is missing."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Initialize with predefined message."""
         super().__init__("Missing yandexPassportOauthToken environment variable")
 
@@ -1106,7 +1106,7 @@ class ShadowstepMissingYandexTokenError(ShadowstepTranslatorError):
 class ShadowstepTranslationFailedError(ShadowstepTranslatorError):
     """Raised when translation fails."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Initialize with predefined message."""
         super().__init__("Translation failed: empty response")
 

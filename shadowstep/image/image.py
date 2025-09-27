@@ -28,7 +28,7 @@ class ShadowstepImage:
         base: Shadowstep,
         threshold: float = 0.5,
         timeout: float = 5.0,
-    ):
+    ) -> None:
         """Initialize the ShadowstepImage.
 
         Args:
@@ -426,7 +426,7 @@ class ShadowstepImage:
         raise NotImplementedError
 
     @property
-    def should(self) -> Any:  # type: ignore[return-any]
+    def should(self) -> Any:  # type: ignore[return-any]  # noqa: ANN401
         """ImageShould functionality - not yet implemented."""
         self.logger.debug("%s", get_current_func_name())
         raise NotImplementedError

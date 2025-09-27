@@ -29,7 +29,7 @@ class UiSelector:
 
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Initialize the UiSelector with empty state."""
         self.logger = logging.getLogger(__name__)
         self._methods: list[tuple[str, Any]] = []
@@ -158,7 +158,7 @@ class UiSelector:
         """Set sibling with another UiSelector."""
         return self._add_hierarchical_method(UiAttribute.SIBLING, sibling)
 
-    def _add_method(self, attribute: UiAttribute, value: Any) -> UiSelector:
+    def _add_method(self, attribute: UiAttribute, value: Any) -> UiSelector:  # noqa: ANN401
         """Add a method call to the selector."""
         self._methods.append((attribute.value, value))
         return self

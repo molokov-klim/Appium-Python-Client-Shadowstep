@@ -94,7 +94,7 @@ class UiAttribute(str, Enum):
             return self.value == other
         return super().__eq__(other)
 
-    def __hash__(self):
+    def __hash__(self) -> int:
         """Return hash value based on the enum value.
 
         Returns:

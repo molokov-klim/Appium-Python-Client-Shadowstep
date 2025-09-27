@@ -44,14 +44,14 @@ class LocatorConverter:
     locator formats, replacing the deprecated DeprecatedLocatorConverter.
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Initialize the converter with all sub-converters."""
         self.logger = logger
         self.dict_converter = DictConverter()
         self.ui_selector_converter = UiSelectorConverter()
         self.xpath_converter = XPathConverter()
 
-    def _raise_unsupported_selector_format_error(self, selector: Any) -> None:
+    def _raise_unsupported_selector_format_error(self, selector: Any) -> None:  # noqa: ANN401
         """Raise ShadowstepUnsupportedSelectorFormatError for unsupported selector format.
         
         Args:

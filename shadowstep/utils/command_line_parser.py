@@ -15,7 +15,7 @@ from shadowstep.utils.utils import get_current_func_name
 logger = logging.getLogger(__name__)
 
 
-def udid():
+def udid() -> str:
     """Extract UDID from command line arguments.
 
     Returns:
@@ -31,7 +31,7 @@ def udid():
     return var
 
 
-def model():
+def model() -> str:
     """Extract device model from command line arguments.
 
     Returns:
@@ -47,7 +47,7 @@ def model():
     return var
 
 
-def detailed():
+def detailed() -> bool:
     """Extract detailed flag from command line arguments.
 
     Returns:
@@ -63,7 +63,7 @@ def detailed():
     return var
 
 
-def chat_id():
+def chat_id() -> str:
     """Extract chat ID from command line arguments.
 
     Returns:
@@ -79,7 +79,7 @@ def chat_id():
     return var
 
 
-def env():
+def env() -> str:
     """Extract environment setting from command line arguments.
 
     Returns:
@@ -95,7 +95,7 @@ def env():
     return var
 
 
-def root_dir():
+def root_dir() -> str:
     """Extract root directory path from command line arguments.
 
     Returns:

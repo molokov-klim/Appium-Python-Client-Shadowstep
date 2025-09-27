@@ -653,7 +653,7 @@ class Element(ElementBase):
         """
         return self.properties.get_attributes()
 
-    def get_property(self, name: str) -> Any:
+    def get_property(self, name: str) -> Any:  # noqa: ANN401
         """Get the value of the specified property.
 
         Args:
@@ -746,7 +746,7 @@ class Element(ElementBase):
         return self.properties.tag_name()
 
     @property
-    def attributes(self) -> Any:
+    def attributes(self) -> Any:  # noqa: ANN401
         """Get all element attributes.
 
         Returns:

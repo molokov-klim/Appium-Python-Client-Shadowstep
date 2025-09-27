@@ -28,7 +28,7 @@ class Transport:
     app.transport.scp.some_scp_method
     """
 
-    def __init__(self, server: str, port: int, user: str, password: str):
+    def __init__(self, server: str, port: int, user: str, password: str) -> None:
         """Initialize the Transport.
 
         Args:
@@ -42,7 +42,7 @@ class Transport:
         self.scp = SCPClient(cast("paramiko.Transport", self.ssh.get_transport()))
 
     @staticmethod
-    def _create_ssh_client(server: str, port: int, user: str, password: str):
+    def _create_ssh_client(server: str, port: int, user: str, password: str) -> paramiko.SSHClient:
         client = paramiko.SSHClient()
         client.load_system_host_keys()
         client.set_missing_host_key_policy(paramiko.AutoAddPolicy())  # noqa: S507

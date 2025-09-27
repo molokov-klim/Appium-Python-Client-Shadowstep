@@ -141,7 +141,7 @@ class ShadowstepLogcat:
         return True
 
 
-    def __exit__(self, exc_type: Any, exc_val: Any, exc_tb: Any):
+    def __exit__(self, exc_type: Any, exc_val: Any, exc_tb: Any) -> None:  # noqa: ANN401
         """Context manager exit method to stop logcat capture.
 
         Args:
@@ -152,7 +152,7 @@ class ShadowstepLogcat:
         """
         self.stop()
 
-    def __del__(self):
+    def __del__(self) -> None:
         """Destructor to ensure logcat capture is stopped on object deletion.
 
         Suppresses any exceptions during cleanup to prevent issues during

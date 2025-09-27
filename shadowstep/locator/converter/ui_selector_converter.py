@@ -5,6 +5,8 @@ UiSelector strings between different formats including XPath,
 dictionary locators, and back to UiSelector strings with
 comprehensive error handling and validation.
 """
+from __future__ import annotations
+
 import logging
 from typing import Any, cast
 
@@ -37,7 +39,7 @@ class UiSelectorConverter:
     including XPath, dictionary locators, and back to UiSelector strings.
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Initialize the converter with logging."""
         self.logger = logging.getLogger(__name__)
         self._compatible_groups = self._build_compatibility_groups()
@@ -237,7 +239,7 @@ class UiSelectorConverter:
             "hierarchy": [UiAttribute.CHILD_SELECTOR, UiAttribute.FROM_PARENT],
         }
 
-    def _convert_nested_selector(self, nested_sel: Any) -> str:
+    def _convert_nested_selector(self, nested_sel: dict | Selector) -> str:
         """Convert a nested selector to XPath.
 
         Args:
@@ -266,7 +268,7 @@ class UiSelectorConverter:
 
         """
 
-        def convert_arg(arg: Any) -> Any:
+        def convert_arg(arg: str | float | bool | Selector) -> str | int | float | bool | dict:
             if hasattr(arg, "methods"):  # Nested Selector
                 return self._selector_to_parsed_dict(arg)
             return arg
@@ -290,7 +292,7 @@ class UiSelectorConverter:
 
         """
 
-        def format_arg(arg: Any) -> str:
+        def format_arg(arg: str | float | bool | dict) -> str:
             if isinstance(arg, dict):
                 # Nested selector - without final semicolon
                 return self._parsed_dict_to_selector(cast("dict[str, Any]", arg), top_level=False)

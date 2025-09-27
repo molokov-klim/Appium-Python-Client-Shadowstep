@@ -4,9 +4,10 @@ This module provides the mapping dictionary and utility functions
 for converting UiSelector attributes to their corresponding XPath
 predicates with proper value formatting and hierarchical handling.
 """
+from __future__ import annotations
+
 # shadowstep/locator/map/ui_to_xpath.py
 from collections.abc import Callable
-from typing import Any
 
 from shadowstep.exceptions.shadowstep_exceptions import ShadowstepUnsupportedUiSelectorMethodError
 from shadowstep.locator.types.ui_selector import UiAttribute
@@ -84,7 +85,7 @@ UI_TO_XPATH: dict[UiAttribute, Callable[[str], str]] = {
 }
 
 
-def get_xpath_for_method(method: UiAttribute, value: Any) -> str:
+def get_xpath_for_method(method: UiAttribute, value: str | float | bool) -> str:
     """Get XPath predicate for a specific UiSelector method and value.
 
     Args:

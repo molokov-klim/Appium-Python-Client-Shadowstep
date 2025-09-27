@@ -69,7 +69,7 @@ class PageNavigator:
         self.graph_manager = PageGraph()
         self.logger = logger
 
-    def add_page(self, page: Any, edges: dict[str, Any]) -> None:
+    def add_page(self, page: Any, edges: dict[str, Any]) -> None:  # noqa: ANN401
         """Add a page and its transitions to the dom graph.
 
         Args:
@@ -86,7 +86,7 @@ class PageNavigator:
 
         self.graph_manager.add_page(page=page, edges=edges)
 
-    def navigate(self, from_page: Any, to_page: Any, timeout: int = DEFAULT_NAVIGATION_TIMEOUT) -> bool:
+    def navigate(self, from_page: Any, to_page: Any, timeout: int = DEFAULT_NAVIGATION_TIMEOUT) -> bool:  # noqa: ANN401
         """Navigate from one page to another following the defined graph.
 
         Args:
@@ -131,7 +131,7 @@ class PageNavigator:
         else:
             return True
 
-    def find_path(self, start: Any, target: Any) -> list[Any] | None:
+    def find_path(self, start: Any, target: Any) -> list[Any] | None:  # noqa: ANN401
         """Find a path from start page to target page.
 
         Args:
@@ -157,7 +157,7 @@ class PageNavigator:
         # Fallback: BFS traversal
         return self._find_path_bfs(start, target)
 
-    def _find_path_bfs(self, start: Any, target: Any) -> list[Any] | None:
+    def _find_path_bfs(self, start: Any, target: Any) -> list[Any] | None:  # noqa: ANN401
         """Find path using breadth-first search as fallback.
 
         Args:
@@ -225,7 +225,7 @@ class PageGraph:
         self.graph: dict[Any, Any] = {}  # Legacy dictionary-based graph
         self.nx_graph: DiGraph[Any] = nx.DiGraph()  # NetworkX directed graph
 
-    def add_page(self, page: Any, edges: Any) -> None:
+    def add_page(self, page: Any, edges: Any) -> None:  # noqa: ANN401
         """Add a page and its edges to both graph representations.
 
         Args:
@@ -247,7 +247,7 @@ class PageGraph:
             for target_name in edges:
                 self.nx_graph.add_edge(page, target_name)
 
-    def get_edges(self, page: Any) -> list[Any]:
+    def get_edges(self, page: Any) -> list[Any]:  # noqa: ANN401
         """Get edges for a given page.
 
         Args:
@@ -259,7 +259,7 @@ class PageGraph:
         """
         return self.graph.get(page, [])
 
-    def is_valid_edge(self, from_page: Any, to_page: Any) -> bool:
+    def is_valid_edge(self, from_page: Any, to_page: Any) -> bool:  # noqa: ANN401
         """Check if there's a valid edge between two pages.
 
         Args:
@@ -273,7 +273,7 @@ class PageGraph:
         transitions = self.get_edges(from_page)
         return to_page in transitions
 
-    def has_path(self, from_page: Any, to_page: Any) -> bool:
+    def has_path(self, from_page: Any, to_page: Any) -> bool:  # noqa: ANN401
         """Check if there's a path between two pages.
 
         Args:
@@ -289,7 +289,7 @@ class PageGraph:
         except (nx.NetworkXError, KeyError):
             return False
 
-    def find_shortest_path(self, from_page: Any, to_page: Any) -> list[Any] | None:
+    def find_shortest_path(self, from_page: Any, to_page: Any) -> list[Any] | None:  # noqa: ANN401
         """Find the shortest path between two pages.
 
         Args:

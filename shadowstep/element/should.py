@@ -23,7 +23,7 @@ class Should:
         self.be = _ShouldBe(element)
         self.not_be = _ShouldNotBe(element)
 
-    def __getattr__(self, name: str) -> Any:
+    def __getattr__(self, name: str) -> Any:  # noqa: ANN401
         """Delegate unknown attribute access to the underlying Element instance."""
         try:
             return getattr(self.element, name)
@@ -96,7 +96,7 @@ class _ShouldHave(_ShouldBase):
         self._assert(actual == expected, f"have.index: expected '{expected}', got '{actual}'")
         return Should(self.element)
 
-    def attr(self, name: str, expected: Any) -> Should:
+    def attr(self, name: str, expected: Any) -> Should:  # noqa: ANN401
         actual = self.element.get_attribute(name)
         self._assert(
             actual == expected,
