@@ -141,14 +141,12 @@ class PageObjectGenerator:
         self.logger.debug(step)
         switcher_anchor_pairs = self._get_anchor_pairs(ui_element_tree, {"class": "android.widget.Switch"})
         # switches may not be found, this is normal
-        # self.logger.debug(f"{switcher_anchor_pairs=}")
         self.logger.debug("len(switcher_anchor_pairs)=%s", len(switcher_anchor_pairs))
 
         step = "Collecting summary properties"
         self.logger.debug(step)
         summary_anchor_pairs = self._get_summary_pairs(ui_element_tree)
         # summary may not be found, this is normal
-        # self.logger.debug(f"{summary_anchor_pairs=}")
         self.logger.debug("len(summary_anchor_pairs)=%s", len(summary_anchor_pairs))
 
         step = "Collecting remaining regular properties"
@@ -316,7 +314,6 @@ class PageObjectGenerator:
         targets = ui_element_tree.find(**target_attrs)
         if not targets:
             return []
-        # self.logger.debug(f"{targets=}")
 
         step = "Process each target"
         self.logger.debug("[%s] started", step)
@@ -324,7 +321,6 @@ class PageObjectGenerator:
             anchor = self._find_anchor_for_target(target, max_ancestor_distance, target_anchor)
             if anchor:
                 anchor_pairs.append((anchor, target))
-        # self.logger.debug(f"{anchor_pairs=}")
         return anchor_pairs
 
     def _find_anchor_for_target(self, target_element: UiElementNode, max_levels: int,
@@ -374,7 +370,6 @@ class PageObjectGenerator:
 
         # Now filter by depth
         for node in all_descendants:
-            # self.logger.debug(f"{node.id=}, {node.attrs=}")
             if node is target:
                 continue
 

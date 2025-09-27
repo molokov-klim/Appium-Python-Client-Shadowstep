@@ -68,7 +68,6 @@ _NUM_ATTRS = {
 }
 
 _EQ_ATTRS = {
-    # text / description (content-desc)
     "text": (ShadowstepDictAttribute.TEXT, UiAttribute.TEXT),
     "content-desc": (ShadowstepDictAttribute.DESCRIPTION, UiAttribute.DESCRIPTION),
     # resource id / package / class
@@ -205,7 +204,6 @@ class XPathConverter:
                         # sibling → fromParent + childSelector
                         parts.append(f".fromParent(new UiSelector(){child_str})")
                     else:
-                        # default: child
                         parts.append(f".childSelector(new UiSelector(){child_str})")
 
         elif isinstance(node, AbbreviatedStep):    # type: ignore[arg-type]
