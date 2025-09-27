@@ -290,6 +290,6 @@ class UiSelector:
                     method = getattr(selector, method_name)
                     method(value)
                 else:
-                    selector.logger.warning(f"Unknown method: {method_name}")
+                    selector.logger.warning("Unknown method: %s", method_name)
 
         return selector

@@ -70,8 +70,8 @@ class YandexTranslate:
             str: Translated string (or original if not translated).
 
         """
-        self.logger.debug(f"{get_current_func_name()}")
-        self.logger.debug(f"{text=}")
+        self.logger.debug("%s", get_current_func_name())
+        self.logger.debug("text=%s", text)
         if not self._contains_cyrillic(text):
             return text  # No translation needed
 
@@ -88,7 +88,7 @@ class YandexTranslate:
         }
 
         response = requests.post(url, headers=headers, json=body, timeout=30)
-        self.logger.debug(f"{response.text=}")
+        self.logger.debug("response.text=%s", response.text)
         response.raise_for_status()
         translations = response.json().get("translations", [])
 
@@ -96,5 +96,5 @@ class YandexTranslate:
             raise ShadowstepTranslationFailedError
 
         translated = translations[0]["text"]
-        self.logger.debug(f"{translated=}")
+        self.logger.debug("translated=%s", translated)
         return translated

@@ -150,7 +150,7 @@ class DictConverter(Generic[T]):
                 )
             else:
                 self.logger.warning(
-                    f"Hierarchical attribute {hierarchical_key} requires dict value",
+                    "Hierarchical attribute %s requires dict value", hierarchical_key,
                 )
 
         return xpath
@@ -203,9 +203,9 @@ class DictConverter(Generic[T]):
                     ui_part: str = mapping_func(value)
                     ui_parts.append(ui_part)
                 else:
-                    self.logger.warning(f"Unsupported attribute for UiSelector: {key}")
+                    self.logger.warning("Unsupported attribute for UiSelector: %s", key)
             except ValueError:
-                self.logger.warning(f"Unknown attribute: {key}")
+                self.logger.warning("Unknown attribute: %s", key)
                 continue
 
         # Build shadowstep UiSelector chain
@@ -219,7 +219,7 @@ class DictConverter(Generic[T]):
                 method_name: str = get_ui_method_for_hierarchical_attribute(hierarchical_attr)
                 ui_selector += f".{method_name}(new UiSelector(){nested_ui})"
             else:
-                self.logger.warning(f"Hierarchical attribute {hierarchical_key} requires dict value")
+                self.logger.warning("Hierarchical attribute %s requires dict value", hierarchical_key)
 
         return ui_selector
 

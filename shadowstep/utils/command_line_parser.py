@@ -7,7 +7,6 @@ parameters used by the Shadowstep automation framework.
 """
 
 import logging
-import os
 import sys
 from pathlib import Path
 
@@ -23,7 +22,7 @@ def udid():
         str: The UDID value from --udid argument, empty string if not found.
 
     """
-    logger.debug(f"{get_current_func_name()}")
+    logger.debug("%s", get_current_func_name())
     var = ""
     for i in sys.argv[1:]:
         if "--udid" in i:
@@ -39,7 +38,7 @@ def model():
         str: The model value from --model argument, empty string if not found.
 
     """
-    logger.debug(f"{get_current_func_name()}")
+    logger.debug("%s", get_current_func_name())
     var = ""
     for i in sys.argv[1:]:
         if "--model" in i:
@@ -55,7 +54,7 @@ def detailed():
         str: The detailed value from --detailed argument, empty string if not found.
 
     """
-    logger.debug(f"{get_current_func_name()}")
+    logger.debug("%s", get_current_func_name())
     var = ""
     for i in sys.argv[1:]:
         if "--detailed" in i:
@@ -71,7 +70,7 @@ def chat_id():
         str: The chat ID value from --chat_id argument, empty string if not found.
 
     """
-    logger.debug(f"{get_current_func_name()}")
+    logger.debug("%s", get_current_func_name())
     var = ""
     for i in sys.argv[1:]:
         if "--chat_id" in i:
@@ -87,7 +86,7 @@ def env():
         str: The environment value from --env argument, empty string if not found.
 
     """
-    logger.debug(f"{get_current_func_name()}")
+    logger.debug("%s", get_current_func_name())
     var = ""
     for i in sys.argv[1:]:
         if "--env" in i:
@@ -103,7 +102,7 @@ def root_dir():
         str: The absolute path from --rootdir argument, empty string if not found.
 
     """
-    logger.debug(f"{get_current_func_name()}")
+    logger.debug("%s", get_current_func_name())
     root_dir_path = ""
     for i in sys.argv[1:]:
         if "--rootdir" in i:

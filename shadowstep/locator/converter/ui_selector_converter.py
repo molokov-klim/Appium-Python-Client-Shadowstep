@@ -135,7 +135,7 @@ class UiSelectorConverter:
                 try:
                     method = UiAttribute(name)
                 except ValueError as e:
-                    self.logger.warning(f"Unknown UiSelector method '{name}', skipping: {e}")
+                    self.logger.warning("Unknown UiSelector method '%s', skipping: %s", name, e)
                     continue
 
                 if is_hierarchical_method(method):
@@ -155,7 +155,7 @@ class UiSelectorConverter:
                     else:
                         xpath += get_xpath_for_method(method, True)
                 else:
-                    self.logger.warning(f"Method '{method}' not supported in XPath conversion")
+                    self.logger.warning("Method '%s' not supported in XPath conversion", method)
 
         except Exception as e:
             raise ShadowstepSelectorToXPathError(str(e)) from e

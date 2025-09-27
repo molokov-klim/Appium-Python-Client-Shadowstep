@@ -188,7 +188,7 @@ class ShadowstepLogcat:
             name="ShadowstepLogcat",
         )
         self._thread.start()
-        logger.info(f"Started logcat to '{filename}'")
+        logger.info("Started logcat to '%s'", filename)
 
     def stop(self) -> None:
         """Stop logcat capture and cleanup resources.
@@ -213,7 +213,7 @@ class ShadowstepLogcat:
             if driver is not None:
                 driver.execute_script("mobile: stopLogsBroadcast")
         except WebDriverException as e:
-            logger.warning(f"Failed to stop broadcast: {e!r}")
+            logger.warning("Failed to stop broadcast: %r", e)
 
         # Wait for background thread to complete and file to close
         if self._thread:
@@ -271,10 +271,10 @@ class ShadowstepLogcat:
                         for url in endpoints:
                             try:
                                 ws = create_connection(url, timeout=WEBSOCKET_TIMEOUT)
-                                logger.info(f"Logcat WebSocket connected: {url}")
+                                logger.info("Logcat WebSocket connected: %s", url)
                                 break
                             except Exception as ex:
-                                logger.debug(f"Cannot connect to {url}: {ex!r}")
+                                logger.debug("Cannot connect to %s: %r", url, ex)
                         if not ws:
                             self._raise_logcat_connection_error()
 
@@ -295,14 +295,14 @@ class ShadowstepLogcat:
                             except WebSocketConnectionClosedException:
                                 break  # Reconnect
                             except Exception as ex:
-                                logger.debug(f"Ignoring recv error: {ex!r}")
+                                logger.debug("Ignoring recv error: %r", ex)
                                 continue
 
                         # Clear reference and close socket
                         try:
                             ws.close()
                         except Exception as ex:
-                            logger.debug(f"Error closing WebSocket: {ex!r}")
+                            logger.debug("Error closing WebSocket: %r", ex)
                         finally:
                             self._ws = None
 
@@ -310,11 +310,11 @@ class ShadowstepLogcat:
                         time.sleep(self._poll_interval)
 
                     except Exception as inner:
-                        logger.error(f"Logcat stream error, retry in {self._poll_interval}s: {inner!r}", exc_info=True)
+                        logger.exception("Logcat stream error, retry in %ss: %r", self._poll_interval, inner)
                         time.sleep(self._poll_interval)
 
         except Exception:
-            logger.exception(f"Cannot open logcat file '{self._filename}'")
+            logger.exception("Cannot open logcat file '%s'", self._filename)
         finally:
             logger.info("Logcat thread terminated, file closed")
 

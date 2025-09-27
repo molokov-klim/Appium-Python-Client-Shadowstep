@@ -56,7 +56,7 @@ class PageObjectRecyclerExplorer:
             ValueError: If terminal is not initialized.
 
         """
-        self.logger.info(f"{get_current_func_name()}")
+        self.logger.info("%s", get_current_func_name())
         if self.base.terminal is None:  # type: ignore[comparison-overlap]
             raise ShadowstepTerminalNotInitializedError
         width, height = self.base.terminal.get_screen_resolution()
@@ -80,12 +80,12 @@ class PageObjectRecyclerExplorer:
 
         original_cls = self._load_class_from_file(original_page_path, original_page_class_name)
         if not original_cls:
-            self.logger.warning(f"Failed to load class {original_page_class_name} from {original_page_path}")
+            self.logger.warning("Failed to load class %s from %s", original_page_class_name, original_page_path)
             return ""
 
         original_page = original_cls()
         if not hasattr(original_page, "recycler"):
-            self.logger.info(f"{original_page_class_name} does not contain `recycler` property")
+            self.logger.info("%s does not contain `recycler` property", original_page_class_name)
             return ""
 
         recycler_el = original_page.recycler

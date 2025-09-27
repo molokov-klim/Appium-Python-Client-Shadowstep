@@ -30,7 +30,7 @@ class PageObjectMerger:
 
     def merge(self, file1: str, file2: str, output_path: str) -> str:
         """Merge pages."""
-        self.logger.info(f"{get_current_func_name()}")
+        self.logger.info("%s", get_current_func_name())
         page1 = self.parse(file1)
         page2 = self.parse(file2)
         imports = self.get_imports(page1)
@@ -54,13 +54,13 @@ class PageObjectMerger:
             str: Raw content of the file.
 
         """
-        self.logger.debug(f"{get_current_func_name()}")
+        self.logger.debug("%s", get_current_func_name())
         try:
             with Path(file).open(encoding="utf-8") as f:
                 # self.logger.info(f"{content=}")
                 return f.read()
         except Exception:
-            self.logger.exception(f"Failed to read {file}")
+            self.logger.exception("Failed to read %s", file)
             raise
 
     def get_imports(self, page: str) -> str:
@@ -73,7 +73,7 @@ class PageObjectMerger:
             str: All import lines joined by newline.
 
         """
-        self.logger.debug(f"{get_current_func_name()}")
+        self.logger.debug("%s", get_current_func_name())
         lines = page.splitlines()
         import_lines: list[str] = []
         for line in lines:
@@ -100,12 +100,12 @@ class PageObjectMerger:
             ValueError: If class definition not found.
 
         """
-        self.logger.info(f"{get_current_func_name()}")
+        self.logger.info("%s", get_current_func_name())
         for line in page.splitlines():
             stripped = line.strip()
-            self.logger.info(f"{stripped=}")
+            self.logger.info("stripped=%s", stripped)
             if stripped.startswith("class "):
-                self.logger.info(f"finded class {stripped=}")
+                self.logger.info("finded class stripped=%s", stripped)
                 return line.rstrip()
         raise ShadowstepNoClassDefinitionFoundError
 
@@ -119,7 +119,7 @@ class PageObjectMerger:
             dict: method_name -> method_text
 
         """
-        self.logger.debug(f"{get_current_func_name()}")
+        self.logger.debug("%s", get_current_func_name())
 
         methods = {}
         blocks = page.split("\n\n")
@@ -162,7 +162,7 @@ class PageObjectMerger:
             dict[str, Any]: Dictionary with unique methods.
 
         """
-        self.logger.debug(f"{get_current_func_name()}")
+        self.logger.debug("%s", get_current_func_name())
 
         unique_methods = {}
 
@@ -175,7 +175,7 @@ class PageObjectMerger:
             elif unique_methods[name].strip() == body.strip():
                 continue  # duplicate — ignore
             else:
-                self.logger.warning(f"Method conflict on '{name}', skipping version from second file.")
+                self.logger.warning("Method conflict on '%s', skipping version from second file.", name)
 
         return unique_methods
 
@@ -197,7 +197,7 @@ class PageObjectMerger:
             encoding: File encoding.
 
         """
-        self.logger.debug(f"{get_current_func_name()}")
+        self.logger.debug("%s", get_current_func_name())
         lines: list[str] = [imports.strip(), "", "", class_name.strip(), ""]
 
         for name, body in unique_methods.items():

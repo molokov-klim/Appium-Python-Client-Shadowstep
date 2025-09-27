@@ -9,7 +9,6 @@ from __future__ import annotations
 
 import base64
 import logging
-import os
 import re
 import subprocess
 import sys
@@ -126,9 +125,9 @@ class Terminal:
             lines = stdout.readlines()
             output = "".join(lines)
             if stdout_exit_status != 0:
-                logger.error(f"{get_current_func_name()} {output=}")
+                logger.error("%s output=%s", get_current_func_name(), output)
                 return False
-            logger.debug(f"{get_current_func_name()} {output=}")
+            logger.debug("%s output=%s", get_current_func_name(), output)
         except NoSuchDriverException:
             self.base.reconnect()
             return False
@@ -256,9 +255,9 @@ class Terminal:
             lines = stdout.readlines()
             output = "".join(lines)
             if stdout_exit_status != 0:
-                logger.error(f"{get_current_func_name()} {output=}")
+                logger.error("%s output=%s", get_current_func_name(), output)
                 return False
-            logger.debug(f"{get_current_func_name()} {output=}")
+            logger.debug("%s output=%s", get_current_func_name(), output)
         except OSError:
             logger.exception("appium_extended_terminal.push()")
             return False
@@ -271,7 +270,7 @@ class Terminal:
         :param package: The package name of the application to check.
         :return: True if the application is installed, False otherwise.
         """
-        logger.debug(f"is_app_installed() < {package=}")
+        logger.debug("is_app_installed() < package=%s", package)
 
         try:
             result = self.adb_shell(command="pm", args="list packages")
@@ -547,7 +546,7 @@ class Terminal:
             if len(columns) >= MIN_PS_COLUMNS_COUNT:
                 pid, process_name = columns[1], columns[8]
                 if name == process_name:
-                    logger.debug(f"know_pid() > {pid!s}")
+                    logger.debug("know_pid() > %s", pid)
                     return int(pid)
         logger.exception("know_pid() [Process not found]")
         return None
@@ -581,7 +580,7 @@ class Terminal:
         :param process: The name of the process to check for existence (default is "").
         :return: True if the background process was successfully started, False otherwise.
         """
-        logger.debug(f"run_background_process() < {command=}")
+        logger.debug("run_background_process() < command=%s", command)
 
         try:
             self.adb_shell(command=command, args=args + " nohup > /dev/null 2>&1 &")
@@ -614,7 +613,7 @@ class Terminal:
         :param name: The name of the process to kill.
         :return: True if the process was successfully killed, False otherwise.
         """
-        logger.debug(f"kill_by_name() < {name=}")
+        logger.debug("kill_by_name() < name=%s", name)
         try:
             self.adb_shell(command="pkill", args=f"-l SIGINT {name!s}")
         except KeyError:
@@ -703,7 +702,7 @@ class Terminal:
         try:
             self.adb_shell(command="reboot")
         except Exception as e:
-            logger.warning(f"Reboot likely initiated. Caught exception: {e}")
+            logger.warning("Reboot likely initiated. Caught exception: %s", e)
         return True
 
     def get_screen_resolution(self) -> tuple[int, int]:
@@ -718,7 +717,7 @@ class Terminal:
                 resolution_str = output.split(":")[1].strip()
                 width, height = resolution_str.split("x")
                 return int(width), int(height)
-            logger.warning(f"{get_current_func_name()}: Physical size not in output")
+            logger.warning("%s: Physical size not in output", get_current_func_name())
         except Exception:
             logger.exception("Exception in get_screen_size")
             raise

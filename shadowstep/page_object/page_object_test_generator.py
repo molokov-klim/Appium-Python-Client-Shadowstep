@@ -77,22 +77,22 @@ class PageObjectTestGenerator:
             tuple[str, str]: (test_file_path, test_class_name).
 
         """
-        self.logger.debug(f"{get_current_func_name()}")
+        self.logger.debug("%s", get_current_func_name())
 
         step = "Extracting module name"
-        self.logger.debug(f"[{step}] started")
+        self.logger.debug("[%s] started", step)
         module_path = input_path \
             .replace(os.sep, ".") \
             .removesuffix(".py")
 
         step = "Extracting properties from file"
-        self.logger.debug(f"[{step}] started")
+        self.logger.debug("[%s] started", step)
         with Path(input_path).open(encoding="utf-8") as f:
             source = f.read()
         properties = self._extract_properties(source)
 
         step = "Preparing data for template"
-        self.logger.debug(f"[{step}] started")
+        self.logger.debug("[%s] started", step)
         test_class_name = f"Test{class_name}"
         template = self.env.get_template("page_object_test.py.j2")
         rendered = template.render(
@@ -103,16 +103,16 @@ class PageObjectTestGenerator:
         )
 
         step = "Forming test path"
-        self.logger.debug(f"[{step}] started")
+        self.logger.debug("[%s] started", step)
         test_file_name = f"test_{self._camel_to_snake(class_name)}.py"
         test_path = Path(output_dir) / test_file_name
 
         step = "Writing file"
-        self.logger.debug(f"[{step}] started")
+        self.logger.debug("[%s] started", step)
         with test_path.open("w", encoding="utf-8") as f:
             f.write(rendered)
 
-        self.logger.info(f"Generated test → {test_path}")
+        self.logger.info("Generated test → %s", test_path)
         return test_path, test_class_name
 
     def _extract_properties(self, source: str) -> list[str]:

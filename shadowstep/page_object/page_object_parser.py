@@ -115,7 +115,7 @@ class PageObjectParser:
             ValueError: If root node is filtered out and has no valid children
 
         """
-        self.logger.info(f"{get_current_func_name()}")
+        self.logger.info("%s", get_current_func_name())
         try:
             self._tree = etree.fromstring(xml.encode("utf-8"))
             self.ui_element_tree = self._build_tree(self._tree)

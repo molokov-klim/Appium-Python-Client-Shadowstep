@@ -8,7 +8,6 @@ property models, and template-based rendering using Jinja2.
 from __future__ import annotations
 
 import logging
-import os
 from abc import ABC, abstractmethod
 from collections.abc import Generator
 from dataclasses import dataclass, field
@@ -175,7 +174,7 @@ class Jinja2Renderer(TemplateRenderer):
             str: Rendered content as string.
 
         """
-        self.logger.debug(f"{get_current_func_name()}")
+        self.logger.debug("%s", get_current_func_name())
         template = self.env.get_template(template_name)
 
         # Convert dataclass to dict for passing to template
@@ -198,7 +197,7 @@ class Jinja2Renderer(TemplateRenderer):
             path: File path to save to.
 
         """
-        self.logger.debug(f"{get_current_func_name()}")
+        self.logger.debug("%s", get_current_func_name())
         Path(path).resolve().parent.mkdir(parents=True, exist_ok=True)
         with Path(path).open("w", encoding="utf-8") as f:
             f.write(content)
@@ -323,7 +322,7 @@ class PageObjectRenderer:
             str: Path to the saved file.
 
         """
-        self.logger.debug(f"{get_current_func_name()}")
+        self.logger.debug("%s", get_current_func_name())
         model.properties.sort(key=lambda p: p.name)
         rendered_content = self.renderer.render(model, template_name)
         self.renderer.save(rendered_content, output_path)

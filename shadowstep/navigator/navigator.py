@@ -109,24 +109,24 @@ class PageNavigator:
         if timeout < 0:
             raise ShadowstepTimeoutMustBeNonNegativeError
         if from_page == to_page:
-            self.logger.info(f"⏭️ Already on target page: {to_page}")
+            self.logger.info("⏭️ Already on target page: %s", to_page)
             return True
 
         path = self.find_path(from_page, to_page)
         if not path:
-            self.logger.error(f"❌ No dom path found from {from_page} to {to_page}")
+            self.logger.error("❌ No dom path found from %s to %s", from_page, to_page)
             return False
 
         self.logger.info(
-            f"🚀 Navigating: {from_page} ➡ {to_page} via path: {[repr(page) for page in path]}",
+            "🚀 Navigating: %s ➡ %s via path: %s", from_page, to_page, [repr(page) for page in path],
         )
 
         try:
             self.perform_navigation(cast("list[PageBaseShadowstep]", path), timeout)
-            self.logger.info(f"✅ Successfully navigated to {to_page}")
+            self.logger.info("✅ Successfully navigated to %s", to_page)
         except WebDriverException:
-            self.logger.exception(f"❗ WebDriverException during dom from {from_page} to {to_page}")
-            self.logger.debug("📌 Full traceback:\n" + "".join(traceback.format_stack()))
+            self.logger.exception("❗ WebDriverException during dom from %s to %s", from_page, to_page)
+            self.logger.debug("📌 Full traceback:\n%s", "".join(traceback.format_stack()))
             return False
         else:
             return True

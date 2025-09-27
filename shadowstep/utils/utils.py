@@ -9,7 +9,6 @@ used throughout the Shadowstep automation framework.
 import inspect
 import logging
 import math
-import os
 import re
 from pathlib import Path
 

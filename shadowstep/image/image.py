@@ -428,7 +428,7 @@ class ShadowstepImage:
     @property
     def should(self) -> Any:  # type: ignore[return-any]
         """ImageShould functionality - not yet implemented."""
-        self.logger.debug(f"{get_current_func_name()}")
+        self.logger.debug("%s", get_current_func_name())
         raise NotImplementedError
 
     def to_ndarray(

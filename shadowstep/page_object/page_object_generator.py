@@ -10,7 +10,6 @@ from __future__ import annotations
 
 import keyword
 import logging
-import os
 import re
 from pathlib import Path
 from typing import Any, cast
@@ -108,27 +107,27 @@ class PageObjectGenerator:
             tuple[str, str]: (class_name, output_path) of generated page object.
 
         """
-        self.logger.debug(f"{get_current_func_name()}")
+        self.logger.debug("%s", get_current_func_name())
         step = "Forming title property"
         self.logger.debug(step)
         title = self._get_title_property(ui_element_tree)
         if title is None:
             raise ShadowstepTitleNotFoundError
-        self.logger.debug(f"{title.attrs=}")
+        self.logger.debug("title.attrs=%s", title.attrs)
 
         step = "Forming name property"
         self.logger.debug(step)
         name = self._get_name_property(title)
         if name == "":
             raise ShadowstepNameCannotBeEmptyError
-        self.logger.debug(f"{name=}")
+        self.logger.debug("name=%s", name)
 
         step = "Forming class name"
         self.logger.debug(step)
         page_class_name = self._normilize_to_camel_case(name)
         if page_class_name == "":
             raise ShadowstepPageClassNameCannotBeEmptyError
-        self.logger.debug(f"{page_class_name=}")
+        self.logger.debug("page_class_name=%s", page_class_name)
 
         step = "Forming recycler property"
         self.logger.debug(step)
@@ -136,21 +135,21 @@ class PageObjectGenerator:
         # assert recycler is not None, "Can't find recycler"
         if recycler is None:
             recycler = title
-        self.logger.debug(f"{recycler.attrs=}")
+        self.logger.debug("recycler.attrs=%s", recycler.attrs)
 
         step = "Collecting switch-anchor pairs"
         self.logger.debug(step)
         switcher_anchor_pairs = self._get_anchor_pairs(ui_element_tree, {"class": "android.widget.Switch"})
         # switches may not be found, this is normal
         # self.logger.debug(f"{switcher_anchor_pairs=}")
-        self.logger.debug(f"{len(switcher_anchor_pairs)=}")
+        self.logger.debug("len(switcher_anchor_pairs)=%s", len(switcher_anchor_pairs))
 
         step = "Collecting summary properties"
         self.logger.debug(step)
         summary_anchor_pairs = self._get_summary_pairs(ui_element_tree)
         # summary may not be found, this is normal
         # self.logger.debug(f"{summary_anchor_pairs=}")
-        self.logger.debug(f"{len(summary_anchor_pairs)=}")
+        self.logger.debug("len(summary_anchor_pairs)=%s", len(summary_anchor_pairs))
 
         step = "Collecting remaining regular properties"
         self.logger.debug(step)
@@ -164,7 +163,7 @@ class PageObjectGenerator:
         step = "Determining recycler necessity"
         self.logger.debug(step)
         need_recycler = self._is_need_recycler(recycler, regular_properties)
-        self.logger.debug(f"{need_recycler=}")
+        self.logger.debug("need_recycler=%s", need_recycler)
 
         step = "Preparing properties for template"
         self.logger.debug(step)
@@ -219,7 +218,7 @@ class PageObjectGenerator:
         with path.open("w", encoding="utf-8") as f:
             f.write(rendered)
 
-        self.logger.debug(f"Generated PageObject → {path}")
+        self.logger.debug("Generated PageObject → %s", path)
         return path, class_name
 
     def _get_title_property(self, ui_element_tree: UiElementNode) -> UiElementNode | None:
@@ -232,7 +231,7 @@ class PageObjectGenerator:
             Optional[UiElementNode]: Node with screen title (from text or content-desc).
 
         """
-        self.logger.debug(f"{get_current_func_name()}")
+        self.logger.debug("%s", get_current_func_name())
 
         def is_potential_title(ui_node: UiElementNode) -> bool:
             if ui_node.tag not in {"android.widget.TextView", "android.widget.FrameLayout"}:
@@ -250,7 +249,7 @@ class PageObjectGenerator:
             if is_potential_title(ui_node):
                 content = ui_node.attrs.get("content-desc") or ui_node.attrs.get("text")
                 if content and content.strip():
-                    self.logger.debug(f"Found title node: {ui_node.id} → {content}")
+                    self.logger.debug("Found title node: %s → %s", ui_node.id, content)
                     return ui_node
             queue.extend(ui_node.children)
 
@@ -267,7 +266,7 @@ class PageObjectGenerator:
             str: Name derived from title node.
 
         """
-        self.logger.debug(f"{get_current_func_name()}")
+        self.logger.debug("%s", get_current_func_name())
         raw_name = title.attrs.get("text") or title.attrs.get("content-desc") or ""
         raw_name = raw_name.strip()
         if not raw_name:
@@ -286,14 +285,14 @@ class PageObjectGenerator:
             Optional[UiElementNode]: Node marked as scrollable container (recycler).
 
         """
-        self.logger.debug(f"{get_current_func_name()}")
+        self.logger.debug("%s", get_current_func_name())
 
         for node in ui_element_tree.walk():
             scrollable_parents = node.scrollable_parents
             if scrollable_parents:
                 # take the closest scrollable (first in list)
                 scrollable_id = scrollable_parents[0]
-                self.logger.debug(f"Recycler determined from node={node.id}, scrollable_id={scrollable_id}")
+                self.logger.debug("Recycler determined from node=%s, scrollable_id=%s", node.id, scrollable_id)
                 return self._find_by_id(ui_element_tree, scrollable_id)
 
         self.logger.warning("No scrollable parent found in any node")
@@ -306,21 +305,21 @@ class PageObjectGenerator:
             max_ancestor_distance: int = 3,
             target_anchor: tuple[str, ...] = ("text", "content-desc"),
     ) -> list[tuple[UiElementNode, UiElementNode]]:
-        self.logger.debug(f"{get_current_func_name()}")
+        self.logger.debug("%s", get_current_func_name())
 
         step = "Init anchor-target pair list"
-        self.logger.debug(f"[{step}] started")
+        self.logger.debug("[%s] started", step)
         anchor_pairs: list[tuple[UiElementNode, UiElementNode]] = []
 
         step = "Find matching targets"
-        self.logger.debug(f"[{step}] started")
+        self.logger.debug("[%s] started", step)
         targets = ui_element_tree.find(**target_attrs)
         if not targets:
             return []
         # self.logger.debug(f"{targets=}")
 
         step = "Process each target"
-        self.logger.debug(f"[{step}] started")
+        self.logger.debug("[%s] started", step)
         for target in targets:
             anchor = self._find_anchor_for_target(target, max_ancestor_distance, target_anchor)
             if anchor:
@@ -330,7 +329,7 @@ class PageObjectGenerator:
 
     def _find_anchor_for_target(self, target_element: UiElementNode, max_levels: int,
                                 target_anchor: tuple[str, ...] = ("text", "content-desc")) -> UiElementNode | None:
-        self.logger.debug(f"{get_current_func_name()}")
+        self.logger.debug("%s", get_current_func_name())
         for level in range(max_levels + 1):
             parent = self._get_ancestor(target_element, level)
             if not parent:
@@ -362,10 +361,10 @@ class PageObjectGenerator:
             List[UiElementNode]: Filtered nodes at same depth.
 
         """
-        self.logger.debug(f"{get_current_func_name()}")
+        self.logger.debug("%s", get_current_func_name())
 
         step = "Iterating over ancestor.children"
-        self.logger.debug(f"[{step}] started")
+        self.logger.debug("[%s] started", step)
 
         result: list[UiElementNode] = []
         # First collect all descendants of ancestor
@@ -381,12 +380,12 @@ class PageObjectGenerator:
 
             if node.depth == target.depth:
                 self.logger.debug(
-                    f"Sibling/cousin candidate: id={node.id}, class={node.tag}, text={node.attrs.get('text')}, content-desc={node.attrs.get('content-desc')}")
+                    "Sibling/cousin candidate: id=%s, class=%s, text=%s, content-desc=%s", node.id, node.tag, node.attrs.get('text'), node.attrs.get('content-desc'))
                 result.append(cast("UiElementNode", node))
             else:
-                self.logger.debug(f"Rejected (wrong depth): id={node.id}, depth={node.depth} ≠ {target.depth}")
+                self.logger.debug("Rejected (wrong depth): id=%s, depth=%s ≠ %s", node.id, node.depth, target.depth)
 
-        self.logger.debug(f"Total candidates found: {len(result)}")
+        self.logger.debug("Total candidates found: %s", len(result))
         return result
 
     def _is_same_depth(self, node1: UiElementNode, node2: UiElementNode) -> bool:
@@ -416,14 +415,14 @@ class PageObjectGenerator:
             List[Tuple[UiElementNode, UiElementNode]]: List of (anchor, summary) pairs
 
         """
-        self.logger.debug(f"{get_current_func_name()}")
+        self.logger.debug("%s", get_current_func_name())
 
         # Find all elements that have "summary" in attributes
         summary_elements = []
         for element in ui_element_tree.walk():
             if any(re.search(r"\bsummary\b", str(value).lower()) for value in element.attrs.values()):
                 summary_elements.append(element)
-                self.logger.debug(f"Found summary element: {element.id}, attrs={element.attrs}")
+                self.logger.debug("Found summary element: %s, attrs=%s", element.id, element.attrs)
 
         # For each summary element find corresponding anchor
         summary_pairs: list[tuple[UiElementNode, UiElementNode]] = []
@@ -432,12 +431,12 @@ class PageObjectGenerator:
             anchor = self._find_anchor_for_target(cast("UiElementNode", summary), max_levels=3,
                                                   target_anchor=("text", "content-desc"))
             if anchor and not any("summary" in str(value).lower() for value in anchor.attrs.values()):
-                self.logger.debug(f"Found anchor for summary {summary.id}: {anchor.id}, attrs={anchor.attrs}")
+                self.logger.debug("Found anchor for summary %s: %s, attrs=%s", summary.id, anchor.id, anchor.attrs)
                 summary_pairs.append((anchor, cast("UiElementNode", summary)))
             else:
-                self.logger.warning(f"No anchor found for summary element {summary.id}")
+                self.logger.warning("No anchor found for summary element %s", summary.id)
 
-        self.logger.debug(f"Total summary-anchor pairs found: {len(summary_pairs)}")
+        self.logger.debug("Total summary-anchor pairs found: %s", len(summary_pairs))
         return summary_pairs
 
     def _get_regular_properties(
@@ -457,7 +456,7 @@ class PageObjectGenerator:
             List[UiElementNode]: List of unused, unique-locator elements
 
         """
-        self.logger.debug(f"{get_current_func_name()}")
+        self.logger.debug("%s", get_current_func_name())
 
         # 🔁 Convert used_elements to set of locator hashes
         used_locators: set[frozenset[tuple[str, str]]] = set()
@@ -478,18 +477,18 @@ class PageObjectGenerator:
                 continue
 
             if element.tag == "androidx.recyclerview.widget.RecyclerView" and recycler.id and element.id != recycler.id:  # type: ignore[comparison-overlap]
-                self.logger.debug(f"Skipping redundant recycler view: id={recycler.id}")  # type: ignore[arg-type]
+                self.logger.debug("Skipping redundant recycler view: id=%s", recycler.id)  # type: ignore[arg-type]
                 continue
 
-            self.logger.debug(f"Regular element accepted: {element.id}, locator={locator}")
+            self.logger.debug("Regular element accepted: %s, locator=%s", element.id, locator)
             regular_elements.append(element)
             used_locators.add(locator_frozen)
 
-        self.logger.debug(f"Total regular elements found (filtered): {len(regular_elements)}")
+        self.logger.debug("Total regular elements found (filtered): %s", len(regular_elements))
         return regular_elements
 
     def _normilize_to_camel_case(self, text: str) -> str:
-        self.logger.debug(f"{get_current_func_name()}")
+        self.logger.debug("%s", get_current_func_name())
         # sanitize → remove spaces, symbols, make CamelCase
         normalized = self._translate(text)  # translate to English
         normalized = re.sub(r"[^\w\s]", "", normalized)  # remove special characters
@@ -502,7 +501,7 @@ class PageObjectGenerator:
         return camel_case
 
     def _translate(self, text: str) -> str:
-        self.logger.debug(f"{get_current_func_name()}")
+        self.logger.debug("%s", get_current_func_name())
         if self.translator is not None:
             text = self.translator.translate(text)
         return text
@@ -514,11 +513,11 @@ class PageObjectGenerator:
         return None
 
     def _remove_text_from_non_text_elements(self, elements: list[UiElementNode]) -> None:
-        self.logger.debug(f"{get_current_func_name()}")
+        self.logger.debug("%s", get_current_func_name())
 
         for element in elements:
             if element.tag in self.BLACKLIST_NO_TEXT_CLASSES and "text" in element.attrs:
-                self.logger.debug(f"Removing text attribute from {element.tag} element: {element.attrs.get('text')}")
+                self.logger.debug("Removing text attribute from %s element: %s", element.tag, element.attrs.get('text'))
                 del element.attrs["text"]
 
     def _prepare_template_data(self,
@@ -527,7 +526,7 @@ class PageObjectGenerator:
                                recycler: UiElementNode | None,
                                properties: list[dict[str, Any]],
                                need_recycler: bool) -> dict[str, Any]:
-        self.logger.debug(f"{get_current_func_name()}")
+        self.logger.debug("%s", get_current_func_name())
         raw_title = self._get_name_property(title)
         translated = self._translate(raw_title)
         class_name = self._normilize_to_camel_case(translated)
@@ -555,7 +554,7 @@ class PageObjectGenerator:
             dict[str, Any]: Locator dictionary
 
         """
-        self.logger.debug(f"{get_current_func_name()}")
+        self.logger.debug("%s", get_current_func_name())
         if only_id and node.attrs.get("resource-id"):
             return {"resource-id": node.attrs["resource-id"]}
 
@@ -588,7 +587,7 @@ class PageObjectGenerator:
             List[Dict[str, Any]]: Template-ready property dictionaries
 
         """
-        self.logger.debug(f"{get_current_func_name()}")
+        self.logger.debug("%s", get_current_func_name())
 
         properties: list[dict[str, Any]] = []
         used_names: set[str] = set()
@@ -616,7 +615,7 @@ class PageObjectGenerator:
             properties.append(prop)
             used_names.add(name)
             used_ids.add(node.id)
-            self.logger.debug(f"Added regular: {name} → {prop['locator']}")
+            self.logger.debug("Added regular: %s → %s", name, prop['locator'])
 
         # Switcher properties
         for anchor, switcher in switcher_anchor_pairs:
@@ -634,7 +633,7 @@ class PageObjectGenerator:
                 properties.append(anchor_prop)
                 used_names.add(anchor_name)
                 used_ids.add(anchor.id)
-                self.logger.debug(f"Added anchor: {anchor_name} → {anchor_prop['locator']}")
+                self.logger.debug("Added anchor: %s → %s", anchor_name, anchor_prop['locator'])
             else:
                 anchor_name = None
                 for p in properties:
@@ -660,7 +659,7 @@ class PageObjectGenerator:
             properties.append(prop)
             used_names.add(name)
             used_ids.add(switcher.id)
-            self.logger.debug(f"Added switcher: {name} (anchor: {anchor_name}) → {prop['locator']}")
+            self.logger.debug("Added switcher: %s (anchor: %s) → %s", name, anchor_name, prop['locator'])
 
         # Summary properties
         for anchor, summary in summary_anchor_pairs:
@@ -678,18 +677,18 @@ class PageObjectGenerator:
                 properties.append(anchor_prop)
                 used_names.add(base_name)
                 used_ids.add(anchor.id)
-                self.logger.debug(f"Added summary anchor: {base_name} → {anchor_prop['locator']}")
+                self.logger.debug("Added summary anchor: %s → %s", base_name, anchor_prop['locator'])
             else:
                 base_name = None
                 for p in properties:
                     if p.get("element_id") == anchor.id:
                         base_name = p["name"]
-                        self.logger.debug(f"[Find base_name] matched property: name={base_name}, id={anchor.id}")
+                        self.logger.debug("[Find base_name] matched property: name=%s, id=%s", base_name, anchor.id)
                         break
                 if base_name is None:
                     self.logger.debug("[Find base_name] no match found, generating new name")
                     base_name = self._generate_property_name(anchor, used_names)
-                    self.logger.debug(f"[Find base_name] generated name: {base_name}")
+                    self.logger.debug("[Find base_name] generated name: %s", base_name)
 
             if summary.id in used_ids:
                 continue
@@ -707,7 +706,7 @@ class PageObjectGenerator:
             properties.append(prop)
             used_names.add(name)
             used_ids.add(summary.id)
-            self.logger.debug(f"Added summary: {name} (anchor: {base_name}) → {prop['summary_id']}")
+            self.logger.debug("Added summary: %s (anchor: %s) → %s", name, base_name, prop['summary_id'])
 
         return properties
 
@@ -722,7 +721,7 @@ class PageObjectGenerator:
             bool: True if node is scrollable by the recycler
 
         """
-        self.logger.debug(f"{get_current_func_name()}")
+        self.logger.debug("%s", get_current_func_name())
         if not recycler_id or not node.scrollable_parents:
             return False
         return recycler_id in node.scrollable_parents
@@ -738,7 +737,7 @@ class PageObjectGenerator:
             int: Number of parent traversals needed
 
         """
-        self.logger.debug(f"{get_current_func_name()}")
+        self.logger.debug("%s", get_current_func_name())
         # Find common ancestor
         anchor_ancestors = [anchor]
         current = anchor
@@ -781,7 +780,7 @@ class PageObjectGenerator:
             str: Property name.
 
         """
-        self.logger.debug(f"{get_current_func_name()}")
+        self.logger.debug("%s", get_current_func_name())
 
         base = ""
         # Use anchor name if explicitly passed (e.g., switcher/summary tied to anchor)
@@ -817,7 +816,7 @@ class PageObjectGenerator:
             List[str]: List of slug words
 
         """
-        self.logger.debug(f"{get_current_func_name()}")
+        self.logger.debug("%s", get_current_func_name())
         parts = re.split(r"[^\w]+", unidecode(s))
         return [p.lower() for p in parts if p]
 
@@ -831,7 +830,7 @@ class PageObjectGenerator:
             str: Resource ID without package prefix
 
         """
-        self.logger.debug(f"{get_current_func_name()}")
+        self.logger.debug("%s", get_current_func_name())
         return resource_id.split("/", 1)[-1] if "/" in resource_id else resource_id
 
     def _sanitize_name(self, raw_name: str) -> str:
@@ -844,7 +843,7 @@ class PageObjectGenerator:
             str: Sanitized property name
 
         """
-        self.logger.debug(f"{get_current_func_name()}")
+        self.logger.debug("%s", get_current_func_name())
         name = re.sub(r"[^\w]", "_", raw_name)
         if name and name[0].isdigit():
             name = "num_" + name
@@ -860,10 +859,10 @@ class PageObjectGenerator:
             str: File name in snake_case with .py extension
 
         """
-        self.logger.debug(f"{get_current_func_name()}")
+        self.logger.debug("%s", get_current_func_name())
 
         step = "Convert CamelCase to snake_case"
-        self.logger.debug(f"[{step}] started")
+        self.logger.debug("[%s] started", step)
         file_name = re.sub(r"(?<!^)(?=[A-Z])", "_", class_name).lower()
         return f"{file_name}.py"
 
@@ -878,7 +877,7 @@ class PageObjectGenerator:
             bool: Whether recycler is needed
 
         """
-        self.logger.debug(f"{get_current_func_name()}")
+        self.logger.debug("%s", get_current_func_name())
         if not recycler:
             return False
 
@@ -905,19 +904,19 @@ class PageObjectGenerator:
             List[Dict[str, Any]]: Cleaned list of properties.
 
         """
-        self.logger.debug(f"{get_current_func_name()}")
+        self.logger.debug("%s", get_current_func_name())
 
         step = "Filter class-only properties"
-        self.logger.debug(f"[{step}] started")
+        self.logger.debug("[%s] started", step)
         properties = self._filter_class_only_properties(properties)
 
         step = "Filter structural containers"
-        self.logger.debug(f"[{step}] started")
+        self.logger.debug("[%s] started", step)
         properties = self._filter_structural_containers(properties)
 
         # ⛔ Protection from removing title and recycler
         step = "Protect title and recycler"
-        self.logger.debug(f"[{step}] started")
+        self.logger.debug("[%s] started", step)
 
         def is_important(prop: dict[str, Any]) -> bool:
             return prop.get("element_id") in {title_id, recycler_id}
@@ -930,7 +929,7 @@ class PageObjectGenerator:
             # Other filtering (if you add more steps - insert here)
             final.append(prop)
 
-        self.logger.debug(f"{get_current_func_name()} > {final=}")
+        self.logger.debug("%s > final=%s", get_current_func_name(), final)
         return final
 
     def _filter_class_only_properties(self, properties: list[dict[str, Any]]) -> list[dict[str, Any]]:
@@ -943,13 +942,13 @@ class PageObjectGenerator:
             List[Dict[str, Any]]: Filtered property list.
 
         """
-        self.logger.debug(f"{get_current_func_name()}")
+        self.logger.debug("%s", get_current_func_name())
 
         filtered = []
         for prop in properties:
             locator = prop.get("locator", {})
             if list(locator.keys()) == ["class"]:
-                self.logger.debug(f"Removing class-only locator: {prop['name']} ({locator['class']})")
+                self.logger.debug("Removing class-only locator: %s (%s)", prop['name'], locator['class'])
                 continue
             filtered.append(prop)
 
@@ -965,7 +964,7 @@ class PageObjectGenerator:
             List[Dict[str, Any]]: Filtered property list.
 
         """
-        self.logger.debug(f"{get_current_func_name()}")
+        self.logger.debug("%s", get_current_func_name())
 
         filtered = []
         for prop in properties:
@@ -975,7 +974,7 @@ class PageObjectGenerator:
 
             # Class is a known container, and either no id, or id is known to be layout-only
             if cls in self.STRUCTURAL_CLASSES and (not res_id or res_id in self.CONTAINER_IDS):
-                self.logger.debug(f"Removing structural container: {prop['name']} ({cls}, {res_id})")
+                self.logger.debug("Removing structural container: %s (%s, %s)", prop['name'], cls, res_id)
                 continue
 
             filtered.append(prop)

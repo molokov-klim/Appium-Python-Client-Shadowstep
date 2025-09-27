@@ -7,7 +7,6 @@ package names and launchable activities.
 # shadowstep/terminal/aapt.py
 
 import logging
-import os
 import subprocess
 from pathlib import Path
 
@@ -30,7 +29,7 @@ class Aapt:
 
         Returns package name.
         """
-        logger.info(f"{get_current_func_name()} < {path_to_apk}")
+        logger.info("%s < %s", get_current_func_name(), path_to_apk)
 
         command = ["aapt", "dump", "badging", str(Path(path_to_apk))]
 
@@ -53,7 +52,7 @@ class Aapt:
             logger.exception("Could not find package name in the output.")
             raise  # Re-raise exception
 
-        logger.info(f"{get_current_func_name()} > {package_name}")
+        logger.info("%s > %s", get_current_func_name(), package_name)
         # Return package name as string
         return package_name
 
@@ -63,7 +62,7 @@ class Aapt:
 
         Returns activity name as string.
         """
-        logger.info(f"{get_current_func_name()} < {path_to_apk}")
+        logger.info("%s < %s", get_current_func_name(), path_to_apk)
 
         command = ["aapt", "dump", "badging", path_to_apk]
 
@@ -78,7 +77,7 @@ class Aapt:
             launchable_activity = package_line.split("'")[1]
 
             # Return activity name as string
-            logger.info(f"{get_current_func_name()} > {launchable_activity}")
+            logger.info("%s > %s", get_current_func_name(), launchable_activity)
         except subprocess.CalledProcessError:
             logger.exception("Could not extract launchable activity")
         except StopIteration:
