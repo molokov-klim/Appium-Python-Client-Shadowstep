@@ -1,3 +1,9 @@
+"""ADB (Android Debug Bridge) integration for Shadowstep framework.
+
+This module provides the Adb class for interacting with Android devices
+through ADB commands, including device management, app installation,
+file operations, input simulation, and system control.
+"""
 # shadowstep/terminal/adb.py
 from __future__ import annotations
 
@@ -30,6 +36,11 @@ class Adb:
     driver: WebDriver
 
     def __init__(self, base: ShadowstepBase):
+        """Initialize the ADB wrapper.
+
+        Args:
+            base: ShadowstepBase instance for automation operations.
+        """
         self.base: ShadowstepBase = base
         self.driver: WebDriver = base.driver
 

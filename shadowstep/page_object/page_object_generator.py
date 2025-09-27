@@ -1,3 +1,9 @@
+"""Page object generator for Shadowstep framework.
+
+This module provides the PageObjectGenerator class for automatically
+generating page object classes from UI element trees, including
+property extraction, locator generation, and template-based rendering.
+"""
 # shadowstep/page_object/page_object_generator.py
 #  shadowstep/page_object/page_object_generator.py
 from __future__ import annotations
@@ -16,7 +22,19 @@ from shadowstep.utils.utils import get_current_func_name
 
 
 class PageObjectGenerator:
+    """Generator for creating page object classes from UI element trees.
+
+    This class provides functionality to automatically generate page object
+    classes from UI element trees, including property extraction, locator
+    generation, and template-based rendering.
+    """
+
     def __init__(self, translator: Any = None):
+        """Initialize the PageObjectGenerator.
+
+        Args:
+            translator: Optional translator instance for text translation.
+        """
         self.logger = logging.getLogger(__name__)
         self.translator = translator
         self.BLACKLIST_NO_TEXT_CLASSES = {
@@ -73,6 +91,16 @@ class PageObjectGenerator:
             output_dir: str,
             filename_prefix: str = "",
     ) -> tuple[str, str]:
+        """Generate page object from UI element tree.
+
+        Args:
+            ui_element_tree: Root UI element node.
+            output_dir: Directory to save generated files.
+            filename_prefix: Prefix for generated filenames.
+
+        Returns:
+            tuple[str, str]: (class_name, output_path) of generated page object.
+        """
         self.logger.debug(f"{get_current_func_name()}")
         step = "Forming title property"
         self.logger.debug(step)

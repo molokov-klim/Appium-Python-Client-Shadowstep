@@ -1,3 +1,10 @@
+"""Page object recycler explorer for Shadowstep framework.
+
+This module provides the PageObjectRecyclerExplorer class for
+automatically exploring scrollable content in mobile applications
+by generating page objects for different scroll positions and
+merging them into a comprehensive page object.
+"""
 # shadowstep/page_object/page_object_recycler_explorer.py
 from __future__ import annotations
 
@@ -13,8 +20,20 @@ from shadowstep.utils.utils import get_current_func_name
 
 
 class PageObjectRecyclerExplorer:
+    """Explorer for scrollable content in mobile applications.
+
+    This class provides functionality to automatically explore scrollable
+    content by generating page objects for different scroll positions
+    and merging them into a comprehensive page object.
+    """
 
     def __init__(self, base, translator):
+        """Initialize the PageObjectRecyclerExplorer.
+
+        Args:
+            base: Shadowstep instance for automation operations.
+            translator: Translator instance for text translation.
+        """
         self.base: Shadowstep = base
         self.logger = logging.getLogger(__name__)
         self.parser = PageObjectParser()
@@ -22,6 +41,17 @@ class PageObjectRecyclerExplorer:
         self.merger = PageObjectMerger()
 
     def explore(self, output_dir: str) -> str:
+        """Explore recycler views and generate page objects.
+
+        Args:
+            output_dir: Directory to save generated page objects.
+
+        Returns:
+            str: Path to the generated file.
+
+        Raises:
+            ValueError: If terminal is not initialized.
+        """
         self.logger.info(f"{get_current_func_name()}")
         if self.base.terminal is None:  # type: ignore
             raise ValueError("Terminal is not initialized")

@@ -1,3 +1,9 @@
+"""Terminal interface for Shadowstep framework.
+
+This module provides the Terminal class for executing ADB commands
+through Appium server, including device management, app operations,
+input simulation, file operations, and system control via SSH transport.
+"""
 # shadowstep/terminal/terminal.py
 from __future__ import annotations
 
@@ -26,8 +32,19 @@ if TYPE_CHECKING:
 
 
 class NotProvideCredentialsError(Exception):
+    """Raised when SSH credentials are not provided for terminal connection.
+
+    This exception is raised when attempting to establish a terminal
+    connection without providing the required SSH credentials.
+    """
+
     def __init__(self, message: str = "Not provided credentials for ssh connection "
                                       "in connect() method (ssh_username, ssh_password)"):
+        """Initialize the TerminalCredentialsError.
+
+        Args:
+            message: Error message describing the missing credentials.
+        """
         super().__init__(message)
         self.message = message
 
@@ -42,11 +59,21 @@ class Terminal:
     driver: WebDriver
 
     def __init__(self, base: ShadowstepBase):
+        """Initialize the Terminal.
+
+        Args:
+            base: ShadowstepBase instance for automation operations.
+        """
         self.base: ShadowstepBase = base
         self.transport: Transport = base.transport
         self.driver: WebDriver = base.driver
 
     def __del__(self):
+        """Destructor to ensure SSH connection is closed on object deletion.
+        
+        This method ensures that the SSH connection is properly closed
+        when the Terminal object is garbage collected.
+        """
         if self.transport is not None:  # type: ignore
             self.transport.ssh.close()
 

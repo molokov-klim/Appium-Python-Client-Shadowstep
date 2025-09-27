@@ -1,3 +1,9 @@
+"""Page object merger for Shadowstep framework.
+
+This module provides the PageObjectMerger class for merging
+multiple page object files into a single consolidated file,
+handling imports, class definitions, and method deduplication.
+"""
 # shadowstep/page_object/page_object_merger.py
 from __future__ import annotations
 
@@ -10,7 +16,15 @@ from shadowstep.utils.utils import get_current_func_name
 
 
 class PageObjectMerger:
+    """Merger for consolidating multiple page object files.
+
+    This class provides functionality to merge multiple page object files
+    into a single consolidated file, handling imports, class definitions,
+    and method deduplication.
+    """
+
     def __init__(self):
+        """Initialize the PageObjectMerger."""
         self.logger = logging.getLogger(__name__)
 
     def merge(self, file1: str, file2: str, output_path: str) -> str:
@@ -139,6 +153,15 @@ class PageObjectMerger:
         return methods
 
     def remove_duplicates(self, methods1: dict[str, Any], methods2: dict[str, Any]) -> dict[str, Any]:
+        """Remove duplicate methods from two method dictionaries.
+
+        Args:
+            methods1: First dictionary of methods.
+            methods2: Second dictionary of methods.
+
+        Returns:
+            dict[str, Any]: Dictionary with unique methods.
+        """
         self.logger.debug(f"{get_current_func_name()}")
 
         unique_methods = {}
@@ -164,6 +187,15 @@ class PageObjectMerger:
             unique_methods: dict[str, Any],
             encoding: str = "utf-8"
     ) -> None:
+        """Write merged page object to file.
+
+        Args:
+            filepath: Path to output file.
+            imports: Import statements.
+            class_name: Name of the class.
+            unique_methods: Dictionary of unique methods.
+            encoding: File encoding.
+        """
         self.logger.debug(f"{get_current_func_name()}")
         lines: list[str] = [imports.strip(), "", "", class_name.strip(), ""]
 

@@ -1,4 +1,10 @@
 # shadowstep/utils/translator.py
+"""Text translation utilities for Shadowstep framework.
+
+This module provides the YandexTranslate class for translating text
+from Russian to English using the Yandex Cloud Translate API.
+"""
+
 import logging
 import os
 import re

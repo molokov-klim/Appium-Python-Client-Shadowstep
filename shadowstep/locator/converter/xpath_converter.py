@@ -1,3 +1,9 @@
+"""XPath converter module for Shadowstep framework.
+
+This module provides the XPathConverter class for converting
+XPath expressions to UiSelector strings and Shadowstep dictionary
+locators with comprehensive validation and error handling.
+"""
 from __future__ import annotations
 
 import logging
@@ -93,6 +99,7 @@ class XPathConverter:
     """
 
     def __init__(self):
+        """Initialize the XPathConverter."""
         self.logger = logging.getLogger(__name__)
 
     # ========== validation ==========
@@ -109,12 +116,28 @@ class XPathConverter:
     # ========== public API ==========
 
     def xpath_to_dict(self, xpath_str: str) -> dict[str, Any]:
+        """Convert XPath string to dictionary representation.
+
+        Args:
+            xpath_str: XPath expression as string.
+
+        Returns:
+            dict[str, Any]: Dictionary representation of the XPath.
+        """
         self._validate_xpath(xpath_str)
         node = parse(xpath_str)
         node_list = self._ast_to_list(node.relative)    # type: ignore
         return self._ast_to_dict(node_list)
 
     def xpath_to_ui_selector(self, xpath_str: str) -> str:
+        """Convert XPath string to UiSelector string.
+
+        Args:
+            xpath_str: XPath expression as string.
+
+        Returns:
+            str: UiSelector expression as string.
+        """
         self._validate_xpath(xpath_str)
         node = parse(xpath_str)
         node_list = self._ast_to_list(node.relative)    # type: ignore

@@ -1,3 +1,9 @@
+"""Page object test generator for Shadowstep framework.
+
+This module provides the PageObjectTestGenerator class for automatically
+generating test classes based on existing page objects, creating
+visibility checks for all page properties using pytest framework.
+"""
 # shadowstep/page_object/page_object_test_generator.py
 import ast
 import logging
@@ -46,6 +52,7 @@ class PageObjectTestGenerator:
     """
 
     def __init__(self):
+        """Initialize the PageObjectTestGenerator."""
         self.logger = logging.getLogger(__name__)
         templates_dir = os.path.join(os.path.dirname(__file__), "templates")
         self.env = Environment(
@@ -57,6 +64,16 @@ class PageObjectTestGenerator:
         )
 
     def generate_test(self, input_path: str, class_name: str, output_dir: str) -> tuple[str, str]:
+        """Generate test file for page object class.
+
+        Args:
+            input_path: Path to the page object file.
+            class_name: Name of the page object class.
+            output_dir: Directory to save the test file.
+
+        Returns:
+            tuple[str, str]: (test_file_path, test_class_name).
+        """
         self.logger.debug(f"{get_current_func_name()}")
 
         step = "Extracting module name"

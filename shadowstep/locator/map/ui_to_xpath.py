@@ -1,3 +1,9 @@
+"""Mapping from UiSelector attributes to XPath format.
+
+This module provides the mapping dictionary and utility functions
+for converting UiSelector attributes to their corresponding XPath
+predicates with proper value formatting and hierarchical handling.
+"""
 # shadowstep/locator/map/ui_to_xpath.py
 from collections.abc import Callable
 from typing import Any

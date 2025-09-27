@@ -1,3 +1,10 @@
+"""Parser for UiSelector expressions.
+
+This module provides the Parser class for parsing tokenized
+UiSelector expressions into an Abstract Syntax Tree (AST)
+representation that can be used for further processing and
+conversion to other locator formats.
+"""
 from __future__ import annotations
 
 from typing import Any, cast
@@ -15,6 +22,11 @@ class Parser:
     """
 
     def __init__(self, tokens: list[Token]):
+        """Initialize the Parser.
+
+        Args:
+            tokens: List of tokens to parse into an AST.
+        """
         self.tokens = tokens
         self.i = 0
 
@@ -33,7 +45,12 @@ class Parser:
         return self._advance()
 
     def parse(self) -> Selector:
-        # Optional prefix “new UiSelector()”
+        """Parse tokens into a Selector object.
+
+        Returns:
+            Selector: Parsed selector object containing method calls.
+        """
+        # Optional prefix "new UiSelector()"
         if self._peek().type == TokenType.NEW:
             self._advance()
             self._expect(TokenType.UISELECTOR)

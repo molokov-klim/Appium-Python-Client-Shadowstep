@@ -1,1 +1,6 @@
-# shadowstep/utils/__init__.py
+"""Utility functions and helper classes for the Shadowstep framework.
+
+This module provides common utility functions, helper classes, and shared
+functionality used throughout the Shadowstep framework, including command line
+parsing, translation services, and general utility functions.
+"""

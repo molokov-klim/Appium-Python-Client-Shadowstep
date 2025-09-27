@@ -75,6 +75,11 @@ class ShadowstepLogcat:
 
     @property
     def filters(self) -> list[str] | None:
+        """Get the current logcat filters.
+
+        Returns:
+            list[str] | None: List of filter patterns or None if no filters set.
+        """
         return self._filters
 
     @filters.setter
@@ -116,9 +121,21 @@ class ShadowstepLogcat:
 
 
     def __exit__(self, exc_type: Any, exc_val: Any, exc_tb: Any):
+        """Context manager exit method to stop logcat capture.
+        
+        Args:
+            exc_type: Exception type if any.
+            exc_val: Exception value if any.
+            exc_tb: Exception traceback if any.
+        """
         self.stop()
 
     def __del__(self):
+        """Destructor to ensure logcat capture is stopped on object deletion.
+        
+        Suppresses any exceptions during cleanup to prevent issues during
+        garbage collection.
+        """
         with contextlib.suppress(Exception):
             self.stop()
 

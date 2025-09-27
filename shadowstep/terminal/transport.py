@@ -1,5 +1,11 @@
 # shadowstep/terminal/transport.py
 
+"""SSH transport module for Shadowstep framework.
+
+This module provides the Transport class for establishing SSH connections
+and file transfer capabilities using paramiko and SCP libraries.
+"""
+
 import logging
 from typing import cast
 
@@ -22,6 +28,14 @@ class Transport:
     app.transport.scp.some_scp_method
     """
     def __init__(self, server: str, port: int, user: str, password: str):
+        """Initialize the Transport.
+
+        Args:
+            server: SSH server hostname or IP address.
+            port: SSH server port number.
+            user: SSH username for authentication.
+            password: SSH password for authentication.
+        """
         self.ssh = self._create_ssh_client(server=server, port=port, user=user, password=password)
         self.scp = SCPClient(cast(paramiko.Transport, self.ssh.get_transport()))
 

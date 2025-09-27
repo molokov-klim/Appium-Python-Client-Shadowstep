@@ -1,3 +1,10 @@
+"""UiSelector converter module for Shadowstep framework.
+
+This module provides the UiSelectorConverter class for converting
+UiSelector strings between different formats including XPath,
+dictionary locators, and back to UiSelector strings with
+comprehensive error handling and validation.
+"""
 import logging
 from typing import Any, cast
 

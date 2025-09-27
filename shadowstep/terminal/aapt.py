@@ -1,3 +1,9 @@
+"""AAPT (Android Asset Packaging Tool) integration for Shadowstep framework.
+
+This module provides the Aapt class for extracting package information
+from APK files using the Android Asset Packaging Tool, including
+package names and launchable activities.
+"""
 # shadowstep/terminal/aapt.py
 
 import logging
@@ -10,6 +16,12 @@ logger = logging.getLogger(__name__)
 
 
 class Aapt:
+    """Android Asset Packaging Tool (AAPT) integration.
+
+    This class provides functionality to extract package information
+    from APK files using the Android Asset Packaging Tool, including
+    package names and launchable activities.
+    """
 
     @staticmethod
     def get_package_name(path_to_apk: str) -> str:

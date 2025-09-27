@@ -86,6 +86,11 @@ class ElementProperties:
 
     @log_debug()
     def get_attributes(self) -> dict[str, Any]:
+        """Get all attributes of the element.
+
+        Returns:
+            dict[str, Any]: Dictionary containing all element attributes.
+        """
         xpath_expr = self._resolve_xpath_for_attributes()
         if not xpath_expr:
             return {}
