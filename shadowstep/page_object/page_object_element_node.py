@@ -56,6 +56,7 @@ class UiElementNode:
 
         Returns:
             str: Attribute value or empty string if not found.
+
         """
         return self.attrs.get(key, "") if self.attrs else ""
 
@@ -64,6 +65,7 @@ class UiElementNode:
         
         Returns:
             str: Tree-like string representation showing element hierarchy.
+
         """
         return self._repr_tree()
 
@@ -150,6 +152,7 @@ class Jinja2Renderer(TemplateRenderer):
 
         Args:
             templates_dir: Directory path containing Jinja2 templates.
+
         """
         self.logger = logging.getLogger(__name__)
         self.env = Environment(
@@ -170,6 +173,7 @@ class Jinja2Renderer(TemplateRenderer):
 
         Returns:
             str: Rendered content as string.
+
         """
         self.logger.debug(f"{get_current_func_name()}")
         template = self.env.get_template(template_name)
@@ -192,6 +196,7 @@ class Jinja2Renderer(TemplateRenderer):
         Args:
             content: Content to save.
             path: File path to save to.
+
         """
         self.logger.debug(f"{get_current_func_name()}")
         os.makedirs(os.path.dirname(os.path.abspath(path)), exist_ok=True)
@@ -230,6 +235,7 @@ class PageObjectRendererFactory:
 
         Raises:
             ValueError: If renderer type is not supported.
+
         """
         if renderer_type.lower() == "jinja2":
             templates_dir = os.path.join(os.path.dirname(__file__), "templates")
@@ -259,6 +265,7 @@ class ModelBuilder:
 
         Returns:
             PageObjectModel: Built page object model.
+
         """
         property_models: list[PropertyModel] = []
         for prop in properties:
@@ -298,6 +305,7 @@ class PageObjectRenderer:
 
         Args:
             renderer_type: Type of template renderer to use (default: "jinja2").
+
         """
         self.logger = logging.getLogger(__name__)
         self.renderer = PageObjectRendererFactory.create_renderer(renderer_type)
@@ -313,6 +321,7 @@ class PageObjectRenderer:
 
         Returns:
             str: Path to the saved file.
+
         """
         self.logger.debug(f"{get_current_func_name()}")
         model.properties.sort(key=lambda p: p.name)

@@ -34,6 +34,7 @@ class PageObjectGenerator:
 
         Args:
             translator: Optional translator instance for text translation.
+
         """
         self.logger = logging.getLogger(__name__)
         self.translator = translator
@@ -100,6 +101,7 @@ class PageObjectGenerator:
 
         Returns:
             tuple[str, str]: (class_name, output_path) of generated page object.
+
         """
         self.logger.debug(f"{get_current_func_name()}")
         step = "Forming title property"

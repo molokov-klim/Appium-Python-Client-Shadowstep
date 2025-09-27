@@ -25,6 +25,7 @@ class Parser:
 
         Args:
             tokens: List of tokens to parse into an AST.
+
         """
         self.tokens = tokens
         self.i = 0
@@ -48,6 +49,7 @@ class Parser:
 
         Returns:
             Selector: Parsed selector object containing method calls.
+
         """
         # Optional prefix "new UiSelector()"
         if self._peek().type == TokenType.NEW:

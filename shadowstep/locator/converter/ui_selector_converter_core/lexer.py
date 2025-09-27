@@ -75,6 +75,7 @@ class Lexer:
 
         Args:
             text: The UiSelector string to tokenize.
+
         """
         self.text = text
         self.i = 0
@@ -93,6 +94,7 @@ class Lexer:
 
         Returns:
             list[Token]: List of tokens representing the parsed input.
+
         """
         toks: list[Token] = []
         while self.i < self.n:

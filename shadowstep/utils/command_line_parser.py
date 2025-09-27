@@ -20,6 +20,7 @@ def udid():
     
     Returns:
         str: The UDID value from --udid argument, empty string if not found.
+
     """
     logger.debug(f"{get_current_func_name()}")
     var = ""
@@ -35,6 +36,7 @@ def model():
     
     Returns:
         str: The model value from --model argument, empty string if not found.
+
     """
     logger.debug(f"{get_current_func_name()}")
     var = ""
@@ -50,6 +52,7 @@ def detailed():
     
     Returns:
         str: The detailed value from --detailed argument, empty string if not found.
+
     """
     logger.debug(f"{get_current_func_name()}")
     var = ""
@@ -65,6 +68,7 @@ def chat_id():
     
     Returns:
         str: The chat ID value from --chat_id argument, empty string if not found.
+
     """
     logger.debug(f"{get_current_func_name()}")
     var = ""
@@ -80,6 +84,7 @@ def env():
     
     Returns:
         str: The environment value from --env argument, empty string if not found.
+
     """
     logger.debug(f"{get_current_func_name()}")
     var = ""
@@ -95,6 +100,7 @@ def root_dir():
     
     Returns:
         str: The absolute path from --rootdir argument, empty string if not found.
+
     """
     logger.debug(f"{get_current_func_name()}")
     root_dir_path = ""

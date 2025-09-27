@@ -68,6 +68,7 @@ class PageObjectParser:
         WHITE_LIST_RESOURCE_ID: Resource IDs that are always allowed
         BLACK_LIST_RESOURCE_ID: Resource IDs that are always filtered out
         CONTAINER_WHITELIST: Container IDs that are always allowed
+
     """
 
     def __init__(
@@ -86,6 +87,7 @@ class PageObjectParser:
             white_list_resource_id: Resource IDs that are always allowed
             black_list_resource_id: Resource IDs that are always filtered out
             container_whitelist: Container IDs that are always allowed
+
         """
         self.logger = logging.getLogger(__name__)
 
@@ -110,6 +112,7 @@ class PageObjectParser:
         Raises:
             etree.XMLSyntaxError: If XML parsing fails
             ValueError: If root node is filtered out and has no valid children
+
         """
         self.logger.info(f"{get_current_func_name()}")
         try:
@@ -131,6 +134,7 @@ class PageObjectParser:
             
         Raises:
             ValueError: If root node is filtered out and has no valid children
+
         """
         id_counter = 0
 
@@ -150,6 +154,7 @@ class PageObjectParser:
                 
             Returns:
                 Built node or None if filtered out
+
             """
             nonlocal id_counter
             attrib = dict(cast(Any, el.attrib))
@@ -213,6 +218,7 @@ class PageObjectParser:
             
         Returns:
             True if element should be allowed, False otherwise
+
         """
         cls = attrib.get("class")
         rid = attrib.get("resource-id")

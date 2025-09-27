@@ -30,6 +30,7 @@ class ActionStep:
 
         Returns:
             ActionStep: Click action step.
+
         """
         ...
 
@@ -43,6 +44,7 @@ class ActionStep:
 
         Returns:
             ActionStep: Long click action step.
+
         """
         ...
 
@@ -58,6 +60,7 @@ class ActionStep:
 
         Returns:
             ActionStep: Double click action step.
+
         """
         ...
 
@@ -70,6 +73,7 @@ class ActionStep:
 
         Returns:
             ActionStep: Source action step.
+
         """
         ...
 
@@ -82,5 +86,6 @@ class ActionStep:
 
         Returns:
             ActionStep: Screenshot action step.
+
         """
         ...

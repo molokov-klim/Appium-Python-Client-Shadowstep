@@ -73,6 +73,7 @@ class PageObjectTestGenerator:
 
         Returns:
             tuple[str, str]: (test_file_path, test_class_name).
+
         """
         self.logger.debug(f"{get_current_func_name()}")
 

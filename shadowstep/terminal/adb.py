@@ -40,6 +40,7 @@ class Adb:
 
         Args:
             base: ShadowstepBase instance for automation operations.
+
         """
         self.base: ShadowstepBase = base
         self.driver: WebDriver = base.driver
@@ -51,6 +52,7 @@ class Adb:
         Returns:
             Union[List[str], None]
                 A list of connected device identifiers (UUIDs) or None if no devices are found or an error occurs.
+
         """
         logger.info(f"{get_current_func_name()}")
 
@@ -90,6 +92,7 @@ class Adb:
         Returns:
             Union[str, None]
                 The model of the device as a string, or None if an error occurs or the model cannot be retrieved.
+
         """
         logger.info(f"{get_current_func_name()} < {udid}")
         command = ["adb", "-s", f"{udid}", "shell", "getprop", "ro.product.model"] if udid else ["adb", "shell", "getprop", "ro.product.model"]
@@ -121,6 +124,7 @@ class Adb:
         Returns:
             bool
                 True if the file was successfully pushed, False otherwise.
+
         """
         logger.info(f"{get_current_func_name()} < {source=}, {destination=}")
 
@@ -153,6 +157,7 @@ class Adb:
         Returns:
             bool
                 True if the file was successfully pulled, False otherwise.
+
         """
         logger.info(f"{get_current_func_name()} < {source=}, {destination=}")
         command = ["adb", "-s", f"{udid}", "pull", f"{source}", f"{destination}"] if udid else ["adb", "pull", f"{source}", f"{destination}"]
@@ -179,6 +184,7 @@ class Adb:
         Returns:
             bool
                 True if the application was successfully installed, False otherwise.
+
         """
         logger.info(f"install() < {source=}")
         command = ["adb", "-s", f"{udid}", "install", "-r", f"{source}"] if udid else ["adb", "install", f"{source}"]
@@ -203,6 +209,7 @@ class Adb:
         Returns:
             bool
                 True if the application is installed, False otherwise.
+
         """
         logger.info(f"is_installed() < {package=}")
 
@@ -232,6 +239,7 @@ class Adb:
         Returns:
             bool
                 True, if the application was successfully removed, False otherwise.
+
         """
         logger.info(f"uninstall_app() < {package=}")
 
@@ -259,6 +267,7 @@ class Adb:
         Returns:
             bool
                 True if the activity was successfully started, False otherwise.
+
         """
         logger.info(f"start_activity() < {package=}, {activity=}")
 
@@ -280,6 +289,7 @@ class Adb:
         Returns:
             Union[str, None]
                 The name of the current activity if found, None otherwise.
+
         """
         # Log function start information
         logger.info("get_current_activity()")
@@ -324,6 +334,7 @@ class Adb:
         Returns:
             Union[str, None]
                 The name of the current application package if found, None otherwise.
+
         """
         # Log function start information
         logger.info("get_current_app_package()")
@@ -372,6 +383,7 @@ class Adb:
         Returns:
             bool
                 True if the application was successfully closed, False otherwise.
+
         """
         logger.info(f"close_app() < {package=}")
 
@@ -399,6 +411,7 @@ class Adb:
         Returns:
             bool
                 True if the application was successfully rebooted, False otherwise.
+
         """
         logger.info(f"reboot_app() < {package=}, {activity=}")
 
@@ -421,6 +434,7 @@ class Adb:
         Returns:
             bool
                 True if the home button press was successfully executed, False otherwise.
+
         """
         logger.info("press_home()")
 
@@ -442,6 +456,7 @@ class Adb:
         Returns:
             bool
                 True if the back button press was successfully executed, False otherwise.
+
         """
         logger.info("press_back()")
 
@@ -463,6 +478,7 @@ class Adb:
         Returns:
             bool
                 True if the menu button press was successfully executed, False otherwise.
+
         """
         logger.info("press_menu()")
 
@@ -488,6 +504,7 @@ class Adb:
         Returns:
             bool
                 True if the key press was successfully executed, False otherwise.
+
         """
         logger.info(f"input_keycode_num_() < {num=}")
 
@@ -513,6 +530,7 @@ class Adb:
         Returns:
             bool
                 True if the key press was successfully executed, False otherwise.
+
         """
         logger.info(f"input_keycode() < {keycode=}")
 
@@ -538,6 +556,7 @@ class Adb:
         Returns:
             bool
                 True if the text was successfully inputted, False otherwise.
+
         """
         logger.info(f"input_text() < {text=}")
 
@@ -567,6 +586,7 @@ class Adb:
         Returns:
             bool
                 True if the tap was successfully executed, False otherwise.
+
         """
         logger.info(f"tap() < {x=}, {y=}")
 
@@ -603,6 +623,7 @@ class Adb:
         Returns:
             bool
                 True if the swipe was successfully executed, False otherwise.
+
         """
         logger.info(f"swipe() < {start_x=}, {start_y=}, {end_x=}, {end_y=}, {duration=}")
 
@@ -630,6 +651,7 @@ class Adb:
         Returns:
             bool
                 True if the VPN connection is established with the specified IP address, False otherwise.
+
         """
         logger.info(f"check_vpn() < {ip_address=}")
 
@@ -660,6 +682,7 @@ class Adb:
         Returns:
             bool
                 True if the logcat process was successfully stopped, False otherwise.
+
         """
         logger.info("stop_logcat()")
         if Adb.is_process_exist(name="logcat") and Adb.kill_all(name="logcat"):
@@ -680,6 +703,7 @@ class Adb:
         Returns:
             bool
                 True if the process is running, False otherwise.
+
         """
         logger.info(f"is_process_exist() < {name=}")
         command = ["adb", "shell", "ps"]
@@ -721,6 +745,7 @@ class Adb:
         Returns:
             bool
                 True if the process was successfully started and exists, False otherwise.
+
         """
         logger.info(f"run_background_process() < {command=}")
 
@@ -746,6 +771,7 @@ class Adb:
         Returns:
             bool
                 True if the ADB server was successfully reloaded, False otherwise.
+
         """
         logger.info("reload_adb()")
 
@@ -781,6 +807,7 @@ class Adb:
         Returns:
             Union[int, None]
                 The PID of the process if found, None otherwise.
+
         """
         logger.info(f"know_pid() < {name=}")
         command = ["adb", "shell", "ps"]
@@ -821,6 +848,7 @@ class Adb:
         Returns:
             bool
                 True if the process was successfully terminated, False otherwise.
+
         """
         logger.info(f"kill_by_pid() < {pid=}")
 
@@ -846,6 +874,7 @@ class Adb:
         Returns:
             bool
                 True if the process was successfully terminated, False otherwise.
+
         """
         logger.info(f"kill_by_name() < {name=}")
 
@@ -871,6 +900,7 @@ class Adb:
         Returns:
             bool
                 True if the processes were successfully terminated, False otherwise.
+
         """
         logger.info(f"kill_all() < {name=}")
 
@@ -896,6 +926,7 @@ class Adb:
         Returns:
             bool
                 True if the files were successfully deleted, False otherwise.
+
         """
         logger.info(f"delete_files_from_internal_storage() < {path=}")
 
@@ -926,6 +957,7 @@ class Adb:
         Returns:
             bool
                 True if the videos were successfully pulled and deleted (if specified), False otherwise.
+
         """
         logger.info(f"pull_video() < {destination=}")
 
@@ -965,6 +997,7 @@ class Adb:
         Returns:
             bool
                 True if the video recording was successfully stopped, False otherwise.
+
         """
         logger.info("stop_video()")
 
@@ -993,6 +1026,7 @@ class Adb:
         Returns:
             Union[subprocess.Popen[bytes], subprocess.Popen[Union[Union[str, bytes], Any]]]
                 The Popen object representing the running video recording process if successful, None otherwise.
+
         """
         logger.info(f"record_video() < {filename}")
         if path.endswith("/"):
@@ -1023,6 +1057,7 @@ class Adb:
         Returns:
             bool
                 True if the video recording was successfully started, False otherwise.
+
         """
         if path.endswith("/"):
             path = path[:-1]
@@ -1047,6 +1082,7 @@ class Adb:
         Returns:
             bool
                 True if the reboot command was successfully executed, False otherwise.
+
         """
         logger.info("reboot()")
 
@@ -1068,6 +1104,7 @@ class Adb:
         Returns:
             Union[Tuple[int, int], None]
                 A tuple containing the width and height of the screen in pixels if successful, None otherwise.
+
         """
         logger.info("get_screen_resolution()")
 
@@ -1092,6 +1129,7 @@ class Adb:
         Returns:
             list
                 A list of package names installed on the device.
+
         """
         packages_raw = self.execute(command="shell pm list packages")
         # Use regular expression to remove "package:" from each line
@@ -1110,6 +1148,7 @@ class Adb:
         Returns:
             str
                 The output of the executed command as a string.
+
         """
         logger.info(f"execute() < {command}")
         execute_command = ["adb", *command.split()]

@@ -30,6 +30,7 @@ class ShadowstepException(WebDriverException):
             msg: Error message.
             screen: Screenshot data.
             stacktrace: Stack trace information.
+
         """
         super().__init__(msg, screen, stacktrace)
 
@@ -49,6 +50,7 @@ class ShadowstepElementError(ShadowstepException):
         Args:
             message: Error message.
             original_exception: The original exception that caused this error.
+
         """
         super().__init__(message)
         self.original_exception = original_exception
@@ -75,6 +77,7 @@ class ShadowstepNoSuchElementError(NoSuchElementException):
             screen: Screenshot data.
             stacktrace: Stack trace information.
             locator: The locator that was used to find the element.
+
         """
         super().__init__(msg, screen, stacktrace)
         self.locator = locator
@@ -87,6 +90,7 @@ class ShadowstepNoSuchElementError(NoSuchElementException):
         
         Returns:
             str: Formatted string containing locator, message, and stacktrace.
+
         """
         return f"ShadowstepNoSuchElementError: Locator: {self.locator} \n Message: {self.msg} \n Stacktrace: {self.stacktrace}"
 
@@ -108,6 +112,7 @@ class ShadowstepTimeoutException(TimeoutException):
             stacktrace: Stack trace information.
             locator: The locator that was used to find the element.
             driver: The WebDriver instance.
+
         """
         super().__init__(msg, screen, stacktrace)
         self.locator = locator
@@ -119,6 +124,7 @@ class ShadowstepTimeoutException(TimeoutException):
         
         Returns:
             str: Formatted string containing timestamp, message, locator, URL, and stacktrace.
+
         """
         return (f"ShadowstepTimeoutException\n"
                 f"Timestamp: {self.timestamp}\n"
@@ -141,6 +147,7 @@ class ShadowstepElementException(WebDriverException):
             msg: Error message.
             screen: Screenshot data.
             stacktrace: Stack trace information.
+
         """
         super().__init__(msg, screen, stacktrace)
 

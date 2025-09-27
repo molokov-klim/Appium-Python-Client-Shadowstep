@@ -71,6 +71,18 @@ line-length = 100
 [tool.ruff.lint]
 select = ["ALL"]
 
+ignore = [
+    "D203", # conflict in D
+    "D211", # conflict in D
+    "D212", # conflict in D
+    "D213", # conflict in D
+    "E501", # line too long
+    "RUF001", # cyryllic
+    "ANN401", # Any
+    "S101", # assert
+]
+
+
 exclude = [
     "**/__pycache__",
     ".bzr",

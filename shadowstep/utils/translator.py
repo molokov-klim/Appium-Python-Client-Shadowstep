@@ -22,6 +22,7 @@ class YandexTranslate:
 
         Args:
             folder_id (str): The Yandex Cloud folder ID used for translations.
+
         """
         self.logger = logging.getLogger()
         self.folder_id = folder_id
@@ -32,6 +33,7 @@ class YandexTranslate:
 
         Returns:
             str: The IAM token.
+
         """
         oauth_token = os.getenv("yandexPassportOauthToken")  # noqa: SIM112
         if not oauth_token:
@@ -50,6 +52,7 @@ class YandexTranslate:
 
         Returns:
             bool: True if Cyrillic characters are found, otherwise False.
+
         """
         return bool(re.search(r"[а-яА-Я]", text))
 
@@ -61,6 +64,7 @@ class YandexTranslate:
 
         Returns:
             str: Translated string (or original if not translated).
+
         """
         self.logger.debug(f"{get_current_func_name()}")
         self.logger.debug(f"{text=}")

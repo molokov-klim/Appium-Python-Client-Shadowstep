@@ -67,6 +67,7 @@ class XPathAttribute(str, Enum):
         
         Returns:
             str: The string value of the enum attribute.
+
         """
         return self.value
 
@@ -75,6 +76,7 @@ class XPathAttribute(str, Enum):
         
         Returns:
             str: String representation in format 'ClassName.ATTRIBUTE_NAME'.
+
         """
         return f"{self.__class__.__name__}.{self.name}"
 
@@ -86,6 +88,7 @@ class XPathAttribute(str, Enum):
             
         Returns:
             bool: True if equal, False otherwise.
+
         """
         if isinstance(other, str):
             return self.value == other
@@ -96,5 +99,6 @@ class XPathAttribute(str, Enum):
         
         Returns:
             int: Hash value of the enum's string value.
+
         """
         return hash(self.value)

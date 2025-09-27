@@ -4,6 +4,7 @@ This module provides a builder script for testing and demonstrating
 the Shadowstep framework functionality including page object generation,
 parsing, and recycler exploration.
 """
+
 # builder.py
 import json  # type: ignore  # noqa: F401
 import logging  # type: ignore  # noqa: F401

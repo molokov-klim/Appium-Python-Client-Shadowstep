@@ -20,6 +20,7 @@ def _handle_child_selector(child_ui: str) -> str:
 
     Returns:
         UiSelector string with child appended
+
     """
     return f".childSelector({child_ui})"
 
@@ -32,6 +33,7 @@ def _handle_from_parent(parent_ui: str) -> str:
 
     Returns:
         UiSelector string with parent dom
+
     """
     return f".fromParent({parent_ui})"
 
@@ -87,6 +89,7 @@ def get_ui_for_method(method: XPathAttribute, value: Any) -> str:
 
     Raises:
         KeyError: If method is not supported
+
     """
     if method not in XPATH_TO_UI:
         raise KeyError(f"Unsupported XPath attribute: {method}")
@@ -102,6 +105,7 @@ def is_hierarchical_xpath(method: XPathAttribute) -> bool:
 
     Returns:
         True if method is hierarchical (childSelector, fromParent)
+
     """
     return method in (XPathAttribute.CHILD_SELECTOR, XPathAttribute.FROM_PARENT)
 
@@ -111,5 +115,6 @@ def get_supported_attributes() -> list[XPathAttribute]:
 
     Returns:
         List of supported XPathAttribute enum values
+
     """
     return list(XPATH_TO_UI.keys())

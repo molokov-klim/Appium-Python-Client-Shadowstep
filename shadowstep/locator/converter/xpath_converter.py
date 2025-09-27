@@ -122,6 +122,7 @@ class XPathConverter:
 
         Returns:
             dict[str, Any]: Dictionary representation of the XPath.
+
         """
         self._validate_xpath(xpath_str)
         node = parse(xpath_str)
@@ -136,6 +137,7 @@ class XPathConverter:
 
         Returns:
             str: UiSelector expression as string.
+
         """
         self._validate_xpath(xpath_str)
         node = parse(xpath_str)

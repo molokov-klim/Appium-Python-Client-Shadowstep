@@ -3,6 +3,7 @@
 This module provides a comprehensive set of mobile commands for Appium automation,
 including app management, device information, clipboard operations, and more.
 """
+
 from __future__ import annotations
 
 import logging

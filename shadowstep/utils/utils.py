@@ -37,6 +37,7 @@ def find_coordinates_by_vector(
         
     Returns:
         tuple[int, int]: End coordinates (x, y) clamped to screen bounds.
+
     """
     angle_radians = direction * (math.pi / 180)
     dy = abs(distance * math.cos(angle_radians))
@@ -55,6 +56,7 @@ def get_current_func_name(depth: int = 1) -> str:
         
     Returns:
         str: Name of the function at the specified depth, or "<unknown>" if not found.
+
     """
     frame = inspect.currentframe()
     if frame is None:
@@ -74,6 +76,7 @@ def grep_pattern(input_string: str, pattern: str) -> list[str]:
         
     Returns:
         list[str]: List of lines that match the pattern.
+
     """
     lines = input_string.split("\n")  # Split the input string into lines
     regex = re.compile(pattern)  # Compile the regex pattern
@@ -87,5 +90,6 @@ def is_camel_case(text: str) -> bool:
         
     Returns:
         bool: True if text is in camelCase format, False otherwise.
+
     """
     return bool(re.fullmatch(r"[a-z]+(?:[A-Z][a-z0-9]*)*", text))

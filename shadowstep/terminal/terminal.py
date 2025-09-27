@@ -44,6 +44,7 @@ class NotProvideCredentialsError(Exception):
 
         Args:
             message: Error message describing the missing credentials.
+
         """
         super().__init__(message)
         self.message = message
@@ -64,6 +65,7 @@ class Terminal:
 
         Args:
             base: ShadowstepBase instance for automation operations.
+
         """
         self.base: ShadowstepBase = base
         self.transport: Transport = base.transport

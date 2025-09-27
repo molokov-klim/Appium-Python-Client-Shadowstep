@@ -24,6 +24,7 @@ def dict_to_ui_attribute(attr: ShadowstepDictAttribute, value: Any) -> str:
         
     Raises:
         ValueError: If attribute is not supported
+
     """
     if attr in DICT_TO_UI_MAPPING:
         return DICT_TO_UI_MAPPING[attr](value)
@@ -38,6 +39,7 @@ def is_hierarchical_attribute(attr: ShadowstepDictAttribute) -> bool:
         
     Returns:
         True if attribute is hierarchical
+
     """
     return attr in (ShadowstepDictAttribute.CHILD_SELECTOR, ShadowstepDictAttribute.FROM_PARENT,
                     ShadowstepDictAttribute.SIBLING)
@@ -51,6 +53,7 @@ def get_ui_method_for_hierarchical_attribute(attr: ShadowstepDictAttribute) -> s
         
     Returns:
         UiSelector method name
+
     """
     if attr == ShadowstepDictAttribute.CHILD_SELECTOR:
         return UiAttribute.CHILD_SELECTOR.value

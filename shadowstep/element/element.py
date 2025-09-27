@@ -3,6 +3,7 @@
 This module provides the main Element class which serves as the public API
 for interacting with mobile elements in the Shadowstep framework.
 """
+
 from __future__ import annotations
 
 import logging

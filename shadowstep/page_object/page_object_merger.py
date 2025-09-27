@@ -51,6 +51,7 @@ class PageObjectMerger:
 
         Returns:
             str: Raw content of the file.
+
         """
         self.logger.debug(f"{get_current_func_name()}")
         try:
@@ -69,6 +70,7 @@ class PageObjectMerger:
 
         Returns:
             str: All import lines joined by newline.
+
         """
         self.logger.debug(f"{get_current_func_name()}")
         lines = page.splitlines()
@@ -95,6 +97,7 @@ class PageObjectMerger:
 
         Raises:
             ValueError: If class definition not found.
+
         """
         self.logger.info(f"{get_current_func_name()}")
         for line in page.splitlines():
@@ -113,6 +116,7 @@ class PageObjectMerger:
 
         Returns:
             dict: method_name -> method_text
+
         """
         self.logger.debug(f"{get_current_func_name()}")
 
@@ -155,6 +159,7 @@ class PageObjectMerger:
 
         Returns:
             dict[str, Any]: Dictionary with unique methods.
+
         """
         self.logger.debug(f"{get_current_func_name()}")
 
@@ -189,6 +194,7 @@ class PageObjectMerger:
             class_name: Name of the class.
             unique_methods: Dictionary of unique methods.
             encoding: File encoding.
+
         """
         self.logger.debug(f"{get_current_func_name()}")
         lines: list[str] = [imports.strip(), "", "", class_name.strip(), ""]

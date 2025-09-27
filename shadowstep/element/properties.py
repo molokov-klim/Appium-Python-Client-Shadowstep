@@ -90,6 +90,7 @@ class ElementProperties:
 
         Returns:
             dict[str, Any]: Dictionary containing all element attributes.
+
         """
         xpath_expr = self._resolve_xpath_for_attributes()
         if not xpath_expr:

@@ -36,6 +36,7 @@ class ShadowstepImage:
             base: Shadowstep instance for automation operations.
             threshold: Matching threshold for image recognition (0.0 to 1.0).
             timeout: Timeout in seconds for image visibility operations.
+
         """
         self._image = image
         self._base: Shadowstep = base
@@ -89,6 +90,7 @@ class ShadowstepImage:
 
         Returns:
             ShadowstepImage: Self for method chaining.
+
         """
         # self.logger.debug(f"{get_current_func_name()}")
         # self._ensure_visible()
@@ -106,6 +108,7 @@ class ShadowstepImage:
 
         Returns:
             ShadowstepImage: Self for method chaining.
+
         """
         # self.logger.debug(f"{get_current_func_name()}")
         # self._ensure_visible()
@@ -130,6 +133,7 @@ class ShadowstepImage:
 
         Returns:
             ShadowstepImage: Self for method chaining.
+
         """
         # self.logger.debug(f"{get_current_func_name()}")
         # self._ensure_visible()
@@ -147,6 +151,7 @@ class ShadowstepImage:
 
         Returns:
             ShadowstepImage: Self for method chaining.
+
         """
         # self.logger.debug(f"{get_current_func_name()}")
         # self._ensure_visible()
@@ -160,6 +165,7 @@ class ShadowstepImage:
 
         Returns:
             bool: True if image becomes visible within timeout, False otherwise.
+
         """
         # self.logger.debug(f"{get_current_func_name()}")
         # end_time = time.monotonic() + self.timeout
@@ -177,6 +183,7 @@ class ShadowstepImage:
 
         Returns:
             bool: True if image becomes invisible within timeout, False otherwise.
+
         """
         # self.logger.debug(f"{get_current_func_name()}")
         # end_time = time.monotonic() + self.timeout
@@ -194,6 +201,7 @@ class ShadowstepImage:
 
         Returns:
             bool: True if image is visible, False otherwise.
+
         """
         # self.logger.debug(f"{get_current_func_name()} {self.threshold=}")
         # try:
@@ -210,6 +218,7 @@ class ShadowstepImage:
 
         Returns:
             tuple[int, int, int, int]: (x1, y1, x2, y2) coordinates of the image.
+
         """
         # self.logger.debug(f"{get_current_func_name()}")
         # if self._coords is None:
@@ -223,6 +232,7 @@ class ShadowstepImage:
 
         Returns:
             tuple[int, int]: (x, y) center coordinates of the image.
+
         """
         # self.logger.debug(f"{get_current_func_name()}")
         # if self._center is None:
@@ -247,6 +257,7 @@ class ShadowstepImage:
 
         Returns:
             ShadowstepImage: Self for method chaining.
+
         """
         # self.logger.debug(f"{get_current_func_name()}")
         #
@@ -283,6 +294,7 @@ class ShadowstepImage:
 
         Returns:
             ShadowstepImage: Self for method chaining.
+
         """
         # self.logger.debug(f"{get_current_func_name()}")
         # if not self._base:
@@ -310,6 +322,7 @@ class ShadowstepImage:
 
         Returns:
             ShadowstepImage: Self for method chaining.
+
         """
         # self.logger.debug(f"{get_current_func_name()}")
         # if not self._base:
@@ -337,6 +350,7 @@ class ShadowstepImage:
 
         Returns:
             ShadowstepImage: Self for method chaining.
+
         """
         # self.logger.debug(f"{get_current_func_name()}")
         # if not self._base:
@@ -364,6 +378,7 @@ class ShadowstepImage:
 
         Returns:
             ShadowstepImage: Self for method chaining.
+
         """
         # self.logger.debug(f"{get_current_func_name()}")
         # if not self._base:
@@ -395,6 +410,7 @@ class ShadowstepImage:
 
         Returns:
             bool: True if the image contains the target image, False otherwise.
+
         """
         # self.logger.debug(f"{get_current_func_name()}")
         # try:
@@ -425,6 +441,7 @@ class ShadowstepImage:
 
         Returns:
             np.ndarray[Any, Any]: Image as numpy array in RGB format.
+
         """
         # self.logger.debug(f"{get_current_func_name()}")
         # if isinstance(image, np.ndarray):
@@ -468,6 +485,7 @@ class ShadowstepImage:
 
         Returns:
             tuple[float, tuple[int, int]]: (confidence, (x, y)) coordinates of best match.
+
         """
         # self.logger.debug(f"{get_current_func_name()}")
         # full_image = self._enhance_image(full_image)

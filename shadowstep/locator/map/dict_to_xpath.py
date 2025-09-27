@@ -23,6 +23,7 @@ def dict_to_xpath_attribute(attr: ShadowstepDictAttribute, value: Any) -> str:
         
     Raises:
         ValueError: If attribute is not supported
+
     """
     if attr in DICT_TO_XPATH_MAPPING:
         return DICT_TO_XPATH_MAPPING[attr](value)
@@ -37,6 +38,7 @@ def is_hierarchical_attribute(attr: ShadowstepDictAttribute) -> bool:
         
     Returns:
         True if attribute is hierarchical
+
     """
     return attr in (ShadowstepDictAttribute.CHILD_SELECTOR, ShadowstepDictAttribute.FROM_PARENT,
                     ShadowstepDictAttribute.SIBLING)
@@ -51,6 +53,7 @@ def get_xpath_for_hierarchical_attribute(attr: ShadowstepDictAttribute, nested_x
         
     Returns:
         XPath expression with hierarchy
+
     """
     if attr == ShadowstepDictAttribute.CHILD_SELECTOR:
         return nested_xpath

@@ -6,6 +6,7 @@ pathfinding algorithms. It supports both NetworkX-based shortest path finding
 and fallback BFS traversal.
 """
 
+
 from __future__ import annotations
 
 import logging
@@ -39,6 +40,7 @@ class PageNavigator:
         shadowstep: The main Shadowstep instance for page resolution.
         graph_manager: Manages the page transition graph.
         logger: Logger instance for dom events.
+
     """
 
     def __init__(self, shadowstep: Shadowstep) -> None:
@@ -49,6 +51,7 @@ class PageNavigator:
             
         Raises:
             TypeError: If shadowstep is None.
+
         """
         # shadowstep is already typed as Shadowstep, so it cannot be None
 
@@ -65,6 +68,7 @@ class PageNavigator:
             
         Raises:
             TypeError: If page is None or edges is not a dictionary.
+
         """
         if page is None:
             raise TypeError("page cannot be None")
@@ -86,6 +90,7 @@ class PageNavigator:
         Raises:
             TypeError: If from_page or to_page is None.
             ValueError: If timeout is negative.
+
         """
         if from_page is None:
             raise TypeError("from_page cannot be None")
@@ -124,6 +129,7 @@ class PageNavigator:
             
         Returns:
             List of pages representing the path, or None if no path exists.
+
         """
         if isinstance(start, str):
             start = self.shadowstep.resolve_page(start)
@@ -149,6 +155,7 @@ class PageNavigator:
             
         Returns:
             List of pages representing the path, or None if no path exists.
+
         """
         visited = set()
         queue = deque([(start, [])])  # type: ignore
@@ -174,6 +181,7 @@ class PageNavigator:
         Raises:
             ValueError: If path is empty or has only one element.
             AssertionError: If dom to next page fails.
+
         """
         if not path:
             raise ValueError("path cannot be empty")
@@ -201,6 +209,7 @@ class PageGraph:
     Attributes:
         graph: Dictionary-based graph for backward compatibility.
         nx_graph: NetworkX directed graph for advanced operations.
+
     """
 
     def __init__(self) -> None:
@@ -217,6 +226,7 @@ class PageGraph:
             
         Raises:
             TypeError: If page is None.
+
         """
         if page is None:
             raise TypeError("page cannot be None")
@@ -237,6 +247,7 @@ class PageGraph:
             
         Returns:
             List of target pages/names, empty list if page not found.
+
         """
         return self.graph.get(page, [])
 
@@ -249,6 +260,7 @@ class PageGraph:
             
         Returns:
             True if edge exists, False otherwise.
+
         """
         transitions = self.get_edges(from_page)
         return to_page in transitions
@@ -262,6 +274,7 @@ class PageGraph:
             
         Returns:
             True if path exists, False otherwise.
+
         """
         try:
             return nx.has_path(self.nx_graph, from_page, to_page)
@@ -277,6 +290,7 @@ class PageGraph:
             
         Returns:
             List of pages representing the shortest path, or None if no path exists.
+
         """
         try:
             return nx.shortest_path(self.nx_graph, source=from_page, target=to_page)

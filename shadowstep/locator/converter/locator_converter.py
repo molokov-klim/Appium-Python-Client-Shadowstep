@@ -52,6 +52,7 @@ class LocatorConverter:
             
         Raises:
             ShadowstepConversionError: If conversion fails
+
         """
         try:
             from shadowstep.element.element import Element
@@ -82,6 +83,7 @@ class LocatorConverter:
             
         Raises:
             ShadowstepConversionError: If conversion fails
+
         """
         try:
             from shadowstep.element.element import Element
@@ -112,6 +114,7 @@ class LocatorConverter:
             
         Raises:
             ShadowstepConversionError: If conversion fails
+
         """
         try:
             from shadowstep.element.element import Element
@@ -168,6 +171,7 @@ class LocatorConverter:
             
         Raises:
             ValueError: If selector is invalid
+
         """
         if isinstance(selector, dict):
             self.dict_converter.validate_dict_selector(selector)

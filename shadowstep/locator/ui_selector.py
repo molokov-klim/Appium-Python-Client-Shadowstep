@@ -25,6 +25,7 @@ class UiSelector:
     Example:
         selector = UiSelector().text("OK").clickable(True).className("Button")
         selector_str = str(selector)  # "new UiSelector().text("OK").clickable(true).className("Button");"
+
     """
 
     def __init__(self):
@@ -246,6 +247,7 @@ class UiSelector:
             
         Raises:
             ValueError: If string format is invalid
+
         """
         # This is a simplified parser - in a real implementation you might want
         # to use the existing UiSelectorConverter to parse the string
@@ -265,6 +267,7 @@ class UiSelector:
             
         Returns:
             UiSelector instance
+
         """
         selector = cls()
         

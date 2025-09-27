@@ -36,6 +36,7 @@ class Transport:
             port: SSH server port number.
             user: SSH username for authentication.
             password: SSH password for authentication.
+
         """
         self.ssh = self._create_ssh_client(server=server, port=port, user=user, password=password)
         self.scp = SCPClient(cast(paramiko.Transport, self.ssh.get_transport()))

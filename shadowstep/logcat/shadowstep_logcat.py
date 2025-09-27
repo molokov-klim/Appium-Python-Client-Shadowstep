@@ -41,6 +41,7 @@ class ShadowstepLogcat:
         _stop_evt: Event to signal thread termination.
         _filename: Output file path for logcat data.
         _ws: Current WebSocket connection.
+
     """
 
     def __init__(
@@ -56,6 +57,7 @@ class ShadowstepLogcat:
             
         Raises:
             ValueError: If poll_interval is negative.
+
         """
         if poll_interval < 0:
             raise ValueError("poll_interval must be non-negative")
@@ -79,6 +81,7 @@ class ShadowstepLogcat:
 
         Returns:
             list[str] | None: List of filter patterns or None if no filters set.
+
         """
         return self._filters
 
@@ -127,6 +130,7 @@ class ShadowstepLogcat:
             exc_type: Exception type if any.
             exc_val: Exception value if any.
             exc_tb: Exception traceback if any.
+
         """
         self.stop()
 
@@ -148,6 +152,7 @@ class ShadowstepLogcat:
             
         Raises:
             ValueError: If filename is empty.
+
         """
         self.port = port
         if not filename:
@@ -304,6 +309,7 @@ class ShadowstepLogcat:
             
         Returns:
             HTTP URL string for the WebDriver command executor.
+
         """
         http_url = getattr(driver.command_executor, "_url", None)
         if not http_url:

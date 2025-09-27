@@ -5,6 +5,7 @@ automatically exploring scrollable content in mobile applications
 by generating page objects for different scroll positions and
 merging them into a comprehensive page object.
 """
+
 # shadowstep/page_object/page_object_recycler_explorer.py
 from __future__ import annotations
 
@@ -33,6 +34,7 @@ class PageObjectRecyclerExplorer:
         Args:
             base: Shadowstep instance for automation operations.
             translator: Translator instance for text translation.
+
         """
         self.base: Shadowstep = base
         self.logger = logging.getLogger(__name__)
@@ -51,6 +53,7 @@ class PageObjectRecyclerExplorer:
 
         Raises:
             ValueError: If terminal is not initialized.
+
         """
         self.logger.info(f"{get_current_func_name()}")
         if self.base.terminal is None:  # type: ignore
