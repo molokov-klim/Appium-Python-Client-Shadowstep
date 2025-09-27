@@ -36,7 +36,7 @@ class PageObjectGenerator:
     generation, and template-based rendering.
     """
 
-    def __init__(self, translator: "YandexTranslate | None" = None) -> None:
+    def __init__(self, translator: YandexTranslate | None = None) -> None:
         """Initialize the PageObjectGenerator.
 
         Args:
@@ -380,7 +380,7 @@ class PageObjectGenerator:
 
             if node.depth == target.depth:
                 self.logger.debug(
-                    "Sibling/cousin candidate: id=%s, class=%s, text=%s, content-desc=%s", node.id, node.tag, node.attrs.get('text'), node.attrs.get('content-desc'))
+                    "Sibling/cousin candidate: id=%s, class=%s, text=%s, content-desc=%s", node.id, node.tag, node.attrs.get("text"), node.attrs.get("content-desc"))
                 result.append(cast("UiElementNode", node))
             else:
                 self.logger.debug("Rejected (wrong depth): id=%s, depth=%s ≠ %s", node.id, node.depth, target.depth)
@@ -517,7 +517,7 @@ class PageObjectGenerator:
 
         for element in elements:
             if element.tag in self.BLACKLIST_NO_TEXT_CLASSES and "text" in element.attrs:
-                self.logger.debug("Removing text attribute from %s element: %s", element.tag, element.attrs.get('text'))
+                self.logger.debug("Removing text attribute from %s element: %s", element.tag, element.attrs.get("text"))
                 del element.attrs["text"]
 
     def _prepare_template_data(self,
@@ -615,7 +615,7 @@ class PageObjectGenerator:
             properties.append(prop)
             used_names.add(name)
             used_ids.add(node.id)
-            self.logger.debug("Added regular: %s → %s", name, prop['locator'])
+            self.logger.debug("Added regular: %s → %s", name, prop["locator"])
 
         # Switcher properties
         for anchor, switcher in switcher_anchor_pairs:
@@ -633,7 +633,7 @@ class PageObjectGenerator:
                 properties.append(anchor_prop)
                 used_names.add(anchor_name)
                 used_ids.add(anchor.id)
-                self.logger.debug("Added anchor: %s → %s", anchor_name, anchor_prop['locator'])
+                self.logger.debug("Added anchor: %s → %s", anchor_name, anchor_prop["locator"])
             else:
                 anchor_name = None
                 for p in properties:
@@ -659,7 +659,7 @@ class PageObjectGenerator:
             properties.append(prop)
             used_names.add(name)
             used_ids.add(switcher.id)
-            self.logger.debug("Added switcher: %s (anchor: %s) → %s", name, anchor_name, prop['locator'])
+            self.logger.debug("Added switcher: %s (anchor: %s) → %s", name, anchor_name, prop["locator"])
 
         # Summary properties
         for anchor, summary in summary_anchor_pairs:
@@ -677,7 +677,7 @@ class PageObjectGenerator:
                 properties.append(anchor_prop)
                 used_names.add(base_name)
                 used_ids.add(anchor.id)
-                self.logger.debug("Added summary anchor: %s → %s", base_name, anchor_prop['locator'])
+                self.logger.debug("Added summary anchor: %s → %s", base_name, anchor_prop["locator"])
             else:
                 base_name = None
                 for p in properties:
@@ -706,7 +706,7 @@ class PageObjectGenerator:
             properties.append(prop)
             used_names.add(name)
             used_ids.add(summary.id)
-            self.logger.debug("Added summary: %s (anchor: %s) → %s", name, base_name, prop['summary_id'])
+            self.logger.debug("Added summary: %s (anchor: %s) → %s", name, base_name, prop["summary_id"])
 
         return properties
 
@@ -948,7 +948,7 @@ class PageObjectGenerator:
         for prop in properties:
             locator = prop.get("locator", {})
             if list(locator.keys()) == ["class"]:
-                self.logger.debug("Removing class-only locator: %s (%s)", prop['name'], locator['class'])
+                self.logger.debug("Removing class-only locator: %s (%s)", prop["name"], locator["class"])
                 continue
             filtered.append(prop)
 
@@ -974,7 +974,7 @@ class PageObjectGenerator:
 
             # Class is a known container, and either no id, or id is known to be layout-only
             if cls in self.STRUCTURAL_CLASSES and (not res_id or res_id in self.CONTAINER_IDS):
-                self.logger.debug("Removing structural container: %s (%s, %s)", prop['name'], cls, res_id)
+                self.logger.debug("Removing structural container: %s (%s, %s)", prop["name"], cls, res_id)
                 continue
 
             filtered.append(prop)

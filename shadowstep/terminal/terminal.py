@@ -663,7 +663,7 @@ class Terminal:
             return False
         return True
 
-    def record_video(self, **options: str | int | float | bool) -> bool:
+    def record_video(self, **options: str | float | bool) -> bool:
         """Record a video of the device screen (3 MIN MAX).
 
         :param options: Additional options for video recording.
@@ -680,7 +680,7 @@ class Terminal:
             return False
         return True
 
-    def stop_video(self, **options: str | int | float | bool) -> bytes | None:
+    def stop_video(self, **options: str | float | bool) -> bytes | None:
         """Stop the video recording of the device screen and returns the recorded video data (Base64 bytes).
 
         :param options: Additional options for stopping the video recording.

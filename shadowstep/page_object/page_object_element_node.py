@@ -45,7 +45,7 @@ class UiElementNode:
         for child in self.children:
             yield from child.walk()
 
-    def find(self, **kwargs: str | int | float | bool) -> list[UiElementNode]:
+    def find(self, **kwargs: str | float | bool) -> list[UiElementNode]:
         """Find nodes by matching attrs."""
         return [el for el in self.walk() if all(el.attrs.get(k) == v for k, v in kwargs.items())]
 

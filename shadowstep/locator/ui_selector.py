@@ -158,7 +158,7 @@ class UiSelector:
         """Set sibling with another UiSelector."""
         return self._add_hierarchical_method(UiAttribute.SIBLING, sibling)
 
-    def _add_method(self, attribute: UiAttribute, value: Any) -> UiSelector:  # noqa: ANN401
+    def _add_method(self, attribute: UiAttribute, value: Any) -> UiSelector:
         """Add a method call to the selector."""
         self._methods.append((attribute.value, value))
         return self

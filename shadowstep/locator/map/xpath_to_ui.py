@@ -6,7 +6,6 @@ method calls with proper value formatting and hierarchical handling.
 """
 # shadowstep/locator/map/xpath_to_ui.py
 from collections.abc import Callable
-from typing import Any
 
 from shadowstep.exceptions.shadowstep_exceptions import ShadowstepUnsupportedXPathAttributeError
 from shadowstep.locator.types.ui_selector import UiAttribute
@@ -78,7 +77,7 @@ XPATH_TO_UI: dict[XPathAttribute, Callable[[str], str]] = {
 }
 
 
-def get_ui_for_method(method: XPathAttribute, value: str | int | float | bool) -> str:
+def get_ui_for_method(method: XPathAttribute, value: str | float | bool) -> str:
     """Get UiSelector method call for a specific XPath attribute and value.
 
     Args:

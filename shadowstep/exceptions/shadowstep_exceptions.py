@@ -9,7 +9,6 @@ from __future__ import annotations
 import datetime
 import traceback
 from collections.abc import Sequence
-from typing import Any
 
 from appium.webdriver.webdriver import WebDriver
 from selenium.common import NoSuchElementException, TimeoutException, WebDriverException
@@ -539,7 +538,7 @@ class ShadowstepXPathConversionError(ShadowstepConversionError):
 class ShadowstepBooleanLiteralError(ShadowstepXPathConversionError):
     """Raised when boolean literal is invalid."""
 
-    def __init__(self, value: str | int | float | bool) -> None:
+    def __init__(self, value: str | float | bool) -> None:
         """Initialize with invalid value.
         
         Args:
@@ -552,7 +551,7 @@ class ShadowstepBooleanLiteralError(ShadowstepXPathConversionError):
 class ShadowstepNumericLiteralError(ShadowstepXPathConversionError):
     """Raised when numeric literal is invalid."""
 
-    def __init__(self, value: str | int | float | bool) -> None:
+    def __init__(self, value: str | float | bool) -> None:
         """Initialize with invalid value.
         
         Args:

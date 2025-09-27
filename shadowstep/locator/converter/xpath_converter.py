@@ -96,7 +96,7 @@ _MATCHES_ATTRS = {
 }
 
 
-def _to_bool(val: str | int | float | bool) -> bool:
+def _to_bool(val: str | float | bool) -> bool:
     if isinstance(val, bool):
         return val
     if isinstance(val, str):
@@ -108,7 +108,7 @@ def _to_bool(val: str | int | float | bool) -> bool:
     raise ShadowstepBooleanLiteralError(val)
 
 
-def _to_number(val: str | int | float) -> int:
+def _to_number(val: str | float) -> int:
     if isinstance(val, (int, float)):
         return int(val)
     if isinstance(val, str) and val.isdigit():
@@ -319,7 +319,7 @@ class XPathConverter:
 
     # ========== predicate handlers (DICT) ==========
 
-    def _apply_predicate_to_dict(self, pred_expr: Step | FunctionCall | BinaryExpression | int | float, out: dict[str, Any]) -> None:  # noqa: C901, PLR0912, PLR0911
+    def _apply_predicate_to_dict(self, pred_expr: Step | FunctionCall | BinaryExpression | float, out: dict[str, Any]) -> None:  # noqa: C901, PLR0912, PLR0911
         if isinstance(pred_expr, Step):
             nested = self._build_shadowstep_dict([pred_expr], {})
             for k, v in nested.items():
@@ -390,7 +390,7 @@ class XPathConverter:
 
     # ========== predicate handlers (UI SELECTOR) ==========
 
-    def _predicate_to_ui(self, pred_expr: Step | FunctionCall | BinaryExpression | int | float) -> str:  # noqa: C901, PLR0912, PLR0911
+    def _predicate_to_ui(self, pred_expr: Step | FunctionCall | BinaryExpression | float) -> str:  # noqa: C901, PLR0912, PLR0911
         if isinstance(pred_expr, FunctionCall):
             attr, kind, value = self._parse_function_predicate(pred_expr)
             if kind == "contains":
@@ -473,7 +473,7 @@ class XPathConverter:
         raise ShadowstepUnsupportedAttributeExpressionError(node)
 
     @staticmethod
-    def _extract_literal(node: str | int | float | bool | FunctionCall) -> str | int | float | bool:
+    def _extract_literal(node: str | float | bool | FunctionCall) -> str | int | float | bool:
         if isinstance(node, (str, int, float, bool)):
             return node
         if isinstance(node, FunctionCall) and node.name in ("true", "false") and not node.args:

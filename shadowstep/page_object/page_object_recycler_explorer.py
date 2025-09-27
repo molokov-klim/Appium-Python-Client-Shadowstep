@@ -29,7 +29,7 @@ class PageObjectRecyclerExplorer:
     and merging them into a comprehensive page object.
     """
 
-    def __init__(self, base: Shadowstep, translator: "YandexTranslate | None") -> None:
+    def __init__(self, base: Shadowstep, translator: YandexTranslate | None) -> None:
         """Initialize the PageObjectRecyclerExplorer.
 
         Args:

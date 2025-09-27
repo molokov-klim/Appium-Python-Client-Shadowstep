@@ -102,7 +102,7 @@ class ElementProperties:
         return {}
 
     @log_debug()
-    def get_property(self, name: str) -> Any:  # noqa: ANN401
+    def get_property(self, name: str) -> Any:
         """Get element property value."""
         self.logger.warning(
             "Method %s is not implemented in UiAutomator2",

@@ -855,7 +855,7 @@ class ElementGestures:
                                             start_x=x1, start_y=y1)
         return self._execute_tap_and_move_to_coordinates(actions, x2, y2)
 
-    def _mobile_gesture(self, name: str, params: dict[str, Any] | list[Any]) -> Any:  # noqa: ANN401
+    def _mobile_gesture(self, name: str, params: dict[str, Any] | list[Any]) -> Any:
         """Execute a mobile gesture command.
 
         Args:

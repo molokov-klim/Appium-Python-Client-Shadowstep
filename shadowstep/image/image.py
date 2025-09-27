@@ -426,7 +426,7 @@ class ShadowstepImage:
         raise NotImplementedError
 
     @property
-    def should(self) -> Any:  # type: ignore[return-any]  # noqa: ANN401
+    def should(self) -> Any:  # type: ignore[return-any]
         """ImageShould functionality - not yet implemented."""
         self.logger.debug("%s", get_current_func_name())
         raise NotImplementedError

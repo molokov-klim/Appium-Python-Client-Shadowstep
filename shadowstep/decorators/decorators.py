@@ -44,7 +44,7 @@ def fail_safe(  # noqa: C901, PLR0913
         retries: int = 3,
         delay: float = 0.5,
         raise_exception: type[Exception] | None = None,
-        fallback: Any = None,  # noqa: ANN401
+        fallback: Any = None,
         exceptions: tuple[type[Exception], ...] = DEFAULT_EXCEPTIONS,
         log_args: bool = False,  # noqa: FBT001, FBT002
 ) -> Callable[[F], F]:
@@ -71,7 +71,7 @@ def fail_safe(  # noqa: C901, PLR0913
 
     def decorator(func: F) -> F:  # noqa: C901
         @functools.wraps(func)
-        def wrapper(self: Any, *args: Any, **kwargs: Any) -> Any:  # noqa: C901, ANN401
+        def wrapper(self: Any, *args: Any, **kwargs: Any) -> Any:  # noqa: C901
             last_exc: Exception | None = None
             for attempt in range(1, retries + 1):
                 try:
@@ -94,7 +94,7 @@ def fail_safe(  # noqa: C901, PLR0913
                         e,
                     )
                     if log_args:
-                        def format_arg(arg: Any) -> str:  # noqa: ANN401
+                        def format_arg(arg: Any) -> str:
                             if arg is self:
                                 return f"<{self.__class__.__name__} id={id(self)}>"
                             arg_repr = repr(arg)
@@ -167,7 +167,7 @@ def retry(max_retries: int = 3, delay: float = 1.0) -> Callable[[F], F]:
 
     def decorator(func: F) -> F:
         @wraps(func)
-        def wrapper(*args: Any, **kwargs: Any) -> Any:  # noqa: ANN401
+        def wrapper(*args: Any, **kwargs: Any) -> Any:
             result: Any = None
             for _ in range(max_retries):
                 result = func(*args, **kwargs)
@@ -193,7 +193,7 @@ def time_it(func: F) -> F:
     """
 
     @wraps(func)
-    def wrapper(*args: Any, **kwargs: Any) -> Any:  # noqa: ANN401
+    def wrapper(*args: Any, **kwargs: Any) -> Any:
         start_time = time.time()
         result = func(*args, **kwargs)
         end_time = time.time()
@@ -236,7 +236,7 @@ def step_info(
     ) -> Callable[Concatenate[SelfT, P], T]:
         # @allure.step(my_str)
         @wraps(func)
-        def wrapper(self: Any, *args: P.args, **kwargs: P.kwargs) -> T:  # noqa: ANN401
+        def wrapper(self: Any, *args: P.args, **kwargs: P.kwargs) -> T:
             method_name = func.__name__
             class_name = self.__class__.__name__
 
@@ -343,7 +343,7 @@ def current_page() -> Callable[
             func: Callable[Concatenate[SelfT, P], T],
     ) -> Callable[Concatenate[SelfT, P], T]:
         @wraps(func)
-        def wrapper(self: Any, *args: P.args, **kwargs: P.kwargs) -> T:  # noqa: ANN401
+        def wrapper(self: Any, *args: P.args, **kwargs: P.kwargs) -> T:
             method_name = func.__name__
 
             self.logger.info("%s() < %r", method_name, self)

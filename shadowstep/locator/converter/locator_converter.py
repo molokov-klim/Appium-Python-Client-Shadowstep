@@ -51,7 +51,7 @@ class LocatorConverter:
         self.ui_selector_converter = UiSelectorConverter()
         self.xpath_converter = XPathConverter()
 
-    def _raise_unsupported_selector_format_error(self, selector: Any) -> None:  # noqa: ANN401
+    def _raise_unsupported_selector_format_error(self, selector: Any) -> None:
         """Raise ShadowstepUnsupportedSelectorFormatError for unsupported selector format.
         
         Args:

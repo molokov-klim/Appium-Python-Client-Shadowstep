@@ -5,7 +5,7 @@ Shadowstep framework, implementing singleton pattern and page navigation.
 """
 from abc import ABC, abstractmethod
 from collections.abc import Callable
-from typing import TYPE_CHECKING, Any, ClassVar, TypeVar
+from typing import TYPE_CHECKING, ClassVar, TypeVar
 
 from typing_extensions import Self
 

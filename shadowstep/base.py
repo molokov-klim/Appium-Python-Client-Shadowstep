@@ -61,7 +61,7 @@ class WebDriverSingleton(WebDriver):
     _driver = None
     _command_executor = None
 
-    def __new__(cls, *args: Any, **kwargs: Any) -> WebDriver:  # noqa: ANN401
+    def __new__(cls, *args: Any, **kwargs: Any) -> WebDriver:
         """Create or return existing WebDriver instance.
 
         Args:
@@ -79,7 +79,7 @@ class WebDriverSingleton(WebDriver):
         return cls._driver  # type: ignore[return-value]
 
     @classmethod
-    def _get_session_id(cls, kwargs: Any) -> str:  # noqa: ANN401
+    def _get_session_id(cls, kwargs: Any) -> str:
         logger.debug("%s", get_current_func_name())
         res = requests.get(kwargs["command_executor"] + "/sessions", timeout=30)
         res_json = json.loads(res.text)
