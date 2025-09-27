@@ -27,6 +27,9 @@ from shadowstep.utils.utils import get_current_func_name
 logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s")
 logger = logging.getLogger(__name__)
 
+# Constants
+MIN_PS_COLUMNS_COUNT = 9
+
 if TYPE_CHECKING:
     from shadowstep.base import ShadowstepBase
     from shadowstep.terminal import Transport
@@ -541,7 +544,7 @@ class Terminal:
         lines = processes.strip().split("\n")
         for line in lines[1:]:
             columns = line.split()
-            if len(columns) >= 9:
+            if len(columns) >= MIN_PS_COLUMNS_COUNT:
                 pid, process_name = columns[1], columns[8]
                 if name == process_name:
                     logger.debug(f"know_pid() > {pid!s}")
@@ -562,7 +565,7 @@ class Terminal:
         lines = processes.strip().split("\n")
         for line in lines[1:]:
             columns = line.split()
-            if len(columns) >= 9:
+            if len(columns) >= MIN_PS_COLUMNS_COUNT:
                 _, process_name = columns[1], columns[8]
                 if name == process_name:
                     logger.debug("is_process_exist() > True")

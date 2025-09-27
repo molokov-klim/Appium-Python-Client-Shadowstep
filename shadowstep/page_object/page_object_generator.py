@@ -91,7 +91,7 @@ class PageObjectGenerator:
         # add repr filter
         self.env.filters["pretty_dict"] = _pretty_dict
 
-    def generate(
+    def generate(  # noqa: PLR0915
             self,
             ui_element_tree: UiElementNode,
             output_dir: str,
@@ -113,21 +113,21 @@ class PageObjectGenerator:
         self.logger.debug(step)
         title = self._get_title_property(ui_element_tree)
         if title is None:
-            raise ShadowstepTitleNotFoundError()
+            raise ShadowstepTitleNotFoundError
         self.logger.debug(f"{title.attrs=}")
 
         step = "Forming name property"
         self.logger.debug(step)
         name = self._get_name_property(title)
         if name == "":
-            raise ShadowstepNameCannotBeEmptyError()
+            raise ShadowstepNameCannotBeEmptyError
         self.logger.debug(f"{name=}")
 
         step = "Forming class name"
         self.logger.debug(step)
         page_class_name = self._normilize_to_camel_case(name)
         if page_class_name == "":
-            raise ShadowstepPageClassNameCannotBeEmptyError()
+            raise ShadowstepPageClassNameCannotBeEmptyError
         self.logger.debug(f"{page_class_name=}")
 
         step = "Forming recycler property"
@@ -271,7 +271,7 @@ class PageObjectGenerator:
         raw_name = title.attrs.get("text") or title.attrs.get("content-desc") or ""
         raw_name = raw_name.strip()
         if not raw_name:
-            raise ShadowstepTitleNodeNoUsableNameError()
+            raise ShadowstepTitleNodeNoUsableNameError
         if raw_name in keyword.kwlist:
             raw_name = raw_name + "_"
         return raw_name
@@ -569,7 +569,7 @@ class PageObjectGenerator:
 
         return locator
 
-    def _transform_properties(  # noqa: C901
+    def _transform_properties(  # noqa: C901, PLR0915, PLR0912
             self,
             regular_properties: list[UiElementNode],
             switcher_anchor_pairs: list[tuple[UiElementNode, UiElementNode]],

@@ -41,7 +41,7 @@ logger = logging.getLogger(__name__)
 class Element(ElementBase):
     """Public API for Element."""
 
-    def __init__(self,
+    def __init__(self,  # noqa: PLR0913
                  locator: tuple[str, str] | dict[str, Any] | Element | UiSelector,
                  shadowstep: Shadowstep,
                  timeout: float = 30,

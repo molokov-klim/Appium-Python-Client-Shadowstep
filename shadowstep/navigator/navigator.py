@@ -37,6 +37,7 @@ if TYPE_CHECKING:
 
 # Constants
 DEFAULT_NAVIGATION_TIMEOUT = 55
+MIN_PATH_LENGTH = 2
 
 
 class PageNavigator:
@@ -80,7 +81,7 @@ class PageNavigator:
 
         """
         if page is None:
-            raise ShadowstepPageCannotBeNoneError()
+            raise ShadowstepPageCannotBeNoneError
         # edges is already typed as dict[str, Any], so isinstance check is unnecessary
 
         self.graph_manager.add_page(page=page, edges=edges)
@@ -102,11 +103,11 @@ class PageNavigator:
 
         """
         if from_page is None:
-            raise ShadowstepFromPageCannotBeNoneError()
+            raise ShadowstepFromPageCannotBeNoneError
         if to_page is None:
-            raise ShadowstepToPageCannotBeNoneError()
+            raise ShadowstepToPageCannotBeNoneError
         if timeout < 0:
-            raise ShadowstepTimeoutMustBeNonNegativeError()
+            raise ShadowstepTimeoutMustBeNonNegativeError
         if from_page == to_page:
             self.logger.info(f"⏭️ Already on target page: {to_page}")
             return True
@@ -194,9 +195,9 @@ class PageNavigator:
 
         """
         if not path:
-            raise ShadowstepPathCannotBeEmptyError()
-        if len(path) < 2:
-            raise ShadowstepPathMustContainAtLeastTwoPagesError()
+            raise ShadowstepPathCannotBeEmptyError
+        if len(path) < MIN_PATH_LENGTH:
+            raise ShadowstepPathMustContainAtLeastTwoPagesError
 
         for i in range(len(path) - 1):
             current_page = path[i]
@@ -236,7 +237,7 @@ class PageGraph:
 
         """
         if page is None:
-            raise ShadowstepPageCannotBeNoneError()
+            raise ShadowstepPageCannotBeNoneError
 
         self.graph[page] = edges
 

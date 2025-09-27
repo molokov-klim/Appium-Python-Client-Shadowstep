@@ -209,7 +209,7 @@ class PageObjectParser:
 
         root_node = _recurse(cast("Any", root_et), None, [], 0)
         if not root_node:
-            raise ShadowstepRootNodeFilteredOutError()
+            raise ShadowstepRootNodeFilteredOutError
         return root_node
 
     def _is_element_allowed(self, attrib: ElementAttributes) -> bool:

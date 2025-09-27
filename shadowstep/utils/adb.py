@@ -17,6 +17,9 @@ from shadowstep.utils.utils import get_current_func_name, grep_pattern
 
 logger = logging.getLogger(__name__)
 
+# Constants
+MIN_PS_COLUMNS_COUNT = 9
+
 
 class Adb:
     """A class to interact with Android Debug Bridge (ADB) for device management.
@@ -681,7 +684,7 @@ class Adb:
             # Split line into columns by spaces
             columns = line.split()
             # Check that line has at least 9 columns
-            if len(columns) >= 9:
+            if len(columns) >= MIN_PS_COLUMNS_COUNT:
                 # Extract PID and process name from corresponding columns
                 _, process_name = columns[1], columns[8]
                 # Compare process name with searched name
@@ -778,7 +781,7 @@ class Adb:
             # Split line into columns by spaces
             columns = line.split()
             # Check that line has at least 9 columns
-            if len(columns) >= 9:
+            if len(columns) >= MIN_PS_COLUMNS_COUNT:
                 # Extract PID and process name from corresponding columns
                 pid, process_name = columns[1], columns[8]
                 # Compare process name with searched name

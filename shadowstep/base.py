@@ -136,7 +136,7 @@ class ShadowstepBase:
         }
         self._ignored_base_path_parts: set[str] = self._get_ignored_dirs()
 
-    def connect(self,
+    def connect(self,  # noqa: PLR0913
                 capabilities: dict[str, Any],
                 server_ip: str = "127.0.0.1",
                 server_port: int = 4723,

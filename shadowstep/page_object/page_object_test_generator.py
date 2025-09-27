@@ -120,7 +120,7 @@ class PageObjectTestGenerator:
         tree = ast.parse(source)
         class_node = next((n for n in tree.body if isinstance(n, ast.ClassDef)), None)
         if not class_node:
-            raise ShadowstepNoClassDefinitionFoundInTreeError()
+            raise ShadowstepNoClassDefinitionFoundInTreeError
 
         ignore = {"name", "edges", "title", "recycler", "is_current_page"}
         return [

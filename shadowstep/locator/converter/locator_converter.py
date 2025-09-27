@@ -30,6 +30,9 @@ from shadowstep.utils.utils import get_current_func_name
 
 logger = logging.getLogger(__name__)
 
+# Constants
+TUPLE_SELECTOR_LENGTH = 2
+
 if TYPE_CHECKING:
     from shadowstep.element.element import Element
 
@@ -198,14 +201,14 @@ class LocatorConverter:
             # UiSelector DSL validation - convert to dict and validate
             selector_dict = selector.to_dict()
             self.dict_converter.validate_dict_selector(selector_dict)
-        elif isinstance(selector, tuple) and len(selector) == 2:
+        elif isinstance(selector, tuple) and len(selector) == TUPLE_SELECTOR_LENGTH:
             if selector[0] != "xpath":
                 raise ShadowstepUnsupportedTupleFormatError(selector[0])
             # Basic XPath validation
             if not selector[1]:
-                raise ShadowstepEmptyXPathError()
+                raise ShadowstepEmptyXPathError
         elif isinstance(selector, str):  # type: ignore[arg-type]
             if not selector.strip():
-                raise ShadowstepEmptySelectorStringError()
+                raise ShadowstepEmptySelectorStringError
         else:
             raise ShadowstepUnsupportedSelectorTypeError(type(selector))

@@ -27,6 +27,9 @@ from shadowstep.exceptions.shadowstep_exceptions import (
     ShadowstepPollIntervalError,
 )
 
+# Constants
+MIN_LOG_PARTS_COUNT = 6
+
 logger = logging.getLogger(__name__)
 
 # Constants
@@ -67,7 +70,7 @@ class ShadowstepLogcat:
 
         """
         if poll_interval < 0:
-            raise ShadowstepPollIntervalError()
+            raise ShadowstepPollIntervalError
 
         self._driver_getter = driver_getter
         self._poll_interval = poll_interval
@@ -88,7 +91,7 @@ class ShadowstepLogcat:
             ShadowstepLogcatConnectionError: Always raised
 
         """
-        raise ShadowstepLogcatConnectionError()
+        raise ShadowstepLogcatConnectionError
 
     @property
     def filters(self) -> list[str] | None:
@@ -127,7 +130,7 @@ class ShadowstepLogcat:
                 return True
 
         parts = line.split()
-        if len(parts) >= 6:
+        if len(parts) >= MIN_LOG_PARTS_COUNT:
             for i, part in enumerate(parts):
                 if part in {"I", "D", "W", "E", "V"} and i + 1 < len(parts):
                     tag_part = parts[i + 1]
@@ -171,7 +174,7 @@ class ShadowstepLogcat:
         """
         self.port = port
         if not filename:
-            raise ShadowstepEmptyFilenameError()
+            raise ShadowstepEmptyFilenameError
 
         if self._thread and self._thread.is_alive():
             logger.info("Logcat already running")
@@ -220,7 +223,7 @@ class ShadowstepLogcat:
 
         logger.info("Logcat thread terminated, file closed")
 
-    def _run(self) -> None:  # noqa: C901
+    def _run(self) -> None:  # noqa: C901, PLR0915, PLR0912
         """Run main logcat capture loop in background thread.
 
         This method handles the complete logcat capture workflow:

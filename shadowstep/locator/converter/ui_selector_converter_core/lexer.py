@@ -96,7 +96,7 @@ class Lexer:
         self.i += 1
         return ch
 
-    def tokens(self) -> list[Token]:  # noqa: C901
+    def tokens(self) -> list[Token]:  # noqa: C901, PLR0915, PLR0912
         """Tokenize the input string into a list of tokens.
 
         Returns:

@@ -17,8 +17,14 @@ START_DIR = Path.cwd()
 PROJECT_ROOT_DIR = Path(__file__).parent
 logger = logging.getLogger(__name__)
 
+# Constants for angle calculations
+DEGREES_180 = 180
+DEGREES_90 = 90
+DEGREES_270 = 270
+DEGREES_360 = 360
 
-def find_coordinates_by_vector(
+
+def find_coordinates_by_vector(  # noqa: PLR0913
     width: int,
     height: int,
     direction: int,
@@ -43,8 +49,8 @@ def find_coordinates_by_vector(
     angle_radians = direction * (math.pi / 180)
     dy = abs(distance * math.cos(angle_radians))
     dx = abs(distance * math.sin(angle_radians))
-    x = start_x + dx if 0 <= direction <= 180 else start_x - dx
-    y = start_y - dy if 0 <= direction <= 90 or 270 <= direction <= 360 else start_y + dy
+    x = start_x + dx if 0 <= direction <= DEGREES_180 else start_x - dx
+    y = start_y - dy if 0 <= direction <= DEGREES_90 or DEGREES_270 <= direction <= DEGREES_360 else start_y + dy
     x2 = int(max(0, min(int(x), width)))
     y2 = int(max(0, min(int(y), height)))
     return x2, y2

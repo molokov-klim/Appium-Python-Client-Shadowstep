@@ -306,7 +306,7 @@ class Shadowstep(ShadowstepBase):
             timeout=timeout,
         )]
 
-    def schedule_action(
+    def schedule_action(  # noqa: PLR0913
             self,
             name: str,
             steps: list[ActionStep],
@@ -443,7 +443,7 @@ class Shadowstep(ShadowstepBase):
 
     @fail_safe(raise_exception=ShadowstepException,
                exceptions=(NoSuchDriverException, InvalidSessionIdException))
-    def scroll(
+    def scroll(  # noqa: PLR0913
             self,
             left: int,
             top: int,
@@ -687,7 +687,7 @@ class Shadowstep(ShadowstepBase):
     @fail_safe(raise_exception=ShadowstepException,
                exceptions=(NoSuchDriverException, InvalidSessionIdException,
                            StaleElementReferenceException))
-    def fling(
+    def fling(  # noqa: PLR0913
             self,
             left: int,
             top: int,
@@ -752,7 +752,7 @@ class Shadowstep(ShadowstepBase):
     @fail_safe(raise_exception=ShadowstepException,
                exceptions=(NoSuchDriverException, InvalidSessionIdException,
                            StaleElementReferenceException))
-    def pinch_open(
+    def pinch_open(  # noqa: PLR0913
             self,
             left: int,
             top: int,
@@ -818,7 +818,7 @@ class Shadowstep(ShadowstepBase):
                exceptions=(NoSuchDriverException,
                            InvalidSessionIdException,
                            StaleElementReferenceException))
-    def pinch_close(
+    def pinch_close(  # noqa: PLR0913
             self,
             left: int,
             top: int,
@@ -883,7 +883,7 @@ class Shadowstep(ShadowstepBase):
     @fail_safe(raise_exception=ShadowstepException,
                exceptions=(NoSuchDriverException, InvalidSessionIdException,
                            StaleElementReferenceException))
-    def swipe(
+    def swipe(  # noqa: PLR0913
             self,
             left: int,
             top: int,

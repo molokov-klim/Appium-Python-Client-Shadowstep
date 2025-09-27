@@ -116,6 +116,10 @@ def _to_number(val: Any) -> int:
     raise ShadowstepNumericLiteralError(val)
 
 
+# Constants
+FUNCTION_ARGUMENT_COUNT = 2
+
+
 class XPathConverter:
     """Convert xpath expression to UiSelector expression or Shadowstep Dict locator."""
 
@@ -128,7 +132,7 @@ class XPathConverter:
     @staticmethod
     def _validate_xpath(xpath_str: str) -> None:
         if re.search(r"\band\b|\bor\b", xpath_str):
-            raise ShadowstepLogicalOperatorsNotSupportedError()
+            raise ShadowstepLogicalOperatorsNotSupportedError
         try:
             parse(xpath_str)
         except Exception as e:
@@ -169,7 +173,7 @@ class XPathConverter:
 
     # ========== AST traversal ==========
 
-    def _ast_to_ui_selector(self, node_list: list[AbbreviatedStep | Step]) -> str:  # noqa: C901    # type: ignore[return-any]
+    def _ast_to_ui_selector(self, node_list: list[AbbreviatedStep | Step]) -> str:  # noqa: C901, PLR0912    # type: ignore[return-any]
         if not node_list:
             return ""
         node = node_list[0]
@@ -315,7 +319,7 @@ class XPathConverter:
 
     # ========== predicate handlers (DICT) ==========
 
-    def _apply_predicate_to_dict(self, pred_expr: Any, out: dict[str, Any]) -> None:  # noqa: C901
+    def _apply_predicate_to_dict(self, pred_expr: Any, out: dict[str, Any]) -> None:  # noqa: C901, PLR0912, PLR0911
         if isinstance(pred_expr, Step):
             nested = self._build_shadowstep_dict([pred_expr], {})
             for k, v in nested.items():
@@ -386,7 +390,7 @@ class XPathConverter:
 
     # ========== predicate handlers (UI SELECTOR) ==========
 
-    def _predicate_to_ui(self, pred_expr: Any) -> str:  # noqa: C901
+    def _predicate_to_ui(self, pred_expr: Any) -> str:  # noqa: C901, PLR0912, PLR0911
         if isinstance(pred_expr, FunctionCall):
             attr, kind, value = self._parse_function_predicate(pred_expr)
             if kind == "contains":
@@ -432,8 +436,8 @@ class XPathConverter:
         name = func.name
         if name not in ("contains", "starts-with", "matches"):
             raise ShadowstepUnsupportedFunctionError(name)
-        if len(func.args) != 2:    # type: ignore[arg-type]
-            raise ShadowstepFunctionArgumentCountError(name, 2)
+        if len(func.args) != FUNCTION_ARGUMENT_COUNT:    # type: ignore[arg-type]
+            raise ShadowstepFunctionArgumentCountError(name, FUNCTION_ARGUMENT_COUNT)
         lhs, rhs = func.args
         attr = self._extract_attr_name(lhs)
         value = self._extract_literal(rhs)
@@ -450,7 +454,7 @@ class XPathConverter:
             return "text", self._extract_literal(bexpr.right)
         if isinstance(bexpr.right, FunctionCall) and bexpr.right.name == "text":
             return "text", self._extract_literal(bexpr.left)
-        raise ShadowstepEqualityComparisonError()
+        raise ShadowstepEqualityComparisonError
 
     def _maybe_attr(self, node: Any) -> str | None:    # type: ignore[return-any]
         try:

@@ -40,7 +40,7 @@ DEFAULT_EXCEPTIONS: tuple[type[Exception], ...] = (
 )
 
 
-def fail_safe(  # noqa: C901
+def fail_safe(  # noqa: C901, PLR0913
         retries: int = 3,
         delay: float = 0.5,
         raise_exception: type[Exception] | None = None,

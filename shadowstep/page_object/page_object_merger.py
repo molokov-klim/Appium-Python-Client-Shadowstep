@@ -107,7 +107,7 @@ class PageObjectMerger:
             if stripped.startswith("class "):
                 self.logger.info(f"finded class {stripped=}")
                 return line.rstrip()
-        raise ShadowstepNoClassDefinitionFoundError()
+        raise ShadowstepNoClassDefinitionFoundError
 
     def get_methods(self, page: str) -> dict[str, Any]:
         r"""Extract methods and property blocks via \n\n separation with indentation normalization.
@@ -201,7 +201,7 @@ class PageObjectMerger:
         lines: list[str] = [imports.strip(), "", "", class_name.strip(), ""]
 
         for name, body in unique_methods.items():
-            if name == "recycler" or name == "is_current_page":
+            if name in {"recycler", "is_current_page"}:
                 continue
             clean_body = textwrap.dedent(body)  # remove nested indentation
             method_lines = textwrap.indent(clean_body, "    ")  # nest inside class

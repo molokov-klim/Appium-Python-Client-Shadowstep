@@ -253,7 +253,7 @@ class UiSelector:
         # This is a simplified parser - in a real implementation you might want
         # to use the existing UiSelectorConverter to parse the string
         if not selector_str.strip().startswith("new UiSelector()"):
-            raise ShadowstepInvalidUiSelectorStringFormatError()
+            raise ShadowstepInvalidUiSelectorStringFormatError
 
         # For now, we'll create an empty selector and let the user build it
         # In a full implementation, you'd parse the string and extract methods

@@ -41,7 +41,7 @@ class YandexTranslate:
         """
         oauth_token = os.getenv("yandexPassportOauthToken")  # noqa: SIM112
         if not oauth_token:
-            raise ShadowstepMissingYandexTokenError()
+            raise ShadowstepMissingYandexTokenError
 
         url = "https://iam.api.cloud.yandex.net/iam/v1/tokens"
         response = requests.post(url, json={"yandexPassportOauthToken": oauth_token}, timeout=30)
@@ -93,7 +93,7 @@ class YandexTranslate:
         translations = response.json().get("translations", [])
 
         if not translations:
-            raise ShadowstepTranslationFailedError()
+            raise ShadowstepTranslationFailedError
 
         translated = translations[0]["text"]
         self.logger.debug(f"{translated=}")

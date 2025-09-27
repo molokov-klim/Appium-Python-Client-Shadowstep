@@ -234,10 +234,10 @@ class DictConverter(Generic[T]):
 
         """
         if not isinstance(selector_dict, dict): # type: ignore[arg-type]
-            raise ShadowstepSelectorTypeError()
+            raise ShadowstepSelectorTypeError
 
         if not selector_dict:
-            raise ShadowstepEmptySelectorError()
+            raise ShadowstepEmptySelectorError
 
         # Check for conflicting attributes
         text_attrs: list[ShadowstepDictAttribute] = [
