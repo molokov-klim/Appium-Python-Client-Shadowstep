@@ -520,7 +520,7 @@ class PageObjectGenerator:
                                title: UiElementNode,
                                recycler: UiElementNode | None,
                                properties: list[dict[str, Any]],
-                               need_recycler: bool) -> dict[str, Any]:
+                               need_recycler: bool) -> dict[str, Any]:  # noqa: FBT001
         self.logger.debug("%s", get_current_func_name())
         raw_title = self._get_name_property(title)
         translated = self._translate(raw_title)
@@ -538,7 +538,7 @@ class PageObjectGenerator:
             "recycler_locator": recycler_locator,
         }
 
-    def _node_to_locator(self, node: UiElementNode, only_id: bool = False) -> dict[str, Any]:
+    def _node_to_locator(self, node: UiElementNode, only_id: bool = False) -> dict[str, Any]:  # noqa: FBT001, FBT002
         """Convert UiElementNode to a locator dictionary for template.
 
         Args:

@@ -889,7 +889,7 @@ class Adb:
         return True
 
     @staticmethod
-    def pull_video(source: str, destination: str = ".", delete: bool = True) -> bool:
+    def pull_video(source: str, destination: str = ".", delete: bool = True) -> bool:  # noqa: FBT001, FBT002
         """Pull videos from the specified source directory on the device to the destination directory on the local machine.
 
         Args:

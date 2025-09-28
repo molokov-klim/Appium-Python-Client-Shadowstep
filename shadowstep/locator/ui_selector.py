@@ -96,43 +96,43 @@ class UiSelector:
         return self._add_method(UiAttribute.CLASS_NAME_MATCHES, value)
 
     # Boolean property methods
-    def checkable(self, value: bool = True) -> UiSelector:
+    def checkable(self, value: bool = True) -> UiSelector:  # noqa: FBT001, FBT002
         """Set checkable attribute."""
         return self._add_method(UiAttribute.CHECKABLE, value)
 
-    def checked(self, value: bool = True) -> UiSelector:
+    def checked(self, value: bool = True) -> UiSelector:  # noqa: FBT001, FBT002
         """Set checked attribute."""
         return self._add_method(UiAttribute.CHECKED, value)
 
-    def clickable(self, value: bool = True) -> UiSelector:
+    def clickable(self, value: bool = True) -> UiSelector:  # noqa: FBT001, FBT002
         """Set clickable attribute."""
         return self._add_method(UiAttribute.CLICKABLE, value)
 
-    def enabled(self, value: bool = True) -> UiSelector:
+    def enabled(self, value: bool = True) -> UiSelector:  # noqa: FBT001, FBT002
         """Set enabled attribute."""
         return self._add_method(UiAttribute.ENABLED, value)
 
-    def focusable(self, value: bool = True) -> UiSelector:
+    def focusable(self, value: bool = True) -> UiSelector:  # noqa: FBT001, FBT002
         """Set focusable attribute."""
         return self._add_method(UiAttribute.FOCUSABLE, value)
 
-    def focused(self, value: bool = True) -> UiSelector:
+    def focused(self, value: bool = True) -> UiSelector:  # noqa: FBT001, FBT002
         """Set focused attribute."""
         return self._add_method(UiAttribute.FOCUSED, value)
 
-    def longClickable(self, value: bool = True) -> UiSelector:
+    def longClickable(self, value: bool = True) -> UiSelector:  # noqa: FBT001, FBT002
         """Set longClickable attribute."""
         return self._add_method(UiAttribute.LONG_CLICKABLE, value)
 
-    def scrollable(self, value: bool = True) -> UiSelector:
+    def scrollable(self, value: bool = True) -> UiSelector:  # noqa: FBT001, FBT002
         """Set scrollable attribute."""
         return self._add_method(UiAttribute.SCROLLABLE, value)
 
-    def selected(self, value: bool = True) -> UiSelector:
+    def selected(self, value: bool = True) -> UiSelector:  # noqa: FBT001, FBT002
         """Set selected attribute."""
         return self._add_method(UiAttribute.SELECTED, value)
 
-    def password(self, value: bool = True) -> UiSelector:
+    def password(self, value: bool = True) -> UiSelector:  # noqa: FBT001, FBT002
         """Set password attribute."""
         return self._add_method(UiAttribute.PASSWORD, value)
 
@@ -190,7 +190,7 @@ class UiSelector:
         """Return string representation for debugging."""
         return f"UiSelector({self._build_selector_string()})"
 
-    def _build_selector_string(self, is_nested: bool = False) -> str:
+    def _build_selector_string(self, is_nested: bool = False) -> str:  # noqa: FBT001, FBT002
         """Build the final UiSelector string."""
         parts = ["new UiSelector()"]
 

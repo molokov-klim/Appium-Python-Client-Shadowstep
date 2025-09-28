@@ -11,7 +11,7 @@ from __future__ import annotations
 
 import importlib.util
 import logging
-from typing import cast
+from typing import Any, cast
 
 from shadowstep.exceptions.shadowstep_exceptions import ShadowstepTerminalNotInitializedError
 from shadowstep.page_object.page_object_generator import PageObjectGenerator
@@ -29,12 +29,12 @@ class PageObjectRecyclerExplorer:
     and merging them into a comprehensive page object.
     """
 
-    def __init__(self, base: Shadowstep, translator: YandexTranslate | None) -> None:
+    def __init__(self, base: Shadowstep, translator: Any) -> None:
         """Initialize the PageObjectRecyclerExplorer.
 
         Args:
             base: Shadowstep instance for automation operations.
-            translator: Translator instance for text translation.
+            translator: Translator instance for text translation, must contain def translate(text: str) -> str.
 
         """
         self.base: Shadowstep = base

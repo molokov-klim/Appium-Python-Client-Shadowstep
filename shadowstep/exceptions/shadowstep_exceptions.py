@@ -538,7 +538,7 @@ class ShadowstepXPathConversionError(ShadowstepConversionError):
 class ShadowstepBooleanLiteralError(ShadowstepXPathConversionError):
     """Raised when boolean literal is invalid."""
 
-    def __init__(self, value: str | float | bool) -> None:
+    def __init__(self, value: str | float | bool) -> None:  # noqa: FBT001
         """Initialize with invalid value.
         
         Args:
@@ -551,7 +551,7 @@ class ShadowstepBooleanLiteralError(ShadowstepXPathConversionError):
 class ShadowstepNumericLiteralError(ShadowstepXPathConversionError):
     """Raised when numeric literal is invalid."""
 
-    def __init__(self, value: str | float | bool) -> None:
+    def __init__(self, value: str | float | bool) -> None:  # noqa: FBT001
         """Initialize with invalid value.
         
         Args:

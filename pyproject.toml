@@ -43,6 +43,7 @@ dev = [
     "pyright",
     "pytest",
     "pytest-cov",
+    "pytest-rerunfailures",
 ]
 
 [project.urls]

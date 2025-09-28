@@ -85,7 +85,7 @@ UI_TO_XPATH: dict[UiAttribute, Callable[[str], str]] = {
 }
 
 
-def get_xpath_for_method(method: UiAttribute, value: str | float | bool) -> str:
+def get_xpath_for_method(method: UiAttribute, value: str | float | bool) -> str:  # noqa: FBT001
     """Get XPath predicate for a specific UiSelector method and value.
 
     Args:

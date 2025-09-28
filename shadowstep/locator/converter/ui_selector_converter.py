@@ -155,7 +155,7 @@ class UiSelectorConverter:
                     if args:
                         xpath += get_xpath_for_method(method, args[0])
                     else:
-                        xpath += get_xpath_for_method(method, True)
+                        xpath += get_xpath_for_method(method, True)  # noqa: FBT003
                 else:
                     self.logger.warning("Method '%s' not supported in XPath conversion", method)
 
@@ -268,7 +268,7 @@ class UiSelectorConverter:
 
         """
 
-        def convert_arg(arg: str | float | bool | Selector) -> str | int | float | bool | dict:
+        def convert_arg(arg: str | float | bool | Selector) -> str | int | float | bool | dict:  # noqa: FBT001
             if hasattr(arg, "methods"):  # Nested Selector
                 return self._selector_to_parsed_dict(arg)
             return arg
@@ -280,7 +280,7 @@ class UiSelectorConverter:
             ],
         }
 
-    def _parsed_dict_to_selector(self, selector_dict: dict[str, Any], top_level: bool = True) -> str:
+    def _parsed_dict_to_selector(self, selector_dict: dict[str, Any], top_level: bool = True) -> str:  # noqa: FBT001, FBT002
         """Convert parsed dictionary back to UiSelector string.
 
         Args:
@@ -292,7 +292,7 @@ class UiSelectorConverter:
 
         """
 
-        def format_arg(arg: str | float | bool | dict) -> str:
+        def format_arg(arg: str | float | bool | dict) -> str:  # noqa: FBT001
             if isinstance(arg, dict):
                 # Nested selector - without final semicolon
                 return self._parsed_dict_to_selector(cast("dict[str, Any]", arg), top_level=False)

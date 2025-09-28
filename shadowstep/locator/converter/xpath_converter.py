@@ -95,7 +95,7 @@ _MATCHES_ATTRS = {
 }
 
 
-def _to_bool(val: str | float | bool) -> bool:
+def _to_bool(val: str | float | bool) -> bool:  # noqa: FBT001
     if isinstance(val, bool):
         return val
     if isinstance(val, str):
@@ -471,7 +471,7 @@ class XPathConverter:
         raise ShadowstepUnsupportedAttributeExpressionError(node)
 
     @staticmethod
-    def _extract_literal(node: str | float | bool | FunctionCall) -> str | int | float | bool:
+    def _extract_literal(node: str | float | bool | FunctionCall) -> str | int | float | bool:  # noqa: FBT001
         if isinstance(node, (str, int, float, bool)):
             return node
         if isinstance(node, FunctionCall) and node.name in ("true", "false") and not node.args:
