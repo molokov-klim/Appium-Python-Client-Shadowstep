@@ -9,14 +9,16 @@ from __future__ import annotations
 
 import importlib.util
 import logging
-from typing import Any, cast
+from typing import TYPE_CHECKING, Any, cast
 
 from shadowstep.exceptions.shadowstep_exceptions import ShadowstepTerminalNotInitializedError
 from shadowstep.page_object.page_object_generator import PageObjectGenerator
 from shadowstep.page_object.page_object_merger import PageObjectMerger
 from shadowstep.page_object.page_object_parser import PageObjectParser
-from shadowstep.shadowstep import Shadowstep
 from shadowstep.utils.utils import get_current_func_name
+
+if TYPE_CHECKING:
+    from shadowstep.shadowstep import Shadowstep
 
 
 class PageObjectRecyclerExplorer:

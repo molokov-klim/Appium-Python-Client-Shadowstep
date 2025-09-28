@@ -8,7 +8,7 @@ comprehensive error handling and validation.
 from __future__ import annotations
 
 import logging
-from typing import Any, cast
+from typing import TYPE_CHECKING, Any, cast
 
 from shadowstep.exceptions.shadowstep_exceptions import (
     ShadowstepConflictingMethodsError,
@@ -20,7 +20,9 @@ from shadowstep.exceptions.shadowstep_exceptions import (
     ShadowstepUiSelectorMethodArgumentError,
     ShadowstepUnsupportedNestedSelectorError,
 )
-from shadowstep.locator.converter.ui_selector_converter_core.ast import Selector
+
+if TYPE_CHECKING:
+    from shadowstep.locator.converter.ui_selector_converter_core.ast import Selector
 from shadowstep.locator.converter.ui_selector_converter_core.lexer import Lexer
 from shadowstep.locator.converter.ui_selector_converter_core.parser import Parser
 from shadowstep.locator.map.ui_to_dict import UI_TO_SHADOWSTEP_DICT

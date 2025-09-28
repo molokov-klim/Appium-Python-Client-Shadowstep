@@ -6,9 +6,10 @@ in the Shadowstep automation framework.
 """
 from __future__ import annotations
 
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
-from shadowstep.element.element import Element
+if TYPE_CHECKING:
+    from shadowstep.element.element import Element
 
 
 class ActionStep:

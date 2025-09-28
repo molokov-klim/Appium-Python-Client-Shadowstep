@@ -8,10 +8,13 @@ from __future__ import annotations
 
 import datetime
 import traceback
-from collections.abc import Sequence
+from typing import TYPE_CHECKING
 
-from appium.webdriver.webdriver import WebDriver
 from selenium.common import NoSuchElementException, TimeoutException, WebDriverException
+
+if TYPE_CHECKING:
+    from collections.abc import Sequence
+    from appium.webdriver.webdriver import WebDriver
 
 
 class ShadowstepException(WebDriverException):
@@ -21,7 +24,7 @@ class ShadowstepException(WebDriverException):
             self,
             msg: str | None = None,
             screen: str | None = None,
-            stacktrace: Sequence[str] | None = None,
+            stacktrace: "Sequence[str]" | None = None,
     ) -> None:
         """Initialize the ShadowstepException.
 
@@ -102,7 +105,7 @@ class ShadowstepTimeoutException(TimeoutException):
                  screen: str | None = None,
                  stacktrace: list[str] | None = None,
                  locator: str | dict | None = None,
-                 driver: WebDriver | None = None) -> None:
+                 driver: "WebDriver" | None = None) -> None:
         """Initialize the ShadowstepTimeoutException.
 
         Args:
@@ -138,7 +141,7 @@ class ShadowstepElementException(WebDriverException):
 
     def __init__(
             self, msg: str | None = None, screen: str | None = None,
-            stacktrace: Sequence[str] | None = None,
+            stacktrace: "Sequence[str]" | None = None,
     ) -> None:
         """Initialize the ShadowstepElementException.
 

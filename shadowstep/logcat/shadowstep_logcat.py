@@ -12,13 +12,15 @@ import logging
 import re
 import threading
 import time
-from collections.abc import Callable
 from pathlib import Path
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
-from appium.webdriver.webdriver import WebDriver
 from selenium.common import WebDriverException
 from websocket import WebSocket, WebSocketConnectionClosedException, create_connection
+
+if TYPE_CHECKING:
+    from collections.abc import Callable
+    from appium.webdriver.webdriver import WebDriver
 
 from shadowstep.exceptions.shadowstep_exceptions import (
     ShadowstepEmptyFilenameError,
@@ -55,7 +57,7 @@ class ShadowstepLogcat:
 
     def __init__(
             self,
-            driver_getter: Callable[[], WebDriver | None],
+            driver_getter: "Callable[[], WebDriver | None]",
             poll_interval: float = DEFAULT_POLL_INTERVAL,
     ) -> None:
         """Initialize ShadowstepLogcat.
@@ -317,7 +319,7 @@ class ShadowstepLogcat:
         finally:
             logger.info("Logcat thread terminated, file closed")
 
-    def _get_http_url(self, driver: WebDriver) -> str:
+    def _get_http_url(self, driver: "WebDriver") -> str:
         """Extract HTTP URL from WebDriver command executor.
 
         Args:

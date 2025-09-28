@@ -6,7 +6,10 @@ method calls with proper value formatting and hierarchical handling.
 """
 from __future__ import annotations
 
-from collections.abc import Callable
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from collections.abc import Callable
 
 from shadowstep.exceptions.shadowstep_exceptions import ShadowstepUnsupportedXPathAttributeError
 from shadowstep.locator.types.ui_selector import UiAttribute
@@ -39,7 +42,7 @@ def _handle_from_parent(parent_ui: str) -> str:
     return f".fromParent({parent_ui})"
 
 
-XPATH_TO_UI: dict[XPathAttribute, Callable[[str], str]] = {
+XPATH_TO_UI: dict[XPathAttribute, "Callable[[str], str]"] = {
     # --- text-based ---
     XPathAttribute.TEXT: lambda v: f"{UiAttribute.TEXT.value}({v})",
     XPathAttribute.TEXT_CONTAINS: lambda v: f"{UiAttribute.TEXT_CONTAINS.value}({v})",

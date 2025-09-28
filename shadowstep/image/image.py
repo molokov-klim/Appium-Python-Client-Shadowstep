@@ -10,12 +10,11 @@ from __future__ import annotations
 import logging
 from typing import TYPE_CHECKING, Any
 
-import numpy as np
-from PIL import Image as PILImage
-
 from shadowstep.utils.utils import get_current_func_name
 
 if TYPE_CHECKING:
+    import numpy as np
+    from PIL import Image as PILImage
     from shadowstep.shadowstep import Shadowstep
 
 
@@ -24,8 +23,8 @@ class ShadowstepImage:
 
     def __init__(
         self,
-        image: bytes | np.ndarray[Any, Any] | PILImage.Image | str,
-        base: Shadowstep,
+        image: bytes | "np.ndarray[Any, Any]" | "PILImage.Image" | str,
+        base: "Shadowstep",
         threshold: float = 0.5,
         timeout: float = 5.0,
     ) -> None:
@@ -39,7 +38,7 @@ class ShadowstepImage:
 
         """
         self._image = image
-        self._base: Shadowstep = base
+        self._base: "Shadowstep" = base
         self.threshold = threshold
         self.timeout = timeout
         self._coords: tuple[int, int, int, int] | None = None
@@ -50,7 +49,7 @@ class ShadowstepImage:
         """Check visibility and cache coordinates/center if found."""
         raise NotImplementedError
 
-    def tap(self, duration: int | None = None) -> ShadowstepImage:
+    def tap(self, duration: int | None = None) -> "ShadowstepImage":
         """Tap on the image center.
 
         Args:
@@ -62,7 +61,7 @@ class ShadowstepImage:
         """
         raise NotImplementedError
 
-    def drag(self, to: tuple[int, int] | ShadowstepImage, duration: float = 1.0) -> ShadowstepImage:
+    def drag(self, to: tuple[int, int] | "ShadowstepImage", duration: float = 1.0) -> "ShadowstepImage":
         """Drag from image center to target location.
 
         Args:
@@ -75,7 +74,7 @@ class ShadowstepImage:
         """
         raise NotImplementedError
 
-    def zoom(self, percent: float = 1.5, steps: int = 10) -> ShadowstepImage:
+    def zoom(self, percent: float = 1.5, steps: int = 10) -> "ShadowstepImage":
         """Zoom in on the image center.
 
         Args:
@@ -88,7 +87,7 @@ class ShadowstepImage:
         """
         raise NotImplementedError
 
-    def unzoom(self, percent: float = 0.5, steps: int = 10) -> ShadowstepImage:
+    def unzoom(self, percent: float = 0.5, steps: int = 10) -> "ShadowstepImage":
         """Zoom out from the image center.
 
         Args:
@@ -154,7 +153,7 @@ class ShadowstepImage:
         to_percent: float = 0.1,
         max_attempts: int = 10,
         step_delay: float = 0.5,
-    ) -> ShadowstepImage:
+    ) -> "ShadowstepImage":
         """Scroll down within the image container.
 
         Args:
@@ -169,7 +168,7 @@ class ShadowstepImage:
         """
         raise NotImplementedError
 
-    def scroll_up(self, max_attempts: int = 10, step_delay: float = 0.5) -> ShadowstepImage:
+    def scroll_up(self, max_attempts: int = 10, step_delay: float = 0.5) -> "ShadowstepImage":
         """Scroll up to find the image.
 
         Args:
@@ -182,7 +181,7 @@ class ShadowstepImage:
         """
         raise NotImplementedError
 
-    def scroll_left(self, max_attempts: int = 10, step_delay: float = 0.5) -> ShadowstepImage:
+    def scroll_left(self, max_attempts: int = 10, step_delay: float = 0.5) -> "ShadowstepImage":
         """Scroll left to find the image.
 
         Args:
@@ -195,7 +194,7 @@ class ShadowstepImage:
         """
         raise NotImplementedError
 
-    def scroll_right(self, max_attempts: int = 10, step_delay: float = 0.5) -> ShadowstepImage:
+    def scroll_right(self, max_attempts: int = 10, step_delay: float = 0.5) -> "ShadowstepImage":
         """Scroll right to find the image.
 
         Args:
@@ -208,7 +207,7 @@ class ShadowstepImage:
         """
         raise NotImplementedError
 
-    def scroll_to(self, max_attempts: int = 10, step_delay: float = 0.5) -> ShadowstepImage:
+    def scroll_to(self, max_attempts: int = 10, step_delay: float = 0.5) -> "ShadowstepImage":
         """Scroll to bring the image into view.
 
         Args:
@@ -221,7 +220,7 @@ class ShadowstepImage:
         """
         raise NotImplementedError
 
-    def is_contains(self, image: bytes | np.ndarray[Any, Any] | PILImage.Image | str) -> bool:
+    def is_contains(self, image: bytes | "np.ndarray[Any, Any]" | "PILImage.Image" | str) -> bool:
         """Check if this image contains another image.
 
         Args:
@@ -240,8 +239,8 @@ class ShadowstepImage:
         raise NotImplementedError
 
     def to_ndarray(
-        self, image: bytes | np.ndarray[Any, Any] | PILImage.Image | str,
-    ) -> np.ndarray[Any, Any]:
+        self, image: bytes | "np.ndarray[Any, Any]" | "PILImage.Image" | str,
+    ) -> "np.ndarray[Any, Any]":
         """Convert various image formats to numpy array.
 
         Args:
@@ -253,14 +252,14 @@ class ShadowstepImage:
         """
         raise NotImplementedError
 
-    def _preprocess(self, image: np.ndarray[Any, Any]) -> np.ndarray[Any, Any]:
+    def _preprocess(self, image: "np.ndarray[Any, Any]") -> "np.ndarray[Any, Any]":
         raise NotImplementedError
 
-    def _enhance_image(self, image: np.ndarray[Any, Any]) -> np.ndarray[Any, Any]:
+    def _enhance_image(self, image: "np.ndarray[Any, Any]") -> "np.ndarray[Any, Any]":
         raise NotImplementedError
 
     def multi_scale_matching(
-        self, full_image: np.ndarray[Any, Any], template_image: np.ndarray[Any, Any],
+        self, full_image: "np.ndarray[Any, Any]", template_image: "np.ndarray[Any, Any]",
     ) -> tuple[float, tuple[int, int]]:
         """Perform multi-scale template matching.
 

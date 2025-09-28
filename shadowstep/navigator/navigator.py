@@ -14,9 +14,11 @@ from collections import deque
 from typing import TYPE_CHECKING, Any, cast
 
 import networkx as nx
-from networkx.classes import DiGraph
 from networkx.exception import NetworkXException
 from selenium.common import WebDriverException
+
+if TYPE_CHECKING:
+    from networkx.classes import DiGraph
 
 from shadowstep.exceptions.shadowstep_exceptions import (
     ShadowstepFromPageCannotBeNoneError,
@@ -27,11 +29,11 @@ from shadowstep.exceptions.shadowstep_exceptions import (
     ShadowstepTimeoutMustBeNonNegativeError,
     ShadowstepToPageCannotBeNoneError,
 )
-from shadowstep.page_base import PageBaseShadowstep
 
 logger = logging.getLogger(__name__)
 
 if TYPE_CHECKING:
+    from shadowstep.page_base import PageBaseShadowstep
     from shadowstep.shadowstep import Shadowstep
 
 # Constants
@@ -222,7 +224,7 @@ class PageGraph:
     def __init__(self) -> None:
         """Initialize the PageGraph with empty graphs."""
         self.graph: dict[Any, Any] = {}  # Legacy dictionary-based graph
-        self.nx_graph: DiGraph[Any] = nx.DiGraph()  # NetworkX directed graph
+        self.nx_graph: "DiGraph[Any]" = nx.DiGraph()  # NetworkX directed graph
 
     def add_page(self, page: Any, edges: Any) -> None:
         """Add a page and its edges to both graph representations.

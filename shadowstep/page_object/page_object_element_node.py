@@ -8,15 +8,17 @@ from __future__ import annotations
 
 import logging
 from abc import ABC, abstractmethod
-from collections.abc import Generator
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 from jinja2 import Environment, FileSystemLoader
 
 from shadowstep.exceptions.shadowstep_exceptions import ShadowstepUnsupportedRendererTypeError
 from shadowstep.utils.utils import get_current_func_name
+
+if TYPE_CHECKING:
+    from collections.abc import Generator
 
 
 @dataclass

@@ -10,7 +10,7 @@ import keyword
 import logging
 import re
 from pathlib import Path
-from typing import Any, cast
+from typing import TYPE_CHECKING, Any, cast
 
 from jinja2 import Environment, FileSystemLoader
 from unidecode import unidecode
@@ -22,8 +22,10 @@ from shadowstep.exceptions.shadowstep_exceptions import (
     ShadowstepTitleNodeNoUsableNameError,
     ShadowstepTitleNotFoundError,
 )
-from shadowstep.page_object.page_object_element_node import UiElementNode
 from shadowstep.utils.utils import get_current_func_name
+
+if TYPE_CHECKING:
+    from shadowstep.page_object.page_object_element_node import UiElementNode
 
 
 class PageObjectGenerator:
@@ -373,7 +375,8 @@ class PageObjectGenerator:
 
             if node.depth == target.depth:
                 self.logger.debug(
-                    "Sibling/cousin candidate: id=%s, class=%s, text=%s, content-desc=%s", node.id, node.tag, node.attrs.get("text"), node.attrs.get("content-desc"))
+                    "Sibling/cousin candidate: id=%s, class=%s, text=%s, content-desc=%s", node.id, node.tag,
+                    node.attrs.get("text"), node.attrs.get("content-desc"))
                 result.append(cast("UiElementNode", node))
             else:
                 self.logger.debug("Rejected (wrong depth): id=%s, depth=%s ≠ %s", node.id, node.depth, target.depth)

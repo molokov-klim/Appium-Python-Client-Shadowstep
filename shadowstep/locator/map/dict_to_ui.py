@@ -5,7 +5,10 @@ to UiSelector method calls with proper attribute mapping and hierarchy handling.
 """
 from __future__ import annotations
 
-from collections.abc import Callable
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from collections.abc import Callable
 
 from shadowstep.exceptions.shadowstep_exceptions import (
     ShadowstepUnsupportedAttributeForUiSelectorError,
@@ -68,7 +71,7 @@ def get_ui_method_for_hierarchical_attribute(attr: ShadowstepDictAttribute) -> s
 
 
 # Mapping dictionary for quick lookup
-DICT_TO_UI_MAPPING: dict[ShadowstepDictAttribute, Callable[[str], str]] = {
+DICT_TO_UI_MAPPING: dict[ShadowstepDictAttribute, "Callable[[str], str]"] = {
     ShadowstepDictAttribute.TEXT: lambda v: f'.{UiAttribute.TEXT.value}("{v}")',
     ShadowstepDictAttribute.TEXT_CONTAINS: lambda v: f'.{UiAttribute.TEXT_CONTAINS.value}("{v}")',
     ShadowstepDictAttribute.TEXT_STARTS_WITH: lambda v: f'.{UiAttribute.TEXT_STARTS_WITH.value}("{v}")',

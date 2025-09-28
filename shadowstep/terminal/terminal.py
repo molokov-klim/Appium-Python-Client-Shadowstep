@@ -16,7 +16,6 @@ import traceback
 from pathlib import Path
 from typing import TYPE_CHECKING, Any
 
-from appium.webdriver.webdriver import WebDriver
 from selenium.common import InvalidSessionIdException, NoSuchDriverException
 
 from shadowstep.utils.utils import get_current_func_name
@@ -29,6 +28,8 @@ logger = logging.getLogger(__name__)
 MIN_PS_COLUMNS_COUNT = 9
 
 if TYPE_CHECKING:
+    from appium.webdriver.webdriver import WebDriver
+
     from shadowstep.base import ShadowstepBase
     from shadowstep.terminal import Transport
 

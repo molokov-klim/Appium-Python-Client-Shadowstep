@@ -8,8 +8,10 @@ from __future__ import annotations
 
 import logging
 import re
-from collections.abc import Iterable
-from typing import Any
+from typing import TYPE_CHECKING, Any
+
+if TYPE_CHECKING:
+    from collections.abc import Iterable
 
 from eulxml.xpath import parse
 from eulxml.xpath.ast import (
@@ -292,7 +294,7 @@ class XPathConverter:
 
         return result
 
-    def _collect_predicates(self, node: AbsolutePath | PredicatedExpression) -> Iterable[Step | FunctionCall | BinaryExpression | int | float]:
+    def _collect_predicates(self, node: AbsolutePath | PredicatedExpression) -> "Iterable[Step | FunctionCall | BinaryExpression | int | float]":
         if isinstance(node, AbsolutePath):
             if node.relative is not None:
                 yield from self._collect_predicates(node.relative)
