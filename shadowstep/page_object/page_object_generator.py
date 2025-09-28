@@ -95,7 +95,7 @@ class PageObjectGenerator:
             ui_element_tree: UiElementNode,
             output_dir: str,
             filename_prefix: str = "",
-    ) -> tuple[str, str]:
+    ) -> tuple[Path, str]:
         """Generate page object from UI element tree.
 
         Args:
@@ -104,7 +104,7 @@ class PageObjectGenerator:
             filename_prefix: Prefix for generated filenames.
 
         Returns:
-            tuple[str, str]: (class_name, output_path) of generated page object.
+            tuple[Path, str]: (output_path, class_name) of generated page object.
 
         """
         self.logger.debug("%s", get_current_func_name())

@@ -12,6 +12,7 @@ import logging
 import re
 import threading
 import time
+import types
 from pathlib import Path
 from typing import TYPE_CHECKING, Any
 
@@ -142,8 +143,7 @@ class ShadowstepLogcat:
 
         return True
 
-
-    def __exit__(self, exc_type: Any, exc_val: Any, exc_tb: Any) -> None:
+    def __exit__(self, exc_type: type[BaseException] | None, exc_val: BaseException | None, exc_tb: types.TracebackType | None) -> None:
         """Context manager exit method to stop logcat capture.
 
         Args:
@@ -311,8 +311,8 @@ class ShadowstepLogcat:
                         # Pause before reconnection
                         time.sleep(self._poll_interval)
 
-                    except Exception as inner:
-                        logger.exception("Logcat stream error, retry in %ss: %r", self._poll_interval, inner)
+                    except Exception:
+                        logger.exception("Logcat stream error, retry in %ss", self._poll_interval)
                         time.sleep(self._poll_interval)
 
         except Exception:

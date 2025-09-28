@@ -115,7 +115,7 @@ class UiSelectorConverter:
             self.logger.exception("Failed to parse UiSelector string")
             raise ShadowstepInvalidUiSelectorStringError(str(e)) from e
 
-    def _selector_to_xpath(self, sel: dict[str, Any], base_xpath: str = "//*") -> str:  # noqa: PLR0912
+    def _selector_to_xpath(self, sel: dict[str, Any], base_xpath: str = "//*") -> str:  # noqa: PLR0912, C901
         """Convert a parsed selector dictionary to XPath.
 
         Args:
