@@ -71,7 +71,7 @@ def get_xpath_for_hierarchical_attribute(attr: ShadowstepDictAttribute, nested_x
 
 
 # Mapping dictionary for quick lookup
-DICT_TO_XPATH_MAPPING: dict[ShadowstepDictAttribute, "Callable[[str], str]"] = {
+DICT_TO_XPATH_MAPPING: dict[ShadowstepDictAttribute, Callable[[str], str]] = {
     ShadowstepDictAttribute.TEXT: lambda v: f"@text='{v}'",
     ShadowstepDictAttribute.TEXT_CONTAINS: lambda v: f"contains(@text, '{v}')",
     ShadowstepDictAttribute.TEXT_STARTS_WITH: lambda v: f"starts-with(@text, '{v}')",

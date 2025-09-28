@@ -224,7 +224,7 @@ class PageGraph:
     def __init__(self) -> None:
         """Initialize the PageGraph with empty graphs."""
         self.graph: dict[Any, Any] = {}  # Legacy dictionary-based graph
-        self.nx_graph: "DiGraph[Any]" = nx.DiGraph()  # NetworkX directed graph
+        self.nx_graph: DiGraph[Any] = nx.DiGraph()  # NetworkX directed graph
 
     def add_page(self, page: Any, edges: Any) -> None:
         """Add a page and its edges to both graph representations.

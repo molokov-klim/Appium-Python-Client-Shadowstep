@@ -42,7 +42,7 @@ def _handle_from_parent(parent_xpath: str) -> str:
     return f"/..{parent_xpath}"
 
 
-UI_TO_XPATH: dict[UiAttribute, "Callable[[str], str]"] = {
+UI_TO_XPATH: dict[UiAttribute, Callable[[str], str]] = {
     # --- text-based ---
     UiAttribute.TEXT: lambda v: f"[{XPathAttribute.TEXT.value}'{v}']",
     UiAttribute.TEXT_CONTAINS: lambda v: f"[{XPathAttribute.TEXT_CONTAINS.value}'{v}')]",

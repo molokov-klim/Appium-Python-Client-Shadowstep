@@ -76,7 +76,7 @@ class PageObjectMerger:
         import_lines: list[str] = []
         for line in lines:
             stripped = line.strip()
-            if stripped.startswith("import ") or stripped.startswith("from "):
+            if stripped.startswith(("import ", "from ")):
                 import_lines.append(line)
             elif stripped == "" or stripped.startswith("#"):
                 continue

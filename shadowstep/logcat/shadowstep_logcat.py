@@ -20,6 +20,7 @@ from websocket import WebSocket, WebSocketConnectionClosedException, create_conn
 
 if TYPE_CHECKING:
     from collections.abc import Callable
+
     from appium.webdriver.webdriver import WebDriver
 
 from shadowstep.exceptions.shadowstep_exceptions import (
@@ -57,7 +58,7 @@ class ShadowstepLogcat:
 
     def __init__(
             self,
-            driver_getter: "Callable[[], WebDriver | None]",
+            driver_getter: Callable[[], WebDriver | None],
             poll_interval: float = DEFAULT_POLL_INTERVAL,
     ) -> None:
         """Initialize ShadowstepLogcat.
@@ -319,7 +320,7 @@ class ShadowstepLogcat:
         finally:
             logger.info("Logcat thread terminated, file closed")
 
-    def _get_http_url(self, driver: "WebDriver") -> str:
+    def _get_http_url(self, driver: WebDriver) -> str:
         """Extract HTTP URL from WebDriver command executor.
 
         Args:

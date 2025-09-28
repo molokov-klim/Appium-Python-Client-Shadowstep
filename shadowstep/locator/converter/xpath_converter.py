@@ -294,7 +294,7 @@ class XPathConverter:
 
         return result
 
-    def _collect_predicates(self, node: AbsolutePath | PredicatedExpression) -> "Iterable[Step | FunctionCall | BinaryExpression | int | float]":
+    def _collect_predicates(self, node: AbsolutePath | PredicatedExpression) -> Iterable[Step | FunctionCall | BinaryExpression | int | float]:
         if isinstance(node, AbsolutePath):
             if node.relative is not None:
                 yield from self._collect_predicates(node.relative)
