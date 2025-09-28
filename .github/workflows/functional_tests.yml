@@ -76,7 +76,7 @@ jobs:
         api-level: ${{ env.API_LEVEL }}
         arch: ${{ env.ARCH }}
         target: google_apis
-        profile: Nexus 6
+        profile: Pixel 6
         disable-spellchecker: true
         disable-animations: true
         emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
