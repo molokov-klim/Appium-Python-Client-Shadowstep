@@ -102,7 +102,7 @@ jobs:
             sleep 10
             
             # Check if server is running
-            if curl -s http://127.0.0.1:4723/appium/sessions > /dev/null; then echo "✅ Appium server is running"; curl -s http://127.0.0.1:4723/appium/sessions; else echo "❌ Appium server failed to start"; cat appium.log; fi
+            if curl -s http://127.0.0.1:4723/wd/hub/status > /dev/null; then echo "✅ Appium server is running"; else echo "❌ Appium server failed to start"; cat appium.log; fi
             
             # Run tests if Appium server is working
             echo "Running tests for ${{ matrix.test_dir }}..."

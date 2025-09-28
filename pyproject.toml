@@ -37,14 +37,6 @@ classifiers = [
     "Programming Language :: Python :: 3.13"
 ]
 
-[project.optional-dependencies]
-dev = [
-    "ruff",
-    "pyright",
-    "pytest",
-    "pytest-cov",
-    "pytest-rerunfailures",
-]
 
 [project.urls]
 Repository = "https://github.com/molokov-klim/Appium-Python-Client-Shadowstep"
@@ -57,10 +49,14 @@ environments = [
     "sys_platform == 'linux'"
 ]
 
-dev-dependencies = [
+dependency-groups.dev = [
     "pre-commit>=4.3.0",
     "pyright>=1.1.403",
-    "ruff>=0.12.9",
+    "ruff",
+    "pyright",
+    "pytest",
+    "pytest-cov",
+    "pytest-rerunfailures",
 ]
 
 # ---------- RUFF ----------
