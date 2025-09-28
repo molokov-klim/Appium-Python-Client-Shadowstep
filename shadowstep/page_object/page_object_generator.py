@@ -187,7 +187,6 @@ class PageObjectGenerator:
         step = "Preparing data for rendering"
         self.logger.debug(step)
         template_data = self._prepare_template_data(
-            ui_element_tree,
             title,
             recycler,
             properties_for_template,
@@ -517,7 +516,6 @@ class PageObjectGenerator:
                 del element.attrs["text"]
 
     def _prepare_template_data(self,
-                               ui_element_tree: UiElementNode,
                                title: UiElementNode,
                                recycler: UiElementNode | None,
                                properties: list[dict[str, Any]],

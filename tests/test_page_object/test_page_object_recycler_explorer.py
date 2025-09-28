@@ -86,13 +86,13 @@ class TestPageObjectRecyclerExplorer:
         # Create a temporary Python file
         with tempfile.NamedTemporaryFile(mode="w", suffix=".py", delete=False) as f:
             f.write("""
-                    class TestPage:
-                        def __init__(self):
-                            pass
-                        
-                        def test_method(self):
-                            return "test"
-                    """)
+class TestPage:
+    def __init__(self):
+        pass
+    
+    def test_method(self):
+        return "test"
+""")    # don't change intend!
             temp_file = f.name
 
         try:
