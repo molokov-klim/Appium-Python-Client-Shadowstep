@@ -90,19 +90,13 @@ dependencies = [
     { name = "websocket-client", marker = "sys_platform == 'linux' or sys_platform == 'win32' or sys_platform == 'windows'" },
 ]
 
-[package.optional-dependencies]
-dev = [
-    { name = "pyright", marker = "sys_platform == 'linux' or sys_platform == 'win32' or sys_platform == 'windows'" },
-    { name = "pytest", marker = "sys_platform == 'linux' or sys_platform == 'win32' or sys_platform == 'windows'" },
-    { name = "pytest-cov", marker = "sys_platform == 'linux' or sys_platform == 'win32' or sys_platform == 'windows'" },
-    { name = "pytest-rerunfailures", marker = "sys_platform == 'linux' or sys_platform == 'win32' or sys_platform == 'windows'" },
-    { name = "ruff", marker = "sys_platform == 'linux' or sys_platform == 'win32' or sys_platform == 'windows'" },
-]
-
 [package.dev-dependencies]
 dev = [
     { name = "pre-commit", marker = "sys_platform == 'linux' or sys_platform == 'win32' or sys_platform == 'windows'" },
     { name = "pyright", marker = "sys_platform == 'linux' or sys_platform == 'win32' or sys_platform == 'windows'" },
+    { name = "pytest", marker = "sys_platform == 'linux' or sys_platform == 'win32' or sys_platform == 'windows'" },
+    { name = "pytest-cov", marker = "sys_platform == 'linux' or sys_platform == 'win32' or sys_platform == 'windows'" },
+    { name = "pytest-rerunfailures", marker = "sys_platform == 'linux' or sys_platform == 'win32' or sys_platform == 'windows'" },
     { name = "ruff", marker = "sys_platform == 'linux' or sys_platform == 'win32' or sys_platform == 'windows'" },
 ]
 
@@ -118,26 +112,23 @@ requires-dist = [
     { name = "opencv-python", specifier = ">=4.12.0.88" },
     { name = "paramiko", specifier = ">=3.4.0" },
     { name = "pillow", specifier = ">=11.3.0" },
-    { name = "pyright", marker = "extra == 'dev'" },
     { name = "pytesseract", specifier = ">=0.3.10" },
-    { name = "pytest", marker = "extra == 'dev'" },
-    { name = "pytest-cov", marker = "extra == 'dev'" },
-    { name = "pytest-rerunfailures", marker = "extra == 'dev'" },
     { name = "requests", specifier = ">=2.31.0" },
-    { name = "ruff", marker = "extra == 'dev'" },
     { name = "scp", specifier = ">=0.14.5" },
     { name = "selenium", specifier = ">=4.12" },
     { name = "setuptools", specifier = "==80.9.0" },
     { name = "unidecode", specifier = ">=1.4.0" },
     { name = "websocket-client", specifier = ">=1.8.0" },
 ]
-provides-extras = ["dev"]
 
 [package.metadata.requires-dev]
 dev = [
-    { name = "pre-commit", specifier = ">=4.3.0" },
-    { name = "pyright", specifier = ">=1.1.403" },
-    { name = "ruff", specifier = ">=0.12.9" },
+    { name = "pre-commit" },
+    { name = "pyright" },
+    { name = "pytest" },
+    { name = "pytest-cov" },
+    { name = "pytest-rerunfailures" },
+    { name = "ruff" },
 ]
 
 [[package]]
@@ -229,7 +220,7 @@ name = "cffi"
 version = "2.0.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
-    { name = "pycparser", marker = "(implementation_name != 'PyPy' and sys_platform == 'linux') or (implementation_name != 'PyPy' and sys_platform == 'win32') or (implementation_name != 'PyPy' and sys_platform == 'windows')" },
+    { name = "pycparser", marker = "(python_full_version < '3.11' and implementation_name != 'PyPy' and sys_platform == 'linux') or (implementation_name != 'PyPy' and platform_python_implementation != 'PyPy' and sys_platform == 'linux') or (implementation_name != 'PyPy' and sys_platform == 'win32') or (implementation_name != 'PyPy' and sys_platform == 'windows')" },
 ]
 sdist = { url = "https://files.pythonhosted.org/packages/eb/56/b1ba7935a17738ae8453301356628e8147c79dbb825bcbc73dc7401f9846/cffi-2.0.0.tar.gz", hash = "sha256:44d1b5909021139fe36001ae048dbdde8214afa20200eda0f64c068cac5d5529", size = 523588, upload-time = "2025-09-08T23:24:04.541Z" }
 wheels = [
