@@ -3,9 +3,8 @@ name: Functional Tests
 on:
   workflow_dispatch:
   push:
-    branches: [ develop, main ]
+    branches: [ main ]
   pull_request:
-    branches: [ develop, main ]
 
 jobs:
 
@@ -73,7 +72,7 @@ jobs:
           disable-animations: false
           script: echo "Generated AVD snapshot for caching."
 
-      - name: Run Android tests - decorators
+      - name: Run Android tests
         uses: reactivecircus/android-emulator-runner@v2
         with:
           api-level: ${{ env.API_LEVEL }}
@@ -108,8 +107,8 @@ jobs:
             if curl -s http://127.0.0.1:4723/appium/sessions > /dev/null; then echo "✅ Appium server is running"; curl -s http://127.0.0.1:4723/appium/sessions; else echo "❌ Appium server failed to start"; cat appium.log; fi
             
             # Run tests if Appium server is working
-            if curl -s http://127.0.0.1:4723/appium/sessions > /dev/null; then echo "Running tests for ${{ matrix.test_dir }}..."; PYTHONPATH=$PWD uv run pytest ${{ matrix.test_dir }} -svl --log-cli-level INFO --tb=short --setup-show --reruns 2 || echo "Tests failed but continuing"; else echo "Skipping tests - Appium server not ready"; fi
-            PYTHONPATH=$PWD uv run pytest tests/test_shadowstep/ -v --tb=short
+            echo "Running tests for ${{ matrix.test_dir }}..."
+            PYTHONPATH=$PWD uv run pytest ${{ matrix.test_dir }} -svl --log-cli-level INFO --tb=short --setup-show --reruns 2
             
             # Kill Appium server
             kill $APPIUM_PID || true
