@@ -16,7 +16,7 @@ logger = logging.getLogger(__name__)
 
 class TestPageObjectextractor:
 
-    def test_poe(self, app: Shadowstep, android_settings_open_close: None):
+    def test_page_object_parser(self, app: Shadowstep, android_settings_open_close: None):
         source = app.driver.page_source
         ui_element_tree = parser.parse(source)
         assert isinstance(ui_element_tree, UiElementNode)  # noqa: S101
@@ -34,7 +34,7 @@ class TestPageObjectextractor:
         file_path = Path(page_path)
         assert file_path.exists(), f"File {file_path} not found"  # noqa: S101
 
-    def test_page_object_explorer(self, app: Shadowstep, press_home: None, android_settings_open_close: None, cleanup_pages: None):
+    def test_page_object_recycler_explorer(self, app: Shadowstep, press_home: None, android_settings_open_close: None, cleanup_pages: None):
         translator = YandexTranslate(folder_id="b1ghf7n3imfg7foodstv")
         recycler_explorer = PageObjectRecyclerExplorer(app, translator)
         page_path = recycler_explorer.explore("pages")

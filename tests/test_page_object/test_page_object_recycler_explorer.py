@@ -2,6 +2,7 @@
 
 import os
 import tempfile
+from pathlib import Path
 from unittest.mock import Mock
 
 import pytest
@@ -56,7 +57,7 @@ class TestPageObjectRecyclerExplorer:
         explorer.parser.parse = Mock(return_value=mock_tree)
         
         # Mock the generator
-        mock_generator_result = ("test_page.py", "TestPage")
+        mock_generator_result = (Path("test_page.py"), "TestPage")
         explorer.generator.generate = Mock(return_value=mock_generator_result)
         
         # Mock the merger
@@ -73,7 +74,7 @@ class TestPageObjectRecyclerExplorer:
             result = explorer.explore(temp_dir)
             
             assert result is not None  # noqa: S101
-            assert result.startswith("merged")  # noqa: S101
+            assert result.parent.name == "merged_pages"  # noqa: S101
             base.terminal.get_screen_resolution.assert_called()
             base.terminal.adb_shell.assert_called()
             base.swipe.assert_called()
