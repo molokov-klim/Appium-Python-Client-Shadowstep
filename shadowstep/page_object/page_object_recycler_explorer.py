@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import importlib.util
 import logging
+from pathlib import Path
 from typing import TYPE_CHECKING, Any, cast
 
 from shadowstep.exceptions.shadowstep_exceptions import ShadowstepTerminalNotInitializedError
@@ -43,14 +44,14 @@ class PageObjectRecyclerExplorer:
         self.generator = PageObjectGenerator(translator)
         self.merger = PageObjectMerger()
 
-    def explore(self, output_dir: str) -> str:
+    def explore(self, output_dir: str) -> Path:
         """Explore recycler views and generate page objects.
 
         Args:
             output_dir: Directory to save generated page objects.
 
         Returns:
-            str: Path to the generated file.
+            Path: Path to the generated file.
 
         Raises:
             ValueError: If terminal is not initialized.
@@ -120,7 +121,9 @@ class PageObjectRecyclerExplorer:
         page_path, page_class_name = self.generator.generate(tree, output_dir=output_dir, filename_prefix=str(prefix))
         pages.append((page_path, page_class_name))
 
-        output_path = "merged" + original_page_path
+        output_path = Path("merged_pages") / original_page_path.name
+        output_path.parent.mkdir(parents=True, exist_ok=True)
+
         self.merger.merge(original_page_path, cast("str", pages[0][0]), output_path)
 
         for page_tuple in pages:

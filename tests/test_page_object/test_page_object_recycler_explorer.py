@@ -6,6 +6,7 @@ from unittest.mock import Mock
 
 import pytest
 
+from shadowstep.exceptions.shadowstep_exceptions import ShadowstepTerminalNotInitializedError
 from shadowstep.page_object.page_object_recycler_explorer import PageObjectRecyclerExplorer
 
 
@@ -33,7 +34,7 @@ class TestPageObjectRecyclerExplorer:
         
         explorer = PageObjectRecyclerExplorer(base, translator)
         
-        with pytest.raises(ValueError, match="Terminal is not initialized"):
+        with pytest.raises(ShadowstepTerminalNotInitializedError, match="Terminal is not initialized"):
             explorer.explore("output_dir")
 
     def test_explore_with_terminal(self):
