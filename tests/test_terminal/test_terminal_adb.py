@@ -74,7 +74,7 @@ class TestAdb:
         """Test successful device model retrieval."""
         # Arrange
         udid = "emulator-5554"
-        expected_model = "ro.product.model=Pixel 4"
+        expected_model = "ro.product.model=Nexus 6"
         mock_output = expected_model.encode()
 
         with patch("subprocess.check_output", return_value=mock_output) as mock_subprocess:
@@ -88,7 +88,7 @@ class TestAdb:
     def test_get_device_model_no_udid(self):
         """Test device model retrieval without UDID."""
         # Arrange
-        expected_model = "ro.product.model=Pixel 4"
+        expected_model = "ro.product.model=Nexus 6"
         mock_output = expected_model.encode()
 
         with patch("subprocess.check_output", return_value=mock_output) as mock_subprocess:

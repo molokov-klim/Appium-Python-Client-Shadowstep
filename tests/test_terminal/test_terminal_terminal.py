@@ -430,14 +430,14 @@ class TestTerminal:
     def test_get_prop_success(self):
         """Test successful property retrieval."""
         # Arrange
-        expected_value = "[ro.build.version.release]: [11]\n[ro.product.model]: [Pixel 4]"
+        expected_value = "[ro.build.version.release]: [11]\n[ro.product.model]: [Nexus 6]"
 
         with patch.object(self.terminal, "adb_shell", return_value=expected_value) as mock_adb_shell:
             # Act
             result = self.terminal.get_prop()
 
             # Assert
-            expected_dict = {"ro.build.version.release": "11", "ro.product.model": "Pixel 4"}
+            expected_dict = {"ro.build.version.release": "11", "ro.product.model": "Nexus 6"}
             assert result == expected_dict  # noqa: S101
             mock_adb_shell.assert_called_once_with(command="getprop")
 

@@ -66,7 +66,9 @@ class UiSelectorConverter:
         except ShadowstepInvalidUiSelectorError:
             raise
         except Exception as e:
-            raise ShadowstepUiSelectorConversionError("XPath", str(e)) from e
+            error_message = str(e)
+            conversion_type = "XPath"
+            raise ShadowstepUiSelectorConversionError(conversion_type, error_message) from e
 
     def selector_to_dict(self, selector_str: str) -> dict[str, Any]:
         """Convert UiSelector string to dictionary format.
@@ -84,7 +86,9 @@ class UiSelectorConverter:
         except ShadowstepInvalidUiSelectorError:
             raise
         except Exception as e:
-            raise ShadowstepUiSelectorConversionError("XPath", str(e)) from e
+            error_message = str(e)
+            conversion_type = "XPath"
+            raise ShadowstepUiSelectorConversionError(conversion_type, error_message) from e
 
     def parse_selector_string(self, selector_str: str) -> dict[str, Any]:
         """Parse UiSelector string into dictionary format.
@@ -187,7 +191,8 @@ class UiSelectorConverter:
             args = method_data.get("args", [])
 
             if method_name not in UI_TO_SHADOWSTEP_DICT:
-                raise NotImplementedError(f"Method '{method_name}' is not supported")
+                error_message = f"Method '{method_name}' is not supported"
+                raise NotImplementedError(error_message)
 
             self._validate_method_compatibility(method_name, result.keys())     # type: ignore[arg-type]
 

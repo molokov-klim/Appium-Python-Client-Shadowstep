@@ -358,7 +358,7 @@ class XPathConverter:
 
     # ========== predicate handlers (DICT) ==========
 
-    def _apply_predicate_to_dict(
+    def _apply_predicate_to_dict(  # noqa: PLR0912, PLR0911, C901
         self,
         pred_expr: Step | FunctionCall | BinaryExpression | float,
         out: dict[str, Any],

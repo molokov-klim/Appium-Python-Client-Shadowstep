@@ -94,7 +94,7 @@ class ShadowstepLogcat:
 
     def _raise_logcat_connection_error(self) -> None:
         """Raise ShadowstepLogcatConnectionError for WebSocket connection failure.
-        
+
         Raises:
             ShadowstepLogcatConnectionError: Always raised
 

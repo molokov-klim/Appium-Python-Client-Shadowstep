@@ -71,7 +71,9 @@ class DictConverter(Generic[T]):
         try:
             return self._dict_to_xpath_recursive(selector_dict)
         except Exception as e:
-            raise ShadowstepDictConversionError("XPath", str(e)) from e
+            error_message = str(e)
+            conversion_type = "XPath"
+            raise ShadowstepDictConversionError(conversion_type, error_message) from e
 
     def dict_to_ui_selector(self, selector_dict: SelectorDict) -> str:
         """Convert Shadowstep dictionary locator to UiSelector string.
@@ -89,7 +91,9 @@ class DictConverter(Generic[T]):
         try:
             ui_selector = self._dict_to_ui_recursive(selector_dict)
         except Exception as e:
-            raise ShadowstepDictConversionError("UiSelector", str(e)) from e
+            error_message = str(e)
+            conversion_type = "UiSelector"
+            raise ShadowstepDictConversionError(conversion_type, error_message) from e
         else:
             return f"new UiSelector(){ui_selector};"
 

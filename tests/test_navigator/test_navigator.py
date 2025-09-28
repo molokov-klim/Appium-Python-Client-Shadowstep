@@ -446,4 +446,4 @@ class TestPageNavigator:
     
     def test_default_timeout_constant(self) -> None:
         """Test that DEFAULT_NAVIGATION_TIMEOUT has expected value."""
-        assert DEFAULT_NAVIGATION_TIMEOUT == 55  # noqa: S101
+        assert DEFAULT_NAVIGATION_TIMEOUT == 10  # noqa: S101

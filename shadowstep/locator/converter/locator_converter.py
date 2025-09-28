@@ -53,10 +53,10 @@ class LocatorConverter:
 
     def _raise_unsupported_selector_format_error(self, selector: Any) -> None:
         """Raise ShadowstepUnsupportedSelectorFormatError for unsupported selector format.
-        
+
         Args:
             selector: The unsupported selector
-            
+
         Raises:
             ShadowstepUnsupportedSelectorFormatError: Always raised
 

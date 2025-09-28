@@ -30,6 +30,6 @@ generator = PageObjectGenerator(translator)
 recycler_explorer = PageObjectRecyclerExplorer(app, translator)
 
 source = app.driver.page_source
-print(source)
+print(source)   # noqa: T201
 tree = parser.parse(source)
 recycler_explorer.explore("pages")

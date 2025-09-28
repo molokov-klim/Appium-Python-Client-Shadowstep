@@ -1,6 +1,6 @@
 
 # commands to install and run appium server
-# use Google Pixel 14 android virtual device for testing
+# use Google Nexus 6 with 14 android virtual device for testing
 
 ```commandline
 uv lock --upgrade
