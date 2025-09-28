@@ -16,7 +16,12 @@ from pathlib import Path
 from typing import TYPE_CHECKING, Any
 
 from selenium.common import WebDriverException
-from websocket import WebSocket, WebSocketConnectionClosedException, create_connection
+from websocket import (
+    WebSocket,
+    WebSocketConnectionClosedException,
+    WebSocketException,
+    create_connection,
+)
 
 if TYPE_CHECKING:
     import types
@@ -274,7 +279,7 @@ class ShadowstepLogcat:
                                 ws = create_connection(url, timeout=WEBSOCKET_TIMEOUT)
                                 logger.info("Logcat WebSocket connected: %s", url)
                                 break
-                            except Exception as ex:
+                            except (OSError, WebSocketException) as ex:
                                 logger.debug("Cannot connect to %s: %r", url, ex)
                         if not ws:
                             self._raise_logcat_connection_error()
@@ -294,15 +299,19 @@ class ShadowstepLogcat:
 
                                 f.write(line + "\n")
                             except WebSocketConnectionClosedException:
-                                break  # Reconnect
-                            except Exception as ex:
-                                logger.debug("Ignoring recv error: %r", ex)
+                                break  # reconnect
+                            except (TimeoutError, ConnectionError) as ex:
+                                logger.debug("Connection issue: %r", ex)
+                                time.sleep(self._poll_interval)
                                 continue
+                            except Exception:
+                                logger.exception("Unexpected error during logcat streaming")
+                                time.sleep(self._poll_interval)
 
                         # Clear reference and close socket
                         try:
                             ws.close()
-                        except Exception as ex:
+                        except WebSocketException as ex:
                             logger.debug("Error closing WebSocket: %r", ex)
                         finally:
                             self._ws = None
