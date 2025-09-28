@@ -7,7 +7,6 @@ from shadowstep.page_object.page_object_generator import PageObjectGenerator
 from shadowstep.page_object.page_object_parser import PageObjectParser
 from shadowstep.page_object.page_object_recycler_explorer import PageObjectRecyclerExplorer
 from shadowstep.shadowstep import Shadowstep
-from shadowstep.utils.translator import YandexTranslate
 
 parser = PageObjectParser()
 POG = PageObjectGenerator()
@@ -23,7 +22,7 @@ class TestPageObjectextractor:
 
     def test_page_object_generator(self, app: Shadowstep, android_settings_open_close: None, cleanup_pages: None):
         parser = PageObjectParser()
-        translator = YandexTranslate(folder_id="b1ghf7n3imfg7foodstv")
+        translator = None
         generator = PageObjectGenerator(translator)
 
         tree = parser.parse(app.driver.page_source)
@@ -35,7 +34,7 @@ class TestPageObjectextractor:
         assert file_path.exists(), f"File {file_path} not found"  # noqa: S101
 
     def test_page_object_recycler_explorer(self, app: Shadowstep, press_home: None, android_settings_open_close: None, cleanup_pages: None):
-        translator = YandexTranslate(folder_id="b1ghf7n3imfg7foodstv")
+        translator = None
         recycler_explorer = PageObjectRecyclerExplorer(app, translator)
         page_path = recycler_explorer.explore("pages")
         
