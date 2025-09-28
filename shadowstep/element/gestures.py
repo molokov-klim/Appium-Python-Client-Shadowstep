@@ -152,7 +152,7 @@ class ElementGestures:
         while time.time() - start_time < self.element.timeout:
             try:
                 self.element.get_driver()
-                self.element._get_web_element(locator=self.element.locator)  # type: ignore[reportPrivateUsage]  # noqa: SLF001  # noqa: SLF001
+                self.element._get_web_element(locator=self.element.locator)  # type: ignore[reportPrivateUsage]  # noqa: SLF001
                 if duration is None:
                     self._mobile_gesture("mobile: clickGesture",
                                          {"elementId": self.element.id})
@@ -201,7 +201,7 @@ class ElementGestures:
         while time.time() - start_time < self.element.timeout:
             try:
                 self.element.get_driver()
-                self.element._get_web_element(locator=self.element.locator)  # type: ignore[reportPrivateUsage]  # noqa: SLF001  # noqa: SLF001
+                self.element._get_web_element(locator=self.element.locator)  # type: ignore[reportPrivateUsage]  # noqa: SLF001
                 self._mobile_gesture("mobile: doubleClickGesture",
                                      {"elementId": self.element.id})
                 return self.element  # noqa: TRY300
@@ -251,7 +251,7 @@ class ElementGestures:
         while time.time() - start_time < self.element.timeout:
             try:
                 self.element.get_driver()
-                self.element._get_web_element(locator=self.element.locator)  # type: ignore[reportPrivateUsage]  # noqa: SLF001  # noqa: SLF001
+                self.element._get_web_element(locator=self.element.locator)  # type: ignore[reportPrivateUsage]  # noqa: SLF001
                 self._mobile_gesture("mobile: dragGesture",
                                      {"elementId": self.element.id,
                                       "endX": end_x,
@@ -310,7 +310,7 @@ class ElementGestures:
         while time.time() - start_time < self.element.timeout:
             try:
                 self.element.get_driver()
-                self.element._get_web_element(locator=self.element.locator)  # type: ignore[reportPrivateUsage]  # noqa: SLF001  # noqa: SLF001
+                self.element._get_web_element(locator=self.element.locator)  # type: ignore[reportPrivateUsage]  # noqa: SLF001
                 self._mobile_gesture("mobile: flingGesture",
                                      {"elementId": self.element.id,
                                       "direction": direction,
@@ -371,7 +371,7 @@ class ElementGestures:
         while time.time() - start_time < self.element.timeout:
             try:
                 self.element.get_driver()
-                self.element._get_web_element(locator=self.element.locator)  # type: ignore[reportPrivateUsage]  # noqa: SLF001  # noqa: SLF001
+                self.element._get_web_element(locator=self.element.locator)  # type: ignore[reportPrivateUsage]  # noqa: SLF001
                 can_scroll = self._mobile_gesture("mobile: scrollGesture",
                                                   {"elementId": self.element.id,
                                                    "percent": percent,
@@ -556,7 +556,7 @@ class ElementGestures:
         while time.time() - start_time < self.element.timeout:
             try:
                 self.element.get_driver()
-                self.element._get_web_element(locator=self.element.locator)  # type: ignore[reportPrivateUsage]  # noqa: SLF001  # noqa: SLF001
+                self.element._get_web_element(locator=self.element.locator)  # type: ignore[reportPrivateUsage]  # noqa: SLF001
                 self._mobile_gesture("mobile: pinchOpenGesture", {
                     "elementId": self.element.id,
                     "percent": percent,
@@ -608,7 +608,7 @@ class ElementGestures:
         while time.time() - start_time < self.element.timeout:
             try:
                 self.element.get_driver()
-                self.element._get_web_element(locator=self.element.locator)  # type: ignore[reportPrivateUsage]  # noqa: SLF001  # noqa: SLF001
+                self.element._get_web_element(locator=self.element.locator)  # type: ignore[reportPrivateUsage]  # noqa: SLF001
                 self._mobile_gesture("mobile: pinchCloseGesture", {
                     "elementId": self.element.id,
                     "percent": percent,
@@ -661,7 +661,7 @@ class ElementGestures:
         while time.time() - start_time < self.element.timeout:
             try:
                 self.element.get_driver()
-                self.element._get_web_element(locator=self.element.locator)  # type: ignore[reportPrivateUsage]  # noqa: SLF001  # noqa: SLF001
+                self.element._get_web_element(locator=self.element.locator)  # type: ignore[reportPrivateUsage]  # noqa: SLF001
                 self._mobile_gesture("mobile: swipeGesture", {
                     "elementId": self.element.id,
                     "direction": direction.lower(),

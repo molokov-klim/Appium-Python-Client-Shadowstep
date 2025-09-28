@@ -207,7 +207,7 @@ class UiSelector:
 
         # Add hierarchical methods
         for method_name, child_selector in self._hierarchical_methods:
-            child_str = child_selector._build_selector_string(is_nested=True)
+            child_str = child_selector._build_selector_string(is_nested=True)  # noqa: SLF001
             parts.append(f".{method_name}({child_str})")
 
         result = "".join(parts)

@@ -85,7 +85,7 @@ class UiElementNode:
         )
         if not self.children:
             return line
-        return "\n".join([line] + [child._repr_tree(indent + 1) for child in self.children])
+        return "\n".join([line] + [child._repr_tree(indent + 1) for child in self.children])  # noqa: SLF001
 
 
 @dataclass

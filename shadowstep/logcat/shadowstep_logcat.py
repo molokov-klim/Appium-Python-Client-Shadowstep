@@ -332,7 +332,7 @@ class ShadowstepLogcat:
         if not http_url:
             http_url = getattr(driver.command_executor, "_client_config", None)
             if http_url:
-                http_url = getattr(driver.command_executor._client_config, "remote_server_addr", "")
+                http_url = getattr(driver.command_executor._client_config, "remote_server_addr", "")  # noqa: SLF001
             else:
                 http_url = ""
         return http_url
