@@ -1,7 +1,7 @@
 name: Functional Tests
 
 on:
-  workflow_dispatch:  # Only manual
+  workflow_dispatch:
   push:
     branches: [ develop, main ]
   pull_request:
@@ -76,7 +76,7 @@ jobs:
         api-level: ${{ env.API_LEVEL }}
         arch: ${{ env.ARCH }}
         target: google_apis
-        profile: Pixel 6
+        profile: Nexus 6
         disable-spellchecker: true
         disable-animations: true
         emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none

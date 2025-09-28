@@ -179,9 +179,9 @@ class PageNavigator:
             for next_page_name in transitions:
                 next_page = self.shadowstep.resolve_page(cast("str", next_page_name))
                 if next_page == target:
-                    return path + [current_page, next_page]
+                    return [*path, current_page, next_page]
                 if next_page not in visited:
-                    queue.append((next_page, path + [current_page]))
+                    queue.append((next_page, [*path, current_page]))
         return None
 
     def perform_navigation(self, path: list[Any], timeout: int = DEFAULT_NAVIGATION_TIMEOUT) -> None:
