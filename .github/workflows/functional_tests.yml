@@ -9,6 +9,7 @@ jobs:
   android_test:
     runs-on: ubuntu-latest
     strategy:
+      fail-fast: false
       matrix:
         test_dir: [ tests/test_decorators/, tests/test_element/, tests/test_image, tests/test_locator, tests/test_logcat, tests/test_navigator, tests/test_page_object, tests/test_shadowstep, tests/test_terminal ]
 
@@ -86,9 +87,15 @@ jobs:
             echo "Android SDK: $ANDROID_SDK_ROOT"
             adb devices
             echo "========================"
+            
+            echo "Waiting for Android emulator to fully boot..."
+            adb wait-for-device
+            adb shell 'while [[ -z $(getprop sys.boot_completed) ]]; do sleep 1; done;'
+            echo "✅ Emulator boot completed"
+                        
             # Install dependencies first
             uv sync --dev
-            
+                        
             # Test basic imports
             echo "Testing basic imports..."
             uv run python -c "import shadowstep; print('✅ Shadowstep imports successfully')"
