@@ -77,7 +77,7 @@ class LocatorConverter:
 
         """
         try:
-            from shadowstep.element.element import Element
+            from shadowstep.element.element import Element  # noqa: PLC0415
             if isinstance(selector, Element):
                 selector = cast("Element", selector.locator)
             if isinstance(selector, dict):
@@ -108,7 +108,7 @@ class LocatorConverter:
 
         """
         try:
-            from shadowstep.element.element import Element
+            from shadowstep.element.element import Element  # noqa: PLC0415
             if isinstance(selector, Element):
                 selector = cast("Element", selector.locator)
             if isinstance(selector, dict):
@@ -139,7 +139,7 @@ class LocatorConverter:
 
         """
         try:
-            from shadowstep.element.element import Element
+            from shadowstep.element.element import Element  # noqa: PLC0415
             if isinstance(selector, Element):
                 selector = cast("Element", selector.locator)
             if isinstance(selector, dict):

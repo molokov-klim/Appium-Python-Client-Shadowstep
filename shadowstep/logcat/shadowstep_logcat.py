@@ -110,7 +110,6 @@ class ShadowstepLogcat:
     def filters(self, value: list[str]) -> None:
         self._filters = value
         if value:
-            import re
             escaped_filters = [re.escape(f) for f in value]
             self._compiled_filter_pattern = re.compile("|".join(escaped_filters))
             self._filter_set = set(value)

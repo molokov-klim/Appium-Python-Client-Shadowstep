@@ -123,7 +123,7 @@ class PageObjectMerger:
         blocks = page.split("\n\n")
 
         for block in blocks:
-            block = textwrap.dedent(block)  # <<< IMPORTANT: REMOVE EXCESS NESTING
+            block = textwrap.dedent(block)  # noqa: PLW2901
             stripped = block.strip()
 
             if not stripped.startswith("def ") and not stripped.startswith("@property") and not stripped.startswith(
