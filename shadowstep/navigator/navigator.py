@@ -9,6 +9,7 @@ and fallback BFS traversal.
 from __future__ import annotations
 
 import logging
+import time
 import traceback
 from collections import deque
 from typing import TYPE_CHECKING, Any, cast
@@ -37,7 +38,7 @@ if TYPE_CHECKING:
     from shadowstep.shadowstep import Shadowstep
 
 # Constants
-DEFAULT_NAVIGATION_TIMEOUT = 55
+DEFAULT_NAVIGATION_TIMEOUT = 10
 MIN_PATH_LENGTH = 2
 
 
@@ -205,7 +206,12 @@ class PageNavigator:
             next_page = path[i + 1]
             transition_method = current_page.edges[next_page.__class__.__name__]
             transition_method()
-            if not next_page.is_current_page():
+            end_time = time.time() + timeout
+            while time.time() < end_time:
+                if next_page.is_current_page():
+                    break
+                time.sleep(0.5)
+            else:
                 raise ShadowstepNavigationFailedError(current_page, next_page, transition_method)
 
 
