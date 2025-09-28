@@ -123,14 +123,14 @@ class PageObjectMerger:
         blocks = page.split("\n\n")
 
         for block in blocks:
-            block = textwrap.dedent(block)  # noqa: PLW2901
-            stripped = block.strip()
+            dedent_block = textwrap.dedent(block)
+            stripped = dedent_block.strip()
 
             if not stripped.startswith("def ") and not stripped.startswith("@property") and not stripped.startswith(
                     "@current_page"):
                 continue
 
-            lines = block.splitlines()
+            lines = dedent_block.splitlines()
             name = None
 
             for i, line in enumerate(lines):
@@ -145,7 +145,7 @@ class PageObjectMerger:
                         break
 
             if name:
-                methods[name] = block
+                methods[name] = dedent_block
 
         return methods
 
