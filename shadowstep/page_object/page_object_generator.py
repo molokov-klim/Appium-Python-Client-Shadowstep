@@ -36,11 +36,11 @@ class PageObjectGenerator:
     generation, and template-based rendering.
     """
 
-    def __init__(self, translator: YandexTranslate | None = None) -> None:
+    def __init__(self, translator: Any = None) -> None:
         """Initialize the PageObjectGenerator.
 
         Args:
-            translator: Optional translator instance for text translation.
+            translator: Optional translator instance for text translation, must contain def translate(text: str) -> str.
 
         """
         self.logger = logging.getLogger(__name__)
