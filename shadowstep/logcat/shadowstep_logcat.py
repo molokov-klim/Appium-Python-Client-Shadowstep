@@ -12,7 +12,6 @@ import logging
 import re
 import threading
 import time
-import types
 from pathlib import Path
 from typing import TYPE_CHECKING, Any
 
@@ -20,6 +19,7 @@ from selenium.common import WebDriverException
 from websocket import WebSocket, WebSocketConnectionClosedException, create_connection
 
 if TYPE_CHECKING:
+    import types
     from collections.abc import Callable
 
     from appium.webdriver.webdriver import WebDriver
