@@ -4,8 +4,6 @@ This module provides the Aapt class for extracting package information
 from APK files using the Android Asset Packaging Tool, including
 package names and launchable activities.
 """
-# shadowstep/terminal/aapt.py
-
 import logging
 import subprocess
 from pathlib import Path

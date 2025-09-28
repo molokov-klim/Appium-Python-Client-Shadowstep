@@ -1,4 +1,3 @@
-# shadowstep/utils/translator.py
 """Text translation utilities for Shadowstep framework.
 
 This module provides the YandexTranslate class for translating text

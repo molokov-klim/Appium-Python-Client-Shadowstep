@@ -5,7 +5,6 @@ all supported attribute types for UiSelector locators,
 including text-based, description, resource ID, class, boolean,
 numeric, and hierarchical attributes based on Android UiAutomator.
 """
-# shadowstep/locator/types/ui_selector.py
 from enum import Enum
 
 

@@ -1,4 +1,3 @@
-# tests/element/test_elements.py
 import time
 from typing import Any
 

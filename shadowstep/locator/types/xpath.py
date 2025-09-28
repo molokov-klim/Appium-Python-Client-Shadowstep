@@ -5,7 +5,6 @@ all supported attribute types for XPath locators,
 including text-based, description, resource ID, class, boolean,
 numeric, and hierarchical attributes with their XPath syntax.
 """
-# shadowstep/locator/types/xpath.py
 from enum import Enum
 
 

@@ -1,4 +1,3 @@
-# shadowstep/utils/command_line_parser.py
 """Command line argument parser for Shadowstep framework.
 
 This module provides utility functions for parsing command line arguments

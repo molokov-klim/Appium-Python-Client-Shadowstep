@@ -1,5 +1,3 @@
-# tests/locator/test_converter_xpath.py
-# tests/test_converter_xpath.py
 import logging
 from typing import Any
 

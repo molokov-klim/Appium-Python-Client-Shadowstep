@@ -1,4 +1,3 @@
-# tests/terminal/test_terminal_adb.py
 """
 Tests for shadowstep.terminal.adb module.
 """

@@ -4,7 +4,6 @@ This module provides the PageObjectMerger class for merging
 multiple page object files into a single consolidated file,
 handling imports, class definitions, and method deduplication.
 """
-# shadowstep/page_object/page_object_merger.py
 from __future__ import annotations
 
 import logging

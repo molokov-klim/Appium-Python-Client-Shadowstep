@@ -1,4 +1,3 @@
-# tests/navigator/test_navigator.py
 """Tests for the navigator module.
 
 This module contains comprehensive tests for the PageNavigator and PageGraph classes,

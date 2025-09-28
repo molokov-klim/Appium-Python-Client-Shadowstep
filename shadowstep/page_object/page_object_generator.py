@@ -4,8 +4,6 @@ This module provides the PageObjectGenerator class for automatically
 generating page object classes from UI element trees, including
 property extraction, locator generation, and template-based rendering.
 """
-# shadowstep/page_object/page_object_generator.py
-#  shadowstep/page_object/page_object_generator.py
 from __future__ import annotations
 
 import keyword

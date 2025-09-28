@@ -6,7 +6,6 @@ predicates with proper value formatting and hierarchical handling.
 """
 from __future__ import annotations
 
-# shadowstep/locator/map/ui_to_xpath.py
 from collections.abc import Callable
 
 from shadowstep.exceptions.shadowstep_exceptions import ShadowstepUnsupportedUiSelectorMethodError
@@ -116,6 +115,7 @@ def is_hierarchical_method(method: UiAttribute) -> bool:
 
     """
     return method in (UiAttribute.CHILD_SELECTOR, UiAttribute.FROM_PARENT)
+
 
 def get_supported_methods() -> list[UiAttribute]:
     """Get list of all supported UiSelector methods.

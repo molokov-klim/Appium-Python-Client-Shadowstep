@@ -1,4 +1,3 @@
-# tests/element/test_element_coordinates.py
 from typing import Any
 
 import pytest

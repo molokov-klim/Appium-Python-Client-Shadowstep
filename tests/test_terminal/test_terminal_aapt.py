@@ -1,4 +1,3 @@
-# tests/terminal/test_terminal_aapt.py
 """
 Tests for shadowstep.terminal.aapt module.
 """

@@ -1,4 +1,3 @@
-# tests/terminal/test_adb.py
 import os
 import subprocess
 

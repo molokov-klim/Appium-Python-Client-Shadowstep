@@ -1,5 +1,3 @@
-# tests/locator/test_converter_dict.py
-# tests/test_converter_dict.py
 import logging
 from typing import Any
 

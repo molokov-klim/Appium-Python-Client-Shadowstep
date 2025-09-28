@@ -1,4 +1,3 @@
-# shadowstep/navigator/navigator.py
 """Navigation module for managing page transitions in Shadowstep framework.
 
 This module provides functionality for navigating between pages using graph-based

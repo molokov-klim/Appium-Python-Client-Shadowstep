@@ -1,4 +1,3 @@
-# tests/logcat/test_logcat.py
 """Tests for the logcat module.
 
 This module contains comprehensive tests for the ShadowstepLogcat class,

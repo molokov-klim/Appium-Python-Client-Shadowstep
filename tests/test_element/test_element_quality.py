@@ -1,4 +1,3 @@
-# tests/element/test_element_quality.py
 from unittest.mock import Mock
 
 import pytest

@@ -1,4 +1,3 @@
-# tests/terminal/test_terminal_terminal.py
 """
 Tests for shadowstep.terminal.terminal module.
 """

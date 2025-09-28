@@ -4,7 +4,6 @@ This module provides the Terminal class for executing ADB commands
 through Appium server, including device management, app operations,
 input simulation, file operations, and system control via SSH transport.
 """
-# shadowstep/terminal/terminal.py
 from __future__ import annotations
 
 import base64

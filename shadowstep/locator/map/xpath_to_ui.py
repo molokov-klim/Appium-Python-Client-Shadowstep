@@ -4,7 +4,8 @@ This module provides the mapping dictionary and utility functions
 for converting XPath attributes to their corresponding UiSelector
 method calls with proper value formatting and hierarchical handling.
 """
-# shadowstep/locator/map/xpath_to_ui.py
+from __future__ import annotations
+
 from collections.abc import Callable
 
 from shadowstep.exceptions.shadowstep_exceptions import ShadowstepUnsupportedXPathAttributeError

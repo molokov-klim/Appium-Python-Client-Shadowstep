@@ -1,4 +1,3 @@
-# shadowstep/locator/map/dict_to_ui.py
 """Mapping from Shadowstep Dict format to UiSelector expressions.
 
 This module provides functions to convert Shadowstep dictionary locators

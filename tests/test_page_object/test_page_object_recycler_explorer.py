@@ -1,4 +1,3 @@
-# tests/page_object/test_page_object_recycler_explorer.py
 """Tests for page_object_recycler_explorer module."""
 
 import os

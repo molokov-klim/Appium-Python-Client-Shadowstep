@@ -1,4 +1,3 @@
-# shadowstep/terminal/terminal_interface.py
 """Yes, you're right — current `Terminal` implementation is overloaded and violates Single Responsibility Principle (SRP from SOLID), because.
 
 - some methods use **Appium driver (`self.driver`)**, which doesn't require any `transport`;

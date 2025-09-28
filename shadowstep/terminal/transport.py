@@ -1,5 +1,3 @@
-# shadowstep/terminal/transport.py
-
 """SSH transport module for Shadowstep framework.
 
 This module provides the Transport class for establishing SSH connections

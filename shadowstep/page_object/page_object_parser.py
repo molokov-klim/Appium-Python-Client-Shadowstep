@@ -1,4 +1,3 @@
-# shadowstep/page_object/page_object_parser.py
 """Page Object Parser for Android UI XML parsing and tree building.
 
 This module provides functionality to parse Android UI XML (uiautomator2 output)

@@ -1,4 +1,3 @@
-# tests/page_object/test_page_object_generator.py
 """Tests for page_object_generator module."""
 
 import tempfile

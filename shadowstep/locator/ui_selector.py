@@ -1,4 +1,3 @@
-# shadowstep/locator/ui_selector.py
 """UiSelector DSL for fluent API locator building.
 
 This module provides a fluent DSL for building UiSelector locators in a more

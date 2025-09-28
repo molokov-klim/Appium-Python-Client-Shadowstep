@@ -4,7 +4,6 @@ This module provides the PageObjectTestGenerator class for automatically
 generating test classes based on existing page objects, creating
 visibility checks for all page properties using pytest framework.
 """
-# shadowstep/page_object/page_object_test_generator.py
 import ast
 import logging
 import os

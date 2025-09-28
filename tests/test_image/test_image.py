@@ -1,4 +1,3 @@
-# tests/image/test_image.py
 import time
 
 import pytest

@@ -5,7 +5,6 @@ all supported attribute types for Shadowstep dictionary locators,
 including text-based, description, resource ID, class, boolean,
 numeric, and hierarchical attributes.
 """
-# shadowstep/locator/types/shadowstep_dict.py
 from enum import Enum
 
 

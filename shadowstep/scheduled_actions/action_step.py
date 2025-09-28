@@ -4,7 +4,6 @@ This module provides the ActionStep class for defining
 individual action steps that can be scheduled and executed
 in the Shadowstep automation framework.
 """
-# shadowstep/scheduled_actions/action_step.py
 from __future__ import annotations
 
 from typing import Any

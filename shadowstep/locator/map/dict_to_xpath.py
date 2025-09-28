@@ -1,4 +1,3 @@
-# shadowstep/locator/map/dict_to_xpath.py
 """Mapping from Shadowstep Dict format to XPath expressions.
 
 This module provides functions to convert Shadowstep dictionary locators

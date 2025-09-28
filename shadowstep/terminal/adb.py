@@ -4,7 +4,6 @@ This module provides the Adb class for interacting with Android devices
 through ADB commands, including device management, app installation,
 file operations, input simulation, and system control.
 """
-# shadowstep/terminal/adb.py
 from __future__ import annotations
 
 import logging

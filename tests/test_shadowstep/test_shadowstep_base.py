@@ -1,4 +1,3 @@
-# tests/base/test_shadowstep_base.py
 import logging
 import time
 

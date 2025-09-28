@@ -1,5 +1,3 @@
-# tests/locator/test_converter.py
-# tests/test_converter.py
 """
 Tests for the unified LocatorConverter.
 

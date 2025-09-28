@@ -1,4 +1,3 @@
-# shadowstep/locator/__init__.py
 """Locator converter module for converting between different locator formats.
 
 This module provides converters for:

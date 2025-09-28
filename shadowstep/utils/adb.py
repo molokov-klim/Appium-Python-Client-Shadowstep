@@ -1,4 +1,3 @@
-# shadowstep/utils/adb.py
 """LegacyAdb.
 
 This module is deprecated and kept for backward compatibility with external systems.

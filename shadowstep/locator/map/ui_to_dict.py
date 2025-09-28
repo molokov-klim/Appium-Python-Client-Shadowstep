@@ -4,7 +4,6 @@ This module provides the mapping dictionary that converts UiSelector
 attributes to their corresponding Shadowstep dictionary representation
 with appropriate value conversion functions.
 """
-# shadowstep/locator/map/ui_to_dict.py
 from collections.abc import Callable
 from typing import Any
 

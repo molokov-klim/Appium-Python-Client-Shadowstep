@@ -4,7 +4,6 @@ This module provides data models and rendering functionality for
 page object generation, including UI element tree representation,
 property models, and template-based rendering using Jinja2.
 """
-# shadowstep/page_object/page_object_element_node.py
 from __future__ import annotations
 
 import logging

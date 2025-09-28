@@ -1,4 +1,3 @@
-# shadowstep/utils/utils.py
 """General utility functions for Shadowstep framework.
 
 This module provides various utility functions including coordinate calculations,

@@ -1,4 +1,3 @@
-# tests/conftest.py
 import logging
 import os
 import shutil

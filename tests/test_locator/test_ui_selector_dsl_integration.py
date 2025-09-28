@@ -1,5 +1,3 @@
-# tests/locator/test_ui_selector_dsl_integration.py
-# tests/test_ui_selector_dsl_integration.py
 """
 Tests for UiSelector DSL integration with LocatorConverter.
 

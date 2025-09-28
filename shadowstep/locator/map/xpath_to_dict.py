@@ -4,7 +4,6 @@ This module provides the mapping dictionary that converts XPath
 attributes to their corresponding Shadowstep dictionary representation
 with appropriate value conversion functions.
 """
-# shadowstep/locator/map/xpath_to_dict.py
 from collections.abc import Callable
 from typing import Any
 
