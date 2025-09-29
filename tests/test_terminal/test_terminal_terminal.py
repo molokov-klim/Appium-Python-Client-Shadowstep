@@ -3,6 +3,7 @@ Tests for shadowstep.terminal.terminal module.
 """
 
 import base64
+import subprocess
 from unittest.mock import Mock, patch
 
 import pytest
@@ -634,3 +635,758 @@ class TestTerminal:
 
             # Assert
             assert result is False  # noqa: S101
+
+    def test_start_activity_success(self):
+        """Test successful activity start."""
+        # Arrange
+        package = "com.example.app"
+        activity = "com.example.app.MainActivity"
+
+        with patch.object(self.terminal, "adb_shell", return_value="success"):
+            # Act
+            result = self.terminal.start_activity(package, activity)
+
+            # Assert
+            assert result is True  # noqa: S101
+            self.terminal.adb_shell.assert_called_once_with(
+                command="am", args=f"start -n {package}/{activity}"
+            )
+
+    def test_start_activity_driver_exception(self):
+        """Test activity start with driver exception."""
+        # Arrange
+        package = "com.example.app"
+        activity = "com.example.app.MainActivity"
+
+        with patch.object(self.terminal, "adb_shell", side_effect=KeyError("Driver not found")):
+            # Act
+            result = self.terminal.start_activity(package, activity)
+
+            # Assert
+            assert result is False  # noqa: S101
+
+    def test_get_current_app_package_success(self):
+        """Test successful current app package retrieval."""
+        # Arrange
+        dumpsys_output = "mCurrentFocus=Window{1234567890 u0 com.example.app/com.example.app.MainActivity}"
+
+        with patch.object(self.terminal, "adb_shell", return_value=dumpsys_output):
+            # Act
+            result = self.terminal.get_current_app_package()
+
+            # Assert
+            assert result == "com.example.app"  # noqa: S101
+            self.terminal.adb_shell.assert_called_once_with(command="dumpsys", args="window windows")
+
+    def test_get_current_app_package_no_match(self):
+        """Test current app package retrieval with no match."""
+        # Arrange
+        dumpsys_output = "No current focus found"
+
+        with patch.object(self.terminal, "adb_shell", return_value=dumpsys_output):
+            # Act
+            result = self.terminal.get_current_app_package()
+
+            # Assert
+            assert result == ""  # noqa: S101
+
+    def test_get_current_app_package_driver_exception(self):
+        """Test current app package retrieval with driver exception."""
+        with patch.object(self.terminal, "adb_shell", side_effect=KeyError("Driver not found")):
+            # Act
+            result = self.terminal.get_current_app_package()
+
+            # Assert
+            assert result == ""  # noqa: S101
+
+    def test_close_app_success(self):
+        """Test successful app close."""
+        # Arrange
+        package = "com.example.app"
+
+        with patch.object(self.terminal, "adb_shell", return_value="success"):
+            # Act
+            result = self.terminal.close_app(package)
+
+            # Assert
+            assert result is True  # noqa: S101
+            self.terminal.adb_shell.assert_called_once_with(command="am", args=f"force-stop {package}")
+
+    def test_close_app_driver_exception(self):
+        """Test app close with driver exception."""
+        # Arrange
+        package = "com.example.app"
+
+        with patch.object(self.terminal, "adb_shell", side_effect=KeyError("Driver not found")):
+            # Act
+            result = self.terminal.close_app(package)
+
+            # Assert
+            assert result is False  # noqa: S101
+
+    def test_reboot_app_success(self):
+        """Test successful app reboot."""
+        # Arrange
+        package = "com.example.app"
+        activity = "com.example.app.MainActivity"
+
+        with patch.object(self.terminal, "close_app", return_value=True), \
+             patch.object(self.terminal, "start_activity", return_value=True):
+            # Act
+            result = self.terminal.reboot_app(package, activity)
+
+            # Assert
+            assert result is True  # noqa: S101
+            self.terminal.close_app.assert_called_once_with(package=package)
+            self.terminal.start_activity.assert_called_once_with(package=package, activity=activity)
+
+    def test_reboot_app_close_fails(self):
+        """Test app reboot when close fails."""
+        # Arrange
+        package = "com.example.app"
+        activity = "com.example.app.MainActivity"
+
+        with patch.object(self.terminal, "close_app", return_value=False):
+            # Act
+            result = self.terminal.reboot_app(package, activity)
+
+            # Assert
+            assert result is False  # noqa: S101
+
+    def test_is_app_installed_true(self):
+        """Test app installation check when app is installed."""
+        # Arrange
+        package = "com.example.app"
+        pm_output = "package:com.example.app\npackage:com.other.app"
+
+        with patch.object(self.terminal, "adb_shell", return_value=pm_output):
+            # Act
+            result = self.terminal.is_app_installed(package)
+
+            # Assert
+            assert result is True  # noqa: S101
+            self.terminal.adb_shell.assert_called_once_with(command="pm", args="list packages")
+
+    def test_is_app_installed_false(self):
+        """Test app installation check when app is not installed."""
+        # Arrange
+        package = "com.nonexistent.app"
+        pm_output = "package:com.example.app\npackage:com.other.app"
+
+        with patch.object(self.terminal, "adb_shell", return_value=pm_output):
+            # Act
+            result = self.terminal.is_app_installed(package)
+
+            # Assert
+            assert result is False  # noqa: S101
+
+    def test_is_app_installed_driver_exception(self):
+        """Test app installation check with driver exception."""
+        # Arrange
+        package = "com.example.app"
+
+        with patch.object(self.terminal, "adb_shell", side_effect=KeyError("Driver not found")):
+            # Act
+            result = self.terminal.is_app_installed(package)
+
+            # Assert
+            assert result is False  # noqa: S101
+
+    def test_uninstall_app_success(self):
+        """Test successful app uninstall."""
+        # Arrange
+        package = "com.example.app"
+
+        with patch.object(self.terminal.driver, "remove_app", return_value=True):
+            # Act
+            result = self.terminal.uninstall_app(package)
+
+            # Assert
+            assert result is True  # noqa: S101
+            self.terminal.driver.remove_app.assert_called_once_with(app_id=package)
+
+    def test_uninstall_app_driver_exception(self):
+        """Test app uninstall with driver exception."""
+        # Arrange
+        package = "com.example.app"
+
+        with patch.object(self.terminal.driver, "remove_app", side_effect=NoSuchDriverException("Driver not found")):
+            self.terminal.base.reconnect = Mock()
+            # Act
+            result = self.terminal.uninstall_app(package)
+
+            # Assert
+            assert result is False  # noqa: S101
+            self.terminal.base.reconnect.assert_called_once()
+
+    def test_input_keycode_num_success(self):
+        """Test successful numeric keycode input."""
+        # Arrange
+        num = 5
+
+        with patch.object(self.terminal, "adb_shell", return_value="success"):
+            # Act
+            result = self.terminal.input_keycode_num_(num)
+
+            # Assert
+            assert result is True  # noqa: S101
+            self.terminal.adb_shell.assert_called_once_with(command="input", args=f"keyevent KEYCODE_NUMPAD_{num}")
+
+    def test_input_keycode_num_driver_exception(self):
+        """Test numeric keycode input with driver exception."""
+        # Arrange
+        num = 5
+
+        with patch.object(self.terminal, "adb_shell", side_effect=KeyError("Driver not found")):
+            # Act
+            result = self.terminal.input_keycode_num_(num)
+
+            # Assert
+            assert result is False  # noqa: S101
+
+    def test_input_keycode_success(self):
+        """Test successful keycode input."""
+        # Arrange
+        keycode = "KEYCODE_ENTER"
+
+        with patch.object(self.terminal, "adb_shell", return_value="success"):
+            # Act
+            result = self.terminal.input_keycode(keycode)
+
+            # Assert
+            assert result is True  # noqa: S101
+            self.terminal.adb_shell.assert_called_once_with(command="input", args=f"keyevent {keycode}")
+
+    def test_input_keycode_driver_exception(self):
+        """Test keycode input with driver exception."""
+        # Arrange
+        keycode = "KEYCODE_ENTER"
+
+        with patch.object(self.terminal, "adb_shell", side_effect=KeyError("Driver not found")):
+            # Act
+            result = self.terminal.input_keycode(keycode)
+
+            # Assert
+            assert result is False  # noqa: S101
+
+    def test_swipe_right_to_left_success(self):
+        """Test successful right to left swipe."""
+        # Arrange
+        duration = 500
+
+        with patch.object(self.terminal, "get_screen_resolution", return_value=(1080, 2400)), \
+             patch.object(self.terminal, "swipe", return_value=True) as mock_swipe:
+            # Act
+            result = self.terminal.swipe_right_to_left(duration)
+
+            # Assert
+            assert result is True  # noqa: S101
+            mock_swipe.assert_called_once_with(
+                start_x=972, start_y=1200, end_x=108, end_y=1200, duration=duration
+            )
+
+    def test_swipe_left_to_right_success(self):
+        """Test successful left to right swipe."""
+        # Arrange
+        duration = 500
+
+        with patch.object(self.terminal, "get_screen_resolution", return_value=(1080, 2400)), \
+             patch.object(self.terminal, "swipe", return_value=True) as mock_swipe:
+            # Act
+            result = self.terminal.swipe_left_to_right(duration)
+
+            # Assert
+            assert result is True  # noqa: S101
+            mock_swipe.assert_called_once_with(
+                start_x=108, start_y=1200, end_x=972, end_y=1200, duration=duration
+            )
+
+    def test_swipe_top_to_bottom_success(self):
+        """Test successful top to bottom swipe."""
+        # Arrange
+        duration = 500
+
+        with patch.object(self.terminal, "get_screen_resolution", return_value=(1080, 2400)), \
+             patch.object(self.terminal, "swipe", return_value=True) as mock_swipe:
+            # Act
+            result = self.terminal.swipe_top_to_bottom(duration)
+
+            # Assert
+            assert result is True  # noqa: S101
+            mock_swipe.assert_called_once_with(
+                start_x=240, start_y=1200, end_x=2160, end_y=1200, duration=duration
+            )
+
+    def test_swipe_bottom_to_top_success(self):
+        """Test successful bottom to top swipe."""
+        # Arrange
+        duration = 500
+
+        with patch.object(self.terminal, "get_screen_resolution", return_value=(1080, 2400)), \
+             patch.object(self.terminal, "swipe", return_value=True) as mock_swipe:
+            # Act
+            result = self.terminal.swipe_bottom_to_top(duration)
+
+            # Assert
+            assert result is True  # noqa: S101
+            mock_swipe.assert_called_once_with(
+                start_x=2160, start_y=1200, end_x=240, end_y=1200, duration=duration
+            )
+
+    def test_stop_logcat_success(self):
+        """Test successful logcat stop."""
+        # Arrange
+        ps_output = "USER PID PPID VSIZE RSS WCHAN PC NAME\nroot 1234 1 1234 567 0 0 0 logcat"
+
+        with patch.object(self.terminal, "adb_shell", return_value=ps_output):
+            # Act
+            result = self.terminal.stop_logcat()
+
+            # Assert
+            assert result is True  # noqa: S101
+            # stop_logcat calls adb_shell twice: once for ps and once for kill
+            assert self.terminal.adb_shell.call_count == 2  # noqa: S101
+            self.terminal.adb_shell.assert_any_call(command="ps", args="")
+            self.terminal.adb_shell.assert_any_call(command="kill", args="-SIGINT 1234")
+
+    def test_stop_logcat_no_process(self):
+        """Test logcat stop when no logcat process found."""
+        # Arrange
+        ps_output = "USER PID PPID VSIZE RSS WCHAN PC NAME\nroot 1234 1 1234 567 0 0 0 system"
+
+        with patch.object(self.terminal, "adb_shell", return_value=ps_output):
+            # Act
+            result = self.terminal.stop_logcat()
+
+            # Assert
+            assert result is True  # noqa: S101
+
+    def test_stop_logcat_driver_exception(self):
+        """Test logcat stop with driver exception."""
+        with patch.object(self.terminal, "adb_shell", side_effect=KeyError("Driver not found")):
+            # Act
+            result = self.terminal.stop_logcat()
+
+            # Assert
+            assert result is False  # noqa: S101
+
+    def test_know_pid_success(self):
+        """Test successful PID retrieval."""
+        # Arrange
+        process_name = "logcat"
+        ps_output = "USER PID PPID VSIZE RSS WCHAN PC NAME\nroot 1234 1 1234 567 0 0 0 logcat"
+
+        with patch.object(self.terminal, "adb_shell", return_value=ps_output):
+            # Act
+            result = self.terminal.know_pid(process_name)
+
+            # Assert
+            assert result == 1234  # noqa: S101
+            self.terminal.adb_shell.assert_called_once_with(command="ps")
+
+    def test_know_pid_not_found(self):
+        """Test PID retrieval when process not found."""
+        # Arrange
+        process_name = "nonexistent"
+        ps_output = "USER PID PPID VSIZE RSS WCHAN PC NAME\nroot 1234 1 1234 567 0 0 0 logcat"
+
+        with patch.object(self.terminal, "adb_shell", return_value=ps_output):
+            # Act
+            result = self.terminal.know_pid(process_name)
+
+            # Assert
+            assert result is None  # noqa: S101
+
+    def test_is_process_exist_true(self):
+        """Test process existence check when process exists."""
+        # Arrange
+        process_name = "logcat"
+        ps_output = "USER PID PPID VSIZE RSS WCHAN PC NAME\nroot 1234 1 1234 567 0 0 0 logcat"
+
+        with patch.object(self.terminal, "adb_shell", return_value=ps_output):
+            # Act
+            result = self.terminal.is_process_exist(process_name)
+
+            # Assert
+            assert result is True  # noqa: S101
+            self.terminal.adb_shell.assert_called_once_with(command="ps")
+
+    def test_is_process_exist_false(self):
+        """Test process existence check when process does not exist."""
+        # Arrange
+        process_name = "nonexistent"
+        ps_output = "USER PID PPID VSIZE RSS WCHAN PC NAME\nroot 1234 1 1234 567 0 0 0 logcat"
+
+        with patch.object(self.terminal, "adb_shell", return_value=ps_output):
+            # Act
+            result = self.terminal.is_process_exist(process_name)
+
+            # Assert
+            assert result is False  # noqa: S101
+
+    def test_run_background_process_success(self):
+        """Test successful background process execution."""
+        # Arrange
+        command = "logcat"
+        args = "-v time"
+        process = "logcat"
+
+        with patch.object(self.terminal, "adb_shell", return_value="success"), \
+             patch.object(self.terminal, "is_process_exist", return_value=True):
+            # Act
+            result = self.terminal.run_background_process(command, args, process)
+
+            # Assert
+            assert result is True  # noqa: S101
+            self.terminal.adb_shell.assert_called_once_with(
+                command=command, args=f"{args} nohup > /dev/null 2>&1 &"
+            )
+
+    def test_run_background_process_no_check(self):
+        """Test background process execution without process check."""
+        # Arrange
+        command = "logcat"
+        args = "-v time"
+        process = ""
+
+        with patch.object(self.terminal, "adb_shell", return_value="success"):
+            # Act
+            result = self.terminal.run_background_process(command, args, process)
+
+            # Assert
+            assert result is True  # noqa: S101
+
+    def test_run_background_process_driver_exception(self):
+        """Test background process execution with driver exception."""
+        # Arrange
+        command = "logcat"
+        args = "-v time"
+        process = ""
+
+        with patch.object(self.terminal, "adb_shell", side_effect=KeyError("Driver not found")):
+            # Act
+            result = self.terminal.run_background_process(command, args, process)
+
+            # Assert
+            assert result is False  # noqa: S101
+
+    def test_kill_by_pid_success(self):
+        """Test successful process kill by PID."""
+        # Arrange
+        pid = 1234
+
+        with patch.object(self.terminal, "adb_shell", return_value="success"):
+            # Act
+            result = self.terminal.kill_by_pid(pid)
+
+            # Assert
+            assert result is True  # noqa: S101
+            self.terminal.adb_shell.assert_called_once_with(command="kill", args=f"-s SIGINT {pid}")
+
+    def test_kill_by_pid_driver_exception(self):
+        """Test process kill by PID with driver exception."""
+        # Arrange
+        pid = 1234
+
+        with patch.object(self.terminal, "adb_shell", side_effect=KeyError("Driver not found")):
+            # Act
+            result = self.terminal.kill_by_pid(pid)
+
+            # Assert
+            assert result is False  # noqa: S101
+
+    def test_kill_by_name_success(self):
+        """Test successful process kill by name."""
+        # Arrange
+        name = "logcat"
+
+        with patch.object(self.terminal, "adb_shell", return_value="success"):
+            # Act
+            result = self.terminal.kill_by_name(name)
+
+            # Assert
+            assert result is True  # noqa: S101
+            self.terminal.adb_shell.assert_called_once_with(command="pkill", args=f"-l SIGINT {name}")
+
+    def test_kill_by_name_driver_exception(self):
+        """Test process kill by name with driver exception."""
+        # Arrange
+        name = "logcat"
+
+        with patch.object(self.terminal, "adb_shell", side_effect=KeyError("Driver not found")):
+            # Act
+            result = self.terminal.kill_by_name(name)
+
+            # Assert
+            assert result is False  # noqa: S101
+
+    def test_kill_all_success(self):
+        """Test successful kill all processes by name."""
+        # Arrange
+        name = "logcat"
+
+        with patch.object(self.terminal, "adb_shell", return_value="success"):
+            # Act
+            result = self.terminal.kill_all(name)
+
+            # Assert
+            assert result is True  # noqa: S101
+            self.terminal.adb_shell.assert_called_once_with(command="pkill", args=f"-f {name}")
+
+    def test_kill_all_driver_exception(self):
+        """Test kill all processes with driver exception."""
+        # Arrange
+        name = "logcat"
+
+        with patch.object(self.terminal, "adb_shell", side_effect=KeyError("Driver not found")):
+            # Act
+            result = self.terminal.kill_all(name)
+
+            # Assert
+            assert result is False  # noqa: S101
+
+    def test_delete_files_from_internal_storage_success(self):
+        """Test successful file deletion from internal storage."""
+        # Arrange
+        path = "/sdcard/test/"
+
+        with patch.object(self.terminal, "adb_shell", return_value="success"):
+            # Act
+            result = self.terminal.delete_files_from_internal_storage(path)
+
+            # Assert
+            assert result is True  # noqa: S101
+            self.terminal.adb_shell.assert_called_once_with(command="rm", args=f"-rf {path}*")
+
+    def test_delete_files_from_internal_storage_driver_exception(self):
+        """Test file deletion with driver exception."""
+        # Arrange
+        path = "/sdcard/test/"
+
+        with patch.object(self.terminal, "adb_shell", side_effect=KeyError("Driver not found")):
+            # Act
+            result = self.terminal.delete_files_from_internal_storage(path)
+
+            # Assert
+            assert result is False  # noqa: S101
+
+    def test_delete_file_from_internal_storage_success(self):
+        """Test successful single file deletion from internal storage."""
+        # Arrange
+        path = "/sdcard/test/"
+        filename = "test.txt"
+
+        with patch.object(self.terminal, "adb_shell", return_value="success"):
+            # Act
+            result = self.terminal.delete_file_from_internal_storage(path, filename)
+
+            # Assert
+            assert result is True  # noqa: S101
+            self.terminal.adb_shell.assert_called_once_with(command="rm", args=f"-rf /sdcard/test/{filename}")
+
+    def test_delete_file_from_internal_storage_driver_exception(self):
+        """Test single file deletion with driver exception."""
+        # Arrange
+        path = "/sdcard/test/"
+        filename = "test.txt"
+
+        with patch.object(self.terminal, "adb_shell", side_effect=KeyError("Driver not found")):
+            # Act
+            result = self.terminal.delete_file_from_internal_storage(path, filename)
+
+            # Assert
+            assert result is False  # noqa: S101
+
+    def test_get_screen_resolution_success(self):
+        """Test successful screen resolution retrieval."""
+        # Arrange
+        wm_output = "Physical size: 1080x2400"
+
+        with patch.object(self.terminal, "adb_shell", return_value=wm_output):
+            # Act
+            result = self.terminal.get_screen_resolution()
+
+            # Assert
+            assert result == (1080, 2400)  # noqa: S101
+            self.terminal.adb_shell.assert_called_once_with(command="wm", args="size")
+
+    def test_get_screen_resolution_no_physical_size(self):
+        """Test screen resolution retrieval when no physical size found."""
+        # Arrange
+        wm_output = "No physical size information"
+
+        with patch.object(self.terminal, "adb_shell", return_value=wm_output):
+            # Act
+            result = self.terminal.get_screen_resolution()
+
+            # Assert
+            assert result == (0, 0)  # noqa: S101
+
+    def test_get_screen_resolution_driver_exception(self):
+        """Test screen resolution retrieval with driver exception."""
+        with patch.object(self.terminal, "adb_shell", side_effect=KeyError("Driver not found")):
+            # Act & Assert
+            with pytest.raises(KeyError):
+                self.terminal.get_screen_resolution()
+
+    def test_past_text_success(self):
+        """Test successful text pasting."""
+        # Arrange
+        text = "Hello World"
+
+        with patch.object(self.terminal.driver, "set_clipboard_text"), \
+             patch.object(self.terminal, "input_keycode", return_value=True):
+            # Act
+            self.terminal.past_text(text)
+
+            # Assert
+            self.terminal.driver.set_clipboard_text.assert_called_once_with(text=text)
+            self.terminal.input_keycode.assert_called_once_with("279")
+
+    def test_past_text_driver_exception(self):
+        """Test text pasting with driver exception."""
+        # Arrange
+        text = "Hello World"
+
+        with patch.object(self.terminal.driver, "set_clipboard_text", side_effect=NoSuchDriverException("Driver not found")):
+            self.terminal.base.reconnect = Mock()
+            # Act
+            self.terminal.past_text(text, tries=1)
+
+            # Assert
+            self.terminal.base.reconnect.assert_called_once()
+
+    def test_get_prop_hardware_success(self):
+        """Test successful hardware property retrieval."""
+        # Arrange
+        expected_hardware = "qcom"
+
+        with patch.object(self.terminal, "get_prop", return_value={"ro.boot.hardware": expected_hardware}):
+            # Act
+            result = self.terminal.get_prop_hardware()
+
+            # Assert
+            assert result == expected_hardware  # noqa: S101
+
+    def test_get_prop_model_success(self):
+        """Test successful model property retrieval."""
+        # Arrange
+        expected_model = "Pixel 4"
+
+        with patch.object(self.terminal, "get_prop", return_value={"ro.product.model": expected_model}):
+            # Act
+            result = self.terminal.get_prop_model()
+
+            # Assert
+            assert result == expected_model  # noqa: S101
+
+    def test_get_prop_serial_success(self):
+        """Test successful serial property retrieval."""
+        # Arrange
+        expected_serial = "1234567890"
+
+        with patch.object(self.terminal, "get_prop", return_value={"ro.serialno": expected_serial}):
+            # Act
+            result = self.terminal.get_prop_serial()
+
+            # Assert
+            assert result == expected_serial  # noqa: S101
+
+    def test_get_prop_build_success(self):
+        """Test successful build property retrieval."""
+        # Arrange
+        expected_build = "Pixel 4 Build/QQ3A.200805.001"
+
+        with patch.object(self.terminal, "get_prop", return_value={"ro.build.description": expected_build}):
+            # Act
+            result = self.terminal.get_prop_build()
+
+            # Assert
+            assert result == expected_build  # noqa: S101
+
+    def test_get_prop_device_success(self):
+        """Test successful device property retrieval."""
+        # Arrange
+        expected_device = "flame"
+
+        with patch.object(self.terminal, "get_prop", return_value={"ro.product.device": expected_device}):
+            # Act
+            result = self.terminal.get_prop_device()
+
+            # Assert
+            assert result == expected_device  # noqa: S101
+
+    def test_get_prop_uin_success(self):
+        """Test successful UIN property retrieval."""
+        # Arrange
+        expected_uin = "1234567890"
+
+        with patch.object(self.terminal, "get_prop", return_value={"sys.atol.uin": expected_uin}):
+            # Act
+            result = self.terminal.get_prop_uin()
+
+            # Assert
+            assert result == expected_uin  # noqa: S101
+
+    def test_pull_package_success(self):
+        """Test successful package pull."""
+        # Arrange
+        package = "com.example.app"
+        path = "/local/path"
+        filename = "test_apk"
+
+        with patch.object(self.terminal, "get_package_path", return_value="/data/app/com.example.app/shadowstep._apk"), \
+             patch.object(self.terminal, "pull", return_value=True):
+            # Act
+            self.terminal.pull_package(package, path, filename)
+
+            # Assert
+            self.terminal.get_package_path.assert_called_once_with(package=package)
+            self.terminal.pull.assert_called_once()
+
+    def test_pull_package_default_filename(self):
+        """Test package pull with default filename."""
+        # Arrange
+        package = "com.example.app"
+        path = "/local/path"
+        filename = "test_apk"
+
+        with patch.object(self.terminal, "get_package_path", return_value="/data/app/com.example.app/shadowstep._apk"), \
+             patch.object(self.terminal, "pull", return_value=True):
+            # Act
+            self.terminal.pull_package(package, path, filename)
+
+            # Assert
+            self.terminal.pull.assert_called_once()
+
+    def test_get_package_manifest_success(self):
+        """Test successful package manifest retrieval."""
+        # Arrange
+        package = "com.example.app"
+        aapt_output = "package: name='com.example.app' versionCode='1' versionName='1.0'"
+
+        with patch.object(self.terminal, "pull_package"), \
+             patch("subprocess.check_output", return_value=aapt_output.encode()), \
+             patch("pathlib.Path.exists", return_value=True), \
+             patch("pathlib.Path.mkdir"), \
+             patch("pathlib.Path.unlink"):
+            # Act
+            result = self.terminal.get_package_manifest(package)
+
+            # Assert
+            assert "package:" in result  # noqa: S101
+
+    def test_get_package_manifest_aapt_error(self):
+        """Test package manifest retrieval with aapt error."""
+        # Arrange
+        package = "com.example.app"
+
+        with patch.object(self.terminal, "pull_package"), \
+             patch("subprocess.check_output", side_effect=subprocess.CalledProcessError(1, "aapt")), \
+             patch("pathlib.Path.exists", return_value=True), \
+             patch("pathlib.Path.mkdir"):
+            # Act
+            result = self.terminal.get_package_manifest(package)
+
+            # Assert
+            assert result == {}  # noqa: S101
