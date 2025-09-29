@@ -375,7 +375,7 @@ class ShadowstepBase:
             self.logger.info("Driver: %s", self.driver)
             self.logger.info("Session ID: %s", session_id)
             if session_id:
-                return
+                return session_id
             time.sleep(0.5)
             self.driver = WebDriverSingleton.get_driver()
         error_msg = "WebDriver session_id was not assigned in time."

@@ -3,6 +3,8 @@
 This module provides the core Shadowstep class for mobile automation testing
 with Appium, including page object management, element interaction, and
 gesture controls.
+
+https://github.com/appium/appium-uiautomator2-driver
 """
 from __future__ import annotations
 
@@ -23,7 +25,6 @@ from selenium.common import (
 )
 from typing_extensions import Self
 
-from shadowstep.base import ShadowstepBase, WebDriverSingleton
 from shadowstep.decorators.decorators import fail_safe
 from shadowstep.element.element import Element
 from shadowstep.exceptions.shadowstep_exceptions import ShadowstepException
@@ -32,6 +33,7 @@ from shadowstep.logcat.shadowstep_logcat import ShadowstepLogcat
 from shadowstep.mobile_commands import MobileCommands
 from shadowstep.navigator.navigator import PageNavigator
 from shadowstep.page_base import PageBaseShadowstep
+from shadowstep.shadowstep_base import ShadowstepBase, WebDriverSingleton
 from shadowstep.utils.utils import get_current_func_name
 
 if TYPE_CHECKING:
