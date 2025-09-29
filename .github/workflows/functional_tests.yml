@@ -11,7 +11,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        test_dir: [ tests/test_decorators/, tests/test_element/, tests/test_image, tests/test_locator, tests/test_logcat, tests/test_navigator, tests/test_page_object, tests/test_shadowstep, tests/test_terminal ]
+        test_dir: [ tests/test_decorators/, tests/test_image, tests/test_locator, tests/test_logcat, tests/test_navigator, tests/test_page_object, tests/test_shadowstep, tests/test_terminal, tests/test_element/test_element_actions.py, tests/test_element/test_element_coordinates.py, tests/test_element/test_element_dom.py, tests/test_element/test_element_gestures.py, tests/test_element/test_element_properties.py, tests/test_element/test_element_quality.py, tests/test_element/test_element_should.py, tests/test_element/test_element_waiting.py, tests/test_element/test_elements.py, tests/test_element/test_screenshots.py]
 
     env:
       CI: true
