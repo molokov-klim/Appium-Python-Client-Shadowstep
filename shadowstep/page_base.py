@@ -5,7 +5,7 @@ Shadowstep framework, implementing singleton pattern and page navigation.
 """
 from abc import ABC, abstractmethod
 from collections.abc import Callable
-from typing import TYPE_CHECKING, ClassVar, TypeVar
+from typing import TYPE_CHECKING, ClassVar, TypeVar, Any
 
 from typing_extensions import Self
 
@@ -24,12 +24,8 @@ class PageBaseShadowstep(ABC):
     _instances: ClassVar[dict[type, "PageBaseShadowstep"]] = {}
 
 
-    def __new__(cls, *args: object, **kwargs: object) -> "PageBaseShadowstep":  # noqa: ARG004
+    def __new__(cls) -> Any:  # noqa: ARG004
         """Create a new instance or return existing singleton instance.
-
-        Args:
-            *args: Variable length argument list.
-            **kwargs: Arbitrary keyword arguments.
 
         Returns:
             PageBaseShadowstep: The singleton instance of the page class.
