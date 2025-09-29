@@ -4,6 +4,7 @@ This module provides the Terminal class for executing ADB commands
 through Appium server, including device management, app operations,
 input simulation, file operations, and system control via SSH transport.
 """
+
 from __future__ import annotations
 
 import base64
@@ -13,15 +14,18 @@ import subprocess
 import sys
 import time
 import traceback
+from collections.abc import Sequence
 from pathlib import Path
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, cast
 
 from selenium.common import InvalidSessionIdException, NoSuchDriverException
 
 from shadowstep.utils.utils import get_current_func_name
 
 # Configure the root logger (basic configuration)
-logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s")
+logging.basicConfig(
+    level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+)
 logger = logging.getLogger(__name__)
 
 # Constants
@@ -41,8 +45,11 @@ class NotProvideCredentialsError(Exception):
     connection without providing the required SSH credentials.
     """
 
-    def __init__(self, message: str = "Not provided credentials for ssh connection "
-                                      "in connect() method (ssh_username, ssh_password)") -> None:
+    def __init__(
+        self,
+        message: str = "Not provided credentials for ssh connection "
+        "in connect() method (ssh_username, ssh_password)",
+    ) -> None:
         """Initialize the TerminalCredentialsError.
 
         Args:
@@ -51,6 +58,10 @@ class NotProvideCredentialsError(Exception):
         """
         super().__init__(message)
         self.message = message
+
+
+class AdbShellError(Exception):
+    """Adb_shell error."""
 
 
 class Terminal:
@@ -83,28 +94,31 @@ class Terminal:
         if self.transport is not None:  # type: ignore[comparison-overlap]
             self.transport.ssh.close()
 
-    def adb_shell(self, command: str, args: str = "", tries: int = 3) -> str | None:
-        """Execute commands via ADB on a mobile device.
-
-        :param command: The command to execute.
-        :param args: Additional arguments for the command (optional).
-        :param tries: Number of attempts to execute the command in case of failure (default is 3).
-        :return: The result of executing the command.
-        """
+    def adb_shell(self, command: str, args: str = "", tries: int = 3) -> str:
+        """Execute commands via ADB on a mobile device."""
         for _ in range(tries):
             try:
-                return self.driver.execute_script("mobile: shell", {"command": command, "args": [args]})
+                result = self.driver.execute_script(  #  type: ignore[reportUnknownMemberType]
+                    "mobile: shell",
+                    {"command": command, "args": [args]},
+                )
+                return cast("str", result)
             except NoSuchDriverException:  # noqa: PERF203
+                logger.warning("No such driver found")
                 self.base.reconnect()
             except InvalidSessionIdException:
+                logger.warning("Invalid session id found")
                 self.base.reconnect()
             except KeyError:
                 logger.exception("KeyError in get_page_source")
                 traceback_info = "".join(traceback.format_tb(sys.exc_info()[2]))
                 logger.exception(traceback_info)
-        return None
+        msg = f"adb_shell failed after {tries} tries: {command} {args}"
+        raise AdbShellError(msg)
 
-    def push(self, source_path: str, remote_server_path: str, filename: str, destination: str, udid: str) -> bool:
+    def push(
+        self, source_path: str, remote_server_path: str, filename: str, destination: str, udid: str,
+    ) -> bool:
         """Push files from a local source to a remote destination on a mobile device via ADB.
 
         :param source_path: The local path of the file to push.
@@ -120,7 +134,8 @@ class Terminal:
             destination_file_path = f"{destination}/{filename}"
             self.transport.scp.put(files=source_file_path, remote_path=remote_file_path)
             _, stdout, _ = self.transport.ssh.exec_command(
-                f"adb -s {udid} push {remote_file_path} {destination_file_path}")
+                f"adb -s {udid} push {remote_file_path} {destination_file_path}",
+            )
             stdout_exit_status = stdout.channel.recv_exit_status()
             lines = stdout.readlines()
             output = "".join(lines)
@@ -155,8 +170,9 @@ class Terminal:
                 # If path not specified, save in current directory
                 destination = Path.cwd() / Path(source).name
 
-            file_contents_base64 = self.driver.assert_extension_exists("mobile: pullFile"). \
-                execute_script("mobile: pullFile", {"remotePath": source})
+            file_contents_base64 = self.driver.assert_extension_exists(
+                "mobile: pullFile",
+            ).execute_script("mobile: pullFile", {"remotePath": source})
             if not file_contents_base64:
                 return False
             decoded_contents = base64.b64decode(file_contents_base64)
@@ -200,7 +216,9 @@ class Terminal:
             lines = result.split("\n")
             for line in lines:
                 if "mCurrentFocus" in line or "mFocusedApp" in line:
-                    matches = re.search(r"(([A-Za-z]{1}[A-Za-z\d_]*\.)+([A-Za-z][A-Za-z\d_]*)/)", line)
+                    matches = re.search(
+                        r"(([A-Za-z]{1}[A-Za-z\d_]*\.)+([A-Za-z][A-Za-z\d_]*)/)", line,
+                    )
                     if matches:
                         return matches.group(1)[:-1]  # removing trailing slash
         except KeyError:
@@ -250,7 +268,8 @@ class Terminal:
             destination_filepath = Path(remote_server_path) / filename
             self.transport.scp.put(files=source_filepath, remote_path=destination_filepath)
             _, stdout, _ = self.transport.ssh.exec_command(
-                f"adb -s {udid} install -r {destination_filepath}")
+                f"adb -s {udid} install -r {destination_filepath}",
+            )
             stdout_exit_status = stdout.channel.recv_exit_status()
             lines = stdout.readlines()
             output = "".join(lines)
@@ -402,8 +421,14 @@ class Terminal:
         else:
             return True
 
-    def swipe(self, start_x: str | int, start_y: str | int,
-              end_x: str | int, end_y: str | int, duration: int = 300) -> bool:
+    def swipe(
+        self,
+        start_x: str | int,
+        start_y: str | int,
+        end_x: str | int,
+        end_y: str | int,
+        duration: int = 300,
+    ) -> bool:
         """Simulate a swipe gesture from one point to another on the device's screen.
 
         :param start_x: The x-coordinate of the starting point of the swipe.
@@ -414,8 +439,10 @@ class Terminal:
         :return: True if the swipe was successful, False otherwise.
         """
         try:
-            self.adb_shell(command="input",
-                           args=f"swipe {start_x!s} {start_y!s} {end_x!s} {end_y!s} {duration!s}")
+            self.adb_shell(
+                command="input",
+                args=f"swipe {start_x!s} {start_y!s} {end_x!s} {end_y!s} {duration!s}",
+            )
         except KeyError:
             logger.exception("appium_extended_terminal.swipe()")
             return False
@@ -433,11 +460,9 @@ class Terminal:
         height = window_size[1]
         left = int(width * 0.1)
         right = int(width * 0.9)
-        return self.swipe(start_x=right,
-                          start_y=height // 2,
-                          end_x=left,
-                          end_y=height // 2,
-                          duration=duration)
+        return self.swipe(
+            start_x=right, start_y=height // 2, end_x=left, end_y=height // 2, duration=duration,
+        )
 
     def swipe_left_to_right(self, duration: int = 300) -> bool:
         """Simulate a swipe gesture from left to right on the device's screen.
@@ -450,11 +475,9 @@ class Terminal:
         height = window_size[1]
         left = int(width * 0.1)
         right = int(width * 0.9)
-        return self.swipe(start_x=left,
-                          start_y=height // 2,
-                          end_x=right,
-                          end_y=height // 2,
-                          duration=duration)
+        return self.swipe(
+            start_x=left, start_y=height // 2, end_x=right, end_y=height // 2, duration=duration,
+        )
 
     def swipe_top_to_bottom(self, duration: int = 300) -> bool:
         """Simulate a swipe gesture from top to bottom on the device's screen.
@@ -466,11 +489,9 @@ class Terminal:
         height = window_size[1]
         top = int(height * 0.1)
         bottom = int(height * 0.9)
-        return self.swipe(start_x=top,
-                          start_y=height // 2,
-                          end_x=bottom,
-                          end_y=height // 2,
-                          duration=duration)
+        return self.swipe(
+            start_x=top, start_y=height // 2, end_x=bottom, end_y=height // 2, duration=duration,
+        )
 
     def swipe_bottom_to_top(self, duration: int = 300) -> bool:
         """Simulate a swipe gesture from bottom to top on the device's screen.
@@ -482,11 +503,9 @@ class Terminal:
         height = window_size[1]
         top = int(height * 0.1)
         bottom = int(height * 0.9)
-        return self.swipe(start_x=bottom,
-                          start_y=height // 2,
-                          end_x=top,
-                          end_y=height // 2,
-                          duration=duration)
+        return self.swipe(
+            start_x=bottom, start_y=height // 2, end_x=top, end_y=height // 2, duration=duration,
+        )
 
     def check_vpn(self, ip_address: str = "") -> bool:
         """Check if a VPN connection is established on the device.
@@ -812,10 +831,12 @@ class Terminal:
         :param package: The name of the package.
         :return: The path to the APK file.
         """
-        return self.adb_shell(command="pm", args=f"path {package}"). \
-            replace("package:", ""). \
-            replace("\r", ""). \
-            replace("\n", "")
+        return (
+            self.adb_shell(command="pm", args=f"path {package}")
+            .replace("package:", "")
+            .replace("\r", "")
+            .replace("\n", "")
+        )
 
     def pull_package(self, package: str, path: str = "", filename: str = "temp._apk") -> None:
         """Pull the APK file of the specified package from the device to the local machine.
@@ -829,7 +850,7 @@ class Terminal:
             filename = f"{filename}._apk"
         self.pull(source=package_path, destination=str(Path(path) / filename))
 
-    def get_package_manifest(self, package: str) -> dict[str, Any]:
+    def get_package_manifest(self, package: str) -> dict[str, list[str]]:
         """Retrieve the manifest of the specified package from the device.
 
         :param package: The package name of the app.
@@ -839,26 +860,34 @@ class Terminal:
         if not test_path.exists():
             test_path.mkdir(parents=True)
 
-        self.pull_package(package=package, path="test",
-                          filename="temp._apk")
+        self.pull_package(package=package, path="test", filename="temp._apk")
 
-        command = ["aapt", "dump", "badging", str(Path("test") / "temp._apk")]
+        command: Sequence[str] = ["aapt", "dump", "badging", str(test_path / "temp._apk")]
         try:
-            output: str = str(subprocess.check_output(command)).strip()  # noqa: S603
+            output_bytes = subprocess.check_output(command)  # noqa: S603
         except subprocess.CalledProcessError:
             return {}
-        output = output.replace("\\r\\n", " ").replace('b"', "").replace('"', "").replace(":'", ": '")
+
+        output = (
+            output_bytes.decode("utf-8")
+            .strip()
+            .replace("\r\n", " ")
+            .replace('"', "")
+            .replace(":'", ": '")
+        )
+
         list_of_elements = output.split()
-        result = {}
-        current_key = None
+        result: dict[str, list[str]] = {}
+        current_key: str | None = None
 
         for element in list_of_elements:
             if element.endswith(":"):
                 result[element] = []
                 current_key = element
                 continue
-            result[current_key].append(element.replace("'", ""))
+            if current_key:
+                result[current_key].append(element.replace("'", ""))
 
-        (Path("test") / "temp._apk").unlink()
+        (test_path / "temp._apk").unlink()
 
         return result

@@ -3,16 +3,18 @@
 This module provides the abstract base class for all page objects in the
 Shadowstep framework, implementing singleton pattern and page navigation.
 """
+
 from abc import ABC, abstractmethod
 from collections.abc import Callable
-from typing import TYPE_CHECKING, ClassVar, TypeVar, Any
+from typing import TYPE_CHECKING, Any, ClassVar, TypeVar
 
 from typing_extensions import Self
 
-T = TypeVar("T", bound="PageBase")      # type: ignore[valid-type]  # noqa: F821
+T = TypeVar("T", bound="PageBase")  # type: ignore[valid-type]  # noqa: F821
 
 if TYPE_CHECKING:
     from shadowstep.shadowstep import Shadowstep
+
 
 class PageBaseShadowstep(ABC):
     """Abstract shadowstep class for all pages in the Shadowstep framework.
@@ -23,8 +25,7 @@ class PageBaseShadowstep(ABC):
     shadowstep: "Shadowstep"
     _instances: ClassVar[dict[type, "PageBaseShadowstep"]] = {}
 
-
-    def __new__(cls) -> Any:  # noqa: ARG004
+    def __new__(cls) -> Any:
         """Create a new instance or return existing singleton instance.
 
         Returns:
@@ -33,6 +34,7 @@ class PageBaseShadowstep(ABC):
         """
         if cls not in cls._instances:
             from shadowstep.shadowstep import Shadowstep  # noqa: PLC0415
+
             instance = super().__new__(cls)
             instance.shadowstep = Shadowstep.get_instance()
             cls._instances[cls] = instance

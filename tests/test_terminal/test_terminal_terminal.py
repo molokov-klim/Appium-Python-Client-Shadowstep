@@ -8,7 +8,7 @@ from unittest.mock import Mock, patch
 import pytest
 from selenium.common import InvalidSessionIdException, NoSuchDriverException
 
-from shadowstep.terminal.terminal import NotProvideCredentialsError, Terminal
+from shadowstep.terminal.terminal import NotProvideCredentialsError, Terminal, AdbShellError
 
 
 class TestNotProvideCredentialsError:
@@ -20,8 +20,10 @@ class TestNotProvideCredentialsError:
         exception = NotProvideCredentialsError()
 
         # Assert
-        expected_message = ("Not provided credentials for ssh connection "
-                          "in connect() method (ssh_username, ssh_password)")
+        expected_message = (
+            "Not provided credentials for ssh connection "
+            "in connect() method (ssh_username, ssh_password)"
+        )
         assert str(exception) == expected_message  # noqa: S101
         assert exception.message == expected_message  # noqa: S101
 
@@ -119,19 +121,17 @@ class TestTerminal:
         )
 
     def test_adb_shell_no_such_driver_exception(self):
-        """Test adb shell with NoSuchDriverException."""
-        # Arrange
+        """Test adb shell raises AdbShellError on NoSuchDriverException."""
         command = "pm list packages"
         args = ""
 
         self.mock_driver.execute_script.side_effect = NoSuchDriverException("Driver not found")
         self.mock_base.reconnect = Mock()
 
-        # Act
-        result = self.terminal.adb_shell(command, args, tries=1)
+        with pytest.raises(AdbShellError) as exc_info:
+            self.terminal.adb_shell(command, args, tries=1)
 
-        # Assert
-        assert result is None  # noqa: S101
+        assert "adb_shell failed" in str(exc_info.value)  # noqa: S101
         self.mock_base.reconnect.assert_called_once()
 
     def test_adb_shell_invalid_session_exception(self):
@@ -143,26 +143,24 @@ class TestTerminal:
         self.mock_driver.execute_script.side_effect = InvalidSessionIdException("Invalid session")
         self.mock_base.reconnect = Mock()
 
-        # Act
-        result = self.terminal.adb_shell(command, args, tries=1)
+        with pytest.raises(AdbShellError) as exc_info:
+            self.terminal.adb_shell(command, args, tries=1)
 
-        # Assert
-        assert result is None  # noqa: S101
+        assert "adb_shell failed" in str(exc_info.value)  # noqa: S101
         self.mock_base.reconnect.assert_called_once()
 
     def test_adb_shell_key_error(self):
-        """Test adb shell with KeyError."""
-        # Arrange
+        """Test adb shell with KeyError raises AdbShellError without reconnect."""
         command = "pm list packages"
         args = ""
 
         self.mock_driver.execute_script.side_effect = KeyError("Key not found")
 
-        # Act
-        result = self.terminal.adb_shell(command, args, tries=1)
+        with pytest.raises(AdbShellError) as exc_info:
+            self.terminal.adb_shell(command, args, tries=1)
 
-        # Assert
-        assert result is None  # noqa: S101
+        assert "adb_shell failed" in str(exc_info.value)  # noqa: S101
+        self.mock_base.reconnect.assert_not_called()
 
     def test_adb_shell_multiple_tries(self):
         """Test adb shell with multiple tries."""
@@ -174,7 +172,7 @@ class TestTerminal:
         # First call fails, second succeeds
         self.mock_driver.execute_script.side_effect = [
             NoSuchDriverException("Driver not found"),
-            expected_result
+            expected_result,
         ]
         self.mock_base.reconnect = Mock()
 
@@ -293,15 +291,19 @@ class TestTerminal:
         mock_file.__exit__ = Mock(return_value=None)
         mock_file.write = Mock()
 
-        with patch("pathlib.Path.open", return_value=mock_file), \
-             patch("pathlib.Path.mkdir") as mock_mkdir:
+        with (
+            patch("pathlib.Path.open", return_value=mock_file),
+            patch("pathlib.Path.mkdir") as mock_mkdir,
+        ):
             # Act
             result = self.terminal.pull(source, destination)
 
             # Assert
             assert result is True  # noqa: S101
             self.mock_driver.assert_extension_exists.assert_called_once_with("mobile: pullFile")
-            mock_extension.execute_script.assert_called_once_with("mobile: pullFile", {"remotePath": source})
+            mock_extension.execute_script.assert_called_once_with(
+                "mobile: pullFile", {"remotePath": source}
+            )
 
     def test_pull_driver_exception(self):
         """Test file pull with driver exception."""
@@ -311,7 +313,9 @@ class TestTerminal:
 
         # Mock the extension assertion to raise exception
         self.mock_base.reconnect = Mock()
-        self.mock_driver.assert_extension_exists = Mock(side_effect=NoSuchDriverException("Driver not found"))
+        self.mock_driver.assert_extension_exists = Mock(
+            side_effect=NoSuchDriverException("Driver not found")
+        )
 
         # Act
         result = self.terminal.pull(source, destination)
@@ -357,7 +361,9 @@ class TestTerminal:
 
             # Assert
             assert result is True  # noqa: S101
-            self.terminal.adb_shell.assert_called_once_with(command="input", args=f"swipe {x1} {y1} {x2} {y2} {duration}")
+            self.terminal.adb_shell.assert_called_once_with(
+                command="input", args=f"swipe {x1} {y1} {x2} {y2} {duration}"
+            )
 
     def test_swipe_driver_exception(self):
         """Test swipe action with driver exception."""
@@ -405,7 +411,9 @@ class TestTerminal:
 
             # Assert
             assert result is True  # noqa: S101
-            self.terminal.adb_shell.assert_called_once_with(command="input", args="keyevent KEYCODE_HOME")
+            self.terminal.adb_shell.assert_called_once_with(
+                command="input", args="keyevent KEYCODE_HOME"
+            )
 
     def test_press_back_success(self):
         """Test successful back button press."""
@@ -415,7 +423,9 @@ class TestTerminal:
 
             # Assert
             assert result is True  # noqa: S101
-            self.terminal.adb_shell.assert_called_once_with(command="input", args="keyevent KEYCODE_BACK")
+            self.terminal.adb_shell.assert_called_once_with(
+                command="input", args="keyevent KEYCODE_BACK"
+            )
 
     def test_press_menu_success(self):
         """Test successful menu button press."""
@@ -425,14 +435,18 @@ class TestTerminal:
 
             # Assert
             assert result is True  # noqa: S101
-            self.terminal.adb_shell.assert_called_once_with(command="input", args="keyevent KEYCODE_MENU")
+            self.terminal.adb_shell.assert_called_once_with(
+                command="input", args="keyevent KEYCODE_MENU"
+            )
 
     def test_get_prop_success(self):
         """Test successful property retrieval."""
         # Arrange
         expected_value = "[ro.build.version.release]: [11]\n[ro.product.model]: [Nexus 6]"
 
-        with patch.object(self.terminal, "adb_shell", return_value=expected_value) as mock_adb_shell:
+        with patch.object(
+            self.terminal, "adb_shell", return_value=expected_value
+        ) as mock_adb_shell:
             # Act
             result = self.terminal.get_prop()
 
@@ -444,8 +458,10 @@ class TestTerminal:
     def test_get_prop_driver_exception(self):
         """Test property retrieval with driver exception."""
         # Arrange
-        with patch.object(self.terminal, "adb_shell", side_effect=KeyError("Driver not found")), \
-             pytest.raises(KeyError, match="Driver not found"):
+        with (
+            patch.object(self.terminal, "adb_shell", side_effect=KeyError("Driver not found")),
+            pytest.raises(KeyError, match="Driver not found"),
+        ):
             # Act & Assert
             self.terminal.get_prop()
 
@@ -484,8 +500,10 @@ class TestTerminal:
 
     def test_get_packages_driver_exception(self):
         """Test package list retrieval with driver exception."""
-        with patch.object(self.terminal, "adb_shell", side_effect=KeyError("Driver not found")), \
-             pytest.raises(KeyError, match="Driver not found"):
+        with (
+            patch.object(self.terminal, "adb_shell", side_effect=KeyError("Driver not found")),
+            pytest.raises(KeyError, match="Driver not found"),
+        ):
             # Act & Assert
             self.terminal.get_packages()
 
@@ -508,8 +526,10 @@ class TestTerminal:
         # Arrange
         package = "com.nonexistent.app"
 
-        with patch.object(self.terminal, "adb_shell", side_effect=KeyError("Driver not found")), \
-             pytest.raises(KeyError, match="Driver not found"):
+        with (
+            patch.object(self.terminal, "adb_shell", side_effect=KeyError("Driver not found")),
+            pytest.raises(KeyError, match="Driver not found"),
+        ):
             # Act & Assert
             self.terminal.get_package_path(package)
 
@@ -533,7 +553,9 @@ class TestTerminal:
         filename = "test_video.mp4"
         duration = 30
 
-        with patch.object(self.terminal.driver, "start_recording_screen", side_effect=KeyError("Driver not found")):
+        with patch.object(
+            self.terminal.driver, "start_recording_screen", side_effect=KeyError("Driver not found")
+        ):
             # Act
             result = self.terminal.record_video(filename=filename, duration=duration)
 
@@ -545,9 +567,13 @@ class TestTerminal:
         # Arrange
         mock_base64_data = "base64_encoded_video_data"
         expected_bytes = b"decoded_video_data"
-        
-        with patch.object(self.terminal.driver, "stop_recording_screen", return_value=mock_base64_data), \
-             patch("base64.b64decode", return_value=expected_bytes) as mock_b64decode:
+
+        with (
+            patch.object(
+                self.terminal.driver, "stop_recording_screen", return_value=mock_base64_data
+            ),
+            patch("base64.b64decode", return_value=expected_bytes) as mock_b64decode,
+        ):
             # Act
             result = self.terminal.stop_video()
 
@@ -558,7 +584,9 @@ class TestTerminal:
 
     def test_stop_video_driver_exception(self):
         """Test video recording stop with driver exception."""
-        with patch.object(self.terminal.driver, "stop_recording_screen", side_effect=KeyError("Driver not found")):
+        with patch.object(
+            self.terminal.driver, "stop_recording_screen", side_effect=KeyError("Driver not found")
+        ):
             # Act
             result = self.terminal.stop_video()
 
@@ -571,7 +599,9 @@ class TestTerminal:
         ip_address = "192.168.1.100"
         netstat_output = f"tcp 0 0 {ip_address}:443 ESTABLISHED"
 
-        with patch.object(self.terminal, "adb_shell", return_value=netstat_output) as mock_adb_shell:
+        with patch.object(
+            self.terminal, "adb_shell", return_value=netstat_output
+        ) as mock_adb_shell:
             # Act
             result = self.terminal.check_vpn(ip_address)
 
@@ -584,7 +614,9 @@ class TestTerminal:
         # Arrange
         ip_address = "192.168.1.100"
 
-        with patch.object(self.terminal, "adb_shell", return_value="netstat output without VPN connection"):
+        with patch.object(
+            self.terminal, "adb_shell", return_value="netstat output without VPN connection"
+        ):
             # Act
             result = self.terminal.check_vpn(ip_address)
 
@@ -602,6 +634,3 @@ class TestTerminal:
 
             # Assert
             assert result is False  # noqa: S101
-
-
-

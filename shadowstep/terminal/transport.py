@@ -8,10 +8,12 @@ import logging
 from typing import cast
 
 import paramiko
-from scp import SCPClient
+from scp import SCPClient  # type: ignore[reportMissingTypeStubs]
 
 # Configure the root logger (basic configuration)
-logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s")
+logging.basicConfig(
+    level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+)
 logger = logging.getLogger(__name__)
 
 
@@ -46,4 +48,3 @@ class Transport:
         client.set_missing_host_key_policy(paramiko.AutoAddPolicy())  # noqa: S507
         client.connect(server, port, user, password)
         return client
-
