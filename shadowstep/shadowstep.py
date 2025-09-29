@@ -1093,7 +1093,7 @@ class Shadowstep(ShadowstepBase):
 
         """
         self.logger.debug("%s", get_current_func_name())
-        if self.driver is self._SENTINEL:
+        if self.driver is None:
             error_msg = "Driver is not initialized"
             raise RuntimeError(error_msg)
         screenshot = self.driver.get_screenshot_as_base64().encode("utf-8")
@@ -1116,7 +1116,7 @@ class Shadowstep(ShadowstepBase):
         self.logger.debug("%s", get_current_func_name())
         path_to_file = Path(path) / filename
         with path_to_file.open("wb") as f:
-            if self.driver is self._SENTINEL:
+            if self.driver is None:
                 error_msg = "Driver is not initialized"
                 raise RuntimeError(error_msg)
             f.write(self.driver.page_source.encode("utf-8"))
@@ -1139,7 +1139,7 @@ class Shadowstep(ShadowstepBase):
 
         """
         self.logger.debug("%s", get_current_func_name())
-        if self.driver is self._SENTINEL:
+        if self.driver is None:
             error_msg = "Driver is not initialized"
             raise RuntimeError(error_msg)
         self.driver.tap([(x, y)], duration or 100)
@@ -1151,7 +1151,7 @@ class Shadowstep(ShadowstepBase):
     def start_recording_screen(self) -> None:
         """Start screen recording using Appium driver."""
         self.logger.debug("%s", get_current_func_name())
-        if self.driver is self._SENTINEL:
+        if self.driver is None:
             error_msg = "Driver is not initialized"
             raise RuntimeError(error_msg)
         self.driver.start_recording_screen()
@@ -1167,7 +1167,7 @@ class Shadowstep(ShadowstepBase):
 
         """
         self.logger.debug("%s", get_current_func_name())
-        if self.driver is self._SENTINEL:
+        if self.driver is None:
             error_msg = "Driver is not initialized"
             raise RuntimeError(error_msg)
         encoded = self.driver.stop_recording_screen()
@@ -1190,7 +1190,7 @@ class Shadowstep(ShadowstepBase):
         with Path(source_file_path).open("rb") as file:
             file_data = file.read()
             base64data = base64.b64encode(file_data).decode("utf-8")
-        if self.driver is self._SENTINEL:
+        if self.driver is None:
             error_msg = "Driver is not initialized"
             raise RuntimeError(error_msg)
         self.driver.push_file(
@@ -1209,7 +1209,7 @@ class Shadowstep(ShadowstepBase):
         Note: This docstring contains long lines due to API documentation requirements.
         """
         # TODO move to separate class with transparent settings selection (enum?)  # noqa: TD002, TD003, TD004, FIX002
-        if self.driver is not self._SENTINEL:
+        if self.driver is not None:
             self.driver.update_settings(settings={"enableMultiWindows": True})
         raise NotImplementedError
 
