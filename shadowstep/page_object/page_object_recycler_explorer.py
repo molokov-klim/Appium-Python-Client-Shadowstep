@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import importlib.util
 import logging
+import time
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, cast
 
@@ -44,7 +45,7 @@ class PageObjectRecyclerExplorer:
         self.generator = PageObjectGenerator(translator)
         self.merger = PageObjectMerger()
 
-    def explore(self, output_dir: str) -> Path:
+    def explore(self, output_dir: str, timeout: float = 360) -> Path:
         """Explore recycler views and generate page objects.
 
         Args:
@@ -95,7 +96,12 @@ class PageObjectRecyclerExplorer:
             return ""
         prefix = 0
 
+        start_time = time.monotonic()
         while recycler_el.scroll_down(percent=0.5, speed=1000, return_bool=True):
+            if time.monotonic() - start_time > timeout:
+                self.logger.warning("Timeout reached while scrolling recycler")
+                break
+
             # tree changed!!! recycler_raw needs to be redefined
             prefix += 1
             tree = self.parser.parse(self.base.driver.page_source)

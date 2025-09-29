@@ -170,14 +170,14 @@ class TestPage:
         mock_class = Mock()
         mock_instance = Mock()
         mock_class.return_value = mock_instance
-        # Don't add recycler attribute
+        # Don't add recycler attribute - this will make hasattr(original_page, "recycler") return False
         explorer._load_class_from_file = Mock(return_value=mock_class)
 
         # Mock Path operations to avoid file system operations
         with patch('pathlib.Path.mkdir'), \
              patch('pathlib.Path.parent'), \
              patch('pathlib.Path.name', 'test_page.py'):
-            result = explorer.explore("temp_dir")
+            result = explorer.explore("temp_dir", timeout=10)
 
             assert result == ""  # noqa: S101
 
@@ -207,7 +207,7 @@ class TestPage:
         mock_class = Mock()
         mock_instance = Mock()
         mock_recycler = Mock()
-        # Don't add scroll_down method
+        # Don't add scroll_down method - this will make hasattr(recycler_el, "scroll_down") return False
         mock_instance.recycler = mock_recycler
         mock_class.return_value = mock_instance
         explorer._load_class_from_file = Mock(return_value=mock_class)
