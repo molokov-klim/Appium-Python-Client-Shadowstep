@@ -158,7 +158,7 @@ class TestFailSafe:
         """Test fail_safe with argument logging including kwargs."""
         mock_obj = MockClass()
 
-        @fail_safe(retries=1, delay=0.1, log_args=True)
+        @fail_safe(retries=1, delay=0.1, log_args=True, exceptions=(Exception,))
         def test_method(self: MockClass, arg1: str, **kwargs: Any) -> str:
             raise Exception("Test exception")
 
@@ -376,7 +376,7 @@ class TestFailSafe:
         """Test fail_safe log_args with kwargs formatting."""
         mock_obj = MockClass()
 
-        @fail_safe(retries=1, delay=0.1, log_args=True)
+        @fail_safe(retries=1, delay=0.1, log_args=True, exceptions=(Exception,))
         def test_method(self: MockClass, arg1: str, **kwargs: Any) -> str:
             raise Exception("Test exception")
 
@@ -390,7 +390,7 @@ class TestFailSafe:
         """Test fail_safe log_args with comprehensive argument formatting to cover lines 97-108."""
         mock_obj = MockClass()
 
-        @fail_safe(retries=1, delay=0.1, log_args=True)
+        @fail_safe(retries=1, delay=0.1, log_args=True, exceptions=(Exception,))
         def test_method(self: MockClass, normal_arg: str, long_arg: str, complex_arg: dict, other_obj: MockClass) -> str:
             raise Exception("Test exception")
 
@@ -404,6 +404,40 @@ class TestFailSafe:
 
         # Check that debug was called for args logging
         mock_obj.logger.debug.assert_called()
+
+    def test_fail_safe_log_args_formatting_branch_trigger(self) -> None:
+        """Ensure log_args formatting branch executes when specified exceptions are caught."""
+        mock_obj = MockClass()
+
+        @fail_safe(retries=1, delay=0.0, log_args=True, exceptions=(Exception,))
+        def test_method(self: MockClass, arg: str) -> str:
+            raise Exception("boom")
+
+        with pytest.raises(Exception, match="boom"):
+            test_method(mock_obj, "payload")
+
+        formatted_call = mock_obj.logger.debug.call_args_list[0][0][1]
+        assert isinstance(formatted_call, list)
+
+    def test_fail_safe_raise_exception_without_last_exc_zero_retries(self) -> None:
+        """fail_safe should raise configured exception when retries set to zero."""
+
+        @fail_safe(retries=0, raise_exception=ValueError)
+        def test_method(self: MockClass) -> str:
+            return "unused"
+
+        with pytest.raises(ValueError, match="failed after 0 attempts"):
+            test_method(MockClass())
+
+    def test_fail_safe_runtime_error_without_last_exc_zero_retries(self) -> None:
+        """fail_safe should raise RuntimeError when retries zero and no fallback or last_exc."""
+
+        @fail_safe(retries=0)
+        def test_method(self: MockClass) -> str:
+            return "unused"
+
+        with pytest.raises(RuntimeError, match="failed after 0 attempts"):
+            test_method(MockClass())
 
 
 class TestRetry:

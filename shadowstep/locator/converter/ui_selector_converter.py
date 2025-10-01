@@ -22,16 +22,16 @@ from shadowstep.exceptions.shadowstep_exceptions import (
 )
 
 if TYPE_CHECKING:
-    from shadowstep.locator.converter.ui_selector_converter_core.ast import Selector
-from shadowstep.locator.converter.ui_selector_converter_core.lexer import Lexer
-from shadowstep.locator.converter.ui_selector_converter_core.parser import Parser
+    from shadowstep.locator.converter.ui_selector_converter_core.ui_selector_ast import Selector
+from shadowstep.locator.converter.ui_selector_converter_core.ui_selector_lexer import Lexer
+from shadowstep.locator.converter.ui_selector_converter_core.ui_selector_parser import Parser
+from shadowstep.locator.locator_types.ui_selector import UiAttribute
 from shadowstep.locator.map.ui_to_dict import UI_TO_SHADOWSTEP_DICT
 from shadowstep.locator.map.ui_to_xpath import (
     UI_TO_XPATH,
     get_xpath_for_method,
     is_hierarchical_method,
 )
-from shadowstep.locator.types.ui_selector import UiAttribute
 
 
 class UiSelectorConverter:

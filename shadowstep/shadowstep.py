@@ -37,9 +37,8 @@ from shadowstep.shadowstep_base import ShadowstepBase, WebDriverSingleton
 from shadowstep.utils.utils import get_current_func_name
 
 if TYPE_CHECKING:
-    from types import ModuleType
-
     import numpy as np
+    from locator_types import ModuleType
     from numpy._typing import NDArray
     from PIL import Image
     from selenium.types import WaitExcTypes

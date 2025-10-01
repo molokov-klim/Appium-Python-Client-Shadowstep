@@ -24,9 +24,9 @@ from websocket import (
 )
 
 if TYPE_CHECKING:
-    import types
     from collections.abc import Callable
 
+    import locator_types
     from appium.webdriver.webdriver import WebDriver
 
 from shadowstep.exceptions.shadowstep_exceptions import (
@@ -147,7 +147,7 @@ class ShadowstepLogcat:
 
         return True
 
-    def __exit__(self, exc_type: type[BaseException] | None, exc_val: BaseException | None, exc_tb: types.TracebackType | None) -> None:
+    def __exit__(self, exc_type: type[BaseException] | None, exc_val: BaseException | None, exc_tb: locator_types.TracebackType | None) -> None:
         """Context manager exit method to stop logcat capture.
 
         Args:

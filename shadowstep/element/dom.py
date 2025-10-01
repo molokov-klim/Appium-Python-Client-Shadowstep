@@ -25,7 +25,7 @@ from shadowstep.exceptions.shadowstep_exceptions import (
     ShadowstepResolvingLocatorError,
 )
 from shadowstep.locator import UiSelector
-from shadowstep.locator.types.shadowstep_dict import ShadowstepDictAttribute
+from shadowstep.locator.locator_types.shadowstep_dict import ShadowstepDictAttribute
 
 if TYPE_CHECKING:
     from selenium.types import WaitExcTypes

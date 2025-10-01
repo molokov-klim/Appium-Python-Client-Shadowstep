@@ -447,3 +447,53 @@ class TestPageNavigator:
     def test_default_timeout_constant(self) -> None:
         """Test that DEFAULT_NAVIGATION_TIMEOUT has expected value."""
         assert DEFAULT_NAVIGATION_TIMEOUT == 10  # noqa: S101
+
+    def test_find_path_networkx_success(self, navigator: PageNavigator) -> None:
+        """Test find_path when NetworkX finds a path successfully."""
+        page1 = MockPage("page1")
+        page2 = MockPage("page2")
+        
+        navigator.graph_manager.add_page(page1, ["page2"])
+        navigator.graph_manager.add_page(page2, [])
+        
+        # Mock find_shortest_path to return a path
+        with patch.object(navigator.graph_manager, "find_shortest_path", return_value=[page1, page2]):
+            result = navigator.find_path(page1, "page2")
+        
+        assert result == [page1, page2]  # noqa: S101
+
+    def test_has_path_networkx_error(self) -> None:
+        """Test has_path when NetworkX raises an error."""
+        graph = PageGraph()
+        page1 = MockPage("page1")
+        page2 = MockPage("page2")
+        
+        # Mock nx.has_path to raise NetworkXError
+        with patch("networkx.has_path", side_effect=nx.NetworkXError("Test error")):
+            result = graph.has_path(page1, page2)
+        
+        assert result is False  # noqa: S101
+
+    def test_has_path_key_error(self) -> None:
+        """Test has_path when NetworkX raises KeyError."""
+        graph = PageGraph()
+        page1 = MockPage("page1")
+        page2 = MockPage("page2")
+        
+        # Mock nx.has_path to raise KeyError
+        with patch("networkx.has_path", side_effect=KeyError("Test error")):
+            result = graph.has_path(page1, page2)
+        
+        assert result is False  # noqa: S101
+
+    def test_find_shortest_path_networkx_error(self) -> None:
+        """Test find_shortest_path when NetworkX raises NetworkXError."""
+        graph = PageGraph()
+        page1 = MockPage("page1")
+        page2 = MockPage("page2")
+        
+        # Mock nx.shortest_path to raise NetworkXError
+        with patch("networkx.shortest_path", side_effect=nx.NetworkXError("Test error")):
+            result = graph.find_shortest_path(page1, page2)
+        
+        assert result is None  # noqa: S101

@@ -14,7 +14,7 @@ from shadowstep.exceptions.shadowstep_exceptions import (
     ShadowstepUnsupportedAttributeForXPathError,
     ShadowstepUnsupportedHierarchicalAttributeError,
 )
-from shadowstep.locator.types.shadowstep_dict import ShadowstepDictAttribute
+from shadowstep.locator.locator_types.shadowstep_dict import ShadowstepDictAttribute
 
 
 def dict_to_xpath_attribute(attr: ShadowstepDictAttribute, value: str | float | bool | dict) -> str:  # noqa: FBT001

@@ -1,10 +1,19 @@
 import logging
 from typing import Any
+from unittest.mock import patch
 
 import pytest
 
+from shadowstep.exceptions.shadowstep_exceptions import (
+    ShadowstepInvalidUiSelectorStringError,
+    ShadowstepMethodRequiresArgumentError,
+    ShadowstepSelectorToXPathError,
+    ShadowstepUiSelectorConversionError,
+    ShadowstepUiSelectorMethodArgumentError,
+    ShadowstepUnsupportedNestedSelectorError,
+)
 from shadowstep.locator.converter.ui_selector_converter import UiSelectorConverter
-from shadowstep.locator.types.ui_selector import UiAttribute
+from shadowstep.locator.locator_types.ui_selector import UiAttribute
 
 logger = logging.getLogger(__name__)
 
@@ -368,3 +377,253 @@ class TestUiSelectorConverter:
         logger.info(f"{shadowstep_dict=}")
 
         assert shadowstep_dict == expected_dict, f"Expected {expected_dict} got: {shadowstep_dict}"  # noqa: S101  # noqa: S101
+
+    def test_selector_to_xpath_invalid_selector_error(self):
+        """Test selector_to_xpath with invalid selector string."""
+        converter = UiSelectorConverter()
+        
+        result = converter.selector_to_xpath("invalid selector")
+        assert result == "//*"
+
+    def test_selector_to_xpath_conversion_error(self):
+        """Test selector_to_xpath with conversion error."""
+        converter = UiSelectorConverter()
+        
+        # Mock parse_selector_string to raise a different exception
+        with patch.object(converter, 'parse_selector_string', side_effect=ValueError("Test error")):
+            with pytest.raises(ShadowstepUiSelectorConversionError) as exc_info:
+                converter.selector_to_xpath('new UiSelector().text("test");')
+            assert "Test error" in str(exc_info.value)
+
+    def test_selector_to_dict_invalid_selector_error(self):
+        """Test selector_to_dict with invalid selector string."""
+        converter = UiSelectorConverter()
+        
+        result = converter.selector_to_dict("invalid selector")
+        assert result == {}
+
+    def test_selector_to_dict_conversion_error(self):
+        """Test selector_to_dict with conversion error."""
+        converter = UiSelectorConverter()
+        
+        # Mock parse_selector_string to raise a different exception
+        with patch.object(converter, 'parse_selector_string', side_effect=ValueError("Test error")):
+            with pytest.raises(ShadowstepUiSelectorConversionError) as exc_info:
+                converter.selector_to_dict('new UiSelector().text("test");')
+            assert "Test error" in str(exc_info.value)
+
+    def test_parse_selector_string_with_quotes(self):
+        """Test parse_selector_string with quoted string."""
+        converter = UiSelectorConverter()
+        
+        # Test with string wrapped in quotes
+        result = converter.parse_selector_string("'new UiSelector().text(\"test\");'")
+        expected = {
+            "methods": [
+                {"name": "text", "args": ["test"]}
+            ]
+        }
+        assert result == expected
+
+    def test_parse_selector_string_parsing_error(self):
+        """Test parse_selector_string with parsing error."""
+        converter = UiSelectorConverter()
+        
+        result = converter.parse_selector_string("invalid syntax")
+        assert result == {"methods": []}
+
+    def test_selector_to_xpath_no_args_method(self):
+        """Test _selector_to_xpath with method that has no arguments."""
+        converter = UiSelectorConverter()
+        
+        # Test with a method that doesn't require arguments
+        selector_dict = {
+            "methods": [
+                {"name": "clickable", "args": []}
+            ]
+        }
+        
+        result = converter._selector_to_xpath(selector_dict)
+        assert "clickable" in result
+
+    def test_selector_to_xpath_unsupported_method(self):
+        """Test _selector_to_xpath with unsupported method."""
+        converter = UiSelectorConverter()
+        
+        # Mock logger to capture warning
+        with patch.object(converter.logger, 'warning') as mock_warning:
+            selector_dict = {
+                "methods": [
+                    {"name": "unknownMethod", "args": ["test"]}
+                ]
+            }
+            
+            result = converter._selector_to_xpath(selector_dict)
+            mock_warning.assert_called_once()
+            assert mock_warning.call_args[0][1] == "unknownMethod"
+            assert isinstance(mock_warning.call_args[0][2], ValueError)
+
+    def test_selector_to_xpath_from_parent_with_double_slash(self):
+        """Test _selector_to_xpath with fromParent that starts with //."""
+        converter = UiSelectorConverter()
+        
+        # Mock _convert_nested_selector to return xpath starting with //
+        with patch.object(converter, '_convert_nested_selector', return_value="//*[@class='test']"):
+            selector_dict = {
+                "methods": [
+                    {"name": "fromParent", "args": [{"methods": [{"name": "className", "args": ["test"]}]}]}
+                ]
+            }
+            
+            result = converter._selector_to_xpath(selector_dict)
+            assert "/..//*[@class='test']" in result
+
+    def test_selector_to_dict_empty_methods(self):
+        """Test _selector_to_dict with empty methods list."""
+        converter = UiSelectorConverter()
+        
+        selector_dict = {"methods": []}
+        result = converter._selector_to_dict(selector_dict)
+        assert result == {}
+
+    def test_selector_to_dict_unsupported_method(self):
+        """Test _selector_to_dict with unsupported method."""
+        converter = UiSelectorConverter()
+        
+        selector_dict = {
+            "methods": [
+                {"name": "unknownMethod", "args": ["test"]}
+            ]
+        }
+        
+        with pytest.raises(NotImplementedError) as exc_info:
+            converter._selector_to_dict(selector_dict)
+        assert "unknownMethod" in str(exc_info.value)
+
+    def test_selector_to_dict_method_requires_argument(self):
+        """Test _selector_to_dict with method that requires argument but has none."""
+        converter = UiSelectorConverter()
+        
+        selector_dict = {
+            "methods": [
+                {"name": "text", "args": []}
+            ]
+        }
+        
+        with pytest.raises(ShadowstepMethodRequiresArgumentError) as exc_info:
+            converter._selector_to_dict(selector_dict)
+        assert "text" in str(exc_info.value)
+
+    def test_convert_nested_selector_with_selector_object(self):
+        """Test _convert_nested_selector with Selector AST object."""
+        converter = UiSelectorConverter()
+        
+        # Create a mock Selector object
+        class MockSelector:
+            def __init__(self):
+                self.methods = [MockMethod()]
+        
+        class MockMethod:
+            def __init__(self):
+                self.name = "text"
+                self.args = ["test"]
+        
+        mock_selector = MockSelector()
+        
+        with patch.object(converter, '_selector_to_parsed_dict', return_value={"methods": [{"name": "text", "args": ["test"]}]}):
+            with patch.object(converter, '_selector_to_xpath', return_value="*[@text='test']"):
+                result = converter._convert_nested_selector(mock_selector)
+                assert result == "*[@text='test']"
+
+    def test_convert_nested_selector_unsupported_type(self):
+        """Test _convert_nested_selector with unsupported type."""
+        converter = UiSelectorConverter()
+        
+        with pytest.raises(ShadowstepUnsupportedNestedSelectorError) as exc_info:
+            converter._convert_nested_selector("unsupported")
+        assert "str" in str(exc_info.value)
+
+    def test_parsed_dict_to_selector_with_nested_dict(self):
+        """Test _parsed_dict_to_selector with nested dictionary."""
+        converter = UiSelectorConverter()
+        
+        selector_dict = {
+            "methods": [
+                {
+                    "name": "childSelector",
+                    "args": [{"methods": [{"name": "text", "args": ["child"]}]}]
+                }
+            ]
+        }
+        
+        result = converter._parsed_dict_to_selector(selector_dict, top_level=True)
+        assert 'new UiSelector().childSelector(new UiSelector().text("child"));' == result
+
+    def test_parsed_dict_to_selector_with_bool_arg(self):
+        """Test _parsed_dict_to_selector with boolean argument."""
+        converter = UiSelectorConverter()
+        
+        selector_dict = {
+            "methods": [
+                {"name": "clickable", "args": [True]},
+                {"name": "enabled", "args": [False]}
+            ]
+        }
+        
+        result = converter._parsed_dict_to_selector(selector_dict, top_level=True)
+        assert 'new UiSelector().clickable(true).enabled(false);' == result
+
+    def test_parsed_dict_to_selector_with_int_arg(self):
+        """Test _parsed_dict_to_selector with integer argument."""
+        converter = UiSelectorConverter()
+        
+        selector_dict = {
+            "methods": [
+                {"name": "index", "args": [5]}
+            ]
+        }
+        
+        result = converter._parsed_dict_to_selector(selector_dict, top_level=True)
+        assert 'new UiSelector().index(5);' == result
+
+    def test_parsed_dict_to_selector_with_string_arg_escaping(self):
+        """Test _parsed_dict_to_selector with string argument that needs escaping."""
+        converter = UiSelectorConverter()
+        
+        selector_dict = {
+            "methods": [
+                {"name": "text", "args": ['test"with"quotes']},
+                {"name": "description", "args": ['test\\with\\backslashes']}
+            ]
+        }
+        
+        result = converter._parsed_dict_to_selector(selector_dict, top_level=True)
+        assert 'new UiSelector().text("test\\"with\\"quotes").description("test\\\\with\\\\backslashes");' == result
+
+    def test_parsed_dict_to_selector_multiple_args_error(self):
+        """Test _parsed_dict_to_selector with method that has multiple arguments."""
+        converter = UiSelectorConverter()
+        
+        selector_dict = {
+            "methods": [
+                {"name": "text", "args": ["arg1", "arg2"]}
+            ]
+        }
+        
+        with pytest.raises(ShadowstepUiSelectorMethodArgumentError) as exc_info:
+            converter._parsed_dict_to_selector(selector_dict, top_level=True)
+        assert "2" in str(exc_info.value)
+
+    def test_parsed_dict_to_selector_no_top_level_semicolon(self):
+        """Test _parsed_dict_to_selector without top-level semicolon."""
+        converter = UiSelectorConverter()
+        
+        selector_dict = {
+            "methods": [
+                {"name": "text", "args": ["test"]}
+            ]
+        }
+        
+        result = converter._parsed_dict_to_selector(selector_dict, top_level=False)
+        assert result == 'new UiSelector().text("test")'
+        assert not result.endswith(';')

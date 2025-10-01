@@ -14,8 +14,8 @@ from shadowstep.exceptions.shadowstep_exceptions import (
     ShadowstepUnsupportedAttributeForUiSelectorError,
     ShadowstepUnsupportedHierarchicalAttributeError,
 )
-from shadowstep.locator.types.shadowstep_dict import ShadowstepDictAttribute
-from shadowstep.locator.types.ui_selector import UiAttribute
+from shadowstep.locator.locator_types.shadowstep_dict import ShadowstepDictAttribute
+from shadowstep.locator.locator_types.ui_selector import UiAttribute
 
 
 def dict_to_ui_attribute(attr: ShadowstepDictAttribute, value: str | float | bool | dict) -> str:  # noqa: FBT001

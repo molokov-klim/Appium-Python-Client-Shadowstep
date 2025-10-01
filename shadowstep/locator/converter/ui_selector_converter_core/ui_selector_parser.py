@@ -13,8 +13,11 @@ from shadowstep.exceptions.shadowstep_exceptions import (
     ShadowstepExpectedTokenError,
     ShadowstepUnexpectedTokenError,
 )
-from shadowstep.locator.converter.ui_selector_converter_core.ast import MethodCall, Selector
-from shadowstep.locator.converter.ui_selector_converter_core.lexer import (
+from shadowstep.locator.converter.ui_selector_converter_core.ui_selector_ast import (
+    MethodCall,
+    Selector,
+)
+from shadowstep.locator.converter.ui_selector_converter_core.ui_selector_lexer import (
     Token,
     TokenType,
 )

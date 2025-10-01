@@ -12,8 +12,8 @@ if TYPE_CHECKING:
     from collections.abc import Callable
 
 from shadowstep.exceptions.shadowstep_exceptions import ShadowstepUnsupportedUiSelectorMethodError
-from shadowstep.locator.types.ui_selector import UiAttribute
-from shadowstep.locator.types.xpath import XPathAttribute
+from shadowstep.locator.locator_types.ui_selector import UiAttribute
+from shadowstep.locator.locator_types.xpath import XPathAttribute
 
 
 def _handle_child_selector(child_xpath: str) -> str:

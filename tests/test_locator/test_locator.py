@@ -11,7 +11,7 @@ from shadowstep.locator.converter.dict_converter import DictConverter
 from shadowstep.locator.converter.locator_converter import LocatorConverter
 from shadowstep.locator.map.dict_to_ui import dict_to_ui_attribute, is_hierarchical_attribute
 from shadowstep.locator.map.dict_to_xpath import dict_to_xpath_attribute
-from shadowstep.locator.types.shadowstep_dict import ShadowstepDictAttribute
+from shadowstep.locator.locator_types.shadowstep_dict import ShadowstepDictAttribute
 from shadowstep.locator.ui_selector import UiSelector
 
 

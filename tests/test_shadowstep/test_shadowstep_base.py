@@ -7,8 +7,8 @@ from selenium.common.exceptions import (
     WebDriverException,
 )
 
+from conftest import CAPABILITIES, APPIUM_IP, APPIUM_PORT
 from shadowstep.shadowstep import Shadowstep
-from conftest import APPIUM_IP, APPIUM_PORT, CAPABILITIES
 
 logger = logging.getLogger(__name__)
 

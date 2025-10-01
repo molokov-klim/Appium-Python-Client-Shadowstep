@@ -17,6 +17,7 @@ from shadowstep.exceptions.shadowstep_exceptions import (
     ShadowstepHierarchicalAttributeError,
     ShadowstepSelectorTypeError,
 )
+from shadowstep.locator.locator_types.shadowstep_dict import ShadowstepDictAttribute
 from shadowstep.locator.map.dict_to_ui import (
     DICT_TO_UI_MAPPING,
     get_ui_method_for_hierarchical_attribute,
@@ -25,7 +26,6 @@ from shadowstep.locator.map.dict_to_xpath import (
     DICT_TO_XPATH_MAPPING,
     get_xpath_for_hierarchical_attribute,
 )
-from shadowstep.locator.types.shadowstep_dict import ShadowstepDictAttribute
 
 # Type aliases for better readability and maintainability
 SelectorDict = Union[dict[str, Any], dict[ShadowstepDictAttribute, Any]]

@@ -49,8 +49,8 @@ from shadowstep.exceptions.shadowstep_exceptions import (
     ShadowstepUnsupportedLiteralError,
     ShadowstepUnsupportedPredicateError,
 )
-from shadowstep.locator.types.shadowstep_dict import ShadowstepDictAttribute
-from shadowstep.locator.types.ui_selector import UiAttribute
+from shadowstep.locator.locator_types.shadowstep_dict import ShadowstepDictAttribute
+from shadowstep.locator.locator_types.ui_selector import UiAttribute
 
 _BOOL_ATTRS = {
     "checkable": (ShadowstepDictAttribute.CHECKABLE, UiAttribute.CHECKABLE),

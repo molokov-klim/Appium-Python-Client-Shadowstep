@@ -342,3 +342,263 @@ class TestShadowstepLogcat:
         logcat.stop()
         
         assert logcat._thread is None  # noqa: S101
+
+    def test_filters_getter(self, logcat: ShadowstepLogcat) -> None:
+        """Test filters getter property."""
+        # Initially should be None
+        assert logcat.filters is None  # noqa: S101
+        
+        # Set filters
+        logcat.filters = ["test_filter"]
+        assert logcat.filters == ["test_filter"]  # noqa: S101
+
+    def test_filters_setter_with_filters(self, logcat: ShadowstepLogcat) -> None:
+        """Test filters setter with filters."""
+        filters = ["test_filter1", "test_filter2"]
+        logcat.filters = filters
+        
+        assert logcat._filters == filters  # noqa: S101
+        assert logcat._compiled_filter_pattern is not None  # noqa: S101
+        assert logcat._filter_set == set(filters)  # noqa: S101
+
+    def test_filters_setter_empty(self, logcat: ShadowstepLogcat) -> None:
+        """Test filters setter with empty list."""
+        logcat.filters = []
+        
+        assert logcat._filters == []  # noqa: S101
+        assert logcat._compiled_filter_pattern is None  # noqa: S101
+        assert logcat._filter_set is None  # noqa: S101
+
+    def test_should_filter_line_no_pattern(self, logcat: ShadowstepLogcat) -> None:
+        """Test _should_filter_line when no pattern is set."""
+        logcat._compiled_filter_pattern = None
+        
+        result = logcat._should_filter_line("test line")
+        assert result is False  # noqa: S101
+
+    def test_should_filter_line_no_match(self, logcat: ShadowstepLogcat) -> None:
+        """Test _should_filter_line when pattern doesn't match."""
+        logcat.filters = ["test_filter"]
+        
+        result = logcat._should_filter_line("other line")
+        assert result is False  # noqa: S101
+
+    def test_should_filter_line_no_filters(self, logcat: ShadowstepLogcat) -> None:
+        """Test _should_filter_line when filters is None."""
+        logcat._compiled_filter_pattern = Mock()
+        logcat._compiled_filter_pattern.search.return_value = True
+        logcat._filters = None
+        
+        result = logcat._should_filter_line("test line")
+        assert result is False  # noqa: S101
+
+    def test_should_filter_line_with_filters_match(self, logcat: ShadowstepLogcat) -> None:
+        """Test _should_filter_line when filters match."""
+        logcat.filters = ["test_filter"]
+        
+        result = logcat._should_filter_line("line with test_filter")
+        assert result is True  # noqa: S101
+
+    def test_should_filter_line_with_tag_match(self, logcat: ShadowstepLogcat) -> None:
+        """Test _should_filter_line when tag matches."""
+        logcat.filters = ["MyTag"]
+        
+        # Test with proper log format: timestamp level tag:message
+        result = logcat._should_filter_line("01-01 12:00:00.000 I MyTag: test message")
+        assert result is True  # noqa: S101
+
+    def test_should_filter_line_with_tag_no_match(self, logcat: ShadowstepLogcat) -> None:
+        """Test _should_filter_line when tag doesn't match."""
+        logcat.filters = ["MyTag"]
+        
+        # Test with proper log format but different tag
+        result = logcat._should_filter_line("01-01 12:00:00.000 I OtherTag: test message")
+        assert result is False  # noqa: S101
+
+    def test_should_filter_line_insufficient_parts(self, logcat: ShadowstepLogcat) -> None:
+        """Test _should_filter_line when line has insufficient parts."""
+        logcat.filters = ["MyTag"]
+        
+        # Test with insufficient parts (less than MIN_LOG_PARTS_COUNT)
+        # When line has insufficient parts and doesn't match pattern, it should return False
+        result = logcat._should_filter_line("short line")
+        assert result is False  # noqa: S101
+
+    def test_exit_calls_stop(self, logcat: ShadowstepLogcat, temp_file: str) -> None:
+        """Test __exit__ method calls stop."""
+        logcat.start(temp_file)
+        
+        # Test __exit__ method
+        logcat.__exit__(None, None, None)
+        
+        assert logcat._thread is None  # noqa: S101
+
+    @patch("shadowstep.logcat.shadowstep_logcat.create_connection")
+    def test_run_driver_none(self, mock_create_connection: Mock, logcat: ShadowstepLogcat, temp_file: str) -> None:
+        """Test _run method when driver is None."""
+        def none_driver_getter() -> MockWebDriver | None:
+            return None
+        
+        logcat._driver_getter = none_driver_getter  # type: ignore
+        logcat.start(temp_file)
+        time.sleep(0.1)  # Give thread time to start
+        
+        logcat.stop()
+        
+        # Should not attempt to create connection
+        mock_create_connection.assert_not_called()
+
+    @patch("shadowstep.logcat.shadowstep_logcat.create_connection")
+    def test_run_with_port_replacement(self, mock_create_connection: Mock, logcat: ShadowstepLogcat, temp_file: str) -> None:
+        """Test _run method with port replacement."""
+        mock_ws = MockWebSocket()
+        mock_create_connection.return_value = mock_ws
+        
+        # Set a custom port
+        logcat.start(temp_file, port=8080)
+        time.sleep(0.1)  # Give thread time to start
+        
+        logcat.stop()
+        
+        # Verify WebSocket was created
+        mock_create_connection.assert_called()
+
+    @patch("shadowstep.logcat.shadowstep_logcat.create_connection")
+    def test_run_bytes_decoding(self, mock_create_connection: Mock, logcat: ShadowstepLogcat, temp_file: str) -> None:
+        """Test _run method with bytes decoding."""
+        class MockWebSocketWithBytes:
+            def __init__(self):
+                self.closed = False
+                self.recv_count = 0
+            
+            def recv(self):
+                self.recv_count += 1
+                if self.recv_count == 1:
+                    return b"Mock log line in bytes"
+                else:
+                    raise WebSocketConnectionClosedException("Connection closed")
+            
+            def close(self):
+                self.closed = True
+        
+        mock_ws = MockWebSocketWithBytes()
+        mock_create_connection.return_value = mock_ws
+        
+        logcat.start(temp_file)
+        time.sleep(0.1)  # Give thread time to start
+        
+        logcat.stop()
+        
+        # Verify WebSocket was created
+        mock_create_connection.assert_called()
+
+    @patch("shadowstep.logcat.shadowstep_logcat.create_connection")
+    def test_run_with_filtering(self, mock_create_connection: Mock, logcat: ShadowstepLogcat, temp_file: str) -> None:
+        """Test _run method with line filtering."""
+        class MockWebSocketWithFiltering:
+            def __init__(self):
+                self.closed = False
+                self.recv_count = 0
+            
+            def recv(self):
+                self.recv_count += 1
+                if self.recv_count == 1:
+                    return "line with test_filter"
+                elif self.recv_count == 2:
+                    return "line without filter"
+                else:
+                    raise WebSocketConnectionClosedException("Connection closed")
+            
+            def close(self):
+                self.closed = True
+        
+        mock_ws = MockWebSocketWithFiltering()
+        mock_create_connection.return_value = mock_ws
+        
+        # Set up filtering
+        logcat.filters = ["test_filter"]
+        
+        logcat.start(temp_file)
+        time.sleep(0.1)  # Give thread time to start
+        
+        logcat.stop()
+        
+        # Verify WebSocket was created
+        mock_create_connection.assert_called()
+
+    @patch("shadowstep.logcat.shadowstep_logcat.create_connection")
+    def test_run_websocket_exceptions(self, mock_create_connection: Mock, logcat: ShadowstepLogcat, temp_file: str) -> None:
+        """Test _run method with various WebSocket exceptions."""
+        class MockWebSocketWithExceptions:
+            def __init__(self):
+                self.closed = False
+                self.recv_count = 0
+            
+            def recv(self):
+                self.recv_count += 1
+                if self.recv_count == 1:
+                    raise TimeoutError("Timeout")
+                elif self.recv_count == 2:
+                    raise ConnectionError("Connection error")
+                elif self.recv_count == 3:
+                    raise Exception("Unexpected error")
+                else:
+                    raise WebSocketConnectionClosedException("Connection closed")
+            
+            def close(self):
+                self.closed = True
+        
+        mock_ws = MockWebSocketWithExceptions()
+        mock_create_connection.return_value = mock_ws
+        
+        logcat.start(temp_file)
+        time.sleep(0.1)  # Give thread time to start
+        
+        logcat.stop()
+        
+        # Verify WebSocket was created
+        mock_create_connection.assert_called()
+
+    @patch("shadowstep.logcat.shadowstep_logcat.create_connection")
+    def test_run_websocket_close_exception(self, mock_create_connection: Mock, logcat: ShadowstepLogcat, temp_file: str) -> None:
+        """Test _run method with WebSocket close exception."""
+        from websocket import WebSocketException
+        
+        class MockWebSocketWithCloseException:
+            def __init__(self):
+                self.closed = False
+                self.recv_count = 0
+            
+            def recv(self):
+                self.recv_count += 1
+                if self.recv_count == 1:
+                    return "test line"
+                else:
+                    raise WebSocketConnectionClosedException("Connection closed")
+            
+            def close(self):
+                raise WebSocketException("Close error")
+        
+        mock_ws = MockWebSocketWithCloseException()
+        mock_create_connection.return_value = mock_ws
+        
+        logcat.start(temp_file)
+        time.sleep(0.1)  # Give thread time to start
+        
+        logcat.stop()
+        
+        # Verify WebSocket was created
+        mock_create_connection.assert_called()
+
+    @patch("pathlib.Path.open")
+    def test_run_file_open_exception(self, mock_open: Mock, logcat: ShadowstepLogcat, temp_file: str) -> None:
+        """Test _run method with file open exception."""
+        mock_open.side_effect = IOError("Cannot open file")
+        
+        logcat.start(temp_file)
+        time.sleep(0.1)  # Give thread time to start
+        
+        logcat.stop()
+        
+        # Verify file open was attempted
+        mock_open.assert_called()

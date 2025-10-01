@@ -12,7 +12,7 @@ import logging
 from typing import Any
 
 from shadowstep.exceptions.shadowstep_exceptions import ShadowstepInvalidUiSelectorStringFormatError
-from shadowstep.locator.types.ui_selector import UiAttribute
+from shadowstep.locator.locator_types.ui_selector import UiAttribute
 
 
 class UiSelector:
