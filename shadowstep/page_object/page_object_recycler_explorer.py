@@ -45,11 +45,12 @@ class PageObjectRecyclerExplorer:
         self.generator = PageObjectGenerator(translator)
         self.merger = PageObjectMerger()
 
-    def explore(self, output_dir: str, timeout: float = 360) -> Path:
+    def explore(self, output_dir: str, timeout: float = 360) -> Path:  # noqa: C901
         """Explore recycler views and generate page objects.
 
         Args:
             output_dir: Directory to save generated page objects.
+            timeout: Timeout for scrolling
 
         Returns:
             Path: Path to the generated file.
