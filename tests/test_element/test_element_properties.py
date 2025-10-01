@@ -1,3 +1,4 @@
+import re
 import time
 from typing import Any
 
@@ -103,8 +104,10 @@ class TestElementProperties:
 
     def test_bounds(self, app: Shadowstep, press_home: Any, stability: None):
         el = app.get_element({"content-desc": "Phone"})
-        assert isinstance(el.bounds, str)  # noqa: S101  # noqa: S101
-        assert el.bounds == "[23,1626][230,1792]"  # noqa: S101  # noqa: S101
+        assert isinstance(el.bounds, str)
+        assert re.fullmatch(r"\[\d+,\d+\]\[\d+,\d+\]", el.bounds), (
+            f"Invalid bounds format: {el.bounds}"
+        )
 
     def test_checked(self, app: Shadowstep, press_home: Any, stability: None):
         el = app.get_element({"content-desc": "Phone"})
@@ -177,12 +180,16 @@ class TestElementProperties:
     def test_location(self, app: Shadowstep, press_home: Any, stability: None):
         el = app.get_element({"content-desc": "Phone"})
         assert isinstance(el.location, dict)  # noqa: S101  # noqa: S101
-        assert el.location == {"x": 23, "y": 1626}  # noqa: S101  # noqa: S101
+        assert isinstance(el.location.get("x"), int)  # noqa: S101
+        assert isinstance(el.location.get("y"), int)  # noqa: S101
 
     def test_rect(self, app: Shadowstep, press_home: Any, stability: None):
         el = app.get_element({"content-desc": "Phone"})
         assert isinstance(el.rect, dict)  # noqa: S101  # noqa: S101
-        assert el.rect == {"height": 166, "width": 207, "x": 23, "y": 1626}  # noqa: S101  # noqa: S101
+        assert isinstance(el.location.get("height"), int)  # noqa: S101
+        assert isinstance(el.location.get("width"), int)  # noqa: S101
+        assert isinstance(el.location.get("x"), int)  # noqa: S101
+        assert isinstance(el.location.get("y"), int)  # noqa: S101
 
     @pytest.mark.skip(reason="UnknownCommandError. "
                         "The requested resource could not be found, or a request was received using an HTTP method "

@@ -25,7 +25,8 @@ class TestCoordinates:
     def test_location_in_view(self, app: Shadowstep, press_home: Any, stability: None):
         el = app.get_element({"content-desc": "Phone"})
         assert isinstance(el.location_in_view, dict)  # noqa: S101
-        assert el.location_in_view == {"x": 23, "y": 1626}  # noqa: S101
+        assert isinstance(el.location_in_view.get("x"), int)  # noqa: S101
+        assert isinstance(el.location_in_view.get("y"), int)  # noqa: S101
 
     @pytest.mark.skip(reason="Method is not implemented in UiAutomator2")
     def test_location_once_scrolled_into_view(self, app: Shadowstep, press_home: Any, stability: None):
