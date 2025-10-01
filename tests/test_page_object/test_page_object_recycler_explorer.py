@@ -36,7 +36,7 @@ class TestPageObjectRecyclerExplorer:
         explorer = PageObjectRecyclerExplorer(base, translator)
 
         with pytest.raises(ShadowstepTerminalNotInitializedError, match="Terminal is not initialized"):
-            explorer.explore("output_dir")
+            explorer.explore("output_dir", timeout=10)
 
     def test_explore_with_terminal(self):
         """Test explore method with terminal available."""
@@ -71,7 +71,7 @@ class TestPageObjectRecyclerExplorer:
         explorer._load_class_from_file = Mock(return_value=mock_class)
 
         with tempfile.TemporaryDirectory() as temp_dir:
-            result = explorer.explore(temp_dir)
+            result = explorer.explore(temp_dir, timeout=10)
 
             assert result is not None  # noqa: S101
             assert result.parent.name == "merged_pages"  # noqa: S101
@@ -140,7 +140,7 @@ class TestPage:
         explorer._load_class_from_file = Mock(return_value=None)
 
         with tempfile.TemporaryDirectory() as temp_dir:
-            result = explorer.explore(temp_dir)
+            result = explorer.explore(temp_dir, timeout=10)
 
             assert result == ""  # noqa: S101
 
@@ -216,7 +216,7 @@ class TestPage:
         with patch('pathlib.Path.mkdir'), \
              patch('pathlib.Path.parent'), \
              patch('pathlib.Path.name', 'test_page.py'):
-            result = explorer.explore("temp_dir")
+            result = explorer.explore("temp_dir", timeout=10)
 
             assert result == ""  # noqa: S101
 
@@ -262,7 +262,7 @@ class TestPage:
              patch('pathlib.Path.parent'), \
              patch('pathlib.Path.name', 'test_page.py'), \
              patch('pathlib.Path', return_value=mock_output_path):
-            result = explorer.explore("temp_dir")
+            result = explorer.explore("temp_dir", timeout=10)
 
             assert result is not None  # noqa: S101
             assert result.parent.name == "merged_pages"  # noqa: S101
