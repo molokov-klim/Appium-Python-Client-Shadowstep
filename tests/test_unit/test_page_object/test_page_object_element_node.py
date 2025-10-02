@@ -96,7 +96,7 @@ class TestJinja2Renderer:
 
     def test_init(self):
         """Test Jinja2Renderer initialization."""
-        renderer = Jinja2Renderer(templates_dir="templates")
+        renderer = Jinja2Renderer(templates_dir="page_object/templates")
         assert renderer.env is not None  # noqa: S101
         assert renderer.env.loader is not None  # noqa: S101
 
@@ -105,7 +105,7 @@ class TestJinja2Renderer:
         """Test render method."""
         mock_get_func_name.return_value = "test_function"
         
-        renderer = Jinja2Renderer(templates_dir="templates")
+        renderer = Jinja2Renderer(templates_dir="page_object/templates")
         
         # Create a mock model
         from shadowstep.page_object.page_object_element_node import PageObjectModel
@@ -358,7 +358,7 @@ class TestJinja2RendererExtended:
 
     def test_save_method_exists(self):
         """Test that save method exists and is callable."""
-        renderer = Jinja2Renderer(templates_dir="templates")
+        renderer = Jinja2Renderer(templates_dir="page_object/templates")
         assert hasattr(renderer, 'save')  # noqa: S101
         assert callable(renderer.save)  # noqa: S101
 
