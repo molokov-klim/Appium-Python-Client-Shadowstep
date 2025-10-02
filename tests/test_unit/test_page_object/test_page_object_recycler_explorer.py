@@ -10,6 +10,9 @@ import pytest
 from shadowstep.exceptions.shadowstep_exceptions import ShadowstepTerminalNotInitializedError
 from shadowstep.page_object.page_object_recycler_explorer import PageObjectRecyclerExplorer
 
+"""
+uv run pytest -svl --log-cli-level INFO --tb=short --setup-show  tests/test_unit/test_page_object/test_page_object_recycler_explorer.py
+"""
 
 class TestPageObjectRecyclerExplorer:
     """Test cases for PageObjectRecyclerExplorer class."""
@@ -177,7 +180,7 @@ class TestPage:
         with patch('pathlib.Path.mkdir'), \
              patch('pathlib.Path.parent'), \
              patch('pathlib.Path.name', 'test_page.py'):
-            result = explorer.explore("temp_dir", timeout=10)
+            result = explorer.explore("temp_dir", timeout=5)
 
             assert result == ""  # noqa: S101
 
