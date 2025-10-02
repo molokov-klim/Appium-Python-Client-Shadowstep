@@ -1,4 +1,4 @@
-name: Functional Tests
+name: Integration Tests
 
 on:
   push:
@@ -11,7 +11,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        test_dir: [ tests/test_decorators/, tests/test_image, tests/test_locator, tests/test_logcat, tests/test_navigator, tests/test_page_object, tests/test_shadowstep, tests/test_terminal, tests/test_element/test_element_actions.py, tests/test_element/test_element_coordinates.py, tests/test_element/test_element_dom.py, tests/test_element/test_element_gestures.py, tests/test_element/test_element_properties.py, tests/test_element/test_element_quality.py, tests/test_element/test_element_should.py, tests/test_element/test_element_waiting.py, tests/test_element/test_elements.py, tests/test_element/test_screenshots.py]
+        test_dir: [tests/test_integro/page_object/test_page_object.py, tests/test_integro/shadowstep_base/test_shadowstep_base.py, tests/test_integro/test_element/test_element_actions.py, tests/test_integro/test_element/test_element_coordinates.py, tests/test_integro/test_element/test_element_dom.py, tests/test_integro/test_element/test_element_gestures.py, tests/test_integro/test_element/test_element_properties.py, tests/test_integro/test_element/test_element_should.py, tests/test_integro/test_element/test_element_waiting.py, tests/test_integro/test_element/test_elements.py, tests/test_integro/test_element/test_screenshots.py, tests/test_integro/test_image/test_image.py, tests/test_integro/test_logcat/test_logcat.py, tests/test_integro/test_shadowstep/test_shadowstep.py, tests/test_integro/test_terminal/test_adb.py]
 
     env:
       CI: true
