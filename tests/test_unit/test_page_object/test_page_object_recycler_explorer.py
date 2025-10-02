@@ -170,19 +170,15 @@ class TestPage:
         explorer.generator.generate = Mock(return_value=mock_generator_result)
 
         # Mock the _load_class_from_file method to return a class without recycler
-        mock_class = Mock()
-        mock_instance = Mock()
-        mock_class.return_value = mock_instance
-        # Don't add recycler attribute - this will make hasattr(original_page, "recycler") return False
-        explorer._load_class_from_file = Mock(return_value=mock_class)
+        class PageWithoutRecycler:
+            def __init__(self) -> None:
+                pass
 
-        # Mock Path operations to avoid file system operations
-        with patch('pathlib.Path.mkdir'), \
-             patch('pathlib.Path.parent'), \
-             patch('pathlib.Path.name', 'test_page.py'):
-            result = explorer.explore("temp_dir", timeout=5)
+        explorer._load_class_from_file = Mock(return_value=PageWithoutRecycler)
 
-            assert result == ""  # noqa: S101
+        result = explorer.explore("temp_dir", timeout=5)
+
+        assert result == ""  # noqa: S101
 
     def test_explore_recycler_no_scroll_down(self):
         """Test explore method when recycler has no scroll_down method."""
@@ -207,21 +203,19 @@ class TestPage:
         explorer.generator.generate = Mock(return_value=mock_generator_result)
 
         # Mock the _load_class_from_file method
-        mock_class = Mock()
-        mock_instance = Mock()
-        mock_recycler = Mock()
-        # Don't add scroll_down method - this will make hasattr(recycler_el, "scroll_down") return False
-        mock_instance.recycler = mock_recycler
-        mock_class.return_value = mock_instance
-        explorer._load_class_from_file = Mock(return_value=mock_class)
+        class RecyclerWithoutScroll:
+            def __init__(self) -> None:
+                pass
 
-        # Mock Path operations to avoid file system operations
-        with patch('pathlib.Path.mkdir'), \
-             patch('pathlib.Path.parent'), \
-             patch('pathlib.Path.name', 'test_page.py'):
-            result = explorer.explore("temp_dir", timeout=10)
+        class PageWithRecyclerNoScroll:
+            def __init__(self) -> None:
+                self.recycler = RecyclerWithoutScroll()
 
-            assert result == ""  # noqa: S101
+        explorer._load_class_from_file = Mock(return_value=PageWithRecyclerNoScroll)
+
+        result = explorer.explore("temp_dir", timeout=10)
+
+        assert result == ""  # noqa: S101
 
     def test_explore_with_scroll_down_loop(self):
         """Test explore method with scroll_down loop."""
@@ -259,18 +253,18 @@ class TestPage:
         explorer._load_class_from_file = Mock(return_value=mock_class)
 
         # Mock Path operations to avoid file system operations
-        mock_output_path = Mock()
-        mock_output_path.parent.name = "merged_pages"
-        with patch('pathlib.Path.mkdir'), \
-             patch('pathlib.Path.parent'), \
-             patch('pathlib.Path.name', 'test_page.py'), \
-             patch('pathlib.Path', return_value=mock_output_path):
-            result = explorer.explore("temp_dir", timeout=10)
+        with tempfile.TemporaryDirectory() as temp_dir:
+            current_dir = os.getcwd()
+            os.chdir(temp_dir)
+            try:
+                result = explorer.explore(temp_dir, timeout=10)
+            finally:
+                os.chdir(current_dir)
 
             assert result is not None  # noqa: S101
             assert result.parent.name == "merged_pages"  # noqa: S101
-            # Should call scroll_down 3 times (2 True + 1 False)
-            assert mock_recycler.scroll_down.call_count == 3  # noqa: S101
+        # Should call scroll_down 3 times (2 True + 1 False)
+        assert mock_recycler.scroll_down.call_count == 3  # noqa: S101
 
     def test_load_class_from_file_invalid_spec(self):
         """Test _load_class_from_file method with invalid spec."""
@@ -282,9 +276,8 @@ class TestPage:
             temp_file = f.name
 
         try:
-            result = explorer._load_class_from_file(temp_file, "TestPage")
-
-            assert result is None  # noqa: S101
+            with pytest.raises(SyntaxError):
+                explorer._load_class_from_file(temp_file, "TestPage")
         finally:
             os.unlink(temp_file)
 
