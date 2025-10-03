@@ -1,19 +1,21 @@
 name: Pyright Type Check
 
 on:
-  workflow_dispatch:  # Only manual
+  workflow_dispatch:
+  pull_request:
+    branches: [ main, develop ]
 
 jobs:
   type-check:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v3
-    - uses: actions/setup-python@v3
-      with:
-        python-version: '3.x'
-    - name: Install Pyright
-      run: |
-        python -m pip install --upgrade pip
-        pip install pyright
-    - name: Run Pyright
-      run: pyright
+      - uses: actions/checkout@v3
+      - uses: actions/setup-python@v3
+        with:
+          python-version: '3.x'
+      - name: Install Pyright
+        run: |
+          python -m pip install --upgrade pip
+          pip install pyright
+      - name: Run Pyright
+        run: pyright
