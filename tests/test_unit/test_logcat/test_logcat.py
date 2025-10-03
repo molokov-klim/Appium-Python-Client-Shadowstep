@@ -99,6 +99,7 @@ class TestShadowstepLogcat:
         with tempfile.NamedTemporaryFile(mode="w", delete=False, suffix=".log") as f:
             return f.name
     
+    @pytest.mark.unit
     def test_init_default_poll_interval(self, mock_driver_getter: Callable[[], MockWebDriver | None]) -> None:
         """Test initialization with default poll interval."""
         logcat = ShadowstepLogcat(mock_driver_getter)  # type: ignore
@@ -109,6 +110,7 @@ class TestShadowstepLogcat:
         assert logcat._filename is None  # noqa: S101
         assert logcat._ws is None  # noqa: S101
     
+    @pytest.mark.unit
     def test_init_custom_poll_interval(self, mock_driver_getter: Callable[[], MockWebDriver | None]) -> None:
         """Test initialization with custom poll interval."""
         custom_interval = 2.5
@@ -116,16 +118,19 @@ class TestShadowstepLogcat:
         
         assert logcat._poll_interval == custom_interval  # noqa: S101
     
+    @pytest.mark.unit
     def test_init_negative_poll_interval_raises_error(self, mock_driver_getter: Callable[[], MockWebDriver | None]) -> None:
         """Test that negative poll interval raises ValueError."""
         with pytest.raises(ShadowstepPollIntervalError, match="poll_interval must be non-negative"):
             ShadowstepLogcat(mock_driver_getter, poll_interval=-1.0)  # type: ignore
     
+    @pytest.mark.unit
     def test_start_empty_filename_raises_error(self, logcat: ShadowstepLogcat) -> None:
         """Test that starting with empty filename raises ValueError."""
         with pytest.raises(ShadowstepEmptyFilenameError, match="filename cannot be empty"):
             logcat.start("")
     
+    @pytest.mark.unit
     def test_start_already_running(self, logcat: ShadowstepLogcat, temp_file: str) -> None:
         """Test starting when already running."""
         # Start first time
@@ -141,6 +146,7 @@ class TestShadowstepLogcat:
         # Cleanup
         logcat.stop()
     
+    @pytest.mark.unit
     def test_start_stop_basic(self, logcat: ShadowstepLogcat, temp_file: str) -> None:
         """Test basic start and stop functionality."""
         logcat.start(temp_file)
@@ -154,6 +160,7 @@ class TestShadowstepLogcat:
         assert logcat._thread is None  # noqa: S101
         assert logcat._filename is None  # noqa: S101
     
+    @pytest.mark.unit
     def test_stop_without_start(self, logcat: ShadowstepLogcat) -> None:
         """Test stopping when not started."""
         # Should not raise any exceptions
@@ -162,6 +169,7 @@ class TestShadowstepLogcat:
         assert logcat._thread is None  # noqa: S101
         assert logcat._filename is None  # noqa: S101
     
+    @pytest.mark.unit
     def test_del_calls_stop(self, mock_driver_getter: Callable[[], MockWebDriver | None], temp_file: str) -> None:
         """Test that __del__ calls stop method."""
         logcat = ShadowstepLogcat(mock_driver_getter)  # type: ignore
@@ -173,6 +181,7 @@ class TestShadowstepLogcat:
         # Clean up properly
         logcat.stop()
     
+    @pytest.mark.unit
     def test_get_http_url_from_url_attribute(self) -> None:
         """Test _get_http_url when _url attribute exists."""
         driver = MockWebDriver()
@@ -183,6 +192,7 @@ class TestShadowstepLogcat:
         
         assert result == "http://test:8080/wd/hub"  # noqa: S101
     
+    @pytest.mark.unit
     def test_get_http_url_from_client_config(self) -> None:
         """Test _get_http_url when _url is None but _client_config exists."""
         driver = MockWebDriver()
@@ -195,6 +205,7 @@ class TestShadowstepLogcat:
         
         assert result == "https://test:8443"  # noqa: S101
     
+    @pytest.mark.unit
     def test_get_http_url_fallback(self) -> None:
         """Test _get_http_url fallback when no URL found."""
         driver = MockWebDriver()
@@ -206,11 +217,13 @@ class TestShadowstepLogcat:
         
         assert result == ""  # noqa: S101
     
+    @pytest.mark.unit
     def test_constants(self) -> None:
         """Test that constants have expected values."""
         assert DEFAULT_POLL_INTERVAL == 1.0  # noqa: S101
         assert WEBSOCKET_TIMEOUT == 5  # noqa: S101
     
+    @pytest.mark.unit
     def test_thread_name(self, logcat: ShadowstepLogcat, temp_file: str) -> None:
         """Test that thread has correct name."""
         logcat.start(temp_file)
@@ -221,6 +234,7 @@ class TestShadowstepLogcat:
         
         logcat.stop()
     
+    @pytest.mark.unit
     def test_multiple_start_stop_cycles(self, logcat: ShadowstepLogcat, temp_file: str) -> None:
         """Test multiple start/stop cycles."""
         for _ in range(3):
@@ -232,6 +246,7 @@ class TestShadowstepLogcat:
             assert logcat._thread is None  # noqa: S101
             assert logcat._filename is None  # noqa: S101
     
+    @pytest.mark.unit
     @patch("shadowstep.logcat.shadowstep_logcat.create_connection")
     def test_run_websocket_connection_success(self, mock_create_connection: Mock, logcat: ShadowstepLogcat, temp_file: str) -> None:
         """Test successful WebSocket connection in _run method."""
@@ -249,6 +264,7 @@ class TestShadowstepLogcat:
         mock_create_connection.assert_called()
         assert mock_ws.closed  # noqa: S101
     
+    @pytest.mark.unit
     @patch("shadowstep.logcat.shadowstep_logcat.create_connection")
     def test_run_websocket_connection_failure(self, mock_create_connection: Mock, logcat: ShadowstepLogcat, temp_file: str) -> None:
         """Test WebSocket connection failure in _run method."""
@@ -264,6 +280,7 @@ class TestShadowstepLogcat:
         # Verify connection was attempted
         mock_create_connection.assert_called()
     
+    @pytest.mark.unit
     @patch("shadowstep.logcat.shadowstep_logcat.create_connection")
     def test_run_websocket_recv_error(self, mock_create_connection: Mock, logcat: ShadowstepLogcat, temp_file: str) -> None:
         """Test WebSocket recv error handling in _run method."""
@@ -280,6 +297,7 @@ class TestShadowstepLogcat:
         # Verify WebSocket was created
         mock_create_connection.assert_called()
     
+    @pytest.mark.unit
     @patch("shadowstep.logcat.shadowstep_logcat.create_connection")
     def test_run_websocket_close_error(self, mock_create_connection: Mock, logcat: ShadowstepLogcat, temp_file: str) -> None:
         """Test WebSocket close error handling in _run method."""
@@ -296,11 +314,13 @@ class TestShadowstepLogcat:
         # Verify WebSocket was created
         mock_create_connection.assert_called()
     
+    @pytest.mark.unit
     def test_run_no_filename(self, logcat: ShadowstepLogcat) -> None:
         """Test _run method when no filename is set."""
         # This should not raise an exception
         logcat._run()
     
+    @pytest.mark.unit
     def test_run_file_write(self, logcat: ShadowstepLogcat, temp_file: str) -> None:
         """Test that logcat writes to file."""
         with patch("shadowstep.logcat.shadowstep_logcat.create_connection") as mock_create_connection:
@@ -317,6 +337,7 @@ class TestShadowstepLogcat:
             # Check if file was created and has content
             assert Path(temp_file).exists()  # noqa: S101
     
+    @pytest.mark.unit
     def test_stop_webdriver_exception(self, logcat: ShadowstepLogcat, temp_file: str) -> None:
         """Test stop method when WebDriver raises exception."""
         def failing_driver_getter() -> MockWebDriver | None:
@@ -330,6 +351,7 @@ class TestShadowstepLogcat:
         
         assert logcat._thread is None  # noqa: S101
     
+    @pytest.mark.unit
     def test_stop_none_driver(self, logcat: ShadowstepLogcat, temp_file: str) -> None:
         """Test stop method when driver getter returns None."""
         def none_driver_getter() -> MockWebDriver | None:
@@ -343,6 +365,7 @@ class TestShadowstepLogcat:
         
         assert logcat._thread is None  # noqa: S101
 
+    @pytest.mark.unit
     def test_filters_getter(self, logcat: ShadowstepLogcat) -> None:
         """Test filters getter property."""
         # Initially should be None
@@ -352,6 +375,7 @@ class TestShadowstepLogcat:
         logcat.filters = ["test_filter"]
         assert logcat.filters == ["test_filter"]  # noqa: S101
 
+    @pytest.mark.unit
     def test_filters_setter_with_filters(self, logcat: ShadowstepLogcat) -> None:
         """Test filters setter with filters."""
         filters = ["test_filter1", "test_filter2"]
@@ -361,6 +385,7 @@ class TestShadowstepLogcat:
         assert logcat._compiled_filter_pattern is not None  # noqa: S101
         assert logcat._filter_set == set(filters)  # noqa: S101
 
+    @pytest.mark.unit
     def test_filters_setter_empty(self, logcat: ShadowstepLogcat) -> None:
         """Test filters setter with empty list."""
         logcat.filters = []
@@ -369,6 +394,7 @@ class TestShadowstepLogcat:
         assert logcat._compiled_filter_pattern is None  # noqa: S101
         assert logcat._filter_set is None  # noqa: S101
 
+    @pytest.mark.unit
     def test_should_filter_line_no_pattern(self, logcat: ShadowstepLogcat) -> None:
         """Test _should_filter_line when no pattern is set."""
         logcat._compiled_filter_pattern = None
@@ -376,6 +402,7 @@ class TestShadowstepLogcat:
         result = logcat._should_filter_line("test line")
         assert result is False  # noqa: S101
 
+    @pytest.mark.unit
     def test_should_filter_line_no_match(self, logcat: ShadowstepLogcat) -> None:
         """Test _should_filter_line when pattern doesn't match."""
         logcat.filters = ["test_filter"]
@@ -383,6 +410,7 @@ class TestShadowstepLogcat:
         result = logcat._should_filter_line("other line")
         assert result is False  # noqa: S101
 
+    @pytest.mark.unit
     def test_should_filter_line_no_filters(self, logcat: ShadowstepLogcat) -> None:
         """Test _should_filter_line when filters is None."""
         logcat._compiled_filter_pattern = Mock()
@@ -392,6 +420,7 @@ class TestShadowstepLogcat:
         result = logcat._should_filter_line("test line")
         assert result is False  # noqa: S101
 
+    @pytest.mark.unit
     def test_should_filter_line_with_filters_match(self, logcat: ShadowstepLogcat) -> None:
         """Test _should_filter_line when filters match."""
         logcat.filters = ["test_filter"]
@@ -399,6 +428,7 @@ class TestShadowstepLogcat:
         result = logcat._should_filter_line("line with test_filter")
         assert result is True  # noqa: S101
 
+    @pytest.mark.unit
     def test_should_filter_line_with_tag_match(self, logcat: ShadowstepLogcat) -> None:
         """Test _should_filter_line when tag matches."""
         logcat.filters = ["MyTag"]
@@ -407,6 +437,7 @@ class TestShadowstepLogcat:
         result = logcat._should_filter_line("01-01 12:00:00.000 I MyTag: test message")
         assert result is True  # noqa: S101
 
+    @pytest.mark.unit
     def test_should_filter_line_with_tag_no_match(self, logcat: ShadowstepLogcat) -> None:
         """Test _should_filter_line when tag doesn't match."""
         logcat.filters = ["MyTag"]
@@ -415,6 +446,7 @@ class TestShadowstepLogcat:
         result = logcat._should_filter_line("01-01 12:00:00.000 I OtherTag: test message")
         assert result is False  # noqa: S101
 
+    @pytest.mark.unit
     def test_should_filter_line_insufficient_parts(self, logcat: ShadowstepLogcat) -> None:
         """Test _should_filter_line when line has insufficient parts."""
         logcat.filters = ["MyTag"]
@@ -424,6 +456,7 @@ class TestShadowstepLogcat:
         result = logcat._should_filter_line("short line")
         assert result is False  # noqa: S101
 
+    @pytest.mark.unit
     def test_exit_calls_stop(self, logcat: ShadowstepLogcat, temp_file: str) -> None:
         """Test __exit__ method calls stop."""
         logcat.start(temp_file)
@@ -433,6 +466,7 @@ class TestShadowstepLogcat:
         
         assert logcat._thread is None  # noqa: S101
 
+    @pytest.mark.unit
     @patch("shadowstep.logcat.shadowstep_logcat.create_connection")
     def test_run_driver_none(self, mock_create_connection: Mock, logcat: ShadowstepLogcat, temp_file: str) -> None:
         """Test _run method when driver is None."""
@@ -448,6 +482,7 @@ class TestShadowstepLogcat:
         # Should not attempt to create connection
         mock_create_connection.assert_not_called()
 
+    @pytest.mark.unit
     @patch("shadowstep.logcat.shadowstep_logcat.create_connection")
     def test_run_with_port_replacement(self, mock_create_connection: Mock, logcat: ShadowstepLogcat, temp_file: str) -> None:
         """Test _run method with port replacement."""
@@ -463,6 +498,7 @@ class TestShadowstepLogcat:
         # Verify WebSocket was created
         mock_create_connection.assert_called()
 
+    @pytest.mark.unit
     @patch("shadowstep.logcat.shadowstep_logcat.create_connection")
     def test_run_bytes_decoding(self, mock_create_connection: Mock, logcat: ShadowstepLogcat, temp_file: str) -> None:
         """Test _run method with bytes decoding."""
@@ -492,6 +528,7 @@ class TestShadowstepLogcat:
         # Verify WebSocket was created
         mock_create_connection.assert_called()
 
+    @pytest.mark.unit
     @patch("shadowstep.logcat.shadowstep_logcat.create_connection")
     def test_run_with_filtering(self, mock_create_connection: Mock, logcat: ShadowstepLogcat, temp_file: str) -> None:
         """Test _run method with line filtering."""
@@ -526,6 +563,7 @@ class TestShadowstepLogcat:
         # Verify WebSocket was created
         mock_create_connection.assert_called()
 
+    @pytest.mark.unit
     @patch("shadowstep.logcat.shadowstep_logcat.create_connection")
     def test_run_websocket_exceptions(self, mock_create_connection: Mock, logcat: ShadowstepLogcat, temp_file: str) -> None:
         """Test _run method with various WebSocket exceptions."""
@@ -559,6 +597,7 @@ class TestShadowstepLogcat:
         # Verify WebSocket was created
         mock_create_connection.assert_called()
 
+    @pytest.mark.unit
     @patch("shadowstep.logcat.shadowstep_logcat.create_connection")
     def test_run_websocket_close_exception(self, mock_create_connection: Mock, logcat: ShadowstepLogcat, temp_file: str) -> None:
         """Test _run method with WebSocket close exception."""
@@ -590,6 +629,7 @@ class TestShadowstepLogcat:
         # Verify WebSocket was created
         mock_create_connection.assert_called()
 
+    @pytest.mark.unit
     @patch("pathlib.Path.open")
     def test_run_file_open_exception(self, mock_open: Mock, logcat: ShadowstepLogcat, temp_file: str) -> None:
         """Test _run method with file open exception."""

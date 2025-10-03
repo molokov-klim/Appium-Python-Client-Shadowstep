@@ -21,6 +21,7 @@ uv run pytest -svl --log-cli-level INFO --tb=short --setup-show  tests/element/t
 
 class TestElementQuality:
 
+    @pytest.mark.unit
     def test_element_base_initialization(self):
         mock_base = Mock()
         locator = ("xpath", "//test")
@@ -30,6 +31,7 @@ class TestElementQuality:
         assert element_base.timeout == 30.0  # noqa: S101
         assert element_base.poll_frequency == 0.5  # noqa: S101
 
+    @pytest.mark.unit
     def test_element_initialization(self):
         mock_base = Mock()
         locator = {"class": "test", "text": "test"}
@@ -39,38 +41,45 @@ class TestElementQuality:
         assert element.timeout == 30.0  # noqa: S101
         assert element.poll_frequency == 0.5  # noqa: S101
 
+    @pytest.mark.unit
     def test_conditions_visible(self):
         locator = ("xpath", "//test")
         condition = visible(locator)
         assert callable(condition)  # noqa: S101  # noqa: S101  # pyright: ignore [reportUnknownArgumentType]
 
+    @pytest.mark.unit
     def test_conditions_not_visible(self):
         locator = ("xpath", "//test")
         condition = not_visible(locator)
         assert callable(condition)  # noqa: S101
 
+    @pytest.mark.unit
     def test_conditions_clickable(self):
         locator = ("xpath", "//test")
         condition = clickable(locator)
         assert callable(condition)  # noqa: S101
 
+    @pytest.mark.unit
     def test_conditions_not_clickable(self):
         locator = ("xpath", "//test")
         condition = not_clickable(locator)
         assert callable(condition)  # noqa: S101
         assert condition.__name__ == "_predicate"  # noqa: S101
 
+    @pytest.mark.unit
     def test_conditions_present(self):
         locator = ("xpath", "//test")
         condition = present(locator)
         assert callable(condition)  # noqa: S101
 
+    @pytest.mark.unit
     def test_conditions_not_present(self):
         locator = ("xpath", "//test")
         condition = not_present(locator)
         assert callable(condition)  # noqa: S101
         assert condition.__name__ == "_predicate"  # noqa: S101
 
+    @pytest.mark.unit
     def test_should_initialization(self):
         mock_element = Mock()
         should = Should(mock_element)
@@ -81,6 +90,7 @@ class TestElementQuality:
         assert isinstance(should.be, _ShouldBe)  # noqa: S101
         assert isinstance(should.not_be, _ShouldNotBe)  # noqa: S101
 
+    @pytest.mark.unit
     def test_should_have_text(self):
         mock_element = Mock()
         mock_element.text = "test text"
@@ -88,6 +98,7 @@ class TestElementQuality:
         result = should.have.text("test text")
         assert isinstance(result, Should)  # noqa: S101
 
+    @pytest.mark.unit
     def test_should_have_text_failure(self):
         mock_element = Mock()
         mock_element.text = "different text"
@@ -95,6 +106,7 @@ class TestElementQuality:
         with pytest.raises(AssertionError, match="have.text: expected 'test text', got 'different text'"):
             should.have.text("test text")
 
+    @pytest.mark.unit
     def test_should_not_have_text(self):
         mock_element = Mock()
         mock_element.text = "different text"
@@ -102,6 +114,7 @@ class TestElementQuality:
         result = should.not_have.text("test text")
         assert isinstance(result, Should)  # noqa: S101
 
+    @pytest.mark.unit
     def test_should_not_have_text_failure(self):
         mock_element = Mock()
         mock_element.text = "test text"
@@ -109,6 +122,7 @@ class TestElementQuality:
         with pytest.raises(AssertionError, match="\\[should.not\\] have.text: expected 'test text', got 'test text'"):
             should.not_have.text("test text")
 
+    @pytest.mark.unit
     def test_should_be_enabled(self):
         mock_element = Mock()
         mock_element.is_enabled.return_value = True
@@ -116,6 +130,7 @@ class TestElementQuality:
         result = should.be.enabled()
         assert isinstance(result, Should)  # noqa: S101
 
+    @pytest.mark.unit
     def test_should_be_enabled_failure(self):
         mock_element = Mock()
         mock_element.is_enabled.return_value = False
@@ -123,6 +138,7 @@ class TestElementQuality:
         with pytest.raises(AssertionError, match="be.enabled: expected element to be enabled"):
             should.be.enabled()
 
+    @pytest.mark.unit
     def test_should_not_be_enabled(self):
         mock_element = Mock()
         mock_element.is_enabled.return_value = False
@@ -130,6 +146,7 @@ class TestElementQuality:
         result = should.not_be.enabled()
         assert isinstance(result, Should)  # noqa: S101
 
+    @pytest.mark.unit
     def test_should_not_be_enabled_failure(self):
         mock_element = Mock()
         mock_element.is_enabled.return_value = True
@@ -137,6 +154,7 @@ class TestElementQuality:
         with pytest.raises(AssertionError, match="\\[should.not\\] be.enabled: expected element to be enabled"):
             should.not_be.enabled()
 
+    @pytest.mark.unit
     def test_should_have_attr(self):
         mock_element = Mock()
         mock_element.get_attribute.return_value = "test value"
@@ -144,6 +162,7 @@ class TestElementQuality:
         result = should.have.attr("test_attr", "test value")
         assert isinstance(result, Should)  # noqa: S101
 
+    @pytest.mark.unit
     def test_should_have_attr_failure(self):
         mock_element = Mock()
         mock_element.get_attribute.return_value = "different value"
@@ -152,6 +171,7 @@ class TestElementQuality:
                            match="have.attr\\('test_attr'\\): expected 'test value', got 'different value'"):
             should.have.attr("test_attr", "test value")
 
+    @pytest.mark.unit
     def test_element_repr(self):
         mock_base = Mock()
         locator = ("xpath", "//test")
@@ -162,6 +182,7 @@ class TestElementQuality:
         repr_str = repr(element)
         assert "Element(locator=('xpath', '//test')" in repr_str  # noqa: S101
 
+    @pytest.mark.unit
     def test_general_element_exception(self):
         exception = ShadowstepElementException(
             msg="Test error",
@@ -173,6 +194,7 @@ class TestElementQuality:
         assert exception.screen == "screenshot.png"  # noqa: S101
         assert exception.stacktrace == ["trace1", "trace2"]  # noqa: S101
 
+    @pytest.mark.unit
     def test_element_getattr_delegation(self):
         mock_element = Mock()
         mock_element.test_method.return_value = "test result"
@@ -180,6 +202,7 @@ class TestElementQuality:
         result = should.test_method()
         assert result == "test result"  # noqa: S101
 
+    @pytest.mark.unit
     def test_element_getattr_error(self):
         mock_element = Mock()
         del mock_element.nonexistent
@@ -190,6 +213,7 @@ class TestElementQuality:
 
 class TestElementTypeAnnotations:
 
+    @pytest.mark.unit
     def test_element_type_annotations(self):
         annotations = Element.__init__.__annotations__
 
@@ -200,6 +224,7 @@ class TestElementTypeAnnotations:
         assert "ignored_exceptions" in annotations  # noqa: S101
         assert "native" in annotations  # noqa: S101
 
+    @pytest.mark.unit
     def test_element_base_type_annotations(self):
         annotations = ElementBase.__init__.__annotations__
 
@@ -210,6 +235,7 @@ class TestElementTypeAnnotations:
         assert "ignored_exceptions" in annotations  # noqa: S101
         assert "native" in annotations  # noqa: S101
 
+    @pytest.mark.unit
     def test_conditions_type_annotations(self):
         assert hasattr(visible, "__annotations__")  # noqa: S101
         assert hasattr(not_visible, "__annotations__")  # noqa: S101
@@ -218,6 +244,7 @@ class TestElementTypeAnnotations:
         assert hasattr(present, "__annotations__")  # noqa: S101
         assert hasattr(not_present, "__annotations__")  # noqa: S101
 
+    @pytest.mark.unit
     def test_should_type_annotations(self):
         annotations = Should.__init__.__annotations__
         assert "element" in annotations  # noqa: S101

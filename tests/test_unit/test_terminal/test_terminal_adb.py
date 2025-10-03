@@ -20,6 +20,7 @@ class TestAdb:
         self.mock_base.driver = self.mock_driver
         self.adb = Adb(self.mock_base)
 
+    @pytest.mark.unit
     def test_init(self):
         """Test Adb initialization."""
         # Arrange
@@ -34,6 +35,7 @@ class TestAdb:
         assert adb.base == mock_base  # noqa: S101
         assert adb.driver == mock_driver  # noqa: S101
 
+    @pytest.mark.unit
     def test_get_devices_success(self):
         """Test successful device list retrieval."""
         # Arrange
@@ -48,6 +50,7 @@ class TestAdb:
             assert result == expected_devices  # noqa: S101
             mock_subprocess.assert_called_once_with(["adb", "devices"])
 
+    @pytest.mark.unit
     def test_get_devices_no_devices(self):
         """Test device list retrieval with no devices."""
         # Arrange
@@ -60,6 +63,7 @@ class TestAdb:
             # Assert
             assert result == []  # noqa: S101
 
+    @pytest.mark.unit
     def test_get_devices_subprocess_error(self):
         """Test device list retrieval with subprocess error."""
         # Arrange
@@ -70,6 +74,7 @@ class TestAdb:
             # Assert
             assert result == []  # noqa: S101
 
+    @pytest.mark.unit
     def test_get_device_model_success(self):
         """Test successful device model retrieval."""
         # Arrange
@@ -85,6 +90,7 @@ class TestAdb:
             assert result == expected_model  # noqa: S101
             mock_subprocess.assert_called_once_with(["adb", "-s", udid, "shell", "getprop", "ro.product.model"])
 
+    @pytest.mark.unit
     def test_get_device_model_no_udid(self):
         """Test device model retrieval without UDID."""
         # Arrange
@@ -99,6 +105,7 @@ class TestAdb:
             assert result == expected_model  # noqa: S101
             mock_subprocess.assert_called_once_with(["adb", "shell", "getprop", "ro.product.model"])
 
+    @pytest.mark.unit
     def test_get_device_model_subprocess_error(self):
         """Test device model retrieval with subprocess error."""
         # Arrange
@@ -111,6 +118,7 @@ class TestAdb:
             # Assert
             assert result == ""  # noqa: S101
 
+    @pytest.mark.unit
     def test_push_success(self):
         """Test successful file push."""
         # Arrange
@@ -128,6 +136,7 @@ class TestAdb:
                 ["adb", "-s", udid, "push", source, destination], check=True
             )
 
+    @pytest.mark.unit
     def test_push_no_udid(self):
         """Test file push without UDID."""
         # Arrange
@@ -144,6 +153,7 @@ class TestAdb:
                 ["adb", "push", source, destination], check=True
             )
 
+    @pytest.mark.unit
     def test_push_subprocess_error(self):
         """Test file push with subprocess error."""
         # Arrange
@@ -158,6 +168,7 @@ class TestAdb:
             # Assert
             assert result is False  # noqa: S101
 
+    @pytest.mark.unit
     def test_pull_success(self):
         """Test successful file pull."""
         # Arrange
@@ -175,6 +186,7 @@ class TestAdb:
                 ["adb", "-s", udid, "pull", source, destination], check=True
             )
 
+    @pytest.mark.unit
     def test_pull_no_udid(self):
         """Test file pull without UDID."""
         # Arrange
@@ -191,6 +203,7 @@ class TestAdb:
                 ["adb", "pull", source, destination], check=True
             )
 
+    @pytest.mark.unit
     def test_pull_subprocess_error(self):
         """Test file pull with subprocess error."""
         # Arrange
@@ -205,6 +218,7 @@ class TestAdb:
             # Assert
             assert result is False  # noqa: S101
 
+    @pytest.mark.unit
     def test_install_app_success(self):
         """Test successful app installation."""
         # Arrange
@@ -221,6 +235,7 @@ class TestAdb:
                 ["adb", "-s", udid, "install", "-r", source], check=True
             )
 
+    @pytest.mark.unit
     def test_install_app_no_udid(self):
         """Test app installation without UDID."""
         # Arrange
@@ -236,6 +251,7 @@ class TestAdb:
                 ["adb", "install", source], check=True
             )
 
+    @pytest.mark.unit
     def test_install_app_subprocess_error(self):
         """Test app installation with subprocess error."""
         # Arrange
@@ -249,6 +265,7 @@ class TestAdb:
             # Assert
             assert result is False  # noqa: S101
 
+    @pytest.mark.unit
     def test_is_app_installed_true(self):
         """Test app installation check - app is installed."""
         # Arrange
@@ -263,6 +280,7 @@ class TestAdb:
             assert result is True  # noqa: S101
             mock_subprocess.assert_called_once_with("adb shell pm list packages", shell=True)  # noqa: S604
 
+    @pytest.mark.unit
     def test_is_app_installed_false(self):
         """Test app installation check - app is not installed."""
         # Arrange
@@ -276,6 +294,7 @@ class TestAdb:
             # Assert
             assert result is False  # noqa: S101
 
+    @pytest.mark.unit
     def test_is_app_installed_subprocess_error(self):
         """Test app installation check with subprocess error."""
         # Arrange
@@ -288,6 +307,7 @@ class TestAdb:
             # Assert
             assert result is False  # noqa: S101
 
+    @pytest.mark.unit
     def test_uninstall_app_success(self):
         """Test successful app uninstallation."""
         # Arrange
@@ -303,6 +323,7 @@ class TestAdb:
                 ["adb", "uninstall", package], check=True
             )
 
+    @pytest.mark.unit
     def test_uninstall_app_subprocess_error(self):
         """Test app uninstallation with subprocess error."""
         # Arrange
@@ -315,6 +336,7 @@ class TestAdb:
             # Assert
             assert result is False  # noqa: S101
 
+    @pytest.mark.unit
     def test_start_activity_success(self):
         """Test successful activity start."""
         # Arrange
@@ -331,6 +353,7 @@ class TestAdb:
                 ["adb", "shell", "am", "start", "-n", f"{package}/{activity}"]
             )
 
+    @pytest.mark.unit
     def test_start_activity_subprocess_error(self):
         """Test activity start with subprocess error."""
         # Arrange
@@ -344,6 +367,7 @@ class TestAdb:
             # Assert
             assert result is False  # noqa: S101
 
+    @pytest.mark.unit
     def test_close_app_success(self):
         """Test successful app closure."""
         # Arrange
@@ -359,6 +383,7 @@ class TestAdb:
                 ["adb", "shell", "am", "force-stop", package], check=True
             )
 
+    @pytest.mark.unit
     def test_close_app_subprocess_error(self):
         """Test app closure with subprocess error."""
         # Arrange
@@ -371,6 +396,7 @@ class TestAdb:
             # Assert
             assert result is False  # noqa: S101
 
+    @pytest.mark.unit
     def test_press_home_success(self):
         """Test successful home button press."""
         with patch("subprocess.run") as mock_subprocess:
@@ -383,6 +409,7 @@ class TestAdb:
                 ["adb", "shell", "input", "keyevent", "KEYCODE_HOME"], check=True
             )
 
+    @pytest.mark.unit
     def test_press_back_success(self):
         """Test successful back button press."""
         with patch("subprocess.run") as mock_subprocess:
@@ -395,6 +422,7 @@ class TestAdb:
                 ["adb", "shell", "input", "keyevent", "KEYCODE_BACK"], check=True
             )
 
+    @pytest.mark.unit
     def test_press_menu_success(self):
         """Test successful menu button press."""
         with patch("subprocess.run") as mock_subprocess:
@@ -407,6 +435,7 @@ class TestAdb:
                 ["adb", "shell", "input", "keyevent", "KEYCODE_MENU"], check=True
             )
 
+    @pytest.mark.unit
     def test_tap_success(self):
         """Test successful tap action."""
         # Arrange
@@ -422,6 +451,7 @@ class TestAdb:
                 ["adb", "shell", "input", "tap", "100", "200"], check=True
             )
 
+    @pytest.mark.unit
     def test_tap_subprocess_error(self):
         """Test tap action with subprocess error."""
         # Arrange
@@ -434,6 +464,7 @@ class TestAdb:
             # Assert
             assert result is False  # noqa: S101
 
+    @pytest.mark.unit
     def test_swipe_success(self):
         """Test successful swipe action."""
         # Arrange
@@ -450,6 +481,7 @@ class TestAdb:
                 ["adb", "shell", "input", "swipe", "100", "200", "300", "400", "1000"], check=True
             )
 
+    @pytest.mark.unit
     def test_swipe_subprocess_error(self):
         """Test swipe action with subprocess error."""
         # Arrange
@@ -463,6 +495,7 @@ class TestAdb:
             # Assert
             assert result is False  # noqa: S101
 
+    @pytest.mark.unit
     def test_input_text_success(self):
         """Test successful text input."""
         # Arrange
@@ -478,6 +511,7 @@ class TestAdb:
                 ["adb", "shell", "input", "text", "Hello World"], check=True
             )
 
+    @pytest.mark.unit
     def test_input_text_subprocess_error(self):
         """Test text input with subprocess error."""
         # Arrange
@@ -490,6 +524,7 @@ class TestAdb:
             # Assert
             assert result is False  # noqa: S101
 
+    @pytest.mark.unit
     def test_reboot_success(self):
         """Test successful device reboot."""
         with patch("subprocess.call") as mock_subprocess:
@@ -500,6 +535,7 @@ class TestAdb:
             assert result is True  # noqa: S101
             mock_subprocess.assert_called_once_with(["adb", "shell", "reboot"])
 
+    @pytest.mark.unit
     def test_reboot_subprocess_error(self):
         """Test device reboot with subprocess error."""
         with patch("subprocess.call", side_effect=subprocess.CalledProcessError(1, "adb")):
@@ -509,6 +545,7 @@ class TestAdb:
             # Assert
             assert result is False  # noqa: S101
 
+    @pytest.mark.unit
     def test_get_screen_resolution_success(self):
         """Test successful screen resolution retrieval."""
         # Arrange
@@ -522,6 +559,7 @@ class TestAdb:
             assert result == (1080, 1920)  # noqa: S101
             mock_subprocess.assert_called_once_with(["adb", "shell", "wm", "size"])
 
+    @pytest.mark.unit
     def test_get_screen_resolution_subprocess_error(self):
         """Test screen resolution retrieval with subprocess error."""
         with patch("subprocess.check_output", side_effect=subprocess.CalledProcessError(1, "adb")):
@@ -531,6 +569,7 @@ class TestAdb:
             # Assert
             assert result is None  # noqa: S101
 
+    @pytest.mark.unit
     def test_get_screen_resolution_invalid_output(self):
         """Test screen resolution retrieval with invalid output."""
         # Arrange
@@ -543,6 +582,7 @@ class TestAdb:
             # Assert
             assert result is None  # noqa: S101
 
+    @pytest.mark.unit
     def test_get_packages_success(self):
         """Test successful package list retrieval."""
         # Arrange
@@ -556,6 +596,7 @@ class TestAdb:
             expected_packages = ["com.example.app", "com.other.app", "com.third.app"]
             assert result == expected_packages  # noqa: S101
 
+    @pytest.mark.unit
     def test_get_packages_empty_output(self):
         """Test package list retrieval with empty output."""
         # Arrange
@@ -568,6 +609,7 @@ class TestAdb:
             # Assert
             assert result == []  # noqa: S101
 
+    @pytest.mark.unit
     def test_execute_success(self):
         """Test successful command execution."""
         # Arrange
@@ -582,6 +624,7 @@ class TestAdb:
             assert result == expected_output  # noqa: S101
             mock_subprocess.assert_called_once_with(["adb", "shell", "pm", "list", "packages"])
 
+    @pytest.mark.unit
     def test_execute_subprocess_error(self):
         """Test command execution with subprocess error."""
         # Arrange
@@ -592,6 +635,7 @@ class TestAdb:
             # Act & Assert
             Adb.execute(command)
 
+    @pytest.mark.unit
     def test_get_devices_index_error(self):
         """Test get_devices with IndexError when no devices found."""
         # Arrange
@@ -604,6 +648,7 @@ class TestAdb:
             # Assert
             assert result == []  # noqa: S101
 
+    @pytest.mark.unit
     def test_get_devices_empty_output(self):
         """Test get_devices with empty output."""
         # Arrange
@@ -616,6 +661,7 @@ class TestAdb:
             # Assert
             assert result == []  # noqa: S101
 
+    @pytest.mark.unit
     def test_push_file_not_exists(self):
         """Test push when source file does not exist."""
         # Arrange
@@ -630,6 +676,7 @@ class TestAdb:
             # Assert
             assert result is False  # noqa: S101
 
+    @pytest.mark.unit
     def test_push_subprocess_error(self):
         """Test push with subprocess error."""
         # Arrange
@@ -645,6 +692,7 @@ class TestAdb:
             # Assert
             assert result is False  # noqa: S101
 
+    @pytest.mark.unit
     def test_pull_subprocess_error(self):
         """Test pull with subprocess error."""
         # Arrange
@@ -659,6 +707,7 @@ class TestAdb:
             # Assert
             assert result is False  # noqa: S101
 
+    @pytest.mark.unit
     def test_get_current_activity_success(self):
         """Test get_current_activity with successful result."""
         # Arrange
@@ -672,6 +721,7 @@ class TestAdb:
             # Assert
             assert result == ".MainActivity"  # noqa: S101
 
+    @pytest.mark.unit
     def test_get_current_activity_no_match(self):
         """Test get_current_activity with no matching pattern."""
         # Arrange
@@ -685,6 +735,7 @@ class TestAdb:
             # Assert
             assert result == ""  # noqa: S101
 
+    @pytest.mark.unit
     def test_get_current_activity_subprocess_error(self):
         """Test get_current_activity with subprocess error."""
         # Arrange
@@ -695,6 +746,7 @@ class TestAdb:
             # Assert
             assert result == ""  # noqa: S101
 
+    @pytest.mark.unit
     def test_get_current_package_success(self):
         """Test get_current_package with successful result."""
         # Arrange
@@ -708,6 +760,7 @@ class TestAdb:
             # Assert
             assert result == "com.example.app"  # noqa: S101
 
+    @pytest.mark.unit
     def test_get_current_package_no_match(self):
         """Test get_current_package with no matching pattern."""
         # Arrange
@@ -721,6 +774,7 @@ class TestAdb:
             # Assert
             assert result == ""  # noqa: S101
 
+    @pytest.mark.unit
     def test_get_current_package_subprocess_error(self):
         """Test get_current_package with subprocess error."""
         # Arrange
@@ -731,6 +785,7 @@ class TestAdb:
             # Assert
             assert result == ""  # noqa: S101
 
+    @pytest.mark.unit
     def test_install_app_success(self):
         """Test install_app with successful installation."""
         # Arrange
@@ -745,6 +800,7 @@ class TestAdb:
             assert result is True  # noqa: S101
             mock_run.assert_called_once_with(["adb", "-s", "test_device", "install", "-r", "/path/to/app.apk"], check=True)
 
+    @pytest.mark.unit
     def test_install_app_subprocess_error(self):
         """Test install_app with subprocess error."""
         # Arrange
@@ -758,6 +814,7 @@ class TestAdb:
             # Assert
             assert result is False  # noqa: S101
 
+    @pytest.mark.unit
     def test_install_app_no_udid(self):
         """Test install_app without udid."""
         # Arrange
@@ -772,6 +829,7 @@ class TestAdb:
             assert result is True  # noqa: S101
             mock_run.assert_called_once_with(["adb", "install", "/path/to/app.apk"], check=True)
 
+    @pytest.mark.unit
     def test_uninstall_app_success(self):
         """Test uninstall_app with successful uninstallation."""
         # Arrange
@@ -785,6 +843,7 @@ class TestAdb:
             assert result is True  # noqa: S101
             mock_run.assert_called_once_with(["adb", "uninstall", "com.example.app"], check=True)
 
+    @pytest.mark.unit
     def test_uninstall_app_subprocess_error(self):
         """Test uninstall_app with subprocess error."""
         # Arrange
@@ -797,6 +856,7 @@ class TestAdb:
             # Assert
             assert result is False  # noqa: S101
 
+    @pytest.mark.unit
     def test_uninstall_app_no_udid(self):
         """Test uninstall_app without udid."""
         # Arrange
@@ -810,6 +870,7 @@ class TestAdb:
             assert result is True  # noqa: S101
             mock_run.assert_called_once_with(["adb", "uninstall", "com.example.app"], check=True)
 
+    @pytest.mark.unit
     def test_input_keycode_num_success(self):
         """Test successful numpad key input."""
         # Arrange
@@ -825,6 +886,7 @@ class TestAdb:
                 ["adb", "shell", "input", "keyevent", "KEYCODE_NUMPAD_5"], check=True
             )
 
+    @pytest.mark.unit
     def test_input_keycode_num_subprocess_error(self):
         """Test numpad key input with subprocess error."""
         # Arrange
@@ -837,6 +899,7 @@ class TestAdb:
             # Assert
             assert result is False  # noqa: S101
 
+    @pytest.mark.unit
     def test_input_keycode_success(self):
         """Test successful keycode input."""
         # Arrange
@@ -852,6 +915,7 @@ class TestAdb:
                 ["adb", "shell", "input", "keyevent", "KEYCODE_ENTER"], check=True
             )
 
+    @pytest.mark.unit
     def test_input_keycode_subprocess_error(self):
         """Test keycode input with subprocess error."""
         # Arrange
@@ -864,6 +928,7 @@ class TestAdb:
             # Assert
             assert result is False  # noqa: S101
 
+    @pytest.mark.unit
     def test_check_vpn_success(self):
         """Test successful VPN check."""
         # Arrange
@@ -882,6 +947,7 @@ class TestAdb:
             # Assert
             assert result is True  # noqa: S101
 
+    @pytest.mark.unit
     def test_check_vpn_not_found(self):
         """Test VPN check when connection not found."""
         # Arrange
@@ -900,6 +966,7 @@ class TestAdb:
             # Assert
             assert result is False  # noqa: S101
 
+    @pytest.mark.unit
     def test_check_vpn_subprocess_error(self):
         """Test VPN check with subprocess error."""
         # Arrange
@@ -912,6 +979,7 @@ class TestAdb:
             # Assert
             assert result is False  # noqa: S101
 
+    @pytest.mark.unit
     def test_stop_logcat_success(self):
         """Test successful logcat stop."""
         # Arrange
@@ -923,6 +991,7 @@ class TestAdb:
             # Assert
             assert result is True  # noqa: S101
 
+    @pytest.mark.unit
     def test_stop_logcat_no_process(self):
         """Test logcat stop when no process exists."""
         # Arrange
@@ -933,6 +1002,7 @@ class TestAdb:
             # Assert
             assert result is False  # noqa: S101
 
+    @pytest.mark.unit
     def test_stop_logcat_kill_failed(self):
         """Test logcat stop when kill fails."""
         # Arrange
@@ -944,6 +1014,7 @@ class TestAdb:
             # Assert
             assert result is False  # noqa: S101
 
+    @pytest.mark.unit
     def test_is_process_exist_success(self):
         """Test successful process existence check."""
         # Arrange
@@ -958,6 +1029,7 @@ class TestAdb:
             assert result is True  # noqa: S101
             mock_check_output.assert_called_once_with(["adb", "shell", "ps"], shell=True)
 
+    @pytest.mark.unit
     def test_is_process_exist_not_found(self):
         """Test process existence check when process not found."""
         # Arrange
@@ -971,6 +1043,7 @@ class TestAdb:
             # Assert
             assert result is False  # noqa: S101
 
+    @pytest.mark.unit
     def test_is_process_exist_subprocess_error(self):
         """Test process existence check with subprocess error."""
         # Arrange
@@ -983,6 +1056,7 @@ class TestAdb:
             # Assert
             assert result is False  # noqa: S101
 
+    @pytest.mark.unit
     def test_run_background_process_success(self):
         """Test successful background process execution."""
         # Arrange
@@ -998,6 +1072,7 @@ class TestAdb:
             # Assert
             assert result is True  # noqa: S101
 
+    @pytest.mark.unit
     def test_run_background_process_no_check(self):
         """Test background process execution without process check."""
         # Arrange
@@ -1010,6 +1085,7 @@ class TestAdb:
             # Assert
             assert result is True  # noqa: S101
 
+    @pytest.mark.unit
     def test_run_background_process_check_failed(self):
         """Test background process execution when process check fails."""
         # Arrange
@@ -1025,6 +1101,7 @@ class TestAdb:
             # Assert
             assert result is False  # noqa: S101
 
+    @pytest.mark.unit
     def test_run_background_process_subprocess_error(self):
         """Test background process execution with subprocess error."""
         # Arrange
@@ -1037,6 +1114,7 @@ class TestAdb:
             # Assert
             assert result is False  # noqa: S101
 
+    @pytest.mark.unit
     def test_reload_adb_success(self):
         """Test successful ADB reload."""
         # Arrange
@@ -1049,6 +1127,7 @@ class TestAdb:
             assert result is True  # noqa: S101
             assert mock_run.call_count == 2  # noqa: S101
 
+    @pytest.mark.unit
     def test_reload_adb_kill_server_error(self):
         """Test ADB reload when kill-server fails."""
         # Arrange
@@ -1059,6 +1138,7 @@ class TestAdb:
             # Assert
             assert result is False  # noqa: S101
 
+    @pytest.mark.unit
     def test_reload_adb_start_server_error(self):
         """Test ADB reload when start-server fails."""
         # Arrange
@@ -1073,6 +1153,7 @@ class TestAdb:
             # Assert
             assert result is False  # noqa: S101
 
+    @pytest.mark.unit
     def test_know_pid_success(self):
         """Test successful PID retrieval."""
         # Arrange
@@ -1087,6 +1168,7 @@ class TestAdb:
             assert result == 1234  # noqa: S101
             mock_check_output.assert_called_once_with(["adb", "shell", "ps"], shell=True)
 
+    @pytest.mark.unit
     def test_know_pid_not_found(self):
         """Test PID retrieval when process not found."""
         # Arrange
@@ -1100,6 +1182,7 @@ class TestAdb:
             # Assert
             assert result is None  # noqa: S101
 
+    @pytest.mark.unit
     def test_know_pid_subprocess_error(self):
         """Test PID retrieval with subprocess error."""
         # Arrange
@@ -1112,6 +1195,7 @@ class TestAdb:
             # Assert
             assert result is None  # noqa: S101
 
+    @pytest.mark.unit
     def test_kill_by_pid_success(self):
         """Test successful process kill by PID."""
         # Arrange
@@ -1127,6 +1211,7 @@ class TestAdb:
                 ["adb", "shell", "kill", "-s", "SIGINT", "1234"]
             )
 
+    @pytest.mark.unit
     def test_kill_by_pid_subprocess_error(self):
         """Test process kill by PID with subprocess error."""
         # Arrange
@@ -1139,6 +1224,7 @@ class TestAdb:
             # Assert
             assert result is False  # noqa: S101
 
+    @pytest.mark.unit
     def test_kill_by_name_success(self):
         """Test successful process kill by name."""
         # Arrange
@@ -1154,6 +1240,7 @@ class TestAdb:
                 ["adb", "shell", "pkill", "-l", "SIGINT", "logcat"]
             )
 
+    @pytest.mark.unit
     def test_kill_by_name_subprocess_error(self):
         """Test process kill by name with subprocess error."""
         # Arrange
@@ -1166,6 +1253,7 @@ class TestAdb:
             # Assert
             assert result is False  # noqa: S101
 
+    @pytest.mark.unit
     def test_kill_all_success(self):
         """Test successful kill all processes."""
         # Arrange
@@ -1181,6 +1269,7 @@ class TestAdb:
                 ["adb", "shell", "pkill", "-f", "logcat"], check=True
             )
 
+    @pytest.mark.unit
     def test_kill_all_subprocess_error(self):
         """Test kill all processes with subprocess error."""
         # Arrange
@@ -1193,6 +1282,7 @@ class TestAdb:
             # Assert
             assert result is False  # noqa: S101
 
+    @pytest.mark.unit
     def test_delete_files_from_internal_storage_success(self):
         """Test successful file deletion from internal storage."""
         # Arrange
@@ -1208,6 +1298,7 @@ class TestAdb:
                 ["adb", "shell", "rm", "-rf", "/sdcard/test/*"], check=True
             )
 
+    @pytest.mark.unit
     def test_delete_files_from_internal_storage_subprocess_error(self):
         """Test file deletion with subprocess error."""
         # Arrange
@@ -1220,6 +1311,7 @@ class TestAdb:
             # Assert
             assert result is False  # noqa: S101
 
+    @pytest.mark.unit
     def test_pull_video_success(self):
         """Test successful video pull."""
         # Arrange
@@ -1235,6 +1327,7 @@ class TestAdb:
             assert result is True  # noqa: S101
             assert mock_run.call_count == 2  # noqa: S101
 
+    @pytest.mark.unit
     def test_pull_video_empty_source(self):
         """Test video pull with empty source."""
         # Arrange
@@ -1250,6 +1343,7 @@ class TestAdb:
             assert result is True  # noqa: S101
             assert mock_run.call_count == 2  # noqa: S101
 
+    @pytest.mark.unit
     def test_pull_video_no_delete(self):
         """Test video pull without deletion."""
         # Arrange
@@ -1267,6 +1361,7 @@ class TestAdb:
                 ["adb", "pull", "/sdcard/Movies//", "/local/videos//"], check=True
             )
 
+    @pytest.mark.unit
     def test_pull_video_subprocess_error(self):
         """Test video pull with subprocess error."""
         # Arrange
@@ -1280,6 +1375,7 @@ class TestAdb:
             # Assert
             assert result is False  # noqa: S101
 
+    @pytest.mark.unit
     def test_stop_video_success(self):
         """Test successful video stop."""
         # Arrange
@@ -1293,6 +1389,7 @@ class TestAdb:
                 ["adb", "shell", "pkill", "-l", "SIGINT", "screenrecord"]
             )
 
+    @pytest.mark.unit
     def test_stop_video_subprocess_error(self):
         """Test video stop with subprocess error."""
         # Arrange
@@ -1303,6 +1400,7 @@ class TestAdb:
             # Assert
             assert result is False  # noqa: S101
 
+    @pytest.mark.unit
     def test_record_video_success(self):
         """Test successful video recording start."""
         # Arrange
@@ -1319,6 +1417,7 @@ class TestAdb:
                 ["adb", "shell", "screenrecord", "sdcard/Movies/test_video.mp4.mp4"]
             )
 
+    @pytest.mark.unit
     def test_record_video_filename_already_mp4(self):
         """Test video recording with filename already ending in .mp4."""
         # Arrange
@@ -1335,6 +1434,7 @@ class TestAdb:
                 ["adb", "shell", "screenrecord", "sdcard/Movies/test_video.mp4.mp4"]
             )
 
+    @pytest.mark.unit
     def test_record_video_subprocess_error(self):
         """Test video recording with subprocess error."""
         # Arrange
@@ -1348,6 +1448,7 @@ class TestAdb:
             # Assert
             assert result is None  # noqa: S101
 
+    @pytest.mark.unit
     def test_start_record_video_success(self):
         """Test successful video recording start."""
         # Arrange
@@ -1361,6 +1462,7 @@ class TestAdb:
             # Assert
             assert result is True  # noqa: S101
 
+    @pytest.mark.unit
     def test_start_record_video_filename_no_mp4(self):
         """Test video recording start with filename not ending in .mp4."""
         # Arrange
@@ -1374,6 +1476,7 @@ class TestAdb:
             # Assert
             assert result is True  # noqa: S101
 
+    @pytest.mark.unit
     def test_start_record_video_subprocess_error(self):
         """Test video recording start with subprocess error."""
         # Arrange
@@ -1387,6 +1490,7 @@ class TestAdb:
             # Assert
             assert result is False  # noqa: S101
 
+    @pytest.mark.unit
     def test_reboot_app_success(self):
         """Test successful app reboot."""
         # Arrange
@@ -1401,6 +1505,7 @@ class TestAdb:
             # Assert
             assert result is True  # noqa: S101
 
+    @pytest.mark.unit
     def test_reboot_app_close_fails(self):
         """Test app reboot when close fails."""
         # Arrange
@@ -1414,6 +1519,7 @@ class TestAdb:
             # Assert
             assert result is False  # noqa: S101
 
+    @pytest.mark.unit
     def test_reboot_app_start_fails(self):
         """Test app reboot when start fails."""
         # Arrange

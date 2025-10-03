@@ -23,6 +23,7 @@ class TestUiSelectorDSLIntegration:
         """Set up test fixtures."""
         self.converter = LocatorConverter()
 
+    @pytest.mark.unit
     def test_ui_selector_to_dict_conversion(self):
         """Test conversion from UiSelector DSL to dictionary."""
         selector = UiSelector().text("OK").clickable(True)
@@ -30,6 +31,7 @@ class TestUiSelectorDSLIntegration:
         expected = {"text": "OK", "clickable": True}
         assert result == expected  # noqa: S101
 
+    @pytest.mark.unit
     def test_ui_selector_to_xpath_conversion(self):
         """Test conversion from UiSelector DSL to XPath."""
         selector = UiSelector().text("OK").clickable(True)
@@ -37,6 +39,7 @@ class TestUiSelectorDSLIntegration:
         expected = ("xpath", "//*[@text='OK'][@clickable='true']")
         assert result == expected  # noqa: S101
 
+    @pytest.mark.unit
     def test_ui_selector_to_uiselector_conversion(self):
         """Test conversion from UiSelector DSL to UiSelector string."""
         selector = UiSelector().text("OK").clickable(True)
@@ -44,6 +47,7 @@ class TestUiSelectorDSLIntegration:
         expected = 'new UiSelector().text("OK").clickable(true);'
         assert result == expected  # noqa: S101
 
+    @pytest.mark.unit
     def test_ui_selector_hierarchical_to_dict(self):
         """Test conversion of hierarchical UiSelector to dictionary."""
         child = UiSelector().text("Item")
@@ -57,6 +61,7 @@ class TestUiSelectorDSLIntegration:
         }
         assert result == expected  # noqa: S101
 
+    @pytest.mark.unit
     def test_ui_selector_hierarchical_to_xpath(self):
         """Test conversion of hierarchical UiSelector to XPath."""
         child = UiSelector().text("Item")
@@ -65,6 +70,7 @@ class TestUiSelectorDSLIntegration:
         expected = ("xpath", "//*[@class='android.widget.LinearLayout']//*[@text='Item']")
         assert result == expected  # noqa: S101
 
+    @pytest.mark.unit
     def test_ui_selector_hierarchical_to_uiselector(self):
         """Test conversion of hierarchical UiSelector to UiSelector string."""
         child = UiSelector().text("Item")
@@ -73,6 +79,7 @@ class TestUiSelectorDSLIntegration:
         expected = 'new UiSelector().className("android.widget.LinearLayout").childSelector(new UiSelector().text("Item"));'
         assert result == expected  # noqa: S101
 
+    @pytest.mark.unit
     def test_ui_selector_validation(self):
         """Test validation of UiSelector DSL."""
         # Valid selector
@@ -84,6 +91,7 @@ class TestUiSelectorDSLIntegration:
         with pytest.raises(ValueError, match=".*"):  # noqa: PT011
             self.converter.validate_selector(empty_selector)
 
+    @pytest.mark.unit
     def test_roundtrip_conversion_ui_selector_to_dict_and_back(self):
         """Test roundtrip conversion: UiSelector -> dict -> UiSelector."""
         original = UiSelector().text("OK").clickable(True)
@@ -97,6 +105,7 @@ class TestUiSelectorDSLIntegration:
         # Should be equivalent
         assert str(original) == str(restored)  # noqa: S101
 
+    @pytest.mark.unit
     def test_roundtrip_conversion_ui_selector_to_xpath_and_back(self):
         """Test roundtrip conversion: UiSelector -> XPath -> dict -> UiSelector."""
         original = UiSelector().text("OK").clickable(True)
@@ -113,6 +122,7 @@ class TestUiSelectorDSLIntegration:
         # Should be equivalent
         assert str(original) == str(restored)  # noqa: S101
 
+    @pytest.mark.unit
     def test_roundtrip_conversion_ui_selector_to_uiselector_string_and_back(self):
         """Test roundtrip conversion: UiSelector -> string -> dict -> UiSelector."""
         original = UiSelector().text("OK").clickable(True)
@@ -129,6 +139,7 @@ class TestUiSelectorDSLIntegration:
         # Should be equivalent
         assert str(original) == str(restored)  # noqa: S101
 
+    @pytest.mark.unit
     def test_complex_ui_selector_conversion(self):
         """Test conversion of complex UiSelector with multiple attributes."""
         child = UiSelector().text("Menu")
@@ -150,6 +161,7 @@ class TestUiSelectorDSLIntegration:
         assert xpath_tuple[0] == "xpath"  # noqa: S101
         assert uiselector_string.startswith("new UiSelector()")  # noqa: S101
 
+    @pytest.mark.unit
     def test_ui_selector_with_all_attribute_types(self):
         """Test UiSelector with all types of attributes."""
         selector = (UiSelector()
@@ -191,6 +203,7 @@ class TestUiSelectorDSLIntegration:
         assert xpath_tuple[0] == "xpath"  # noqa: S101
         assert uiselector_string.startswith("new UiSelector()")  # noqa: S101
 
+    @pytest.mark.unit
     def test_ui_selector_unicode_support(self):
         """Test UiSelector with unicode characters."""
         selector = UiSelector().text("Hello world! 🌍").description("Special chars: @#$%^&*()")
@@ -205,6 +218,7 @@ class TestUiSelectorDSLIntegration:
         assert selector_dict["content-desc"] == "Special chars: @#$%^&*()"  # noqa: S101
         assert "Hello world! 🌍" in uiselector_string  # noqa: S101
 
+    @pytest.mark.unit
     def test_ui_selector_regex_patterns(self):
         """Test UiSelector with regex patterns."""
         selector = (UiSelector()
@@ -226,6 +240,7 @@ class TestUiSelectorDSLIntegration:
         assert xpath_tuple[0] == "xpath"  # noqa: S101
         assert uiselector_string.startswith("new UiSelector()")  # noqa: S101
 
+    @pytest.mark.unit
     def test_ui_selector_performance(self):
         """Test performance of UiSelector conversions."""
         import time
@@ -249,6 +264,7 @@ class TestUiSelectorDSLIntegration:
         # Should complete in reasonable time (less than 2 seconds for 1000 iterations)
         assert (end_time - start_time) < 2.0  # noqa: S101
 
+    @pytest.mark.unit
     def test_ui_selector_edge_cases(self):
         """Test UiSelector edge cases."""
         # Empty selector - should return empty dict

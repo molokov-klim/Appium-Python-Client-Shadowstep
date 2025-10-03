@@ -19,6 +19,7 @@ from shadowstep.utils.translator import YandexTranslate
 class TestYandexTranslate:
     """Test cases for YandexTranslate class."""
 
+    @pytest.mark.unit
     def test_init_with_folder_id(self) -> None:
         """Test YandexTranslate initialization with folder ID."""
         with patch.object(YandexTranslate, "_get_iam_token", return_value="test_token"):
@@ -28,6 +29,7 @@ class TestYandexTranslate:
 
     @patch.dict(os.environ, {"yandexPassportOauthToken": "test_oauth_token"})
     @patch("requests.post")
+    @pytest.mark.unit
     def test_get_iam_token_success(self, mock_post: Mock) -> None:
         """Test successful IAM token retrieval."""
         mock_response = Mock()
@@ -44,6 +46,7 @@ class TestYandexTranslate:
         )
 
     @patch.dict(os.environ, {}, clear=True)
+    @pytest.mark.unit
     def test_get_iam_token_missing_oauth_token(self) -> None:
         """Test IAM token retrieval with missing OAuth token."""
         with pytest.raises(ShadowstepMissingYandexTokenError):
@@ -51,6 +54,7 @@ class TestYandexTranslate:
 
     @patch.dict(os.environ, {"yandexPassportOauthToken": "test_oauth_token"})
     @patch("requests.post")
+    @pytest.mark.unit
     def test_get_iam_token_http_error(self, mock_post: Mock) -> None:
         """Test IAM token retrieval with HTTP error."""
         mock_response = Mock()
@@ -60,6 +64,7 @@ class TestYandexTranslate:
         with pytest.raises(requests.HTTPError):
             YandexTranslate("test_folder_id")
 
+    @pytest.mark.unit
     def test_contains_cyrillic_with_cyrillic(self) -> None:
         """Test _contains_cyrillic with text containing Cyrillic characters."""
         with patch.object(YandexTranslate, "_get_iam_token", return_value="test_token"):
@@ -68,6 +73,7 @@ class TestYandexTranslate:
             assert translator._contains_cyrillic("Hello Привет") is True  # noqa: S101
             assert translator._contains_cyrillic("тест") is True  # noqa: S101
 
+    @pytest.mark.unit
     def test_contains_cyrillic_without_cyrillic(self) -> None:
         """Test _contains_cyrillic with text not containing Cyrillic characters."""
         with patch.object(YandexTranslate, "_get_iam_token", return_value="test_token"):
@@ -78,6 +84,7 @@ class TestYandexTranslate:
             assert translator._contains_cyrillic("!@#$%^&*()") is False  # noqa: S101
 
     @patch.object(YandexTranslate, "_get_iam_token", return_value="test_token")
+    @pytest.mark.unit
     def test_translate_no_cyrillic(self, mock_get_token: Mock) -> None:
         """Test translate method with text not containing Cyrillic."""
         translator = YandexTranslate("test_folder_id")
@@ -86,6 +93,7 @@ class TestYandexTranslate:
 
     @patch.object(YandexTranslate, "_get_iam_token", return_value="test_token")
     @patch("requests.post")
+    @pytest.mark.unit
     def test_translate_success(self, mock_post: Mock, mock_get_token: Mock) -> None:
         """Test successful translation."""
         mock_response = Mock()
@@ -117,6 +125,7 @@ class TestYandexTranslate:
 
     @patch.object(YandexTranslate, "_get_iam_token", return_value="test_token")
     @patch("requests.post")
+    @pytest.mark.unit
     def test_translate_http_error(self, mock_post: Mock, mock_get_token: Mock) -> None:
         """Test translation with HTTP error."""
         mock_response = Mock()
@@ -130,6 +139,7 @@ class TestYandexTranslate:
 
     @patch.object(YandexTranslate, "_get_iam_token", return_value="test_token")
     @patch("requests.post")
+    @pytest.mark.unit
     def test_translate_no_translations(self, mock_post: Mock, mock_get_token: Mock) -> None:
         """Test translation with empty translations response."""
         mock_response = Mock()
@@ -145,6 +155,7 @@ class TestYandexTranslate:
 
     @patch.object(YandexTranslate, "_get_iam_token", return_value="test_token")
     @patch("requests.post")
+    @pytest.mark.unit
     def test_translate_missing_translations_key(self, mock_post: Mock, mock_get_token: Mock) -> None:
         """Test translation with missing translations key in response."""
         mock_response = Mock()
@@ -160,6 +171,7 @@ class TestYandexTranslate:
 
     @patch.object(YandexTranslate, "_get_iam_token", return_value="test_token")
     @patch("requests.post")
+    @pytest.mark.unit
     def test_translate_with_logging(self, mock_post: Mock, mock_get_token: Mock) -> None:
         """Test translation with logging calls."""
         mock_response = Mock()
@@ -180,6 +192,7 @@ class TestYandexTranslate:
         assert translator.logger.debug.call_count >= 3  # noqa: S101
 
     @patch.object(YandexTranslate, "_get_iam_token", return_value="test_token")
+    @pytest.mark.unit
     def test_translate_empty_string(self, mock_get_token: Mock) -> None:
         """Test translation with empty string."""
         translator = YandexTranslate("test_folder_id")
@@ -188,6 +201,7 @@ class TestYandexTranslate:
 
     @patch.object(YandexTranslate, "_get_iam_token", return_value="test_token")
     @patch("requests.post")
+    @pytest.mark.unit
     def test_translate_mixed_content(self, mock_post: Mock, mock_get_token: Mock) -> None:
         """Test translation with mixed Cyrillic and Latin content."""
         mock_response = Mock()

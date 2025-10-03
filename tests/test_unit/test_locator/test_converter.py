@@ -22,12 +22,14 @@ class TestUnifiedLocatorConverter:
         """Set up test fixtures."""
         self.converter = LocatorConverter()
 
+    @pytest.mark.unit
     def test_to_dict_from_dict(self):
         """Test converting dict to dict (should return unchanged)."""
         selector_dict: dict[str, Any] = {"text": "OK"}
         result = self.converter.to_dict(selector_dict)
         assert result == selector_dict  # noqa: S101
 
+    @pytest.mark.unit
     def test_to_dict_from_xpath_tuple(self):
         """Test converting XPath tuple to dict."""
         xpath_tuple = ("xpath", "//*[@text='OK']")
@@ -35,6 +37,7 @@ class TestUnifiedLocatorConverter:
         assert "text" in result  # noqa: S101
         assert result["text"] == "OK"  # noqa: S101
 
+    @pytest.mark.unit
     def test_to_dict_from_xpath_string(self):
         """Test converting XPath string to dict."""
         xpath_string = "//*[@text='OK']"
@@ -42,6 +45,7 @@ class TestUnifiedLocatorConverter:
         assert "text" in result  # noqa: S101
         assert result["text"] == "OK"  # noqa: S101
 
+    @pytest.mark.unit
     def test_to_dict_from_uiselector_string(self):
         """Test converting UiSelector string to dict."""
         ui_string = 'new UiSelector().text("OK");'
@@ -49,6 +53,7 @@ class TestUnifiedLocatorConverter:
         assert "text" in result  # noqa: S101
         assert result["text"] == "OK"  # noqa: S101
 
+    @pytest.mark.unit
     def test_to_xpath_from_dict(self):
         """Test converting dict to XPath tuple."""
         selector_dict: dict[str, Any] = {"text": "OK"}
@@ -56,12 +61,14 @@ class TestUnifiedLocatorConverter:
         assert result[0] == "xpath"  # noqa: S101
         assert "text='OK'" in result[1]  # noqa: S101
 
+    @pytest.mark.unit
     def test_to_xpath_from_xpath_tuple(self):
         """Test converting XPath tuple to XPath tuple (should return unchanged)."""
         xpath_tuple = ("xpath", "//*[@text='OK']")
         result = self.converter.to_xpath(xpath_tuple)
         assert result == xpath_tuple  # noqa: S101
 
+    @pytest.mark.unit
     def test_to_xpath_from_xpath_string(self):
         """Test converting XPath string to XPath tuple."""
         xpath_string = "//*[@text='OK']"
@@ -69,6 +76,7 @@ class TestUnifiedLocatorConverter:
         assert result[0] == "xpath"  # noqa: S101
         assert result[1] == xpath_string  # noqa: S101
 
+    @pytest.mark.unit
     def test_to_xpath_from_uiselector_string(self):
         """Test converting UiSelector string to XPath tuple."""
         ui_string = 'new UiSelector().text("OK");'
@@ -76,6 +84,7 @@ class TestUnifiedLocatorConverter:
         assert result[0] == "xpath"  # noqa: S101
         assert "text='OK'" in result[1]  # noqa: S101
 
+    @pytest.mark.unit
     def test_to_uiselector_from_dict(self):
         """Test converting dict to UiSelector string."""
         selector_dict: dict[str, Any] = {"text": "OK"}
@@ -83,6 +92,7 @@ class TestUnifiedLocatorConverter:
         assert result.startswith("new UiSelector()")  # noqa: S101
         assert 'text("OK")' in result  # noqa: S101
 
+    @pytest.mark.unit
     def test_to_uiselector_from_xpath_tuple(self):
         """Test converting XPath tuple to UiSelector string."""
         xpath_tuple = ("xpath", "//*[@text='OK']")
@@ -90,6 +100,7 @@ class TestUnifiedLocatorConverter:
         assert result.startswith("new UiSelector()")  # noqa: S101
         assert 'text("OK")' in result  # noqa: S101
 
+    @pytest.mark.unit
     def test_to_uiselector_from_xpath_string(self):
         """Test converting XPath string to UiSelector string."""
         xpath_string = "//*[@text='OK']"
@@ -97,12 +108,14 @@ class TestUnifiedLocatorConverter:
         assert result.startswith("new UiSelector()")  # noqa: S101
         assert 'text("OK")' in result  # noqa: S101
 
+    @pytest.mark.unit
     def test_to_uiselector_from_uiselector_string(self):
         """Test converting UiSelector string to UiSelector string (should return unchanged)."""
         ui_string = 'new UiSelector().text("OK");'
         result = self.converter.to_uiselector(ui_string)
         assert result == ui_string  # noqa: S101
 
+    @pytest.mark.unit
     def test_direct_conversion_methods(self):
         """Test direct conversion methods between specific formats."""
         selector_dict: dict[str, Any] = {"text": "OK", "clickable": True}
@@ -137,40 +150,47 @@ class TestUnifiedLocatorConverter:
         assert "text='OK'" in xpath_from_ui  # noqa: S101
         assert "clickable='true'" in xpath_from_ui  # noqa: S101
 
+    @pytest.mark.unit
     def test_validate_selector_valid_dict(self):
         """Test validation of valid dictionary selector."""
         selector_dict: dict[str, Any] = {"text": "OK"}
         # Should not raise any exception
         self.converter.validate_selector(selector_dict)
 
+    @pytest.mark.unit
     def test_validate_selector_valid_xpath_tuple(self):
         """Test validation of valid XPath tuple."""
         xpath_tuple = ("xpath", "//*[@text='OK']")
         # Should not raise any exception
         self.converter.validate_selector(xpath_tuple)
 
+    @pytest.mark.unit
     def test_validate_selector_valid_string(self):
         """Test validation of valid string selector."""
         ui_string = 'new UiSelector().text("OK");'
         # Should not raise any exception
         self.converter.validate_selector(ui_string)
 
+    @pytest.mark.unit
     def test_validate_selector_invalid_tuple(self):
         """Test validation of invalid tuple format."""
         invalid_tuple = ("invalid", "//*[@text='OK']")
         with pytest.raises(ValueError, match="Unsupported tuple format"):
             self.converter.validate_selector(invalid_tuple)
 
+    @pytest.mark.unit
     def test_validate_selector_empty_string(self):
         """Test validation of empty string."""
         with pytest.raises(ValueError, match="Selector string cannot be empty"):
             self.converter.validate_selector("")
 
+    @pytest.mark.unit
     def test_validate_selector_invalid_type(self):
         """Test validation of invalid selector type."""
         with pytest.raises(ValueError, match="Unsupported selector type"):
             self.converter.validate_selector(123)  # type: ignore
 
+    @pytest.mark.unit
     def test_roundtrip_conversions(self):
         """Test roundtrip conversions to ensure consistency."""
         original_dict: dict[str, Any] = {
@@ -194,6 +214,7 @@ class TestUnifiedLocatorConverter:
         xpath_from_ui = self.converter.to_xpath(ui_from_xpath)
         assert xpath_from_ui == xpath_tuple  # noqa: S101
 
+    @pytest.mark.unit
     def test_complex_selector_conversion(self):
         """Test conversion of complex selectors with hierarchical relationships."""
         complex_dict: dict[str, Any] = {
@@ -217,6 +238,7 @@ class TestUnifiedLocatorConverter:
         assert "OK" in ui_selector  # noqa: S101
         assert "childSelector" in ui_selector  # noqa: S101
 
+    @pytest.mark.unit
     def test_unicode_and_special_characters(self):
         """Test conversion with unicode and special characters."""
         unicode_dict: dict[str, Any] = {

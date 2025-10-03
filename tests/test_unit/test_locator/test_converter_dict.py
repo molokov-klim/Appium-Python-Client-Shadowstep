@@ -56,6 +56,7 @@ class TestDictConverter:
             ({"class": 'Button', "enabled": False, "index": 1}, "//*[@class='Button'][@enabled='false'][@index=1]"),  # noqa
         ]
     )
+    @pytest.mark.unit
     def test_dict_to_xpath_basic_attributes(self, selector_dict: dict[str, Any], expected_xpath: str):
         """Test conversion of basic dictionary attributes to XPath."""
         result = self.converter.dict_to_xpath(selector_dict)
@@ -106,6 +107,7 @@ class TestDictConverter:
              'new UiSelector().className("Button").enabled(false).index(1);'),
         ]
     )
+    @pytest.mark.unit
     def test_dict_to_ui_selector_basic_attributes(self, selector_dict: dict[str, Any], expected_ui: str):
         """Test conversion of basic dictionary attributes to UiSelector."""
         result = self.converter.dict_to_ui_selector(selector_dict)
@@ -171,6 +173,7 @@ class TestDictConverter:
             ),
         ]
     )
+    @pytest.mark.unit
     def test_dict_to_xpath_hierarchical(self, selector_dict: dict[str, Any], expected_xpath: str):
         """Test conversion of hierarchical dictionary selectors to XPath."""
         result = self.converter.dict_to_xpath(selector_dict)
@@ -231,6 +234,7 @@ class TestDictConverter:
             }, 'new UiSelector().text("Settings").clickable(true).fromParent(new UiSelector().className("android.widget.LinearLayout").enabled(true).childSelector(new UiSelector().text("Menu")));'),
         ]
     )
+    @pytest.mark.unit
     def test_dict_to_ui_selector_hierarchical(self, selector_dict: dict[str, Any], expected_ui: str):
         """Test conversion of hierarchical dictionary selectors to UiSelector."""
         result = self.converter.dict_to_ui_selector(selector_dict)
@@ -239,6 +243,7 @@ class TestDictConverter:
         logger.info(f"Result: {result}")
         assert result == expected_ui  # noqa: S101
 
+    @pytest.mark.unit
     def test_validate_dict_selector_valid(self):
         """Test validation of valid dictionary selectors."""
         valid_selectors = [
@@ -256,6 +261,7 @@ class TestDictConverter:
             # Should not raise any exception
             self.converter.validate_dict_selector(selector)
 
+    @pytest.mark.unit
     def test_validate_dict_selector_invalid(self):
         """Test validation of invalid dictionary selectors."""
         # Empty dictionary
@@ -286,6 +292,7 @@ class TestDictConverter:
                 "childSelector": "not a dict"
             })
 
+    @pytest.mark.unit
     def test_roundtrip_conversion(self):
         """Test roundtrip conversion: dict -> xpath -> dict (via existing converters)."""
         # This test would require integration with existing XPathConverter
@@ -317,6 +324,7 @@ class TestDictConverterComplex:
         """Set up test fixtures."""
         self.converter = DictConverter()
 
+    @pytest.mark.unit
     def test_deep_nested_hierarchy_xpath(self):
         """Test XPath conversion with 5+ levels of nesting."""
         # Create a deeply nested structure: Container > Row > Cell > Button > Text
@@ -351,6 +359,7 @@ class TestDictConverterComplex:
         logger.info(f"Deep nested XPath result: {result}")
         assert result == expected  # noqa: S101
 
+    @pytest.mark.unit
     def test_deep_nested_hierarchy_ui_selector(self):
         """Test UiSelector conversion with 5+ levels of nesting."""
         deep_selector = {
@@ -382,6 +391,7 @@ class TestDictConverterComplex:
         logger.info(f"Deep nested UiSelector result: {result}")
         assert result == expected  # noqa: S101
 
+    @pytest.mark.unit
     def test_mixed_hierarchical_relationships(self):
         """Test complex selector with mixed hierarchical relationships."""
         complex_selector = {
@@ -418,6 +428,7 @@ class TestDictConverterComplex:
         assert "Sibling Element" in xpath_result  # noqa: S101  # noqa: S101
         assert "Sibling Element" in ui_result  # noqa: S101  # noqa: S101
 
+    @pytest.mark.unit
     def test_multiple_instances_and_indexes(self):
         """Test selector with multiple instance and index attributes."""
         multi_selector = {
@@ -440,6 +451,7 @@ class TestDictConverterComplex:
         assert ".index(1)" in ui_result  # noqa: S101
         assert ".instance(2)" in ui_result  # noqa: S101
 
+    @pytest.mark.unit
     def test_all_text_functions_combined(self):
         """Test selector with all text function types."""
         text_functions_selector = {
@@ -453,6 +465,7 @@ class TestDictConverterComplex:
         with pytest.raises(ValueError, match="Conflicting text attributes"):
             self.converter.validate_dict_selector(text_functions_selector)
 
+    @pytest.mark.unit
     def test_all_description_functions_combined(self):
         """Test selector with all description function types."""
         desc_functions_selector = {
@@ -466,6 +479,7 @@ class TestDictConverterComplex:
         with pytest.raises(ValueError, match="Conflicting description attributes"):
             self.converter.validate_dict_selector(desc_functions_selector)
 
+    @pytest.mark.unit
     def test_complex_regex_patterns(self):
         """Test selector with complex regex patterns."""
         regex_selector = {
@@ -487,6 +501,7 @@ class TestDictConverterComplex:
         assert ".resourceIdMatches(" in ui_result  # noqa: S101
         assert ".classNameMatches(" in ui_result  # noqa: S101
 
+    @pytest.mark.unit
     def test_boolean_attributes_combinations(self):
         """Test all possible boolean attribute combinations."""
         boolean_selector = {
@@ -519,11 +534,13 @@ class TestDictConverterComplex:
         for attr in boolean_attrs_ui:
             assert f".{attr}(" in ui_result  # noqa: S101
 
+    @pytest.mark.unit
     def test_edge_case_empty_dict(self):
         """Test edge case with empty dictionary."""
         with pytest.raises(ValueError, match="Selector dictionary cannot be empty"):
             self.converter.validate_dict_selector({})
 
+    @pytest.mark.unit
     def test_edge_case_invalid_hierarchical_value(self):
         """Test edge case with invalid hierarchical attribute value."""
         invalid_selector = {
@@ -533,11 +550,13 @@ class TestDictConverterComplex:
         with pytest.raises(ValueError, match="Hierarchical attribute.*must have dict value"):
             self.converter.validate_dict_selector(invalid_selector)
 
+    @pytest.mark.unit
     def test_edge_case_non_dict_input(self):
         """Test edge case with non-dictionary input."""
         with pytest.raises(ValueError, match="Selector must be a dictionary"):
             self.converter.validate_dict_selector("not a dict")  # type: ignore
 
+    @pytest.mark.unit
     def test_performance_large_selector(self):
         """Test performance with large selector containing many attributes."""
         large_selector: dict[str, Any] = {}
@@ -565,6 +584,7 @@ class TestDictConverterComplex:
         assert "Performance Test" in xpath_result  # noqa: S101
         assert "Performance Test" in ui_result  # noqa: S101
 
+    @pytest.mark.unit
     def test_unicode_and_special_characters(self):
         """Test selector with unicode and special characters."""
         unicode_selector = {
@@ -585,6 +605,7 @@ class TestDictConverterComplex:
         assert "Special chars: @#$%^&*()" in xpath_result  # noqa: S101
         assert "Special chars: @#$%^&*()" in ui_result  # noqa: S101
 
+    @pytest.mark.unit
     def test_nested_validation_errors(self):
         """Test validation errors in nested structures."""
         nested_invalid_selector = {
@@ -598,6 +619,7 @@ class TestDictConverterComplex:
         with pytest.raises(ValueError, match="Conflicting text attributes"):
             self.converter.validate_dict_selector(nested_invalid_selector)
 
+    @pytest.mark.unit
     def test_circular_reference_protection(self):
         """Test protection against potential circular references."""
         # Create a selector that could potentially cause issues
@@ -626,6 +648,7 @@ class TestDictConverterComplex:
         assert "Root" in xpath_result  # noqa: S101
         assert "Root" in ui_result  # noqa: S101
 
+    @pytest.mark.unit
     def test_stress_test_deep_nesting(self):
         """Stress test with very deep nesting (10+ levels)."""
         # Build a very deep nested structure

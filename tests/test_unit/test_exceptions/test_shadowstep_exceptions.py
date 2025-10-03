@@ -5,11 +5,13 @@ import pytest
 import shadowstep.exceptions.shadowstep_exceptions as exc
 
 
+@pytest.mark.unit
 def test_shadowstep_exception_initialization() -> None:
     instance = exc.ShadowstepException("base", "screen", ["trace"])
     assert isinstance(instance, exc.ShadowstepException)
 
 
+@pytest.mark.unit
 def test_shadowstep_element_error_records_original_exception() -> None:
     try:
         raise ValueError("boom")
@@ -19,6 +21,7 @@ def test_shadowstep_element_error_records_original_exception() -> None:
     assert "ValueError" in wrapper.traceback
 
 
+@pytest.mark.unit
 def test_shadowstep_no_such_element_error_str() -> None:
     error = exc.ShadowstepNoSuchElementError(
         msg="missing",
@@ -30,6 +33,7 @@ def test_shadowstep_no_such_element_error_str() -> None:
     assert "Message: missing" in message
 
 
+@pytest.mark.unit
 def test_shadowstep_timeout_exception_str_includes_context() -> None:
     driver = type("Driver", (), {"current_url": "https://example.org"})()
     timeout = exc.ShadowstepTimeoutException(
@@ -411,11 +415,13 @@ def test_shadowstep_timeout_exception_str_includes_context() -> None:
         ),
     ],
 )
+@pytest.mark.unit
 def test_exception_messages(exception_cls, kwargs, expected) -> None:
     instance = exception_cls(**kwargs)
     assert expected in str(instance)
 
 
+@pytest.mark.unit
 def test_shadowstep_timeout_exception_timestamp_consistency() -> None:
     driver = type("Driver", (), {"current_url": "https://example.net"})()
     before = datetime.datetime.now(datetime.timezone.utc)

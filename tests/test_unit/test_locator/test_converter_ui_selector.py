@@ -61,6 +61,7 @@ class TestUiSelectorConverter:
             (UiAttribute.INSTANCE, 0, "//*[1]"),
         ]
     )
+    @pytest.mark.unit
     def test_ui_to_xpath_attributes(self, method_name: str, arg: Any, expected_xpath_part: str):
         converter = UiSelectorConverter()
         selector_str = f"new UiSelector().{method_name}({repr(arg)});"
@@ -222,6 +223,7 @@ class TestUiSelectorConverter:
             ),
         ]
     )
+    @pytest.mark.unit
     def test_ui_to_xpath(self, selector_str: str, expected_xpath: str):
         converter = UiSelectorConverter()
         xpath = converter.selector_to_xpath(selector_str)
@@ -242,6 +244,7 @@ class TestUiSelectorConverter:
 
         ]
     )
+    @pytest.mark.unit
     def test_ui_to_xpath_negative(self, selector_str: str, expected_xpath: str):
         converter = UiSelectorConverter()
         xpath = converter.selector_to_xpath(selector_str)
@@ -297,6 +300,7 @@ class TestUiSelectorConverter:
             (UiAttribute.FROM_PARENT, "parent", {"fromParent": "parent"}),
         ]
     )
+    @pytest.mark.unit
     def test_ui_to_dict_attributes(self, method: UiAttribute, value: Any, expected: dict[str, Any]):
         converter = UiSelectorConverter()
         selector_str = f"new UiSelector().{method.value}({repr(value)});"
@@ -348,6 +352,7 @@ class TestUiSelectorConverter:
             ),
         ]
     )
+    @pytest.mark.unit
     def test_ui_to_dict(self, selector_str: str, expected_dict: dict[str, Any]):
         converter = UiSelectorConverter()
         shadowstep_dict = converter.selector_to_dict(selector_str)
@@ -368,6 +373,7 @@ class TestUiSelectorConverter:
             ),
         ]
     )
+    @pytest.mark.unit
     def test_ui_to_dict_negative(self, selector_str: str, expected_dict: dict[str, Any]):
         converter = UiSelectorConverter()
         shadowstep_dict = converter.selector_to_dict(selector_str)
@@ -378,6 +384,7 @@ class TestUiSelectorConverter:
 
         assert shadowstep_dict == expected_dict, f"Expected {expected_dict} got: {shadowstep_dict}"  # noqa: S101  # noqa: S101
 
+    @pytest.mark.unit
     def test_selector_to_xpath_invalid_selector_error(self):
         """Test selector_to_xpath with invalid selector string."""
         converter = UiSelectorConverter()
@@ -385,6 +392,7 @@ class TestUiSelectorConverter:
         result = converter.selector_to_xpath("invalid selector")
         assert result == "//*"
 
+    @pytest.mark.unit
     def test_selector_to_xpath_conversion_error(self):
         """Test selector_to_xpath with conversion error."""
         converter = UiSelectorConverter()
@@ -395,6 +403,7 @@ class TestUiSelectorConverter:
                 converter.selector_to_xpath('new UiSelector().text("test");')
             assert "Test error" in str(exc_info.value)
 
+    @pytest.mark.unit
     def test_selector_to_dict_invalid_selector_error(self):
         """Test selector_to_dict with invalid selector string."""
         converter = UiSelectorConverter()
@@ -402,6 +411,7 @@ class TestUiSelectorConverter:
         result = converter.selector_to_dict("invalid selector")
         assert result == {}
 
+    @pytest.mark.unit
     def test_selector_to_dict_conversion_error(self):
         """Test selector_to_dict with conversion error."""
         converter = UiSelectorConverter()
@@ -412,6 +422,7 @@ class TestUiSelectorConverter:
                 converter.selector_to_dict('new UiSelector().text("test");')
             assert "Test error" in str(exc_info.value)
 
+    @pytest.mark.unit
     def test_parse_selector_string_with_quotes(self):
         """Test parse_selector_string with quoted string."""
         converter = UiSelectorConverter()
@@ -425,6 +436,7 @@ class TestUiSelectorConverter:
         }
         assert result == expected
 
+    @pytest.mark.unit
     def test_parse_selector_string_parsing_error(self):
         """Test parse_selector_string with parsing error."""
         converter = UiSelectorConverter()
@@ -432,6 +444,7 @@ class TestUiSelectorConverter:
         result = converter.parse_selector_string("invalid syntax")
         assert result == {"methods": []}
 
+    @pytest.mark.unit
     def test_selector_to_xpath_no_args_method(self):
         """Test _selector_to_xpath with method that has no arguments."""
         converter = UiSelectorConverter()
@@ -446,6 +459,7 @@ class TestUiSelectorConverter:
         result = converter._selector_to_xpath(selector_dict)
         assert "clickable" in result
 
+    @pytest.mark.unit
     def test_selector_to_xpath_unsupported_method(self):
         """Test _selector_to_xpath with unsupported method."""
         converter = UiSelectorConverter()
@@ -463,6 +477,7 @@ class TestUiSelectorConverter:
             assert mock_warning.call_args[0][1] == "unknownMethod"
             assert isinstance(mock_warning.call_args[0][2], ValueError)
 
+    @pytest.mark.unit
     def test_selector_to_xpath_from_parent_with_double_slash(self):
         """Test _selector_to_xpath with fromParent that starts with //."""
         converter = UiSelectorConverter()
@@ -478,6 +493,7 @@ class TestUiSelectorConverter:
             result = converter._selector_to_xpath(selector_dict)
             assert "/..//*[@class='test']" in result
 
+    @pytest.mark.unit
     def test_selector_to_dict_empty_methods(self):
         """Test _selector_to_dict with empty methods list."""
         converter = UiSelectorConverter()
@@ -486,6 +502,7 @@ class TestUiSelectorConverter:
         result = converter._selector_to_dict(selector_dict)
         assert result == {}
 
+    @pytest.mark.unit
     def test_selector_to_dict_unsupported_method(self):
         """Test _selector_to_dict with unsupported method."""
         converter = UiSelectorConverter()
@@ -500,6 +517,7 @@ class TestUiSelectorConverter:
             converter._selector_to_dict(selector_dict)
         assert "unknownMethod" in str(exc_info.value)
 
+    @pytest.mark.unit
     def test_selector_to_dict_method_requires_argument(self):
         """Test _selector_to_dict with method that requires argument but has none."""
         converter = UiSelectorConverter()
@@ -514,6 +532,7 @@ class TestUiSelectorConverter:
             converter._selector_to_dict(selector_dict)
         assert "text" in str(exc_info.value)
 
+    @pytest.mark.unit
     def test_convert_nested_selector_with_selector_object(self):
         """Test _convert_nested_selector with Selector AST object."""
         converter = UiSelectorConverter()
@@ -535,6 +554,7 @@ class TestUiSelectorConverter:
                 result = converter._convert_nested_selector(mock_selector)
                 assert result == "*[@text='test']"
 
+    @pytest.mark.unit
     def test_convert_nested_selector_unsupported_type(self):
         """Test _convert_nested_selector with unsupported type."""
         converter = UiSelectorConverter()
@@ -543,6 +563,7 @@ class TestUiSelectorConverter:
             converter._convert_nested_selector("unsupported")
         assert "str" in str(exc_info.value)
 
+    @pytest.mark.unit
     def test_parsed_dict_to_selector_with_nested_dict(self):
         """Test _parsed_dict_to_selector with nested dictionary."""
         converter = UiSelectorConverter()
@@ -559,6 +580,7 @@ class TestUiSelectorConverter:
         result = converter._parsed_dict_to_selector(selector_dict, top_level=True)
         assert 'new UiSelector().childSelector(new UiSelector().text("child"));' == result
 
+    @pytest.mark.unit
     def test_parsed_dict_to_selector_with_bool_arg(self):
         """Test _parsed_dict_to_selector with boolean argument."""
         converter = UiSelectorConverter()
@@ -573,6 +595,7 @@ class TestUiSelectorConverter:
         result = converter._parsed_dict_to_selector(selector_dict, top_level=True)
         assert 'new UiSelector().clickable(true).enabled(false);' == result
 
+    @pytest.mark.unit
     def test_parsed_dict_to_selector_with_int_arg(self):
         """Test _parsed_dict_to_selector with integer argument."""
         converter = UiSelectorConverter()
@@ -586,6 +609,7 @@ class TestUiSelectorConverter:
         result = converter._parsed_dict_to_selector(selector_dict, top_level=True)
         assert 'new UiSelector().index(5);' == result
 
+    @pytest.mark.unit
     def test_parsed_dict_to_selector_with_string_arg_escaping(self):
         """Test _parsed_dict_to_selector with string argument that needs escaping."""
         converter = UiSelectorConverter()
@@ -600,6 +624,7 @@ class TestUiSelectorConverter:
         result = converter._parsed_dict_to_selector(selector_dict, top_level=True)
         assert 'new UiSelector().text("test\\"with\\"quotes").description("test\\\\with\\\\backslashes");' == result
 
+    @pytest.mark.unit
     def test_parsed_dict_to_selector_multiple_args_error(self):
         """Test _parsed_dict_to_selector with method that has multiple arguments."""
         converter = UiSelectorConverter()
@@ -614,6 +639,7 @@ class TestUiSelectorConverter:
             converter._parsed_dict_to_selector(selector_dict, top_level=True)
         assert "2" in str(exc_info.value)
 
+    @pytest.mark.unit
     def test_parsed_dict_to_selector_no_top_level_semicolon(self):
         """Test _parsed_dict_to_selector without top-level semicolon."""
         converter = UiSelectorConverter()

@@ -12,11 +12,13 @@ from shadowstep.page_object.page_object_merger import PageObjectMerger
 class TestPageObjectMerger:
     """Test cases for PageObjectMerger class."""
 
+    @pytest.mark.unit
     def test_init(self):
         """Test PageObjectMerger initialization."""
         merger = PageObjectMerger()
         assert merger.logger is not None  # noqa: S101
 
+    @pytest.mark.unit
     def test_merge_success(self):
         """Test merge method with successful merge."""
         merger = PageObjectMerger()
@@ -40,6 +42,7 @@ class TestPageObjectMerger:
             assert result == output_path  # noqa: S101
             assert os.path.exists(output_path)  # noqa: S101
 
+    @pytest.mark.unit
     def test_merge_file_not_found(self):
         """Test merge method when file is not found."""
         merger = PageObjectMerger()
@@ -55,6 +58,7 @@ class TestPageObjectMerger:
             with pytest.raises(FileNotFoundError):
                 merger.merge(nonexistent_path, file2_path, output_path)
 
+    @pytest.mark.unit
     def test_merge_io_error(self):
         """Test merge method with IO error."""
         merger = PageObjectMerger()
@@ -73,6 +77,7 @@ class TestPageObjectMerger:
                     pytest.raises(OSError, match="File not found"):
                 merger.merge(file1_path, file2_path, output_path)
 
+    @pytest.mark.unit
     def test_merge_with_temp_files(self):
         """Test merge method with temporary files."""
         merger = PageObjectMerger()
@@ -94,6 +99,7 @@ class TestPageObjectMerger:
             assert result == output_path  # noqa: S101
             assert os.path.exists(output_path)  # noqa: S101
 
+    @pytest.mark.unit
     def test_parse_success(self):
         """Test parse method with successful file reading."""
         merger = PageObjectMerger()
@@ -108,6 +114,7 @@ class TestPageObjectMerger:
             result = merger.parse(file_path)
             assert result == content  # noqa: S101
 
+    @pytest.mark.unit
     def test_parse_file_not_found(self):
         """Test parse method when file is not found."""
         merger = PageObjectMerger()
@@ -118,6 +125,7 @@ class TestPageObjectMerger:
             with pytest.raises(FileNotFoundError):
                 merger.parse(nonexistent_path)
 
+    @pytest.mark.unit
     def test_parse_io_error(self):
         """Test parse method with IO error."""
         merger = PageObjectMerger()
@@ -132,6 +140,7 @@ class TestPageObjectMerger:
                 with pytest.raises(OSError, match="IO Error"):
                     merger.parse(file_path)
 
+    @pytest.mark.unit
     def test_get_imports_with_imports(self):
         """Test get_imports method with import statements."""
         merger = PageObjectMerger()
@@ -147,6 +156,7 @@ class TestClass:
         expected = "import os\nfrom pathlib import Path"
         assert result == expected  # noqa: S101
 
+    @pytest.mark.unit
     def test_get_imports_with_empty_lines_and_comments(self):
         """Test get_imports method with empty lines and comments."""
         merger = PageObjectMerger()
@@ -163,6 +173,7 @@ class TestClass:
         expected = "import os\nfrom pathlib import Path"
         assert result == expected  # noqa: S101
 
+    @pytest.mark.unit
     def test_get_imports_no_imports(self):
         """Test get_imports method with no import statements."""
         merger = PageObjectMerger()
@@ -173,6 +184,7 @@ class TestClass:
         result = merger.get_imports(page_content)
         assert result == ""  # noqa: S101
 
+    @pytest.mark.unit
     def test_get_class_name_success(self):
         """Test get_class_name method with successful class finding."""
         merger = PageObjectMerger()
@@ -185,6 +197,7 @@ class TestClass:
         result = merger.get_class_name(page_content)
         assert result == "class TestClass:"  # noqa: S101
 
+    @pytest.mark.unit
     def test_get_class_name_not_found(self):
         """Test get_class_name method when no class is found."""
         merger = PageObjectMerger()
@@ -198,6 +211,7 @@ def test_function():
         with pytest.raises(ShadowstepNoClassDefinitionFoundError):
             merger.get_class_name(page_content)
 
+    @pytest.mark.unit
     def test_get_methods_with_def_methods(self):
         """Test get_methods method with def methods."""
         merger = PageObjectMerger()
@@ -217,6 +231,7 @@ def test_function():
         assert "def method1(self):" in result["method1"]  # noqa: S101
         assert "def method2(self):" in result["method2"]  # noqa: S101
 
+    @pytest.mark.unit
     def test_get_methods_with_property_methods(self):
         """Test get_methods method with @property methods."""
         merger = PageObjectMerger()
@@ -236,6 +251,7 @@ def test_function():
         assert "property1" in result  # noqa: S101
         assert "property2" in result  # noqa: S101
 
+    @pytest.mark.unit
     def test_get_methods_with_current_page_methods(self):
         """Test get_methods method with @current_page methods."""
         merger = PageObjectMerger()
@@ -250,6 +266,7 @@ def test_function():
         result = merger.get_methods(page_content)
         assert "current_page_method" in result  # noqa: S101
 
+    @pytest.mark.unit
     def test_get_methods_no_methods(self):
         """Test get_methods method with no methods."""
         merger = PageObjectMerger()
@@ -260,6 +277,7 @@ def test_function():
         result = merger.get_methods(page_content)
         assert result == {}  # noqa: S101
 
+    @pytest.mark.unit
     def test_remove_duplicates_no_duplicates(self):
         """Test remove_duplicates method with no duplicate methods."""
         merger = PageObjectMerger()
@@ -272,6 +290,7 @@ def test_function():
         assert "method1" in result  # noqa: S101
         assert "method2" in result  # noqa: S101
 
+    @pytest.mark.unit
     def test_remove_duplicates_with_duplicates(self):
         """Test remove_duplicates method with duplicate methods."""
         merger = PageObjectMerger()
@@ -283,6 +302,7 @@ def test_function():
         assert len(result) == 1  # noqa: S101
         assert "method1" in result  # noqa: S101
 
+    @pytest.mark.unit
     def test_remove_duplicates_with_conflicts(self):
         """Test remove_duplicates method with conflicting methods."""
         merger = PageObjectMerger()
@@ -295,6 +315,7 @@ def test_function():
         assert "method1" in result  # noqa: S101
         assert result["method1"] == "def method1(self): return 'test1'"  # noqa: S101
 
+    @pytest.mark.unit
     def test_write_to_file_success(self):
         """Test write_to_file method with successful writing."""
         merger = PageObjectMerger()
@@ -318,6 +339,7 @@ def test_function():
                 assert "def method1(self):" in content  # noqa: S101
                 assert "def method2(self):" in content  # noqa: S101
 
+    @pytest.mark.unit
     def test_write_to_file_with_recycler_and_is_current_page(self):
         """Test write_to_file method with recycler and is_current_page methods."""
         merger = PageObjectMerger()
@@ -341,6 +363,7 @@ def test_function():
                 assert "def recycler(self):" in content  # noqa: S101
                 assert "def is_current_page(self):" in content  # noqa: S101
 
+    @pytest.mark.unit
     def test_write_to_file_with_encoding(self):
         """Test write_to_file method with custom encoding."""
         merger = PageObjectMerger()
@@ -355,6 +378,7 @@ def test_function():
             
             assert os.path.exists(output_path)  # noqa: S101
 
+    @pytest.mark.unit
     def test_write_to_file_creates_directory(self):
         """Test write_to_file method creates parent directory."""
         merger = PageObjectMerger()

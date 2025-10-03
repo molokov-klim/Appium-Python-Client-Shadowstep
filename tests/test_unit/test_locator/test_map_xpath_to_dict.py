@@ -10,6 +10,7 @@ from shadowstep.locator.locator_types.xpath import XPathAttribute
 class TestXPathToDictMapping:
     """Test XPath to ShadowstepDict mapping functionality."""
 
+    @pytest.mark.unit
     def test_text_attributes(self):
         """Test text-based attribute mappings."""
         # Test TEXT
@@ -32,6 +33,7 @@ class TestXPathToDictMapping:
         expected = {ShadowstepDictAttribute.TEXT_MATCHES.value: "\\d+"}
         assert result == expected
 
+    @pytest.mark.unit
     def test_description_attributes(self):
         """Test description-based attribute mappings."""
         # Test DESCRIPTION
@@ -54,6 +56,7 @@ class TestXPathToDictMapping:
         expected = {ShadowstepDictAttribute.DESCRIPTION_MATCHES.value: "Btn\\d+"}
         assert result == expected
 
+    @pytest.mark.unit
     def test_resource_id_attributes(self):
         """Test resource ID and package attribute mappings."""
         # Test RESOURCE_ID
@@ -76,6 +79,7 @@ class TestXPathToDictMapping:
         expected = {ShadowstepDictAttribute.PACKAGE_NAME_MATCHES.value: "com\\..*"}
         assert result == expected
 
+    @pytest.mark.unit
     def test_class_attributes(self):
         """Test class name attribute mappings."""
         # Test CLASS_NAME
@@ -88,6 +92,7 @@ class TestXPathToDictMapping:
         expected = {ShadowstepDictAttribute.CLASS_NAME_MATCHES.value: "android\\..*"}
         assert result == expected
 
+    @pytest.mark.unit
     def test_boolean_attributes(self):
         """Test boolean attribute mappings."""
         # Test CHECKABLE
@@ -140,6 +145,7 @@ class TestXPathToDictMapping:
         expected = {ShadowstepDictAttribute.PASSWORD.value: "false"}
         assert result == expected
 
+    @pytest.mark.unit
     def test_numeric_attributes(self):
         """Test numeric attribute mappings."""
         # Test INDEX
@@ -152,6 +158,7 @@ class TestXPathToDictMapping:
         expected = {ShadowstepDictAttribute.INSTANCE.value: "5"}
         assert result == expected
 
+    @pytest.mark.unit
     def test_hierarchical_attributes(self):
         """Test hierarchical attribute mappings."""
         # Test CHILD_SELECTOR
@@ -164,6 +171,7 @@ class TestXPathToDictMapping:
         expected = {ShadowstepDictAttribute.FROM_PARENT.value: "parent_selector"}
         assert result == expected
 
+    @pytest.mark.unit
     def test_all_attributes_covered(self):
         """Test that all supported XPathAttribute enum values are covered in the mapping."""
         # SIBLING is not supported in the mapping

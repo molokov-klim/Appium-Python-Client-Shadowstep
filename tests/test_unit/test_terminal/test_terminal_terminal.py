@@ -15,6 +15,7 @@ from shadowstep.terminal.terminal import NotProvideCredentialsError, Terminal, A
 class TestNotProvideCredentialsError:
     """Test cases for NotProvideCredentialsError exception."""
 
+    @pytest.mark.unit
     def test_default_message(self):
         """Test exception with default message."""
         # Act
@@ -28,6 +29,7 @@ class TestNotProvideCredentialsError:
         assert str(exception) == expected_message  # noqa: S101
         assert exception.message == expected_message  # noqa: S101
 
+    @pytest.mark.unit
     def test_custom_message(self):
         """Test exception with custom message."""
         # Arrange
@@ -59,6 +61,7 @@ class TestTerminal:
 
         self.terminal = Terminal(self.mock_base)
 
+    @pytest.mark.unit
     def test_init(self):
         """Test Terminal initialization."""
         # Arrange
@@ -77,6 +80,7 @@ class TestTerminal:
         assert terminal.driver == mock_driver  # noqa: S101
         assert terminal.transport == mock_transport  # noqa: S101
 
+    @pytest.mark.unit
     def test_del(self):
         """Test Terminal destructor."""
         # Act
@@ -85,6 +89,7 @@ class TestTerminal:
         # Assert
         self.mock_ssh.close.assert_called_once()
 
+    @pytest.mark.unit
     def test_adb_shell_success(self):
         """Test successful adb shell command execution."""
         # Arrange
@@ -103,6 +108,7 @@ class TestTerminal:
             "mobile: shell", {"command": command, "args": [args]}
         )
 
+    @pytest.mark.unit
     def test_adb_shell_with_args(self):
         """Test adb shell command execution with arguments."""
         # Arrange
@@ -121,6 +127,7 @@ class TestTerminal:
             "mobile: shell", {"command": command, "args": [args]}
         )
 
+    @pytest.mark.unit
     def test_adb_shell_no_such_driver_exception(self):
         """Test adb shell raises AdbShellError on NoSuchDriverException."""
         command = "pm list packages"
@@ -135,6 +142,7 @@ class TestTerminal:
         assert "adb_shell failed" in str(exc_info.value)  # noqa: S101
         self.mock_base.reconnect.assert_called_once()
 
+    @pytest.mark.unit
     def test_adb_shell_invalid_session_exception(self):
         """Test adb shell with InvalidSessionIdException."""
         # Arrange
@@ -150,6 +158,7 @@ class TestTerminal:
         assert "adb_shell failed" in str(exc_info.value)  # noqa: S101
         self.mock_base.reconnect.assert_called_once()
 
+    @pytest.mark.unit
     def test_adb_shell_key_error(self):
         """Test adb shell with KeyError raises AdbShellError without reconnect."""
         command = "pm list packages"
@@ -163,6 +172,7 @@ class TestTerminal:
         assert "adb_shell failed" in str(exc_info.value)  # noqa: S101
         self.mock_base.reconnect.assert_not_called()
 
+    @pytest.mark.unit
     def test_adb_shell_multiple_tries(self):
         """Test adb shell with multiple tries."""
         # Arrange
@@ -185,6 +195,7 @@ class TestTerminal:
         assert self.mock_driver.execute_script.call_count == 2  # noqa: S101
         self.mock_base.reconnect.assert_called_once()
 
+    @pytest.mark.unit
     def test_push_success(self):
         """Test successful file push."""
         # Arrange
@@ -211,6 +222,7 @@ class TestTerminal:
         self.mock_transport.scp.put.assert_called_once()
         self.mock_transport.ssh.exec_command.assert_called_once()
 
+    @pytest.mark.unit
     def test_push_without_credentials(self):
         """Test file push without transport credentials."""
         # Arrange
@@ -229,6 +241,7 @@ class TestTerminal:
         # Assert
         assert result is False  # noqa: S101
 
+    @pytest.mark.unit
     def test_install_app_success(self):
         """Test successful app installation."""
         # Arrange
@@ -254,6 +267,7 @@ class TestTerminal:
         self.mock_transport.scp.put.assert_called_once()
         self.mock_transport.ssh.exec_command.assert_called_once()
 
+    @pytest.mark.unit
     def test_install_app_without_credentials(self):
         """Test app installation without transport credentials."""
         # Arrange
@@ -271,6 +285,7 @@ class TestTerminal:
         # Assert
         assert result is False  # noqa: S101
 
+    @pytest.mark.unit
     def test_pull_success(self):
         """Test successful file pull."""
         # Arrange
@@ -306,6 +321,7 @@ class TestTerminal:
                 "mobile: pullFile", {"remotePath": source}
             )
 
+    @pytest.mark.unit
     def test_pull_driver_exception(self):
         """Test file pull with driver exception."""
         # Arrange
@@ -325,6 +341,7 @@ class TestTerminal:
         assert result is False  # noqa: S101
         self.mock_base.reconnect.assert_called_once()
 
+    @pytest.mark.unit
     def test_tap_success(self):
         """Test successful tap action."""
         # Arrange
@@ -338,6 +355,7 @@ class TestTerminal:
             assert result is True  # noqa: S101
             mock_adb_shell.assert_called_once_with(command="input", args=f"tap {x} {y}")
 
+    @pytest.mark.unit
     def test_tap_driver_exception(self):
         """Test tap action with driver exception."""
         # Arrange
@@ -350,6 +368,7 @@ class TestTerminal:
             # Assert
             assert result is False  # noqa: S101
 
+    @pytest.mark.unit
     def test_swipe_success(self):
         """Test successful swipe action."""
         # Arrange
@@ -366,6 +385,7 @@ class TestTerminal:
                 command="input", args=f"swipe {x1} {y1} {x2} {y2} {duration}"
             )
 
+    @pytest.mark.unit
     def test_swipe_driver_exception(self):
         """Test swipe action with driver exception."""
         # Arrange
@@ -379,6 +399,7 @@ class TestTerminal:
             # Assert
             assert result is False  # noqa: S101
 
+    @pytest.mark.unit
     def test_input_text_success(self):
         """Test successful text input."""
         # Arrange
@@ -392,6 +413,7 @@ class TestTerminal:
             assert result is True  # noqa: S101
             self.terminal.adb_shell.assert_called_once_with(command="input", args=f"text {text}")
 
+    @pytest.mark.unit
     def test_input_text_driver_exception(self):
         """Test text input with driver exception."""
         # Arrange
@@ -404,6 +426,7 @@ class TestTerminal:
             # Assert
             assert result is False  # noqa: S101
 
+    @pytest.mark.unit
     def test_press_home_success(self):
         """Test successful home button press."""
         with patch.object(self.terminal, "adb_shell", return_value="success"):
@@ -416,6 +439,7 @@ class TestTerminal:
                 command="input", args="keyevent KEYCODE_HOME"
             )
 
+    @pytest.mark.unit
     def test_press_back_success(self):
         """Test successful back button press."""
         with patch.object(self.terminal, "adb_shell", return_value="success"):
@@ -428,6 +452,7 @@ class TestTerminal:
                 command="input", args="keyevent KEYCODE_BACK"
             )
 
+    @pytest.mark.unit
     def test_press_menu_success(self):
         """Test successful menu button press."""
         with patch.object(self.terminal, "adb_shell", return_value="success"):
@@ -440,6 +465,7 @@ class TestTerminal:
                 command="input", args="keyevent KEYCODE_MENU"
             )
 
+    @pytest.mark.unit
     def test_get_prop_success(self):
         """Test successful property retrieval."""
         # Arrange
@@ -456,6 +482,7 @@ class TestTerminal:
             assert result == expected_dict  # noqa: S101
             mock_adb_shell.assert_called_once_with(command="getprop")
 
+    @pytest.mark.unit
     def test_get_prop_driver_exception(self):
         """Test property retrieval with driver exception."""
         # Arrange
@@ -466,6 +493,7 @@ class TestTerminal:
             # Act & Assert
             self.terminal.get_prop()
 
+    @pytest.mark.unit
     def test_reboot_success(self):
         """Test successful device reboot."""
         with patch.object(self.terminal, "adb_shell", return_value="success"):
@@ -476,6 +504,7 @@ class TestTerminal:
             assert result is True  # noqa: S101
             self.terminal.adb_shell.assert_called_once_with(command="reboot")
 
+    @pytest.mark.unit
     def test_reboot_driver_exception(self):
         """Test device reboot with driver exception."""
         with patch.object(self.terminal, "adb_shell", side_effect=KeyError("Driver not found")):
@@ -485,6 +514,7 @@ class TestTerminal:
             # Assert
             assert result is True  # noqa: S101
 
+    @pytest.mark.unit
     def test_get_packages_success(self):
         """Test successful package list retrieval."""
         # Arrange
@@ -499,6 +529,7 @@ class TestTerminal:
             assert result == expected_packages  # noqa: S101
             self.terminal.adb_shell.assert_called_once_with(command="pm", args="list packages")
 
+    @pytest.mark.unit
     def test_get_packages_driver_exception(self):
         """Test package list retrieval with driver exception."""
         with (
@@ -508,6 +539,7 @@ class TestTerminal:
             # Act & Assert
             self.terminal.get_packages()
 
+    @pytest.mark.unit
     def test_get_package_path_success(self):
         """Test successful package path retrieval."""
         # Arrange
@@ -522,6 +554,7 @@ class TestTerminal:
             assert result == expected_path  # noqa: S101
             self.terminal.adb_shell.assert_called_once_with(command="pm", args=f"path {package}")
 
+    @pytest.mark.unit
     def test_get_package_path_driver_exception(self):
         """Test package path retrieval with driver exception."""
         # Arrange
@@ -534,6 +567,7 @@ class TestTerminal:
             # Act & Assert
             self.terminal.get_package_path(package)
 
+    @pytest.mark.unit
     def test_record_video_success(self):
         """Test successful video recording start."""
         # Arrange
@@ -548,6 +582,7 @@ class TestTerminal:
             assert result is True  # noqa: S101
             mock_start_recording.assert_called_once_with(filename=filename, duration=duration)
 
+    @pytest.mark.unit
     def test_record_video_driver_exception(self):
         """Test video recording start with driver exception."""
         # Arrange
@@ -563,6 +598,7 @@ class TestTerminal:
             # Assert
             assert result is False  # noqa: S101
 
+    @pytest.mark.unit
     def test_stop_video_success(self):
         """Test successful video recording stop."""
         # Arrange
@@ -583,6 +619,7 @@ class TestTerminal:
             self.terminal.driver.stop_recording_screen.assert_called_once_with()
             mock_b64decode.assert_called_once_with(mock_base64_data)
 
+    @pytest.mark.unit
     def test_stop_video_driver_exception(self):
         """Test video recording stop with driver exception."""
         with patch.object(
@@ -594,6 +631,7 @@ class TestTerminal:
             # Assert
             assert result is None  # noqa: S101
 
+    @pytest.mark.unit
     def test_check_vpn_success(self):
         """Test successful VPN check."""
         # Arrange
@@ -610,6 +648,7 @@ class TestTerminal:
             assert result is True  # noqa: S101
             mock_adb_shell.assert_called_once_with(command="netstat", args="")
 
+    @pytest.mark.unit
     def test_check_vpn_no_connection(self):
         """Test VPN check with no VPN connection."""
         # Arrange
@@ -624,6 +663,7 @@ class TestTerminal:
             # Assert
             assert result is False  # noqa: S101
 
+    @pytest.mark.unit
     def test_check_vpn_driver_exception(self):
         """Test VPN check with driver exception."""
         # Arrange
@@ -636,6 +676,7 @@ class TestTerminal:
             # Assert
             assert result is False  # noqa: S101
 
+    @pytest.mark.unit
     def test_start_activity_success(self):
         """Test successful activity start."""
         # Arrange
@@ -652,6 +693,7 @@ class TestTerminal:
                 command="am", args=f"start -n {package}/{activity}"
             )
 
+    @pytest.mark.unit
     def test_start_activity_driver_exception(self):
         """Test activity start with driver exception."""
         # Arrange
@@ -665,6 +707,7 @@ class TestTerminal:
             # Assert
             assert result is False  # noqa: S101
 
+    @pytest.mark.unit
     def test_get_current_app_package_success(self):
         """Test successful current app package retrieval."""
         # Arrange
@@ -678,6 +721,7 @@ class TestTerminal:
             assert result == "com.example.app"  # noqa: S101
             self.terminal.adb_shell.assert_called_once_with(command="dumpsys", args="window windows")
 
+    @pytest.mark.unit
     def test_get_current_app_package_no_match(self):
         """Test current app package retrieval with no match."""
         # Arrange
@@ -690,6 +734,7 @@ class TestTerminal:
             # Assert
             assert result == ""  # noqa: S101
 
+    @pytest.mark.unit
     def test_get_current_app_package_driver_exception(self):
         """Test current app package retrieval with driver exception."""
         with patch.object(self.terminal, "adb_shell", side_effect=KeyError("Driver not found")):
@@ -699,6 +744,7 @@ class TestTerminal:
             # Assert
             assert result == ""  # noqa: S101
 
+    @pytest.mark.unit
     def test_close_app_success(self):
         """Test successful app close."""
         # Arrange
@@ -712,6 +758,7 @@ class TestTerminal:
             assert result is True  # noqa: S101
             self.terminal.adb_shell.assert_called_once_with(command="am", args=f"force-stop {package}")
 
+    @pytest.mark.unit
     def test_close_app_driver_exception(self):
         """Test app close with driver exception."""
         # Arrange
@@ -724,6 +771,7 @@ class TestTerminal:
             # Assert
             assert result is False  # noqa: S101
 
+    @pytest.mark.unit
     def test_reboot_app_success(self):
         """Test successful app reboot."""
         # Arrange
@@ -740,6 +788,7 @@ class TestTerminal:
             self.terminal.close_app.assert_called_once_with(package=package)
             self.terminal.start_activity.assert_called_once_with(package=package, activity=activity)
 
+    @pytest.mark.unit
     def test_reboot_app_close_fails(self):
         """Test app reboot when close fails."""
         # Arrange
@@ -753,6 +802,7 @@ class TestTerminal:
             # Assert
             assert result is False  # noqa: S101
 
+    @pytest.mark.unit
     def test_is_app_installed_true(self):
         """Test app installation check when app is installed."""
         # Arrange
@@ -767,6 +817,7 @@ class TestTerminal:
             assert result is True  # noqa: S101
             self.terminal.adb_shell.assert_called_once_with(command="pm", args="list packages")
 
+    @pytest.mark.unit
     def test_is_app_installed_false(self):
         """Test app installation check when app is not installed."""
         # Arrange
@@ -780,6 +831,7 @@ class TestTerminal:
             # Assert
             assert result is False  # noqa: S101
 
+    @pytest.mark.unit
     def test_is_app_installed_driver_exception(self):
         """Test app installation check with driver exception."""
         # Arrange
@@ -792,6 +844,7 @@ class TestTerminal:
             # Assert
             assert result is False  # noqa: S101
 
+    @pytest.mark.unit
     def test_uninstall_app_success(self):
         """Test successful app uninstall."""
         # Arrange
@@ -805,6 +858,7 @@ class TestTerminal:
             assert result is True  # noqa: S101
             self.terminal.driver.remove_app.assert_called_once_with(app_id=package)
 
+    @pytest.mark.unit
     def test_uninstall_app_driver_exception(self):
         """Test app uninstall with driver exception."""
         # Arrange
@@ -819,6 +873,7 @@ class TestTerminal:
             assert result is False  # noqa: S101
             self.terminal.base.reconnect.assert_called_once()
 
+    @pytest.mark.unit
     def test_input_keycode_num_success(self):
         """Test successful numeric keycode input."""
         # Arrange
@@ -832,6 +887,7 @@ class TestTerminal:
             assert result is True  # noqa: S101
             self.terminal.adb_shell.assert_called_once_with(command="input", args=f"keyevent KEYCODE_NUMPAD_{num}")
 
+    @pytest.mark.unit
     def test_input_keycode_num_driver_exception(self):
         """Test numeric keycode input with driver exception."""
         # Arrange
@@ -844,6 +900,7 @@ class TestTerminal:
             # Assert
             assert result is False  # noqa: S101
 
+    @pytest.mark.unit
     def test_input_keycode_success(self):
         """Test successful keycode input."""
         # Arrange
@@ -857,6 +914,7 @@ class TestTerminal:
             assert result is True  # noqa: S101
             self.terminal.adb_shell.assert_called_once_with(command="input", args=f"keyevent {keycode}")
 
+    @pytest.mark.unit
     def test_input_keycode_driver_exception(self):
         """Test keycode input with driver exception."""
         # Arrange
@@ -869,6 +927,7 @@ class TestTerminal:
             # Assert
             assert result is False  # noqa: S101
 
+    @pytest.mark.unit
     def test_swipe_right_to_left_success(self):
         """Test successful right to left swipe."""
         # Arrange
@@ -885,6 +944,7 @@ class TestTerminal:
                 start_x=972, start_y=1200, end_x=108, end_y=1200, duration=duration
             )
 
+    @pytest.mark.unit
     def test_swipe_left_to_right_success(self):
         """Test successful left to right swipe."""
         # Arrange
@@ -901,6 +961,7 @@ class TestTerminal:
                 start_x=108, start_y=1200, end_x=972, end_y=1200, duration=duration
             )
 
+    @pytest.mark.unit
     def test_swipe_top_to_bottom_success(self):
         """Test successful top to bottom swipe."""
         # Arrange
@@ -917,6 +978,7 @@ class TestTerminal:
                 start_x=240, start_y=1200, end_x=2160, end_y=1200, duration=duration
             )
 
+    @pytest.mark.unit
     def test_swipe_bottom_to_top_success(self):
         """Test successful bottom to top swipe."""
         # Arrange
@@ -933,6 +995,7 @@ class TestTerminal:
                 start_x=2160, start_y=1200, end_x=240, end_y=1200, duration=duration
             )
 
+    @pytest.mark.unit
     def test_stop_logcat_success(self):
         """Test successful logcat stop."""
         # Arrange
@@ -949,6 +1012,7 @@ class TestTerminal:
             self.terminal.adb_shell.assert_any_call(command="ps", args="")
             self.terminal.adb_shell.assert_any_call(command="kill", args="-SIGINT 1234")
 
+    @pytest.mark.unit
     def test_stop_logcat_no_process(self):
         """Test logcat stop when no logcat process found."""
         # Arrange
@@ -961,6 +1025,7 @@ class TestTerminal:
             # Assert
             assert result is True  # noqa: S101
 
+    @pytest.mark.unit
     def test_stop_logcat_driver_exception(self):
         """Test logcat stop with driver exception."""
         with patch.object(self.terminal, "adb_shell", side_effect=KeyError("Driver not found")):
@@ -970,6 +1035,7 @@ class TestTerminal:
             # Assert
             assert result is False  # noqa: S101
 
+    @pytest.mark.unit
     def test_know_pid_success(self):
         """Test successful PID retrieval."""
         # Arrange
@@ -984,6 +1050,7 @@ class TestTerminal:
             assert result == 1234  # noqa: S101
             self.terminal.adb_shell.assert_called_once_with(command="ps")
 
+    @pytest.mark.unit
     def test_know_pid_not_found(self):
         """Test PID retrieval when process not found."""
         # Arrange
@@ -997,6 +1064,7 @@ class TestTerminal:
             # Assert
             assert result is None  # noqa: S101
 
+    @pytest.mark.unit
     def test_is_process_exist_true(self):
         """Test process existence check when process exists."""
         # Arrange
@@ -1011,6 +1079,7 @@ class TestTerminal:
             assert result is True  # noqa: S101
             self.terminal.adb_shell.assert_called_once_with(command="ps")
 
+    @pytest.mark.unit
     def test_is_process_exist_false(self):
         """Test process existence check when process does not exist."""
         # Arrange
@@ -1024,6 +1093,7 @@ class TestTerminal:
             # Assert
             assert result is False  # noqa: S101
 
+    @pytest.mark.unit
     def test_run_background_process_success(self):
         """Test successful background process execution."""
         # Arrange
@@ -1042,6 +1112,7 @@ class TestTerminal:
                 command=command, args=f"{args} nohup > /dev/null 2>&1 &"
             )
 
+    @pytest.mark.unit
     def test_run_background_process_no_check(self):
         """Test background process execution without process check."""
         # Arrange
@@ -1056,6 +1127,7 @@ class TestTerminal:
             # Assert
             assert result is True  # noqa: S101
 
+    @pytest.mark.unit
     def test_run_background_process_driver_exception(self):
         """Test background process execution with driver exception."""
         # Arrange
@@ -1070,6 +1142,7 @@ class TestTerminal:
             # Assert
             assert result is False  # noqa: S101
 
+    @pytest.mark.unit
     def test_kill_by_pid_success(self):
         """Test successful process kill by PID."""
         # Arrange
@@ -1083,6 +1156,7 @@ class TestTerminal:
             assert result is True  # noqa: S101
             self.terminal.adb_shell.assert_called_once_with(command="kill", args=f"-s SIGINT {pid}")
 
+    @pytest.mark.unit
     def test_kill_by_pid_driver_exception(self):
         """Test process kill by PID with driver exception."""
         # Arrange
@@ -1095,6 +1169,7 @@ class TestTerminal:
             # Assert
             assert result is False  # noqa: S101
 
+    @pytest.mark.unit
     def test_kill_by_name_success(self):
         """Test successful process kill by name."""
         # Arrange
@@ -1108,6 +1183,7 @@ class TestTerminal:
             assert result is True  # noqa: S101
             self.terminal.adb_shell.assert_called_once_with(command="pkill", args=f"-l SIGINT {name}")
 
+    @pytest.mark.unit
     def test_kill_by_name_driver_exception(self):
         """Test process kill by name with driver exception."""
         # Arrange
@@ -1120,6 +1196,7 @@ class TestTerminal:
             # Assert
             assert result is False  # noqa: S101
 
+    @pytest.mark.unit
     def test_kill_all_success(self):
         """Test successful kill all processes by name."""
         # Arrange
@@ -1133,6 +1210,7 @@ class TestTerminal:
             assert result is True  # noqa: S101
             self.terminal.adb_shell.assert_called_once_with(command="pkill", args=f"-f {name}")
 
+    @pytest.mark.unit
     def test_kill_all_driver_exception(self):
         """Test kill all processes with driver exception."""
         # Arrange
@@ -1145,6 +1223,7 @@ class TestTerminal:
             # Assert
             assert result is False  # noqa: S101
 
+    @pytest.mark.unit
     def test_delete_files_from_internal_storage_success(self):
         """Test successful file deletion from internal storage."""
         # Arrange
@@ -1158,6 +1237,7 @@ class TestTerminal:
             assert result is True  # noqa: S101
             self.terminal.adb_shell.assert_called_once_with(command="rm", args=f"-rf {path}*")
 
+    @pytest.mark.unit
     def test_delete_files_from_internal_storage_driver_exception(self):
         """Test file deletion with driver exception."""
         # Arrange
@@ -1170,6 +1250,7 @@ class TestTerminal:
             # Assert
             assert result is False  # noqa: S101
 
+    @pytest.mark.unit
     def test_delete_file_from_internal_storage_success(self):
         """Test successful single file deletion from internal storage."""
         # Arrange
@@ -1184,6 +1265,7 @@ class TestTerminal:
             assert result is True  # noqa: S101
             self.terminal.adb_shell.assert_called_once_with(command="rm", args=f"-rf /sdcard/test/{filename}")
 
+    @pytest.mark.unit
     def test_delete_file_from_internal_storage_driver_exception(self):
         """Test single file deletion with driver exception."""
         # Arrange
@@ -1197,6 +1279,7 @@ class TestTerminal:
             # Assert
             assert result is False  # noqa: S101
 
+    @pytest.mark.unit
     def test_get_screen_resolution_success(self):
         """Test successful screen resolution retrieval."""
         # Arrange
@@ -1210,6 +1293,7 @@ class TestTerminal:
             assert result == (1080, 2400)  # noqa: S101
             self.terminal.adb_shell.assert_called_once_with(command="wm", args="size")
 
+    @pytest.mark.unit
     def test_get_screen_resolution_no_physical_size(self):
         """Test screen resolution retrieval when no physical size found."""
         # Arrange
@@ -1222,6 +1306,7 @@ class TestTerminal:
             # Assert
             assert result == (0, 0)  # noqa: S101
 
+    @pytest.mark.unit
     def test_get_screen_resolution_driver_exception(self):
         """Test screen resolution retrieval with driver exception."""
         with patch.object(self.terminal, "adb_shell", side_effect=KeyError("Driver not found")):
@@ -1229,6 +1314,7 @@ class TestTerminal:
             with pytest.raises(KeyError):
                 self.terminal.get_screen_resolution()
 
+    @pytest.mark.unit
     def test_past_text_success(self):
         """Test successful text pasting."""
         # Arrange
@@ -1243,6 +1329,7 @@ class TestTerminal:
             self.terminal.driver.set_clipboard_text.assert_called_once_with(text=text)
             self.terminal.input_keycode.assert_called_once_with("279")
 
+    @pytest.mark.unit
     def test_past_text_driver_exception(self):
         """Test text pasting with driver exception."""
         # Arrange
@@ -1256,6 +1343,7 @@ class TestTerminal:
             # Assert
             self.terminal.base.reconnect.assert_called_once()
 
+    @pytest.mark.unit
     def test_get_prop_hardware_success(self):
         """Test successful hardware property retrieval."""
         # Arrange
@@ -1268,6 +1356,7 @@ class TestTerminal:
             # Assert
             assert result == expected_hardware  # noqa: S101
 
+    @pytest.mark.unit
     def test_get_prop_model_success(self):
         """Test successful model property retrieval."""
         # Arrange
@@ -1280,6 +1369,7 @@ class TestTerminal:
             # Assert
             assert result == expected_model  # noqa: S101
 
+    @pytest.mark.unit
     def test_get_prop_serial_success(self):
         """Test successful serial property retrieval."""
         # Arrange
@@ -1292,6 +1382,7 @@ class TestTerminal:
             # Assert
             assert result == expected_serial  # noqa: S101
 
+    @pytest.mark.unit
     def test_get_prop_build_success(self):
         """Test successful build property retrieval."""
         # Arrange
@@ -1304,6 +1395,7 @@ class TestTerminal:
             # Assert
             assert result == expected_build  # noqa: S101
 
+    @pytest.mark.unit
     def test_get_prop_device_success(self):
         """Test successful device property retrieval."""
         # Arrange
@@ -1316,6 +1408,7 @@ class TestTerminal:
             # Assert
             assert result == expected_device  # noqa: S101
 
+    @pytest.mark.unit
     def test_get_prop_uin_success(self):
         """Test successful UIN property retrieval."""
         # Arrange
@@ -1328,6 +1421,7 @@ class TestTerminal:
             # Assert
             assert result == expected_uin  # noqa: S101
 
+    @pytest.mark.unit
     def test_pull_package_success(self):
         """Test successful package pull."""
         # Arrange
@@ -1344,6 +1438,7 @@ class TestTerminal:
             self.terminal.get_package_path.assert_called_once_with(package=package)
             self.terminal.pull.assert_called_once()
 
+    @pytest.mark.unit
     def test_pull_package_default_filename(self):
         """Test package pull with default filename."""
         # Arrange
@@ -1359,6 +1454,7 @@ class TestTerminal:
             # Assert
             self.terminal.pull.assert_called_once()
 
+    @pytest.mark.unit
     def test_get_package_manifest_success(self):
         """Test successful package manifest retrieval."""
         # Arrange
@@ -1376,6 +1472,7 @@ class TestTerminal:
             # Assert
             assert "package:" in result  # noqa: S101
 
+    @pytest.mark.unit
     def test_get_package_manifest_aapt_error(self):
         """Test package manifest retrieval with aapt error."""
         # Arrange

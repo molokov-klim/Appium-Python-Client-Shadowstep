@@ -12,11 +12,13 @@ from shadowstep.page_object.page_object_test_generator import PageObjectTestGene
 class TestPageObjectTestGenerator:
     """Test cases for PageObjectTestGenerator class."""
 
+    @pytest.mark.unit
     def test_init(self):
         """Test PageObjectTestGenerator initialization."""
         generator = PageObjectTestGenerator()
         assert generator.logger is not None  # noqa: S101
 
+    @pytest.mark.unit
     def test_generate_simple_test(self):
         """Test generate method with simple test case."""
         generator = PageObjectTestGenerator()
@@ -32,6 +34,7 @@ class TestPageObjectTestGenerator:
             assert result is not None  # noqa: S101
             assert len(result) == 2  # noqa: S101
 
+    @pytest.mark.unit
     def test_generate_with_filename_prefix(self):
         """Test generate method with filename prefix."""
         generator = PageObjectTestGenerator()
@@ -47,6 +50,7 @@ class TestPageObjectTestGenerator:
             assert result is not None  # noqa: S101
             assert len(result) == 2  # noqa: S101
 
+    @pytest.mark.unit
     def test_generate_with_temp_files(self):
         """Test generate method with temporary files."""
         generator = PageObjectTestGenerator()
@@ -66,6 +70,7 @@ class TestPageObjectTestGenerator:
             file_path = result[0]
             assert os.path.exists(file_path)  # noqa: S101
 
+    @pytest.mark.unit
     def test_extract_properties_no_class_definition(self):
         """Test _extract_properties method when no class definition is found."""
         generator = PageObjectTestGenerator()
@@ -84,6 +89,7 @@ class TestPageObjectTestGenerator:
         finally:
             os.unlink(temp_file)
 
+    @pytest.mark.unit
     def test_extract_properties_with_properties(self):
         """Test _extract_properties method with class containing properties."""
         generator = PageObjectTestGenerator()
@@ -118,6 +124,7 @@ class TestPage:
         finally:
             os.unlink(temp_file)
 
+    @pytest.mark.unit
     def test_camel_to_snake(self):
         """Test _camel_to_snake method."""
         generator = PageObjectTestGenerator()

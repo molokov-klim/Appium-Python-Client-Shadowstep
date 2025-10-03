@@ -18,18 +18,21 @@ from shadowstep.locator.locator_types.xpath import XPathAttribute
 class TestXPathToUiMapping:
     """Test XPath to UiSelector mapping functionality."""
 
+    @pytest.mark.unit
     def test_handle_child_selector(self):
         """Test child selector handling."""
         result = _handle_child_selector("new UiSelector().text('Child')")
         expected = ".childSelector(new UiSelector().text('Child'))"
         assert result == expected
 
+    @pytest.mark.unit
     def test_handle_from_parent(self):
         """Test from parent handling."""
         result = _handle_from_parent("new UiSelector().text('Parent')")
         expected = ".fromParent(new UiSelector().text('Parent'))"
         assert result == expected
 
+    @pytest.mark.unit
     def test_text_attributes(self):
         """Test text-based attribute mappings."""
         # Test TEXT
@@ -52,6 +55,7 @@ class TestXPathToUiMapping:
         expected = f"{UiAttribute.TEXT_MATCHES.value}(\\d+)"
         assert result == expected
 
+    @pytest.mark.unit
     def test_description_attributes(self):
         """Test description-based attribute mappings."""
         # Test DESCRIPTION
@@ -74,6 +78,7 @@ class TestXPathToUiMapping:
         expected = f"{UiAttribute.DESCRIPTION_MATCHES.value}(Btn\\d+)"
         assert result == expected
 
+    @pytest.mark.unit
     def test_resource_id_attributes(self):
         """Test resource ID and package attribute mappings."""
         # Test RESOURCE_ID
@@ -96,6 +101,7 @@ class TestXPathToUiMapping:
         expected = f"{UiAttribute.PACKAGE_NAME_MATCHES.value}(com\\..*)"
         assert result == expected
 
+    @pytest.mark.unit
     def test_class_attributes(self):
         """Test class name attribute mappings."""
         # Test CLASS_NAME
@@ -108,6 +114,7 @@ class TestXPathToUiMapping:
         expected = f"{UiAttribute.CLASS_NAME_MATCHES.value}(android\\..*)"
         assert result == expected
 
+    @pytest.mark.unit
     def test_boolean_attributes(self):
         """Test boolean attribute mappings."""
         # Test CHECKABLE
@@ -160,6 +167,7 @@ class TestXPathToUiMapping:
         expected = f"{UiAttribute.PASSWORD.value}(false)"
         assert result == expected
 
+    @pytest.mark.unit
     def test_numeric_attributes(self):
         """Test numeric attribute mappings."""
         # Test INDEX
@@ -172,6 +180,7 @@ class TestXPathToUiMapping:
         expected = f"{UiAttribute.INSTANCE.value}(5)"
         assert result == expected
 
+    @pytest.mark.unit
     def test_hierarchical_attributes(self):
         """Test hierarchical attribute mappings."""
         # Test CHILD_SELECTOR
@@ -184,12 +193,14 @@ class TestXPathToUiMapping:
         expected = ".fromParent(new UiSelector().text('Parent'))"
         assert result == expected
 
+    @pytest.mark.unit
     def test_get_ui_for_method_success(self):
         """Test get_ui_for_method with valid method."""
         result = get_ui_for_method(XPathAttribute.TEXT, "Hello")
         expected = f"{UiAttribute.TEXT.value}(Hello)"
         assert result == expected
 
+    @pytest.mark.unit
     def test_get_ui_for_method_unsupported(self):
         """Test get_ui_for_method with unsupported method."""
         # Create a mock XPathAttribute that's not in the mapping
@@ -199,17 +210,20 @@ class TestXPathToUiMapping:
         with pytest.raises(ShadowstepUnsupportedXPathAttributeError):
             get_ui_for_method(MockXPathAttribute(), "test")
 
+    @pytest.mark.unit
     def test_is_hierarchical_xpath_true(self):
         """Test is_hierarchical_xpath returns True for hierarchical methods."""
         assert is_hierarchical_xpath(XPathAttribute.CHILD_SELECTOR) is True
         assert is_hierarchical_xpath(XPathAttribute.FROM_PARENT) is True
 
+    @pytest.mark.unit
     def test_is_hierarchical_xpath_false(self):
         """Test is_hierarchical_xpath returns False for non-hierarchical methods."""
         assert is_hierarchical_xpath(XPathAttribute.TEXT) is False
         assert is_hierarchical_xpath(XPathAttribute.CLASS_NAME) is False
         assert is_hierarchical_xpath(XPathAttribute.CLICKABLE) is False
 
+    @pytest.mark.unit
     def test_get_supported_attributes(self):
         """Test get_supported_attributes returns all supported attributes."""
         supported = get_supported_attributes()
@@ -220,6 +234,7 @@ class TestXPathToUiMapping:
         for attr in XPATH_TO_UI.keys():
             assert attr in supported
 
+    @pytest.mark.unit
     def test_all_attributes_covered(self):
         """Test that all supported XPathAttribute enum values are covered in the mapping."""
         # SIBLING is not supported in the mapping

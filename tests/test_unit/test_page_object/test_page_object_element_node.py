@@ -20,6 +20,7 @@ from shadowstep.page_object.page_object_element_node import (
 class TestUiElementNode:
     """Test cases for UiElementNode class."""
 
+    @pytest.mark.unit
     def test_init(self):
         """Test UiElementNode initialization."""
         node = UiElementNode(
@@ -37,6 +38,7 @@ class TestUiElementNode:
         assert node.depth == 0  # noqa: S101
         assert node.scrollable_parents == []  # noqa: S101
 
+    @pytest.mark.unit
     def test_walk_single_node(self):
         """Test walk method with single node."""
         node = UiElementNode(
@@ -50,6 +52,7 @@ class TestUiElementNode:
         assert len(nodes) == 1  # noqa: S101
         assert nodes[0] == node  # noqa: S101
 
+    @pytest.mark.unit
     def test_find(self):
         """Test find method."""
         root = UiElementNode(
@@ -72,6 +75,7 @@ class TestUiElementNode:
         assert len(found) == 1  # noqa: S101
         assert found[0] == button  # noqa: S101
 
+    @pytest.mark.unit
     def test_get_attr(self):
         """Test get_attr method."""
         node = UiElementNode(
@@ -94,6 +98,7 @@ class TestUiElementNode:
 class TestJinja2Renderer:
     """Test cases for Jinja2Renderer class."""
 
+    @pytest.mark.unit
     def test_init(self):
         """Test Jinja2Renderer initialization."""
         renderer = Jinja2Renderer(templates_dir="page_object/templates")
@@ -101,6 +106,7 @@ class TestJinja2Renderer:
         assert renderer.env.loader is not None  # noqa: S101
 
     @patch("shadowstep.page_object.page_object_element_node.get_current_func_name")
+    @pytest.mark.unit
     def test_render(self, mock_get_func_name: Mock):
         """Test render method."""
         mock_get_func_name.return_value = "test_function"
@@ -129,6 +135,7 @@ class TestJinja2Renderer:
             mock_get_template.assert_called_once_with("page_object.py.j2")
             mock_template.render.assert_called_once()
 
+    @pytest.mark.unit
     def test_walk_tree(self):
         """Test walk method with tree of nodes."""
         root = UiElementNode(
@@ -169,6 +176,7 @@ class TestJinja2Renderer:
         assert nodes[2] == grandchild  # noqa: S101
         assert nodes[3] == child2  # noqa: S101
 
+    @pytest.mark.unit
     def test_get_attr_with_none_attrs(self):
         """Test get_attr method when attrs is None."""
         node = UiElementNode(
@@ -180,6 +188,7 @@ class TestJinja2Renderer:
         
         assert node.get_attr("any_key") == ""  # noqa: S101
 
+    @pytest.mark.unit
     def test_repr(self):
         """Test __repr__ method."""
         root = UiElementNode(
@@ -213,6 +222,7 @@ class TestJinja2Renderer:
         assert "id=child" in repr_str  # noqa: S101
         assert "parent_id='root'" in repr_str  # noqa: S101
 
+    @pytest.mark.unit
     def test_find_no_matches(self):
         """Test find method with no matches."""
         root = UiElementNode(
@@ -225,6 +235,7 @@ class TestJinja2Renderer:
         found = root.find(**{"class": "android.widget.Button"})
         assert len(found) == 0  # noqa: S101
 
+    @pytest.mark.unit
     def test_find_multiple_matches(self):
         """Test find method with multiple matches."""
         root = UiElementNode(
@@ -259,6 +270,7 @@ class TestJinja2Renderer:
 class TestPropertyModel:
     """Test cases for PropertyModel class."""
 
+    @pytest.mark.unit
     def test_init(self):
         """Test PropertyModel initialization."""
         prop = PropertyModel(
@@ -281,6 +293,7 @@ class TestPropertyModel:
         assert prop.sibling is True  # noqa: S101
         assert prop.via_recycler is True  # noqa: S101
 
+    @pytest.mark.unit
     def test_init_with_defaults(self):
         """Test PropertyModel initialization with default values."""
         prop = PropertyModel(
@@ -304,6 +317,7 @@ class TestPropertyModel:
 class TestPageObjectModel:
     """Test cases for PageObjectModel class."""
 
+    @pytest.mark.unit
     def test_init(self):
         """Test PageObjectModel initialization."""
         properties = [
@@ -327,6 +341,7 @@ class TestPageObjectModel:
         assert model.properties == properties  # noqa: S101
         assert model.need_recycler is True  # noqa: S101
 
+    @pytest.mark.unit
     def test_init_with_defaults(self):
         """Test PageObjectModel initialization with default values."""
         model = PageObjectModel(
@@ -347,6 +362,7 @@ class TestPageObjectModel:
 class TestTemplateRenderer:
     """Test cases for TemplateRenderer abstract class."""
 
+    @pytest.mark.unit
     def test_cannot_instantiate(self):
         """Test that TemplateRenderer cannot be instantiated directly."""
         with pytest.raises(TypeError):
@@ -356,12 +372,14 @@ class TestTemplateRenderer:
 class TestJinja2RendererExtended:
     """Extended test cases for Jinja2Renderer class."""
 
+    @pytest.mark.unit
     def test_save_method_exists(self):
         """Test that save method exists and is callable."""
         renderer = Jinja2Renderer(templates_dir="page_object/templates")
         assert hasattr(renderer, 'save')  # noqa: S101
         assert callable(renderer.save)  # noqa: S101
 
+    @pytest.mark.unit
     def test_pretty_dict(self):
         """Test _pretty_dict static method."""
         test_dict = {"key1": "value1", "key2": "value2", "key3": "value3"}
@@ -370,12 +388,14 @@ class TestJinja2RendererExtended:
         expected = "{\n    'key1': 'value1',\n    'key2': 'value2',\n    'key3': 'value3'\n}"
         assert result == expected  # noqa: S101
 
+    @pytest.mark.unit
     def test_pretty_dict_empty(self):
         """Test _pretty_dict with empty dictionary."""
         result = Jinja2Renderer._pretty_dict({}, base_indent=4)
         expected = "{\n}"
         assert result == expected  # noqa: S101
 
+    @pytest.mark.unit
     def test_pretty_dict_single_item(self):
         """Test _pretty_dict with single item."""
         result = Jinja2Renderer._pretty_dict({"key": "value"}, base_indent=4)
@@ -386,16 +406,19 @@ class TestJinja2RendererExtended:
 class TestPageObjectRendererFactory:
     """Test cases for PageObjectRendererFactory class."""
 
+    @pytest.mark.unit
     def test_create_renderer_jinja2(self):
         """Test creating Jinja2 renderer."""
         renderer = PageObjectRendererFactory.create_renderer("jinja2")
         assert isinstance(renderer, Jinja2Renderer)  # noqa: S101
 
+    @pytest.mark.unit
     def test_create_renderer_jinja2_uppercase(self):
         """Test creating Jinja2 renderer with uppercase."""
         renderer = PageObjectRendererFactory.create_renderer("JINJA2")
         assert isinstance(renderer, Jinja2Renderer)  # noqa: S101
 
+    @pytest.mark.unit
     def test_create_renderer_unsupported(self):
         """Test creating unsupported renderer type."""
         from shadowstep.exceptions.shadowstep_exceptions import ShadowstepUnsupportedRendererTypeError
@@ -407,6 +430,7 @@ class TestPageObjectRendererFactory:
 class TestModelBuilder:
     """Test cases for ModelBuilder class."""
 
+    @pytest.mark.unit
     def test_build_from_ui_tree(self):
         """Test build_from_ui_tree method."""
         ui_tree = UiElementNode(
@@ -444,6 +468,7 @@ class TestModelBuilder:
         assert len(model.properties) == 1  # noqa: S101
         assert model.properties[0].name == "button1"  # noqa: S101
 
+    @pytest.mark.unit
     def test_build_from_ui_tree_with_content_desc(self):
         """Test build_from_ui_tree with content-desc instead of text."""
         ui_tree = UiElementNode(
@@ -465,6 +490,7 @@ class TestModelBuilder:
         assert model.raw_title == "Test Description"  # noqa: S101
         assert model.need_recycler is False  # noqa: S101
 
+    @pytest.mark.unit
     def test_build_from_ui_tree_no_title(self):
         """Test build_from_ui_tree with no title."""
         ui_tree = UiElementNode(
@@ -485,6 +511,7 @@ class TestModelBuilder:
         assert model.class_name == "Page"  # noqa: S101
         assert model.raw_title == ""  # noqa: S101
 
+    @pytest.mark.unit
     def test_build_from_ui_tree_with_spaces_in_title(self):
         """Test build_from_ui_tree with spaces in title."""
         ui_tree = UiElementNode(
@@ -509,17 +536,20 @@ class TestModelBuilder:
 class TestPageObjectRenderer:
     """Test cases for PageObjectRenderer class."""
 
+    @pytest.mark.unit
     def test_init_default(self):
         """Test PageObjectRenderer initialization with default renderer."""
         renderer = PageObjectRenderer()
         assert isinstance(renderer.renderer, Jinja2Renderer)  # noqa: S101
 
+    @pytest.mark.unit
     def test_init_jinja2(self):
         """Test PageObjectRenderer initialization with jinja2 renderer."""
         renderer = PageObjectRenderer("jinja2")
         assert isinstance(renderer.renderer, Jinja2Renderer)  # noqa: S101
 
     @patch("shadowstep.page_object.page_object_element_node.get_current_func_name")
+    @pytest.mark.unit
     def test_render_and_save(self, mock_get_func_name: Mock):
         """Test render_and_save method."""
         mock_get_func_name.return_value = "test_function"
@@ -554,6 +584,7 @@ class TestPageObjectRenderer:
             assert model.properties[1].name == "button2"  # noqa: S101
 
     @patch("shadowstep.page_object.page_object_element_node.get_current_func_name")
+    @pytest.mark.unit
     def test_render_and_save_default_template(self, mock_get_func_name: Mock):
         """Test render_and_save method with default template."""
         mock_get_func_name.return_value = "test_function"

@@ -11,18 +11,21 @@ from shadowstep.page_object.page_object_parser import PageObjectParser
 class TestPageObjectParser:
     """Test cases for PageObjectParser class."""
 
+    @pytest.mark.unit
     def test_init(self):
         """Test PageObjectParser initialization."""
         parser = PageObjectParser()
         assert parser.ui_element_tree is None  # noqa: S101
         assert parser.logger is not None  # noqa: S101
 
+    @pytest.mark.unit
     def test_init_with_whitelist(self):
         """Test PageObjectParser initialization with whitelist."""
         whitelist = ("android.widget.Button", "android.widget.TextView")
         parser = PageObjectParser(white_list_classes=whitelist)
         assert whitelist == parser.WHITE_LIST_CLASSES  # noqa: S101
 
+    @pytest.mark.unit
     def test_parse_valid_xml(self):
         """Test parse method with valid XML."""
         parser = PageObjectParser()
@@ -49,6 +52,7 @@ class TestPageObjectParser:
                 mock_fromstring.assert_called_once_with(xml_content.encode("utf-8"))
                 mock_build_tree.assert_called_once_with(mock_root)
 
+    @pytest.mark.unit
     def test_parse_invalid_xml(self):
         """Test parse method with invalid XML."""
         parser = PageObjectParser()
@@ -59,6 +63,7 @@ class TestPageObjectParser:
              pytest.raises(etree.XMLSyntaxError):  # type: ignore
             parser.parse(invalid_xml)
 
+    @pytest.mark.unit
     def test_is_element_allowed_with_whitelist(self):
         """Test _is_element_allowed method with whitelist."""
         parser = PageObjectParser()
@@ -71,6 +76,7 @@ class TestPageObjectParser:
         attrib = {"class": "android.widget.Button"}
         assert parser._is_element_allowed(attrib) is False  # noqa: S101
 
+    @pytest.mark.unit
     def test_is_element_allowed_with_text(self):
         """Test _is_element_allowed method with text content."""
         parser = PageObjectParser()
@@ -79,6 +85,7 @@ class TestPageObjectParser:
         attrib = {"class": "android.widget.TextView", "text": "Hello World"}
         assert parser._is_element_allowed(attrib) is True  # noqa: S101
 
+    @pytest.mark.unit
     def test_is_element_allowed_with_content_desc(self):
         """Test _is_element_allowed method with content description."""
         parser = PageObjectParser()
@@ -87,6 +94,7 @@ class TestPageObjectParser:
         attrib = {"class": "android.widget.TextView", "content-desc": "Text description"}
         assert parser._is_element_allowed(attrib) is True  # noqa: S101
 
+    @pytest.mark.unit
     def test_is_element_allowed_clickable(self):
         """Test _is_element_allowed method with clickable attribute."""
         parser = PageObjectParser()
@@ -95,6 +103,7 @@ class TestPageObjectParser:
         attrib = {"class": "android.widget.View", "clickable": "true", "text": "Click me"}
         assert parser._is_element_allowed(attrib) is True  # noqa: S101
 
+    @pytest.mark.unit
     def test_is_element_allowed_none_of_above(self):
         """Test _is_element_allowed method with none of the special attributes."""
         parser = PageObjectParser()
@@ -103,6 +112,7 @@ class TestPageObjectParser:
         attrib = {"class": "android.widget.View"}
         assert parser._is_element_allowed(attrib) is False  # noqa: S101
 
+    @pytest.mark.unit
     def test_is_element_allowed_blacklist_class(self):
         """Test _is_element_allowed method with blacklisted class."""
         parser = PageObjectParser()
@@ -111,6 +121,7 @@ class TestPageObjectParser:
         attrib = {"class": "hierarchy"}
         assert parser._is_element_allowed(attrib) is False  # noqa: S101
 
+    @pytest.mark.unit
     def test_is_element_allowed_blacklist_resource_id(self):
         """Test _is_element_allowed method with blacklisted resource ID."""
         parser = PageObjectParser()
@@ -119,6 +130,7 @@ class TestPageObjectParser:
         attrib = {"class": "android.widget.View", "resource-id": "decor"}
         assert parser._is_element_allowed(attrib) is False  # noqa: S101
 
+    @pytest.mark.unit
     def test_is_element_allowed_whitelist_resource_id(self):
         """Test _is_element_allowed method with whitelisted resource ID."""
         parser = PageObjectParser()
@@ -127,6 +139,7 @@ class TestPageObjectParser:
         attrib = {"class": "android.widget.View", "resource-id": "button"}
         assert parser._is_element_allowed(attrib) is True  # noqa: S101
 
+    @pytest.mark.unit
     def test_build_tree_simple_hierarchy(self):
         """Test _build_tree method with simple hierarchy."""
         parser = PageObjectParser()
@@ -144,6 +157,7 @@ class TestPageObjectParser:
             assert result.tag == "node"  # noqa: S101
             assert result.attrs == {"class": "android.widget.Button", "text": "Click me"}  # noqa: S101
 
+    @pytest.mark.unit
     def test_build_tree_hierarchy_root(self):
         """Test _build_tree method with hierarchy root."""
         parser = PageObjectParser()
@@ -165,6 +179,7 @@ class TestPageObjectParser:
             assert result is not None  # noqa: S101
             assert result.tag == "node"  # noqa: S101
 
+    @pytest.mark.unit
     def test_build_tree_with_children(self):
         """Test _build_tree method with children elements."""
         parser = PageObjectParser()
@@ -195,6 +210,7 @@ class TestPageObjectParser:
             assert result.children[0].tag == "child1"  # noqa: S101
             assert result.children[1].tag == "child2"  # noqa: S101
 
+    @pytest.mark.unit
     def test_build_tree_filtered_parent_with_children(self):
         """Test _build_tree method with filtered parent but allowed children."""
         parser = PageObjectParser()
@@ -224,6 +240,7 @@ class TestPageObjectParser:
             assert len(result.children) == 1  # noqa: S101
             assert result.children[0].tag == "child"  # noqa: S101
 
+    @pytest.mark.unit
     def test_build_tree_filtered_parent_no_children(self):
         """Test _build_tree method with filtered parent and no children."""
         parser = PageObjectParser()
@@ -239,6 +256,7 @@ class TestPageObjectParser:
             with pytest.raises(ShadowstepRootNodeFilteredOutError):
                 parser._build_tree(mock_parent)
 
+    @pytest.mark.unit
     def test_build_tree_root_node_filtered_out_error(self):
         """Test _build_tree method when root node is filtered out."""
         parser = PageObjectParser()
@@ -254,6 +272,7 @@ class TestPageObjectParser:
             with pytest.raises(ShadowstepRootNodeFilteredOutError):
                 parser._build_tree(mock_root)
 
+    @pytest.mark.unit
     def test_build_tree_with_scrollable_parents(self):
         """Test _build_tree method with scrollable parents."""
         parser = PageObjectParser()
@@ -278,6 +297,7 @@ class TestPageObjectParser:
             assert result.scrollable_parents == ["el_0"]  # Parent's ID should be in scrollable_parents
             assert result.children[0].scrollable_parents == ["el_0"]  # Child should inherit scrollable parents
 
+    @pytest.mark.unit
     def test_parse_successful_parsing(self):
         """Test parse method with successful parsing."""
         parser = PageObjectParser()
@@ -304,6 +324,7 @@ class TestPageObjectParser:
                 mock_fromstring.assert_called_once_with(xml_content.encode("utf-8"))
                 mock_build_tree.assert_called_once_with(mock_root)
 
+    @pytest.mark.unit
     def test_init_with_all_parameters(self):
         """Test PageObjectParser initialization with all parameters."""
         whitelist_classes = ("android.widget.Button", "android.widget.TextView")

@@ -17,6 +17,7 @@ uv run pytest -svl --log-cli-level INFO --tb=short --setup-show  tests/test_unit
 class TestPageObjectRecyclerExplorer:
     """Test cases for PageObjectRecyclerExplorer class."""
 
+    @pytest.mark.unit
     def test_init(self):
         """Test PageObjectRecyclerExplorer initialization."""
         base = Mock()
@@ -30,6 +31,7 @@ class TestPageObjectRecyclerExplorer:
         assert explorer.generator is not None  # noqa: S101
         assert explorer.merger is not None  # noqa: S101
 
+    @pytest.mark.unit
     def test_explore_without_terminal(self):
         """Test explore method when terminal is None."""
         base = Mock()
@@ -41,6 +43,7 @@ class TestPageObjectRecyclerExplorer:
         with pytest.raises(ShadowstepTerminalNotInitializedError, match="Terminal is not initialized"):
             explorer.explore("output_dir", timeout=10)
 
+    @pytest.mark.unit
     def test_explore_with_terminal(self):
         """Test explore method with terminal available."""
         base = Mock()
@@ -82,6 +85,7 @@ class TestPageObjectRecyclerExplorer:
             base.terminal.adb_shell.assert_called()
             base.swipe.assert_called()
 
+    @pytest.mark.unit
     def test_load_class_from_file_success(self):
         """Test _load_class_from_file method with successful loading."""
         explorer = PageObjectRecyclerExplorer(Mock(), Mock())
@@ -89,10 +93,13 @@ class TestPageObjectRecyclerExplorer:
         # Create a temporary Python file
         with tempfile.NamedTemporaryFile(mode="w", suffix=".py", delete=False) as f:
             f.write("""
+import pytest
+
 class TestPage:
     def __init__(self):
         pass
     
+    @pytest.mark.unit
     def test_method(self):
         return "test"
 """)    # don't change intend!
@@ -110,6 +117,7 @@ class TestPage:
         finally:
             os.unlink(temp_file)
 
+    @pytest.mark.unit
     def test_load_class_from_file_nonexistent_file(self):
         """Test _load_class_from_file method with nonexistent file."""
         explorer = PageObjectRecyclerExplorer(Mock(), Mock())
@@ -117,6 +125,7 @@ class TestPage:
         with pytest.raises(FileNotFoundError):
             explorer._load_class_from_file("nonexistent.py", "TestPage")
 
+    @pytest.mark.unit
     def test_explore_failed_to_load_class(self):
         """Test explore method when class loading fails."""
         base = Mock()
@@ -147,6 +156,7 @@ class TestPage:
 
             assert result == ""  # noqa: S101
 
+    @pytest.mark.unit
     def test_explore_no_recycler_property(self):
         """Test explore method when page has no recycler property."""
         base = Mock()
@@ -180,6 +190,7 @@ class TestPage:
 
         assert result == ""  # noqa: S101
 
+    @pytest.mark.unit
     def test_explore_recycler_no_scroll_down(self):
         """Test explore method when recycler has no scroll_down method."""
         base = Mock()
@@ -217,6 +228,7 @@ class TestPage:
 
         assert result == ""  # noqa: S101
 
+    @pytest.mark.unit
     def test_explore_with_scroll_down_loop(self):
         """Test explore method with scroll_down loop."""
         base = Mock()
@@ -266,6 +278,7 @@ class TestPage:
         # Should call scroll_down 3 times (2 True + 1 False)
         assert mock_recycler.scroll_down.call_count == 3  # noqa: S101
 
+    @pytest.mark.unit
     def test_load_class_from_file_invalid_spec(self):
         """Test _load_class_from_file method with invalid spec."""
         explorer = PageObjectRecyclerExplorer(Mock(), Mock())
@@ -281,6 +294,7 @@ class TestPage:
         finally:
             os.unlink(temp_file)
 
+    @pytest.mark.unit
     def test_load_class_from_file_class_not_found(self):
         """Test _load_class_from_file method when class is not found in module."""
         explorer = PageObjectRecyclerExplorer(Mock(), Mock())

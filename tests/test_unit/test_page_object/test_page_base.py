@@ -16,6 +16,7 @@ class ConcretePageBaseShadowstep(PageBaseShadowstep):
 class TestPageBaseShadowstep:
     """Test cases for PageBaseShadowstep class."""
 
+    @pytest.mark.unit
     def test_singleton_behavior(self):
         """Test that PageBaseShadowstep implements singleton pattern correctly."""
         # Clear any existing instances
@@ -29,6 +30,7 @@ class TestPageBaseShadowstep:
         instance2 = ConcretePageBaseShadowstep()
         assert instance1 is instance2
 
+    @pytest.mark.unit
     def test_get_instance_class_method(self):
         """Test get_instance class method returns singleton instance."""
         # Clear any existing instances
@@ -40,6 +42,7 @@ class TestPageBaseShadowstep:
         assert instance1 is instance2
         assert isinstance(instance1, ConcretePageBaseShadowstep)
 
+    @pytest.mark.unit
     def test_clear_instance_class_method(self):
         """Test clear_instance class method removes stored instance."""
         # Create an instance
@@ -52,6 +55,7 @@ class TestPageBaseShadowstep:
         instance2 = ConcretePageBaseShadowstep()
         assert instance1 is not instance2
 
+    @pytest.mark.unit
     def test_abstract_edges_property(self):
         """Test that edges property is abstract and must be implemented."""
         # This test verifies that PageBaseShadowstep cannot be instantiated

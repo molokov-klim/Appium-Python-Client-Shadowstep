@@ -15,6 +15,7 @@ from shadowstep.terminal.aapt import Aapt
 class TestAapt:
     """Test cases for Aapt class."""
 
+    @pytest.mark.unit
     def test_get_package_name_success(self):
         """Test successful package name extraction."""
         # Arrange
@@ -30,6 +31,7 @@ class TestAapt:
             assert result == expected_package  # noqa: S101
             mock_subprocess.assert_called_once_with(["aapt", "dump", "badging", apk_path])
 
+    @pytest.mark.unit
     def test_get_package_name_subprocess_error(self):
         """Test package name extraction with subprocess error."""
         # Arrange
@@ -40,6 +42,7 @@ class TestAapt:
             # Act & Assert
                 Aapt.get_package_name(apk_path)
 
+    @pytest.mark.unit
     def test_get_package_name_value_error(self):
         """Test package name extraction with ValueError (package name not found)."""
         # Arrange
@@ -51,6 +54,7 @@ class TestAapt:
             # Act & Assert
                 Aapt.get_package_name(apk_path)
 
+    @pytest.mark.unit
     def test_get_launchable_activity_success(self):
         """Test successful launchable activity extraction."""
         # Arrange
@@ -68,6 +72,7 @@ application: label='App' icon=''"""
             assert result == expected_activity  # noqa: S101
             mock_subprocess.assert_called_once_with(["aapt", "dump", "badging", apk_path], universal_newlines=True)
 
+    @pytest.mark.unit
     def test_get_launchable_activity_subprocess_error(self):
         """Test launchable activity extraction with subprocess error."""
         # Arrange
@@ -80,6 +85,7 @@ application: label='App' icon=''"""
             # Assert
             assert result == ""  # noqa: S101
 
+    @pytest.mark.unit
     def test_get_launchable_activity_stop_iteration(self):
         """Test launchable activity extraction with StopIteration (no launchable-activity found)."""
         # Arrange
@@ -94,6 +100,7 @@ application: label='App' icon=''"""
             # Assert
             assert result == ""  # noqa: S101
 
+    @pytest.mark.unit
     def test_get_launchable_activity_empty_output(self):
         """Test launchable activity extraction with empty output."""
         # Arrange
@@ -107,6 +114,7 @@ application: label='App' icon=''"""
             # Assert
             assert result == ""  # noqa: S101
 
+    @pytest.mark.unit
     def test_get_launchable_activity_multiple_activities(self):
         """Test launchable activity extraction with multiple activities (should return first)."""
         # Arrange
@@ -124,6 +132,7 @@ application: label='App' icon=''"""
             # Assert
             assert result == expected_activity  # noqa: S101
 
+    @pytest.mark.unit
     def test_get_package_name_with_path_construction(self):
         """Test that Path is used correctly in get_package_name."""
         # Arrange
@@ -138,6 +147,7 @@ application: label='App' icon=''"""
                 # Assert
                 mock_subprocess.assert_called_once_with(["aapt", "dump", "badging", expected_path])
 
+    @pytest.mark.unit
     def test_get_launchable_activity_direct_path(self):
         """Test that get_launchable_activity uses path directly without os.path.join."""
         # Arrange

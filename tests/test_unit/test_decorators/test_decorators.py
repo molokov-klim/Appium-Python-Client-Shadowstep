@@ -48,6 +48,7 @@ class MockClass:
 class TestFailSafe:
     """Test cases for fail_safe decorator."""
 
+    @pytest.mark.unit
     def test_fail_safe_success_first_attempt(self) -> None:
         """Test fail_safe with successful first attempt."""
         mock_obj = MockClass()
@@ -60,6 +61,7 @@ class TestFailSafe:
         assert result == "success"  # noqa: S101
         assert mock_obj.logger.warning.call_count == 0  # noqa: S101
 
+    @pytest.mark.unit
     def test_fail_safe_retry_on_exception(self) -> None:
         """Test fail_safe with retry on exception."""
         mock_obj = MockClass()
@@ -77,6 +79,7 @@ class TestFailSafe:
         assert result == "success"  # noqa: S101
         assert call_count == 3  # noqa: S101
 
+    @pytest.mark.unit
     def test_fail_safe_max_retries_exceeded(self) -> None:
         """Test fail_safe when max retries exceeded."""
         mock_obj = MockClass()
@@ -88,6 +91,7 @@ class TestFailSafe:
         with pytest.raises(Exception, match="Persistent error"):
             test_method(mock_obj)
 
+    @pytest.mark.unit
     def test_fail_safe_with_fallback(self) -> None:
         """Test fail_safe with fallback value."""
         mock_obj = MockClass()
@@ -99,6 +103,7 @@ class TestFailSafe:
         result = test_method(mock_obj)
         assert result == "fallback_value"  # noqa: S101
 
+    @pytest.mark.unit
     def test_fail_safe_with_custom_exception(self) -> None:
         """Test fail_safe with custom exception."""
         mock_obj = MockClass()
@@ -110,10 +115,11 @@ class TestFailSafe:
         with pytest.raises(ValueError, match="failed after 1 attempts"):
             test_method(mock_obj)
 
+    @pytest.mark.unit
     def test_fail_safe_reconnection_logic(self) -> None:
         """Test fail_safe reconnection logic."""
         mock_obj = MockClass()
-        mock_obj._connected = False
+        mock_obj._connected = False  # type: ignore
         mock_obj.reconnect = Mock()
 
         @fail_safe(retries=2, delay=0.1)
@@ -124,6 +130,7 @@ class TestFailSafe:
         assert result == "success"  # noqa: S101
         mock_obj.reconnect.assert_called()
 
+    @pytest.mark.unit
     def test_fail_safe_log_args(self) -> None:
         """Test fail_safe with argument logging."""
         mock_obj = MockClass()
@@ -138,6 +145,7 @@ class TestFailSafe:
         # Check that debug was called for args logging
         mock_obj.logger.debug.assert_called()
 
+    @pytest.mark.unit
     def test_fail_safe_log_args_with_long_string(self) -> None:
         """Test fail_safe with argument logging and long string truncation."""
         mock_obj = MockClass()
@@ -154,6 +162,7 @@ class TestFailSafe:
         # Check that debug was called for args logging
         mock_obj.logger.debug.assert_called()
 
+    @pytest.mark.unit
     def test_fail_safe_log_args_with_kwargs(self) -> None:
         """Test fail_safe with argument logging including kwargs."""
         mock_obj = MockClass()
@@ -168,10 +177,11 @@ class TestFailSafe:
         # Check that debug was called for args logging
         mock_obj.logger.debug.assert_called()
 
+    @pytest.mark.unit
     def test_fail_safe_disconnection_after_exception(self) -> None:
         """Test fail_safe reconnection logic after exception."""
         mock_obj = MockClass()
-        mock_obj._connected = True
+        mock_obj._connected = True  # type: ignore
         mock_obj.reconnect = Mock()
         call_count = 0
 
@@ -193,6 +203,7 @@ class TestFailSafe:
         # Check that reconnect was called
         mock_obj.reconnect.assert_called()
 
+    @pytest.mark.unit
     def test_fail_safe_raise_exception_without_last_exc(self) -> None:
         """Test fail_safe with raise_exception when last_exc is None."""
         mock_obj = MockClass()
@@ -206,6 +217,7 @@ class TestFailSafe:
         result = test_method(mock_obj)
         assert result == "success"
 
+    @pytest.mark.unit
     def test_fail_safe_runtime_error_fallback(self) -> None:
         """Test fail_safe RuntimeError when all retries exhausted and no last_exc."""
         mock_obj = MockClass()
@@ -219,6 +231,7 @@ class TestFailSafe:
         result = test_method(mock_obj)
         assert result == "success"
 
+    @pytest.mark.unit
     def test_fail_safe_raise_exception_no_last_exc_scenario(self) -> None:
         """Test fail_safe with raise_exception when no exception occurs but retries are exhausted."""
         mock_obj = MockClass()
@@ -242,6 +255,7 @@ class TestFailSafe:
         result = test_method(mock_obj)
         assert result == "success"
 
+    @pytest.mark.unit
     def test_fail_safe_runtime_error_no_last_exc_scenario(self) -> None:
         """Test fail_safe RuntimeError when no exception occurs but retries are exhausted."""
         mock_obj = MockClass()
@@ -265,6 +279,7 @@ class TestFailSafe:
         result = test_method(mock_obj)
         assert result == "success"
 
+    @pytest.mark.unit
     def test_fail_safe_raise_exception_without_last_exc_edge_case(self) -> None:
         """Test fail_safe edge case where raise_exception is set but last_exc is None."""
         mock_obj = MockClass()
@@ -279,6 +294,7 @@ class TestFailSafe:
         result = test_method(mock_obj)
         assert result == "success"
 
+    @pytest.mark.unit
     def test_fail_safe_runtime_error_without_last_exc_edge_case(self) -> None:
         """Test fail_safe edge case where all retries exhausted but last_exc is None."""
         mock_obj = MockClass()
@@ -293,6 +309,7 @@ class TestFailSafe:
         result = test_method(mock_obj)
         assert result == "success"
 
+    @pytest.mark.unit
     def test_fail_safe_raise_exception_no_last_exc_final_fallback(self) -> None:
         """Test fail_safe final fallback when raise_exception is set but no last_exc."""
         mock_obj = MockClass()
@@ -306,6 +323,7 @@ class TestFailSafe:
         result = test_method(mock_obj)
         assert result == "success"
 
+    @pytest.mark.unit
     def test_fail_safe_runtime_error_no_last_exc_final_fallback(self) -> None:
         """Test fail_safe final fallback when no last_exc and no raise_exception."""
         mock_obj = MockClass()
@@ -319,26 +337,28 @@ class TestFailSafe:
         result = test_method(mock_obj)
         assert result == "success"
 
+    @pytest.mark.unit
     def test_fail_safe_log_args_detailed_formatting(self) -> None:
         """Test fail_safe with detailed argument formatting including self reference."""
         mock_obj = MockClass()
 
         @fail_safe(retries=1, delay=0.1, log_args=True)
-        def test_method(self: MockClass, normal_arg: str, complex_arg: dict) -> str:
+        def test_method(self: MockClass, normal_arg: str, complex_arg: dict[str, Any]) -> str:
             raise Exception("Test exception")
 
         complex_dict = {"key": "value", "nested": {"inner": "data"}}
-        
+
         with pytest.raises(Exception, match="Test exception"):
             test_method(mock_obj, "test_string", complex_dict)
 
         # Check that debug was called for args logging
         mock_obj.logger.debug.assert_called()
-        
+
         # Verify the specific formatting calls were made
         debug_calls = mock_obj.logger.debug.call_args_list
         assert len(debug_calls) >= 1  # At least stack trace logging
 
+    @pytest.mark.unit
     def test_fail_safe_log_args_with_self_reference(self) -> None:
         """Test fail_safe log_args with self reference formatting."""
         mock_obj = MockClass()
@@ -348,13 +368,14 @@ class TestFailSafe:
             raise Exception("Test exception")
 
         other_mock = MockClass()
-        
+
         with pytest.raises(Exception, match="Test exception"):
             test_method(mock_obj, other_mock)
 
         # Check that debug was called for args logging
         mock_obj.logger.debug.assert_called()
 
+    @pytest.mark.unit
     def test_fail_safe_log_args_with_long_string_truncation(self) -> None:
         """Test fail_safe log_args with string truncation logic."""
         mock_obj = MockClass()
@@ -365,13 +386,14 @@ class TestFailSafe:
 
         # Create a string longer than 200 characters to trigger truncation
         very_long_string = "x" * 250
-        
+
         with pytest.raises(Exception, match="Test exception"):
             test_method(mock_obj, very_long_string)
 
         # Check that debug was called for args logging
         mock_obj.logger.debug.assert_called()
 
+    @pytest.mark.unit
     def test_fail_safe_log_args_with_kwargs_formatting(self) -> None:
         """Test fail_safe log_args with kwargs formatting."""
         mock_obj = MockClass()
@@ -386,12 +408,14 @@ class TestFailSafe:
         # Check that debug was called for args logging
         mock_obj.logger.debug.assert_called()
 
+    @pytest.mark.unit
     def test_fail_safe_log_args_comprehensive_formatting(self) -> None:
         """Test fail_safe log_args with comprehensive argument formatting to cover lines 97-108."""
         mock_obj = MockClass()
 
         @fail_safe(retries=1, delay=0.1, log_args=True, exceptions=(Exception,))
-        def test_method(self: MockClass, normal_arg: str, long_arg: str, complex_arg: dict, other_obj: MockClass) -> str:
+        def test_method(self: MockClass, normal_arg: str, long_arg: str, complex_arg: dict[str, Any],
+                        other_obj: MockClass) -> str:
             raise Exception("Test exception")
 
         # Create a very long string to trigger truncation logic
@@ -405,6 +429,7 @@ class TestFailSafe:
         # Check that debug was called for args logging
         mock_obj.logger.debug.assert_called()
 
+    @pytest.mark.unit
     def test_fail_safe_log_args_formatting_branch_trigger(self) -> None:
         """Ensure log_args formatting branch executes when specified exceptions are caught."""
         mock_obj = MockClass()
@@ -419,6 +444,7 @@ class TestFailSafe:
         formatted_call = mock_obj.logger.debug.call_args_list[0][0][1]
         assert isinstance(formatted_call, list)
 
+    @pytest.mark.unit
     def test_fail_safe_raise_exception_without_last_exc_zero_retries(self) -> None:
         """fail_safe should raise configured exception when retries set to zero."""
 
@@ -429,6 +455,7 @@ class TestFailSafe:
         with pytest.raises(ValueError, match="failed after 0 attempts"):
             test_method(MockClass())
 
+    @pytest.mark.unit
     def test_fail_safe_runtime_error_without_last_exc_zero_retries(self) -> None:
         """fail_safe should raise RuntimeError when retries zero and no fallback or last_exc."""
 
@@ -443,6 +470,7 @@ class TestFailSafe:
 class TestRetry:
     """Test cases for retry decorator."""
 
+    @pytest.mark.unit
     def test_retry_success_first_attempt(self) -> None:
         """Test retry with successful first attempt."""
         call_count = 0
@@ -457,6 +485,7 @@ class TestRetry:
         assert result is True  # noqa: S101
         assert call_count == 1  # noqa: S101
 
+    @pytest.mark.unit
     def test_retry_retry_on_false(self) -> None:
         """Test retry when function returns False."""
         call_count = 0
@@ -471,6 +500,7 @@ class TestRetry:
         assert result is True  # noqa: S101
         assert call_count == 3  # noqa: S101
 
+    @pytest.mark.unit
     def test_retry_retry_on_none(self) -> None:
         """Test retry when function returns None."""
         call_count = 0
@@ -487,6 +517,7 @@ class TestRetry:
         assert result == "success"  # noqa: S101
         assert call_count == 2  # noqa: S101
 
+    @pytest.mark.unit
     def test_retry_max_retries_exceeded(self) -> None:
         """Test retry when max retries exceeded."""
         call_count = 0
@@ -506,8 +537,10 @@ class TestTimeIt:
     """Test cases for time_it decorator."""
 
     @patch("builtins.print")
+    @pytest.mark.unit
     def test_time_it_execution_time(self, mock_print: Mock) -> None:
         """Test time_it decorator measures execution time."""
+
         @time_it
         def test_function() -> str:
             time.sleep(0.1)
@@ -521,8 +554,10 @@ class TestTimeIt:
         assert "seconds" in print_call  # noqa: S101
 
     @patch("builtins.print")
+    @pytest.mark.unit
     def test_time_it_with_arguments(self, mock_print: Mock) -> None:
         """Test time_it decorator with function arguments."""
+
         @time_it
         def test_function(arg1: str, arg2: int) -> str:
             return f"{arg1}_{arg2}"
@@ -535,6 +570,7 @@ class TestTimeIt:
 class TestStepInfo:
     """Test cases for step_info decorator."""
 
+    @pytest.mark.unit
     def test_step_info_success(self) -> None:
         """Test step_info decorator with successful execution."""
         mock_obj = MockClass()
@@ -551,6 +587,7 @@ class TestStepInfo:
         mock_obj.logger.info.assert_called()
         mock_obj.shadowstep.get_screenshot.assert_called()
 
+    @pytest.mark.unit
     def test_step_info_with_exception(self) -> None:
         """Test step_info decorator with exception."""
         mock_obj = MockClass()
@@ -566,6 +603,7 @@ class TestStepInfo:
         # Check that error logging was called
         mock_obj.logger.error.assert_called()
 
+    @pytest.mark.unit
     def test_step_info_screen_recording(self) -> None:
         """Test step_info decorator with screen recording."""
         mock_obj = MockClass()
@@ -584,6 +622,7 @@ class TestStepInfo:
         mock_obj.driver.start_recording_screen.assert_called_once()
         # Note: stop_recording_screen is only called on exception, not on success
 
+    @pytest.mark.unit
     def test_step_info_video_recording_error(self) -> None:
         """Test step_info decorator with video recording error."""
         mock_obj = MockClass()
@@ -604,6 +643,7 @@ class TestStepInfo:
         # Check that telegram error message was sent
         mock_obj.telegram.send_message.assert_called()
 
+    @pytest.mark.unit
     def test_step_info_screen_recording_start_error(self) -> None:
         """Test step_info decorator with screen recording start error."""
         mock_obj = MockClass()
@@ -624,6 +664,7 @@ class TestStepInfo:
 class TestCurrentPage:
     """Test cases for current_page decorator."""
 
+    @pytest.mark.unit
     def test_current_page_success(self) -> None:
         """Test current_page decorator with successful execution."""
         mock_obj = MockClass()
@@ -638,6 +679,7 @@ class TestCurrentPage:
         # Check that logging was called
         mock_obj.logger.info.assert_called()
 
+    @pytest.mark.unit
     def test_current_page_with_arguments(self) -> None:
         """Test current_page decorator with method arguments."""
         mock_obj = MockClass()
@@ -654,6 +696,7 @@ class TestLogInfo:
     """Test cases for log_info decorator."""
 
     @patch("logging.getLogger")
+    @pytest.mark.unit
     def test_log_info_success(self, mock_get_logger: Mock) -> None:
         """Test log_info decorator with successful execution."""
         mock_logger = Mock()
@@ -670,6 +713,7 @@ class TestLogInfo:
         mock_logger.info.assert_called()
 
     @patch("logging.getLogger")
+    @pytest.mark.unit
     def test_log_info_with_kwargs(self, mock_get_logger: Mock) -> None:
         """Test log_info decorator with keyword arguments."""
         mock_logger = Mock()
@@ -690,6 +734,7 @@ class TestLogDebug:
     """Test cases for log_debug decorator."""
 
     @patch("logging.getLogger")
+    @pytest.mark.unit
     def test_log_debug_success(self, mock_get_logger: Mock) -> None:
         """Test log_debug decorator with successful execution."""
         mock_logger = Mock()
@@ -706,6 +751,7 @@ class TestLogDebug:
         mock_logger.debug.assert_called()
 
     @patch("logging.getLogger")
+    @pytest.mark.unit
     def test_log_debug_with_kwargs(self, mock_get_logger: Mock) -> None:
         """Test log_debug decorator with keyword arguments."""
         mock_logger = Mock()
@@ -722,6 +768,7 @@ class TestLogDebug:
         mock_logger.debug.assert_called()
 
     @patch("logging.getLogger")
+    @pytest.mark.unit
     def test_log_debug_with_exception(self, mock_get_logger: Mock) -> None:
         """Test log_debug decorator with exception handling."""
         mock_logger = Mock()
@@ -738,6 +785,7 @@ class TestLogDebug:
         mock_logger.debug.assert_called()
 
     @patch("logging.getLogger")
+    @pytest.mark.unit
     def test_log_debug_preserves_metadata(self, mock_get_logger: Mock) -> None:
         """Test that log_debug preserves function metadata."""
         mock_logger = Mock()
@@ -755,6 +803,7 @@ class TestLogDebug:
 class TestDefaultExceptions:
     """Test cases for DEFAULT_EXCEPTIONS constant."""
 
+    @pytest.mark.unit
     def test_default_exceptions_contains_expected_types(self) -> None:
         """Test that DEFAULT_EXCEPTIONS contains expected exception types."""
         from selenium.common import (
@@ -771,6 +820,7 @@ class TestDefaultExceptions:
 
         assert expected_exceptions == DEFAULT_EXCEPTIONS  # noqa: S101
 
+    @pytest.mark.unit
     def test_default_exceptions_are_exception_types(self) -> None:
         """Test that all items in DEFAULT_EXCEPTIONS are exception types."""
         for exc_type in DEFAULT_EXCEPTIONS:
@@ -780,6 +830,7 @@ class TestDefaultExceptions:
 class TestDecoratorIntegration:
     """Integration tests for decorators."""
 
+    @pytest.mark.unit
     def test_multiple_decorators_combined(self) -> None:
         """Test combining multiple decorators."""
         mock_obj = MockClass()
@@ -792,8 +843,10 @@ class TestDecoratorIntegration:
         result = test_method(mock_obj)
         assert result == "success"  # noqa: S101
 
+    @pytest.mark.unit
     def test_decorator_preserves_function_metadata(self) -> None:
         """Test that decorators preserve function metadata."""
+
         @fail_safe(retries=1, delay=0.1)
         def test_function(arg1: str, arg2: int = 42) -> str:
             """Test function docstring."""
@@ -802,8 +855,10 @@ class TestDecoratorIntegration:
         assert test_function.__name__ == "test_function"  # noqa: S101
         assert test_function.__doc__ == "Test function docstring."  # noqa: S101
 
+    @pytest.mark.unit
     def test_decorator_type_hints_preserved(self) -> None:
         """Test that decorators preserve type hints."""
+
         @log_info()
         def test_function(arg1: str, arg2: int) -> str:
             return f"{arg1}_{arg2}"

@@ -68,6 +68,7 @@ class TestXPathConverter:
                   ShadowstepDictAttribute.RESOURCE_ID: "ru.figma.app.debug:id/paymentMethods"}}),
         ]
     )
+    @pytest.mark.unit
     def test_xpath_to_dict_attributes(self, xpath: str, expected: dict[str, Any]):
         """Test conversion of XPath attributes to dictionary format."""
         converter = XPathConverter()
@@ -295,6 +296,7 @@ class TestXPathConverter:
             ),
         ]
     )
+    @pytest.mark.unit
     def test_xpath_to_dict(self, xpath: str, expected: dict[str, Any]):
         """Test conversion of complex XPath expressions to dictionary format."""
         converter = XPathConverter()
@@ -467,6 +469,7 @@ class TestXPathConverter:
             ),
         ],
     )
+    @pytest.mark.unit
     def test_xpath_to_dict_deep_nesting(self, xpath: Any, expected: Any):
         converter = XPathConverter()
         shadowstep_dict = converter.xpath_to_dict(xpath)
@@ -559,6 +562,7 @@ class TestXPathConverter:
             ),
         ],
     )
+    @pytest.mark.unit
     def test_xpath_to_dict_with_functions(self, xpath: Any, expected: Any):
         converter = XPathConverter()
         shadowstep_dict = converter.xpath_to_dict(xpath)
@@ -650,6 +654,7 @@ class TestXPathConverter:
             ),
         ],
     )
+    @pytest.mark.unit
     def test_xpath_to_dict_with_following_sibling(self, xpath: str, expected: dict[str, Any]):
         converter = XPathConverter()
         result = converter.xpath_to_dict(xpath)
@@ -697,6 +702,7 @@ class TestXPathConverter:
             ("//*[6]", "new UiSelector().instance(5);"),
         ]
     )
+    @pytest.mark.unit
     def test_xpath_to_ui_attributes(self, xpath: str, expected: str):
         """Test conversion of XPath attributes to UiSelector format."""
         converter = XPathConverter()
@@ -845,6 +851,7 @@ class TestXPathConverter:
             ),
         ]
     )
+    @pytest.mark.unit
     def test_xpath_to_ui(self, xpath: str, expected: str):
         """Test conversion of complex XPath expressions to UiSelector format."""
         converter = XPathConverter()
@@ -865,6 +872,7 @@ class TestXPathConverter:
             ('//*[contains(@nonexistent,"value")]', ""),
         ]
     )
+    @pytest.mark.unit
     def test_xpath_to_ui_negative(self, xpath: str, expected: str):
         """Test conversion of invalid XPath expressions."""
         converter = XPathConverter()
@@ -894,6 +902,7 @@ class TestXPathConverter:
             # Add other deep nested scenarios if needed
         ],
     )
+    @pytest.mark.unit
     def test_xpath_to_ui_deep_nesting(self, xpath: str, expected: str):
         converter = XPathConverter()
         ui_selector = converter.xpath_to_ui_selector(xpath)
@@ -930,6 +939,7 @@ class TestXPathConverter:
             # Can add other function variants for coverage
         ],
     )
+    @pytest.mark.unit
     def test_xpath_to_ui_with_functions(self, xpath: str, expected: str):
         converter = XPathConverter()
         ui_selector = converter.xpath_to_ui_selector(xpath)
@@ -975,6 +985,7 @@ class TestXPathConverter:
             ),
         ],
     )
+    @pytest.mark.unit
     def test_xpath_to_ui_with_following_sibling(self, xpath: str, expected: str):
         converter = XPathConverter()
         ui_selector = converter.xpath_to_ui_selector(xpath)
@@ -985,6 +996,7 @@ class TestXPathConverter:
         logger.info("+++++++++++++++++++++++++++++++++")
         assert expected == ui_selector  # noqa: S101  # noqa: S101
 
+    @pytest.mark.unit
     def test_to_bool_with_invalid_value(self):
         """Test _to_bool function with invalid values."""
         from shadowstep.locator.converter.xpath_converter import _to_bool
@@ -998,6 +1010,7 @@ class TestXPathConverter:
         with pytest.raises(ShadowstepBooleanLiteralError):
             _to_bool(123)
     
+    @pytest.mark.unit
     def test_to_number_with_invalid_value(self):
         """Test _to_number function with invalid values."""
         from shadowstep.locator.converter.xpath_converter import _to_number
@@ -1012,6 +1025,7 @@ class TestXPathConverter:
         result = _to_number(3.14)
         assert result == 3
     
+    @pytest.mark.unit
     def test_validate_xpath_with_logical_operators(self):
         """Test _validate_xpath with logical operators."""
         from shadowstep.exceptions.shadowstep_exceptions import ShadowstepLogicalOperatorsNotSupportedError
@@ -1024,6 +1038,7 @@ class TestXPathConverter:
         with pytest.raises(ShadowstepLogicalOperatorsNotSupportedError):
             converter._validate_xpath('//*[@text="test" or @class="button"]')
     
+    @pytest.mark.unit
     def test_validate_xpath_with_invalid_syntax(self):
         """Test _validate_xpath with invalid XPath syntax."""
         from shadowstep.exceptions.shadowstep_exceptions import ShadowstepInvalidXPathError
@@ -1033,12 +1048,14 @@ class TestXPathConverter:
         with pytest.raises(ShadowstepInvalidXPathError):
             converter._validate_xpath('//*[invalid syntax')
     
+    @pytest.mark.unit
     def test_ast_to_ui_selector_empty_list(self):
         """Test _ast_to_ui_selector with empty list."""
         converter = XPathConverter()
         result = converter._ast_to_ui_selector([])
         assert result == ""
     
+    @pytest.mark.unit
     def test_ast_to_ui_selector_unsupported_abbreviated_step(self):
         """Test _ast_to_ui_selector with unsupported abbreviated step."""
         from shadowstep.exceptions.shadowstep_exceptions import ShadowstepUnsupportedAbbreviatedStepError
@@ -1052,6 +1069,7 @@ class TestXPathConverter:
         with pytest.raises(ShadowstepUnsupportedAbbreviatedStepError):
             converter._ast_to_ui_selector([mock_step])
     
+    @pytest.mark.unit
     def test_ast_to_ui_selector_unsupported_ast_node(self):
         """Test _ast_to_ui_selector with unsupported AST node."""
         from shadowstep.exceptions.shadowstep_exceptions import ShadowstepUnsupportedASTNodeError
@@ -1062,12 +1080,14 @@ class TestXPathConverter:
         with pytest.raises(ShadowstepUnsupportedASTNodeError):
             converter._ast_to_ui_selector(["invalid_node"])
     
+    @pytest.mark.unit
     def test_ast_to_dict_empty_list(self):
         """Test _ast_to_dict with empty list."""
         converter = XPathConverter()
         result = converter._ast_to_dict([])
         assert result == {}
     
+    @pytest.mark.unit
     def test_build_shadowstep_dict_unsupported_ast_node(self):
         """Test _build_shadowstep_dict with unsupported AST node."""
         from shadowstep.exceptions.shadowstep_exceptions import ShadowstepUnsupportedASTNodeBuildError
@@ -1077,6 +1097,7 @@ class TestXPathConverter:
         with pytest.raises(ShadowstepUnsupportedASTNodeBuildError):
             converter._build_shadowstep_dict(["invalid_node"], {})
     
+    @pytest.mark.unit
     def test_ast_to_list_unsupported_ast_node(self):
         """Test _ast_to_list with unsupported AST node."""
         from shadowstep.exceptions.shadowstep_exceptions import ShadowstepUnsupportedASTNodeError
@@ -1086,6 +1107,7 @@ class TestXPathConverter:
         with pytest.raises(ShadowstepUnsupportedASTNodeError):
             converter._ast_to_list("invalid_node")
     
+    @pytest.mark.unit
     def test_collect_predicates_absolute_path_with_relative(self):
         """Test _collect_predicates with AbsolutePath that has relative."""
         from eulxml.xpath.ast import AbsolutePath, Step, NameTest
@@ -1101,6 +1123,7 @@ class TestXPathConverter:
         predicates = list(converter._collect_predicates(abs_path))
         assert len(predicates) == 0  # No predicates in this case
     
+    @pytest.mark.unit
     def test_apply_predicate_to_dict_contains_not_supported(self):
         """Test _apply_predicate_to_dict with contains on unsupported attribute."""
         from shadowstep.exceptions.shadowstep_exceptions import ShadowstepContainsNotSupportedError
@@ -1114,6 +1137,7 @@ class TestXPathConverter:
         with pytest.raises(ShadowstepUnsupportedAttributeExpressionError):
             converter._apply_predicate_to_dict(func_call, {})
     
+    @pytest.mark.unit
     def test_apply_predicate_to_dict_starts_with_not_supported(self):
         """Test _apply_predicate_to_dict with starts-with on unsupported attribute."""
         from shadowstep.exceptions.shadowstep_exceptions import ShadowstepStartsWithNotSupportedError
@@ -1127,6 +1151,7 @@ class TestXPathConverter:
         with pytest.raises(ShadowstepUnsupportedAttributeExpressionError):
             converter._apply_predicate_to_dict(func_call, {})
     
+    @pytest.mark.unit
     def test_apply_predicate_to_dict_matches_not_supported(self):
         """Test _apply_predicate_to_dict with matches on unsupported attribute."""
         from shadowstep.exceptions.shadowstep_exceptions import ShadowstepMatchesNotSupportedError
@@ -1140,6 +1165,7 @@ class TestXPathConverter:
         with pytest.raises(ShadowstepUnsupportedAttributeExpressionError):
             converter._apply_predicate_to_dict(func_call, {})
     
+    @pytest.mark.unit
     def test_apply_predicate_to_dict_unsupported_function(self):
         """Test _apply_predicate_to_dict with unsupported function."""
         from shadowstep.exceptions.shadowstep_exceptions import ShadowstepUnsupportedFunctionError
@@ -1153,6 +1179,7 @@ class TestXPathConverter:
         with pytest.raises(ShadowstepUnsupportedFunctionError):
             converter._apply_predicate_to_dict(func_call, {})
     
+    @pytest.mark.unit
     def test_apply_predicate_to_dict_unsupported_comparison_operator(self):
         """Test _apply_predicate_to_dict with unsupported comparison operator."""
         from shadowstep.exceptions.shadowstep_exceptions import ShadowstepUnsupportedComparisonOperatorError
@@ -1166,6 +1193,7 @@ class TestXPathConverter:
         with pytest.raises(ShadowstepUnsupportedComparisonOperatorError):
             converter._apply_predicate_to_dict(bexpr, {})
     
+    @pytest.mark.unit
     def test_apply_predicate_to_dict_unsupported_attribute(self):
         """Test _apply_predicate_to_dict with unsupported attribute."""
         from eulxml.xpath.ast import BinaryExpression, Step, NameTest
@@ -1183,6 +1211,7 @@ class TestXPathConverter:
         with pytest.raises(ShadowstepUnsupportedAttributeError):
             converter._apply_predicate_to_dict(bexpr, {})
     
+    @pytest.mark.unit
     def test_apply_predicate_to_dict_attribute_presence_not_supported(self):
         """Test _apply_predicate_to_dict with attribute presence on unsupported attribute."""
         from shadowstep.exceptions.shadowstep_exceptions import ShadowstepAttributePresenceNotSupportedError
@@ -1196,6 +1225,7 @@ class TestXPathConverter:
         
         converter._apply_predicate_to_dict(step, {})
     
+    @pytest.mark.unit
     def test_apply_predicate_to_dict_unsupported_predicate(self):
         """Test _apply_predicate_to_dict with unsupported predicate."""
         from shadowstep.exceptions.shadowstep_exceptions import ShadowstepUnsupportedPredicateError
@@ -1205,6 +1235,7 @@ class TestXPathConverter:
         with pytest.raises(ShadowstepUnsupportedPredicateError):
             converter._apply_predicate_to_dict("invalid_predicate", {})
     
+    @pytest.mark.unit
     def test_predicate_to_ui_contains_not_supported(self):
         """Test _predicate_to_ui with contains on unsupported attribute."""
         from shadowstep.exceptions.shadowstep_exceptions import ShadowstepContainsNotSupportedError
@@ -1218,6 +1249,7 @@ class TestXPathConverter:
         with pytest.raises(ShadowstepUnsupportedAttributeExpressionError):
             converter._predicate_to_ui(func_call)
     
+    @pytest.mark.unit
     def test_predicate_to_ui_starts_with_not_supported(self):
         """Test _predicate_to_ui with starts-with on unsupported attribute."""
         from shadowstep.exceptions.shadowstep_exceptions import ShadowstepStartsWithNotSupportedError
@@ -1231,6 +1263,7 @@ class TestXPathConverter:
         with pytest.raises(ShadowstepUnsupportedAttributeExpressionError):
             converter._predicate_to_ui(func_call)
     
+    @pytest.mark.unit
     def test_predicate_to_ui_matches_not_supported(self):
         """Test _predicate_to_ui with matches on unsupported attribute."""
         from shadowstep.exceptions.shadowstep_exceptions import ShadowstepMatchesNotSupportedError
@@ -1244,6 +1277,7 @@ class TestXPathConverter:
         with pytest.raises(ShadowstepUnsupportedAttributeExpressionError):
             converter._predicate_to_ui(func_call)
     
+    @pytest.mark.unit
     def test_predicate_to_ui_unsupported_function(self):
         """Test _predicate_to_ui with unsupported function."""
         from shadowstep.exceptions.shadowstep_exceptions import ShadowstepUnsupportedFunctionError
@@ -1257,6 +1291,7 @@ class TestXPathConverter:
         with pytest.raises(ShadowstepUnsupportedFunctionError):
             converter._predicate_to_ui(func_call)
     
+    @pytest.mark.unit
     def test_predicate_to_ui_unsupported_attribute(self):
         """Test _predicate_to_ui with unsupported attribute."""
         from eulxml.xpath.ast import BinaryExpression, Step, NameTest
@@ -1274,6 +1309,7 @@ class TestXPathConverter:
         with pytest.raises(ShadowstepUnsupportedAttributeError):
             converter._predicate_to_ui(bexpr)
     
+    @pytest.mark.unit
     def test_predicate_to_ui_unsupported_predicate(self):
         """Test _predicate_to_ui with unsupported predicate."""
         from shadowstep.exceptions.shadowstep_exceptions import ShadowstepUnsupportedPredicateError
@@ -1283,6 +1319,7 @@ class TestXPathConverter:
         with pytest.raises(ShadowstepUnsupportedPredicateError):
             converter._predicate_to_ui("invalid_predicate")
     
+    @pytest.mark.unit
     def test_parse_function_predicate_unsupported_function(self):
         """Test _parse_function_predicate with unsupported function."""
         from shadowstep.exceptions.shadowstep_exceptions import ShadowstepUnsupportedFunctionError
@@ -1296,6 +1333,7 @@ class TestXPathConverter:
         with pytest.raises(ShadowstepUnsupportedFunctionError):
             converter._parse_function_predicate(func_call)
     
+    @pytest.mark.unit
     def test_parse_function_predicate_wrong_argument_count(self):
         """Test _parse_function_predicate with wrong argument count."""
         from shadowstep.exceptions.shadowstep_exceptions import ShadowstepFunctionArgumentCountError
@@ -1309,6 +1347,7 @@ class TestXPathConverter:
         with pytest.raises(ShadowstepFunctionArgumentCountError):
             converter._parse_function_predicate(func_call)
     
+    @pytest.mark.unit
     def test_parse_equality_comparison_equality_error(self):
         """Test _parse_equality_comparison with equality comparison error."""
         from shadowstep.exceptions.shadowstep_exceptions import ShadowstepEqualityComparisonError
@@ -1322,6 +1361,7 @@ class TestXPathConverter:
         with pytest.raises(ShadowstepEqualityComparisonError):
             converter._parse_equality_comparison(bexpr)
     
+    @pytest.mark.unit
     def test_extract_attr_name_unsupported_attribute_expression(self):
         """Test _extract_attr_name with unsupported attribute expression."""
         from shadowstep.exceptions.shadowstep_exceptions import ShadowstepUnsupportedAttributeExpressionError
@@ -1331,6 +1371,7 @@ class TestXPathConverter:
         with pytest.raises(ShadowstepUnsupportedAttributeExpressionError):
             converter._extract_attr_name("invalid_node")
     
+    @pytest.mark.unit
     def test_extract_literal_unsupported_literal(self):
         """Test _extract_literal with unsupported literal."""
         from shadowstep.exceptions.shadowstep_exceptions import ShadowstepUnsupportedLiteralError
@@ -1344,6 +1385,7 @@ class TestXPathConverter:
         with pytest.raises(ShadowstepUnsupportedLiteralError):
             converter._extract_literal(func_call)
     
+    @pytest.mark.unit
     def test_balance_parentheses_unbalanced_error(self):
         """Test _balance_parentheses with unbalanced parentheses."""
         from shadowstep.exceptions.shadowstep_exceptions import ShadowstepUnbalancedUiSelectorError
@@ -1353,6 +1395,7 @@ class TestXPathConverter:
         with pytest.raises(ShadowstepUnbalancedUiSelectorError):
             converter._balance_parentheses("((unbalanced")
     
+    @pytest.mark.unit
     def test_balance_parentheses_extra_close_parentheses(self):
         """Test _balance_parentheses with extra close parentheses."""
         converter = XPathConverter()
@@ -1360,6 +1403,7 @@ class TestXPathConverter:
         result = converter._balance_parentheses("balanced))")
         assert result == "balanced)"
     
+    @pytest.mark.unit
     def test_balance_parentheses_already_balanced(self):
         """Test _balance_parentheses with already balanced parentheses."""
         converter = XPathConverter()

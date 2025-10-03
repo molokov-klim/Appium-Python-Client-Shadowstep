@@ -59,7 +59,7 @@ class ElementWaiting:
 
         """
         start_time: float = time.time()
-        while time.time() - start_time < self.element.timeout:
+        while time.time() - start_time < timeout:
             try:
                 resolved_locator: tuple[str, str] | None = self.converter.to_xpath(
                     self.element.remove_null_value(self.element.locator),
@@ -111,7 +111,7 @@ class ElementWaiting:
         """
         start_time: float = time.time()
 
-        while time.time() - start_time < self.element.timeout:
+        while time.time() - start_time < timeout:
             try:
                 resolved_locator: tuple[str, str] | None = self.converter.to_xpath(
                     self.element.remove_null_value(self.element.locator),
@@ -148,7 +148,7 @@ class ElementWaiting:
         """
         start_time: float = time.time()
 
-        while time.time() - start_time < self.element.timeout:
+        while time.time() - start_time < timeout:
             try:
                 resolved_locator: tuple[str, str] | None = self.converter.to_xpath(
                     self.element.remove_null_value(self.element.locator),
@@ -184,7 +184,7 @@ class ElementWaiting:
         """
         start_time: float = time.time()
 
-        while time.time() - start_time < self.element.timeout:
+        while time.time() - start_time < timeout:
             try:
                 resolved_locator: tuple[str, str] | None = self.converter.to_xpath(
                     self.element.remove_null_value(self.element.locator),
@@ -220,7 +220,7 @@ class ElementWaiting:
         """
         start_time: float = time.time()
 
-        while time.time() - start_time < self.element.timeout:
+        while time.time() - start_time < timeout:
             try:
                 resolved_locator: tuple[str, str] | None = self.converter.to_xpath(
                     self.element.remove_null_value(self.element.locator),
@@ -256,7 +256,7 @@ class ElementWaiting:
         """
         start_time: float = time.time()
 
-        while time.time() - start_time < self.element.timeout:
+        while time.time() - start_time < timeout:
             try:
                 resolved_locator: tuple[str, str] | None = self.converter.to_xpath(
                     self.element.remove_null_value(self.element.locator),

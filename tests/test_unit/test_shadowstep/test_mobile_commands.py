@@ -22,6 +22,7 @@ class TestMobileCommands:
         mobile_commands.is_connected = Mock(return_value=True)
         return mobile_commands
 
+    @pytest.mark.unit
     def test_initialization(self, mock_shadowstep):
         """Test MobileCommands initialization."""
         mobile_commands = MobileCommands(mock_shadowstep)
@@ -29,6 +30,7 @@ class TestMobileCommands:
         assert mobile_commands.driver is None
         assert mobile_commands.logger is not None
 
+    @pytest.mark.unit
     @patch('shadowstep.mobile_commands.WebDriverSingleton.get_driver')
     def test_activate_app(self, mock_get_driver, mobile_commands):
         """Test activate_app method."""
@@ -41,6 +43,7 @@ class TestMobileCommands:
         assert result is mobile_commands
         mock_driver.execute_script.assert_called_once_with("mobile: activateApp", params)
 
+    @pytest.mark.unit
     @patch('shadowstep.mobile_commands.WebDriverSingleton.get_driver')
     def test_battery_info(self, mock_get_driver, mobile_commands):
         """Test battery_info method."""
@@ -53,6 +56,7 @@ class TestMobileCommands:
         assert result is mobile_commands
         mock_driver.execute_script.assert_called_once_with("mobile: batteryInfo", params)
 
+    @pytest.mark.unit
     @patch('shadowstep.mobile_commands.WebDriverSingleton.get_driver')
     def test_battery_info_no_params(self, mock_get_driver, mobile_commands):
         """Test battery_info method with no parameters."""
@@ -64,6 +68,7 @@ class TestMobileCommands:
         assert result is mobile_commands
         mock_driver.execute_script.assert_called_once_with("mobile: batteryInfo", {})
 
+    @pytest.mark.unit
     @patch('shadowstep.mobile_commands.WebDriverSingleton.get_driver')
     def test_clear_element(self, mock_get_driver, mobile_commands):
         """Test clear_element method."""
@@ -76,6 +81,7 @@ class TestMobileCommands:
         assert result is mobile_commands
         mock_driver.execute_script.assert_called_once_with("mobile: clearElement", params)
 
+    @pytest.mark.unit
     @patch('shadowstep.mobile_commands.WebDriverSingleton.get_driver')
     def test_device_info(self, mock_get_driver, mobile_commands):
         """Test device_info method."""
@@ -87,6 +93,7 @@ class TestMobileCommands:
         assert result is mobile_commands
         mock_driver.execute_script.assert_called_once_with("mobile: deviceInfo", {})
 
+    @pytest.mark.unit
     @patch('shadowstep.mobile_commands.WebDriverSingleton.get_driver')
     def test_fingerprint(self, mock_get_driver, mobile_commands):
         """Test fingerprint method."""
@@ -99,6 +106,7 @@ class TestMobileCommands:
         assert result is mobile_commands
         mock_driver.execute_script.assert_called_once_with("mobile: fingerprint", params)
 
+    @pytest.mark.unit
     @patch('shadowstep.mobile_commands.WebDriverSingleton.get_driver')
     def test_get_clipboard(self, mock_get_driver, mobile_commands):
         """Test get_clipboard method."""
@@ -110,6 +118,7 @@ class TestMobileCommands:
         assert result is mobile_commands
         mock_driver.execute_script.assert_called_once_with("mobile: getClipboard", {})
 
+    @pytest.mark.unit
     @patch('shadowstep.mobile_commands.WebDriverSingleton.get_driver')
     def test_get_current_activity(self, mock_get_driver, mobile_commands):
         """Test get_current_activity method."""
@@ -121,6 +130,7 @@ class TestMobileCommands:
         assert result is mobile_commands
         mock_driver.execute_script.assert_called_once_with("mobile: getCurrentActivity", {})
 
+    @pytest.mark.unit
     @patch('shadowstep.mobile_commands.WebDriverSingleton.get_driver')
     def test_get_current_package(self, mock_get_driver, mobile_commands):
         """Test get_current_package method."""
@@ -132,6 +142,7 @@ class TestMobileCommands:
         assert result is mobile_commands
         mock_driver.execute_script.assert_called_once_with("mobile: getCurrentPackage", {})
 
+    @pytest.mark.unit
     @patch('shadowstep.mobile_commands.WebDriverSingleton.get_driver')
     def test_get_device_time(self, mock_get_driver, mobile_commands):
         """Test get_device_time method."""
@@ -143,6 +154,7 @@ class TestMobileCommands:
         assert result is mobile_commands
         mock_driver.execute_script.assert_called_once_with("mobile: getDeviceTime", {})
 
+    @pytest.mark.unit
     @patch('shadowstep.mobile_commands.WebDriverSingleton.get_driver')
     def test_get_performance_data(self, mock_get_driver, mobile_commands):
         """Test get_performance_data method."""
@@ -155,6 +167,7 @@ class TestMobileCommands:
         assert result is mobile_commands
         mock_driver.execute_script.assert_called_once_with("mobile: getPerformanceData", params)
 
+    @pytest.mark.unit
     @patch('shadowstep.mobile_commands.WebDriverSingleton.get_driver')
     def test_get_performance_data_types(self, mock_get_driver, mobile_commands):
         """Test get_performance_data_types method."""
@@ -166,6 +179,7 @@ class TestMobileCommands:
         assert result is mobile_commands
         mock_driver.execute_script.assert_called_once_with("mobile: getPerformanceDataTypes", {})
 
+    @pytest.mark.unit
     @patch('shadowstep.mobile_commands.WebDriverSingleton.get_driver')
     def test_get_settings(self, mock_get_driver, mobile_commands):
         """Test get_settings method."""
@@ -177,6 +191,7 @@ class TestMobileCommands:
         assert result is mobile_commands
         mock_driver.execute_script.assert_called_once_with("mobile: getSettings", {})
 
+    @pytest.mark.unit
     @patch('shadowstep.mobile_commands.WebDriverSingleton.get_driver')
     def test_hide_keyboard(self, mock_get_driver, mobile_commands):
         """Test hide_keyboard method."""
@@ -188,6 +203,7 @@ class TestMobileCommands:
         assert result is mobile_commands
         mock_driver.execute_script.assert_called_once_with("mobile: hideKeyboard", {})
 
+    @pytest.mark.unit
     @patch('shadowstep.mobile_commands.WebDriverSingleton.get_driver')
     def test_install_app(self, mock_get_driver, mobile_commands):
         """Test install_app method."""
@@ -200,6 +216,7 @@ class TestMobileCommands:
         assert result is mobile_commands
         mock_driver.execute_script.assert_called_once_with("mobile: installApp", params)
 
+    @pytest.mark.unit
     @patch('shadowstep.mobile_commands.WebDriverSingleton.get_driver')
     def test_is_app_installed(self, mock_get_driver, mobile_commands):
         """Test is_app_installed method."""
@@ -212,6 +229,7 @@ class TestMobileCommands:
         assert result is mobile_commands
         mock_driver.execute_script.assert_called_once_with("mobile: isAppInstalled", params)
 
+    @pytest.mark.unit
     @patch('shadowstep.mobile_commands.WebDriverSingleton.get_driver')
     def test_long_press_key(self, mock_get_driver, mobile_commands):
         """Test long_press_key method."""
@@ -224,6 +242,7 @@ class TestMobileCommands:
         assert result is mobile_commands
         mock_driver.execute_script.assert_called_once_with("mobile: longPressKey", params)
 
+    @pytest.mark.unit
     @patch('shadowstep.mobile_commands.WebDriverSingleton.get_driver')
     def test_open_notifications(self, mock_get_driver, mobile_commands):
         """Test open_notifications method."""
@@ -235,6 +254,7 @@ class TestMobileCommands:
         assert result is mobile_commands
         mock_driver.execute_script.assert_called_once_with("mobile: openNotifications", {})
 
+    @pytest.mark.unit
     @patch('shadowstep.mobile_commands.WebDriverSingleton.get_driver')
     def test_open_settings(self, mock_get_driver, mobile_commands):
         """Test open_settings method."""
@@ -246,6 +266,7 @@ class TestMobileCommands:
         assert result is mobile_commands
         mock_driver.execute_script.assert_called_once_with("mobile: openSettings", {})
 
+    @pytest.mark.unit
     @patch('shadowstep.mobile_commands.WebDriverSingleton.get_driver')
     def test_press_key(self, mock_get_driver, mobile_commands):
         """Test press_key method."""
@@ -258,6 +279,7 @@ class TestMobileCommands:
         assert result is mobile_commands
         mock_driver.execute_script.assert_called_once_with("mobile: pressKey", params)
 
+    @pytest.mark.unit
     @patch('shadowstep.mobile_commands.WebDriverSingleton.get_driver')
     def test_query_app_state(self, mock_get_driver, mobile_commands):
         """Test query_app_state method."""
@@ -270,6 +292,7 @@ class TestMobileCommands:
         assert result is mobile_commands
         mock_driver.execute_script.assert_called_once_with("mobile: queryAppState", params)
 
+    @pytest.mark.unit
     @patch('shadowstep.mobile_commands.WebDriverSingleton.get_driver')
     def test_remove_app(self, mock_get_driver, mobile_commands):
         """Test remove_app method."""
@@ -282,6 +305,7 @@ class TestMobileCommands:
         assert result is mobile_commands
         mock_driver.execute_script.assert_called_once_with("mobile: removeApp", params)
 
+    @pytest.mark.unit
     @patch('shadowstep.mobile_commands.WebDriverSingleton.get_driver')
     def test_replace_element_value(self, mock_get_driver, mobile_commands):
         """Test replace_element_value method."""
@@ -294,6 +318,7 @@ class TestMobileCommands:
         assert result is mobile_commands
         mock_driver.execute_script.assert_called_once_with("mobile: replaceElementValue", params)
 
+    @pytest.mark.unit
     @patch('shadowstep.mobile_commands.WebDriverSingleton.get_driver')
     def test_scroll_back_to(self, mock_get_driver, mobile_commands):
         """Test scroll_back_to method."""
@@ -306,6 +331,7 @@ class TestMobileCommands:
         assert result is mobile_commands
         mock_driver.execute_script.assert_called_once_with("mobile: scrollBackTo", params)
 
+    @pytest.mark.unit
     @patch('shadowstep.mobile_commands.WebDriverSingleton.get_driver')
     def test_send_sms(self, mock_get_driver, mobile_commands):
         """Test send_sms method."""
@@ -318,6 +344,7 @@ class TestMobileCommands:
         assert result is mobile_commands
         mock_driver.execute_script.assert_called_once_with("mobile: sendSMS", params)
 
+    @pytest.mark.unit
     @patch('shadowstep.mobile_commands.WebDriverSingleton.get_driver')
     def test_set_clipboard(self, mock_get_driver, mobile_commands):
         """Test set_clipboard method."""
@@ -330,6 +357,7 @@ class TestMobileCommands:
         assert result is mobile_commands
         mock_driver.execute_script.assert_called_once_with("mobile: setClipboard", params)
 
+    @pytest.mark.unit
     @patch('shadowstep.mobile_commands.WebDriverSingleton.get_driver')
     def test_set_text(self, mock_get_driver, mobile_commands):
         """Test set_text method."""
@@ -342,6 +370,7 @@ class TestMobileCommands:
         assert result is mobile_commands
         mock_driver.execute_script.assert_called_once_with("mobile: setText", params)
 
+    @pytest.mark.unit
     @patch('shadowstep.mobile_commands.WebDriverSingleton.get_driver')
     def test_shell(self, mock_get_driver, mobile_commands):
         """Test shell method."""
@@ -354,6 +383,7 @@ class TestMobileCommands:
         assert result is mobile_commands
         mock_driver.execute_script.assert_called_once_with("mobile: shell", params)
 
+    @pytest.mark.unit
     @patch('shadowstep.mobile_commands.WebDriverSingleton.get_driver')
     def test_start_activity(self, mock_get_driver, mobile_commands):
         """Test start_activity method."""
@@ -366,6 +396,7 @@ class TestMobileCommands:
         assert result is mobile_commands
         mock_driver.execute_script.assert_called_once_with("mobile: startActivity", params)
 
+    @pytest.mark.unit
     @patch('shadowstep.mobile_commands.WebDriverSingleton.get_driver')
     def test_start_logs_broadcast(self, mock_get_driver, mobile_commands):
         """Test start_logs_broadcast method."""
@@ -377,6 +408,7 @@ class TestMobileCommands:
         assert result is mobile_commands
         mock_driver.execute_script.assert_called_once_with("mobile: startLogsBroadcast", {})
 
+    @pytest.mark.unit
     @patch('shadowstep.mobile_commands.WebDriverSingleton.get_driver')
     def test_stop_logs_broadcast(self, mock_get_driver, mobile_commands):
         """Test stop_logs_broadcast method."""
@@ -388,6 +420,7 @@ class TestMobileCommands:
         assert result is mobile_commands
         mock_driver.execute_script.assert_called_once_with("mobile: stopLogsBroadcast", {})
 
+    @pytest.mark.unit
     @patch('shadowstep.mobile_commands.WebDriverSingleton.get_driver')
     def test_terminate_app(self, mock_get_driver, mobile_commands):
         """Test terminate_app method."""
@@ -400,6 +433,7 @@ class TestMobileCommands:
         assert result is mobile_commands
         mock_driver.execute_script.assert_called_once_with("mobile: terminateApp", params)
 
+    @pytest.mark.unit
     @patch('shadowstep.mobile_commands.WebDriverSingleton.get_driver')
     def test_toggle_location_services(self, mock_get_driver, mobile_commands):
         """Test toggle_location_services method."""
@@ -411,6 +445,7 @@ class TestMobileCommands:
         assert result is mobile_commands
         mock_driver.execute_script.assert_called_once_with("mobile: toggleLocationServices", {})
 
+    @pytest.mark.unit
     @patch('shadowstep.mobile_commands.WebDriverSingleton.get_driver')
     def test_update_settings(self, mock_get_driver, mobile_commands):
         """Test update_settings method."""
@@ -423,6 +458,7 @@ class TestMobileCommands:
         assert result is mobile_commands
         mock_driver.execute_script.assert_called_once_with("mobile: updateSettings", params)
 
+    @pytest.mark.unit
     @patch('shadowstep.mobile_commands.WebDriverSingleton.get_driver')
     def test_get_text(self, mock_get_driver, mobile_commands):
         """Test get_text method."""
@@ -435,6 +471,7 @@ class TestMobileCommands:
         assert result is mobile_commands
         mock_driver.execute_script.assert_called_once_with("mobile: getText", params)
 
+    @pytest.mark.unit
     @patch('shadowstep.mobile_commands.WebDriverSingleton.get_driver')
     def test_perform_editor_action(self, mock_get_driver, mobile_commands):
         """Test perform_editor_action method."""
@@ -447,6 +484,7 @@ class TestMobileCommands:
         assert result is mobile_commands
         mock_driver.execute_script.assert_called_once_with("mobile: performEditorAction", params)
 
+    @pytest.mark.unit
     @patch('shadowstep.mobile_commands.WebDriverSingleton.get_driver')
     def test_execute_with_driver(self, mock_get_driver, mobile_commands):
         """Test _execute method with valid driver."""
@@ -457,6 +495,7 @@ class TestMobileCommands:
         
         mock_driver.execute_script.assert_called_once_with("test: command", {"param": "value"})
 
+    @pytest.mark.unit
     @patch('shadowstep.mobile_commands.WebDriverSingleton.get_driver')
     def test_execute_with_none_driver(self, mock_get_driver, mobile_commands):
         """Test _execute method with None driver raises exception."""
@@ -467,6 +506,7 @@ class TestMobileCommands:
         with pytest.raises(ShadowstepException, match="WebDriver is not available"):
             mobile_commands._execute("test: command", {"param": "value"})
 
+    @pytest.mark.unit
     @patch('shadowstep.mobile_commands.WebDriverSingleton.get_driver')
     def test_execute_with_none_params(self, mock_get_driver, mobile_commands):
         """Test _execute method with None params."""

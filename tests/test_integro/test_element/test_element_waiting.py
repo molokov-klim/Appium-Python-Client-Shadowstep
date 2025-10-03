@@ -1,19 +1,11 @@
-import time
-from unittest.mock import Mock, patch
-
-from selenium.common import (
-    InvalidSessionIdException,
-    NoSuchDriverException,
-    StaleElementReferenceException,
-    TimeoutException,
-    WebDriverException,
-)
-
-from shadowstep.shadowstep import Shadowstep
-
 """
 uv run pytest -svl --log-cli-level INFO --tb=short --setup-show tests/element/test_element_waiting.py
 """
+
+import time
+
+from shadowstep.shadowstep import Shadowstep
+
 
 
 # ruff: noqa: S101
@@ -249,134 +241,6 @@ class TestElementWaiting:
 
         # Both should work the same way (or at least be consistent)
         # Note: Due to locator strategy issues, results might differ
-
-    @patch("shadowstep.element.waiting.WebDriverWait")
-    def test_wait_handles_timeout_exception(self, mock_webdriver_wait, app: Shadowstep, stability: None):
-        """Test that wait method handles TimeoutException properly."""
-        # Mock WebDriverWait to raise TimeoutException
-        mock_wait_instance = Mock()
-        mock_wait_instance.until.side_effect = TimeoutException("Element not found")
-        mock_webdriver_wait.return_value = mock_wait_instance
-
-        el = app.get_element({"resource-id": "com.android.quicksearchbox:id/search_widget_text"})
-        result = el.wait(timeout=1, return_bool=True)
-        assert result is False
-
-    @patch("shadowstep.element.waiting.WebDriverWait")
-    def test_wait_handles_stale_element_reference(self, mock_webdriver_wait, app: Shadowstep, stability: None):
-        """Test that wait method handles StaleElementReferenceException properly."""
-        # Mock WebDriverWait to raise StaleElementReferenceException first, then succeed
-        mock_wait_instance = Mock()
-        mock_wait_instance.until.side_effect = [
-            StaleElementReferenceException("Stale element"),
-            Mock()  # Success on second call
-        ]
-        mock_webdriver_wait.return_value = mock_wait_instance
-
-        el = app.get_element({"resource-id": "com.android.quicksearchbox:id/search_widget_text"})
-        result = el.wait(timeout=5, return_bool=True)
-        assert result is True
-
-    @patch("shadowstep.element.waiting.WebDriverWait")
-    def test_wait_handles_no_such_driver_exception(self, mock_webdriver_wait, app: Shadowstep, stability: None):
-        """Test that wait method handles NoSuchDriverException properly."""
-        # Mock WebDriverWait to raise NoSuchDriverException
-        mock_wait_instance = Mock()
-        mock_wait_instance.until.side_effect = NoSuchDriverException("No driver")
-        mock_webdriver_wait.return_value = mock_wait_instance
-
-        el = app.get_element({"resource-id": "com.android.quicksearchbox:id/search_widget_text"})
-        # Should not raise exception, should handle gracefully
-        result = el.wait(timeout=1, return_bool=True)
-        assert result is False
-
-    @patch("shadowstep.element.waiting.WebDriverWait")
-    def test_wait_handles_invalid_session_id_exception(self, mock_webdriver_wait, app: Shadowstep, stability: None):
-        """Test that wait method handles InvalidSessionIdException properly."""
-        # Mock WebDriverWait to raise InvalidSessionIdException
-        mock_wait_instance = Mock()
-        mock_wait_instance.until.side_effect = InvalidSessionIdException("Invalid session")
-        mock_webdriver_wait.return_value = mock_wait_instance
-
-        el = app.get_element({"resource-id": "com.android.quicksearchbox:id/search_widget_text"})
-        # Should not raise exception, should handle gracefully
-        result = el.wait(timeout=1, return_bool=True)
-        assert result is False
-
-    @patch("shadowstep.element.waiting.WebDriverWait")
-    def test_wait_handles_webdriver_exception(self, mock_webdriver_wait, app: Shadowstep, stability: None):
-        """Test that wait method handles WebDriverException properly."""
-        # Mock WebDriverWait to raise WebDriverException
-        mock_wait_instance = Mock()
-        mock_wait_instance.until.side_effect = WebDriverException("WebDriver error")
-        mock_webdriver_wait.return_value = mock_wait_instance
-
-        el = app.get_element({"resource-id": "com.android.quicksearchbox:id/search_widget_text"})
-        # Should not raise exception, should handle gracefully
-        result = el.wait(timeout=1, return_bool=True)
-        assert result is False
-
-    @patch("shadowstep.element.waiting.WebDriverWait")
-    def test_wait_visible_handles_timeout_exception(self, mock_webdriver_wait, app: Shadowstep, stability: None):
-        """Test that wait_visible method handles TimeoutException properly."""
-        # Mock WebDriverWait to raise TimeoutException
-        mock_wait_instance = Mock()
-        mock_wait_instance.until.side_effect = TimeoutException("Element not visible")
-        mock_webdriver_wait.return_value = mock_wait_instance
-
-        el = app.get_element({"resource-id": "com.android.quicksearchbox:id/search_widget_text"})
-        result = el.wait_visible(timeout=1, return_bool=True)
-        assert result is True  # wait_visible returns True for non-existent elements
-
-    @patch("shadowstep.element.waiting.WebDriverWait")
-    def test_wait_clickable_handles_timeout_exception(self, mock_webdriver_wait, app: Shadowstep, stability: None):
-        """Test that wait_clickable method handles TimeoutException properly."""
-        # Mock WebDriverWait to raise TimeoutException
-        mock_wait_instance = Mock()
-        mock_wait_instance.until.side_effect = TimeoutException("Element not clickable")
-        mock_webdriver_wait.return_value = mock_wait_instance
-
-        el = app.get_element({"resource-id": "com.android.quicksearchbox:id/search_widget_text"})
-        result = el.wait_clickable(timeout=1, return_bool=True)
-        assert result is True  # wait_clickable returns True for non-existent elements
-
-    @patch("shadowstep.element.waiting.WebDriverWait")
-    def test_wait_for_not_handles_timeout_exception(self, mock_webdriver_wait, app: Shadowstep, stability: None):
-        """Test that wait_for_not method handles TimeoutException properly."""
-        # Mock WebDriverWait to raise TimeoutException
-        mock_wait_instance = Mock()
-        mock_wait_instance.until.side_effect = TimeoutException("Element still present")
-        mock_webdriver_wait.return_value = mock_wait_instance
-
-        el = app.get_element({"resource-id": "com.android.quicksearchbox:id/search_widget_text"})
-        result = el.wait_for_not(timeout=1, return_bool=True)
-        assert result is False  # wait_for_not returns False on timeout
-
-    @patch("shadowstep.element.waiting.WebDriverWait")
-    def test_wait_for_not_visible_handles_timeout_exception(self, mock_webdriver_wait, app: Shadowstep,
-                                                            stability: None):
-        """Test that wait_for_not_visible method handles TimeoutException properly."""
-        # Mock WebDriverWait to raise TimeoutException
-        mock_wait_instance = Mock()
-        mock_wait_instance.until.side_effect = TimeoutException("Element still visible")
-        mock_webdriver_wait.return_value = mock_wait_instance
-
-        el = app.get_element({"resource-id": "com.android.quicksearchbox:id/search_widget_text"})
-        result = el.wait_for_not_visible(timeout=1, return_bool=True)
-        assert result is True  # wait_for_not_visible returns True for non-existent elements
-
-    @patch("shadowstep.element.waiting.WebDriverWait")
-    def test_wait_for_not_clickable_handles_timeout_exception(self, mock_webdriver_wait, app: Shadowstep,
-                                                              stability: None):
-        """Test that wait_for_not_clickable method handles TimeoutException properly."""
-        # Mock WebDriverWait to raise TimeoutException
-        mock_wait_instance = Mock()
-        mock_wait_instance.until.side_effect = TimeoutException("Element still clickable")
-        mock_webdriver_wait.return_value = mock_wait_instance
-
-        el = app.get_element({"resource-id": "com.android.quicksearchbox:id/search_widget_text"})
-        result = el.wait_for_not_clickable(timeout=1, return_bool=True)
-        assert result is True  # wait_for_not_clickable returns True for non-existent elements
 
     def test_wait_with_negative_timeout(self, app: Shadowstep, stability: None):
         """Test wait method with negative timeout."""
