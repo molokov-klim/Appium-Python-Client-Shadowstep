@@ -1,7 +1,9 @@
 name: Unit Tests
 
 on:
-  workflow_dispatch:  # Only manual
+  workflow_dispatch:
+  pull_request:
+    branches: [ main, develop ]
 
 jobs:
   unit-tests:
