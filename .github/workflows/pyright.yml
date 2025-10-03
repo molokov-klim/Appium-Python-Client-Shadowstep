@@ -1,11 +1,7 @@
 name: Pyright Type Check
 
 on:
-  push:
-    branches:
-      - main
-      - develop
-  workflow_dispatch:
+  workflow_dispatch:  # Only manual
 
 jobs:
   type-check:
