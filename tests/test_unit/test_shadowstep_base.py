@@ -725,7 +725,7 @@ class TestShadowstepBaseUnit:
 
         base = ShadowstepBase()
         base.capabilities = {
-            "appium:avd": "Pixel_4_API_30",
+            "appium:avd": "Pixel_6_API_34",
             "appium:avdLaunchTimeout": 120000,
             "appium:avdReadyTimeout": 60000,
             "appium:avdArgs": ["-no-snapshot-load"],
@@ -738,7 +738,7 @@ class TestShadowstepBaseUnit:
 
         base._capabilities_to_options()
 
-        assert base.options.avd == "Pixel_4_API_30"
+        assert base.options.avd == "Pixel_6_API_34"
         # Timeout values are stored as timedelta (milliseconds converted to seconds)
         assert base.options.avd_launch_timeout.total_seconds() == 120
         assert base.options.avd_ready_timeout.total_seconds() == 60

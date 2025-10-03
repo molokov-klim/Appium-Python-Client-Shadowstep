@@ -32,9 +32,9 @@ class TestAdb:
             udid : str. The unique device identifier for the connected device.
 
         Asserts:
-            Asserts that 'Pixel' is part of the device model string.
+            Asserts that 'Nexus' is part of the device model string.
         """
-        assert "Pixel" in app.adb.get_device_model(udid=udid)  # noqa: S101
+        assert "Nexus" in app.adb.get_device_model(udid=udid)  # noqa: S101
 
     def test_push(self, app: Shadowstep, udid: str) -> None:
         """

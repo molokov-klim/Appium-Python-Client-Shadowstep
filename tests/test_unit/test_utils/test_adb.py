@@ -64,17 +64,17 @@ class TestAdbGetDeviceModel:
     @pytest.mark.unit
     def test_get_device_model_success(self, mock_check_output: Mock) -> None:
         """Test successful device model retrieval."""
-        mock_check_output.return_value = b"Pixel 6\n"
+        mock_check_output.return_value = b"Nexus 6\n"
         result = Adb.get_device_model("1234567890")
-        assert result == "Pixel 6"  # noqa: S101
+        assert result == "Nexus 6"  # noqa: S101
 
     @patch("subprocess.check_output")
     @pytest.mark.unit
     def test_get_device_model_no_udid(self, mock_check_output: Mock) -> None:
         """Test device model retrieval without UDID."""
-        mock_check_output.return_value = b"Pixel 6\n"
+        mock_check_output.return_value = b"Nexus 6\n"
         result = Adb.get_device_model("")
-        assert result == "Pixel 6"  # noqa: S101
+        assert result == "Nexus 6"  # noqa: S101
 
     @patch("subprocess.check_output")
     @pytest.mark.unit

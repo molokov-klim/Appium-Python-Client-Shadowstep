@@ -1360,7 +1360,7 @@ class TestTerminal:
     def test_get_prop_model_success(self):
         """Test successful model property retrieval."""
         # Arrange
-        expected_model = "Pixel 4"
+        expected_model = "Nexus 6"
 
         with patch.object(self.terminal, "get_prop", return_value={"ro.product.model": expected_model}):
             # Act
@@ -1386,7 +1386,7 @@ class TestTerminal:
     def test_get_prop_build_success(self):
         """Test successful build property retrieval."""
         # Arrange
-        expected_build = "Pixel 4 Build/QQ3A.200805.001"
+        expected_build = "Nexus 6 Build/QQ3A.200805.001"
 
         with patch.object(self.terminal, "get_prop", return_value={"ro.build.description": expected_build}):
             # Act
