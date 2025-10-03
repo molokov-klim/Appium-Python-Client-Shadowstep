@@ -1132,3 +1132,81 @@ class TestShadowstepUnit:
         shadowstep.driver = mock_driver
         shadowstep._execute("test: command", {"param": "value"})
         mock_driver.execute_script.assert_called_once_with("test: command", {"param": "value"})
+
+    @pytest.mark.unit
+    def test_get_element(self):
+        """Test get_element method."""
+        mock_element = Mock()
+
+        with patch("shadowstep.shadowstep.Element", return_value=mock_element):
+            result = shadowstep.get_element({"class": "test"}, timeout=10, poll_frequency=0.2)
+
+            assert result is mock_element
+
+    @pytest.mark.unit
+    def test_update_settings_with_driver(self):
+        """Test update_settings method with valid driver."""
+        mock_driver = Mock()
+        shadowstep.driver = mock_driver
+
+        with pytest.raises(NotImplementedError):
+            shadowstep.update_settings()
+
+        # Verify that update_settings was called before NotImplementedError
+        mock_driver.update_settings.assert_called_once_with(settings={"enableMultiWindows": True})
+
+    @pytest.mark.unit
+    def test_auto_discover_pages_with_ignored_directory_in_walk(self):
+        """Test _auto_discover_pages skips directories with ignored names during os.walk."""
+        import os
+        from pathlib import Path
+
+        # Reset discovery flag to allow re-discovery
+        shadowstep._pages_discovered = False
+
+        # Use a real temporary directory
+        import tempfile
+        with tempfile.TemporaryDirectory() as tmpdir:
+            # Create a __pycache__ directory
+            pycache_dir = Path(tmpdir) / "__pycache__"
+            pycache_dir.mkdir()
+            
+            # Create a page file in __pycache__ (should be ignored)
+            (pycache_dir / "page_test.py").write_text("# test page")
+
+            # Mock sys.path to include our temp directory
+            with patch("sys.path", [tmpdir]):
+                # This should skip the __pycache__ directory
+                shadowstep._auto_discover_pages()
+                # No exception should be raised
+
+    @pytest.mark.unit
+    def test_auto_discover_pages_with_file_instead_of_directory(self):
+        """Test _auto_discover_pages skips file paths (not directories) in sys.path."""
+        from pathlib import Path
+        import tempfile
+
+        # Reset discovery flag
+        shadowstep._pages_discovered = False
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            # Create a file (not a directory)
+            file_path = Path(tmpdir) / "somefile.py"
+            file_path.write_text("# test")
+
+            # Add the file path to sys.path (which should be skipped)
+            with patch("sys.path", [str(file_path)]):
+                # This should skip the file path and not raise an error
+                shadowstep._auto_discover_pages()
+                # No exception should be raised
+
+    @pytest.mark.unit
+    def test_find_and_get_element_with_exception_in_get_elements(self):
+        """Test find_and_get_element when get_elements raises exception."""
+        
+        with patch.object(shadowstep, "get_elements", side_effect=Exception("Failed to get scrollables")):
+            with pytest.raises(Exception) as exc_info:
+                shadowstep.find_and_get_element({"class": "test"})
+            
+            # The exception should be re-raised
+            assert "Failed to get scrollables" in str(exc_info.value)

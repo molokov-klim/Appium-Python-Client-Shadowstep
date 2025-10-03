@@ -51,12 +51,12 @@ environments = [
 
 [dependency-groups]
 dev = [
-  "pre-commit",
-  "pyright",
-  "ruff",
-  "pytest",
-  "pytest-cov",
-  "pytest-rerunfailures"
+    "pre-commit",
+    "pyright",
+    "ruff",
+    "pytest",
+    "pytest-cov",
+    "pytest-rerunfailures"
 ]
 
 
@@ -116,6 +116,8 @@ exclude = [
     "tests/*",
     "**/tests",
     "**/tests/*",
+    "**/test*",
+    "**/test*/*",
 ]
 
 # ---------- PYRIGHT ----------
@@ -132,6 +134,8 @@ exclude = [
     "tests/*",
     "**/tests",
     "**/tests/*",
+    "**/test*",
+    "**/test*/*",
 ]
 typeCheckingMode = "strict"
 
