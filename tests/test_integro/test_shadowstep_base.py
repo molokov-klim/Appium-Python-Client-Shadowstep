@@ -991,3 +991,639 @@ class TestShadowstepBase:
 
         assert isinstance(app.options, UiAutomator2Options)
         assert app.options.new_command_timeout == timedelta(seconds=300)
+
+    # ====================================================================================
+    # Missing integration tests - stubs below
+    # ====================================================================================
+
+    def test_appium_disconnected_error_creation(self, app: Shadowstep):
+        """Test AppiumDisconnectedError exception creation and handling.
+
+        Steps:
+        1. Create an instance of AppiumDisconnectedError with message, screen, and stacktrace.
+        2. Verify that the exception is created correctly.
+        3. Verify that the exception can be raised and caught.
+        4. Verify that exception attributes are accessible.
+
+        Тест создания исключения AppiumDisconnectedError:
+        1. Создать экземпляр AppiumDisconnectedError с сообщением, скриншотом и стектрейсом.
+        2. Проверить, что исключение создано корректно.
+        3. Проверить, что исключение можно поднять и поймать.
+        4. Проверить доступность атрибутов исключения.
+        """
+        pass
+
+    def test_webdriver_singleton_get_session_id_success(self, app: Shadowstep):
+        """Test WebDriverSingleton._get_session_id() successfully retrieves session ID.
+
+        Steps:
+        1. Connect to Appium server and establish a session.
+        2. Call WebDriverSingleton._get_session_id() with command_executor kwargs.
+        3. Verify that a valid session_id string is returned.
+        4. Verify that the session_id matches the current driver's session_id.
+
+        Тест успешного получения session_id через WebDriverSingleton._get_session_id():
+        1. Подключиться к Appium серверу и установить сессию.
+        2. Вызвать WebDriverSingleton._get_session_id() с параметрами command_executor.
+        3. Проверить, что возвращается валидный session_id.
+        4. Проверить, что session_id соответствует текущему session_id драйвера.
+        """
+        pass
+
+    def test_webdriver_singleton_get_session_id_no_sessions(self, app: Shadowstep):
+        """Test WebDriverSingleton._get_session_id() when no sessions exist.
+
+        Steps:
+        1. Disconnect all active sessions.
+        2. Call WebDriverSingleton._get_session_id() with command_executor kwargs.
+        3. Verify that "unknown_session_id" is returned.
+        4. Verify no exceptions are raised.
+
+        Тест получения session_id когда сессий нет:
+        1. Отключить все активные сессии.
+        2. Вызвать WebDriverSingleton._get_session_id() с параметрами command_executor.
+        3. Проверить, что возвращается "unknown_session_id".
+        4. Проверить, что не возникает исключений.
+        """
+        pass
+
+    def test_webdriver_singleton_get_session_id_request_timeout(self, app: Shadowstep):
+        """Test WebDriverSingleton._get_session_id() with network timeout.
+
+        Steps:
+        1. Mock or simulate a network timeout scenario.
+        2. Call WebDriverSingleton._get_session_id() with invalid/unreachable server.
+        3. Verify that a timeout exception is raised or handled gracefully.
+
+        Тест получения session_id при таймауте сети:
+        1. Замокать или симулировать таймаут сети.
+        2. Вызвать WebDriverSingleton._get_session_id() с недоступным сервером.
+        3. Проверить, что возникает исключение таймаута или оно обрабатывается корректно.
+        """
+        pass
+
+    def test_webdriver_singleton_clear_instance_explicit(self, app: Shadowstep):
+        """Test WebDriverSingleton.clear_instance() explicitly clears resources.
+
+        Steps:
+        1. Ensure a WebDriver session is active.
+        2. Call WebDriverSingleton.clear_instance() explicitly.
+        3. Verify that _driver is set to None.
+        4. Verify that _instance is set to None.
+        5. Verify that garbage collection is triggered.
+
+        Тест явной очистки WebDriverSingleton.clear_instance():
+        1. Убедиться, что активна сессия WebDriver.
+        2. Вызвать WebDriverSingleton.clear_instance() явно.
+        3. Проверить, что _driver установлен в None.
+        4. Проверить, что _instance установлен в None.
+        5. Проверить, что запущен сборщик мусора.
+        """
+        pass
+
+    def test_is_session_active_on_grid_success(self, app: Shadowstep):
+        """Test _is_session_active_on_grid() returns True when session found in Grid.
+
+        Steps:
+        1. Connect to a Selenium Grid (or mock Grid endpoint).
+        2. Establish a session.
+        3. Call _is_session_active_on_grid().
+        4. Verify that True is returned when session is found in Grid slots.
+
+        Тест _is_session_active_on_grid() возвращает True при наличии сессии в Grid:
+        1. Подключиться к Selenium Grid (или замокать Grid endpoint).
+        2. Установить сессию.
+        3. Вызвать _is_session_active_on_grid().
+        4. Проверить, что возвращается True когда сессия найдена в слотах Grid.
+        """
+        pass
+
+    def test_is_session_active_on_grid_not_found(self, app: Shadowstep):
+        """Test _is_session_active_on_grid() returns False when session not in Grid.
+
+        Steps:
+        1. Connect to a standalone server (not Grid).
+        2. Call _is_session_active_on_grid().
+        3. Verify that False is returned.
+        4. Verify no exceptions are raised.
+
+        Тест _is_session_active_on_grid() возвращает False когда сессия не в Grid:
+        1. Подключиться к standalone серверу (не Grid).
+        2. Вызвать _is_session_active_on_grid().
+        3. Проверить, что возвращается False.
+        4. Проверить, что не возникает исключений.
+        """
+        pass
+
+    def test_is_session_active_on_grid_request_failure(self, app: Shadowstep):
+        """Test _is_session_active_on_grid() handles request failures gracefully.
+
+        Steps:
+        1. Mock or simulate a failed HTTP request to /status endpoint.
+        2. Call _is_session_active_on_grid().
+        3. Verify that False is returned (exception caught internally).
+        4. Verify that a warning is logged.
+
+        Тест _is_session_active_on_grid() обрабатывает сбой запроса корректно:
+        1. Замокать или симулировать неудачный HTTP запрос к /status endpoint.
+        2. Вызвать _is_session_active_on_grid().
+        3. Проверить, что возвращается False (исключение перехвачено внутри).
+        4. Проверить, что записано предупреждение в лог.
+        """
+        pass
+
+    def test_is_session_active_on_standalone_legacy_success(self, app: Shadowstep):
+        """Test _is_session_active_on_standalone() finds session via legacy /sessions.
+
+        Steps:
+        1. Connect to standalone Appium server.
+        2. Call _is_session_active_on_standalone().
+        3. Verify that True is returned when session_id matches.
+        4. Verify the correct endpoint (/sessions) is queried.
+
+        Тест _is_session_active_on_standalone() находит сессию через legacy /sessions:
+        1. Подключиться к standalone Appium серверу.
+        2. Вызвать _is_session_active_on_standalone().
+        3. Проверить, что возвращается True когда session_id совпадает.
+        4. Проверить, что запрашивается правильный endpoint (/sessions).
+        """
+        pass
+
+    def test_is_session_active_on_standalone_legacy_not_found(self, app: Shadowstep):
+        """Test _is_session_active_on_standalone() returns False when no session found.
+
+        Steps:
+        1. Disconnect from server or ensure no matching session.
+        2. Call _is_session_active_on_standalone().
+        3. Verify that False is returned.
+        4. Verify no exceptions are raised.
+
+        Тест _is_session_active_on_standalone() возвращает False когда сессия не найдена:
+        1. Отключиться от сервера или убедиться, что нет совпадающей сессии.
+        2. Вызвать _is_session_active_on_standalone().
+        3. Проверить, что возвращается False.
+        4. Проверить, что не возникает исключений.
+        """
+        pass
+
+    def test_is_session_active_on_standalone_legacy_request_exception(self, app: Shadowstep):
+        """Test _is_session_active_on_standalone() handles exceptions gracefully.
+
+        Steps:
+        1. Mock or cause a request exception (network error, timeout).
+        2. Call _is_session_active_on_standalone().
+        3. Verify that False is returned.
+        4. Verify exception is logged and caught.
+
+        Тест _is_session_active_on_standalone() обрабатывает исключения корректно:
+        1. Замокать или вызвать исключение запроса (ошибка сети, таймаут).
+        2. Вызвать _is_session_active_on_standalone().
+        3. Проверить, что возвращается False.
+        4. Проверить, что исключение залогировано и перехвачено.
+        """
+        pass
+
+    def test_is_session_active_on_standalone_new_style_success(self, app: Shadowstep):
+        """Test _is_session_active_on_standalone_new_style() with /appium/sessions.
+
+        Steps:
+        1. Connect to Appium server supporting new-style endpoint.
+        2. Call _is_session_active_on_standalone_new_style().
+        3. Verify that True is returned when session is found.
+        4. Verify the /appium/sessions endpoint is queried.
+
+        Тест _is_session_active_on_standalone_new_style() с /appium/sessions:
+        1. Подключиться к Appium серверу, поддерживающему новый endpoint.
+        2. Вызвать _is_session_active_on_standalone_new_style().
+        3. Проверить, что возвращается True когда сессия найдена.
+        4. Проверить, что запрашивается endpoint /appium/sessions.
+        """
+        pass
+
+    def test_is_session_active_on_standalone_new_style_not_found(self, app: Shadowstep):
+        """Test _is_session_active_on_standalone_new_style() when no session exists.
+
+        Steps:
+        1. Disconnect or ensure no matching session.
+        2. Call _is_session_active_on_standalone_new_style().
+        3. Verify that False is returned.
+        4. Verify no exceptions are raised.
+
+        Тест _is_session_active_on_standalone_new_style() когда сессии нет:
+        1. Отключиться или убедиться, что нет совпадающей сессии.
+        2. Вызвать _is_session_active_on_standalone_new_style().
+        3. Проверить, что возвращается False.
+        4. Проверить, что не возникает исключений.
+        """
+        pass
+
+    def test_is_session_active_on_standalone_new_style_request_exception(self, app: Shadowstep):
+        """Test _is_session_active_on_standalone_new_style() handles exceptions.
+
+        Steps:
+        1. Mock or cause a network/timeout exception.
+        2. Call _is_session_active_on_standalone_new_style().
+        3. Verify that False is returned.
+        4. Verify exception is logged.
+
+        Тест _is_session_active_on_standalone_new_style() обрабатывает исключения:
+        1. Замокать или вызвать исключение сети/таймаута.
+        2. Вызвать _is_session_active_on_standalone_new_style().
+        3. Проверить, что возвращается False.
+        4. Проверить, что исключение залогировано.
+        """
+        pass
+
+    def test_wait_for_session_id_success(self, app: Shadowstep):
+        """Test _wait_for_session_id() successfully waits for session_id assignment.
+
+        Steps:
+        1. Connect to Appium and trigger _wait_for_session_id().
+        2. Verify that method returns when session_id is assigned.
+        3. Verify that the session_id is not None.
+        4. Verify that the timeout is not exceeded.
+
+        Тест _wait_for_session_id() успешно ждёт назначения session_id:
+        1. Подключиться к Appium и запустить _wait_for_session_id().
+        2. Проверить, что метод возвращает результат когда session_id назначен.
+        3. Проверить, что session_id не None.
+        4. Проверить, что таймаут не превышен.
+        """
+        pass
+
+    def test_wait_for_session_id_timeout(self, app: Shadowstep):
+        """Test _wait_for_session_id() raises RuntimeError on timeout.
+
+        Steps:
+        1. Mock a scenario where session_id is never assigned.
+        2. Call _wait_for_session_id() with a short timeout.
+        3. Verify that RuntimeError is raised with appropriate message.
+        4. Verify that the error message mentions timeout.
+
+        Тест _wait_for_session_id() выбрасывает RuntimeError при таймауте:
+        1. Замокать сценарий, где session_id никогда не назначается.
+        2. Вызвать _wait_for_session_id() с коротким таймаутом.
+        3. Проверить, что возникает RuntimeError с соответствующим сообщением.
+        4. Проверить, что сообщение об ошибке упоминает таймаут.
+        """
+        pass
+
+    def test_wait_for_session_id_custom_timeout(self, app: Shadowstep):
+        """Test _wait_for_session_id() respects custom timeout value.
+
+        Steps:
+        1. Call _wait_for_session_id() with a custom timeout (e.g., 5 seconds).
+        2. Verify that method waits for the specified duration before timing out.
+        3. Verify that timeout value is honored.
+
+        Тест _wait_for_session_id() учитывает кастомное значение таймаута:
+        1. Вызвать _wait_for_session_id() с кастомным таймаутом (например, 5 секунд).
+        2. Проверить, что метод ожидает указанную длительность до таймаута.
+        3. Проверить, что значение таймаута учитывается.
+        """
+        pass
+
+    def test_get_ignored_dirs_returns_system_paths(self, app: Shadowstep):
+        """Test _get_ignored_dirs() returns system and virtual environment paths.
+
+        Steps:
+        1. Call _get_ignored_dirs().
+        2. Verify that the returned set contains typical system directories.
+        3. Verify that virtual environment paths are included.
+        4. Verify that common directories like __pycache__, .venv, .idea are included.
+
+        Тест _get_ignored_dirs() возвращает системные пути и пути виртуального окружения:
+        1. Вызвать _get_ignored_dirs().
+        2. Проверить, что возвращаемое множество содержит типичные системные директории.
+        3. Проверить, что пути виртуального окружения включены.
+        4. Проверить, что общие директории типа __pycache__, .venv, .idea включены.
+        """
+        pass
+
+    def test_get_ignored_dirs_handles_invalid_paths(self, app: Shadowstep):
+        """Test _get_ignored_dirs() handles invalid or non-existent paths gracefully.
+
+        Steps:
+        1. Mock sys.path to include non-existent or invalid paths.
+        2. Call _get_ignored_dirs().
+        3. Verify that no exceptions are raised.
+        4. Verify that only valid paths are processed.
+
+        Тест _get_ignored_dirs() обрабатывает невалидные или несуществующие пути:
+        1. Замокать sys.path чтобы включить несуществующие или невалидные пути.
+        2. Вызвать _get_ignored_dirs().
+        3. Проверить, что не возникает исключений.
+        4. Проверить, что обрабатываются только валидные пути.
+        """
+        pass
+
+    def test_connect_with_invalid_ip_address(self, app: Shadowstep):
+        """Test connect() with invalid IP address raises appropriate exception.
+
+        Steps:
+        1. Attempt to connect with an invalid IP address (e.g., "999.999.999.999").
+        2. Verify that an exception is raised (WebDriverException or similar).
+        3. Verify that driver remains None or is not initialized.
+        4. Verify that connection state is not established.
+
+        Тест connect() с невалидным IP адресом выбрасывает соответствующее исключение:
+        1. Попытаться подключиться с невалидным IP адресом (например, "999.999.999.999").
+        2. Проверить, что возникает исключение (WebDriverException или подобное).
+        3. Проверить, что driver остаётся None или не инициализирован.
+        4. Проверить, что состояние подключения не установлено.
+        """
+        pass
+
+    def test_connect_with_unreachable_server(self, app: Shadowstep):
+        """Test connect() when Appium server is unreachable.
+
+        Steps:
+        1. Attempt to connect to a non-existent server (e.g., wrong port).
+        2. Verify that a connection exception is raised.
+        3. Verify that driver is not initialized.
+        4. Verify that appropriate error message is present.
+
+        Тест connect() когда Appium сервер недоступен:
+        1. Попытаться подключиться к несуществующему серверу (например, неправильный порт).
+        2. Проверить, что возникает исключение подключения.
+        3. Проверить, что driver не инициализирован.
+        4. Проверить, что присутствует соответствующее сообщение об ошибке.
+        """
+        pass
+
+    def test_connect_with_invalid_capabilities(self, app: Shadowstep):
+        """Test connect() with invalid or malformed capabilities.
+
+        Steps:
+        1. Attempt to connect with invalid capabilities (e.g., missing required fields).
+        2. Verify that an exception is raised during connection.
+        3. Verify that driver is not successfully initialized.
+        4. Verify error message indicates capability issue.
+
+        Тест connect() с невалидными или неправильно сформированными capabilities:
+        1. Попытаться подключиться с невалидными capabilities (например, отсутствуют обязательные поля).
+        2. Проверить, что возникает исключение при подключении.
+        3. Проверить, что driver не инициализирован успешно.
+        4. Проверить, что сообщение об ошибке указывает на проблему с capabilities.
+        """
+        pass
+
+    def test_connect_with_ssh_credentials(self, app: Shadowstep):
+        """Test connect() with SSH user and password initializes Transport, Terminal, Adb.
+
+        Steps:
+        1. Disconnect if already connected.
+        2. Connect with ssh_user and ssh_password parameters.
+        3. Verify that self.transport is initialized and not None.
+        4. Verify that self.terminal is initialized and not None.
+        5. Verify that self.adb is initialized and not None.
+        6. Verify that Transport is initialized with correct credentials.
+
+        Тест connect() с SSH credentials инициализирует Transport, Terminal, Adb:
+        1. Отключиться если уже подключены.
+        2. Подключиться с параметрами ssh_user и ssh_password.
+        3. Проверить, что self.transport инициализирован и не None.
+        4. Проверить, что self.terminal инициализирован и не None.
+        5. Проверить, что self.adb инициализирован и не None.
+        6. Проверить, что Transport инициализирован с правильными credentials.
+        """
+        pass
+
+    def test_connect_with_custom_command_executor(self, app: Shadowstep):
+        """Test connect() with custom command_executor URL.
+
+        Steps:
+        1. Disconnect if connected.
+        2. Connect with a custom command_executor URL.
+        3. Verify that self.command_executor matches the provided URL.
+        4. Verify that connection is established successfully.
+        5. Verify that driver uses the custom command_executor.
+
+        Тест connect() с кастомным command_executor URL:
+        1. Отключиться если подключены.
+        2. Подключиться с кастомным command_executor URL.
+        3. Проверить, что self.command_executor совпадает с предоставленным URL.
+        4. Проверить, что подключение установлено успешно.
+        5. Проверить, что driver использует кастомный command_executor.
+        """
+        pass
+
+    def test_connect_without_ssh_credentials_no_transport(self, app: Shadowstep):
+        """Test connect() without SSH credentials does not initialize Transport.
+
+        Steps:
+        1. Disconnect if connected.
+        2. Connect without ssh_user and ssh_password.
+        3. Verify that self.transport remains None.
+        4. Verify that self.terminal is still initialized (doesn't require Transport).
+        5. Verify that self.adb is still initialized (doesn't require Transport).
+
+        Тест connect() без SSH credentials не инициализирует Transport:
+        1. Отключиться если подключены.
+        2. Подключиться без ssh_user и ssh_password.
+        3. Проверить, что self.transport остаётся None.
+        4. Проверить, что self.terminal всё равно инициализирован (не требует Transport).
+        5. Проверить, что self.adb всё равно инициализирован (не требует Transport).
+        """
+        pass
+
+    def test_disconnect_with_no_driver(self, app: Shadowstep):
+        """Test disconnect() when driver is None or already disconnected.
+
+        Steps:
+        1. Ensure driver is None (disconnect first if needed).
+        2. Call disconnect().
+        3. Verify that no exceptions are raised.
+        4. Verify that the method completes successfully.
+
+        Тест disconnect() когда driver равен None или уже отключен:
+        1. Убедиться, что driver равен None (сначала отключиться если нужно).
+        2. Вызвать disconnect().
+        3. Проверить, что не возникает исключений.
+        4. Проверить, что метод завершается успешно.
+        """
+        pass
+
+    def test_disconnect_handles_no_such_driver_exception(self, app: Shadowstep):
+        """Test disconnect() handles NoSuchDriverException gracefully.
+
+        Steps:
+        1. Mock or simulate a scenario where NoSuchDriverException is raised.
+        2. Call disconnect().
+        3. Verify that exception is caught and handled.
+        4. Verify that driver is set to None.
+        5. Verify that WebDriverSingleton is cleared.
+
+        Тест disconnect() обрабатывает NoSuchDriverException корректно:
+        1. Замокать или симулировать сценарий, где возникает NoSuchDriverException.
+        2. Вызвать disconnect().
+        3. Проверить, что исключение перехвачено и обработано.
+        4. Проверить, что driver установлен в None.
+        5. Проверить, что WebDriverSingleton очищен.
+        """
+        pass
+
+    def test_disconnect_request_failure(self, app: Shadowstep):
+        """Test disconnect() when DELETE request to session fails.
+
+        Steps:
+        1. Establish a connection.
+        2. Mock or simulate a failed DELETE request.
+        3. Call disconnect().
+        4. Verify that exception is handled appropriately.
+        5. Verify that driver.quit() is still called.
+        6. Verify that cleanup occurs despite request failure.
+
+        Тест disconnect() когда DELETE запрос к сессии не удаётся:
+        1. Установить подключение.
+        2. Замокать или симулировать неудачный DELETE запрос.
+        3. Вызвать disconnect().
+        4. Проверить, что исключение обработано соответствующим образом.
+        5. Проверить, что driver.quit() всё равно вызван.
+        6. Проверить, что очистка происходит несмотря на сбой запроса.
+        """
+        pass
+
+    def test_reconnect_without_initial_connect(self, app: Shadowstep):
+        """Test reconnect() behavior when no previous connection parameters exist.
+
+        Steps:
+        1. Create a fresh Shadowstep instance without calling connect().
+        2. Call reconnect().
+        3. Verify that reconnect handles missing connection parameters gracefully.
+        4. Verify appropriate behavior (no-op or exception).
+
+        Тест reconnect() когда отсутствуют параметры предыдущего подключения:
+        1. Создать новый экземпляр Shadowstep без вызова connect().
+        2. Вызвать reconnect().
+        3. Проверить, что reconnect корректно обрабатывает отсутствующие параметры подключения.
+        4. Проверить соответствующее поведение (no-op или исключение).
+        """
+        pass
+
+    def test_reconnect_when_server_becomes_unavailable(self, app: Shadowstep):
+        """Test reconnect() when Appium server becomes unavailable.
+
+        Steps:
+        1. Establish initial connection.
+        2. Simulate server becoming unavailable (stop server or block connection).
+        3. Call reconnect().
+        4. Verify that appropriate exception is raised.
+        5. Verify that connection state reflects failure.
+
+        Тест reconnect() когда Appium сервер становится недоступным:
+        1. Установить начальное подключение.
+        2. Симулировать недоступность сервера (остановить сервер или блокировать подключение).
+        3. Вызвать reconnect().
+        4. Проверить, что возникает соответствующее исключение.
+        5. Проверить, что состояние подключения отражает сбой.
+        """
+        pass
+
+    def test_reconnect_preserves_all_connection_parameters(self, app: Shadowstep):
+        """Test reconnect() preserves all original connection parameters.
+
+        Steps:
+        1. Connect with specific parameters (server_ip, port, capabilities, options, etc.).
+        2. Call reconnect().
+        3. Verify that all parameters are preserved in the new connection.
+        4. Verify that server_ip, server_port, capabilities, options match original values.
+        5. Verify that SSH credentials are preserved if provided.
+
+        Тест reconnect() сохраняет все исходные параметры подключения:
+        1. Подключиться с определёнными параметрами (server_ip, port, capabilities, options и т.д.).
+        2. Вызвать reconnect().
+        3. Проверить, что все параметры сохранены в новом подключении.
+        4. Проверить, что server_ip, server_port, capabilities, options совпадают с исходными значениями.
+        5. Проверить, что SSH credentials сохранены если были предоставлены.
+        """
+        pass
+
+    def test_is_connected_with_multiple_check_methods(self, app: Shadowstep):
+        """Test is_connected() correctly evaluates all three check methods.
+
+        Steps:
+        1. Connect to server (Grid, standalone legacy, or standalone new style).
+        2. Call is_connected().
+        3. Verify that method returns True when any of the three checks succeeds.
+        4. Mock scenarios where each method returns False/True individually.
+        5. Verify logical OR behavior across all three checks.
+
+        Тест is_connected() корректно оценивает все три метода проверки:
+        1. Подключиться к серверу (Grid, standalone legacy или standalone new style).
+        2. Вызвать is_connected().
+        3. Проверить, что метод возвращает True когда любая из трёх проверок успешна.
+        4. Замокать сценарии, где каждый метод возвращает False/True индивидуально.
+        5. Проверить поведение логического ИЛИ для всех трёх проверок.
+        """
+        pass
+
+    def test_get_driver_returns_singleton_instance(self, app: Shadowstep):
+        """Test get_driver() returns the singleton WebDriver instance.
+
+        Steps:
+        1. Establish connection.
+        2. Call get_driver() multiple times.
+        3. Verify that the same instance is returned each time.
+        4. Verify that the instance matches WebDriverSingleton.get_driver().
+
+        Тест get_driver() возвращает singleton экземпляр WebDriver:
+        1. Установить подключение.
+        2. Вызвать get_driver() несколько раз.
+        3. Проверить, что каждый раз возвращается один и тот же экземпляр.
+        4. Проверить, что экземпляр совпадает с WebDriverSingleton.get_driver().
+        """
+        pass
+
+    def test_capabilities_to_options_boundary_timeout_values(self, app: Shadowstep):
+        """Test _capabilities_to_options with boundary timeout values (0, max int).
+
+        Steps:
+        1. Set capabilities with boundary timeout values (0, very large numbers).
+        2. Call _capabilities_to_options().
+        3. Verify that boundary values are converted correctly.
+        4. Verify that no overflow or conversion errors occur.
+
+        Тест _capabilities_to_options с граничными значениями таймаутов (0, max int):
+        1. Установить capabilities с граничными значениями таймаутов (0, очень большие числа).
+        2. Вызвать _capabilities_to_options().
+        3. Проверить, что граничные значения конвертируются корректно.
+        4. Проверить, что не возникает переполнений или ошибок конвертации.
+        """
+        pass
+
+    def test_capabilities_to_options_with_empty_capabilities(self, app: Shadowstep):
+        """Test _capabilities_to_options with empty capabilities dictionary.
+
+        Steps:
+        1. Set app.capabilities to an empty dictionary {}.
+        2. Set app.options to None.
+        3. Call _capabilities_to_options().
+        4. Verify that options is initialized to UiAutomator2Options instance.
+        5. Verify that no errors occur with empty capabilities.
+
+        Тест _capabilities_to_options с пустым словарём capabilities:
+        1. Установить app.capabilities в пустой словарь {}.
+        2. Установить app.options в None.
+        3. Вызвать _capabilities_to_options().
+        4. Проверить, что options инициализирован экземпляром UiAutomator2Options.
+        5. Проверить, что не возникает ошибок при пустых capabilities.
+        """
+        pass
+
+    def test_capabilities_to_options_with_unknown_capability(self, app: Shadowstep):
+        """Test _capabilities_to_options with unknown/unsupported capability keys.
+
+        Steps:
+        1. Set capabilities with unknown keys (e.g., "appium:unknownKey": "value").
+        2. Call _capabilities_to_options().
+        3. Verify that method completes without errors.
+        4. Verify that unknown keys are ignored gracefully.
+
+        Тест _capabilities_to_options с неизвестными/неподдерживаемыми ключами capability:
+        1. Установить capabilities с неизвестными ключами (например, "appium:unknownKey": "value").
+        2. Вызвать _capabilities_to_options().
+        3. Проверить, что метод завершается без ошибок.
+        4. Проверить, что неизвестные ключи игнорируются корректно.
+        """
+        pass
