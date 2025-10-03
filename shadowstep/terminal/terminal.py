@@ -14,7 +14,6 @@ import subprocess
 import sys
 import time
 import traceback
-from collections.abc import Sequence
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, cast
 
@@ -32,6 +31,8 @@ logger = logging.getLogger(__name__)
 MIN_PS_COLUMNS_COUNT = 9
 
 if TYPE_CHECKING:
+    from collections.abc import Sequence
+
     from appium.webdriver.webdriver import WebDriver
 
     from shadowstep.base import ShadowstepBase
