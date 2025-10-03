@@ -400,6 +400,70 @@ class TestAdbInputMethods:
         result = Adb.swipe(100, 200, 300, 400, 500)
         assert result is True  # noqa: S101
 
+    @patch("subprocess.run")
+    @pytest.mark.unit
+    def test_press_home_error(self, mock_run: Mock) -> None:
+        """Test home button press with subprocess error."""
+        mock_run.side_effect = subprocess.CalledProcessError(1, "adb")
+        result = Adb.press_home()
+        assert result is False  # noqa: S101
+
+    @patch("subprocess.run")
+    @pytest.mark.unit
+    def test_press_back_error(self, mock_run: Mock) -> None:
+        """Test back button press with subprocess error."""
+        mock_run.side_effect = subprocess.CalledProcessError(1, "adb")
+        result = Adb.press_back()
+        assert result is False  # noqa: S101
+
+    @patch("subprocess.run")
+    @pytest.mark.unit
+    def test_press_menu_error(self, mock_run: Mock) -> None:
+        """Test menu button press with subprocess error."""
+        mock_run.side_effect = subprocess.CalledProcessError(1, "adb")
+        result = Adb.press_menu()
+        assert result is False  # noqa: S101
+
+    @patch("subprocess.run")
+    @pytest.mark.unit
+    def test_input_keycode_num_error(self, mock_run: Mock) -> None:
+        """Test number key input with subprocess error."""
+        mock_run.side_effect = subprocess.CalledProcessError(1, "adb")
+        result = Adb.input_keycode_num_(5)
+        assert result is False  # noqa: S101
+
+    @patch("subprocess.run")
+    @pytest.mark.unit
+    def test_input_keycode_error(self, mock_run: Mock) -> None:
+        """Test keycode input with subprocess error."""
+        mock_run.side_effect = subprocess.CalledProcessError(1, "adb")
+        result = Adb.input_keycode("KEYCODE_ENTER")
+        assert result is False  # noqa: S101
+
+    @patch("subprocess.run")
+    @pytest.mark.unit
+    def test_input_text_error(self, mock_run: Mock) -> None:
+        """Test text input with subprocess error."""
+        mock_run.side_effect = subprocess.CalledProcessError(1, "adb")
+        result = Adb.input_text("Hello World")
+        assert result is False  # noqa: S101
+
+    @patch("subprocess.run")
+    @pytest.mark.unit
+    def test_tap_error(self, mock_run: Mock) -> None:
+        """Test tap with subprocess error."""
+        mock_run.side_effect = subprocess.CalledProcessError(1, "adb")
+        result = Adb.tap(100, 200)
+        assert result is False  # noqa: S101
+
+    @patch("subprocess.run")
+    @pytest.mark.unit
+    def test_swipe_error(self, mock_run: Mock) -> None:
+        """Test swipe with subprocess error."""
+        mock_run.side_effect = subprocess.CalledProcessError(1, "adb")
+        result = Adb.swipe(100, 200, 300, 400, 500)
+        assert result is False  # noqa: S101
+
 
 class TestAdbProcessMethods:
     """Test cases for ADB process management methods."""
@@ -425,6 +489,14 @@ class TestAdbProcessMethods:
 
     @patch("subprocess.check_output")
     @pytest.mark.unit
+    def test_is_process_exist_error(self, mock_check_output: Mock) -> None:
+        """Test process existence check with subprocess error."""
+        mock_check_output.side_effect = subprocess.CalledProcessError(1, "adb")
+        result = Adb.is_process_exist("test_process")
+        assert result is False  # noqa: S101
+
+    @patch("subprocess.check_output")
+    @pytest.mark.unit
     def test_know_pid_success(self, mock_check_output: Mock) -> None:
         """Test successful PID retrieval."""
         mock_check_output.return_value = b"USER PID PPID VSIZE RSS WCHAN PC NAME\nroot 1234 1 1000 500 0x0 0x0 0x0 test_process\n"
@@ -439,6 +511,14 @@ class TestAdbProcessMethods:
         result = Adb.know_pid("test_process")
         assert result is None  # noqa: S101
 
+    @patch("subprocess.check_output")
+    @pytest.mark.unit
+    def test_know_pid_error(self, mock_check_output: Mock) -> None:
+        """Test PID retrieval with subprocess error."""
+        mock_check_output.side_effect = subprocess.CalledProcessError(1, "adb")
+        result = Adb.know_pid("test_process")
+        assert result is None  # noqa: S101
+
     @patch("subprocess.call")
     @pytest.mark.unit
     def test_kill_by_pid_success(self, mock_call: Mock) -> None:
@@ -449,11 +529,27 @@ class TestAdbProcessMethods:
 
     @patch("subprocess.call")
     @pytest.mark.unit
+    def test_kill_by_pid_error(self, mock_call: Mock) -> None:
+        """Test process kill by PID with subprocess error."""
+        mock_call.side_effect = subprocess.CalledProcessError(1, "adb")
+        result = Adb.kill_by_pid(1234)
+        assert result is False  # noqa: S101
+
+    @patch("subprocess.call")
+    @pytest.mark.unit
     def test_kill_by_name_success(self, mock_call: Mock) -> None:
         """Test successful process kill by name."""
         mock_call.return_value = 0
         result = Adb.kill_by_name("test_process")
         assert result is True  # noqa: S101
+
+    @patch("subprocess.call")
+    @pytest.mark.unit
+    def test_kill_by_name_error(self, mock_call: Mock) -> None:
+        """Test process kill by name with subprocess error."""
+        mock_call.side_effect = subprocess.CalledProcessError(1, "adb")
+        result = Adb.kill_by_name("test_process")
+        assert result is False  # noqa: S101
 
     @patch("subprocess.run")
     @pytest.mark.unit
@@ -462,6 +558,14 @@ class TestAdbProcessMethods:
         mock_run.return_value = None
         result = Adb.kill_all("test_process")
         assert result is True  # noqa: S101
+
+    @patch("subprocess.run")
+    @pytest.mark.unit
+    def test_kill_all_error(self, mock_run: Mock) -> None:
+        """Test kill all processes with subprocess error."""
+        mock_run.side_effect = subprocess.CalledProcessError(1, "adb")
+        result = Adb.kill_all("test_process")
+        assert result is False  # noqa: S101
 
 
 class TestAdbUtilityMethods:
@@ -476,6 +580,25 @@ class TestAdbUtilityMethods:
             result = Adb.reload_adb()
         assert result is True  # noqa: S101
 
+    @patch("subprocess.run")
+    @pytest.mark.unit
+    def test_reload_adb_kill_server_error(self, mock_run: Mock) -> None:
+        """Test ADB reload with kill-server error."""
+        mock_run.side_effect = subprocess.CalledProcessError(1, "adb")
+        with patch("time.sleep"):
+            result = Adb.reload_adb()
+        assert result is False  # noqa: S101
+
+    @patch("subprocess.run")
+    @pytest.mark.unit
+    def test_reload_adb_start_server_error(self, mock_run: Mock) -> None:
+        """Test ADB reload with start-server error."""
+        # First call (kill-server) succeeds, second call (start-server) fails
+        mock_run.side_effect = [None, subprocess.CalledProcessError(1, "adb")]
+        with patch("time.sleep"):
+            result = Adb.reload_adb()
+        assert result is False  # noqa: S101
+
     @patch("subprocess.check_output")
     @pytest.mark.unit
     def test_get_screen_resolution_success(self, mock_check_output: Mock) -> None:
@@ -489,6 +612,22 @@ class TestAdbUtilityMethods:
     def test_get_screen_resolution_invalid_output(self, mock_check_output: Mock) -> None:
         """Test screen resolution retrieval with invalid output."""
         mock_check_output.return_value = b"Invalid output\n"
+        result = Adb.get_screen_resolution()
+        assert result is None  # noqa: S101
+
+    @patch("subprocess.check_output")
+    @pytest.mark.unit
+    def test_get_screen_resolution_value_error(self, mock_check_output: Mock) -> None:
+        """Test screen resolution retrieval with value that cannot be converted to int."""
+        mock_check_output.return_value = b"Physical size: abcxdef\n"
+        result = Adb.get_screen_resolution()
+        assert result is None  # noqa: S101
+
+    @patch("subprocess.check_output")
+    @pytest.mark.unit
+    def test_get_screen_resolution_called_process_error(self, mock_check_output: Mock) -> None:
+        """Test screen resolution retrieval with subprocess error."""
+        mock_check_output.side_effect = subprocess.CalledProcessError(1, "adb")
         result = Adb.get_screen_resolution()
         assert result is None  # noqa: S101
 
@@ -515,11 +654,39 @@ class TestAdbVideoMethods:
 
     @patch("subprocess.Popen")
     @pytest.mark.unit
+    def test_record_video_error(self, mock_popen: Mock) -> None:
+        """Test video recording start with subprocess error."""
+        mock_popen.side_effect = subprocess.CalledProcessError(1, "adb")
+        result = Adb.record_video("sdcard/Movies/", "test.mp4")
+        assert result is None  # noqa: S101
+
+    @patch("subprocess.Popen")
+    @pytest.mark.unit
     def test_start_record_video_success(self, mock_popen: Mock) -> None:
         """Test successful video recording start (boolean version)."""
         mock_popen.return_value = Mock()
         result = Adb.start_record_video("sdcard/Movies/", "test.mp4")
         assert result is True  # noqa: S101
+
+    @patch("subprocess.Popen")
+    @pytest.mark.unit
+    def test_start_record_video_error(self, mock_popen: Mock) -> None:
+        """Test video recording start with subprocess error (boolean version)."""
+        mock_popen.side_effect = subprocess.CalledProcessError(1, "adb")
+        result = Adb.start_record_video("sdcard/Movies/", "test.mp4")
+        assert result is False  # noqa: S101
+
+    @patch("subprocess.Popen")
+    @pytest.mark.unit
+    def test_start_record_video_without_mp4_extension(self, mock_popen: Mock) -> None:
+        """Test video recording start with filename without .mp4 extension."""
+        mock_popen.return_value = Mock()
+        result = Adb.start_record_video("sdcard/Movies/", "test")
+        assert result is True  # noqa: S101
+        # Verify that .mp4 was added to the filename
+        mock_popen.assert_called_once()
+        call_args = mock_popen.call_args[0][0]
+        assert call_args[-1] == "sdcard/Movies/test.mp4"  # noqa: S101
 
     @patch("subprocess.call")
     @pytest.mark.unit
@@ -529,6 +696,14 @@ class TestAdbVideoMethods:
         result = Adb.stop_video()
         assert result is True  # noqa: S101
 
+    @patch("subprocess.call")
+    @pytest.mark.unit
+    def test_stop_video_error(self, mock_call: Mock) -> None:
+        """Test video recording stop with subprocess error."""
+        mock_call.side_effect = subprocess.CalledProcessError(1, "adb")
+        result = Adb.stop_video()
+        assert result is False  # noqa: S101
+
     @patch("subprocess.run")
     @pytest.mark.unit
     def test_pull_video_success(self, mock_run: Mock) -> None:
@@ -536,6 +711,23 @@ class TestAdbVideoMethods:
         mock_run.return_value = None
         result = Adb.pull_video("sdcard/Movies/", "/local/path/", True)
         assert result is True  # noqa: S101
+
+    @patch("subprocess.run")
+    @pytest.mark.unit
+    def test_pull_video_pull_error(self, mock_run: Mock) -> None:
+        """Test video pull with pull command error."""
+        mock_run.side_effect = subprocess.CalledProcessError(1, "adb")
+        result = Adb.pull_video("sdcard/Movies/", "/local/path/", True)
+        assert result is False  # noqa: S101
+
+    @patch("subprocess.run")
+    @pytest.mark.unit
+    def test_pull_video_delete_error(self, mock_run: Mock) -> None:
+        """Test video pull with delete command error."""
+        # First call (pull) succeeds, second call (delete) fails
+        mock_run.side_effect = [None, subprocess.CalledProcessError(1, "adb")]
+        result = Adb.pull_video("sdcard/Movies/", "/local/path/", True)
+        assert result is False  # noqa: S101
 
 
 class TestAdbFileMethods:
@@ -551,11 +743,27 @@ class TestAdbFileMethods:
 
     @patch("subprocess.run")
     @pytest.mark.unit
-    def test_reboot_success(self, mock_run: Mock) -> None:
+    def test_delete_files_from_internal_storage_error(self, mock_run: Mock) -> None:
+        """Test file deletion from internal storage with subprocess error."""
+        mock_run.side_effect = subprocess.CalledProcessError(1, "adb")
+        result = Adb.delete_files_from_internal_storage("/sdcard/test/")
+        assert result is False  # noqa: S101
+
+    @patch("subprocess.call")
+    @pytest.mark.unit
+    def test_reboot_success(self, mock_call: Mock) -> None:
         """Test successful device reboot."""
-        mock_run.return_value = None
+        mock_call.return_value = 0
         result = Adb.reboot()
         assert result is True  # noqa: S101
+
+    @patch("subprocess.call")
+    @pytest.mark.unit
+    def test_reboot_error(self, mock_call: Mock) -> None:
+        """Test device reboot with subprocess error."""
+        mock_call.side_effect = subprocess.CalledProcessError(1, "adb")
+        result = Adb.reboot()
+        assert result is False  # noqa: S101
 
 
 class TestAdbNetworkMethods:
@@ -578,6 +786,14 @@ class TestAdbNetworkMethods:
         mock_output = Mock()
         mock_output.stdout = "tcp 0 0 10.0.0.1:443 ESTABLISHED\n"
         mock_run.return_value = mock_output
+        result = Adb.check_vpn("192.168.1.100")
+        assert result is False  # noqa: S101
+
+    @patch("subprocess.run")
+    @pytest.mark.unit
+    def test_check_vpn_error(self, mock_run: Mock) -> None:
+        """Test VPN check with subprocess error."""
+        mock_run.side_effect = subprocess.CalledProcessError(1, "adb")
         result = Adb.check_vpn("192.168.1.100")
         assert result is False  # noqa: S101
 
@@ -626,6 +842,14 @@ class TestAdbBackgroundProcess:
         """Test background process execution when process doesn't exist."""
         mock_popen.return_value = Mock()
         mock_is_process_exist.return_value = False
+        result = Adb.run_background_process("test_command", "test_process")
+        assert result is False  # noqa: S101
+
+    @patch("subprocess.Popen")
+    @pytest.mark.unit
+    def test_run_background_process_error(self, mock_popen: Mock) -> None:
+        """Test background process execution with subprocess error."""
+        mock_popen.side_effect = subprocess.CalledProcessError(1, "adb")
         result = Adb.run_background_process("test_command", "test_process")
         assert result is False  # noqa: S101
 

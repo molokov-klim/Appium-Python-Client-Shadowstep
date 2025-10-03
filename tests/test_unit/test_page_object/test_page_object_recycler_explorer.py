@@ -314,3 +314,24 @@ class OtherClass:
             assert result is None  # noqa: S101
         finally:
             os.unlink(temp_file)
+
+    @pytest.mark.unit
+    def test_load_class_from_file_spec_is_none(self):
+        """Test _load_class_from_file when spec_from_file_location returns None."""
+        explorer = PageObjectRecyclerExplorer(Mock(), Mock())
+        
+        with patch("importlib.util.spec_from_file_location", return_value=None):
+            result = explorer._load_class_from_file("/test/path.py", "TestClass")
+            assert result is None  # noqa: S101
+
+    @pytest.mark.unit
+    def test_load_class_from_file_loader_is_none(self):
+        """Test _load_class_from_file when spec.loader is None."""
+        explorer = PageObjectRecyclerExplorer(Mock(), Mock())
+        
+        mock_spec = Mock()
+        mock_spec.loader = None
+        
+        with patch("importlib.util.spec_from_file_location", return_value=mock_spec):
+            result = explorer._load_class_from_file("/test/path.py", "TestClass")
+            assert result is None  # noqa: S101

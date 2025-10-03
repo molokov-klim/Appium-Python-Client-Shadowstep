@@ -1063,3 +1063,4 @@ class TestPageObjectGenerator:
         result = _pretty_dict({}, base_indent=4)
         expected = "{\n}"
         assert result == expected  # noqa: S101
+

@@ -47,7 +47,7 @@ class TestAdb:
         Asserts:
             Asserts that the file was successfully pushed to the specified directory on the device.
         """
-        app.adb.push(source=os.path.join("_test_data", "test_file"),
+        app.adb.push(source=os.path.join("test_integro", "_test_data", "test_file"),
                      destination=os.path.join("sdcard/Download/test_file"),
                      udid=udid)
         response = str(subprocess.check_output(["adb", "-s", f"{udid}", "shell", "ls", "sdcard/Download"]))  # noqa: S603, S607
@@ -65,7 +65,7 @@ class TestAdb:
         Asserts:
             Asserts that the file was successfully pulled from the device to the local machine.
         """
-        app.adb.push(source=os.path.join("_test_data", "test_file"),
+        app.adb.push(source=os.path.join("test_integro", "_test_data", "test_file"),
                      destination="sdcard/Download/test_file",
                      udid=udid)
         assert not os.path.exists("test_file")  # noqa: S101
@@ -88,7 +88,7 @@ class TestAdb:
             Asserts that the application was installed and can be found in the list of installed packages.
             And not in the list after uninstall.
         """
-        app.adb.install_app(source=os.path.join("_apk", "notepad.apk"),
+        app.adb.install_app(source=os.path.join("test_integro", "_apk", "notepad.apk"),
                             udid=udid)
         package = "com.farmerbb.notepad"
         result = subprocess.check_output(["adb", "-s", f"{udid}", "shell", "pm", "list", "packages"]).decode().strip()  # noqa: S603, S607

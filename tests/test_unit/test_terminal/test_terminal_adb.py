@@ -1533,3 +1533,70 @@ class TestAdb:
             
             # Assert
             assert result is False  # noqa: S101
+
+    @pytest.mark.unit
+    def test_push_success_return_true(self):
+        """Test push method returns True on success."""
+        # Arrange
+        source = "/path/to/file.txt"
+        destination = "/sdcard/file.txt"
+        udid = "emulator-5554"
+        
+        with patch("pathlib.Path.exists", return_value=True):
+            with patch("subprocess.run") as mock_run:
+                mock_run.return_value = None
+                
+                # Act
+                result = Adb.push(source, destination, udid)
+                
+                # Assert
+                assert result is True  # noqa: S101
+                mock_run.assert_called_once()
+
+    @pytest.mark.unit
+    def test_press_home_subprocess_error(self):
+        """Test press_home with subprocess error."""
+        with patch("subprocess.run", side_effect=subprocess.CalledProcessError(1, "adb")):
+            # Act
+            result = Adb.press_home()
+            
+            # Assert
+            assert result is False  # noqa: S101
+
+    @pytest.mark.unit
+    def test_press_back_subprocess_error(self):
+        """Test press_back with subprocess error."""
+        with patch("subprocess.run", side_effect=subprocess.CalledProcessError(1, "adb")):
+            # Act
+            result = Adb.press_back()
+            
+            # Assert
+            assert result is False  # noqa: S101
+
+    @pytest.mark.unit
+    def test_press_menu_subprocess_error(self):
+        """Test press_menu with subprocess error."""
+        with patch("subprocess.run", side_effect=subprocess.CalledProcessError(1, "adb")):
+            # Act
+            result = Adb.press_menu()
+            
+            # Assert
+            assert result is False  # noqa: S101
+
+    @pytest.mark.unit
+    def test_pull_video_delete_source_subprocess_error(self):
+        """Test pull_video with delete source subprocess error."""
+        # Arrange
+        source = "sdcard/Movies/test.mp4"
+        destination = "./test.mp4"
+        delete_source = True
+        
+        with patch("subprocess.run") as mock_run:
+            # First call succeeds (pull), second call fails (delete)
+            mock_run.side_effect = [None, subprocess.CalledProcessError(1, "adb")]
+            
+            # Act
+            result = Adb.pull_video(source, destination, delete_source)
+            
+            # Assert
+            assert result is False  # noqa: S101
