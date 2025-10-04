@@ -10,9 +10,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        test_dir: [ tests/test_integro/page_object/test_page_object.py ]
-        #test_dir: [ tests/test_integro/page_object/test_page_object.py, tests/test_integro/shadowstep_base/test_shadowstep_base.py, tests/test_integro/test_element/test_element_actions.py, tests/test_integro/test_element/test_element_coordinates.py, tests/test_integro/test_element/test_element_dom.py, tests/test_integro/test_element/test_element_gestures.py, tests/test_integro/test_element/test_element_properties.py, tests/test_integro/test_element/test_element_should.py, tests/test_integro/test_element/test_element_waiting.py, tests/test_integro/test_element/test_elements.py, tests/test_integro/test_element/test_screenshots.py, tests/test_integro/test_image/test_image.py, tests/test_integro/test_logcat/test_logcat.py, tests/test_integro/test_shadowstep/test_shadowstep.py, tests/test_integro/test_terminal/test_adb.py ]
-
+        test_dir: [ tests/test_shadowstep, tests/test_terminal ]
+        #test_dir: [ tests/test_decorators/, tests/test_element/, tests/test_image, tests/test_locator, tests/test_logcat, tests/test_navigator, tests/test_page_object, tests/test_shadowstep, tests/test_terminal ]
 
     env:
       CI: true
@@ -40,18 +39,10 @@ jobs:
         with:
           node-version: 'lts/*'
 
-      - name: Install or update Appium and uiautomator2 driver
+      - name: Install Appium
         run: |
-          if ! command -v appium &> /dev/null; then
-            echo "Appium not found, installing..."
-            npm install -g appium@latest
-          else
-            echo "Appium already installed, updating..."
-            npm update -g appium
-          fi
-          
-          appium driver update uiautomator2 || appium driver install uiautomator2
-
+          npm install -g appium@latest
+          appium driver install uiautomator2
 
       - name: Enable KVM group perms
         run: |
@@ -101,10 +92,10 @@ jobs:
             adb wait-for-device
             adb shell 'while [[ -z $(getprop sys.boot_completed) ]]; do sleep 1; done;'
             echo "✅ Emulator boot completed"
-            
+                        
             # Install dependencies first
             uv sync --dev
-            
+                        
             # Test basic imports
             echo "Testing basic imports..."
             uv run python -c "import shadowstep; print('✅ Shadowstep imports successfully')"
@@ -122,8 +113,6 @@ jobs:
             
             # Run tests if Appium server is working
             echo "Running tests for ${{ matrix.test_dir }}..."
-            pwd
-            ls -la
             PYTHONPATH=$PWD uv run pytest ${{ matrix.test_dir }} -svl --log-cli-level INFO --tb=short --setup-show --reruns 2
             
             # Kill Appium server
