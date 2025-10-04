@@ -7,10 +7,10 @@ on:
 
 jobs:
   unit-tests:
-    runs-on: ubuntu-latest
+    runs-on: [ self-hosted, linux, x64 ]
     strategy:
       matrix:
-        python-version: [3.9, 3.10, 3.11]
+        python-version: [ 3.9, 3.10, 3.11 ]
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5

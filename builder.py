@@ -16,7 +16,12 @@ from shadowstep.page_object.page_object_parser import PageObjectParser
 from shadowstep.page_object.page_object_recycler_explorer import PageObjectRecyclerExplorer
 from shadowstep.shadowstep import Shadowstep
 from shadowstep.utils.translator import YandexTranslate
-from tests.conftest import APPIUM_COMMAND_EXECUTOR, APPIUM_IP, APPIUM_PORT, CAPABILITIES
+from tests.test_integro.conftest import (
+            APPIUM_COMMAND_EXECUTOR,
+            APPIUM_IP,
+            APPIUM_PORT,
+            CAPABILITIES,
+)
 
 app = Shadowstep()
 app.connect(server_ip=APPIUM_IP,
