@@ -1,4 +1,5 @@
 import logging
+import os
 import shutil
 import time
 from pathlib import Path
@@ -17,7 +18,10 @@ logging.getLogger("httpcore").setLevel(logging.CRITICAL)
 logging.getLogger("websockets").setLevel(logging.CRITICAL)
 logging.getLogger("charset_normalizer").setLevel(logging.CRITICAL)
 
-UDID = "127.0.0.1:6555"  # GooglePixel
+IS_CI = os.getenv("CI", "false").lower() == "true"
+
+UDID = "emulator-5554" if IS_CI else "127.0.0.1:6555"
+
 APPIUM_IP = "127.0.0.1"
 APPIUM_PORT = 4723
 
