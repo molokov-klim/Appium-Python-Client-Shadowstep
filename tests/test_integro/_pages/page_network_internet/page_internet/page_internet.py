@@ -16,7 +16,8 @@ class PageInternet(PageBaseShadowstep):
 
     @property
     def edges(self) -> dict[str, Any]:
-        return {}
+        return {"PageNetworkInternet": self.,
+                "PageSavedNetworks": self.}
 
     @property
     def name(self) -> str:

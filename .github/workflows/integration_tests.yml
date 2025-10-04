@@ -35,10 +35,23 @@ jobs:
         with:
           node-version: 'lts/*'
 
-      - name: Install Appium
+      - name: Install or update Appium and uiautomator2 driver
         run: |
-          npm install -g appium@latest
-          appium driver install uiautomator2
+          if ! command -v appium &> /dev/null; then
+            echo "Appium not found, installing..."
+            npm install -g appium@latest
+          else
+            echo "Appium already installed, updating..."
+            npm update -g appium
+          fi
+          
+          if appium driver list --installed | grep -q 'uiautomator2'; then
+            echo "uiautomator2 driver already installed, updating..."
+            appium driver update uiautomator2
+          else
+            echo "Installing uiautomator2 driver..."
+            appium driver install uiautomator2
+          fi
 
       - name: Enable KVM group perms
         run: |
