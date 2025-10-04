@@ -34,7 +34,7 @@ translator = YandexTranslate(folder_id="b1ghf7n3imfg7foodstv")
 generator = PageObjectGenerator(translator)
 recycler_explorer = PageObjectRecyclerExplorer(app, translator)
 
-source = app.driver.page_source
+source = app.driver.page_source    # type: ignore[reportOptionalMemberAccess]
 print(source)   # noqa: T201
 tree = parser.parse(source)
 recycler_explorer.explore("pages")

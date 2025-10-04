@@ -1,10 +1,10 @@
 """
 uv run pytest -svl --log-cli-level INFO --tb=short --setup-show  tests/base/test_shadowstep_base.py
 """
+
 import logging
 import time
 from datetime import timedelta
-from pathlib import Path
 
 from appium.options.android.uiautomator2.base import UiAutomator2Options
 from selenium.common.exceptions import (
@@ -20,15 +20,12 @@ logger = logging.getLogger(__name__)
 
 # type: ignore[reportPrivateUsage]
 class TestShadowstepBase:
-
     def test_webdriver_singleton_creation(self, app: Shadowstep):
         """Test WebDriverSingleton creation and reuse"""
 
         # Create a new Shadowstep instance - it should reuse the same driver
         app2 = Shadowstep()
-        app2.connect(server_ip=APPIUM_IP,
-                     server_port=APPIUM_PORT,
-                     capabilities=CAPABILITIES)
+        app2.connect(server_ip=APPIUM_IP, server_port=APPIUM_PORT, capabilities=CAPABILITIES)
 
         # Both instances should have the same driver (singleton pattern)
         assert app.driver is not None  # noqa: S101
@@ -37,25 +34,21 @@ class TestShadowstepBase:
     def test_reconnect_after_session_disruption(self, app: Shadowstep):
         """Test automatic reconnection on broken session"""
         app.reconnect()  # Reconnection
-        app.driver.get_screenshot_as_png()  # Attempt to execute command
-        assert app.driver.session_id is not None, "Failed to reconnect"  # noqa: S101
+        app.driver.get_screenshot_as_png()  # Attempt to execute command    # type: ignore
+        assert app.driver.session_id is not None, "Failed to reconnect"  # noqa: S101    # type: ignore
 
     def test_disconnect_on_invalid_session_exception(self, app: Shadowstep):
         """Test InvalidSessionIdException handling on session break in disconnect"""
         app.disconnect()
         CAPABILITIES["appium:newCommandTimeout"] = 10
-        app.connect(server_ip=APPIUM_IP,
-                    server_port=APPIUM_PORT,
-                    capabilities=CAPABILITIES)
+        app.connect(server_ip=APPIUM_IP, server_port=APPIUM_PORT, capabilities=CAPABILITIES)
         time.sleep(12)
         try:
-            app.driver.get_screenshot_as_png()
+            app.driver.get_screenshot_as_png()  # type: ignore
         except InvalidSessionIdException as error:
             assert isinstance(error, InvalidSessionIdException)  # noqa: S101, PT017
             CAPABILITIES["appium:newCommandTimeout"] = 900
-            app.connect(server_ip=APPIUM_IP,
-                        server_port=APPIUM_PORT,
-                        capabilities=CAPABILITIES)
+            app.connect(server_ip=APPIUM_IP, server_port=APPIUM_PORT, capabilities=CAPABILITIES)
             return True
         except Exception as error:
             logger.error(error)
@@ -71,10 +64,10 @@ class TestShadowstepBase:
 
     def test_session_state_before_command_execution(self, app: Shadowstep):
         """Test session state before executing WebDriver commands"""
-        if app.driver.session_id is None:
+        if app.driver.session_id is None:  # type: ignore
             app.reconnect()  # Reconnection when no active session
         try:
-            app.driver.get_screenshot_as_png()
+            app.driver.get_screenshot_as_png()  # type: ignore
         except WebDriverException as error:
             raise AssertionError(f"Command execution error: {error}") from error
 
@@ -85,7 +78,9 @@ class TestShadowstepBase:
         new_caps["appium:autoGrantPermissions"] = False  # Change capabilities
         app.connect(server_ip="127.0.0.1", server_port=4723, capabilities=new_caps)
         assert app.driver is not None, "Session was not created with new capabilities parameters"  # noqa: S101
-        assert app.options.auto_grant_permissions is False, "autoGrantPermissions parameter was not applied"  # noqa: S101
+        assert app.options.auto_grant_permissions is False, (  # type: ignore
+            "autoGrantPermissions parameter was not applied"
+        )  # noqa: S101    # type: ignore
         app.connect(server_ip="127.0.0.1", server_port=4723, capabilities=CAPABILITIES)
 
     def test_is_connected_when_connected(self, app: Shadowstep):
@@ -113,7 +108,7 @@ class TestShadowstepBase:
 
         app.capabilities = capabilities
         app.options = None
-        app._capabilities_to_options()
+        app._capabilities_to_options()  # type: ignore[reportPrivateUsage]
 
         assert isinstance(app.options, UiAutomator2Options)
         assert app.options.platform_name == "Android"
@@ -152,7 +147,7 @@ class TestShadowstepBase:
 
         app.capabilities = capabilities
         app.options = None
-        app._capabilities_to_options()
+        app._capabilities_to_options()  # type: ignore[reportPrivateUsage]
 
         assert isinstance(app.options, UiAutomator2Options)
         assert app.options.app == "/path/to/app.apk"
@@ -180,7 +175,7 @@ class TestShadowstepBase:
         """Test _capabilities_to_options with no capabilities."""
         app.capabilities = None
         app.options = None
-        app._capabilities_to_options()
+        app._capabilities_to_options()  # type: ignore[reportPrivateUsage]
 
         assert app.options is None
 
@@ -192,11 +187,11 @@ class TestShadowstepBase:
 
         app.capabilities = {"platformName": "Android"}
         app.options = existing_options
-        app._capabilities_to_options()
+        app._capabilities_to_options()  # type: ignore[reportPrivateUsage]
 
         # Should not modify existing options
         assert app.options is existing_options
-        assert app.options.platform_name == "iOS"
+        assert app.options.platform_name == "iOS"  # type: ignore
 
     def test_capabilities_to_options_udid_lowercase(self, app: Shadowstep):
         """Test _capabilities_to_options with lowercase udid."""
@@ -205,7 +200,7 @@ class TestShadowstepBase:
 
         app.capabilities = capabilities
         app.options = None
-        app._capabilities_to_options()
+        app._capabilities_to_options()  # type: ignore[reportPrivateUsage]
 
         assert isinstance(app.options, UiAutomator2Options)
         assert app.options.udid == "test_udid_lowercase"
@@ -217,7 +212,7 @@ class TestShadowstepBase:
 
         app.capabilities = capabilities
         app.options = None
-        app._capabilities_to_options()
+        app._capabilities_to_options()  # type: ignore[reportPrivateUsage]
 
         assert isinstance(app.options, UiAutomator2Options)
         assert app.options.system_port == 8201
@@ -229,7 +224,7 @@ class TestShadowstepBase:
 
         app.capabilities = capabilities
         app.options = None
-        app._capabilities_to_options()
+        app._capabilities_to_options()  # type: ignore[reportPrivateUsage]
 
         assert isinstance(app.options, UiAutomator2Options)
         assert app.options.skip_server_installation is True
@@ -241,7 +236,7 @@ class TestShadowstepBase:
 
         app.capabilities = capabilities
         app.options = None
-        app._capabilities_to_options()
+        app._capabilities_to_options()  # type: ignore[reportPrivateUsage]
 
         assert isinstance(app.options, UiAutomator2Options)
         assert app.options.uiautomator2_server_launch_timeout == timedelta(seconds=60)
@@ -253,7 +248,7 @@ class TestShadowstepBase:
 
         app.capabilities = capabilities
         app.options = None
-        app._capabilities_to_options()
+        app._capabilities_to_options()  # type: ignore[reportPrivateUsage]
 
         assert isinstance(app.options, UiAutomator2Options)
         assert app.options.uiautomator2_server_install_timeout == timedelta(seconds=60)
@@ -265,7 +260,7 @@ class TestShadowstepBase:
 
         app.capabilities = capabilities
         app.options = None
-        app._capabilities_to_options()
+        app._capabilities_to_options()  # type: ignore[reportPrivateUsage]
 
         assert isinstance(app.options, UiAutomator2Options)
         assert app.options.uiautomator2_server_read_timeout == timedelta(seconds=60)
@@ -277,7 +272,7 @@ class TestShadowstepBase:
 
         app.capabilities = capabilities
         app.options = None
-        app._capabilities_to_options()
+        app._capabilities_to_options()  # type: ignore[reportPrivateUsage]
 
         assert isinstance(app.options, UiAutomator2Options)
         assert app.options.disable_window_animation is True
@@ -289,7 +284,7 @@ class TestShadowstepBase:
 
         app.capabilities = capabilities
         app.options = None
-        app._capabilities_to_options()
+        app._capabilities_to_options()  # type: ignore[reportPrivateUsage]
 
         assert isinstance(app.options, UiAutomator2Options)
         assert app.options.skip_device_initialization is True
@@ -301,7 +296,7 @@ class TestShadowstepBase:
 
         app.capabilities = capabilities
         app.options = None
-        app._capabilities_to_options()
+        app._capabilities_to_options()  # type: ignore[reportPrivateUsage]
 
         assert isinstance(app.options, UiAutomator2Options)
         assert app.options.locale_script == "Latn"
@@ -313,7 +308,7 @@ class TestShadowstepBase:
 
         app.capabilities = capabilities
         app.options = None
-        app._capabilities_to_options()
+        app._capabilities_to_options()  # type: ignore[reportPrivateUsage]
 
         assert isinstance(app.options, UiAutomator2Options)
         assert app.options.language == "en"
@@ -325,7 +320,7 @@ class TestShadowstepBase:
 
         app.capabilities = capabilities
         app.options = None
-        app._capabilities_to_options()
+        app._capabilities_to_options()  # type: ignore[reportPrivateUsage]
 
         assert isinstance(app.options, UiAutomator2Options)
         assert app.options.locale == "en_US"
@@ -337,7 +332,7 @@ class TestShadowstepBase:
 
         app.capabilities = capabilities
         app.options = None
-        app._capabilities_to_options()
+        app._capabilities_to_options()  # type: ignore[reportPrivateUsage]
 
         assert isinstance(app.options, UiAutomator2Options)
         assert app.options.adb_port == 5037
@@ -349,7 +344,7 @@ class TestShadowstepBase:
 
         app.capabilities = capabilities
         app.options = None
-        app._capabilities_to_options()
+        app._capabilities_to_options()  # type: ignore[reportPrivateUsage]
 
         assert isinstance(app.options, UiAutomator2Options)
         assert app.options.remote_adb_host == "192.168.1.100"
@@ -361,7 +356,7 @@ class TestShadowstepBase:
 
         app.capabilities = capabilities
         app.options = None
-        app._capabilities_to_options()
+        app._capabilities_to_options()  # type: ignore[reportPrivateUsage]
 
         assert isinstance(app.options, UiAutomator2Options)
         assert app.options.adb_exec_timeout == timedelta(seconds=60)
@@ -373,7 +368,7 @@ class TestShadowstepBase:
 
         app.capabilities = capabilities
         app.options = None
-        app._capabilities_to_options()
+        app._capabilities_to_options()  # type: ignore[reportPrivateUsage]
 
         assert isinstance(app.options, UiAutomator2Options)
         assert app.options.clear_device_logs_on_start is True
@@ -385,7 +380,7 @@ class TestShadowstepBase:
 
         app.capabilities = capabilities
         app.options = None
-        app._capabilities_to_options()
+        app._capabilities_to_options()  # type: ignore[reportPrivateUsage]
 
         assert isinstance(app.options, UiAutomator2Options)
         assert app.options.build_tools_version == "30.0.3"
@@ -397,7 +392,7 @@ class TestShadowstepBase:
 
         app.capabilities = capabilities
         app.options = None
-        app._capabilities_to_options()
+        app._capabilities_to_options()  # type: ignore[reportPrivateUsage]
 
         assert isinstance(app.options, UiAutomator2Options)
         assert app.options.skip_logcat_capture is True
@@ -409,7 +404,7 @@ class TestShadowstepBase:
 
         app.capabilities = capabilities
         app.options = None
-        app._capabilities_to_options()
+        app._capabilities_to_options()  # type: ignore[reportPrivateUsage]
 
         assert isinstance(app.options, UiAutomator2Options)
         assert app.options.suppress_kill_server is True
@@ -421,7 +416,7 @@ class TestShadowstepBase:
 
         app.capabilities = capabilities
         app.options = None
-        app._capabilities_to_options()
+        app._capabilities_to_options()  # type: ignore[reportPrivateUsage]
 
         assert isinstance(app.options, UiAutomator2Options)
         assert app.options.ignore_hidden_api_policy_error is True
@@ -433,7 +428,7 @@ class TestShadowstepBase:
 
         app.capabilities = capabilities
         app.options = None
-        app._capabilities_to_options()
+        app._capabilities_to_options()  # type: ignore[reportPrivateUsage]
 
         assert isinstance(app.options, UiAutomator2Options)
         assert app.options.mock_location_app == "com.example.mocklocation"
@@ -445,7 +440,7 @@ class TestShadowstepBase:
 
         app.capabilities = capabilities
         app.options = None
-        app._capabilities_to_options()
+        app._capabilities_to_options()  # type: ignore[reportPrivateUsage]
 
         assert isinstance(app.options, UiAutomator2Options)
         assert app.options.logcat_format == "time"
@@ -457,7 +452,7 @@ class TestShadowstepBase:
 
         app.capabilities = capabilities
         app.options = None
-        app._capabilities_to_options()
+        app._capabilities_to_options()  # type: ignore[reportPrivateUsage]
 
         assert isinstance(app.options, UiAutomator2Options)
         assert app.options.logcat_filter_specs == ["*:V"]
@@ -469,7 +464,7 @@ class TestShadowstepBase:
 
         app.capabilities = capabilities
         app.options = None
-        app._capabilities_to_options()
+        app._capabilities_to_options()  # type: ignore[reportPrivateUsage]
 
         assert isinstance(app.options, UiAutomator2Options)
         assert app.options.allow_delay_adb is True
@@ -481,7 +476,7 @@ class TestShadowstepBase:
 
         app.capabilities = capabilities
         app.options = None
-        app._capabilities_to_options()
+        app._capabilities_to_options()  # type: ignore[reportPrivateUsage]
 
         assert isinstance(app.options, UiAutomator2Options)
         assert app.options.avd == "test_avd"
@@ -493,7 +488,7 @@ class TestShadowstepBase:
 
         app.capabilities = capabilities
         app.options = None
-        app._capabilities_to_options()
+        app._capabilities_to_options()  # type: ignore[reportPrivateUsage]
 
         assert isinstance(app.options, UiAutomator2Options)
         assert app.options.avd_launch_timeout == timedelta(seconds=120)
@@ -505,7 +500,7 @@ class TestShadowstepBase:
 
         app.capabilities = capabilities
         app.options = None
-        app._capabilities_to_options()
+        app._capabilities_to_options()  # type: ignore[reportPrivateUsage]
 
         assert isinstance(app.options, UiAutomator2Options)
         assert app.options.avd_ready_timeout == timedelta(seconds=120)
@@ -517,7 +512,7 @@ class TestShadowstepBase:
 
         app.capabilities = capabilities
         app.options = None
-        app._capabilities_to_options()
+        app._capabilities_to_options()  # type: ignore[reportPrivateUsage]
 
         assert isinstance(app.options, UiAutomator2Options)
         assert app.options.avd_args == "-no-snapshot-load"
@@ -529,7 +524,7 @@ class TestShadowstepBase:
 
         app.capabilities = capabilities
         app.options = None
-        app._capabilities_to_options()
+        app._capabilities_to_options()  # type: ignore[reportPrivateUsage]
 
         assert isinstance(app.options, UiAutomator2Options)
         assert app.options.avd_env == {"ANDROID_HOME": "/path/to/android"}
@@ -541,7 +536,7 @@ class TestShadowstepBase:
 
         app.capabilities = capabilities
         app.options = None
-        app._capabilities_to_options()
+        app._capabilities_to_options()  # type: ignore[reportPrivateUsage]
 
         assert isinstance(app.options, UiAutomator2Options)
         assert app.options.network_speed == "full"
@@ -553,7 +548,7 @@ class TestShadowstepBase:
 
         app.capabilities = capabilities
         app.options = None
-        app._capabilities_to_options()
+        app._capabilities_to_options()  # type: ignore[reportPrivateUsage]
 
         assert isinstance(app.options, UiAutomator2Options)
         assert app.options.gps_enabled is True
@@ -565,7 +560,7 @@ class TestShadowstepBase:
 
         app.capabilities = capabilities
         app.options = None
-        app._capabilities_to_options()
+        app._capabilities_to_options()  # type: ignore[reportPrivateUsage]
 
         assert isinstance(app.options, UiAutomator2Options)
         assert app.options.is_headless is True
@@ -577,7 +572,7 @@ class TestShadowstepBase:
 
         app.capabilities = capabilities
         app.options = None
-        app._capabilities_to_options()
+        app._capabilities_to_options()  # type: ignore[reportPrivateUsage]
 
         assert isinstance(app.options, UiAutomator2Options)
         assert app.options.use_keystore is True
@@ -589,7 +584,7 @@ class TestShadowstepBase:
 
         app.capabilities = capabilities
         app.options = None
-        app._capabilities_to_options()
+        app._capabilities_to_options()  # type: ignore[reportPrivateUsage]
 
         assert isinstance(app.options, UiAutomator2Options)
         assert app.options.keystore_path == "/path/to/keystore"
@@ -601,7 +596,7 @@ class TestShadowstepBase:
 
         app.capabilities = capabilities
         app.options = None
-        app._capabilities_to_options()
+        app._capabilities_to_options()  # type: ignore[reportPrivateUsage]
 
         assert isinstance(app.options, UiAutomator2Options)
         assert app.options.keystore_password == "password123"
@@ -613,7 +608,7 @@ class TestShadowstepBase:
 
         app.capabilities = capabilities
         app.options = None
-        app._capabilities_to_options()
+        app._capabilities_to_options()  # type: ignore[reportPrivateUsage]
 
         assert isinstance(app.options, UiAutomator2Options)
         assert app.options.key_alias == "mykey"
@@ -625,7 +620,7 @@ class TestShadowstepBase:
 
         app.capabilities = capabilities
         app.options = None
-        app._capabilities_to_options()
+        app._capabilities_to_options()  # type: ignore[reportPrivateUsage]
 
         assert isinstance(app.options, UiAutomator2Options)
         assert app.options.key_password == "keypass123"
@@ -637,7 +632,7 @@ class TestShadowstepBase:
 
         app.capabilities = capabilities
         app.options = None
-        app._capabilities_to_options()
+        app._capabilities_to_options()  # type: ignore[reportPrivateUsage]
 
         assert isinstance(app.options, UiAutomator2Options)
         assert app.options.no_sign is True
@@ -649,7 +644,7 @@ class TestShadowstepBase:
 
         app.capabilities = capabilities
         app.options = None
-        app._capabilities_to_options()
+        app._capabilities_to_options()  # type: ignore[reportPrivateUsage]
 
         assert isinstance(app.options, UiAutomator2Options)
         assert app.options.skip_unlock is True
@@ -661,7 +656,7 @@ class TestShadowstepBase:
 
         app.capabilities = capabilities
         app.options = None
-        app._capabilities_to_options()
+        app._capabilities_to_options()  # type: ignore[reportPrivateUsage]
 
         assert isinstance(app.options, UiAutomator2Options)
         assert app.options.unlock_type == "pin"
@@ -673,7 +668,7 @@ class TestShadowstepBase:
 
         app.capabilities = capabilities
         app.options = None
-        app._capabilities_to_options()
+        app._capabilities_to_options()  # type: ignore[reportPrivateUsage]
 
         assert isinstance(app.options, UiAutomator2Options)
         assert app.options.unlock_key == "1234"
@@ -685,7 +680,7 @@ class TestShadowstepBase:
 
         app.capabilities = capabilities
         app.options = None
-        app._capabilities_to_options()
+        app._capabilities_to_options()  # type: ignore[reportPrivateUsage]
 
         assert isinstance(app.options, UiAutomator2Options)
         assert app.options.unlock_strategy == "locksettings"
@@ -697,7 +692,7 @@ class TestShadowstepBase:
 
         app.capabilities = capabilities
         app.options = None
-        app._capabilities_to_options()
+        app._capabilities_to_options()  # type: ignore[reportPrivateUsage]
 
         assert isinstance(app.options, UiAutomator2Options)
         assert app.options.unlock_success_timeout == timedelta(seconds=30)
@@ -709,7 +704,7 @@ class TestShadowstepBase:
 
         app.capabilities = capabilities
         app.options = None
-        app._capabilities_to_options()
+        app._capabilities_to_options()  # type: ignore[reportPrivateUsage]
 
         assert isinstance(app.options, UiAutomator2Options)
         assert app.options.mjpeg_server_port == 8080
@@ -721,7 +716,7 @@ class TestShadowstepBase:
 
         app.capabilities = capabilities
         app.options = None
-        app._capabilities_to_options()
+        app._capabilities_to_options()  # type: ignore[reportPrivateUsage]
 
         assert isinstance(app.options, UiAutomator2Options)
         assert app.options.mjpeg_screenshot_url == "http://localhost:8080/screenshot"
@@ -733,7 +728,7 @@ class TestShadowstepBase:
 
         app.capabilities = capabilities
         app.options = None
-        app._capabilities_to_options()
+        app._capabilities_to_options()  # type: ignore[reportPrivateUsage]
 
         assert isinstance(app.options, UiAutomator2Options)
         assert app.options.auto_web_view is True
@@ -745,7 +740,7 @@ class TestShadowstepBase:
 
         app.capabilities = capabilities
         app.options = None
-        app._capabilities_to_options()
+        app._capabilities_to_options()  # type: ignore[reportPrivateUsage]
 
         assert isinstance(app.options, UiAutomator2Options)
         assert app.options.auto_webview_timeout == timedelta(seconds=30)
@@ -757,7 +752,7 @@ class TestShadowstepBase:
 
         app.capabilities = capabilities
         app.options = None
-        app._capabilities_to_options()
+        app._capabilities_to_options()  # type: ignore[reportPrivateUsage]
 
         assert isinstance(app.options, UiAutomator2Options)
         assert app.options.webview_devtools_port == 9222
@@ -769,7 +764,7 @@ class TestShadowstepBase:
 
         app.capabilities = capabilities
         app.options = None
-        app._capabilities_to_options()
+        app._capabilities_to_options()  # type: ignore[reportPrivateUsage]
 
         assert isinstance(app.options, UiAutomator2Options)
         assert app.options.ensure_webviews_have_pages is True
@@ -781,7 +776,7 @@ class TestShadowstepBase:
 
         app.capabilities = capabilities
         app.options = None
-        app._capabilities_to_options()
+        app._capabilities_to_options()  # type: ignore[reportPrivateUsage]
 
         assert isinstance(app.options, UiAutomator2Options)
         assert app.options.chromedriver_port == 9515
@@ -793,7 +788,7 @@ class TestShadowstepBase:
 
         app.capabilities = capabilities
         app.options = None
-        app._capabilities_to_options()
+        app._capabilities_to_options()  # type: ignore[reportPrivateUsage]
 
         assert isinstance(app.options, UiAutomator2Options)
         assert app.options.chromedriver_ports == [9515, 9516]
@@ -805,7 +800,7 @@ class TestShadowstepBase:
 
         app.capabilities = capabilities
         app.options = None
-        app._capabilities_to_options()
+        app._capabilities_to_options()  # type: ignore[reportPrivateUsage]
 
         assert isinstance(app.options, UiAutomator2Options)
         assert app.options.chromedriver_args == ["--no-sandbox"]
@@ -817,7 +812,7 @@ class TestShadowstepBase:
 
         app.capabilities = capabilities
         app.options = None
-        app._capabilities_to_options()
+        app._capabilities_to_options()  # type: ignore[reportPrivateUsage]
 
         assert isinstance(app.options, UiAutomator2Options)
         assert app.options.chromedriver_executable == "/path/to/chromedriver"
@@ -829,7 +824,7 @@ class TestShadowstepBase:
 
         app.capabilities = capabilities
         app.options = None
-        app._capabilities_to_options()
+        app._capabilities_to_options()  # type: ignore[reportPrivateUsage]
 
         assert isinstance(app.options, UiAutomator2Options)
         assert app.options.chromedriver_executable_dir == "/path/to/chromedriver/dir"
@@ -841,7 +836,7 @@ class TestShadowstepBase:
 
         app.capabilities = capabilities
         app.options = None
-        app._capabilities_to_options()
+        app._capabilities_to_options()  # type: ignore[reportPrivateUsage]
 
         assert isinstance(app.options, UiAutomator2Options)
         assert app.options.chromedriver_chrome_mapping_file == "/path/to/mapping.json"
@@ -853,7 +848,7 @@ class TestShadowstepBase:
 
         app.capabilities = capabilities
         app.options = None
-        app._capabilities_to_options()
+        app._capabilities_to_options()  # type: ignore[reportPrivateUsage]
 
         assert isinstance(app.options, UiAutomator2Options)
         assert app.options.chromedriver_use_system_executable is True
@@ -865,7 +860,7 @@ class TestShadowstepBase:
 
         app.capabilities = capabilities
         app.options = None
-        app._capabilities_to_options()
+        app._capabilities_to_options()  # type: ignore[reportPrivateUsage]
 
         assert isinstance(app.options, UiAutomator2Options)
         assert app.options.chromedriver_disable_build_check is True
@@ -877,7 +872,7 @@ class TestShadowstepBase:
 
         app.capabilities = capabilities
         app.options = None
-        app._capabilities_to_options()
+        app._capabilities_to_options()  # type: ignore[reportPrivateUsage]
 
         assert isinstance(app.options, UiAutomator2Options)
         assert app.options.recreate_chrome_driver_sessions is True
@@ -889,13 +884,13 @@ class TestShadowstepBase:
 
         app.capabilities = capabilities
         app.options = None
-        app._capabilities_to_options()
+        app._capabilities_to_options()  # type: ignore[reportPrivateUsage]
 
         assert isinstance(app.options, UiAutomator2Options)
         assert app.options.native_web_screenshot is True
 
     def test_capabilities_to_options_extract_chrome_android_package_from_context_name(
-            self, app: Shadowstep
+        self, app: Shadowstep
     ):
         """Test _capabilities_to_options with extract chrome android package from context name."""
 
@@ -903,7 +898,7 @@ class TestShadowstepBase:
 
         app.capabilities = capabilities
         app.options = None
-        app._capabilities_to_options()
+        app._capabilities_to_options()  # type: ignore[reportPrivateUsage]
 
         assert isinstance(app.options, UiAutomator2Options)
         assert app.options.extract_chrome_android_package_from_context_name is True
@@ -915,7 +910,7 @@ class TestShadowstepBase:
 
         app.capabilities = capabilities
         app.options = None
-        app._capabilities_to_options()
+        app._capabilities_to_options()  # type: ignore[reportPrivateUsage]
 
         assert isinstance(app.options, UiAutomator2Options)
         assert app.options.show_chromedriver_log is True
@@ -927,7 +922,7 @@ class TestShadowstepBase:
 
         app.capabilities = capabilities
         app.options = None
-        app._capabilities_to_options()
+        app._capabilities_to_options()  # type: ignore[reportPrivateUsage]
 
         assert isinstance(app.options, UiAutomator2Options)
         assert app.options.page_load_strategy == "eager"
@@ -939,7 +934,7 @@ class TestShadowstepBase:
 
         app.capabilities = capabilities
         app.options = None
-        app._capabilities_to_options()
+        app._capabilities_to_options()  # type: ignore[reportPrivateUsage]
 
         assert isinstance(app.options, UiAutomator2Options)
         assert app.options.chrome_options == {"args": ["--no-sandbox"]}
@@ -951,7 +946,7 @@ class TestShadowstepBase:
 
         app.capabilities = capabilities
         app.options = None
-        app._capabilities_to_options()
+        app._capabilities_to_options()  # type: ignore[reportPrivateUsage]
 
         assert isinstance(app.options, UiAutomator2Options)
         assert app.options.chrome_logging_prefs == {"browser": "ALL"}
@@ -963,7 +958,7 @@ class TestShadowstepBase:
 
         app.capabilities = capabilities
         app.options = None
-        app._capabilities_to_options()
+        app._capabilities_to_options()  # type: ignore[reportPrivateUsage]
 
         assert isinstance(app.options, UiAutomator2Options)
         assert app.options.disable_suppress_accessibility_service is True
@@ -975,7 +970,7 @@ class TestShadowstepBase:
 
         app.capabilities = capabilities
         app.options = None
-        app._capabilities_to_options()
+        app._capabilities_to_options()  # type: ignore[reportPrivateUsage]
 
         assert isinstance(app.options, UiAutomator2Options)
         assert app.options.user_profile == "test_profile"
@@ -987,7 +982,7 @@ class TestShadowstepBase:
 
         app.capabilities = capabilities
         app.options = None
-        app._capabilities_to_options()
+        app._capabilities_to_options()  # type: ignore[reportPrivateUsage]
 
         assert isinstance(app.options, UiAutomator2Options)
         assert app.options.new_command_timeout == timedelta(seconds=300)

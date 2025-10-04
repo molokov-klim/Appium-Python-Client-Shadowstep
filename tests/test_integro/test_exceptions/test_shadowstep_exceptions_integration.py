@@ -7,8 +7,8 @@ testing exception behavior in real Android automation scenarios.
 import pytest
 from shadowstep.exceptions.shadowstep_exceptions import (
     ShadowstepException,
-    ShadowstepElementError,
-    ShadowstepNoSuchElementError,
+    ShadowstepElementException,
+    ShadowstepNoSuchElementException,
     ShadowstepTimeoutException,
     ShadowstepElementException,
     ShadowstepLocatorConverterError,
@@ -160,25 +160,25 @@ class TestShadowstepExceptionIntegration:
 
 
 class TestShadowstepElementErrorIntegration:
-    """Integration tests for ShadowstepElementError with real Android elements."""
+    """Integration tests for ShadowstepElementException with real Android elements."""
 
     @pytest.mark.integro
     def test_shadowstep_element_error_with_real_element_operation(self, app):
-        """Test ShadowstepElementError with real element operation failure.
+        """Test ShadowstepElementException with real element operation failure.
         
         Steps:
         1. Attempt to perform element operation that will fail
         2. Catch the original exception
-        3. Wrap it in ShadowstepElementError
+        3. Wrap it in ShadowstepElementException
         4. Verify original exception is preserved
         5. Verify traceback is captured
         6. Verify error message is meaningful
         
-        Тест ShadowstepElementError с реальной операцией элемента, которая не удается.
+        Тест ShadowstepElementException с реальной операцией элемента, которая не удается.
         Шаги:
         1. Попытаться выполнить операцию элемента, которая не удастся
         2. Перехватить исходное исключение
-        3. Обернуть его в ShadowstepElementError
+        3. Обернуть его в ShadowstepElementException
         4. Проверить сохранение исходного исключения
         5. Проверить захват стека вызовов
         6. Проверить осмысленность сообщения об ошибке
@@ -187,19 +187,19 @@ class TestShadowstepElementErrorIntegration:
 
     @pytest.mark.integro
     def test_shadowstep_element_error_with_selenium_exception(self, app):
-        """Test ShadowstepElementError wrapping Selenium exceptions.
+        """Test ShadowstepElementException wrapping Selenium exceptions.
         
         Steps:
         1. Trigger Selenium WebDriverException
-        2. Wrap it in ShadowstepElementError
+        2. Wrap it in ShadowstepElementException
         3. Verify original Selenium exception is preserved
         4. Verify additional context is added
         5. Verify error handling works correctly
         
-        Тест ShadowstepElementError оборачивающий исключения Selenium.
+        Тест ShadowstepElementException оборачивающий исключения Selenium.
         Шаги:
         1. Вызвать Selenium WebDriverException
-        2. Обернуть его в ShadowstepElementError
+        2. Обернуть его в ShadowstepElementException
         3. Проверить сохранение исходного исключения Selenium
         4. Проверить добавление дополнительного контекста
         5. Проверить правильную работу обработки ошибок
@@ -208,19 +208,19 @@ class TestShadowstepElementErrorIntegration:
 
     @pytest.mark.integro
     def test_shadowstep_element_error_with_appium_exception(self, app):
-        """Test ShadowstepElementError wrapping Appium exceptions.
+        """Test ShadowstepElementException wrapping Appium exceptions.
         
         Steps:
         1. Trigger Appium-specific exception
-        2. Wrap it in ShadowstepElementError
+        2. Wrap it in ShadowstepElementException
         3. Verify original Appium exception is preserved
         4. Verify traceback contains Appium context
         5. Verify error message is informative
         
-        Тест ShadowstepElementError оборачивающий исключения Appium.
+        Тест ShadowstepElementException оборачивающий исключения Appium.
         Шаги:
         1. Вызвать специфичное для Appium исключение
-        2. Обернуть его в ShadowstepElementError
+        2. Обернуть его в ShadowstepElementException
         3. Проверить сохранение исходного исключения Appium
         4. Проверить, что стек вызовов содержит контекст Appium
         5. Проверить информативность сообщения об ошибке
@@ -229,25 +229,25 @@ class TestShadowstepElementErrorIntegration:
 
 
 class TestShadowstepNoSuchElementErrorIntegration:
-    """Integration tests for ShadowstepNoSuchElementError with real Android elements."""
+    """Integration tests for ShadowstepNoSuchElementException with real Android elements."""
 
     @pytest.mark.integro
     def test_shadowstep_no_such_element_error_with_real_locator(self, app):
-        """Test ShadowstepNoSuchElementError with real locator data.
+        """Test ShadowstepNoSuchElementException with real locator data.
         
         Steps:
         1. Attempt to find element with invalid locator
         2. Catch NoSuchElementException
-        3. Wrap it in ShadowstepNoSuchElementError with locator info
+        3. Wrap it in ShadowstepNoSuchElementException with locator info
         4. Verify locator information is preserved
         5. Verify error message includes locator details
         6. Verify string representation is helpful for debugging
         
-        Тест ShadowstepNoSuchElementError с реальными данными локатора.
+        Тест ShadowstepNoSuchElementException с реальными данными локатора.
         Шаги:
         1. Попытаться найти элемент с невалидным локатором
         2. Перехватить NoSuchElementException
-        3. Обернуть его в ShadowstepNoSuchElementError с информацией о локаторе
+        3. Обернуть его в ShadowstepNoSuchElementException с информацией о локаторе
         4. Проверить сохранение информации о локаторе
         5. Проверить, что сообщение об ошибке включает детали локатора
         6. Проверить, что строковое представление полезно для отладки
@@ -256,21 +256,21 @@ class TestShadowstepNoSuchElementErrorIntegration:
 
     @pytest.mark.integro
     def test_shadowstep_no_such_element_error_with_complex_locator(self, app):
-        """Test ShadowstepNoSuchElementError with complex locator strategies.
+        """Test ShadowstepNoSuchElementException with complex locator strategies.
         
         Steps:
         1. Use complex locator strategy (XPath, UiSelector, etc.)
         2. Trigger NoSuchElementException
-        3. Wrap it in ShadowstepNoSuchElementError
+        3. Wrap it in ShadowstepNoSuchElementException
         4. Verify complex locator is properly displayed
         5. Verify error message is readable
         6. Verify debugging information is comprehensive
         
-        Тест ShadowstepNoSuchElementError со сложными стратегиями локаторов.
+        Тест ShadowstepNoSuchElementException со сложными стратегиями локаторов.
         Шаги:
         1. Использовать сложную стратегию локатора (XPath, UiSelector, и т.д.)
         2. Вызвать NoSuchElementException
-        3. Обернуть его в ShadowstepNoSuchElementError
+        3. Обернуть его в ShadowstepNoSuchElementException
         4. Проверить правильное отображение сложного локатора
         5. Проверить читаемость сообщения об ошибке
         6. Проверить полноту отладочной информации
@@ -279,21 +279,21 @@ class TestShadowstepNoSuchElementErrorIntegration:
 
     @pytest.mark.integro
     def test_shadowstep_no_such_element_error_with_screenshot_context(self, app):
-        """Test ShadowstepNoSuchElementError with screenshot context.
+        """Test ShadowstepNoSuchElementException with screenshot context.
         
         Steps:
         1. Trigger NoSuchElementException
         2. Capture screenshot at time of error
-        3. Create ShadowstepNoSuchElementError with screenshot
+        3. Create ShadowstepNoSuchElementException with screenshot
         4. Verify screenshot data is accessible
         5. Verify error message includes screenshot info
         6. Verify debugging context is complete
         
-        Тест ShadowstepNoSuchElementError с контекстом скриншота.
+        Тест ShadowstepNoSuchElementException с контекстом скриншота.
         Шаги:
         1. Вызвать NoSuchElementException
         2. Захватить скриншот в момент ошибки
-        3. Создать ShadowstepNoSuchElementError со скриншотом
+        3. Создать ShadowstepNoSuchElementException со скриншотом
         4. Проверить доступность данных скриншота
         5. Проверить, что сообщение об ошибке включает информацию о скриншоте
         6. Проверить полноту контекста отладки

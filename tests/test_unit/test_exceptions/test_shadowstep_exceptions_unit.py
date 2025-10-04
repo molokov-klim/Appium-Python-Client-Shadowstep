@@ -16,14 +16,14 @@ def test_shadowstep_element_error_records_original_exception() -> None:
     try:
         raise ValueError("boom")
     except ValueError as err:
-        wrapper = exc.ShadowstepElementError("wrapper", err)
+        wrapper = exc.ShadowstepElementException("wrapper", err)
     assert wrapper.original_exception.args == ("boom",)
     assert "ValueError" in wrapper.traceback
 
 
 @pytest.mark.unit
 def test_shadowstep_no_such_element_error_str() -> None:
-    error = exc.ShadowstepNoSuchElementError(
+    error = exc.ShadowstepNoSuchElementException(
         msg="missing",
         locator={"id": "btn"},
         stacktrace=["line"],

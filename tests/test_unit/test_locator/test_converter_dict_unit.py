@@ -264,30 +264,38 @@ class TestDictConverter:
     @pytest.mark.unit
     def test_validate_dict_selector_invalid(self):
         """Test validation of invalid dictionary selectors."""
+        from shadowstep.exceptions.shadowstep_exceptions import (
+            ShadowstepEmptySelectorError,
+            ShadowstepSelectorTypeError,
+            ShadowstepConflictingTextAttributesError,
+            ShadowstepConflictingDescriptionAttributesError,
+            ShadowstepHierarchicalAttributeError,
+        )
+        
         # Empty dictionary
-        with pytest.raises(ValueError, match="Selector dictionary cannot be empty"):
+        with pytest.raises(ShadowstepEmptySelectorError):
             self.converter.validate_dict_selector({})
         
         # Not a dictionary
-        with pytest.raises(ValueError, match="Selector must be a dictionary"):
+        with pytest.raises(ShadowstepSelectorTypeError):
             self.converter.validate_dict_selector("not a dict")  # type: ignore
         
         # Conflicting text attributes
-        with pytest.raises(ValueError, match="Conflicting text attributes"):
+        with pytest.raises(ShadowstepConflictingTextAttributesError):
             self.converter.validate_dict_selector({
                 "text": "OK",
                 "textContains": "Hello"
             })
         
         # Conflicting description attributes
-        with pytest.raises(ValueError, match="Conflicting description attributes"):
+        with pytest.raises(ShadowstepConflictingDescriptionAttributesError):
             self.converter.validate_dict_selector({
                 "content-desc": "OK",
                 "content-descContains": "Hello"
             })
         
         # Invalid hierarchical attribute value
-        with pytest.raises(ValueError, match="Hierarchical attribute.*must have dict value"):
+        with pytest.raises(ShadowstepHierarchicalAttributeError):
             self.converter.validate_dict_selector({
                 "childSelector": "not a dict"
             })
@@ -454,6 +462,8 @@ class TestDictConverterComplex:
     @pytest.mark.unit
     def test_all_text_functions_combined(self):
         """Test selector with all text function types."""
+        from shadowstep.exceptions.shadowstep_exceptions import ShadowstepConflictingTextAttributesError
+        
         text_functions_selector = {
             "text": "Exact Text",
             "textContains": "Contains",
@@ -462,12 +472,14 @@ class TestDictConverterComplex:
         }
 
         # This should fail validation due to conflicting text attributes
-        with pytest.raises(ValueError, match="Conflicting text attributes"):
+        with pytest.raises(ShadowstepConflictingTextAttributesError):
             self.converter.validate_dict_selector(text_functions_selector)
 
     @pytest.mark.unit
     def test_all_description_functions_combined(self):
         """Test selector with all description function types."""
+        from shadowstep.exceptions.shadowstep_exceptions import ShadowstepConflictingDescriptionAttributesError
+        
         desc_functions_selector = {
             "content-desc": "Exact Desc",
             "content-descContains": "Contains",
@@ -476,7 +488,7 @@ class TestDictConverterComplex:
         }
 
         # This should fail validation due to conflicting description attributes
-        with pytest.raises(ValueError, match="Conflicting description attributes"):
+        with pytest.raises(ShadowstepConflictingDescriptionAttributesError):
             self.converter.validate_dict_selector(desc_functions_selector)
 
     @pytest.mark.unit
@@ -537,23 +549,29 @@ class TestDictConverterComplex:
     @pytest.mark.unit
     def test_edge_case_empty_dict(self):
         """Test edge case with empty dictionary."""
-        with pytest.raises(ValueError, match="Selector dictionary cannot be empty"):
+        from shadowstep.exceptions.shadowstep_exceptions import ShadowstepEmptySelectorError
+        
+        with pytest.raises(ShadowstepEmptySelectorError):
             self.converter.validate_dict_selector({})
 
     @pytest.mark.unit
     def test_edge_case_invalid_hierarchical_value(self):
         """Test edge case with invalid hierarchical attribute value."""
+        from shadowstep.exceptions.shadowstep_exceptions import ShadowstepHierarchicalAttributeError
+        
         invalid_selector = {
             "childSelector": "not a dict"  # Should be dict
         }
 
-        with pytest.raises(ValueError, match="Hierarchical attribute.*must have dict value"):
+        with pytest.raises(ShadowstepHierarchicalAttributeError):
             self.converter.validate_dict_selector(invalid_selector)
 
     @pytest.mark.unit
     def test_edge_case_non_dict_input(self):
         """Test edge case with non-dictionary input."""
-        with pytest.raises(ValueError, match="Selector must be a dictionary"):
+        from shadowstep.exceptions.shadowstep_exceptions import ShadowstepSelectorTypeError
+        
+        with pytest.raises(ShadowstepSelectorTypeError):
             self.converter.validate_dict_selector("not a dict")  # type: ignore
 
     @pytest.mark.unit
@@ -608,6 +626,8 @@ class TestDictConverterComplex:
     @pytest.mark.unit
     def test_nested_validation_errors(self):
         """Test validation errors in nested structures."""
+        from shadowstep.exceptions.shadowstep_exceptions import ShadowstepConflictingTextAttributesError
+        
         nested_invalid_selector = {
             "text": "Parent",
             "childSelector": {
@@ -616,7 +636,7 @@ class TestDictConverterComplex:
             }
         }
 
-        with pytest.raises(ValueError, match="Conflicting text attributes"):
+        with pytest.raises(ShadowstepConflictingTextAttributesError):
             self.converter.validate_dict_selector(nested_invalid_selector)
 
     @pytest.mark.unit

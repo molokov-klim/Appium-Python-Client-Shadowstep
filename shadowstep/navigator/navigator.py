@@ -212,7 +212,7 @@ class PageNavigator:
                     break
                 time.sleep(0.5)
             else:
-                raise ShadowstepNavigationFailedError(current_page, next_page, transition_method)
+                raise ShadowstepNavigationFailedError(from_page=str(current_page), to_page=str(next_page), method=str(transition_method))
 
 
 class PageGraph:

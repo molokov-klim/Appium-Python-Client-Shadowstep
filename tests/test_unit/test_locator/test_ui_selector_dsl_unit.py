@@ -309,7 +309,9 @@ class TestUiSelectorDSL:
         assert isinstance(selector, UiSelector)  # noqa: S101
         
         # Invalid string
-        with pytest.raises(ValueError, match="Invalid UiSelector string format"):
+        from shadowstep.exceptions.shadowstep_exceptions import ShadowstepInvalidUiSelectorStringFormatError
+        
+        with pytest.raises(ShadowstepInvalidUiSelectorStringFormatError):
             UiSelector.from_string("invalid string")
 
     @pytest.mark.unit

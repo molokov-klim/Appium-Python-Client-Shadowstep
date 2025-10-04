@@ -352,13 +352,17 @@ class TestLocatorConverter:
     @pytest.mark.unit
     def test_validate_selector_empty_string(self, converter: LocatorConverter) -> None:
         """Test validation of empty string selector."""
-        with pytest.raises(ValueError, match="Selector string cannot be empty"):
+        from shadowstep.exceptions.shadowstep_exceptions import ShadowstepEmptySelectorStringError
+        
+        with pytest.raises(ShadowstepEmptySelectorStringError):
             converter.validate_selector("")
 
     @pytest.mark.unit
     def test_validate_selector_unsupported_type(self, converter: LocatorConverter) -> None:
         """Test validation of unsupported selector type."""
-        with pytest.raises(ValueError, match="Unsupported selector type"):
+        from shadowstep.exceptions.shadowstep_exceptions import ShadowstepUnsupportedSelectorTypeError
+        
+        with pytest.raises(ShadowstepUnsupportedSelectorTypeError):
             converter.validate_selector(123)  # type: ignore
 
 
@@ -403,9 +407,11 @@ class TestDictConverter:
     @pytest.mark.unit
     def test_validate_dict_selector_empty(self, dict_converter: DictConverter) -> None:
         """Test validation of empty dict selector."""
+        from shadowstep.exceptions.shadowstep_exceptions import ShadowstepEmptySelectorError
+        
         selector_dict = {}
-        # Should raise ValueError for empty selector
-        with pytest.raises(ValueError, match="Selector dictionary cannot be empty"):
+        # Should raise ShadowstepEmptySelectorError for empty selector
+        with pytest.raises(ShadowstepEmptySelectorError):
             dict_converter.validate_dict_selector(selector_dict)  # type: ignore
 
 
@@ -457,7 +463,9 @@ class TestDictToUiMapping:
     @pytest.mark.unit
     def test_dict_to_ui_attribute_unsupported(self) -> None:
         """Test unsupported attribute conversion."""
-        with pytest.raises(ValueError, match="Unsupported attribute for UiSelector conversion"):
+        from shadowstep.exceptions.shadowstep_exceptions import ShadowstepUnsupportedAttributeForUiSelectorError
+        
+        with pytest.raises(ShadowstepUnsupportedAttributeForUiSelectorError):
             dict_to_ui_attribute(ShadowstepDictAttribute.CHILD_SELECTOR, {})  # type: ignore
 
     @pytest.mark.unit
@@ -522,7 +530,9 @@ class TestDictToXPathMapping:
     @pytest.mark.unit
     def test_dict_to_xpath_attribute_unsupported(self) -> None:
         """Test unsupported attribute conversion."""
-        with pytest.raises(ValueError, match="Unsupported attribute for XPath conversion"):
+        from shadowstep.exceptions.shadowstep_exceptions import ShadowstepUnsupportedAttributeForXPathError
+        
+        with pytest.raises(ShadowstepUnsupportedAttributeForXPathError):
             dict_to_xpath_attribute(ShadowstepDictAttribute.CHILD_SELECTOR, {})  # type: ignore
 
 

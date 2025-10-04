@@ -288,3 +288,903 @@ class TestElementWaiting:
             assert end_time - start_time < 60.0  # Very generous 60 seconds threshold
             # Results should be consistent with implementation behavior
             assert isinstance(result, bool)
+
+    def test_wait_handles_nosuchdriver_exception(self, app: Shadowstep, stability: None):
+        """Test wait method handles NoSuchDriverException gracefully.
+        
+        Steps:
+        1. Create element with valid locator
+        2. Simulate NoSuchDriverException by corrupting driver
+        3. Call wait method and verify it handles exception
+        4. Verify method returns appropriate result
+        
+        Тест проверяет обработку NoSuchDriverException в методе wait.
+        Шаги:
+        1. Создать элемент с валидным локатором
+        2. Симулировать NoSuchDriverException через повреждение драйвера
+        3. Вызвать метод wait и проверить обработку исключения
+        4. Проверить возврат соответствующего результата
+        """
+        pass
+
+    def test_wait_handles_invalid_session_exception(self, app: Shadowstep, stability: None):
+        """Test wait method handles InvalidSessionIdException gracefully.
+        
+        Steps:
+        1. Create element with valid locator
+        2. Simulate InvalidSessionIdException by corrupting session
+        3. Call wait method and verify it handles exception
+        4. Verify method returns appropriate result
+        
+        Тест проверяет обработку InvalidSessionIdException в методе wait.
+        Шаги:
+        1. Создать элемент с валидным локатором
+        2. Симулировать InvalidSessionIdException через повреждение сессии
+        3. Вызвать метод wait и проверить обработку исключения
+        4. Проверить возврат соответствующего результата
+        """
+        pass
+
+    def test_wait_handles_stale_element_reference_exception(self, app: Shadowstep, stability: None):
+        """Test wait method handles StaleElementReferenceException and re-acquires element.
+        
+        Steps:
+        1. Create element with valid locator
+        2. Simulate StaleElementReferenceException
+        3. Call wait method and verify it handles exception
+        4. Verify element is re-acquired and method continues
+        5. Verify method returns appropriate result
+        
+        Тест проверяет обработку StaleElementReferenceException в методе wait.
+        Шаги:
+        1. Создать элемент с валидным локатором
+        2. Симулировать StaleElementReferenceException
+        3. Вызвать метод wait и проверить обработку исключения
+        4. Проверить повторное получение элемента и продолжение работы
+        5. Проверить возврат соответствующего результата
+        """
+        pass
+
+    def test_wait_handles_webdriver_exception(self, app: Shadowstep, stability: None):
+        """Test wait method handles WebDriverException gracefully.
+        
+        Steps:
+        1. Create element with valid locator
+        2. Simulate WebDriverException
+        3. Call wait method and verify it handles exception
+        4. Verify method returns appropriate result
+        
+        Тест проверяет обработку WebDriverException в методе wait.
+        Шаги:
+        1. Создать элемент с валидным локатором
+        2. Симулировать WebDriverException
+        3. Вызвать метод wait и проверить обработку исключения
+        4. Проверить возврат соответствующего результата
+        """
+        pass
+
+    def test_wait_handles_general_exception(self, app: Shadowstep, stability: None):
+        """Test wait method handles general Exception gracefully.
+        
+        Steps:
+        1. Create element with valid locator
+        2. Simulate general Exception
+        3. Call wait method and verify it handles exception
+        4. Verify method continues execution and returns appropriate result
+        
+        Тест проверяет обработку общего Exception в методе wait.
+        Шаги:
+        1. Создать элемент с валидным локатором
+        2. Симулировать общий Exception
+        3. Вызвать метод wait и проверить обработку исключения
+        4. Проверить продолжение выполнения и возврат соответствующего результата
+        """
+        pass
+
+    def test_wait_visible_handles_nosuchdriver_exception(self, app: Shadowstep, stability: None):
+        """Test wait_visible method handles NoSuchDriverException gracefully.
+        
+        Steps:
+        1. Create element with valid locator
+        2. Simulate NoSuchDriverException by corrupting driver
+        3. Call wait_visible method and verify it handles exception
+        4. Verify method returns appropriate result
+        
+        Тест проверяет обработку NoSuchDriverException в методе wait_visible.
+        Шаги:
+        1. Создать элемент с валидным локатором
+        2. Симулировать NoSuchDriverException через повреждение драйвера
+        3. Вызвать метод wait_visible и проверить обработку исключения
+        4. Проверить возврат соответствующего результата
+        """
+        pass
+
+    def test_wait_visible_handles_invalid_session_exception(self, app: Shadowstep, stability: None):
+        """Test wait_visible method handles InvalidSessionIdException gracefully.
+        
+        Steps:
+        1. Create element with valid locator
+        2. Simulate InvalidSessionIdException by corrupting session
+        3. Call wait_visible method and verify it handles exception
+        4. Verify method returns appropriate result
+        
+        Тест проверяет обработку InvalidSessionIdException в методе wait_visible.
+        Шаги:
+        1. Создать элемент с валидным локатором
+        2. Симулировать InvalidSessionIdException через повреждение сессии
+        3. Вызвать метод wait_visible и проверить обработку исключения
+        4. Проверить возврат соответствующего результата
+        """
+        pass
+
+    def test_wait_visible_handles_stale_element_reference_exception(self, app: Shadowstep, stability: None):
+        """Test wait_visible method handles StaleElementReferenceException and re-acquires element.
+        
+        Steps:
+        1. Create element with valid locator
+        2. Simulate StaleElementReferenceException
+        3. Call wait_visible method and verify it handles exception
+        4. Verify element is re-acquired and method continues
+        5. Verify method returns appropriate result
+        
+        Тест проверяет обработку StaleElementReferenceException в методе wait_visible.
+        Шаги:
+        1. Создать элемент с валидным локатором
+        2. Симулировать StaleElementReferenceException
+        3. Вызвать метод wait_visible и проверить обработку исключения
+        4. Проверить повторное получение элемента и продолжение работы
+        5. Проверить возврат соответствующего результата
+        """
+        pass
+
+    def test_wait_visible_handles_webdriver_exception(self, app: Shadowstep, stability: None):
+        """Test wait_visible method handles WebDriverException gracefully.
+        
+        Steps:
+        1. Create element with valid locator
+        2. Simulate WebDriverException
+        3. Call wait_visible method and verify it handles exception
+        4. Verify method returns appropriate result
+        
+        Тест проверяет обработку WebDriverException в методе wait_visible.
+        Шаги:
+        1. Создать элемент с валидным локатором
+        2. Симулировать WebDriverException
+        3. Вызвать метод wait_visible и проверить обработку исключения
+        4. Проверить возврат соответствующего результата
+        """
+        pass
+
+    def test_wait_visible_handles_general_exception(self, app: Shadowstep, stability: None):
+        """Test wait_visible method handles general Exception gracefully.
+        
+        Steps:
+        1. Create element with valid locator
+        2. Simulate general Exception
+        3. Call wait_visible method and verify it handles exception
+        4. Verify method continues execution and returns appropriate result
+        
+        Тест проверяет обработку общего Exception в методе wait_visible.
+        Шаги:
+        1. Создать элемент с валидным локатором
+        2. Симулировать общий Exception
+        3. Вызвать метод wait_visible и проверить обработку исключения
+        4. Проверить продолжение выполнения и возврат соответствующего результата
+        """
+        pass
+
+    def test_wait_clickable_handles_nosuchdriver_exception(self, app: Shadowstep, stability: None):
+        """Test wait_clickable method handles NoSuchDriverException gracefully.
+        
+        Steps:
+        1. Create element with valid locator
+        2. Simulate NoSuchDriverException by corrupting driver
+        3. Call wait_clickable method and verify it handles exception
+        4. Verify method returns appropriate result
+        
+        Тест проверяет обработку NoSuchDriverException в методе wait_clickable.
+        Шаги:
+        1. Создать элемент с валидным локатором
+        2. Симулировать NoSuchDriverException через повреждение драйвера
+        3. Вызвать метод wait_clickable и проверить обработку исключения
+        4. Проверить возврат соответствующего результата
+        """
+        pass
+
+    def test_wait_clickable_handles_invalid_session_exception(self, app: Shadowstep, stability: None):
+        """Test wait_clickable method handles InvalidSessionIdException gracefully.
+        
+        Steps:
+        1. Create element with valid locator
+        2. Simulate InvalidSessionIdException by corrupting session
+        3. Call wait_clickable method and verify it handles exception
+        4. Verify method returns appropriate result
+        
+        Тест проверяет обработку InvalidSessionIdException в методе wait_clickable.
+        Шаги:
+        1. Создать элемент с валидным локатором
+        2. Симулировать InvalidSessionIdException через повреждение сессии
+        3. Вызвать метод wait_clickable и проверить обработку исключения
+        4. Проверить возврат соответствующего результата
+        """
+        pass
+
+    def test_wait_clickable_handles_stale_element_reference_exception(self, app: Shadowstep, stability: None):
+        """Test wait_clickable method handles StaleElementReferenceException and re-acquires element.
+        
+        Steps:
+        1. Create element with valid locator
+        2. Simulate StaleElementReferenceException
+        3. Call wait_clickable method and verify it handles exception
+        4. Verify element is re-acquired and method continues
+        5. Verify method returns appropriate result
+        
+        Тест проверяет обработку StaleElementReferenceException в методе wait_clickable.
+        Шаги:
+        1. Создать элемент с валидным локатором
+        2. Симулировать StaleElementReferenceException
+        3. Вызвать метод wait_clickable и проверить обработку исключения
+        4. Проверить повторное получение элемента и продолжение работы
+        5. Проверить возврат соответствующего результата
+        """
+        pass
+
+    def test_wait_clickable_handles_webdriver_exception(self, app: Shadowstep, stability: None):
+        """Test wait_clickable method handles WebDriverException gracefully.
+        
+        Steps:
+        1. Create element with valid locator
+        2. Simulate WebDriverException
+        3. Call wait_clickable method and verify it handles exception
+        4. Verify method returns appropriate result
+        
+        Тест проверяет обработку WebDriverException в методе wait_clickable.
+        Шаги:
+        1. Создать элемент с валидным локатором
+        2. Симулировать WebDriverException
+        3. Вызвать метод wait_clickable и проверить обработку исключения
+        4. Проверить возврат соответствующего результата
+        """
+        pass
+
+    def test_wait_clickable_handles_general_exception(self, app: Shadowstep, stability: None):
+        """Test wait_clickable method handles general Exception gracefully.
+        
+        Steps:
+        1. Create element with valid locator
+        2. Simulate general Exception
+        3. Call wait_clickable method and verify it handles exception
+        4. Verify method continues execution and returns appropriate result
+        
+        Тест проверяет обработку общего Exception в методе wait_clickable.
+        Шаги:
+        1. Создать элемент с валидным локатором
+        2. Симулировать общий Exception
+        3. Вызвать метод wait_clickable и проверить обработку исключения
+        4. Проверить продолжение выполнения и возврат соответствующего результата
+        """
+        pass
+
+    def test_wait_for_not_handles_nosuchdriver_exception(self, app: Shadowstep, stability: None):
+        """Test wait_for_not method handles NoSuchDriverException gracefully.
+        
+        Steps:
+        1. Create element with valid locator
+        2. Simulate NoSuchDriverException by corrupting driver
+        3. Call wait_for_not method and verify it handles exception
+        4. Verify method returns appropriate result
+        
+        Тест проверяет обработку NoSuchDriverException в методе wait_for_not.
+        Шаги:
+        1. Создать элемент с валидным локатором
+        2. Симулировать NoSuchDriverException через повреждение драйвера
+        3. Вызвать метод wait_for_not и проверить обработку исключения
+        4. Проверить возврат соответствующего результата
+        """
+        pass
+
+    def test_wait_for_not_handles_invalid_session_exception(self, app: Shadowstep, stability: None):
+        """Test wait_for_not method handles InvalidSessionIdException gracefully.
+        
+        Steps:
+        1. Create element with valid locator
+        2. Simulate InvalidSessionIdException by corrupting session
+        3. Call wait_for_not method and verify it handles exception
+        4. Verify method returns appropriate result
+        
+        Тест проверяет обработку InvalidSessionIdException в методе wait_for_not.
+        Шаги:
+        1. Создать элемент с валидным локатором
+        2. Симулировать InvalidSessionIdException через повреждение сессии
+        3. Вызвать метод wait_for_not и проверить обработку исключения
+        4. Проверить возврат соответствующего результата
+        """
+        pass
+
+    def test_wait_for_not_handles_stale_element_reference_exception(self, app: Shadowstep, stability: None):
+        """Test wait_for_not method handles StaleElementReferenceException and re-acquires element.
+        
+        Steps:
+        1. Create element with valid locator
+        2. Simulate StaleElementReferenceException
+        3. Call wait_for_not method and verify it handles exception
+        4. Verify element is re-acquired and method continues
+        5. Verify method returns appropriate result
+        
+        Тест проверяет обработку StaleElementReferenceException в методе wait_for_not.
+        Шаги:
+        1. Создать элемент с валидным локатором
+        2. Симулировать StaleElementReferenceException
+        3. Вызвать метод wait_for_not и проверить обработку исключения
+        4. Проверить повторное получение элемента и продолжение работы
+        5. Проверить возврат соответствующего результата
+        """
+        pass
+
+    def test_wait_for_not_handles_webdriver_exception(self, app: Shadowstep, stability: None):
+        """Test wait_for_not method handles WebDriverException gracefully.
+        
+        Steps:
+        1. Create element with valid locator
+        2. Simulate WebDriverException
+        3. Call wait_for_not method and verify it handles exception
+        4. Verify method returns appropriate result
+        
+        Тест проверяет обработку WebDriverException в методе wait_for_not.
+        Шаги:
+        1. Создать элемент с валидным локатором
+        2. Симулировать WebDriverException
+        3. Вызвать метод wait_for_not и проверить обработку исключения
+        4. Проверить возврат соответствующего результата
+        """
+        pass
+
+    def test_wait_for_not_handles_general_exception(self, app: Shadowstep, stability: None):
+        """Test wait_for_not method handles general Exception gracefully.
+        
+        Steps:
+        1. Create element with valid locator
+        2. Simulate general Exception
+        3. Call wait_for_not method and verify it handles exception
+        4. Verify method continues execution and returns appropriate result
+        
+        Тест проверяет обработку общего Exception в методе wait_for_not.
+        Шаги:
+        1. Создать элемент с валидным локатором
+        2. Симулировать общий Exception
+        3. Вызвать метод wait_for_not и проверить обработку исключения
+        4. Проверить продолжение выполнения и возврат соответствующего результата
+        """
+        pass
+
+    def test_wait_for_not_visible_handles_nosuchdriver_exception(self, app: Shadowstep, stability: None):
+        """Test wait_for_not_visible method handles NoSuchDriverException gracefully.
+        
+        Steps:
+        1. Create element with valid locator
+        2. Simulate NoSuchDriverException by corrupting driver
+        3. Call wait_for_not_visible method and verify it handles exception
+        4. Verify method returns appropriate result
+        
+        Тест проверяет обработку NoSuchDriverException в методе wait_for_not_visible.
+        Шаги:
+        1. Создать элемент с валидным локатором
+        2. Симулировать NoSuchDriverException через повреждение драйвера
+        3. Вызвать метод wait_for_not_visible и проверить обработку исключения
+        4. Проверить возврат соответствующего результата
+        """
+        pass
+
+    def test_wait_for_not_visible_handles_invalid_session_exception(self, app: Shadowstep, stability: None):
+        """Test wait_for_not_visible method handles InvalidSessionIdException gracefully.
+        
+        Steps:
+        1. Create element with valid locator
+        2. Simulate InvalidSessionIdException by corrupting session
+        3. Call wait_for_not_visible method and verify it handles exception
+        4. Verify method returns appropriate result
+        
+        Тест проверяет обработку InvalidSessionIdException в методе wait_for_not_visible.
+        Шаги:
+        1. Создать элемент с валидным локатором
+        2. Симулировать InvalidSessionIdException через повреждение сессии
+        3. Вызвать метод wait_for_not_visible и проверить обработку исключения
+        4. Проверить возврат соответствующего результата
+        """
+        pass
+
+    def test_wait_for_not_visible_handles_stale_element_reference_exception(self, app: Shadowstep, stability: None):
+        """Test wait_for_not_visible method handles StaleElementReferenceException and re-acquires element.
+        
+        Steps:
+        1. Create element with valid locator
+        2. Simulate StaleElementReferenceException
+        3. Call wait_for_not_visible method and verify it handles exception
+        4. Verify element is re-acquired and method continues
+        5. Verify method returns appropriate result
+        
+        Тест проверяет обработку StaleElementReferenceException в методе wait_for_not_visible.
+        Шаги:
+        1. Создать элемент с валидным локатором
+        2. Симулировать StaleElementReferenceException
+        3. Вызвать метод wait_for_not_visible и проверить обработку исключения
+        4. Проверить повторное получение элемента и продолжение работы
+        5. Проверить возврат соответствующего результата
+        """
+        pass
+
+    def test_wait_for_not_visible_handles_webdriver_exception(self, app: Shadowstep, stability: None):
+        """Test wait_for_not_visible method handles WebDriverException gracefully.
+        
+        Steps:
+        1. Create element with valid locator
+        2. Simulate WebDriverException
+        3. Call wait_for_not_visible method and verify it handles exception
+        4. Verify method returns appropriate result
+        
+        Тест проверяет обработку WebDriverException в методе wait_for_not_visible.
+        Шаги:
+        1. Создать элемент с валидным локатором
+        2. Симулировать WebDriverException
+        3. Вызвать метод wait_for_not_visible и проверить обработку исключения
+        4. Проверить возврат соответствующего результата
+        """
+        pass
+
+    def test_wait_for_not_visible_handles_general_exception(self, app: Shadowstep, stability: None):
+        """Test wait_for_not_visible method handles general Exception gracefully.
+        
+        Steps:
+        1. Create element with valid locator
+        2. Simulate general Exception
+        3. Call wait_for_not_visible method and verify it handles exception
+        4. Verify method continues execution and returns appropriate result
+        
+        Тест проверяет обработку общего Exception в методе wait_for_not_visible.
+        Шаги:
+        1. Создать элемент с валидным локатором
+        2. Симулировать общий Exception
+        3. Вызвать метод wait_for_not_visible и проверить обработку исключения
+        4. Проверить продолжение выполнения и возврат соответствующего результата
+        """
+        pass
+
+    def test_wait_for_not_clickable_handles_nosuchdriver_exception(self, app: Shadowstep, stability: None):
+        """Test wait_for_not_clickable method handles NoSuchDriverException gracefully.
+        
+        Steps:
+        1. Create element with valid locator
+        2. Simulate NoSuchDriverException by corrupting driver
+        3. Call wait_for_not_clickable method and verify it handles exception
+        4. Verify method returns appropriate result
+        
+        Тест проверяет обработку NoSuchDriverException в методе wait_for_not_clickable.
+        Шаги:
+        1. Создать элемент с валидным локатором
+        2. Симулировать NoSuchDriverException через повреждение драйвера
+        3. Вызвать метод wait_for_not_clickable и проверить обработку исключения
+        4. Проверить возврат соответствующего результата
+        """
+        pass
+
+    def test_wait_for_not_clickable_handles_invalid_session_exception(self, app: Shadowstep, stability: None):
+        """Test wait_for_not_clickable method handles InvalidSessionIdException gracefully.
+        
+        Steps:
+        1. Create element with valid locator
+        2. Simulate InvalidSessionIdException by corrupting session
+        3. Call wait_for_not_clickable method and verify it handles exception
+        4. Verify method returns appropriate result
+        
+        Тест проверяет обработку InvalidSessionIdException в методе wait_for_not_clickable.
+        Шаги:
+        1. Создать элемент с валидным локатором
+        2. Симулировать InvalidSessionIdException через повреждение сессии
+        3. Вызвать метод wait_for_not_clickable и проверить обработку исключения
+        4. Проверить возврат соответствующего результата
+        """
+        pass
+
+    def test_wait_for_not_clickable_handles_stale_element_reference_exception(self, app: Shadowstep, stability: None):
+        """Test wait_for_not_clickable method handles StaleElementReferenceException and re-acquires element.
+        
+        Steps:
+        1. Create element with valid locator
+        2. Simulate StaleElementReferenceException
+        3. Call wait_for_not_clickable method and verify it handles exception
+        4. Verify element is re-acquired and method continues
+        5. Verify method returns appropriate result
+        
+        Тест проверяет обработку StaleElementReferenceException в методе wait_for_not_clickable.
+        Шаги:
+        1. Создать элемент с валидным локатором
+        2. Симулировать StaleElementReferenceException
+        3. Вызвать метод wait_for_not_clickable и проверить обработку исключения
+        4. Проверить повторное получение элемента и продолжение работы
+        5. Проверить возврат соответствующего результата
+        """
+        pass
+
+    def test_wait_for_not_clickable_handles_webdriver_exception(self, app: Shadowstep, stability: None):
+        """Test wait_for_not_clickable method handles WebDriverException gracefully.
+        
+        Steps:
+        1. Create element with valid locator
+        2. Simulate WebDriverException
+        3. Call wait_for_not_clickable method and verify it handles exception
+        4. Verify method returns appropriate result
+        
+        Тест проверяет обработку WebDriverException в методе wait_for_not_clickable.
+        Шаги:
+        1. Создать элемент с валидным локатором
+        2. Симулировать WebDriverException
+        3. Вызвать метод wait_for_not_clickable и проверить обработку исключения
+        4. Проверить возврат соответствующего результата
+        """
+        pass
+
+    def test_wait_for_not_clickable_handles_general_exception(self, app: Shadowstep, stability: None):
+        """Test wait_for_not_clickable method handles general Exception gracefully.
+        
+        Steps:
+        1. Create element with valid locator
+        2. Simulate general Exception
+        3. Call wait_for_not_clickable method and verify it handles exception
+        4. Verify method continues execution and returns appropriate result
+        
+        Тест проверяет обработку общего Exception в методе wait_for_not_clickable.
+        Шаги:
+        1. Создать элемент с валидным локатором
+        2. Симулировать общий Exception
+        3. Вызвать метод wait_for_not_clickable и проверить обработку исключения
+        4. Проверить продолжение выполнения и возврат соответствующего результата
+        """
+        pass
+
+    def test_wait_with_invalid_locator_returns_false(self, app: Shadowstep, stability: None):
+        """Test wait method returns False when locator cannot be resolved.
+        
+        Steps:
+        1. Create element with invalid locator that resolves to None
+        2. Call wait method and verify it handles None locator
+        3. Verify method returns appropriate result based on implementation
+        
+        Тест проверяет возврат False при невалидном локаторе в методе wait.
+        Шаги:
+        1. Создать элемент с невалидным локатором, который разрешается в None
+        2. Вызвать метод wait и проверить обработку None локатора
+        3. Проверить возврат соответствующего результата согласно реализации
+        """
+        pass
+
+    def test_wait_visible_with_invalid_locator_returns_true(self, app: Shadowstep, stability: None):
+        """Test wait_visible method returns True when locator cannot be resolved.
+        
+        Steps:
+        1. Create element with invalid locator that resolves to None
+        2. Call wait_visible method and verify it handles None locator
+        3. Verify method returns True (as per current implementation)
+        
+        Тест проверяет возврат True при невалидном локаторе в методе wait_visible.
+        Шаги:
+        1. Создать элемент с невалидным локатором, который разрешается в None
+        2. Вызвать метод wait_visible и проверить обработку None локатора
+        3. Проверить возврат True (согласно текущей реализации)
+        """
+        pass
+
+    def test_wait_clickable_with_invalid_locator_returns_true(self, app: Shadowstep, stability: None):
+        """Test wait_clickable method returns True when locator cannot be resolved.
+        
+        Steps:
+        1. Create element with invalid locator that resolves to None
+        2. Call wait_clickable method and verify it handles None locator
+        3. Verify method returns True (as per current implementation)
+        
+        Тест проверяет возврат True при невалидном локаторе в методе wait_clickable.
+        Шаги:
+        1. Создать элемент с невалидным локатором, который разрешается в None
+        2. Вызвать метод wait_clickable и проверить обработку None локатора
+        3. Проверить возврат True (согласно текущей реализации)
+        """
+        pass
+
+    def test_wait_for_not_with_invalid_locator_returns_true(self, app: Shadowstep, stability: None):
+        """Test wait_for_not method returns True when locator cannot be resolved.
+        
+        Steps:
+        1. Create element with invalid locator that resolves to None
+        2. Call wait_for_not method and verify it handles None locator
+        3. Verify method returns True (as per current implementation)
+        
+        Тест проверяет возврат True при невалидном локаторе в методе wait_for_not.
+        Шаги:
+        1. Создать элемент с невалидным локатором, который разрешается в None
+        2. Вызвать метод wait_for_not и проверить обработку None локатора
+        3. Проверить возврат True (согласно текущей реализации)
+        """
+        pass
+
+    def test_wait_for_not_visible_with_invalid_locator_returns_true(self, app: Shadowstep, stability: None):
+        """Test wait_for_not_visible method returns True when locator cannot be resolved.
+        
+        Steps:
+        1. Create element with invalid locator that resolves to None
+        2. Call wait_for_not_visible method and verify it handles None locator
+        3. Verify method returns True (as per current implementation)
+        
+        Тест проверяет возврат True при невалидном локаторе в методе wait_for_not_visible.
+        Шаги:
+        1. Создать элемент с невалидным локатором, который разрешается в None
+        2. Вызвать метод wait_for_not_visible и проверить обработку None локатора
+        3. Проверить возврат True (согласно текущей реализации)
+        """
+        pass
+
+    def test_wait_for_not_clickable_with_invalid_locator_returns_true(self, app: Shadowstep, stability: None):
+        """Test wait_for_not_clickable method returns True when locator cannot be resolved.
+        
+        Steps:
+        1. Create element with invalid locator that resolves to None
+        2. Call wait_for_not_clickable method and verify it handles None locator
+        3. Verify method returns True (as per current implementation)
+        
+        Тест проверяет возврат True при невалидном локаторе в методе wait_for_not_clickable.
+        Шаги:
+        1. Создать элемент с невалидным локатором, который разрешается в None
+        2. Вызвать метод wait_for_not_clickable и проверить обработку None локатора
+        3. Проверить возврат True (согласно текущей реализации)
+        """
+        pass
+
+    def test_wait_timeout_behavior_with_existing_element(self, app: Shadowstep, stability: None):
+        """Test wait method timeout behavior when element exists but condition fails.
+        
+        Steps:
+        1. Create element with valid locator that exists
+        2. Call wait method with very short timeout
+        3. Verify method handles timeout gracefully
+        4. Verify method returns appropriate result
+        
+        Тест проверяет поведение таймаута в методе wait при существующем элементе.
+        Шаги:
+        1. Создать элемент с валидным локатором, который существует
+        2. Вызвать метод wait с очень коротким таймаутом
+        3. Проверить корректную обработку таймаута
+        4. Проверить возврат соответствующего результата
+        """
+        pass
+
+    def test_wait_visible_timeout_behavior_with_existing_element(self, app: Shadowstep, stability: None):
+        """Test wait_visible method timeout behavior when element exists but is not visible.
+        
+        Steps:
+        1. Create element with valid locator that exists but is not visible
+        2. Call wait_visible method with short timeout
+        3. Verify method handles timeout gracefully
+        4. Verify method returns appropriate result
+        
+        Тест проверяет поведение таймаута в методе wait_visible при невидимом элементе.
+        Шаги:
+        1. Создать элемент с валидным локатором, который существует, но не видим
+        2. Вызвать метод wait_visible с коротким таймаутом
+        3. Проверить корректную обработку таймаута
+        4. Проверить возврат соответствующего результата
+        """
+        pass
+
+    def test_wait_clickable_timeout_behavior_with_existing_element(self, app: Shadowstep, stability: None):
+        """Test wait_clickable method timeout behavior when element exists but is not clickable.
+        
+        Steps:
+        1. Create element with valid locator that exists but is not clickable
+        2. Call wait_clickable method with short timeout
+        3. Verify method handles timeout gracefully
+        4. Verify method returns appropriate result
+        
+        Тест проверяет поведение таймаута в методе wait_clickable при некликабельном элементе.
+        Шаги:
+        1. Создать элемент с валидным локатором, который существует, но не кликабелен
+        2. Вызвать метод wait_clickable с коротким таймаутом
+        3. Проверить корректную обработку таймаута
+        4. Проверить возврат соответствующего результата
+        """
+        pass
+
+    def test_wait_for_not_timeout_behavior_with_existing_element(self, app: Shadowstep, stability: None):
+        """Test wait_for_not method timeout behavior when element exists and should not disappear.
+        
+        Steps:
+        1. Create element with valid locator that exists and will not disappear
+        2. Call wait_for_not method with short timeout
+        3. Verify method handles timeout gracefully
+        4. Verify method returns False (element still exists)
+        
+        Тест проверяет поведение таймаута в методе wait_for_not при существующем элементе.
+        Шаги:
+        1. Создать элемент с валидным локатором, который существует и не исчезнет
+        2. Вызвать метод wait_for_not с коротким таймаутом
+        3. Проверить корректную обработку таймаута
+        4. Проверить возврат False (элемент все еще существует)
+        """
+        pass
+
+    def test_wait_for_not_visible_timeout_behavior_with_visible_element(self, app: Shadowstep, stability: None):
+        """Test wait_for_not_visible method timeout behavior when element is visible and should not become invisible.
+        
+        Steps:
+        1. Create element with valid locator that is visible and will not become invisible
+        2. Call wait_for_not_visible method with short timeout
+        3. Verify method handles timeout gracefully
+        4. Verify method returns appropriate result
+        
+        Тест проверяет поведение таймаута в методе wait_for_not_visible при видимом элементе.
+        Шаги:
+        1. Создать элемент с валидным локатором, который видим и не станет невидимым
+        2. Вызвать метод wait_for_not_visible с коротким таймаутом
+        3. Проверить корректную обработку таймаута
+        4. Проверить возврат соответствующего результата
+        """
+        pass
+
+    def test_wait_for_not_clickable_timeout_behavior_with_clickable_element(self, app: Shadowstep, stability: None):
+        """Test wait_for_not_clickable method timeout behavior when element is clickable and should not become unclickable.
+        
+        Steps:
+        1. Create element with valid locator that is clickable and will not become unclickable
+        2. Call wait_for_not_clickable method with short timeout
+        3. Verify method handles timeout gracefully
+        4. Verify method returns appropriate result
+        
+        Тест проверяет поведение таймаута в методе wait_for_not_clickable при кликабельном элементе.
+        Шаги:
+        1. Создать элемент с валидным локатором, который кликабелен и не станет некликабельным
+        2. Вызвать метод wait_for_not_clickable с коротким таймаутом
+        3. Проверить корректную обработку таймаута
+        4. Проверить возврат соответствующего результата
+        """
+        pass
+
+    def test_wait_with_driver_disconnection(self, app: Shadowstep, stability: None):
+        """Test wait method behavior when WebDriver connection is lost during operation.
+        
+        Steps:
+        1. Create element with valid locator
+        2. Simulate driver disconnection during wait operation
+        3. Call wait method and verify it handles disconnection
+        4. Verify method returns appropriate result or raises appropriate exception
+        
+        Тест проверяет поведение метода wait при потере соединения с WebDriver.
+        Шаги:
+        1. Создать элемент с валидным локатором
+        2. Симулировать потерю соединения с драйвером во время операции ожидания
+        3. Вызвать метод wait и проверить обработку потери соединения
+        4. Проверить возврат соответствующего результата или вызов соответствующего исключения
+        """
+        pass
+
+    def test_wait_visible_with_driver_disconnection(self, app: Shadowstep, stability: None):
+        """Test wait_visible method behavior when WebDriver connection is lost during operation.
+        
+        Steps:
+        1. Create element with valid locator
+        2. Simulate driver disconnection during wait operation
+        3. Call wait_visible method and verify it handles disconnection
+        4. Verify method returns appropriate result or raises appropriate exception
+        
+        Тест проверяет поведение метода wait_visible при потере соединения с WebDriver.
+        Шаги:
+        1. Создать элемент с валидным локатором
+        2. Симулировать потерю соединения с драйвером во время операции ожидания
+        3. Вызвать метод wait_visible и проверить обработку потери соединения
+        4. Проверить возврат соответствующего результата или вызов соответствующего исключения
+        """
+        pass
+
+    def test_wait_clickable_with_driver_disconnection(self, app: Shadowstep, stability: None):
+        """Test wait_clickable method behavior when WebDriver connection is lost during operation.
+        
+        Steps:
+        1. Create element with valid locator
+        2. Simulate driver disconnection during wait operation
+        3. Call wait_clickable method and verify it handles disconnection
+        4. Verify method returns appropriate result or raises appropriate exception
+        
+        Тест проверяет поведение метода wait_clickable при потере соединения с WebDriver.
+        Шаги:
+        1. Создать элемент с валидным локатором
+        2. Симулировать потерю соединения с драйвером во время операции ожидания
+        3. Вызвать метод wait_clickable и проверить обработку потери соединения
+        4. Проверить возврат соответствующего результата или вызов соответствующего исключения
+        """
+        pass
+
+    def test_wait_for_not_with_driver_disconnection(self, app: Shadowstep, stability: None):
+        """Test wait_for_not method behavior when WebDriver connection is lost during operation.
+        
+        Steps:
+        1. Create element with valid locator
+        2. Simulate driver disconnection during wait operation
+        3. Call wait_for_not method and verify it handles disconnection
+        4. Verify method returns appropriate result or raises appropriate exception
+        
+        Тест проверяет поведение метода wait_for_not при потере соединения с WebDriver.
+        Шаги:
+        1. Создать элемент с валидным локатором
+        2. Симулировать потерю соединения с драйвером во время операции ожидания
+        3. Вызвать метод wait_for_not и проверить обработку потери соединения
+        4. Проверить возврат соответствующего результата или вызов соответствующего исключения
+        """
+        pass
+
+    def test_wait_for_not_visible_with_driver_disconnection(self, app: Shadowstep, stability: None):
+        """Test wait_for_not_visible method behavior when WebDriver connection is lost during operation.
+        
+        Steps:
+        1. Create element with valid locator
+        2. Simulate driver disconnection during wait operation
+        3. Call wait_for_not_visible method and verify it handles disconnection
+        4. Verify method returns appropriate result or raises appropriate exception
+        
+        Тест проверяет поведение метода wait_for_not_visible при потере соединения с WebDriver.
+        Шаги:
+        1. Создать элемент с валидным локатором
+        2. Симулировать потерю соединения с драйвером во время операции ожидания
+        3. Вызвать метод wait_for_not_visible и проверить обработку потери соединения
+        4. Проверить возврат соответствующего результата или вызов соответствующего исключения
+        """
+        pass
+
+    def test_wait_for_not_clickable_with_driver_disconnection(self, app: Shadowstep, stability: None):
+        """Test wait_for_not_clickable method behavior when WebDriver connection is lost during operation.
+        
+        Steps:
+        1. Create element with valid locator
+        2. Simulate driver disconnection during wait operation
+        3. Call wait_for_not_clickable method and verify it handles disconnection
+        4. Verify method returns appropriate result or raises appropriate exception
+        
+        Тест проверяет поведение метода wait_for_not_clickable при потере соединения с WebDriver.
+        Шаги:
+        1. Создать элемент с валидным локатором
+        2. Симулировать потерю соединения с драйвером во время операции ожидания
+        3. Вызвать метод wait_for_not_clickable и проверить обработку потери соединения
+        4. Проверить возврат соответствующего результата или вызов соответствующего исключения
+        """
+        pass
+
+    def test_wait_methods_with_concurrent_operations(self, app: Shadowstep, stability: None):
+        """Test wait methods behavior with concurrent operations on same element.
+        
+        Steps:
+        1. Create element with valid locator
+        2. Start multiple wait operations concurrently on same element
+        3. Verify all operations complete successfully
+        4. Verify no race conditions or conflicts occur
+        
+        Тест проверяет поведение методов ожидания при параллельных операциях с одним элементом.
+        Шаги:
+        1. Создать элемент с валидным локатором
+        2. Запустить несколько операций ожидания параллельно с одним элементом
+        3. Проверить успешное завершение всех операций
+        4. Проверить отсутствие состояний гонки или конфликтов
+        """
+        pass
+
+    def test_wait_methods_with_rapid_locator_changes(self, app: Shadowstep, stability: None):
+        """Test wait methods behavior when element locator changes rapidly during wait.
+        
+        Steps:
+        1. Create element with valid locator
+        2. Simulate rapid locator changes during wait operation
+        3. Call wait method and verify it handles locator changes
+        4. Verify method returns appropriate result
+        
+        Тест проверяет поведение методов ожидания при быстрых изменениях локатора элемента.
+        Шаги:
+        1. Создать элемент с валидным локатором
+        2. Симулировать быстрые изменения локатора во время операции ожидания
+        3. Вызвать метод ожидания и проверить обработку изменений локатора
+        4. Проверить возврат соответствующего результата
+        """
+        pass

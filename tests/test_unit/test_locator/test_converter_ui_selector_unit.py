@@ -401,7 +401,7 @@ class TestUiSelectorConverter:
         with patch.object(converter, 'parse_selector_string', side_effect=ValueError("Test error")):
             with pytest.raises(ShadowstepUiSelectorConversionError) as exc_info:
                 converter.selector_to_xpath('new UiSelector().text("test");')
-            assert "Test error" in str(exc_info.value)
+            assert "Failed to convert UiSelector to XPath: Test error" in str(exc_info.value)
 
     @pytest.mark.unit
     def test_selector_to_dict_invalid_selector_error(self):
@@ -420,7 +420,7 @@ class TestUiSelectorConverter:
         with patch.object(converter, 'parse_selector_string', side_effect=ValueError("Test error")):
             with pytest.raises(ShadowstepUiSelectorConversionError) as exc_info:
                 converter.selector_to_dict('new UiSelector().text("test");')
-            assert "Test error" in str(exc_info.value)
+            assert "Failed to convert UiSelector to Dict: Test error" in str(exc_info.value)
 
     @pytest.mark.unit
     def test_parse_selector_string_with_quotes(self):

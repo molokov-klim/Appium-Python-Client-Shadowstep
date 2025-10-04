@@ -87,8 +87,10 @@ class TestUiSelectorDSLIntegration:
         self.converter.validate_selector(valid_selector)  # Should not raise
         
         # Invalid selector (empty)
+        from shadowstep.exceptions.shadowstep_exceptions import ShadowstepEmptySelectorError
+        
         empty_selector = UiSelector()
-        with pytest.raises(ValueError, match=".*"):  # noqa: PT011
+        with pytest.raises(ShadowstepEmptySelectorError):
             self.converter.validate_selector(empty_selector)
 
     @pytest.mark.unit

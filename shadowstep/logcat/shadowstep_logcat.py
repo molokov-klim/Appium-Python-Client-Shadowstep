@@ -78,7 +78,7 @@ class ShadowstepLogcat:
 
         """
         if poll_interval < 0:
-            raise ShadowstepPollIntervalError
+            raise ShadowstepPollIntervalError("poll_interval must be non-negative")
 
         self._driver_getter = driver_getter
         self._poll_interval = poll_interval
@@ -180,7 +180,7 @@ class ShadowstepLogcat:
         """
         self.port = port
         if not filename:
-            raise ShadowstepEmptyFilenameError
+            raise ShadowstepEmptyFilenameError("filename cannot be empty")
 
         if self._thread and self._thread.is_alive():
             logger.info("Logcat already running")

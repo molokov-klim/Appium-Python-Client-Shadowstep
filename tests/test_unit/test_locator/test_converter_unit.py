@@ -174,20 +174,26 @@ class TestUnifiedLocatorConverter:
     @pytest.mark.unit
     def test_validate_selector_invalid_tuple(self):
         """Test validation of invalid tuple format."""
+        from shadowstep.exceptions.shadowstep_exceptions import ShadowstepUnsupportedTupleFormatError
+        
         invalid_tuple = ("invalid", "//*[@text='OK']")
-        with pytest.raises(ValueError, match="Unsupported tuple format"):
+        with pytest.raises(ShadowstepUnsupportedTupleFormatError):
             self.converter.validate_selector(invalid_tuple)
 
     @pytest.mark.unit
     def test_validate_selector_empty_string(self):
         """Test validation of empty string."""
-        with pytest.raises(ValueError, match="Selector string cannot be empty"):
+        from shadowstep.exceptions.shadowstep_exceptions import ShadowstepEmptySelectorStringError
+        
+        with pytest.raises(ShadowstepEmptySelectorStringError):
             self.converter.validate_selector("")
 
     @pytest.mark.unit
     def test_validate_selector_invalid_type(self):
         """Test validation of invalid selector type."""
-        with pytest.raises(ValueError, match="Unsupported selector type"):
+        from shadowstep.exceptions.shadowstep_exceptions import ShadowstepUnsupportedSelectorTypeError
+        
+        with pytest.raises(ShadowstepUnsupportedSelectorTypeError):
             self.converter.validate_selector(123)  # type: ignore
 
     @pytest.mark.unit

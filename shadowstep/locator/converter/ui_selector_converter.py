@@ -68,7 +68,7 @@ class UiSelectorConverter:
         except Exception as e:
             error_message = str(e)
             conversion_type = "XPath"
-            raise ShadowstepUiSelectorConversionError(conversion_type, error_message) from e
+            raise ShadowstepUiSelectorConversionError(operation=conversion_type, details=error_message) from e
 
     def selector_to_dict(self, selector_str: str) -> dict[str, Any]:
         """Convert UiSelector string to dictionary format.
@@ -87,8 +87,8 @@ class UiSelectorConverter:
             raise
         except Exception as e:
             error_message = str(e)
-            conversion_type = "XPath"
-            raise ShadowstepUiSelectorConversionError(conversion_type, error_message) from e
+            conversion_type = "Dict"
+            raise ShadowstepUiSelectorConversionError(operation=conversion_type, details=error_message) from e
 
     def parse_selector_string(self, selector_str: str) -> dict[str, Any]:
         """Parse UiSelector string into dictionary format.

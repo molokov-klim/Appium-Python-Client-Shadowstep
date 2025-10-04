@@ -11,7 +11,7 @@ from appium.webdriver.webelement import WebElement
 
 from shadowstep.element.base import ElementBase
 from shadowstep.exceptions.shadowstep_exceptions import (
-    ShadowstepNoSuchElementError,
+    ShadowstepNoSuchElementException,
     ShadowstepTimeoutException,
 )
 
@@ -125,7 +125,7 @@ class TestElementBase:
         element_base = ElementBase(("xpath", "//test"), mock_shadowstep)
         # Make remove_null_value return empty dict
         with patch.object(element_base, "remove_null_value", return_value={}):
-            with pytest.raises(ShadowstepNoSuchElementError, match="Failed to resolve locator"):
+            with pytest.raises(ShadowstepNoSuchElementException, match="Failed to resolve locator"):
                 element_base._get_web_element({"text": "null"})
 
     @pytest.mark.unit
@@ -156,7 +156,7 @@ class TestElementBase:
         
         element_base = ElementBase(("xpath", "//test"), mock_shadowstep)
         
-        with pytest.raises(ShadowstepNoSuchElementError) as exc_info:
+        with pytest.raises(ShadowstepNoSuchElementException) as exc_info:
             element_base._get_web_element(("xpath", "//test"))
         
         assert "Element not found" in exc_info.value.msg
@@ -190,7 +190,7 @@ class TestElementBase:
         
         element_base = ElementBase(("xpath", "//test"), mock_shadowstep)
         
-        with pytest.raises(ShadowstepNoSuchElementError) as exc_info:
+        with pytest.raises(ShadowstepNoSuchElementException) as exc_info:
             element_base._get_web_element(("xpath", "//test"))
         
         assert exc_info.value.msg == "Timeout"
