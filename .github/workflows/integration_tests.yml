@@ -8,10 +8,6 @@ jobs:
 
   android_test:
     runs-on: [ self-hosted, linux, x64 ]
-    strategy:
-      fail-fast: false
-      matrix:
-        test_dir: [ tests/test_integro/page_object/test_page_object.py, tests/test_integro/shadowstep_base/test_shadowstep_base.py, tests/test_integro/test_element/test_element_actions.py, tests/test_integro/test_element/test_element_coordinates.py, tests/test_integro/test_element/test_element_dom.py, tests/test_integro/test_element/test_element_gestures.py, tests/test_integro/test_element/test_element_properties.py, tests/test_integro/test_element/test_element_should.py, tests/test_integro/test_element/test_element_waiting.py, tests/test_integro/test_element/test_elements.py, tests/test_integro/test_element/test_screenshots.py, tests/test_integro/test_image/test_image.py, tests/test_integro/test_logcat/test_logcat.py, tests/test_integro/test_shadowstep/test_shadowstep.py, tests/test_integro/test_terminal/test_adb.py ]
 
     env:
       CI: true
@@ -112,8 +108,8 @@ jobs:
             if curl -s http://127.0.0.1:4723/wd/hub/status > /dev/null; then echo "✅ Appium server is running"; else echo "❌ Appium server failed to start"; cat appium.log; fi
             
             # Run tests if Appium server is working
-            echo "Running tests for ${{ matrix.test_dir }}..."
-            PYTHONPATH=$PWD uv run pytest ${{ matrix.test_dir }} -svl --log-cli-level INFO --tb=short --setup-show --reruns 2
+            echo "Running tests for tests/test_integro
+            PYTHONPATH=$PWD uv run pytest tests/test_integro -svl --log-cli-level INFO --tb=short --setup-show --reruns 2
             
             # Kill Appium server
             kill $APPIUM_PID || true
