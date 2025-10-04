@@ -121,6 +121,8 @@ jobs:
             
             # Run tests if Appium server is working
             echo "Running tests for ${{ matrix.test_dir }}..."
+            echo pwd
+            echo ls -la
             PYTHONPATH=$PWD uv run pytest ${{ matrix.test_dir }} -svl --log-cli-level INFO --tb=short --setup-show --reruns 2
             
             # Kill Appium server
