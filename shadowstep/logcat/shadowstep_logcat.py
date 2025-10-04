@@ -78,7 +78,8 @@ class ShadowstepLogcat:
 
         """
         if poll_interval < 0:
-            raise ShadowstepPollIntervalError("poll_interval must be non-negative")
+            msg = "poll_interval must be non-negative"
+            raise ShadowstepPollIntervalError(msg)
 
         self._driver_getter = driver_getter
         self._poll_interval = poll_interval
@@ -156,6 +157,7 @@ class ShadowstepLogcat:
             exc_tb: Exception traceback if any.
 
         """
+        logger.debug(exc_type, exc_val, exc_tb)
         self.stop()
 
     def __del__(self) -> None:
@@ -180,7 +182,8 @@ class ShadowstepLogcat:
         """
         self.port = port
         if not filename:
-            raise ShadowstepEmptyFilenameError("filename cannot be empty")
+            msg = "filename cannot be empty"
+            raise ShadowstepEmptyFilenameError(msg)
 
         if self._thread and self._thread.is_alive():
             logger.info("Logcat already running")
@@ -342,7 +345,7 @@ class ShadowstepLogcat:
         if not http_url:
             http_url = getattr(driver.command_executor, "_client_config", None)
             if http_url:
-                http_url = getattr(driver.command_executor._client_config, "remote_server_addr", "")  # noqa: SLF001
+                http_url = getattr(driver.command_executor._client_config, "remote_server_addr", "")  # noqa: SLF001 # type: ignore[reportPrivateUsage]
             else:
                 http_url = ""
         return http_url
