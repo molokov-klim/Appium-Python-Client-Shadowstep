@@ -1,6 +1,4 @@
-# shadowstep/locator/ui_selector.py
-"""
-UiSelector DSL for fluent API locator building.
+"""UiSelector DSL for fluent API locator building.
 
 This module provides a fluent DSL for building UiSelector locators in a more
 readable and maintainable way, similar to the original UiSelector API but with
@@ -13,23 +11,24 @@ from __future__ import annotations
 import logging
 from typing import Any
 
-from shadowstep.locator.types.ui_selector import UiAttribute
+from shadowstep.exceptions.shadowstep_exceptions import ShadowstepInvalidUiSelectorStringFormatError
+from shadowstep.locator.locator_types.ui_selector import UiAttribute
 
 
 class UiSelector:
-    """
-    Fluent DSL for building UiSelector locators.
-    
+    """Fluent DSL for building UiSelector locators.
+
     This class provides a fluent API for building UiSelector locators in a
     more readable way than string concatenation. It supports all UiAttribute
     methods and hierarchical relationships.
-    
+
     Example:
         selector = UiSelector().text("OK").clickable(True).className("Button")
         selector_str = str(selector)  # "new UiSelector().text("OK").clickable(true).className("Button");"
+
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Initialize the UiSelector with empty state."""
         self.logger = logging.getLogger(__name__)
         self._methods: list[tuple[str, Any]] = []
@@ -96,43 +95,43 @@ class UiSelector:
         return self._add_method(UiAttribute.CLASS_NAME_MATCHES, value)
 
     # Boolean property methods
-    def checkable(self, value: bool = True) -> UiSelector:
+    def checkable(self, value: bool = True) -> UiSelector:  # noqa: FBT001, FBT002
         """Set checkable attribute."""
         return self._add_method(UiAttribute.CHECKABLE, value)
 
-    def checked(self, value: bool = True) -> UiSelector:
+    def checked(self, value: bool = True) -> UiSelector:  # noqa: FBT001, FBT002
         """Set checked attribute."""
         return self._add_method(UiAttribute.CHECKED, value)
 
-    def clickable(self, value: bool = True) -> UiSelector:
+    def clickable(self, value: bool = True) -> UiSelector:  # noqa: FBT001, FBT002
         """Set clickable attribute."""
         return self._add_method(UiAttribute.CLICKABLE, value)
 
-    def enabled(self, value: bool = True) -> UiSelector:
+    def enabled(self, value: bool = True) -> UiSelector:  # noqa: FBT001, FBT002
         """Set enabled attribute."""
         return self._add_method(UiAttribute.ENABLED, value)
 
-    def focusable(self, value: bool = True) -> UiSelector:
+    def focusable(self, value: bool = True) -> UiSelector:  # noqa: FBT001, FBT002
         """Set focusable attribute."""
         return self._add_method(UiAttribute.FOCUSABLE, value)
 
-    def focused(self, value: bool = True) -> UiSelector:
+    def focused(self, value: bool = True) -> UiSelector:  # noqa: FBT001, FBT002
         """Set focused attribute."""
         return self._add_method(UiAttribute.FOCUSED, value)
 
-    def longClickable(self, value: bool = True) -> UiSelector:
+    def longClickable(self, value: bool = True) -> UiSelector:  # noqa: FBT001, FBT002
         """Set longClickable attribute."""
         return self._add_method(UiAttribute.LONG_CLICKABLE, value)
 
-    def scrollable(self, value: bool = True) -> UiSelector:
+    def scrollable(self, value: bool = True) -> UiSelector:  # noqa: FBT001, FBT002
         """Set scrollable attribute."""
         return self._add_method(UiAttribute.SCROLLABLE, value)
 
-    def selected(self, value: bool = True) -> UiSelector:
+    def selected(self, value: bool = True) -> UiSelector:  # noqa: FBT001, FBT002
         """Set selected attribute."""
         return self._add_method(UiAttribute.SELECTED, value)
 
-    def password(self, value: bool = True) -> UiSelector:
+    def password(self, value: bool = True) -> UiSelector:  # noqa: FBT001, FBT002
         """Set password attribute."""
         return self._add_method(UiAttribute.PASSWORD, value)
 
@@ -171,15 +170,15 @@ class UiSelector:
     def to_dict(self) -> dict[str, Any]:
         """Convert UiSelector to dictionary format."""
         result = {}
-        
+
         # Add regular methods
         for method_name, value in self._methods:
-            result[method_name] = value
-        
+            result[method_name] = value  # noqa: PERF403
+
         # Add hierarchical methods
         for method_name, child_selector in self._hierarchical_methods:
             result[method_name] = child_selector.to_dict()
-        
+
         return result
 
     def __str__(self) -> str:
@@ -190,10 +189,10 @@ class UiSelector:
         """Return string representation for debugging."""
         return f"UiSelector({self._build_selector_string()})"
 
-    def _build_selector_string(self, is_nested: bool = False) -> str:
+    def _build_selector_string(self, is_nested: bool = False) -> str:  # noqa: FBT001, FBT002
         """Build the final UiSelector string."""
         parts = ["new UiSelector()"]
-        
+
         # Add regular methods
         for method_name, value in self._methods:
             if isinstance(value, str):
@@ -204,21 +203,21 @@ class UiSelector:
                 parts.append(f".{method_name}({str(value).lower()})")
             else:
                 parts.append(f".{method_name}({value})")
-        
+
         # Add hierarchical methods
         for method_name, child_selector in self._hierarchical_methods:
-            child_str = child_selector._build_selector_string(is_nested=True)
+            child_str = child_selector._build_selector_string(is_nested=True)  # noqa: SLF001
             parts.append(f".{method_name}({child_str})")
-        
+
         result = "".join(parts)
-        
+
         # Only add semicolon if not nested
         if not is_nested:
             result += ";"
-        
+
         return result
 
-    def __eq__(self, other: Any) -> bool:
+    def __eq__(self, other: object) -> bool:
         """Check equality with another UiSelector."""
         if not isinstance(other, UiSelector):
             return False
@@ -238,45 +237,45 @@ class UiSelector:
 
     @classmethod
     def from_string(cls, selector_str: str) -> UiSelector:
-        """
-        Create UiSelector from string representation.
-        
+        """Create UiSelector from string representation.
+
         Args:
             selector_str: UiSelector string like "new UiSelector().text('OK');"
-            
+
         Returns:
             UiSelector instance
-            
+
         Raises:
             ValueError: If string format is invalid
+
         """
         # This is a simplified parser - in a real implementation you might want
         # to use the existing UiSelectorConverter to parse the string
         if not selector_str.strip().startswith("new UiSelector()"):
-            raise ValueError("Invalid UiSelector string format")
-        
+            raise ShadowstepInvalidUiSelectorStringFormatError
+
         # For now, we'll create an empty selector and let the user build it
         # In a full implementation, you'd parse the string and extract methods
         return cls()
 
     @classmethod
     def from_dict(cls, selector_dict: dict[str, Any]) -> UiSelector:
-        """
-        Create UiSelector from dictionary representation.
-        
+        """Create UiSelector from dictionary representation.
+
         Args:
             selector_dict: Dictionary with selector attributes
-            
+
         Returns:
             UiSelector instance
+
         """
         selector = cls()
-        
+
         for key, value in selector_dict.items():
             if key in [UiAttribute.CHILD_SELECTOR, UiAttribute.FROM_PARENT, UiAttribute.SIBLING]:
                 # Handle hierarchical attributes
                 if isinstance(value, dict):
-                    child_selector = cls.from_dict(value) # type: ignore
+                    child_selector = cls.from_dict(value) # type: ignore[return-any]
                     if key == UiAttribute.CHILD_SELECTOR:
                         selector.childSelector(child_selector)
                     elif key == UiAttribute.FROM_PARENT:
@@ -290,6 +289,6 @@ class UiSelector:
                     method = getattr(selector, method_name)
                     method(value)
                 else:
-                    selector.logger.warning(f"Unknown method: {method_name}")
-        
+                    selector.logger.warning("Unknown method: %s", method_name)
+
         return selector

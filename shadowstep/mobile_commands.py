@@ -3,6 +3,7 @@
 This module provides a comprehensive set of mobile commands for Appium automation,
 including app management, device information, clipboard operations, and more.
 """
+
 from __future__ import annotations
 
 import logging
@@ -16,9 +17,9 @@ from selenium.common.exceptions import (
 
 if TYPE_CHECKING:
     from shadowstep.shadowstep import Shadowstep
-from shadowstep.base import WebDriverSingleton
 from shadowstep.decorators.decorators import fail_safe
 from shadowstep.exceptions.shadowstep_exceptions import ShadowstepException
+from shadowstep.shadowstep_base import WebDriverSingleton
 from shadowstep.utils.utils import get_current_func_name
 
 

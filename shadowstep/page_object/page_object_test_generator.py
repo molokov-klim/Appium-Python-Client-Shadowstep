@@ -1,11 +1,18 @@
-# shadowstep/page_object/page_object_test_generator.py
+"""Page object test generator for Shadowstep framework.
+
+This module provides the PageObjectTestGenerator class for automatically
+generating test classes based on existing page objects, creating
+visibility checks for all page properties using pytest framework.
+"""
 import ast
 import logging
 import os
 import re
+from pathlib import Path
 
 from jinja2 import Environment, FileSystemLoader
 
+from shadowstep.exceptions.shadowstep_exceptions import ShadowstepNoClassDefinitionFoundInTreeError
 from shadowstep.utils.utils import get_current_func_name
 
 
@@ -45,54 +52,66 @@ class PageObjectTestGenerator:
 
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
+        """Initialize the PageObjectTestGenerator."""
         self.logger = logging.getLogger(__name__)
-        templates_dir = os.path.join(os.path.dirname(__file__), "templates")
+        templates_dir = Path(__file__).parent / "templates"
         self.env = Environment(
             loader=FileSystemLoader(templates_dir),
-            autoescape=True,  # noqa: S701
+            autoescape=True,
             keep_trailing_newline=True,
             trim_blocks=True,
-            lstrip_blocks=True
+            lstrip_blocks=True,
         )
 
     def generate_test(self, input_path: str, class_name: str, output_dir: str) -> tuple[str, str]:
-        self.logger.debug(f"{get_current_func_name()}")
+        """Generate test file for page object class.
+
+        Args:
+            input_path: Path to the page object file.
+            class_name: Name of the page object class.
+            output_dir: Directory to save the test file.
+
+        Returns:
+            tuple[str, str]: (test_file_path, test_class_name).
+
+        """
+        self.logger.debug("%s", get_current_func_name())
 
         step = "Extracting module name"
-        self.logger.debug(f"[{step}] started")
+        self.logger.debug("[%s] started", step)
         module_path = input_path \
             .replace(os.sep, ".") \
             .removesuffix(".py")
 
         step = "Extracting properties from file"
-        self.logger.debug(f"[{step}] started")
-        with open(input_path, encoding="utf-8") as f:
+        self.logger.debug("[%s] started", step)
+        with Path(input_path).open(encoding="utf-8") as f:
             source = f.read()
         properties = self._extract_properties(source)
 
         step = "Preparing data for template"
-        self.logger.debug(f"[{step}] started")
+        self.logger.debug("[%s] started", step)
         test_class_name = f"Test{class_name}"
         template = self.env.get_template("page_object_test.py.j2")
         rendered = template.render(
             module_path=module_path,
             class_name=class_name,
             test_class_name=test_class_name,
-            properties=properties
+            properties=properties,
         )
 
         step = "Forming test path"
-        self.logger.debug(f"[{step}] started")
+        self.logger.debug("[%s] started", step)
         test_file_name = f"test_{self._camel_to_snake(class_name)}.py"
-        test_path = os.path.join(output_dir, test_file_name)
+        test_path = Path(output_dir) / test_file_name
 
         step = "Writing file"
-        self.logger.debug(f"[{step}] started")
-        with open(test_path, "w", encoding="utf-8") as f:
+        self.logger.debug("[%s] started", step)
+        with test_path.open("w", encoding="utf-8") as f:
             f.write(rendered)
 
-        self.logger.info(f"Generated test → {test_path}")
+        self.logger.info("Generated test → %s", test_path)
         return test_path, test_class_name
 
     def _extract_properties(self, source: str) -> list[str]:
@@ -100,7 +119,7 @@ class PageObjectTestGenerator:
         tree = ast.parse(source)
         class_node = next((n for n in tree.body if isinstance(n, ast.ClassDef)), None)
         if not class_node:
-            raise ValueError("No class definition found")
+            raise ShadowstepNoClassDefinitionFoundInTreeError
 
         ignore = {"name", "edges", "title", "recycler", "is_current_page"}
         return [

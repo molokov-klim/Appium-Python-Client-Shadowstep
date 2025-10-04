@@ -1,33 +1,43 @@
-# shadowstep/locator/map/xpath_to_ui.py
-from collections.abc import Callable
-from typing import Any
+"""Mapping from XPath attributes to UiSelector format.
 
-from shadowstep.locator.types.ui_selector import UiAttribute
-from shadowstep.locator.types.xpath import XPathAttribute
+This module provides the mapping dictionary and utility functions
+for converting XPath attributes to their corresponding UiSelector
+method calls with proper value formatting and hierarchical handling.
+"""
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from collections.abc import Callable
+
+from shadowstep.exceptions.shadowstep_exceptions import ShadowstepUnsupportedXPathAttributeError
+from shadowstep.locator.locator_types.ui_selector import UiAttribute
+from shadowstep.locator.locator_types.xpath import XPathAttribute
 
 
 def _handle_child_selector(child_ui: str) -> str:
-    """
-    Handle childSelector method by appending child UiSelector.
+    """Handle childSelector method by appending child UiSelector.
 
     Args:
         child_ui: The UiSelector string for the child selector
 
     Returns:
         UiSelector string with child appended
+
     """
     return f".childSelector({child_ui})"
 
 
 def _handle_from_parent(parent_ui: str) -> str:
-    """
-    Handle fromParent method by going to parent and then to specified element.
+    """Handle fromParent method by going to parent and then to specified element.
 
     Args:
         parent_ui: The UiSelector string for the parent selector
 
     Returns:
         UiSelector string with parent dom
+
     """
     return f".fromParent({parent_ui})"
 
@@ -71,9 +81,8 @@ XPATH_TO_UI: dict[XPathAttribute, Callable[[str], str]] = {
 }
 
 
-def get_ui_for_method(method: XPathAttribute, value: Any) -> str:
-    """
-    Get UiSelector method call for a specific XPath attribute and value.
+def get_ui_for_method(method: XPathAttribute, value: str | float | bool) -> str:  # noqa: FBT001
+    """Get UiSelector method call for a specific XPath attribute and value.
 
     Args:
         method: The XPath attribute
@@ -84,31 +93,32 @@ def get_ui_for_method(method: XPathAttribute, value: Any) -> str:
 
     Raises:
         KeyError: If method is not supported
+
     """
     if method not in XPATH_TO_UI:
-        raise KeyError(f"Unsupported XPath attribute: {method}")
+        raise ShadowstepUnsupportedXPathAttributeError(method)
 
     return XPATH_TO_UI[method](value)
 
 
 def is_hierarchical_xpath(method: XPathAttribute) -> bool:
-    """
-    Check if a method requires special hierarchical handling.
+    """Check if a method requires special hierarchical handling.
 
     Args:
         method: The XPath attribute to check
 
     Returns:
         True if method is hierarchical (childSelector, fromParent)
+
     """
     return method in (XPathAttribute.CHILD_SELECTOR, XPathAttribute.FROM_PARENT)
 
 
 def get_supported_attributes() -> list[XPathAttribute]:
-    """
-    Get list of all supported XPath attributes.
+    """Get list of all supported XPath attributes.
 
     Returns:
         List of supported XPathAttribute enum values
+
     """
     return list(XPATH_TO_UI.keys())

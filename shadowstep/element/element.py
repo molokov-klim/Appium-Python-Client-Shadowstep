@@ -3,6 +3,7 @@
 This module provides the main Element class which serves as the public API
 for interacting with mobile elements in the Shadowstep framework.
 """
+
 from __future__ import annotations
 
 import logging
@@ -426,7 +427,7 @@ class Element(ElementBase):
         """
         return self.gestures.fling(speed, direction)
 
-    def scroll_down(self, percent: float = 0.7, speed: int = 2000, return_bool: bool = False) -> Element:  # noqa: FBT001, FBT002, E501
+    def scroll_down(self, percent: float = 0.7, speed: int = 2000, return_bool: bool = False) -> Element:  # noqa: FBT001, FBT002
         """Scroll down within the element.
 
         Args:
@@ -440,7 +441,7 @@ class Element(ElementBase):
         """
         return self.scroll(direction="down", percent=percent, speed=speed, return_bool=return_bool)
 
-    def scroll_up(self, percent: float = 0.7, speed: int = 2000, return_bool: bool = False) -> Element:  # noqa: FBT001, FBT002, E501
+    def scroll_up(self, percent: float = 0.7, speed: int = 2000, return_bool: bool = False) -> Element:  # noqa: FBT001, FBT002
         """Scroll up within the element.
 
         Args:
@@ -454,7 +455,7 @@ class Element(ElementBase):
         """
         return self.scroll(direction="up", percent=percent, speed=speed, return_bool=return_bool)
 
-    def scroll_left(self, percent: float = 0.7, speed: int = 2000, return_bool: bool = False) -> Element:  # noqa: FBT001, FBT002, E501
+    def scroll_left(self, percent: float = 0.7, speed: int = 2000, return_bool: bool = False) -> Element:  # noqa: FBT001, FBT002
         """Scroll left within the element.
 
         Args:
@@ -468,7 +469,7 @@ class Element(ElementBase):
         """
         return self.scroll(direction="left", percent=percent, speed=speed, return_bool=return_bool)
 
-    def scroll_right(self, percent: float = 0.7, speed: int = 2000, return_bool: bool = False) -> Element:  # noqa: FBT001, FBT002, E501
+    def scroll_right(self, percent: float = 0.7, speed: int = 2000, return_bool: bool = False) -> Element:  # noqa: FBT001, FBT002
         """Scroll right within the element.
 
         Args:
@@ -652,7 +653,7 @@ class Element(ElementBase):
         """
         return self.properties.get_attributes()
 
-    def get_property(self, name: str) -> Any:  # noqa: ANN401
+    def get_property(self, name: str) -> Any:
         """Get the value of the specified property.
 
         Args:
@@ -745,7 +746,7 @@ class Element(ElementBase):
         return self.properties.tag_name()
 
     @property
-    def attributes(self) -> Any:  # noqa: ANN401
+    def attributes(self) -> Any:
         """Get all element attributes.
 
         Returns:
@@ -1098,7 +1099,7 @@ class Element(ElementBase):
         """
         return self.waiting.wait(timeout, poll_frequency=poll_frequency, return_bool=return_bool)
 
-    def wait_visible(self, timeout: int = 10, poll_frequency: float = 0.5, return_bool: bool = False) -> Element | bool:  # noqa: FBT001, FBT002, E501
+    def wait_visible(self, timeout: int = 10, poll_frequency: float = 0.5, return_bool: bool = False) -> Element | bool:  # noqa: FBT001, FBT002
         """Wait until the element is visible.
 
         Args:
@@ -1129,7 +1130,7 @@ class Element(ElementBase):
         """
         return self.waiting.wait_clickable(timeout, poll_frequency, return_bool)
 
-    def wait_for_not(self, timeout: int = 10, poll_frequency: float = 0.5, return_bool: bool = False) -> Element | bool:  # noqa: FBT001, FBT002, E501
+    def wait_for_not(self, timeout: int = 10, poll_frequency: float = 0.5, return_bool: bool = False) -> Element | bool:  # noqa: FBT001, FBT002
         """Wait until the element is no longer present in the DOM.
 
         Args:

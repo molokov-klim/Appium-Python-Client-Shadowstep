@@ -1,60 +1,65 @@
-# shadowstep/locator/map/dict_to_ui.py
-"""
-Mapping from Shadowstep Dict format to UiSelector expressions.
+"""Mapping from Shadowstep Dict format to UiSelector expressions.
 
 This module provides functions to convert Shadowstep dictionary locators
 to UiSelector method calls with proper attribute mapping and hierarchy handling.
 """
+from __future__ import annotations
 
-from collections.abc import Callable
-from typing import Any
+from typing import TYPE_CHECKING
 
-from shadowstep.locator.types.shadowstep_dict import ShadowstepDictAttribute
-from shadowstep.locator.types.ui_selector import UiAttribute
+if TYPE_CHECKING:
+    from collections.abc import Callable
+
+from shadowstep.exceptions.shadowstep_exceptions import (
+    ShadowstepUnsupportedAttributeForUiSelectorError,
+    ShadowstepUnsupportedHierarchicalAttributeError,
+)
+from shadowstep.locator.locator_types.shadowstep_dict import ShadowstepDictAttribute
+from shadowstep.locator.locator_types.ui_selector import UiAttribute
 
 
-def dict_to_ui_attribute(attr: ShadowstepDictAttribute, value: Any) -> str:
-    """
-    Convert a single dictionary attribute to UiSelector method call.
-    
+def dict_to_ui_attribute(attr: ShadowstepDictAttribute, value: str | float | bool | dict) -> str:  # noqa: FBT001
+    """Convert a single dictionary attribute to UiSelector method call.
+
     Args:
         attr: Dictionary attribute enum
         value: Attribute value
-        
+
     Returns:
         UiSelector method call string
-        
+
     Raises:
         ValueError: If attribute is not supported
+
     """
     if attr in DICT_TO_UI_MAPPING:
         return DICT_TO_UI_MAPPING[attr](value)
-    raise ValueError(f"Unsupported attribute for UiSelector conversion: {attr}")
+    raise ShadowstepUnsupportedAttributeForUiSelectorError(attr)
 
 
 def is_hierarchical_attribute(attr: ShadowstepDictAttribute) -> bool:
-    """
-    Check if attribute represents hierarchical relationship.
-    
+    """Check if attribute represents hierarchical relationship.
+
     Args:
         attr: Dictionary attribute enum
-        
+
     Returns:
         True if attribute is hierarchical
+
     """
     return attr in (ShadowstepDictAttribute.CHILD_SELECTOR, ShadowstepDictAttribute.FROM_PARENT,
                     ShadowstepDictAttribute.SIBLING)
 
 
 def get_ui_method_for_hierarchical_attribute(attr: ShadowstepDictAttribute) -> str:
-    """
-    Get UiSelector method name for hierarchical attributes.
-    
+    """Get UiSelector method name for hierarchical attributes.
+
     Args:
         attr: Hierarchical attribute enum
-        
+
     Returns:
         UiSelector method name
+
     """
     if attr == ShadowstepDictAttribute.CHILD_SELECTOR:
         return UiAttribute.CHILD_SELECTOR.value
@@ -62,7 +67,7 @@ def get_ui_method_for_hierarchical_attribute(attr: ShadowstepDictAttribute) -> s
         return UiAttribute.FROM_PARENT.value
     if attr == ShadowstepDictAttribute.SIBLING:
         return UiAttribute.SIBLING.value
-    raise ValueError(f"Unsupported hierarchical attribute: {attr}")
+    raise ShadowstepUnsupportedHierarchicalAttributeError(attr)
 
 
 # Mapping dictionary for quick lookup

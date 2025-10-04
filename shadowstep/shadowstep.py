@@ -3,6 +3,8 @@
 This module provides the core Shadowstep class for mobile automation testing
 with Appium, including page object management, element interaction, and
 gesture controls.
+
+https://github.com/appium/appium-uiautomator2-driver
 """
 from __future__ import annotations
 
@@ -23,7 +25,6 @@ from selenium.common import (
 )
 from typing_extensions import Self
 
-from shadowstep.base import ShadowstepBase, WebDriverSingleton
 from shadowstep.decorators.decorators import fail_safe
 from shadowstep.element.element import Element
 from shadowstep.exceptions.shadowstep_exceptions import ShadowstepException
@@ -32,12 +33,12 @@ from shadowstep.logcat.shadowstep_logcat import ShadowstepLogcat
 from shadowstep.mobile_commands import MobileCommands
 from shadowstep.navigator.navigator import PageNavigator
 from shadowstep.page_base import PageBaseShadowstep
+from shadowstep.shadowstep_base import ShadowstepBase, WebDriverSingleton
 from shadowstep.utils.utils import get_current_func_name
 
 if TYPE_CHECKING:
-    from types import ModuleType
-
     import numpy as np
+    from locator_types import ModuleType
     from numpy._typing import NDArray
     from PIL import Image
     from selenium.types import WaitExcTypes
@@ -47,7 +48,7 @@ if TYPE_CHECKING:
     from shadowstep.scheduled_actions.action_step import ActionStep
 
 # Configure the root logger (basic configuration)
-logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s")  # noqa: E501
+logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s")
 logger = logging.getLogger(__name__)
 
 
@@ -63,7 +64,7 @@ class Shadowstep(ShadowstepBase):
     _instance: Shadowstep | None = None
     _pages_discovered: bool = False
 
-    def __new__(cls, *args: Any, **kwargs: Any) -> Self:  # noqa: ARG004, ANN401
+    def __new__(cls, *args: object, **kwargs: object) -> Self:  # noqa: ARG004
         """Create a new instance or return existing singleton instance.
 
         Returns:
@@ -95,7 +96,7 @@ class Shadowstep(ShadowstepBase):
             return
         super().__init__()
 
-        self._logcat: ShadowstepLogcat = ShadowstepLogcat(driver_getter=WebDriverSingleton.get_driver)  # noqa: E501
+        self._logcat: ShadowstepLogcat = ShadowstepLogcat(driver_getter=WebDriverSingleton.get_driver)
         self.navigator: PageNavigator = PageNavigator(self)
         self.mobile_commands: MobileCommands = MobileCommands(self)
         self.logger = logging.getLogger(f"{__name__}.{self.__class__.__name__}")
@@ -103,7 +104,7 @@ class Shadowstep(ShadowstepBase):
         self._initialized = True
 
     def _auto_discover_pages(self) -> None:
-        """Automatically import and register all PageBase subclasses from all 'pages' directories in sys.path."""  # noqa: E501
+        """Automatically import and register all PageBase subclasses from all 'pages' directories in sys.path."""
         self.logger.debug("📂 %s: %s", get_current_func_name(), list(set(sys.path)))
         if self._pages_discovered:
             return
@@ -1093,7 +1094,7 @@ class Shadowstep(ShadowstepBase):
 
         """
         self.logger.debug("%s", get_current_func_name())
-        if self.driver is self._SENTINEL:
+        if self.driver is None:
             error_msg = "Driver is not initialized"
             raise RuntimeError(error_msg)
         screenshot = self.driver.get_screenshot_as_base64().encode("utf-8")
@@ -1116,7 +1117,7 @@ class Shadowstep(ShadowstepBase):
         self.logger.debug("%s", get_current_func_name())
         path_to_file = Path(path) / filename
         with path_to_file.open("wb") as f:
-            if self.driver is self._SENTINEL:
+            if self.driver is None:
                 error_msg = "Driver is not initialized"
                 raise RuntimeError(error_msg)
             f.write(self.driver.page_source.encode("utf-8"))
@@ -1139,7 +1140,7 @@ class Shadowstep(ShadowstepBase):
 
         """
         self.logger.debug("%s", get_current_func_name())
-        if self.driver is self._SENTINEL:
+        if self.driver is None:
             error_msg = "Driver is not initialized"
             raise RuntimeError(error_msg)
         self.driver.tap([(x, y)], duration or 100)
@@ -1151,7 +1152,7 @@ class Shadowstep(ShadowstepBase):
     def start_recording_screen(self) -> None:
         """Start screen recording using Appium driver."""
         self.logger.debug("%s", get_current_func_name())
-        if self.driver is self._SENTINEL:
+        if self.driver is None:
             error_msg = "Driver is not initialized"
             raise RuntimeError(error_msg)
         self.driver.start_recording_screen()
@@ -1167,7 +1168,7 @@ class Shadowstep(ShadowstepBase):
 
         """
         self.logger.debug("%s", get_current_func_name())
-        if self.driver is self._SENTINEL:
+        if self.driver is None:
             error_msg = "Driver is not initialized"
             raise RuntimeError(error_msg)
         encoded = self.driver.stop_recording_screen()
@@ -1190,7 +1191,7 @@ class Shadowstep(ShadowstepBase):
         with Path(source_file_path).open("rb") as file:
             file_data = file.read()
             base64data = base64.b64encode(file_data).decode("utf-8")
-        if self.driver is self._SENTINEL:
+        if self.driver is None:
             error_msg = "Driver is not initialized"
             raise RuntimeError(error_msg)
         self.driver.push_file(
@@ -1208,8 +1209,8 @@ class Shadowstep(ShadowstepBase):
 
         Note: This docstring contains long lines due to API documentation requirements.
         """
-        # TODO move to separate class with transparent settings selection (enum?)  # noqa: TD002, TD003, TD004, FIX002, E501
-        if self.driver is not self._SENTINEL:
+        # TODO move to separate class with transparent settings selection (enum?)  # noqa: TD002, TD003, TD004, FIX002
+        if self.driver is not None:
             self.driver.update_settings(settings={"enableMultiWindows": True})
         raise NotImplementedError
 

@@ -1,9 +1,14 @@
-# shadowstep/locator/map/ui_to_dict.py
+"""Mapping from UiSelector attributes to Shadowstep dictionary format.
+
+This module provides the mapping dictionary that converts UiSelector
+attributes to their corresponding Shadowstep dictionary representation
+with appropriate value conversion functions.
+"""
 from collections.abc import Callable
 from typing import Any
 
-from shadowstep.locator.types.shadowstep_dict import ShadowstepDictAttribute
-from shadowstep.locator.types.ui_selector import UiAttribute
+from shadowstep.locator.locator_types.shadowstep_dict import ShadowstepDictAttribute
+from shadowstep.locator.locator_types.ui_selector import UiAttribute
 
 UI_TO_SHADOWSTEP_DICT: dict[UiAttribute, Callable[[str], dict[str, Any]]] = {
     # --- text-based ---

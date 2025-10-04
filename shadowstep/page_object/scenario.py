@@ -1,4 +1,3 @@
-# shadowstep/page_object/scenario.py
 """Architecture design document for ShadowstepScenarioEngine.
 
 You're right, Navigator already exists. Great job. Amazing that something came out of your hands that doesn't cause eye bleeding.
@@ -51,7 +50,7 @@ Navigator is a dumb route bus. You say "go to SettingsPage" — it goes.
 
 ```python
 class Scenario:
-    def __init__(self, name: str):
+    def __init__(self, name: str) -> None:
         self.steps = []
         self.name = name
 

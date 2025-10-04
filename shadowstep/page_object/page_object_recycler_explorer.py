@@ -1,30 +1,67 @@
-# shadowstep/page_object/page_object_recycler_explorer.py
+"""Page object recycler explorer for Shadowstep framework.
+
+This module provides the PageObjectRecyclerExplorer class for
+automatically exploring scrollable content in mobile applications
+by generating page objects for different scroll positions and
+merging them into a comprehensive page object.
+"""
 from __future__ import annotations
 
 import importlib.util
 import logging
-from typing import cast
+import time
+from pathlib import Path
+from typing import TYPE_CHECKING, Any, cast
 
+from shadowstep.exceptions.shadowstep_exceptions import ShadowstepTerminalNotInitializedError
 from shadowstep.page_object.page_object_generator import PageObjectGenerator
 from shadowstep.page_object.page_object_merger import PageObjectMerger
 from shadowstep.page_object.page_object_parser import PageObjectParser
-from shadowstep.shadowstep import Shadowstep
 from shadowstep.utils.utils import get_current_func_name
+
+if TYPE_CHECKING:
+    from shadowstep.shadowstep import Shadowstep
 
 
 class PageObjectRecyclerExplorer:
+    """Explorer for scrollable content in mobile applications.
 
-    def __init__(self, base, translator):
+    This class provides functionality to automatically explore scrollable
+    content by generating page objects for different scroll positions
+    and merging them into a comprehensive page object.
+    """
+
+    def __init__(self, base: Shadowstep, translator: Any) -> None:
+        """Initialize the PageObjectRecyclerExplorer.
+
+        Args:
+            base: Shadowstep instance for automation operations.
+            translator: Translator instance for text translation, must contain def translate(text: str) -> str.
+
+        """
         self.base: Shadowstep = base
         self.logger = logging.getLogger(__name__)
         self.parser = PageObjectParser()
         self.generator = PageObjectGenerator(translator)
         self.merger = PageObjectMerger()
 
-    def explore(self, output_dir: str) -> str:
-        self.logger.info(f"{get_current_func_name()}")
-        if self.base.terminal is None:  # type: ignore
-            raise ValueError("Terminal is not initialized")
+    def explore(self, output_dir: str, timeout: float = 360) -> Path:  # noqa: C901
+        """Explore recycler views and generate page objects.
+
+        Args:
+            output_dir: Directory to save generated page objects.
+            timeout: Timeout for scrolling
+
+        Returns:
+            Path: Path to the generated file.
+
+        Raises:
+            ValueError: If terminal is not initialized.
+
+        """
+        self.logger.info("%s", get_current_func_name())
+        if self.base.terminal is None:  # type: ignore[comparison-overlap]
+            raise ShadowstepTerminalNotInitializedError
         width, height = self.base.terminal.get_screen_resolution()
         x = width // 2
         y_start = int(height * 0.2)
@@ -46,12 +83,12 @@ class PageObjectRecyclerExplorer:
 
         original_cls = self._load_class_from_file(original_page_path, original_page_class_name)
         if not original_cls:
-            self.logger.warning(f"Failed to load class {original_page_class_name} from {original_page_path}")
+            self.logger.warning("Failed to load class %s from %s", original_page_class_name, original_page_path)
             return ""
 
         original_page = original_cls()
         if not hasattr(original_page, "recycler"):
-            self.logger.info(f"{original_page_class_name} does not contain `recycler` property")
+            self.logger.info("%s does not contain `recycler` property", original_page_class_name)
             return ""
 
         recycler_el = original_page.recycler
@@ -60,7 +97,12 @@ class PageObjectRecyclerExplorer:
             return ""
         prefix = 0
 
+        start_time = time.monotonic()
         while recycler_el.scroll_down(percent=0.5, speed=1000, return_bool=True):
+            if time.monotonic() - start_time > timeout:
+                self.logger.warning("Timeout reached while scrolling recycler")
+                break
+
             # tree changed!!! recycler_raw needs to be redefined
             prefix += 1
             tree = self.parser.parse(self.base.driver.page_source)
@@ -86,7 +128,9 @@ class PageObjectRecyclerExplorer:
         page_path, page_class_name = self.generator.generate(tree, output_dir=output_dir, filename_prefix=str(prefix))
         pages.append((page_path, page_class_name))
 
-        output_path = "merged" + original_page_path
+        output_path = Path("merged_pages") / original_page_path.name
+        output_path.parent.mkdir(parents=True, exist_ok=True)
+
         self.merger.merge(original_page_path, cast("str", pages[0][0]), output_path)
 
         for page_tuple in pages:

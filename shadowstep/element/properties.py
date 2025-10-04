@@ -76,16 +76,22 @@ class ElementProperties:
                     self.element.utilities.handle_driver_error(error)
                     continue
                 raise ShadowstepElementException(
-                    msg=f"Failed to {inspect.currentframe() if inspect.currentframe() else 'unknown'}('{name}') within {self.element.timeout=}",  # noqa: E501  # noqa: E501
+                    msg=f"Failed to {inspect.currentframe() if inspect.currentframe() else 'unknown'}('{name}') within {self.element.timeout=}",
                     stacktrace=traceback.format_stack(),
                 ) from error
         raise ShadowstepElementException(
-            msg=f"Failed to {inspect.currentframe() if inspect.currentframe() else 'unknown'}('{name}') within {self.element.timeout=}",  # noqa: E501
+            msg=f"Failed to {inspect.currentframe() if inspect.currentframe() else 'unknown'}('{name}') within {self.element.timeout=}",
             stacktrace=traceback.format_stack(),
         )
 
     @log_debug()
     def get_attributes(self) -> dict[str, Any]:
+        """Get all attributes of the element.
+
+        Returns:
+            dict[str, Any]: Dictionary containing all element attributes.
+
+        """
         xpath_expr = self._resolve_xpath_for_attributes()
         if not xpath_expr:
             return {}
@@ -96,7 +102,7 @@ class ElementProperties:
         return {}
 
     @log_debug()
-    def get_property(self, name: str) -> Any:  # noqa: ANN401
+    def get_property(self, name: str) -> Any:
         """Get element property value."""
         self.logger.warning(
             "Method %s is not implemented in UiAutomator2",
@@ -126,11 +132,11 @@ class ElementProperties:
                     self.element.utilities.handle_driver_error(error)
                     continue
                 raise ShadowstepElementException(
-                    msg=f"Failed to {inspect.currentframe() if inspect.currentframe() else 'unknown'} within {self.element.timeout=}",  # noqa: E501  # noqa: E501
+                    msg=f"Failed to {inspect.currentframe() if inspect.currentframe() else 'unknown'} within {self.element.timeout=}",
                     stacktrace=traceback.format_stack(),
                 ) from error
         raise ShadowstepElementException(
-            msg=f"Failed to {inspect.currentframe() if inspect.currentframe() else 'unknown'} within {self.element.timeout=}",  # noqa: E501
+            msg=f"Failed to {inspect.currentframe() if inspect.currentframe() else 'unknown'} within {self.element.timeout=}",
             stacktrace=traceback.format_stack(),
         )
 
@@ -162,11 +168,11 @@ class ElementProperties:
                     self.element.utilities.handle_driver_error(error)
                     continue
                 raise ShadowstepElementException(
-                    msg=f"Failed to {inspect.currentframe() if inspect.currentframe() else 'unknown'} within {self.element.timeout=}",  # noqa: E501  # noqa: E501
+                    msg=f"Failed to {inspect.currentframe() if inspect.currentframe() else 'unknown'} within {self.element.timeout=}",
                     stacktrace=traceback.format_stack(),
                 ) from error
         raise ShadowstepElementException(
-            msg=f"Failed to {inspect.currentframe() if inspect.currentframe() else 'unknown'} within {self.element.timeout=}",  # noqa: E501
+            msg=f"Failed to {inspect.currentframe() if inspect.currentframe() else 'unknown'} within {self.element.timeout=}",
             stacktrace=traceback.format_stack(),
         )
 
@@ -201,11 +207,11 @@ class ElementProperties:
                     self.element.utilities.handle_driver_error(error)
                     continue
                 raise ShadowstepElementException(
-                    msg=f"Failed to {inspect.currentframe() if inspect.currentframe() else 'unknown'} within {self.element.timeout=}",  # noqa: E501  # noqa: E501
+                    msg=f"Failed to {inspect.currentframe() if inspect.currentframe() else 'unknown'} within {self.element.timeout=}",
                     stacktrace=traceback.format_stack(),
                 ) from error
         raise ShadowstepElementException(
-            msg=f"Failed to {inspect.currentframe() if inspect.currentframe() else 'unknown'} within {self.element.timeout=}",  # noqa: E501
+            msg=f"Failed to {inspect.currentframe() if inspect.currentframe() else 'unknown'} within {self.element.timeout=}",
             stacktrace=traceback.format_stack(),
         )
 
@@ -221,7 +227,7 @@ class ElementProperties:
                 return result
             time.sleep(0.1)
         raise ShadowstepElementException(
-            msg=f"Failed to {inspect.currentframe() if inspect.currentframe() else 'unknown'} within {self.element.timeout=}",  # noqa: E501
+            msg=f"Failed to {inspect.currentframe() if inspect.currentframe() else 'unknown'} within {self.element.timeout=}",
             stacktrace=traceback.format_stack(),
         )
 
@@ -255,11 +261,11 @@ class ElementProperties:
                     self.element.utilities.handle_driver_error(error)
                     continue
                 raise ShadowstepElementException(
-                    msg=f"Failed to {inspect.currentframe() if inspect.currentframe() else 'unknown'} within {self.element.timeout=}",  # noqa: E501  # noqa: E501
+                    msg=f"Failed to {inspect.currentframe() if inspect.currentframe() else 'unknown'} within {self.element.timeout=}",
                     stacktrace=traceback.format_stack(),
                 ) from error
         raise ShadowstepElementException(
-            msg=f"Failed to {inspect.currentframe() if inspect.currentframe() else 'unknown'} within {self.element.timeout=}",  # noqa: E501
+            msg=f"Failed to {inspect.currentframe() if inspect.currentframe() else 'unknown'} within {self.element.timeout=}",
             stacktrace=traceback.format_stack(),
         )
 
@@ -293,11 +299,11 @@ class ElementProperties:
                     self.element.utilities.handle_driver_error(error)
                     continue
                 raise ShadowstepElementException(
-                    msg=f"Failed to {inspect.currentframe() if inspect.currentframe() else 'unknown'} within {self.element.timeout=}",  # noqa: E501  # noqa: E501
+                    msg=f"Failed to {inspect.currentframe() if inspect.currentframe() else 'unknown'} within {self.element.timeout=}",
                     stacktrace=traceback.format_stack(),
                 ) from error
         raise ShadowstepElementException(
-            msg=f"Failed to {inspect.currentframe() if inspect.currentframe() else 'unknown'} within {self.element.timeout=}",  # noqa: E501
+            msg=f"Failed to {inspect.currentframe() if inspect.currentframe() else 'unknown'} within {self.element.timeout=}",
             stacktrace=traceback.format_stack(),
         )
 
@@ -336,11 +342,11 @@ class ElementProperties:
                     self.element.utilities.handle_driver_error(error)
                     continue
                 raise ShadowstepElementException(
-                    msg=f"Failed to {inspect.currentframe() if inspect.currentframe() else 'unknown'} within {self.element.timeout=}",  # noqa: E501  # noqa: E501
+                    msg=f"Failed to {inspect.currentframe() if inspect.currentframe() else 'unknown'} within {self.element.timeout=}",
                     stacktrace=traceback.format_stack(),
                 ) from error
         raise ShadowstepElementException(
-            msg=f"Failed to {inspect.currentframe() if inspect.currentframe() else 'unknown'} within {self.element.timeout=}",  # noqa: E501
+            msg=f"Failed to {inspect.currentframe() if inspect.currentframe() else 'unknown'} within {self.element.timeout=}",
             stacktrace=traceback.format_stack(),
         )
 

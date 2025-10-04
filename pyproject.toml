@@ -1,6 +1,6 @@
 [project]
 name = "appium-python-client-shadowstep"
-version = "0.34.164"
+version = "0.34.168"
 description = "UI Testing Framework powered by Appium Python Client"
 authors = [{ name = "Molokov Klim", email = "ultrakawaii9654449192@gmail.com" }]
 license = "MIT"
@@ -17,7 +17,7 @@ dependencies = [
     "Pillow>=11.3.0", # image
     "pytesseract>=0.3.10", # image (ocr)
     "allure-pytest>=2.13.2", # reports (decorators)
-    "paramiko>=3.4.0", # terminal
+    "paramiko>=4.0.0", # terminal
     "scp>=0.14.5", # terminal
     "networkx>=3.2.1", # navigator
     "lxml>=6.0.2", # page object generator
@@ -37,13 +37,6 @@ classifiers = [
     "Programming Language :: Python :: 3.13"
 ]
 
-[project.optional-dependencies]
-dev = [
-    "ruff",
-    "pyright",
-    "pytest",
-    "pytest-cov",
-]
 
 [project.urls]
 Repository = "https://github.com/molokov-klim/Appium-Python-Client-Shadowstep"
@@ -56,11 +49,16 @@ environments = [
     "sys_platform == 'linux'"
 ]
 
-dev-dependencies = [
-    "pre-commit>=4.3.0",
-    "pyright>=1.1.403",
-    "ruff>=0.12.9",
+[dependency-groups]
+dev = [
+    "pre-commit",
+    "pyright",
+    "ruff",
+    "pytest",
+    "pytest-cov",
+    "pytest-rerunfailures"
 ]
+
 
 # ---------- RUFF ----------
 [tool.ruff]
@@ -70,6 +68,18 @@ line-length = 100
 
 [tool.ruff.lint]
 select = ["ALL"]
+
+ignore = [
+    "D203", # conflict in D
+    "D211", # conflict in D
+    "D212", # conflict in D
+    "D213", # conflict in D
+    "E501", # line too long
+    "RUF001", # cyryllic
+    "ANN401", # Any
+    "S101", # assert
+]
+
 
 exclude = [
     "**/__pycache__",
@@ -106,6 +116,8 @@ exclude = [
     "tests/*",
     "**/tests",
     "**/tests/*",
+    "**/test*",
+    "**/test*/*",
 ]
 
 # ---------- PYRIGHT ----------
@@ -122,6 +134,8 @@ exclude = [
     "tests/*",
     "**/tests",
     "**/tests/*",
+    "**/test*",
+    "**/test*/*",
 ]
 typeCheckingMode = "strict"
 

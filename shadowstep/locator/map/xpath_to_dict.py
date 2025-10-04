@@ -1,9 +1,14 @@
-# shadowstep/locator/map/xpath_to_dict.py
+"""Mapping from XPath attributes to Shadowstep dictionary format.
+
+This module provides the mapping dictionary that converts XPath
+attributes to their corresponding Shadowstep dictionary representation
+with appropriate value conversion functions.
+"""
 from collections.abc import Callable
 from typing import Any
 
-from shadowstep.locator.types.shadowstep_dict import ShadowstepDictAttribute
-from shadowstep.locator.types.xpath import XPathAttribute
+from shadowstep.locator.locator_types.shadowstep_dict import ShadowstepDictAttribute
+from shadowstep.locator.locator_types.xpath import XPathAttribute
 
 XPATH_TO_SHADOWSTEP_DICT: dict[XPathAttribute, Callable[[str], dict[str, Any]]] = {
     # --- text-based ---

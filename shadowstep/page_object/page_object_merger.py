@@ -1,4 +1,9 @@
-# shadowstep/page_object/page_object_merger.py
+"""Page object merger for Shadowstep framework.
+
+This module provides the PageObjectMerger class for merging
+multiple page object files into a single consolidated file,
+handling imports, class definitions, and method deduplication.
+"""
 from __future__ import annotations
 
 import logging
@@ -6,18 +11,25 @@ import textwrap
 from pathlib import Path
 from typing import Any
 
+from shadowstep.exceptions.shadowstep_exceptions import ShadowstepNoClassDefinitionFoundError
 from shadowstep.utils.utils import get_current_func_name
 
 
 class PageObjectMerger:
-    def __init__(self):
+    """Merger for consolidating multiple page object files.
+
+    This class provides functionality to merge multiple page object files
+    into a single consolidated file, handling imports, class definitions,
+    and method deduplication.
+    """
+
+    def __init__(self) -> None:
+        """Initialize the PageObjectMerger."""
         self.logger = logging.getLogger(__name__)
 
     def merge(self, file1: str, file2: str, output_path: str) -> str:
-        """
-        merge pages
-        """
-        self.logger.info(f"{get_current_func_name()}")
+        """Merge pages."""
+        self.logger.info("%s", get_current_func_name())
         page1 = self.parse(file1)
         page2 = self.parse(file2)
         imports = self.get_imports(page1)
@@ -32,40 +44,39 @@ class PageObjectMerger:
         return output_path
 
     def parse(self, file: str | Path) -> str:
-        """
-        Reads and returns the full content of a Python file as a UTF-8 string.
+        """Read and return the full content of a Python file as a UTF-8 string.
 
         Args:
             file (str or Path): Path to the Python file.
 
         Returns:
             str: Raw content of the file.
+
         """
-        self.logger.debug(f"{get_current_func_name()}")
+        self.logger.debug("%s", get_current_func_name())
         try:
-            with open(file, encoding="utf-8") as f:
-                # self.logger.info(f"{content=}")
+            with Path(file).open(encoding="utf-8") as f:
                 return f.read()
-        except Exception as e:
-            self.logger.error(f"Failed to read {file}: {e}")
+        except Exception:
+            self.logger.exception("Failed to read %s", file)
             raise
 
     def get_imports(self, page: str) -> str:
-        """
-        Extracts all import statements from the given source code.
+        """Extract all import statements from the given source code.
 
         Args:
             page (str): Raw text of a Python file.
 
         Returns:
             str: All import lines joined by newline.
+
         """
-        self.logger.debug(f"{get_current_func_name()}")
+        self.logger.debug("%s", get_current_func_name())
         lines = page.splitlines()
         import_lines: list[str] = []
         for line in lines:
             stripped = line.strip()
-            if stripped.startswith("import ") or stripped.startswith("from "):
+            if stripped.startswith(("import ", "from ")):
                 import_lines.append(line)
             elif stripped == "" or stripped.startswith("#"):
                 continue
@@ -75,8 +86,7 @@ class PageObjectMerger:
         return "\n".join(import_lines)
 
     def get_class_name(self, page: str) -> str:
-        """
-        Return string with first class declaration.
+        """Return string with first class declaration.
 
         Args:
             page (str): Python file source code.
@@ -86,40 +96,41 @@ class PageObjectMerger:
 
         Raises:
             ValueError: If class definition not found.
+
         """
-        self.logger.info(f"{get_current_func_name()}")
+        self.logger.info("%s", get_current_func_name())
         for line in page.splitlines():
             stripped = line.strip()
-            self.logger.info(f"{stripped=}")
+            self.logger.info("stripped=%s", stripped)
             if stripped.startswith("class "):
-                self.logger.info(f"finded class {stripped=}")
+                self.logger.info("finded class stripped=%s", stripped)
                 return line.rstrip()
-        raise ValueError("No class definition found in the given source.")
+        raise ShadowstepNoClassDefinitionFoundError
 
     def get_methods(self, page: str) -> dict[str, Any]:
-        """
-        Extract methods and property blocks via \n\n separation with indentation normalization.
+        r"""Extract methods and property blocks via \n\n separation with indentation normalization.
 
         Args:
             page (str): PageObject source code.
 
         Returns:
             dict: method_name -> method_text
+
         """
-        self.logger.debug(f"{get_current_func_name()}")
+        self.logger.debug("%s", get_current_func_name())
 
         methods = {}
         blocks = page.split("\n\n")
 
         for block in blocks:
-            block = textwrap.dedent(block)  # <<< IMPORTANT: REMOVE EXCESS NESTING
-            stripped = block.strip()
+            dedent_block = textwrap.dedent(block)
+            stripped = dedent_block.strip()
 
             if not stripped.startswith("def ") and not stripped.startswith("@property") and not stripped.startswith(
                     "@current_page"):
                 continue
 
-            lines = block.splitlines()
+            lines = dedent_block.splitlines()
             name = None
 
             for i, line in enumerate(lines):
@@ -134,17 +145,27 @@ class PageObjectMerger:
                         break
 
             if name:
-                methods[name] = block
+                methods[name] = dedent_block
 
         return methods
 
     def remove_duplicates(self, methods1: dict[str, Any], methods2: dict[str, Any]) -> dict[str, Any]:
-        self.logger.debug(f"{get_current_func_name()}")
+        """Remove duplicate methods from two method dictionaries.
+
+        Args:
+            methods1: First dictionary of methods.
+            methods2: Second dictionary of methods.
+
+        Returns:
+            dict[str, Any]: Dictionary with unique methods.
+
+        """
+        self.logger.debug("%s", get_current_func_name())
 
         unique_methods = {}
 
         for name, body in methods1.items():
-            unique_methods[name] = body
+            unique_methods[name] = body  # noqa: PERF403
 
         for name, body in methods2.items():
             if name not in unique_methods:
@@ -152,7 +173,7 @@ class PageObjectMerger:
             elif unique_methods[name].strip() == body.strip():
                 continue  # duplicate — ignore
             else:
-                self.logger.warning(f"Method conflict on '{name}', skipping version from second file.")
+                self.logger.warning("Method conflict on '%s', skipping version from second file.", name)
 
         return unique_methods
 
@@ -162,13 +183,23 @@ class PageObjectMerger:
             imports: str,
             class_name: str,
             unique_methods: dict[str, Any],
-            encoding: str = "utf-8"
+            encoding: str = "utf-8",
     ) -> None:
-        self.logger.debug(f"{get_current_func_name()}")
+        """Write merged page object to file.
+
+        Args:
+            filepath: Path to output file.
+            imports: Import statements.
+            class_name: Name of the class.
+            unique_methods: Dictionary of unique methods.
+            encoding: File encoding.
+
+        """
+        self.logger.debug("%s", get_current_func_name())
         lines: list[str] = [imports.strip(), "", "", class_name.strip(), ""]
 
         for name, body in unique_methods.items():
-            if name == "recycler" or name == "is_current_page":
+            if name in {"recycler", "is_current_page"}:
                 continue
             clean_body = textwrap.dedent(body)  # remove nested indentation
             method_lines = textwrap.indent(clean_body, "    ")  # nest inside class

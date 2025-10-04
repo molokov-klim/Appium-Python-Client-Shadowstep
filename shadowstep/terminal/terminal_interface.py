@@ -1,6 +1,4 @@
-# shadowstep/terminal/terminal_interface.py
-"""
-Yes, you're right — current `Terminal` implementation is overloaded and violates Single Responsibility Principle (SRP from SOLID), because:
+"""Yes, you're right — current `Terminal` implementation is overloaded and violates Single Responsibility Principle (SRP from SOLID), because.
 
 - some methods use **Appium driver (`self.driver`)**, which doesn't require any `transport`;
 - other part (e.g., `push`, `install_app`) uses **`self.transport` and SSH**, which brings dependencies and mandatory SSH connection requirement.
@@ -85,7 +83,7 @@ from appium.webdriver.webdriver import WebDriver
 from selenium.common import NoSuchDriverException, InvalidSessionIdException
 
 class TerminalInterface:
-    def __init__(self, driver: WebDriver, shadowstep=None):
+    def __init__(self, driver: WebDriver, shadowstep=None) -> None:
         self.driver = driver
         self.shadowstep = shadowstep
 
@@ -109,7 +107,7 @@ from .terminal_interface import TerminalInterface
 from .terminal import Transport  # or however you define transport
 
 class RemoteTerminal(TerminalInterface):
-    def __init__(self, driver, transport: Transport, shadowstep=None):
+    def __init__(self, driver, transport: Transport, shadowstep=None) -> None:
         super().__init__(driver, shadowstep)
         self.transport = transport
 

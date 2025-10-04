@@ -14,7 +14,14 @@ from __future__ import annotations
 import logging
 from typing import TYPE_CHECKING, Any, cast
 
-from shadowstep.exceptions.shadowstep_exceptions import ShadowstepConversionError
+from shadowstep.exceptions.shadowstep_exceptions import (
+    ShadowstepConversionFailedError,
+    ShadowstepEmptySelectorStringError,
+    ShadowstepEmptyXPathError,
+    ShadowstepUnsupportedSelectorFormatError,
+    ShadowstepUnsupportedSelectorTypeError,
+    ShadowstepUnsupportedTupleFormatError,
+)
 from shadowstep.locator.converter.dict_converter import DictConverter
 from shadowstep.locator.converter.ui_selector_converter import UiSelectorConverter
 from shadowstep.locator.converter.xpath_converter import XPathConverter
@@ -23,42 +30,56 @@ from shadowstep.utils.utils import get_current_func_name
 
 logger = logging.getLogger(__name__)
 
+# Constants
+TUPLE_SELECTOR_LENGTH = 2
+
 if TYPE_CHECKING:
     from shadowstep.element.element import Element
 
 
 class LocatorConverter:
-    """
-    Unified converter for all locator formats.
-    
+    """Unified converter for all locator formats.
+
     This class provides a single interface for converting between different
     locator formats, replacing the deprecated DeprecatedLocatorConverter.
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Initialize the converter with all sub-converters."""
         self.logger = logger
         self.dict_converter = DictConverter()
         self.ui_selector_converter = UiSelectorConverter()
         self.xpath_converter = XPathConverter()
 
-    def to_dict(self, selector: tuple[str, str] | dict[str, Any] | Element | UiSelector | str) -> dict[str, Any]:
+    def _raise_unsupported_selector_format_error(self, selector: Any) -> None:
+        """Raise ShadowstepUnsupportedSelectorFormatError for unsupported selector format.
+
+        Args:
+            selector: The unsupported selector
+
+        Raises:
+            ShadowstepUnsupportedSelectorFormatError: Always raised
+
         """
-        Convert any selector format to dictionary format.
-        
+        raise ShadowstepUnsupportedSelectorFormatError(selector)
+
+    def to_dict(self, selector: tuple[str, str] | dict[str, Any] | Element | UiSelector | str) -> dict[str, Any]:
+        """Convert any selector format to dictionary format.
+
         Args:
             selector: Selector in any supported format
-            
+
         Returns:
             Dictionary representation of the selector
-            
+
         Raises:
             ShadowstepConversionError: If conversion fails
+
         """
         try:
-            from shadowstep.element.element import Element
+            from shadowstep.element.element import Element  # noqa: PLC0415
             if isinstance(selector, Element):
-                selector = cast(Element, selector.locator)
+                selector = cast("Element", selector.locator)
             if isinstance(selector, dict):
                 return selector
             if isinstance(selector, tuple):
@@ -69,27 +90,27 @@ class LocatorConverter:
                 return self.xpath_to_dict(selector)
             if isinstance(selector, UiSelector):
                 return self.uiselector_to_dict(selector.__str__())
-            raise ShadowstepConversionError(f"Unsupported selector format: {selector}")
+            self._raise_unsupported_selector_format_error(selector)
         except Exception as e:
-            raise ShadowstepConversionError(f"{get_current_func_name()} failed to convert selector: {selector}. {e}") from e
+            raise ShadowstepConversionFailedError(get_current_func_name(), selector, str(e)) from e
 
     def to_xpath(self, selector: tuple[str, str] | dict[str, Any] | Element | UiSelector) -> tuple[str, str]:
-        """
-        Convert any selector format to XPath tuple format.
-        
+        """Convert any selector format to XPath tuple format.
+
         Args:
             selector: Selector in any supported format
-            
+
         Returns:
             Tuple in format ("xpath", "//*[@text='OK']")
-            
+
         Raises:
             ShadowstepConversionError: If conversion fails
+
         """
         try:
-            from shadowstep.element.element import Element
+            from shadowstep.element.element import Element  # noqa: PLC0415
             if isinstance(selector, Element):
-                selector = cast(Element, selector.locator)
+                selector = cast("Element", selector.locator)
             if isinstance(selector, dict):
                 return "xpath", self.dict_to_xpath(selector)
             if isinstance(selector, tuple):
@@ -100,27 +121,27 @@ class LocatorConverter:
                 return "xpath", selector
             if isinstance(selector, UiSelector):
                 return "xpath", self.uiselector_to_xpath(selector.__str__())
-            raise ShadowstepConversionError(f"Unsupported selector format: {selector}")
+            self._raise_unsupported_selector_format_error(selector)
         except Exception as e:
-            raise ShadowstepConversionError(f"{get_current_func_name()} failed to convert selector: {selector}. {e}") from e
+            raise ShadowstepConversionFailedError(get_current_func_name(), selector, str(e)) from e
 
     def to_uiselector(self, selector: tuple[str, str] | dict[str, Any] | Element | UiSelector) -> str:
-        """
-        Convert any selector format to UiSelector string.
-        
+        """Convert any selector format to UiSelector string.
+
         Args:
             selector: Selector in any supported format
-            
+
         Returns:
             UiSelector string in format "new UiSelector().text('OK');"
-            
+
         Raises:
             ShadowstepConversionError: If conversion fails
+
         """
         try:
-            from shadowstep.element.element import Element
+            from shadowstep.element.element import Element  # noqa: PLC0415
             if isinstance(selector, Element):
-                selector = cast(Element, selector.locator)
+                selector = cast("Element", selector.locator)
             if isinstance(selector, dict):
                 return self.dict_to_uiselector(selector)
             if isinstance(selector, UiSelector):
@@ -133,9 +154,9 @@ class LocatorConverter:
                 return self.xpath_to_uiselector(selector)
             if isinstance(selector, UiSelector):
                 return selector.__str__()
-            raise ShadowstepConversionError(f"Unsupported selector format: {selector}")
+            self._raise_unsupported_selector_format_error(selector)
         except Exception as e:
-            raise ShadowstepConversionError(f"{get_current_func_name()} failed to convert selector: {selector}. {e}") from e
+            raise ShadowstepConversionFailedError(get_current_func_name(), selector, str(e)) from e
 
     # Convenience methods for direct conversion between specific formats
     def dict_to_xpath(self, selector_dict: dict[str, Any]) -> str:
@@ -165,14 +186,14 @@ class LocatorConverter:
         return self.dict_converter.dict_to_xpath(selector_dict)
 
     def validate_selector(self, selector: dict[str, Any] | tuple[str, str] | str | UiSelector) -> None:
-        """
-        Validate selector format and content.
-        
+        """Validate selector format and content.
+
         Args:
             selector: Selector to validate
-            
+
         Raises:
             ValueError: If selector is invalid
+
         """
         if isinstance(selector, dict):
             self.dict_converter.validate_dict_selector(selector)
@@ -180,14 +201,14 @@ class LocatorConverter:
             # UiSelector DSL validation - convert to dict and validate
             selector_dict = selector.to_dict()
             self.dict_converter.validate_dict_selector(selector_dict)
-        elif isinstance(selector, tuple) and len(selector) == 2:
+        elif isinstance(selector, tuple) and len(selector) == TUPLE_SELECTOR_LENGTH:
             if selector[0] != "xpath":
-                raise ValueError(f"Unsupported tuple format: {selector[0]}")
+                raise ShadowstepUnsupportedTupleFormatError(selector[0])
             # Basic XPath validation
             if not selector[1]:
-                raise ValueError("XPath string cannot be empty")
-        elif isinstance(selector, str):  # type: ignore
+                raise ShadowstepEmptyXPathError
+        elif isinstance(selector, str):  # type: ignore[arg-type]
             if not selector.strip():
-                raise ValueError("Selector string cannot be empty")
+                raise ShadowstepEmptySelectorStringError
         else:
-            raise ValueError(f"Unsupported selector type: {type(selector)}")
+            raise ShadowstepUnsupportedSelectorTypeError(type(selector))
