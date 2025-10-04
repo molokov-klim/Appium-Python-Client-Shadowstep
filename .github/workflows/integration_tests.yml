@@ -45,13 +45,7 @@ jobs:
             npm update -g appium
           fi
           
-          if appium driver list --installed | grep -q 'uiautomator2'; then
-            echo "uiautomator2 driver already installed, updating..."
-            appium driver update uiautomator2
-          else
-            echo "Installing uiautomator2 driver..."
-            appium driver install uiautomator2
-          fi
+          appium driver update uiautomator2 || appium driver install uiautomator2
 
 
       - name: Enable KVM group perms
