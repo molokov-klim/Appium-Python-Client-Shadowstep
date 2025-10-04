@@ -11,6 +11,7 @@ Shadowstep is a UI automation framework for Android applications built on top of
 - Image-based actions on screen
 
 [![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/molokov-klim/Appium-Python-Client-Shadowstep)
+[![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 
 [![PyPI version](https://badge.fury.io/py/appium-python-client-shadowstep.svg)](https://badge.fury.io/py/appium-python-client-shadowstep)
 [![Downloads](https://pepy.tech/badge/appium-python-client-shadowstep)](https://pepy.tech/project/appium-python-client-shadowstep)
@@ -81,7 +82,7 @@ from shadowstep.shadowstep import Shadowstep
 
 shadowstep = Shadowstep.get_instance()
 ```
-Shadowstep is singletone, if you already create instance you can get it from every place
+Shadowstep is a singleton, so if you’ve already created an instance, you can access it from anywhere.
 
 ---
 
@@ -306,9 +307,8 @@ app.stop_logcat()
 - Modular architecture: `element`, `elements`, `navigator`, `terminal`, `image`, `utils`
 
 ---
----
 
-## Page Object module (generation)
+## Page Object Generation Module
 
 Tools to automatically generate PageObject classes from UI XML (uiautomator2), enrich them while scrolling, merge results, and generate baseline tests.
 
@@ -404,19 +404,6 @@ To tweak generated code structure, edit these files. (The generator uses the loc
 
 ---
 
-## Limitations and Details
-
-- Focused on Android (XML and uiautomator2 attributes)
-- Generator heuristics:
-  - Find `title` via `text`/`content-desc`
-  - Treat `scrollable==true` container as `recycler` if present
-  - Switch ↔ anchor pairs, `summary` fields, filtering structural/non-informative classes
-  - Remove `text` from locators for classes where text search is not supported
-- `PageObjectRecyclerExplorer` requires an active session and `mobile: shell` capability; uses swipes and `adb_shell`
-- Merge result is saved as a separate file (see prefix/path in `explore()`)
-
----
-
 ## Code References
 
 - `shadowstep/page_object/page_object_parser.py`
@@ -430,7 +417,7 @@ To tweak generated code structure, edit these files. (The generator uses the loc
 ## Limitations
 
 - Android only (no iOS or Web)
-- Singleton session (for parallel testing need use different runners/containers)
+- Singleton session — for parallel testing, use separate runners or containers.
 
 ---
 

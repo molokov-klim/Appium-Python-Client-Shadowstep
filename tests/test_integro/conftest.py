@@ -50,10 +50,30 @@ def app():
     global application
     global UDID
 
+    # Clear any existing instance
+    application.disconnect()
+    time.sleep(2)
+    
     application.connect(server_ip=APPIUM_IP,
                         server_port=APPIUM_PORT,
                         command_executor=APPIUM_COMMAND_EXECUTOR,
                         capabilities=CAPABILITIES)
+    
+    # Wait for connection to be fully established
+    max_wait_time = 60  # seconds
+    start_time = time.time()
+    
+    while time.time() - start_time < max_wait_time:
+        if (application.is_connected() and 
+            application.driver is not None and 
+            application.driver.session_id is not None):
+            break
+        time.sleep(1)
+    
+    # Final verification
+    if not (application.is_connected() and application.driver is not None and application.driver.session_id is not None):
+        raise RuntimeError("Failed to establish connection within timeout period")
+    
     yield application
     application.disconnect()
 
