@@ -26,7 +26,6 @@ from selenium.common import (
 )
 from typing_extensions import Concatenate, ParamSpec
 
-
 # Type variables for better type safety
 P = ParamSpec("P")
 T = TypeVar("T")

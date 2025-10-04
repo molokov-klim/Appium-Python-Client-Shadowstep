@@ -357,15 +357,68 @@ class TestShadowstep:
         3. Verify that the exception is caught and logged.
         4. Verify that the method completes without raising exceptions.
         5. Verify that no pages are registered from the problematic module.
-
-        Тест _register_pages_from_module() обрабатывает ошибки импорта корректно:
-        1. Создать модуль, который выбрасывает исключение при инспекции.
-        2. Вызвать _register_pages_from_module() с проблемным модулем.
-        3. Проверить, что исключение перехвачено и залогировано.
-        4. Проверить, что метод завершается без выброса исключений.
-        5. Проверить, что никакие страницы не зарегистрированы из проблемного модуля.
         """
-        pass
+        import logging
+        import types
+        from io import StringIO
+        
+        # Step 1: Create a module that raises an exception during inspection
+        # We'll create a module that raises an exception when inspect.getmembers() is called
+        test_module = types.ModuleType("test_problematic_module")
+        
+        # Create a class that raises an exception when inspect.getmembers() tries to inspect it
+        # We'll create a class that raises an exception when its __bases__ is accessed
+        class ProblematicClass:
+            def __init__(self):
+                # This will cause an exception when inspect.getmembers() tries to check if it's a subclass
+                pass
+            
+            @property
+            def __bases__(self):
+                raise RuntimeError("Simulated inspection error")
+        
+        # Add the problematic class to the module
+        test_module.ProblematicClass = ProblematicClass
+        
+        # Also add a descriptor that raises an exception when accessed
+        class ProblematicDescriptor:
+            def __get__(self, obj, objtype=None):
+                raise RuntimeError("Simulated descriptor access error")
+        
+        test_module.problematic_descriptor = ProblematicDescriptor()
+        
+        # Store original pages count
+        original_pages_count = len(app.pages)
+        
+        # Set up log capture to verify exception is logged
+        log_capture = StringIO()
+        handler = logging.StreamHandler(log_capture)
+        handler.setLevel(logging.ERROR)
+        app.logger.addHandler(handler)
+        
+        try:
+            # Step 2: Call _register_pages_from_module() with the problematic module
+            # This should not raise an exception due to the try-except block
+            app._register_pages_from_module(test_module)
+            
+            # Step 3: Verify that the exception is caught and logged
+            log_output = log_capture.getvalue()
+            assert "Error page register from module" in log_output  # noqa: S101
+            assert "test_problematic_module" in log_output  # noqa: S101
+            assert "Simulated inspection error" in log_output  # noqa: S101
+            
+            # Step 4: Verify that the method completes without raising exceptions
+            # The method should complete successfully (no exception raised)
+            # This is verified by the fact that we reach this point without exception
+            
+            # Step 5: Verify that no pages are registered from the problematic module
+            assert len(app.pages) == original_pages_count  # noqa: S101
+            # Verify that no new pages were added
+            assert "ProblematicClass" not in app.pages  # noqa: S101
+            
+        finally:
+            # Clean up: remove the log handler
+            app.logger.removeHandler(handler)
 
     def test_register_pages_from_module_registration_error(self, app: Shadowstep):
         """Test _register_pages_from_module() handles registration errors gracefully.
