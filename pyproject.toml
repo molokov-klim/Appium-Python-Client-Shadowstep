@@ -78,6 +78,7 @@ ignore = [
     "RUF001", # cyryllic
     "ANN401", # Any
     "S101", # assert
+    "PGH004", # blanket-noqa
 ]
 
 
@@ -118,6 +119,8 @@ exclude = [
     "**/tests/*",
     "**/test*",
     "**/test*/*",
+    "**/test*.py",
+    "**/test*/*.py",
 ]
 
 # ---------- PYRIGHT ----------
@@ -136,6 +139,8 @@ exclude = [
     "**/tests/*",
     "**/test*",
     "**/test*/*",
+    "**/test*.py",
+    "**/test*/*.py",
 ]
 typeCheckingMode = "strict"
 

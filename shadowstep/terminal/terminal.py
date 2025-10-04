@@ -15,7 +15,7 @@ import sys
 import time
 import traceback
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, cast
+from typing import TYPE_CHECKING, cast
 
 from selenium.common import InvalidSessionIdException, NoSuchDriverException
 
@@ -35,7 +35,7 @@ if TYPE_CHECKING:
 
     from appium.webdriver.webdriver import WebDriver
 
-    from shadowstep.base import ShadowstepBase
+    from shadowstep.shadowstep import Shadowstep
     from shadowstep.terminal import Transport
 
 
@@ -71,20 +71,16 @@ class Terminal:
     Required ssh
     """
 
-    base: ShadowstepBase
+    shadowstep: Shadowstep
     transport: Transport
     driver: WebDriver
 
-    def __init__(self, base: ShadowstepBase) -> None:
-        """Initialize the Terminal.
-
-        Args:
-            base: ShadowstepBase instance for automation operations.
-
-        """
-        self.base: ShadowstepBase = base
-        self.transport: Transport = base.transport
-        self.driver: WebDriver = base.driver
+    def __init__(self) -> None:
+        """Initialize the Terminal."""
+        from shadowstep.shadowstep import Shadowstep  # noqa: PLC0415
+        self.shadowstep: Shadowstep = Shadowstep.get_instance()
+        self.transport: Transport = self.shadowstep.transport
+        self.driver: WebDriver = self.shadowstep.driver
 
     def __del__(self) -> None:
         """Destructor to ensure SSH connection is closed on object deletion.
@@ -106,10 +102,10 @@ class Terminal:
                 return cast("str", result)
             except NoSuchDriverException:  # noqa: PERF203
                 logger.warning("No such driver found")
-                self.base.reconnect()
+                self.shadowstep.reconnect()
             except InvalidSessionIdException:
                 logger.warning("Invalid session id found")
-                self.base.reconnect()
+                self.shadowstep.reconnect()
             except KeyError:
                 logger.exception("KeyError in get_page_source")
                 traceback_info = "".join(traceback.format_tb(sys.exc_info()[2]))
@@ -145,10 +141,10 @@ class Terminal:
                 return False
             logger.debug("%s output=%s", get_current_func_name(), output)
         except NoSuchDriverException:
-            self.base.reconnect()
+            self.shadowstep.reconnect()
             return False
         except InvalidSessionIdException:
-            self.base.reconnect()
+            self.shadowstep.reconnect()
             return False
         except OSError:
             logger.exception("push()")
@@ -180,10 +176,10 @@ class Terminal:
             with Path(destination).open("wb") as file:
                 file.write(decoded_contents)
         except NoSuchDriverException:
-            self.base.reconnect()
+            self.shadowstep.reconnect()
             return False
         except InvalidSessionIdException:
-            self.base.reconnect()
+            self.shadowstep.reconnect()
             return False
         except OSError:
             logger.exception("appium_extended_terminal.pull")
@@ -313,10 +309,10 @@ class Terminal:
         try:
             self.driver.remove_app(app_id=package)
         except NoSuchDriverException:
-            self.base.reconnect()
+            self.shadowstep.reconnect()
             return False
         except InvalidSessionIdException:
-            self.base.reconnect()
+            self.shadowstep.reconnect()
             return False
         except KeyError:
             logger.exception("appium_extended_terminal.uninstall_app()")
@@ -692,9 +688,9 @@ class Terminal:
         try:
             self.driver.start_recording_screen(**options)
         except NoSuchDriverException:
-            self.base.reconnect()
+            self.shadowstep.reconnect()
         except InvalidSessionIdException:
-            self.base.reconnect()
+            self.shadowstep.reconnect()
         except KeyError:
             logger.exception("appium_extended_terminal.record_video")
             return False
@@ -710,9 +706,9 @@ class Terminal:
             str_based64_video = self.driver.stop_recording_screen(**options)
             return base64.b64decode(str_based64_video)
         except NoSuchDriverException:
-            self.base.reconnect()
+            self.shadowstep.reconnect()
         except InvalidSessionIdException:
-            self.base.reconnect()
+            self.shadowstep.reconnect()
         except KeyError:
             logger.exception("appium_extended_terminal.stop_video")
             return None
@@ -751,20 +747,20 @@ class Terminal:
                 self.driver.set_clipboard_text(text=text)
                 self.input_keycode("279")
             except NoSuchDriverException:  # noqa: PERF203
-                self.base.reconnect()
+                self.shadowstep.reconnect()
             except InvalidSessionIdException:
-                self.base.reconnect()
+                self.shadowstep.reconnect()
             else:
                 return
 
-    def get_prop(self) -> dict[str, Any]:
+    def get_prop(self) -> dict[str, str]:
         """Retrieve system properties from the device.
 
         :return: A dictionary containing the system properties as key-value pairs.
         """
         raw_properties = self.adb_shell(command="getprop")
         lines = raw_properties.replace("\r", "").strip().split("\n")
-        result_dict = {}
+        result_dict: dict[str, str] = {}
         for line in lines:
             try:
                 key, value = line.strip().split(":", 1)

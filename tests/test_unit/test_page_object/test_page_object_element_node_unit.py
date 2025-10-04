@@ -1,3 +1,5 @@
+# ruff: noqa
+# pyright: ignore
 """Tests for page_object_element_node module."""
 
 from unittest.mock import Mock, patch

@@ -1,3 +1,5 @@
+# ruff: noqa
+# pyright: ignore
 import datetime
 
 import pytest

@@ -1,3 +1,5 @@
+# ruff: noqa
+# pyright: ignore
 from shadowstep.element.element import Element
 from shadowstep.shadowstep import Shadowstep
 

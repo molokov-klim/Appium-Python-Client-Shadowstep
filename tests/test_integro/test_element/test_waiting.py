@@ -1,3 +1,5 @@
+# ruff: noqa
+# pyright: ignore
 """
 uv run pytest -svl --log-cli-level INFO --tb=short --setup-show tests/element/test_element_waiting.py
 """

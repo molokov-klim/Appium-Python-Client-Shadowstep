@@ -1,3 +1,5 @@
+# ruff: noqa
+# pyright: ignore
 import contextlib
 import time
 

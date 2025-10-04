@@ -1,3 +1,5 @@
+# ruff: noqa
+# pyright: ignore
 import re
 import time
 from typing import Any

@@ -26,6 +26,7 @@ from selenium.common import (
 )
 from typing_extensions import Concatenate, ParamSpec
 
+
 # Type variables for better type safety
 P = ParamSpec("P")
 T = TypeVar("T")
@@ -239,15 +240,17 @@ def step_info(
         def wrapper(self: Any, *args: P.args, **kwargs: P.kwargs) -> T:
             method_name = func.__name__
             class_name = self.__class__.__name__
+            from shadowstep.shadowstep import Shadowstep  # noqa: PLC0415
+            shadowstep = Shadowstep.get_instance()
 
             self.logger.info("[%s.%s]", class_name, method_name)
             self.logger.info("🔵🔵🔵 -> %s < args=%s, kwargs=%s", my_str, args, kwargs)
-            screenshot = self.shadowstep.get_screenshot()
+            screenshot = shadowstep.get_screenshot()
             timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")  # noqa: DTZ005
             screenshot_name_begin = f"screenshot_begin_{timestamp}.png"
 
             try:
-                self.shadowstep.driver.start_recording_screen()
+                shadowstep.driver.start_recording_screen()
                 self.logger.debug("[%s.%s] Screen recording started", class_name, method_name)
             except Exception as error:  # noqa: BLE001
                 self.logger.error(  # noqa: TRY400
@@ -270,7 +273,7 @@ def step_info(
                 )
                 text = (f"before {class_name}.{method_name} \n "
                        f"< args={args}, kwargs={kwargs} \n[{my_str}]")
-                screenshot_end = self.shadowstep.get_screenshot()
+                screenshot_end = shadowstep.get_screenshot()
                 allure.attach(
                     screenshot_end,
                     name=text,
@@ -281,7 +284,7 @@ def step_info(
 
                 # Video
                 try:
-                    video_data = self.shadowstep.driver.stop_recording_screen()
+                    video_data = shadowstep.driver.stop_recording_screen()
                     allure.attach(
                         base64.b64decode(video_data),
                         name=text,

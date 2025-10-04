@@ -1,3 +1,5 @@
+# ruff: noqa
+# pyright: ignore
 """Integration tests for the exceptions module.
 
 This module contains integration tests for Shadowstep custom exceptions,

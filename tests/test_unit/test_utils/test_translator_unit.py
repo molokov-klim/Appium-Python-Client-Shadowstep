@@ -1,3 +1,5 @@
+# ruff: noqa
+# pyright: ignore
 """Tests for shadowstep.utils.translator module.
 
 This module contains tests for the YandexTranslate class and its translation functionality.

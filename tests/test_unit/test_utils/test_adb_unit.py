@@ -1,3 +1,5 @@
+# ruff: noqa
+# pyright: ignore
 """Tests for shadowstep.utils.adb module.
 
 This module contains tests for the legacy Adb class and its ADB functionality.

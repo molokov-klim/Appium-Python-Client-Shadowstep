@@ -1,3 +1,5 @@
+# ruff: noqa
+# pyright: ignore
 """Tests for page_object_test_generator module."""
 
 import os

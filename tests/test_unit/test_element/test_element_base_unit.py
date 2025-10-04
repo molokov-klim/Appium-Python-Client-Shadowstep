@@ -1,3 +1,5 @@
+# ruff: noqa
+# pyright: ignore
 """Unit tests for shadowstep/element/base.py module."""
 from unittest.mock import Mock, patch, MagicMock
 import pytest

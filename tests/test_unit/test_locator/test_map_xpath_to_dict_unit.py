@@ -1,3 +1,5 @@
+# ruff: noqa
+# pyright: ignore
 """Tests for xpath_to_dict mapping module."""
 
 import pytest

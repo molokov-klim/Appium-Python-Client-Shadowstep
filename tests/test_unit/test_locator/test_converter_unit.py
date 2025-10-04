@@ -1,3 +1,5 @@
+# ruff: noqa
+# pyright: ignore
 """
 Tests for the unified LocatorConverter.
 

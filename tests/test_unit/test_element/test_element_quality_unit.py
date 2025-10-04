@@ -1,3 +1,5 @@
+# ruff: noqa
+# pyright: ignore
 from unittest.mock import Mock
 
 import pytest

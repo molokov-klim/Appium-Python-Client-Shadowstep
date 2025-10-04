@@ -1,3 +1,5 @@
+# ruff: noqa
+# pyright: ignore
 """Tests for the logcat module.
 
 This module contains comprehensive tests for the ShadowstepLogcat class,

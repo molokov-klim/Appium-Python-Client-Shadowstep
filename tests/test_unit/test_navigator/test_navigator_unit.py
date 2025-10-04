@@ -1,3 +1,5 @@
+# ruff: noqa
+# pyright: ignore
 """Tests for the navigator module.
 
 This module contains comprehensive tests for the PageNavigator and PageGraph classes,

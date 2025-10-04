@@ -1,3 +1,5 @@
+# ruff: noqa
+# pyright: ignore
 """Tests for shadowstep package initialization and logging configuration."""
 
 import logging

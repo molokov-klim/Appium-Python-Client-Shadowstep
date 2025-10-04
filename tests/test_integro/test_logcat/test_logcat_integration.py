@@ -1,3 +1,5 @@
+# ruff: noqa
+# pyright: ignore
 """Integration tests for the logcat module.
 
 This module contains integration tests for the ShadowstepLogcat class,

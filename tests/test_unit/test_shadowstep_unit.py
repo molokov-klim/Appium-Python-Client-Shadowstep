@@ -1,3 +1,5 @@
+# ruff: noqa
+# pyright: ignore
 import base64
 from unittest.mock import patch, Mock, mock_open
 

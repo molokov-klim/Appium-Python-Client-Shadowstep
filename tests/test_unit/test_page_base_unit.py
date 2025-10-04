@@ -1,3 +1,5 @@
+# ruff: noqa
+# pyright: ignore
 """Tests for PageBaseShadowstep class."""
 
 import pytest

@@ -1,3 +1,5 @@
+# ruff: noqa
+# pyright: ignore
 """Tests for shadowstep.utils.utils module.
 
 This module contains tests for utility functions including coordinate calculations,

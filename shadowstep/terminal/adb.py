@@ -4,6 +4,7 @@ This module provides the Adb class for interacting with Android devices
 through ADB commands, including device management, app installation,
 file operations, input simulation, and system control.
 """
+
 from __future__ import annotations
 
 import logging
@@ -11,14 +12,8 @@ import re
 import subprocess
 import time
 from pathlib import Path
-from typing import TYPE_CHECKING
 
 from shadowstep.utils.utils import get_current_func_name, grep_pattern
-
-if TYPE_CHECKING:
-    from appium.webdriver.webdriver import WebDriver
-
-    from shadowstep.base import ShadowstepBase
 
 logger = logging.getLogger(__name__)
 
@@ -32,18 +27,8 @@ class Adb:
     Use only if Appium server is running locally where the test is being performed
     """
 
-    base: ShadowstepBase
-    driver: WebDriver
-
-    def __init__(self, base: ShadowstepBase) -> None:
-        """Initialize the ADB wrapper.
-
-        Args:
-            base: ShadowstepBase instance for automation operations.
-
-        """
-        self.base: ShadowstepBase = base
-        self.driver: WebDriver = base.driver
+    def __init__(self) -> None:
+        """Initialize the ADB wrapper."""
 
     @staticmethod
     def get_devices() -> list[str]:
@@ -94,7 +79,11 @@ class Adb:
 
         """
         logger.info("%s < %s", get_current_func_name(), udid)
-        command = ["adb", "-s", f"{udid}", "shell", "getprop", "ro.product.model"] if udid else ["adb", "shell", "getprop", "ro.product.model"]
+        command = (
+            ["adb", "-s", f"{udid}", "shell", "getprop", "ro.product.model"]
+            if udid
+            else ["adb", "shell", "getprop", "ro.product.model"]
+        )
         try:
             # Execute command and get output
             model = subprocess.check_output(command)  # noqa: S603
@@ -129,7 +118,11 @@ class Adb:
         if not Path(source).exists():
             logger.error("Source path does not exist: source=%s", source)
             return False
-        command = ["adb", "-s", f"{udid}", "push", f"{source}", f"{destination}"] if udid else ["adb", "push", f"{source}", f"{destination}"]
+        command = (
+            ["adb", "-s", f"{udid}", "push", f"{source}", f"{destination}"]
+            if udid
+            else ["adb", "push", f"{source}", f"{destination}"]
+        )
         try:
             subprocess.run(command, check=True)  # noqa: S603
             logger.info("%s > True", get_current_func_name())
@@ -157,7 +150,11 @@ class Adb:
 
         """
         logger.info("%s < source=%s, destination=%s", get_current_func_name(), source, destination)
-        command = ["adb", "-s", f"{udid}", "pull", f"{source}", f"{destination}"] if udid else ["adb", "pull", f"{source}", f"{destination}"]
+        command = (
+            ["adb", "-s", f"{udid}", "pull", f"{source}", f"{destination}"]
+            if udid
+            else ["adb", "pull", f"{source}", f"{destination}"]
+        )
         try:
             subprocess.run(command, check=True)  # noqa: S603
             logger.info("%s > True", get_current_func_name())
@@ -183,7 +180,11 @@ class Adb:
 
         """
         logger.info("install() < source=%s", source)
-        command = ["adb", "-s", f"{udid}", "install", "-r", f"{source}"] if udid else ["adb", "install", f"{source}"]
+        command = (
+            ["adb", "-s", f"{udid}", "install", "-r", f"{source}"]
+            if udid
+            else ["adb", "install", f"{source}"]
+        )
         try:
             subprocess.run(command, check=True)  # noqa: S603
             logger.info("install() > True")
@@ -585,9 +586,13 @@ class Adb:
             return True
 
     @staticmethod
-    def swipe(start_x: str | int, start_y: str | int,
-              end_x: str | int, end_y: str | int,
-              duration: int = 300) -> bool:
+    def swipe(
+        start_x: str | int,
+        start_y: str | int,
+        end_x: str | int,
+        end_y: str | int,
+        duration: int = 300,
+    ) -> bool:
         """Simulate a swipe gesture from the starting coordinates to the ending coordinates on the device using ADB.
 
         Args:
@@ -607,10 +612,27 @@ class Adb:
                 True if the swipe was successfully executed, False otherwise.
 
         """
-        logger.info("swipe() < start_x=%s, start_y=%s, end_x=%s, end_y=%s, duration=%s", start_x, start_y, end_x, end_y, duration)
+        logger.info(
+            "swipe() < start_x=%s, start_y=%s, end_x=%s, end_y=%s, duration=%s",
+            start_x,
+            start_y,
+            end_x,
+            end_y,
+            duration,
+        )
 
         # Form command for swipe using ADB
-        command = ["adb", "shell", "input", "swipe", str(start_x), str(start_y), str(end_x), str(end_y), str(duration)]
+        command = [
+            "adb",
+            "shell",
+            "input",
+            "swipe",
+            str(start_x),
+            str(start_y),
+            str(end_x),
+            str(end_y),
+            str(duration),
+        ]
         try:
             # Execute command
             subprocess.run(command, check=True)  # noqa: S603
@@ -970,8 +992,9 @@ class Adb:
         return True
 
     @staticmethod
-    def record_video(path: str = "sdcard/Movies/", filename: str = "screenrecord.mp4") -> subprocess.Popen[
-                                                                                              bytes] | None:
+    def record_video(
+        path: str = "sdcard/Movies/", filename: str = "screenrecord.mp4",
+    ) -> subprocess.Popen[bytes] | None:
         """Start recording a video on the device using ADB.
 
         Args:
@@ -999,7 +1022,9 @@ class Adb:
             return None
 
     @staticmethod
-    def start_record_video(path: str = "sdcard/Movies/", filename: str = "screenrecord.mp4") -> bool:
+    def start_record_video(
+        path: str = "sdcard/Movies/", filename: str = "screenrecord.mp4",
+    ) -> bool:
         """Start recording a video on the device using ADB.
 
         Args:

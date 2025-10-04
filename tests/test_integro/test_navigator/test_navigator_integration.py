@@ -1,3 +1,5 @@
+# ruff: noqa
+# pyright: ignore
 """Integration tests for the navigator module.
 
 This module contains integration tests for the PageNavigator and PageGraph classes,

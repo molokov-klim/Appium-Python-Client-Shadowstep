@@ -117,19 +117,19 @@ class ShadowstepBase:
     def __init__(self) -> None:
         """Initialize the ShadowstepBase instance."""
         self.logger: logging.Logger = logger
-        self.driver: WebDriver | None = None
-        self.server_ip: str | None = None
-        self.server_port: int | None = None
-        self.capabilities: dict[str, Any] | None = None
-        self.options: UiAutomator2Options | None = None
-        self.extensions: list[WebDriver] | None = None
-        self.ssh_password: str | None = None
-        self.ssh_user: str | None = None
+        self.driver: WebDriver = None
+        self.server_ip: str = None
+        self.server_port: int = None
+        self.capabilities: dict[str, Any] = None
+        self.options: UiAutomator2Options = None
+        self.extensions: list[WebDriver] = None
+        self.ssh_password: str = None
+        self.ssh_user: str = None
         self.ssh_port: int = 22
-        self.command_executor: str | None = None
-        self.transport: Transport | None = None
-        self.terminal: Terminal | None = None
-        self.adb: Adb | None = None
+        self.command_executor: str = None
+        self.transport: Transport = None
+        self.terminal: Terminal = None
+        self.adb: Adb = None
         self._ignored_auto_discover_dirs: set[str] = {
             "__pycache__", ".venv", "venv", "site-packages", "dist-packages", ".git",
             "build", "dist", ".idea", ".pytest_cache", "results",
@@ -140,7 +140,7 @@ class ShadowstepBase:
                 capabilities: dict[str, Any],
                 server_ip: str = "127.0.0.1",
                 server_port: int = 4723,
-                options: (AppiumOptions | list[AppiumOptions]) | None = None,
+                options: (AppiumOptions | list[AppiumOptions]) | UiAutomator2Options | None = None,
                 extensions: list[WebDriver] | None = None,
                 ssh_user: str | None = None,
                 ssh_password: str | None = None,
@@ -198,8 +198,8 @@ class ShadowstepBase:
                                        port=self.ssh_port,
                                        user=self.ssh_user,
                                        password=self.ssh_password)
-        self.terminal = Terminal(base=self)
-        self.adb = Adb(base=self)
+        self.terminal = Terminal()
+        self.adb = Adb()
 
     def disconnect(self) -> None:
         """Disconnect from the device using the Appium server.

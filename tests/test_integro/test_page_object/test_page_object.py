@@ -1,3 +1,5 @@
+# ruff: noqa
+# pyright: ignore
 """
 Integration tests for shadowstep.page_object modules.
 

@@ -1,3 +1,5 @@
+# ruff: noqa
+# pyright: ignore
 from typing import Any
 
 from shadowstep.shadowstep import Shadowstep

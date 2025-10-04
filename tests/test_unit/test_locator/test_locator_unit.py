@@ -1,3 +1,5 @@
+# ruff: noqa
+# pyright: ignore
 """Tests for the locator module.
 
 This module contains comprehensive tests for the locator conversion functionality,

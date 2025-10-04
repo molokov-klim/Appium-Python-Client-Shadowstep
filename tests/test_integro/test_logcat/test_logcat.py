@@ -1,3 +1,5 @@
+# ruff: noqa
+# pyright: ignore
 import threading
 import time
 from pathlib import Path
