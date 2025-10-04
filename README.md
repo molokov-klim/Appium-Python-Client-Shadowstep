@@ -75,6 +75,14 @@ application.connect(server_ip='127.0.0.1', server_port=4723, capabilities=capabi
 - You may pass `command_executor` directly (e.g., `http://127.0.0.1:4723/wd/hub`), then `server_ip/port` are optional.
 - If you pass `capabilities` as a `dict`, they will be converted into `UiAutomator2Options` internally.
 
+
+```python
+from shadowstep.shadowstep import Shadowstep
+
+shadowstep = Shadowstep.get_instance()
+```
+Shadowstep is singletone, if you already create instance you can get it from every place
+
 ---
 
 ## Test Setup (Pytest)

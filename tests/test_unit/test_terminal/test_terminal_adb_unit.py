@@ -17,25 +17,16 @@ class TestAdb:
 
     def setup_method(self):
         """Set up test fixtures."""
-        self.mock_base = Mock()
-        self.mock_driver = Mock()
-        self.mock_base.driver = self.mock_driver
-        self.adb = Adb(self.mock_base)
+        self.adb = Adb()
 
     @pytest.mark.unit
     def test_init(self):
         """Test Adb initialization."""
-        # Arrange
-        mock_base = Mock()
-        mock_driver = Mock()
-        mock_base.driver = mock_driver
-
         # Act
-        adb = Adb(mock_base)
+        adb = Adb()
 
         # Assert
-        assert adb.base == mock_base  # noqa: S101
-        assert adb.driver == mock_driver  # noqa: S101
+        assert adb is not None  # noqa: S101
 
     @pytest.mark.unit
     def test_get_devices_success(self):
@@ -86,7 +77,7 @@ class TestAdb:
 
         with patch("subprocess.check_output", return_value=mock_output) as mock_subprocess:
             # Act
-            result = self.adb.get_device_model(udid)
+            result = Adb.get_device_model(udid)
 
             # Assert
             assert result == expected_model  # noqa: S101
@@ -101,7 +92,7 @@ class TestAdb:
 
         with patch("subprocess.check_output", return_value=mock_output) as mock_subprocess:
             # Act
-            result = self.adb.get_device_model("")
+            result = Adb.get_device_model("")
 
             # Assert
             assert result == expected_model  # noqa: S101
@@ -115,7 +106,7 @@ class TestAdb:
 
         with patch("subprocess.check_output", side_effect=subprocess.CalledProcessError(1, "adb")):
             # Act
-            result = self.adb.get_device_model(udid)
+            result = Adb.get_device_model(udid)
 
             # Assert
             assert result == ""  # noqa: S101
@@ -180,7 +171,7 @@ class TestAdb:
 
         with patch("subprocess.run") as mock_subprocess:
             # Act
-            result = self.adb.pull(source, destination, udid)
+            result = Adb.pull(source, destination, udid)
 
             # Assert
             assert result is True  # noqa: S101
@@ -197,7 +188,7 @@ class TestAdb:
 
         with patch("subprocess.run") as mock_subprocess:
             # Act
-            result = self.adb.pull(source, destination, "")
+            result = Adb.pull(source, destination, "")
 
             # Assert
             assert result is True  # noqa: S101
@@ -215,7 +206,7 @@ class TestAdb:
 
         with patch("subprocess.run", side_effect=subprocess.CalledProcessError(1, "adb")):
             # Act
-            result = self.adb.pull(source, destination, udid)
+            result = Adb.pull(source, destination, udid)
 
             # Assert
             assert result is False  # noqa: S101
@@ -276,7 +267,7 @@ class TestAdb:
 
         with patch("subprocess.check_output", return_value=mock_output.encode()) as mock_subprocess:
             # Act
-            result = self.adb.is_app_installed(package)
+            result = Adb.is_app_installed(package)
 
             # Assert
             assert result is True  # noqa: S101
@@ -291,7 +282,7 @@ class TestAdb:
 
         with patch("subprocess.check_output", return_value=mock_output.encode()):
             # Act
-            result = self.adb.is_app_installed(package)
+            result = Adb.is_app_installed(package)
 
             # Assert
             assert result is False  # noqa: S101
@@ -304,7 +295,7 @@ class TestAdb:
 
         with patch("subprocess.check_output", side_effect=subprocess.CalledProcessError(1, "adb")):
             # Act
-            result = self.adb.is_app_installed(package)
+            result = Adb.is_app_installed(package)
 
             # Assert
             assert result is False  # noqa: S101
@@ -317,7 +308,7 @@ class TestAdb:
 
         with patch("subprocess.run") as mock_subprocess:
             # Act
-            result = self.adb.uninstall_app(package)
+            result = Adb.uninstall_app(package)
 
             # Assert
             assert result is True  # noqa: S101
@@ -333,7 +324,7 @@ class TestAdb:
 
         with patch("subprocess.run", side_effect=subprocess.CalledProcessError(1, "adb")):
             # Act
-            result = self.adb.uninstall_app(package)
+            result = Adb.uninstall_app(package)
 
             # Assert
             assert result is False  # noqa: S101
@@ -347,7 +338,7 @@ class TestAdb:
 
         with patch("subprocess.check_output") as mock_subprocess:
             # Act
-            result = self.adb.start_activity(package, activity)
+            result = Adb.start_activity(package, activity)
 
             # Assert
             assert result is True  # noqa: S101
@@ -364,7 +355,7 @@ class TestAdb:
 
         with patch("subprocess.check_output", side_effect=subprocess.CalledProcessError(1, "adb")):
             # Act
-            result = self.adb.start_activity(package, activity)
+            result = Adb.start_activity(package, activity)
 
             # Assert
             assert result is False  # noqa: S101
@@ -377,7 +368,7 @@ class TestAdb:
 
         with patch("subprocess.run") as mock_subprocess:
             # Act
-            result = self.adb.close_app(package)
+            result = Adb.close_app(package)
 
             # Assert
             assert result is True  # noqa: S101
@@ -393,7 +384,7 @@ class TestAdb:
 
         with patch("subprocess.run", side_effect=subprocess.CalledProcessError(1, "adb")):
             # Act
-            result = self.adb.close_app(package)
+            result = Adb.close_app(package)
 
             # Assert
             assert result is False  # noqa: S101
@@ -403,7 +394,7 @@ class TestAdb:
         """Test successful home button press."""
         with patch("subprocess.run") as mock_subprocess:
             # Act
-            result = self.adb.press_home()
+            result = Adb.press_home()
 
             # Assert
             assert result is True  # noqa: S101
@@ -416,7 +407,7 @@ class TestAdb:
         """Test successful back button press."""
         with patch("subprocess.run") as mock_subprocess:
             # Act
-            result = self.adb.press_back()
+            result = Adb.press_back()
 
             # Assert
             assert result is True  # noqa: S101
@@ -429,7 +420,7 @@ class TestAdb:
         """Test successful menu button press."""
         with patch("subprocess.run") as mock_subprocess:
             # Act
-            result = self.adb.press_menu()
+            result = Adb.press_menu()
 
             # Assert
             assert result is True  # noqa: S101
@@ -445,7 +436,7 @@ class TestAdb:
 
         with patch("subprocess.run") as mock_subprocess:
             # Act
-            result = self.adb.tap(x, y)
+            result = Adb.tap(x, y)
 
             # Assert
             assert result is True  # noqa: S101
@@ -461,7 +452,7 @@ class TestAdb:
 
         with patch("subprocess.run", side_effect=subprocess.CalledProcessError(1, "adb")):
             # Act
-            result = self.adb.tap(x, y)
+            result = Adb.tap(x, y)
 
             # Assert
             assert result is False  # noqa: S101
@@ -475,7 +466,7 @@ class TestAdb:
 
         with patch("subprocess.run") as mock_subprocess:
             # Act
-            result = self.adb.swipe(x1, y1, x2, y2, duration)
+            result = Adb.swipe(x1, y1, x2, y2, duration)
 
             # Assert
             assert result is True  # noqa: S101
@@ -492,7 +483,7 @@ class TestAdb:
 
         with patch("subprocess.run", side_effect=subprocess.CalledProcessError(1, "adb")):
             # Act
-            result = self.adb.swipe(x1, y1, x2, y2, duration)
+            result = Adb.swipe(x1, y1, x2, y2, duration)
 
             # Assert
             assert result is False  # noqa: S101
@@ -505,7 +496,7 @@ class TestAdb:
 
         with patch("subprocess.run") as mock_subprocess:
             # Act
-            result = self.adb.input_text(text)
+            result = Adb.input_text(text)
 
             # Assert
             assert result is True  # noqa: S101
@@ -521,7 +512,7 @@ class TestAdb:
 
         with patch("subprocess.run", side_effect=subprocess.CalledProcessError(1, "adb")):
             # Act
-            result = self.adb.input_text(text)
+            result = Adb.input_text(text)
 
             # Assert
             assert result is False  # noqa: S101
@@ -531,7 +522,7 @@ class TestAdb:
         """Test successful device reboot."""
         with patch("subprocess.call") as mock_subprocess:
             # Act
-            result = self.adb.reboot()
+            result = Adb.reboot()
 
             # Assert
             assert result is True  # noqa: S101
@@ -542,7 +533,7 @@ class TestAdb:
         """Test device reboot with subprocess error."""
         with patch("subprocess.call", side_effect=subprocess.CalledProcessError(1, "adb")):
             # Act
-            result = self.adb.reboot()
+            result = Adb.reboot()
 
             # Assert
             assert result is False  # noqa: S101
@@ -555,7 +546,7 @@ class TestAdb:
 
         with patch("subprocess.check_output", return_value=mock_output.encode()) as mock_subprocess:
             # Act
-            result = self.adb.get_screen_resolution()
+            result = Adb.get_screen_resolution()
 
             # Assert
             assert result == (1080, 1920)  # noqa: S101
@@ -566,7 +557,7 @@ class TestAdb:
         """Test screen resolution retrieval with subprocess error."""
         with patch("subprocess.check_output", side_effect=subprocess.CalledProcessError(1, "adb")):
             # Act
-            result = self.adb.get_screen_resolution()
+            result = Adb.get_screen_resolution()
 
             # Assert
             assert result is None  # noqa: S101
@@ -579,7 +570,7 @@ class TestAdb:
 
         with patch("subprocess.check_output", return_value=mock_output.encode()):
             # Act
-            result = self.adb.get_screen_resolution()
+            result = Adb.get_screen_resolution()
 
             # Assert
             assert result is None  # noqa: S101

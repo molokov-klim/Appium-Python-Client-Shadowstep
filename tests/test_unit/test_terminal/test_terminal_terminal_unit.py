@@ -50,35 +50,37 @@ class TestTerminal:
 
     def setup_method(self):
         """Set up test fixtures."""
-        self.mock_base = Mock()
+        self.mock_shadowstep = Mock()
         self.mock_driver = Mock()
         self.mock_transport = Mock()
         self.mock_ssh = Mock()
         self.mock_scp = Mock()
 
-        self.mock_base.driver = self.mock_driver
-        self.mock_base.transport = self.mock_transport
+        self.mock_shadowstep.driver = self.mock_driver
+        self.mock_shadowstep.transport = self.mock_transport
         self.mock_transport.ssh = self.mock_ssh
         self.mock_transport.scp = self.mock_scp
 
-        self.terminal = Terminal(self.mock_base)
+        with patch('shadowstep.shadowstep.Shadowstep.get_instance', return_value=self.mock_shadowstep):
+            self.terminal = Terminal()
 
     @pytest.mark.unit
     def test_init(self):
         """Test Terminal initialization."""
         # Arrange
-        mock_base = Mock()
+        mock_shadowstep = Mock()
         mock_driver = Mock()
         mock_transport = Mock()
 
-        mock_base.driver = mock_driver
-        mock_base.transport = mock_transport
+        mock_shadowstep.driver = mock_driver
+        mock_shadowstep.transport = mock_transport
 
         # Act
-        terminal = Terminal(mock_base)
+        with patch('shadowstep.shadowstep.Shadowstep.get_instance', return_value=mock_shadowstep):
+            terminal = Terminal()
 
         # Assert
-        assert terminal.base == mock_base  # noqa: S101
+        assert terminal.shadowstep == mock_shadowstep  # noqa: S101
         assert terminal.driver == mock_driver  # noqa: S101
         assert terminal.transport == mock_transport  # noqa: S101
 
@@ -136,13 +138,13 @@ class TestTerminal:
         args = ""
 
         self.mock_driver.execute_script.side_effect = NoSuchDriverException("Driver not found")
-        self.mock_base.reconnect = Mock()
+        self.mock_shadowstep.reconnect = Mock()
 
         with pytest.raises(AdbShellError) as exc_info:
             self.terminal.adb_shell(command, args, tries=1)
 
         assert "adb_shell failed" in str(exc_info.value)  # noqa: S101
-        self.mock_base.reconnect.assert_called_once()
+        self.mock_shadowstep.reconnect.assert_called_once()
 
     @pytest.mark.unit
     def test_adb_shell_invalid_session_exception(self):
@@ -152,13 +154,13 @@ class TestTerminal:
         args = ""
 
         self.mock_driver.execute_script.side_effect = InvalidSessionIdException("Invalid session")
-        self.mock_base.reconnect = Mock()
+        self.mock_shadowstep.reconnect = Mock()
 
         with pytest.raises(AdbShellError) as exc_info:
             self.terminal.adb_shell(command, args, tries=1)
 
         assert "adb_shell failed" in str(exc_info.value)  # noqa: S101
-        self.mock_base.reconnect.assert_called_once()
+        self.mock_shadowstep.reconnect.assert_called_once()
 
     @pytest.mark.unit
     def test_adb_shell_key_error(self):
@@ -172,7 +174,7 @@ class TestTerminal:
             self.terminal.adb_shell(command, args, tries=1)
 
         assert "adb_shell failed" in str(exc_info.value)  # noqa: S101
-        self.mock_base.reconnect.assert_not_called()
+        self.mock_shadowstep.reconnect.assert_not_called()
 
     @pytest.mark.unit
     def test_adb_shell_multiple_tries(self):
@@ -187,7 +189,7 @@ class TestTerminal:
             NoSuchDriverException("Driver not found"),
             expected_result,
         ]
-        self.mock_base.reconnect = Mock()
+        self.mock_shadowstep.reconnect = Mock()
 
         # Act
         result = self.terminal.adb_shell(command, args, tries=2)
@@ -195,7 +197,7 @@ class TestTerminal:
         # Assert
         assert result == expected_result  # noqa: S101
         assert self.mock_driver.execute_script.call_count == 2  # noqa: S101
-        self.mock_base.reconnect.assert_called_once()
+        self.mock_shadowstep.reconnect.assert_called_once()
 
     @pytest.mark.unit
     def test_push_success(self):
@@ -331,7 +333,7 @@ class TestTerminal:
         destination = "/local/path/file.txt"
 
         # Mock the extension assertion to raise exception
-        self.mock_base.reconnect = Mock()
+        self.mock_shadowstep.reconnect = Mock()
         self.mock_driver.assert_extension_exists = Mock(
             side_effect=NoSuchDriverException("Driver not found")
         )
@@ -341,7 +343,7 @@ class TestTerminal:
 
         # Assert
         assert result is False  # noqa: S101
-        self.mock_base.reconnect.assert_called_once()
+        self.mock_shadowstep.reconnect.assert_called_once()
 
     @pytest.mark.unit
     def test_tap_success(self):
@@ -867,13 +869,13 @@ class TestTerminal:
         package = "com.example.app"
 
         with patch.object(self.terminal.driver, "remove_app", side_effect=NoSuchDriverException("Driver not found")):
-            self.terminal.base.reconnect = Mock()
+            self.terminal.shadowstep.reconnect = Mock()
             # Act
             result = self.terminal.uninstall_app(package)
 
             # Assert
             assert result is False  # noqa: S101
-            self.terminal.base.reconnect.assert_called_once()
+            self.terminal.shadowstep.reconnect.assert_called_once()
 
     @pytest.mark.unit
     def test_input_keycode_num_success(self):
@@ -1338,12 +1340,12 @@ class TestTerminal:
         text = "Hello World"
 
         with patch.object(self.terminal.driver, "set_clipboard_text", side_effect=NoSuchDriverException("Driver not found")):
-            self.terminal.base.reconnect = Mock()
+            self.terminal.shadowstep.reconnect = Mock()
             # Act
             self.terminal.past_text(text, tries=1)
 
             # Assert
-            self.terminal.base.reconnect.assert_called_once()
+            self.terminal.shadowstep.reconnect.assert_called_once()
 
     @pytest.mark.unit
     def test_get_prop_hardware_success(self):

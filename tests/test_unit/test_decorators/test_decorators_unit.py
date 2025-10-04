@@ -576,31 +576,41 @@ class TestStepInfo:
     def test_step_info_success(self) -> None:
         """Test step_info decorator with successful execution."""
         mock_obj = MockClass()
-        mock_obj.shadowstep.get_screenshot.return_value = b"screenshot_data"
+        mock_shadowstep = Mock()
+        mock_shadowstep.get_screenshot.return_value = b"screenshot_data"
+        mock_shadowstep.driver = Mock()
+        mock_shadowstep.driver.start_recording_screen.return_value = None
+        mock_shadowstep.driver.stop_recording_screen.return_value = b"video_data"
 
-        @step_info("Test step")
-        def test_method(self: MockClass) -> str:
-            return "success"
+        with patch('shadowstep.shadowstep.Shadowstep.get_instance', return_value=mock_shadowstep):
+            @step_info("Test step")
+            def test_method(self: MockClass) -> str:
+                return "success"
 
-        result = test_method(mock_obj)
-        assert result == "success"  # noqa: S101
+            result = test_method(mock_obj)
+            assert result == "success"  # noqa: S101
 
         # Check that logging was called
         mock_obj.logger.info.assert_called()
-        mock_obj.shadowstep.get_screenshot.assert_called()
+        mock_shadowstep.get_screenshot.assert_called()
 
     @pytest.mark.unit
     def test_step_info_with_exception(self) -> None:
         """Test step_info decorator with exception."""
         mock_obj = MockClass()
-        mock_obj.shadowstep.get_screenshot.return_value = b"screenshot_data"
+        mock_shadowstep = Mock()
+        mock_shadowstep.get_screenshot.return_value = b"screenshot_data"
+        mock_shadowstep.driver = Mock()
+        mock_shadowstep.driver.start_recording_screen.return_value = None
+        mock_shadowstep.driver.stop_recording_screen.return_value = b"video_data"
 
-        @step_info("Test step")
-        def test_method(self: MockClass) -> str:
-            raise ValueError("Test error")
+        with patch('shadowstep.shadowstep.Shadowstep.get_instance', return_value=mock_shadowstep):
+            @step_info("Test step")
+            def test_method(self: MockClass) -> str:
+                raise ValueError("Test error")
 
-        result = test_method(mock_obj)
-        assert result is False  # noqa: S101
+            result = test_method(mock_obj)
+            assert result is False  # noqa: S101
 
         # Check that error logging was called
         mock_obj.logger.error.assert_called()
@@ -609,35 +619,41 @@ class TestStepInfo:
     def test_step_info_screen_recording(self) -> None:
         """Test step_info decorator with screen recording."""
         mock_obj = MockClass()
-        mock_obj.shadowstep.get_screenshot.return_value = b"screenshot_data"
-        mock_obj.driver.start_recording_screen.return_value = None
-        mock_obj.driver.stop_recording_screen.return_value = b"video_data"
+        mock_shadowstep = Mock()
+        mock_shadowstep.get_screenshot.return_value = b"screenshot_data"
+        mock_shadowstep.driver = Mock()
+        mock_shadowstep.driver.start_recording_screen.return_value = None
+        mock_shadowstep.driver.stop_recording_screen.return_value = b"video_data"
 
-        @step_info("Test step")
-        def test_method(self: MockClass) -> str:
-            return "success"
+        with patch('shadowstep.shadowstep.Shadowstep.get_instance', return_value=mock_shadowstep):
+            @step_info("Test step")
+            def test_method(self: MockClass) -> str:
+                return "success"
 
-        result = test_method(mock_obj)
-        assert result == "success"  # noqa: S101
+            result = test_method(mock_obj)
+            assert result == "success"  # noqa: S101
 
         # Check that screen recording was started
-        mock_obj.driver.start_recording_screen.assert_called_once()
+        mock_shadowstep.driver.start_recording_screen.assert_called_once()
         # Note: stop_recording_screen is only called on exception, not on success
 
     @pytest.mark.unit
     def test_step_info_video_recording_error(self) -> None:
         """Test step_info decorator with video recording error."""
         mock_obj = MockClass()
-        mock_obj.shadowstep.get_screenshot.return_value = b"screenshot_data"
-        mock_obj.driver.start_recording_screen.return_value = None
-        mock_obj.driver.stop_recording_screen.side_effect = Exception("Video recording error")
+        mock_shadowstep = Mock()
+        mock_shadowstep.get_screenshot.return_value = b"screenshot_data"
+        mock_shadowstep.driver = Mock()
+        mock_shadowstep.driver.start_recording_screen.return_value = None
+        mock_shadowstep.driver.stop_recording_screen.side_effect = Exception("Video recording error")
 
-        @step_info("Test step")
-        def test_method(self: MockClass) -> str:
-            raise ValueError("Test error")
+        with patch('shadowstep.shadowstep.Shadowstep.get_instance', return_value=mock_shadowstep):
+            @step_info("Test step")
+            def test_method(self: MockClass) -> str:
+                raise ValueError("Test error")
 
-        result = test_method(mock_obj)
-        assert result is False  # noqa: S101
+            result = test_method(mock_obj)
+            assert result is False  # noqa: S101
 
         # Check that error logging was called
         mock_obj.logger.error.assert_called()
@@ -649,15 +665,19 @@ class TestStepInfo:
     def test_step_info_screen_recording_start_error(self) -> None:
         """Test step_info decorator with screen recording start error."""
         mock_obj = MockClass()
-        mock_obj.shadowstep.get_screenshot.return_value = b"screenshot_data"
-        mock_obj.driver.start_recording_screen.side_effect = Exception("Recording start error")
+        mock_shadowstep = Mock()
+        mock_shadowstep.get_screenshot.return_value = b"screenshot_data"
+        mock_shadowstep.driver = Mock()
+        mock_shadowstep.driver.start_recording_screen.side_effect = Exception("Recording start error")
+        mock_shadowstep.driver.stop_recording_screen.return_value = b"video_data"
 
-        @step_info("Test step")
-        def test_method(self: MockClass) -> str:
-            return "success"
+        with patch('shadowstep.shadowstep.Shadowstep.get_instance', return_value=mock_shadowstep):
+            @step_info("Test step")
+            def test_method(self: MockClass) -> str:
+                return "success"
 
-        result = test_method(mock_obj)
-        assert result == "success"  # noqa: S101
+            result = test_method(mock_obj)
+            assert result == "success"  # noqa: S101
 
         # Check that error logging was called for recording start error
         mock_obj.logger.error.assert_called()
