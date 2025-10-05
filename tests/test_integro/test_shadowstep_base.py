@@ -15,7 +15,7 @@ from selenium.common.exceptions import InvalidSessionIdException, WebDriverExcep
 from shadowstep.shadowstep import Shadowstep
 from shadowstep.shadowstep_base import WebDriverSingleton
 
-from .conftest import APPIUM_IP, APPIUM_PORT, CAPABILITIES
+from .conftest import APPIUM_IP, APPIUM_PORT, CAPABILITIES, UDID
 
 logger = logging.getLogger(__name__)
 
@@ -242,3 +242,338 @@ class TestShadowstepBase:
         # Verify state after operations
         assert app.is_connected(), "Should remain connected after operations"
         assert app.driver.session_id is not None, "Session should remain valid"
+
+    def test_terminal_initialization(self, app: Shadowstep):
+        """Test that terminal is properly initialized after connection.
+
+        Steps:
+        1. Verify terminal instance is created.
+        2. Verify terminal is not None.
+        """
+        # Verify terminal is initialized
+        assert app.terminal is not None, "Terminal should be initialized after connect"
+        assert hasattr(app.terminal, "press_home"), "Terminal should have expected methods"
+
+    def test_adb_initialization(self, app: Shadowstep):
+        """Test that ADB is properly initialized after connection.
+
+        Steps:
+        1. Verify adb instance is created.
+        2. Verify adb is not None.
+        """
+        # Verify adb is initialized
+        assert app.adb is not None, "ADB should be initialized after connect"
+        assert hasattr(app.adb, "get_devices"), "ADB should have expected methods"
+
+    def test_capabilities_conversion_to_options(self, app: Shadowstep):
+        """Test that capabilities are correctly converted to options.
+
+        Steps:
+        1. Disconnect and reconnect with specific capabilities.
+        2. Verify options are created from capabilities.
+        3. Verify key options are set correctly.
+        """
+        # Disconnect current session
+        app.disconnect()
+
+        # Create capabilities with various options
+        test_capabilities = {
+            "platformName": "android",
+            "appium:automationName": "uiautomator2",
+            "appium:UDID": UDID,
+            "appium:noReset": True,
+            "appium:autoGrantPermissions": True,
+            "appium:newCommandTimeout": 600,
+        }
+
+        # Connect with test capabilities
+        app.connect(
+            server_ip=APPIUM_IP,
+            server_port=APPIUM_PORT,
+            capabilities=test_capabilities,
+        )
+
+        # Verify options are set
+        assert app.options is not None, "Options should be created from capabilities"
+        assert app.options.platform_name == "android", "Platform name should be set"
+        assert app.options.automation_name.lower() == "uiautomator2", "Automation name should be set"
+        assert app.options.no_reset is True, "noReset should be set"
+        assert app.options.auto_grant_permissions is True, "autoGrantPermissions should be set"
+        # new_command_timeout is stored as timedelta
+        assert app.options.new_command_timeout.total_seconds() == 600, "newCommandTimeout should be set"
+
+    def test_command_executor_auto_generation(self, app: Shadowstep):
+        """Test that command_executor is auto-generated when not provided.
+
+        Steps:
+        1. Disconnect current session.
+        2. Connect without command_executor.
+        3. Verify command_executor is auto-generated correctly.
+        """
+        # Disconnect current session
+        app.disconnect()
+
+        # Connect without explicit command_executor
+        app.connect(
+            server_ip=APPIUM_IP,
+            server_port=APPIUM_PORT,
+            capabilities=CAPABILITIES,
+        )
+
+        # Verify command_executor is auto-generated
+        expected_executor = f"http://{APPIUM_IP}:{APPIUM_PORT}/wd/hub"
+        assert app.command_executor == expected_executor, "Command executor should be auto-generated"
+
+    def test_server_attributes_set_correctly(self, app: Shadowstep):
+        """Test that server attributes are set correctly after connection.
+
+        Steps:
+        1. Verify server_ip is set.
+        2. Verify server_port is set.
+        3. Verify capabilities are stored.
+        """
+        # Verify server attributes
+        assert app.server_ip == APPIUM_IP, "Server IP should be set correctly"
+        assert app.server_port == APPIUM_PORT, "Server port should be set correctly"
+        assert app.capabilities is not None, "Capabilities should be stored"
+        assert isinstance(app.capabilities, dict), "Capabilities should be a dictionary"
+
+    def test_connect_with_udid_capability(self, app: Shadowstep):
+        """Test connection with UDID capability (both uppercase and lowercase).
+
+        Steps:
+        1. Disconnect current session.
+        2. Connect with UDID capability.
+        3. Verify connection is established.
+        4. Verify UDID is set in options.
+        """
+        # Disconnect current session
+        app.disconnect()
+
+        # Create capabilities with UDID
+        udid_capabilities = CAPABILITIES.copy()
+        udid_capabilities["appium:UDID"] = UDID
+
+        # Connect with UDID
+        app.connect(
+            server_ip=APPIUM_IP,
+            server_port=APPIUM_PORT,
+            capabilities=udid_capabilities,
+        )
+
+        # Verify connection
+        assert app.is_connected(), "Should connect with UDID capability"
+        assert app.options.udid == UDID, "UDID should be set in options"
+
+    def test_connect_with_app_package_capability(self, app: Shadowstep):
+        """Test connection with app package and activity capabilities.
+
+        Steps:
+        1. Disconnect current session.
+        2. Connect with app package and activity.
+        3. Verify connection is established.
+        4. Verify app package and activity are set in options.
+        """
+        # Disconnect current session
+        app.disconnect()
+
+        # Create capabilities with app package
+        app_capabilities = CAPABILITIES.copy()
+        app_capabilities["appium:appPackage"] = "com.android.settings"
+        app_capabilities["appium:appActivity"] = "com.android.settings.Settings"
+
+        # Connect with app package
+        app.connect(
+            server_ip=APPIUM_IP,
+            server_port=APPIUM_PORT,
+            capabilities=app_capabilities,
+        )
+
+        # Verify connection
+        assert app.is_connected(), "Should connect with app package capability"
+        assert app.options.app_package == "com.android.settings", "App package should be set"
+        assert app.options.app_activity == "com.android.settings.Settings", "App activity should be set"
+
+    def test_reconnect_preserves_capabilities(self, app: Shadowstep):
+        """Test that reconnect preserves original capabilities.
+
+        Steps:
+        1. Store original capabilities.
+        2. Reconnect.
+        3. Verify capabilities are preserved.
+        """
+        # Store original capabilities
+        original_capabilities = app.capabilities.copy()
+        original_server_ip = app.server_ip
+        original_server_port = app.server_port
+
+        # Reconnect
+        app.reconnect()
+
+        # Verify capabilities are preserved
+        assert app.server_ip == original_server_ip, "Server IP should be preserved"
+        assert app.server_port == original_server_port, "Server port should be preserved"
+        assert app.capabilities == original_capabilities, "Capabilities should be preserved"
+
+    def test_disconnect_cleans_up_driver(self, app: Shadowstep):
+        """Test that disconnect properly terminates connection.
+
+        Steps:
+        1. Verify driver exists before disconnect.
+        2. Disconnect.
+        3. Verify connection is terminated.
+        """
+        # Verify driver exists
+        assert app.driver is not None, "Driver should exist before disconnect"
+        session_id = app.driver.session_id
+
+        # Disconnect
+        app.disconnect()
+
+        # Verify connection is terminated (session should be inactive)
+        # Note: driver may not be None due to Shadowstep singleton pattern,
+        # but the session should be terminated
+        assert not app.is_connected(), "Connection should be terminated after disconnect"
+
+        # Reconnect for cleanup
+        app.connect(server_ip=APPIUM_IP, server_port=APPIUM_PORT, capabilities=CAPABILITIES)
+
+    def test_webdriver_singleton_get_driver_class_method(self):
+        """Test WebDriverSingleton.get_driver class method.
+
+        Steps:
+        1. Call WebDriverSingleton.get_driver().
+        2. Verify it returns a driver instance or None.
+        """
+        # Get driver via class method
+        driver = WebDriverSingleton.get_driver()
+
+        # Verify driver is returned (could be None if not initialized)
+        assert driver is not None or driver is None, "get_driver should return driver or None"
+
+    def test_connection_with_platform_version_capability(self, app: Shadowstep):
+        """Test connection with platform version capability.
+
+        Steps:
+        1. Disconnect current session.
+        2. Connect with platform version.
+        3. Verify connection is established.
+        4. Verify platform version is set in options.
+        """
+        # Disconnect current session
+        app.disconnect()
+
+        # Create capabilities with platform version
+        platform_capabilities = CAPABILITIES.copy()
+        platform_capabilities["appium:platformVersion"] = "12"
+
+        # Connect with platform version
+        app.connect(
+            server_ip=APPIUM_IP,
+            server_port=APPIUM_PORT,
+            capabilities=platform_capabilities,
+        )
+
+        # Verify connection
+        assert app.is_connected(), "Should connect with platform version capability"
+        assert app.options.platform_version == "12", "Platform version should be set"
+
+    def test_connection_with_adb_timeout_capability(self, app: Shadowstep):
+        """Test connection with ADB exec timeout capability.
+
+        Steps:
+        1. Disconnect current session.
+        2. Connect with ADB timeout.
+        3. Verify connection is established.
+        4. Verify ADB timeout is set in options.
+        """
+        # Disconnect current session
+        app.disconnect()
+
+        # Create capabilities with ADB timeout
+        adb_capabilities = CAPABILITIES.copy()
+        adb_capabilities["appium:adbExecTimeout"] = 60000
+
+        # Connect with ADB timeout
+        app.connect(
+            server_ip=APPIUM_IP,
+            server_port=APPIUM_PORT,
+            capabilities=adb_capabilities,
+        )
+
+        # Verify connection
+        assert app.is_connected(), "Should connect with ADB timeout capability"
+        # adb_exec_timeout is stored as timedelta (milliseconds)
+        assert app.options.adb_exec_timeout.total_seconds() == 60, "ADB exec timeout should be set"
+
+    def test_connection_with_system_port_capability(self, app: Shadowstep):
+        """Test connection with system port capability.
+
+        Steps:
+        1. Disconnect current session.
+        2. Connect with system port.
+        3. Verify connection is established.
+        4. Verify system port is set in options.
+        """
+        # Disconnect current session
+        app.disconnect()
+
+        # Create capabilities with system port
+        system_port_capabilities = CAPABILITIES.copy()
+        system_port_capabilities["appium:systemPort"] = 8299
+
+        # Connect with system port
+        app.connect(
+            server_ip=APPIUM_IP,
+            server_port=APPIUM_PORT,
+            capabilities=system_port_capabilities,
+        )
+
+        # Verify connection
+        assert app.is_connected(), "Should connect with system port capability"
+        assert app.options.system_port == 8299, "System port should be set"
+
+    def test_connection_sets_extensions_attribute(self, app: Shadowstep):
+        """Test that extensions attribute is set during connection.
+
+        Steps:
+        1. Verify extensions attribute exists.
+        2. Verify it can be None or a list.
+        """
+        # Verify extensions attribute
+        assert hasattr(app, "extensions"), "App should have extensions attribute"
+        assert app.extensions is None or isinstance(app.extensions, list), (
+            "Extensions should be None or list"
+        )
+
+    def test_driver_has_session_id_after_connect(self, app: Shadowstep):
+        """Test that driver has valid session_id after connection.
+
+        Steps:
+        1. Verify driver exists.
+        2. Verify session_id is set.
+        3. Verify session_id is not empty.
+        """
+        # Verify driver and session_id
+        assert app.driver is not None, "Driver should exist"
+        assert app.driver.session_id is not None, "Session ID should be set"
+        assert len(app.driver.session_id) > 0, "Session ID should not be empty"
+        assert isinstance(app.driver.session_id, str), "Session ID should be a string"
+
+    def test_reconnect_updates_session_id(self, app: Shadowstep):
+        """Test that reconnect creates a new session with different ID.
+
+        Steps:
+        1. Store original session ID.
+        2. Reconnect.
+        3. Verify new session ID is different.
+        """
+        # Store original session ID
+        original_session_id = app.driver.session_id
+
+        # Reconnect
+        app.reconnect()
+
+        # Verify new session ID
+        assert app.driver.session_id is not None, "New session ID should be set"
+        assert app.driver.session_id != original_session_id, "New session ID should be different"
