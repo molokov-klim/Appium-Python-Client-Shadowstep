@@ -193,3 +193,26 @@ class TestShadowstep:
 
         # Verify False is returned and no exception was raised
         assert result is False  # noqa: S101
+
+    def test_tap_coordinates(self, app: Shadowstep, android_settings_open_close: None):
+        """Test tap() performs tap gesture at specified coordinates.
+
+        Steps:
+        1. Find an element on the Settings screen.
+        2. Get its coordinates.
+        3. Call tap() at those coordinates.
+        4. Verify the tap action completes without errors.
+        """
+        # Find a visible element
+        element = app.get_element({"text": "Settings"})
+
+        # Get element location
+        location = element.location
+        x = location["x"] + 10
+        y = location["y"] + 10
+
+        # Perform tap gesture
+        result = app.tap(x=x, y=y, duration=100)
+
+        # Verify tap returns self for chaining
+        assert result is app  # noqa: S101

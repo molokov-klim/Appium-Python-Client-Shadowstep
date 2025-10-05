@@ -167,9 +167,7 @@ class Terminal:
                 # If path not specified, save in current directory
                 destination = Path.cwd() / Path(source).name
 
-            file_contents_base64 = self.driver.assert_extension_exists(
-                "mobile: pullFile",
-            ).execute_script("mobile: pullFile", {"remotePath": source})
+            file_contents_base64 = self.driver.execute_script("mobile: pullFile", {"remotePath": source})
             if not file_contents_base64:
                 return False
             decoded_contents = base64.b64decode(file_contents_base64)
