@@ -24,7 +24,6 @@ from selenium.common import (
     WebDriverException,
 )
 from typing_extensions import Self
-from ui_automator.mobile_commands import MobileCommands
 
 from shadowstep.decorators.decorators import fail_safe
 from shadowstep.element.element import Element
@@ -34,6 +33,7 @@ from shadowstep.logcat.shadowstep_logcat import ShadowstepLogcat
 from shadowstep.navigator.navigator import PageNavigator
 from shadowstep.page_base import PageBaseShadowstep
 from shadowstep.shadowstep_base import ShadowstepBase, WebDriverSingleton
+from shadowstep.ui_automator.mobile_commands import MobileCommands
 from shadowstep.utils.utils import get_current_func_name
 
 if TYPE_CHECKING:
