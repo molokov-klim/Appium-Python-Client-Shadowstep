@@ -49,7 +49,7 @@ class MobileCommands:
             StaleElementReferenceException,
         ),
     )
-    def battery_info(self, params: dict[str, Any] | list[Any] | None = None) -> MobileCommands:
+    def battery_info(self, params: dict[str, Any] | list[Any] | None = None)-> Any:
         """Execute mobile: batteryInfo command.
 
         https://github.com/appium/appium-uiautomator2-driver/blob/master/docs/android-mobile-gestures.md#mobile-batteryinfo
@@ -62,8 +62,7 @@ class MobileCommands:
 
         """
         self.logger.debug("%s", get_current_func_name())
-        self._execute("mobile: batteryInfo", params)
-        return self
+        return self._execute("mobile: batteryInfo", params)
 
     @fail_safe(
         raise_exception=ShadowstepException,
@@ -73,7 +72,7 @@ class MobileCommands:
             StaleElementReferenceException,
         ),
     )
-    def device_info(self, params: dict[str, Any] | list[Any] | None = None) -> MobileCommands:
+    def device_info(self, params: dict[str, Any] | list[Any] | None = None)-> Any:
         """Execute mobile: deviceInfo command.
 
         https://github.com/appium/appium-uiautomator2-driver/blob/master/docs/android-mobile-gestures.md#mobile-deviceinfo
@@ -86,8 +85,7 @@ class MobileCommands:
 
         """
         self.logger.debug("%s", get_current_func_name())
-        self._execute("mobile: deviceInfo", params)
-        return self
+        return self._execute("mobile: deviceInfo", params)
 
     @fail_safe(
         raise_exception=ShadowstepException,
@@ -97,7 +95,7 @@ class MobileCommands:
             StaleElementReferenceException,
         ),
     )
-    def get_clipboard(self, params: dict[str, Any] | list[Any] | None = None) -> MobileCommands:
+    def get_clipboard(self, params: dict[str, Any] | list[Any] | None = None)-> Any:
         """Execute mobile: getClipboard command.
 
         https://github.com/appium/appium-uiautomator2-driver/blob/master/docs/android-mobile-gestures.md#mobile-getclipboard
@@ -110,8 +108,7 @@ class MobileCommands:
 
         """
         self.logger.debug("%s", get_current_func_name())
-        self._execute("mobile: getClipboard", params)
-        return self
+        return self._execute("mobile: getClipboard", params)
 
     @fail_safe(
         raise_exception=ShadowstepException,
@@ -124,7 +121,7 @@ class MobileCommands:
     def get_current_activity(
         self,
         params: dict[str, Any] | list[Any] | None = None,
-    ) -> MobileCommands:
+    )-> Any:
         """Execute mobile: getCurrentActivity command.
 
         https://github.com/appium/appium-uiautomator2-driver/blob/master/docs/android-mobile-gestures.md#mobile-getcurrentactivity
@@ -137,8 +134,7 @@ class MobileCommands:
 
         """
         self.logger.debug("%s", get_current_func_name())
-        self._execute("mobile: getCurrentActivity", params)
-        return self
+        return self._execute("mobile: getCurrentActivity", params)
 
     @fail_safe(
         raise_exception=ShadowstepException,
@@ -151,7 +147,7 @@ class MobileCommands:
     def get_current_package(
         self,
         params: dict[str, Any] | list[Any] | None = None,
-    ) -> MobileCommands:
+    )-> Any:
         """Execute mobile: getCurrentPackage command.
 
         https://github.com/appium/appium-uiautomator2-driver/blob/master/docs/android-mobile-gestures.md#mobile-getcurrentpackage
@@ -164,8 +160,7 @@ class MobileCommands:
 
         """
         self.logger.debug("%s", get_current_func_name())
-        self._execute("mobile: getCurrentPackage", params)
-        return self
+        return self._execute("mobile: getCurrentPackage", params)
 
     @fail_safe(
         raise_exception=ShadowstepException,
@@ -175,7 +170,7 @@ class MobileCommands:
             StaleElementReferenceException,
         ),
     )
-    def get_device_time(self, params: dict[str, Any] | list[Any] | None = None) -> MobileCommands:
+    def get_device_time(self, params: dict[str, Any] | list[Any] | None = None)-> Any:
         """Execute mobile: getDeviceTime command.
 
         https://github.com/appium/appium-uiautomator2-driver/blob/master/docs/android-mobile-gestures.md#mobile-getdevicetime
@@ -188,8 +183,7 @@ class MobileCommands:
 
         """
         self.logger.debug("%s", get_current_func_name())
-        self._execute("mobile: getDeviceTime", params)
-        return self
+        return self._execute("mobile: getDeviceTime", params)
 
     @fail_safe(
         raise_exception=ShadowstepException,
@@ -202,7 +196,7 @@ class MobileCommands:
     def get_performance_data(
         self,
         params: dict[str, Any] | list[Any] | None = None,
-    ) -> MobileCommands:
+    )-> Any:
         """Execute mobile: getPerformanceData command.
 
         https://github.com/appium/appium-uiautomator2-driver/blob/master/docs/android-mobile-gestures.md#mobile-getperformancedata
@@ -215,8 +209,7 @@ class MobileCommands:
 
         """
         self.logger.debug("%s", get_current_func_name())
-        self._execute("mobile: getPerformanceData", params)
-        return self
+        return self._execute("mobile: getPerformanceData", params)
 
     @fail_safe(
         raise_exception=ShadowstepException,
@@ -229,7 +222,7 @@ class MobileCommands:
     def get_performance_data_types(
         self,
         params: dict[str, Any] | list[Any] | None = None,
-    ) -> MobileCommands:
+    )-> Any:
         """Execute mobile: getPerformanceDataTypes command.
 
         https://github.com/appium/appium-uiautomator2-driver/blob/master/docs/android-mobile-gestures.md#mobile-getperformancedatatypes
@@ -242,8 +235,7 @@ class MobileCommands:
 
         """
         self.logger.debug("%s", get_current_func_name())
-        self._execute("mobile: getPerformanceDataTypes", params)
-        return self
+        return self._execute("mobile: getPerformanceDataTypes", params)
 
     @fail_safe(
         raise_exception=ShadowstepException,
@@ -253,7 +245,7 @@ class MobileCommands:
             StaleElementReferenceException,
         ),
     )
-    def hide_keyboard(self, params: dict[str, Any] | list[Any] | None = None) -> MobileCommands:
+    def hide_keyboard(self, params: dict[str, Any] | list[Any] | None = None)-> Any:
         """Execute mobile: hideKeyboard command.
 
         https://github.com/appium/appium-uiautomator2-driver/blob/master/docs/android-mobile-gestures.md#mobile-hidekeyboard
@@ -266,8 +258,7 @@ class MobileCommands:
 
         """
         self.logger.debug("%s", get_current_func_name())
-        self._execute("mobile: hideKeyboard", params)
-        return self
+        return self._execute("mobile: hideKeyboard", params)
 
     @fail_safe(
         raise_exception=ShadowstepException,
@@ -280,7 +271,7 @@ class MobileCommands:
     def open_notifications(
         self,
         params: dict[str, Any] | list[Any] | None = None,
-    ) -> MobileCommands:
+    )-> Any:
         """Execute mobile: openNotifications command.
 
         https://github.com/appium/appium-uiautomator2-driver/blob/master/docs/android-mobile-gestures.md#mobile-opennotifications
@@ -293,8 +284,7 @@ class MobileCommands:
 
         """
         self.logger.debug("%s", get_current_func_name())
-        self._execute("mobile: openNotifications", params)
-        return self
+        return self._execute("mobile: openNotifications", params)
 
     @fail_safe(
         raise_exception=ShadowstepException,
@@ -304,7 +294,7 @@ class MobileCommands:
             StaleElementReferenceException,
         ),
     )
-    def press_key(self, params: dict[str, Any] | list[Any] | None = None) -> MobileCommands:
+    def press_key(self, params: dict[str, Any] | list[Any] | None = None)-> Any:
         """Execute mobile: pressKey command.
 
         https://github.com/appium/appium-uiautomator2-driver/blob/master/docs/android-mobile-gestures.md#mobile-presskey
@@ -317,8 +307,7 @@ class MobileCommands:
 
         """
         self.logger.debug("%s", get_current_func_name())
-        self._execute("mobile: pressKey", params)
-        return self
+        return self._execute("mobile: pressKey", params)
 
     @fail_safe(
         raise_exception=ShadowstepException,
@@ -328,7 +317,7 @@ class MobileCommands:
             StaleElementReferenceException,
         ),
     )
-    def set_clipboard(self, params: dict[str, Any] | list[Any] | None = None) -> MobileCommands:
+    def set_clipboard(self, params: dict[str, Any] | list[Any] | None = None)-> Any:
         """Execute mobile: setClipboard command.
 
         https://github.com/appium/appium-uiautomator2-driver/blob/master/docs/android-mobile-gestures.md#mobile-setclipboard
@@ -341,8 +330,7 @@ class MobileCommands:
 
         """
         self.logger.debug("%s", get_current_func_name())
-        self._execute("mobile: setClipboard", params)
-        return self
+        return self._execute("mobile: setClipboard", params)
 
     @fail_safe(
         raise_exception=ShadowstepException,
@@ -352,7 +340,7 @@ class MobileCommands:
             StaleElementReferenceException,
         ),
     )
-    def shell(self, params: dict[str, Any] | list[Any] | None = None) -> MobileCommands:
+    def shell(self, params: dict[str, Any] | list[Any] | None = None)-> Any:
         """Execute mobile: shell command.
 
         https://github.com/appium/appium-uiautomator2-driver/blob/master/docs/android-mobile-gestures.md#mobile-shell
@@ -365,8 +353,7 @@ class MobileCommands:
 
         """
         self.logger.debug("%s", get_current_func_name())
-        self._execute("mobile: shell", params)
-        return self
+        return self._execute("mobile: shell", params)
 
     @fail_safe(
         raise_exception=ShadowstepException,
@@ -379,7 +366,7 @@ class MobileCommands:
     def start_logs_broadcast(
         self,
         params: dict[str, Any] | list[Any] | None = None,
-    ) -> MobileCommands:
+    )-> Any:
         """Execute mobile: startLogsBroadcast command.
 
         https://github.com/appium/appium-uiautomator2-driver/blob/master/docs/android-mobile-gestures.md#mobile-startlogsbroadcast
@@ -392,8 +379,7 @@ class MobileCommands:
 
         """
         self.logger.debug("%s", get_current_func_name())
-        self._execute("mobile: startLogsBroadcast", params)
-        return self
+        return self._execute("mobile: startLogsBroadcast", params)
 
     @fail_safe(
         raise_exception=ShadowstepException,
@@ -406,7 +392,7 @@ class MobileCommands:
     def stop_logs_broadcast(
         self,
         params: dict[str, Any] | list[Any] | None = None,
-    ) -> MobileCommands:
+    )-> Any:
         """Execute mobile: stopLogsBroadcast command.
 
         https://github.com/appium/appium-uiautomator2-driver/blob/master/docs/android-mobile-gestures.md#mobile-stoplogsbroadcast
@@ -419,13 +405,12 @@ class MobileCommands:
 
         """
         self.logger.debug("%s", get_current_func_name())
-        self._execute("mobile: stopLogsBroadcast", params)
-        return self
+        return self._execute("mobile: stopLogsBroadcast", params)
 
-    def _execute(self, name: str, params: dict[str, Any] | list[Any] | None) -> None:
+    def _execute(self, name: str, params: dict[str, Any] | list[Any] | None) -> Any:
         # https://github.com/appium/appium-uiautomator2-driver/blob/master/docs/android-mobile-gestures.md
         self.driver = WebDriverSingleton.get_driver()
         if self.driver is None:
             error_msg = "WebDriver is not available"
             raise ShadowstepException(error_msg)
-        self.driver.execute_script(name, params or {})
+        return self.driver.execute_script(name, params or {})
