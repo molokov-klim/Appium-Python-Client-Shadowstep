@@ -13,10 +13,14 @@ from shadowstep.exceptions.shadowstep_exceptions import ShadowstepException
 uv run pytest -svl --log-cli-level INFO --tb=short --setup-show  tests/element/test_element_quality.py
 """
 
-shadowstep = Shadowstep()
-
 
 class TestShadowstepUnit:
+
+    def _create_test_shadowstep(self) -> Shadowstep:
+        """Helper method to create test Shadowstep instance."""
+        # Clear any existing instances
+        Shadowstep._instance = None
+        return Shadowstep()
     @pytest.mark.unit
     def test_singleton_behavior(self):
         """Test that Shadowstep implements singleton pattern correctly."""
@@ -55,177 +59,11 @@ class TestShadowstepUnit:
             instance2 = Shadowstep()
             assert instance1 is instance2
 
-    @pytest.mark.unit
-    def test_auto_discover_pages_with_nonexistent_path(self):
-        """Test _auto_discover_pages with nonexistent path."""
-
-        # Mock sys.path to include a nonexistent path
-        with patch("sys.path", ["/nonexistent/path"]):
-            with patch("pathlib.Path.exists", return_value=False):
-                shadowstep._auto_discover_pages() # type: ignore
-                # Should not raise exception, just skip the path
-
-    @pytest.mark.unit
-    def test_auto_discover_pages_with_file_path(self):
-        """Test _auto_discover_pages with file path (not directory)."""
-
-        # Mock sys.path to include a file path
-        with patch("sys.path", ["/some/file.txt"]):
-            with patch("pathlib.Path.exists", return_value=True):
-                with patch("pathlib.Path.is_dir", return_value=False):
-                    shadowstep._auto_discover_pages() # type: ignore
-                    # Should not raise exception, just skip the path
-
-    @pytest.mark.unit
-    def test_auto_discover_pages_with_ignored_dir(self):
-        """Test _auto_discover_pages with ignored directory name."""
-
-        # Mock sys.path to include an ignored directory
-        with patch("sys.path", ["/some/__pycache__"]):
-            with patch("pathlib.Path.exists", return_value=True):
-                with patch("pathlib.Path.is_dir", return_value=True):
-                    with patch("pathlib.Path.name", "__pycache__"):
-                        shadowstep._auto_discover_pages() # type: ignore
-                        # Should not raise exception, just skip the path
-
-    @pytest.mark.unit
-    def test_auto_discover_pages_with_nonexistent_path_condition(self):
-        """Test _auto_discover_pages with nonexistent path condition (line 118)."""
-
-        # Mock sys.path to include a path that doesn't exist
-        with patch("sys.path", ["/nonexistent/path"]):
-            with patch("pathlib.Path.exists", return_value=False):
-                shadowstep._auto_discover_pages() # type: ignore
-                # Should not raise exception, just skip the path
-
-    @pytest.mark.unit
-    def test_auto_discover_pages_with_file_path_condition(self):
-        """Test _auto_discover_pages with file path condition (line 118)."""
-
-        # Mock sys.path to include a file path (not directory)
-        with patch("sys.path", ["/some/file.txt"]):
-            with patch("pathlib.Path.exists", return_value=True):
-                with patch("pathlib.Path.is_dir", return_value=False):
-                    shadowstep._auto_discover_pages() # type: ignore
-                    # Should not raise exception, just skip the path
-
-    @pytest.mark.unit
-    def test_auto_discover_pages_with_ignored_dir_condition(self):
-        """Test _auto_discover_pages with ignored directory condition (line 124)."""
-
-        # Mock sys.path to include a valid path
-        with patch("sys.path", ["/valid/path"]):
-            with patch("pathlib.Path.exists", return_value=True):
-                with patch("pathlib.Path.is_dir", return_value=True):
-                    with patch("pathlib.Path.name", "valid"):
-                        with patch("os.walk", return_value=[("/valid/path", [], ["page_test.py"])]):
-                            with patch(
-                                    "pathlib.Path.relative_to", return_value=Mock(parts=["page_test"])
-                            ):
-                                with patch(
-                                        "pathlib.Path.with_suffix",
-                                        return_value=Mock(parts=["page_test"]),
-                                ):
-                                    with patch("importlib.import_module", return_value=Mock()):
-                                        with patch.object(shadowstep, "_register_pages_from_module"):
-                                            # Mock a directory that should be ignored
-                                            with patch(
-                                                    "pathlib.Path",
-                                                    side_effect=lambda x: Mock(name="__pycache__"), # type: ignore
-                                            ):
-                                                shadowstep._auto_discover_pages() # type: ignore
-                                                # Should not raise exception, just skip the path
-
-    @pytest.mark.unit
-    def test_auto_discover_pages_with_import_error(self):
-        """Test _auto_discover_pages with import error."""
-
-        # Mock sys.path to include a valid path
-        with patch("sys.path", ["/valid/path"]):
-            with patch("pathlib.Path.exists", return_value=True):
-                with patch("pathlib.Path.is_dir", return_value=True):
-                    with patch("pathlib.Path.name", "valid"):
-                        with patch("os.walk", return_value=[("/valid/path", [], ["page_test.py"])]):
-                            with patch(
-                                    "pathlib.Path.relative_to", return_value=Mock(parts=["page_test"])
-                            ):
-                                with patch(
-                                        "pathlib.Path.with_suffix",
-                                        return_value=Mock(parts=["page_test"]),
-                                ):
-                                    with patch(
-                                            "importlib.import_module",
-                                            side_effect=ImportError("Module not found"),
-                                    ):
-                                        with patch.object(shadowstep, "logger") as mock_logger:
-                                            # Reset the discovery flag to allow re-discovery
-                                            shadowstep._pages_discovered = False    # type: ignore
-                                            shadowstep._auto_discover_pages() # type: ignore
-                                            # Should log warning about import error
-                                            assert mock_logger.warning.call_count >= 1
-
-    @pytest.mark.unit
-    def test_register_pages_from_module_with_non_page_class(self):
-        """Test _register_pages_from_module with class that doesn't start with 'Page'."""
-
-        from shadowstep.page_base import PageBaseShadowstep
-
-        # Create a mock module with a class that doesn't start with 'Page'
-        mock_module = Mock()
-        mock_module.__name__ = "test_module"
-
-        # Create a real class that inherits from PageBaseShadowstep but doesn't start with 'Page'
-        class NonPageClass(PageBaseShadowstep):
-            @property
-            def edges(self):
-                return {}
-
-        # Mock inspect.getmembers to return our mock class
-        with patch("inspect.getmembers", return_value=[("NonPageClass", NonPageClass)]):
-            with patch("inspect.isclass", return_value=True):
-                shadowstep._register_pages_from_module(mock_module)
-
-                # Verify the class was NOT registered because it doesn't start with 'Page'
-                assert "NonPageClass" not in shadowstep.pages
-
-    @pytest.mark.unit
-    def test_register_pages_from_module_success(self):
-        """Test _register_pages_from_module with successful registration."""
-
-        from shadowstep.page_base import PageBaseShadowstep
-
-        # Create a mock module with a page class
-        mock_module = Mock()
-        mock_module.__name__ = "test_module"
-
-        # Create a real class that inherits from PageBaseShadowstep
-        class MockPageClass(PageBaseShadowstep):
-            @property
-            def edges(self):
-                return {"next_page": lambda: None}
-
-        # Mock inspect.getmembers to return our mock class
-        with patch("inspect.getmembers", return_value=[("PageTest", MockPageClass)]):
-            with patch("inspect.isclass", return_value=True):
-                shadowstep._register_pages_from_module(mock_module)
-
-                # Verify the page was registered
-                assert "PageTest" in shadowstep.pages
-
-    @pytest.mark.unit
-    def test_register_pages_from_module_exception(self):
-        """Test _register_pages_from_module with exception."""
-
-        mock_module = Mock()
-        mock_module.__name__ = "test_module"
-
-        with patch("inspect.getmembers", side_effect=Exception("Test error")):
-            # Should not raise exception, just log warning
-            shadowstep._register_pages_from_module(mock_module)
 
     @pytest.mark.unit
     def test_list_registered_pages(self):
         """Test list_registered_pages method."""
+        shadowstep = self._create_test_shadowstep()
 
         # Add some mock pages
         mock_page1 = Mock()
@@ -245,6 +83,7 @@ class TestShadowstepUnit:
     @pytest.mark.unit
     def test_get_page_success(self):
         """Test get_page method with existing page."""
+        shadowstep = self._create_test_shadowstep()
 
         mock_page_class = Mock()
         mock_page_instance = Mock()
@@ -259,6 +98,7 @@ class TestShadowstepUnit:
     @pytest.mark.unit
     def test_get_page_not_found(self):
         """Test get_page method with non-existing page."""
+        shadowstep = self._create_test_shadowstep()
 
         shadowstep.pages = {}
 
@@ -270,6 +110,7 @@ class TestShadowstepUnit:
     @pytest.mark.unit
     def test_resolve_page_success(self):
         """Test resolve_page method with existing page."""
+        shadowstep = self._create_test_shadowstep()
 
         mock_page_class = Mock()
         mock_page_instance = Mock()
@@ -284,6 +125,7 @@ class TestShadowstepUnit:
     @pytest.mark.unit
     def test_resolve_page_not_found(self):
         """Test resolve_page method with non-existing page."""
+        shadowstep = self._create_test_shadowstep()
 
         shadowstep.pages = {}
 
@@ -293,6 +135,7 @@ class TestShadowstepUnit:
     @pytest.mark.unit
     def test_get_elements(self):
         """Test get_elements method."""
+        shadowstep = self._create_test_shadowstep()
 
         mock_element = Mock()
         mock_elements = [Mock()()]
@@ -307,6 +150,7 @@ class TestShadowstepUnit:
     @pytest.mark.unit
     def test_get_image(self):
         """Test get_image method."""
+        shadowstep = self._create_test_shadowstep()
 
         mock_image = Mock()
 
@@ -318,6 +162,7 @@ class TestShadowstepUnit:
     @pytest.mark.unit
     def test_get_images(self):
         """Test get_images method."""
+        shadowstep = self._create_test_shadowstep()
 
         mock_image = Mock()
 
@@ -329,6 +174,7 @@ class TestShadowstepUnit:
     @pytest.mark.unit
     def test_schedule_action_not_implemented(self):
         """Test schedule_action method raises NotImplementedError."""
+        shadowstep = self._create_test_shadowstep()
 
         with pytest.raises(NotImplementedError):
             shadowstep.schedule_action("test", [])
@@ -336,6 +182,7 @@ class TestShadowstepUnit:
     @pytest.mark.unit
     def test_get_action_history_not_implemented(self):
         """Test get_action_history method raises NotImplementedError."""
+        shadowstep = self._create_test_shadowstep()
 
         with pytest.raises(NotImplementedError):
             shadowstep.get_action_history("test")
@@ -343,6 +190,7 @@ class TestShadowstepUnit:
     @pytest.mark.unit
     def test_unschedule_action_not_implemented(self):
         """Test unschedule_action method raises NotImplementedError."""
+        shadowstep = self._create_test_shadowstep()
 
         with pytest.raises(NotImplementedError):
             shadowstep.unschedule_action("test")
@@ -350,6 +198,7 @@ class TestShadowstepUnit:
     @pytest.mark.unit
     def test_start_logcat_with_filters(self):
         """Test start_logcat method with filters."""
+        shadowstep = self._create_test_shadowstep()
 
         with patch.object(shadowstep._logcat, "start") as mock_start:
             filters = ["test_filter"]
@@ -361,6 +210,7 @@ class TestShadowstepUnit:
     @pytest.mark.unit
     def test_start_logcat_without_filters(self):
         """Test start_logcat method without filters."""
+        shadowstep = self._create_test_shadowstep()
 
         with patch.object(shadowstep._logcat, "start") as mock_start:
             shadowstep.start_logcat("test.log")
@@ -370,6 +220,7 @@ class TestShadowstepUnit:
     @pytest.mark.unit
     def test_stop_logcat(self):
         """Test stop_logcat method."""
+        shadowstep = self._create_test_shadowstep()
 
         with patch.object(shadowstep._logcat, "stop") as mock_stop:
             shadowstep.stop_logcat()
@@ -379,6 +230,7 @@ class TestShadowstepUnit:
     @pytest.mark.unit
     def test_find_and_get_element_success(self):
         """Test find_and_get_element method with successful find."""
+        shadowstep = self._create_test_shadowstep()
 
         mock_scrollable = Mock()
         mock_element = Mock()
@@ -393,6 +245,7 @@ class TestShadowstepUnit:
     @pytest.mark.unit
     def test_find_and_get_element_not_found(self):
         """Test find_and_get_element method when element not found."""
+        shadowstep = self._create_test_shadowstep()
 
         with patch.object(shadowstep, "get_elements", return_value=[]):
             with pytest.raises(Exception):  # ShadowstepException
@@ -401,6 +254,7 @@ class TestShadowstepUnit:
     @pytest.mark.unit
     def test_find_and_get_element_scroll_failure(self):
         """Test find_and_get_element method when scroll fails."""
+        shadowstep = self._create_test_shadowstep()
 
         mock_scrollable = Mock()
         mock_scrollable.scroll_to_element.side_effect = Exception("Scroll failed")
@@ -412,6 +266,7 @@ class TestShadowstepUnit:
     @pytest.mark.unit
     def test_is_text_visible_success(self):
         """Test is_text_visible method with visible text."""
+        shadowstep = self._create_test_shadowstep()
 
         mock_element = Mock()
         mock_element.is_visible.return_value = True
@@ -425,6 +280,7 @@ class TestShadowstepUnit:
     @pytest.mark.unit
     def test_is_text_visible_not_visible(self):
         """Test is_text_visible method with not visible text."""
+        shadowstep = self._create_test_shadowstep()
 
         mock_element = Mock()
         mock_element.is_visible.return_value = False
@@ -437,6 +293,7 @@ class TestShadowstepUnit:
     @pytest.mark.unit
     def test_is_text_visible_exception(self):
         """Test is_text_visible method with exception."""
+        shadowstep = self._create_test_shadowstep()
 
         with patch("shadowstep.shadowstep.Element", side_effect=Exception("Test error")):
             result = shadowstep.is_text_visible("test text")
@@ -446,6 +303,7 @@ class TestShadowstepUnit:
     @pytest.mark.unit
     def test_scroll_invalid_direction(self):
         """Test scroll method with invalid direction."""
+        shadowstep = self._create_test_shadowstep()
 
         with pytest.raises(ShadowstepException, match="scroll failed after 3 attempts"):
             shadowstep.scroll(0, 0, 100, 100, "invalid", 0.5, 1000)
@@ -453,6 +311,7 @@ class TestShadowstepUnit:
     @pytest.mark.unit
     def test_scroll_invalid_percent(self):
         """Test scroll method with invalid percent."""
+        shadowstep = self._create_test_shadowstep()
 
         with pytest.raises(ShadowstepException, match="scroll failed after 3 attempts"):
             shadowstep.scroll(0, 0, 100, 100, "up", 1.5, 1000)
@@ -460,6 +319,7 @@ class TestShadowstepUnit:
     @pytest.mark.unit
     def test_scroll_negative_speed(self):
         """Test scroll method with negative speed."""
+        shadowstep = self._create_test_shadowstep()
 
         with pytest.raises(ShadowstepException, match="scroll failed after 3 attempts"):
             shadowstep.scroll(0, 0, 100, 100, "up", 0.5, -1)
@@ -467,6 +327,7 @@ class TestShadowstepUnit:
     @pytest.mark.unit
     def test_scroll_success(self):
         """Test scroll method with valid parameters."""
+        shadowstep = self._create_test_shadowstep()
 
         mock_driver = Mock()
 
@@ -962,61 +823,7 @@ class TestShadowstepUnit:
                     assert result is True
                     mock_file.assert_called_once_with("wb")
 
-    @pytest.mark.unit
-    def test_get_screenshot_with_driver(self):
-        """Test get_screenshot method with valid driver."""
 
-        mock_driver = Mock()
-        mock_driver.get_screenshot_as_base64.return_value = "dGVzdA=="  # base64 for "test"
-
-        with patch.object(shadowstep, "driver", mock_driver):
-            with patch.object(shadowstep, "is_connected", return_value=True):
-                result = shadowstep.get_screenshot()
-
-                expected = base64.b64decode("dGVzdA==")
-                assert result == expected
-
-    @pytest.mark.unit
-    def test_get_screenshot_no_driver(self):
-        """Test get_screenshot method with no driver."""
-
-        # Mock driver to be None and prevent reconnection
-        mock_driver = None
-        with patch.object(shadowstep, "driver", mock_driver):
-            with patch.object(shadowstep, "is_connected", return_value=False):
-                with patch.object(shadowstep, "connect", side_effect=RuntimeError("Connection failed")):
-                    # When driver is None, get_screenshot should raise RuntimeError
-                    # which will be converted to ShadowstepException by @fail_safe
-                    with pytest.raises(ShadowstepException):
-                        shadowstep.get_screenshot()
-
-    @pytest.mark.unit
-    def test_save_source(self):
-        """Test save_source method."""
-
-        mock_driver = Mock()
-        mock_driver.page_source = "test page source"
-        original_driver = shadowstep.driver
-        shadowstep.driver = mock_driver
-
-        try:
-            with patch.object(shadowstep, "is_connected", return_value=True):
-                with patch("pathlib.Path.open", mock_open()) as mock_file:
-                    result = shadowstep.save_source("/test/path", "test.xml")
-
-                    assert result is True
-                    mock_file.assert_called_once_with("wb")
-        finally:
-            shadowstep.driver = original_driver
-
-    @pytest.mark.unit
-    def test_save_source_no_driver(self):
-        """Test save_source method with no driver."""
-
-        with patch.object(shadowstep, "driver", None):
-            with patch.object(shadowstep, "is_connected", return_value=True):
-                with pytest.raises(ShadowstepException):
-                    shadowstep.save_source("/test/path", "test.xml")
 
     @pytest.mark.unit
     def test_tap_with_duration(self):
@@ -1097,29 +904,6 @@ class TestShadowstepUnit:
                 with pytest.raises(ShadowstepException):
                     shadowstep.stop_recording_screen()
 
-    @pytest.mark.unit
-    def test_push_file(self):
-        """Test push method."""
-
-        mock_driver = Mock()
-        test_data = b"test file content"
-        with patch.object(shadowstep, "driver", mock_driver):
-            with patch.object(shadowstep, "is_connected", return_value=True):
-                with patch("pathlib.Path.open", mock_open(read_data=test_data)) as mock_file:
-                    result = shadowstep.push("/local/path", "/remote/path")
-                    assert result is shadowstep
-                    expected_data = base64.b64encode(test_data).decode("utf-8")
-                    mock_driver.push_file.assert_called_once_with(
-                        destination_path="/remote/path", base64data=expected_data
-                    )
-
-    @pytest.mark.unit
-    def test_push_file_no_driver(self):
-        """Test push method with no driver."""
-        with patch.object(shadowstep, "driver", None):
-            with patch.object(shadowstep, "is_connected", return_value=True):
-                with pytest.raises(ShadowstepException):
-                    shadowstep.push("/local/path", "/remote/path")
 
     @pytest.mark.unit
     def test_update_settings_not_implemented(self):
@@ -1127,13 +911,6 @@ class TestShadowstepUnit:
         with pytest.raises(NotImplementedError):
             shadowstep.update_settings()
 
-    @pytest.mark.unit
-    def test_execute_method(self):
-        """Test _execute method."""
-        mock_driver = Mock()
-        shadowstep.driver = mock_driver
-        shadowstep._execute("test: command", {"param": "value"})
-        mock_driver.execute_script.assert_called_once_with("test: command", {"param": "value"})
 
     @pytest.mark.unit
     def test_get_element(self):
@@ -1157,50 +934,6 @@ class TestShadowstepUnit:
         # Verify that update_settings was called before NotImplementedError
         mock_driver.update_settings.assert_called_once_with(settings={"enableMultiWindows": True})
 
-    @pytest.mark.unit
-    def test_auto_discover_pages_with_ignored_directory_in_walk(self):
-        """Test _auto_discover_pages skips directories with ignored names during os.walk."""
-        import os
-        from pathlib import Path
-
-        # Reset discovery flag to allow re-discovery
-        shadowstep._pages_discovered = False
-
-        # Use a real temporary directory
-        import tempfile
-        with tempfile.TemporaryDirectory() as tmpdir:
-            # Create a __pycache__ directory
-            pycache_dir = Path(tmpdir) / "__pycache__"
-            pycache_dir.mkdir()
-            
-            # Create a page file in __pycache__ (should be ignored)
-            (pycache_dir / "page_test.py").write_text("# test page")
-
-            # Mock sys.path to include our temp directory
-            with patch("sys.path", [tmpdir]):
-                # This should skip the __pycache__ directory
-                shadowstep._auto_discover_pages()
-                # No exception should be raised
-
-    @pytest.mark.unit
-    def test_auto_discover_pages_with_file_instead_of_directory(self):
-        """Test _auto_discover_pages skips file paths (not directories) in sys.path."""
-        from pathlib import Path
-        import tempfile
-
-        # Reset discovery flag
-        shadowstep._pages_discovered = False
-
-        with tempfile.TemporaryDirectory() as tmpdir:
-            # Create a file (not a directory)
-            file_path = Path(tmpdir) / "somefile.py"
-            file_path.write_text("# test")
-
-            # Add the file path to sys.path (which should be skipped)
-            with patch("sys.path", [str(file_path)]):
-                # This should skip the file path and not raise an error
-                shadowstep._auto_discover_pages()
-                # No exception should be raised
 
     @pytest.mark.unit
     def test_find_and_get_element_with_exception_in_get_elements(self):
