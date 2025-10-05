@@ -1,6 +1,9 @@
 https://github.com/appium/appium-uiautomator2-driver
 
-mobile commands
+# mobile commands
+
+mobile: shell
+https://github.com/appium/appium-uiautomator2-driver?tab=readme-ov-file#mobile-shell
 
 mobile: scroll
 https://github.com/appium/appium-uiautomator2-driver?tab=readme-ov-file#mobile-scroll

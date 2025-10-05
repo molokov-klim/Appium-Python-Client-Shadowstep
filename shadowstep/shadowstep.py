@@ -24,13 +24,13 @@ from selenium.common import (
     WebDriverException,
 )
 from typing_extensions import Self
+from ui_automator.mobile_commands import MobileCommands
 
 from shadowstep.decorators.decorators import fail_safe
 from shadowstep.element.element import Element
 from shadowstep.exceptions.shadowstep_exceptions import ShadowstepException
 from shadowstep.image.image import ShadowstepImage
 from shadowstep.logcat.shadowstep_logcat import ShadowstepLogcat
-from shadowstep.mobile_commands import MobileCommands
 from shadowstep.navigator.navigator import PageNavigator
 from shadowstep.page_base import PageBaseShadowstep
 from shadowstep.shadowstep_base import ShadowstepBase, WebDriverSingleton
@@ -97,7 +97,7 @@ class Shadowstep(ShadowstepBase):
 
         self._logcat: ShadowstepLogcat = ShadowstepLogcat(driver_getter=WebDriverSingleton.get_driver)
         self.navigator: PageNavigator = PageNavigator(self)
-        self.mobile_commands: MobileCommands = MobileCommands(self)
+        self.mobile_commands: MobileCommands = MobileCommands()
         self.logger = logging.getLogger(f"{__name__}.{self.__class__.__name__}")
         self._auto_discover_pages()
         self._initialized = True
