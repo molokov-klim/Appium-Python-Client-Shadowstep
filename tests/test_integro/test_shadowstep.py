@@ -46,10 +46,6 @@ class TestShadowstep:
         el = app.find_and_get_element({"class": "android.widget.TextView"})
         assert el.get_attribute("class") == "android.widget.TextView"  # noqa: S101
 
-    # ====================================================================================
-    # Integration tests for Shadowstep functionality
-    # ====================================================================================
-
 
     def test_list_registered_pages_output(self, app: Shadowstep):
         """Test list_registered_pages() executes without errors.
