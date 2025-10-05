@@ -7,13 +7,14 @@ including app management, device information, clipboard operations, and more.
 from __future__ import annotations
 
 import logging
-from typing import Any
+from typing import Any, ClassVar
 
 from selenium.common.exceptions import (
     InvalidSessionIdException,
     NoSuchDriverException,
     StaleElementReferenceException,
 )
+from typing_extensions import Self
 
 from shadowstep.decorators.decorators import fail_safe
 from shadowstep.exceptions.shadowstep_exceptions import ShadowstepException
@@ -22,16 +23,26 @@ from shadowstep.utils.utils import get_current_func_name
 
 
 class MobileCommands:
-    """Mobile commands wrapper for Appium automation.
+    """Singleton mobile commands wrapper for Appium automation.
 
     This class provides a comprehensive set of mobile commands for Appium automation,
     including app management, device information, clipboard operations, and more.
+    see https://github.com/appium/appium-uiautomator2-driver
     """
 
+    _instance: ClassVar[MobileCommands | None] = None
+    logger: logging.Logger
+
+    def __new__(cls, *args: Any, **kwargs: Any) -> Self:  # noqa: ARG004
+        """Ensure only one instance of MobileCommands exists."""
+        if cls._instance is None:
+            cls._instance = super().__new__(cls)
+        return cls._instance  # type: ignore[return-value]
+
     def __init__(self) -> None:
-        """Initialize MobileCommands instance."""
-        self.driver: Any = None
-        self.logger = logging.getLogger(f"{__name__}.{self.__class__.__name__}")
+        """Initialize the MobileCommands singleton."""
+        if not hasattr(self, "logger"):
+            self.logger = logging.getLogger(f"{__name__}.{self.__class__.__name__}")
 
     @fail_safe(
         raise_exception=ShadowstepException,
@@ -1237,7 +1248,9 @@ class MobileCommands:
             StaleElementReferenceException,
         ),
     )
-    def start_media_projection_recording(self, params: dict[str, Any] | list[Any] | None = None) -> Any:
+    def start_media_projection_recording(
+        self, params: dict[str, Any] | list[Any] | None = None,
+    ) -> Any:
         """Execute mobile: startMediaProjectionRecording command.
 
         https://github.com/appium/appium-uiautomator2-driver?tab=readme-ov-file#mobile-startmediaprojectionrecording
@@ -1260,7 +1273,9 @@ class MobileCommands:
             StaleElementReferenceException,
         ),
     )
-    def is_media_projection_recording_running(self, params: dict[str, Any] | list[Any] | None = None) -> Any:
+    def is_media_projection_recording_running(
+        self, params: dict[str, Any] | list[Any] | None = None,
+    ) -> Any:
         """Execute mobile: isMediaProjectionRecordingRunning command.
 
         https://github.com/appium/appium-uiautomator2-driver?tab=readme-ov-file#mobile-ismediaprojectionrecordingrunning
@@ -1283,7 +1298,9 @@ class MobileCommands:
             StaleElementReferenceException,
         ),
     )
-    def stop_media_projection_recording(self, params: dict[str, Any] | list[Any] | None = None) -> Any:
+    def stop_media_projection_recording(
+        self, params: dict[str, Any] | list[Any] | None = None,
+    ) -> Any:
         """Execute mobile: stopMediaProjectionRecording command.
 
         https://github.com/appium/appium-uiautomator2-driver?tab=readme-ov-file#mobile-stopmediaprojectionrecording
@@ -2220,8 +2237,5 @@ class MobileCommands:
 
     def _execute(self, name: str, params: dict[str, Any] | list[Any] | None) -> Any:
         # https://github.com/appium/appium-uiautomator2-driver/blob/master/docs/android-mobile-gestures.md
-        self.driver = WebDriverSingleton.get_driver()
-        if self.driver is None:
-            error_msg = "WebDriver is not available"
-            raise ShadowstepException(error_msg)
-        return self.driver.execute_script(name, params or {})
+        driver = WebDriverSingleton.get_driver()
+        return driver.execute_script(name, params or {})  # type: ignore[reportUnknownMemberType]
