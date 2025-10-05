@@ -42,11 +42,9 @@ class TestElementWaiting:
 
     def test_wait_visible_timeout(self, app: Shadowstep, stability: None):
         """Test wait_visible timeout for non-visible element."""
-        # Create element that exists but might not be visible
         el = app.get_element({"resource-id": "non.existent.element"})
         result = el.wait_visible(timeout=2, return_bool=True)
-        # Should return True for non-existent elements (as per current implementation)
-        assert result is True
+        assert result is False
 
     def test_wait_clickable_success(self, app: Shadowstep, stability: None):
         """Test successful wait for clickable element."""
@@ -58,8 +56,7 @@ class TestElementWaiting:
         """Test wait_clickable timeout for non-clickable element."""
         el = app.get_element({"resource-id": "non.existent.element"})
         result = el.wait_clickable(timeout=2, return_bool=True)
-        # Should return True for non-existent elements (as per current implementation)
-        assert result is True
+        assert result is False
 
     def test_wait_for_not_success(self, app: Shadowstep, stability: None):
         """Test successful wait for element to disappear."""
@@ -73,15 +70,13 @@ class TestElementWaiting:
         """Test successful wait for element to become invisible."""
         el = app.get_element({"resource-id": "com.android.quicksearchbox:id/search_widget_text"})
         result = el.wait_for_not_visible(timeout=2, return_bool=True)
-        # Should return True for non-existent elements (as per current implementation)
-        assert result is True
+        assert result is False
 
     def test_wait_for_not_clickable_success(self, app: Shadowstep, stability: None):
         """Test successful wait for element to become not clickable."""
         el = app.get_element({"resource-id": "com.android.quicksearchbox:id/search_widget_text"})
         result = el.wait_for_not_clickable(timeout=2, return_bool=True)
-        # Should return True for non-existent elements (as per current implementation)
-        assert result is True
+        assert result is False
 
     def test_wait_with_custom_timeout_and_poll_frequency(self, app: Shadowstep, stability: None):
         """Test wait method with custom timeout and poll frequency."""
@@ -116,13 +111,13 @@ class TestElementWaiting:
         """Test wait_for_not_visible with custom timeout and poll frequency."""
         el = app.get_element({"resource-id": "com.android.quicksearchbox:id/search_widget_text"})
         result = el.wait_for_not_visible(timeout=2, poll_frequency=0.1, return_bool=True)
-        assert result is True  # Non-existent elements are considered not visible
+        assert result is False
 
     def test_wait_for_not_clickable_with_custom_parameters(self, app: Shadowstep, stability: None):
         """Test wait_for_not_clickable with custom timeout and poll frequency."""
         el = app.get_element({"resource-id": "com.android.quicksearchbox:id/search_widget_text"})
         result = el.wait_for_not_clickable(timeout=2, poll_frequency=0.1, return_bool=True)
-        assert result is True  # Non-existent elements are considered not clickable
+        assert result is False
 
     def test_wait_with_none_locator(self, app: Shadowstep, stability: None):
         """Test wait method behavior with None locator."""
@@ -153,13 +148,13 @@ class TestElementWaiting:
         """Test wait_for_not_visible method behavior with None locator."""
         el = app.get_element({})
         result = el.wait_for_not_visible(timeout=1, return_bool=True)
-        assert result is True  # None locator returns True for wait_for_not_visible
+        assert result is False
 
     def test_wait_for_not_clickable_with_none_locator(self, app: Shadowstep, stability: None):
         """Test wait_for_not_clickable method behavior with None locator."""
         el = app.get_element({})
         result = el.wait_for_not_clickable(timeout=1, return_bool=True)
-        assert result is True  # None locator returns True for wait_for_not_clickable
+        assert result is False
 
     def test_wait_timeout_exceeds_element_timeout(self, app: Shadowstep, stability: None):
         """Test that wait respects element's timeout when it's shorter than method timeout."""
@@ -181,8 +176,7 @@ class TestElementWaiting:
         assert el.wait(return_bool=False) == el
         assert el.wait_visible(return_bool=False) == el
         assert el.wait_clickable(return_bool=False) == el
-        # wait_for_not returns False when element exists, so it returns False instead of Element
-        assert el.wait_for_not(return_bool=False) is False
+        assert el.wait_for_not(return_bool=False) == el
         assert el.wait_for_not_visible(return_bool=False) == el
         assert el.wait_for_not_clickable(return_bool=False) == el
 
@@ -222,10 +216,10 @@ class TestElementWaiting:
         results = []
         for _ in range(3):
             result = el.wait(timeout=2, return_bool=True)
-            results.append(result)
+            results.append(result)  # type: ignore
 
         # All results should be the same
-        assert all(r == results[0] for r in results)
+        assert all(r == results[0] for r in results)  # type: ignore
         assert results[0] is True  # Element exists
 
     def test_wait_with_different_locator_types(self, app: Shadowstep, stability: None):

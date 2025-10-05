@@ -23,10 +23,13 @@ class TestElementProperties:
             el.get_attribute("text")
 
     def test_get_attributes(self, app: Shadowstep, stability: None):
-        element = app.get_element(locator={"package": "com.android.launcher3",
-                                           "class": "android.view.ViewGroup",
-                                           "resource-id": "com.android.launcher3:id/hotseat",
-                                           })
+        element = app.get_element(
+            locator={
+                "package": "com.android.launcher3",
+                "class": "android.view.ViewGroup",
+                "resource-id": "com.android.launcher3:id/hotseat",
+            }
+        )
         attrs = element.get_attributes()
         assert isinstance(attrs, dict)  # noqa: S101  # noqa: S101
         assert "bounds" in attrs  # noqa: S101  # noqa: S101
@@ -47,13 +50,16 @@ class TestElementProperties:
 
     def test_is_visible(self, app: Shadowstep, press_home: Any, stability: None):
         phone = app.get_element(locator={"content-desc": "Phone"}, timeout=5)
-        search = app.get_element(locator={"resource-id": "com.android.quicksearchbox:id/search_widget_text"}, timeout=5)
+        search = app.get_element(
+            locator={"resource-id": "com.android.quicksearchbox:id/search_widget_text"}, timeout=5
+        )
+        phone.wait(timeout=5)
         assert search.is_visible() is True  # noqa: S101  # noqa: S101
         assert phone.is_visible() is True  # noqa: S101  # noqa: S101
         phone.tap()
         time.sleep(3)
-        assert phone.is_visible() is False  # noqa: S101  # noqa: S101
-        assert search.is_visible() is False  # noqa: S101  # noqa: S101
+        assert not phone.is_visible()  # noqa: S101  # noqa: S101
+        assert not search.is_visible()  # noqa: S101  # noqa: S101
 
     def test_is_selected(self, app: Shadowstep, press_home: Any, stability: None):
         el = app.get_element({"content-desc": "Phone"})
@@ -188,36 +194,40 @@ class TestElementProperties:
     def test_rect(self, app: Shadowstep, press_home: Any, stability: None):
         el = app.get_element({"content-desc": "Phone"})
         assert isinstance(el.rect, dict)  # noqa: S101  # noqa: S101
-        assert isinstance(el.location.get("height"), int)  # noqa: S101
-        assert isinstance(el.location.get("width"), int)  # noqa: S101
         assert isinstance(el.location.get("x"), int)  # noqa: S101
         assert isinstance(el.location.get("y"), int)  # noqa: S101
 
-    @pytest.mark.skip(reason="UnknownCommandError. "
-                        "The requested resource could not be found, or a request was received using an HTTP method "
-                        "that is not supported by the mapped resource")
+    @pytest.mark.skip(
+        reason="UnknownCommandError. "
+        "The requested resource could not be found, or a request was received using an HTTP method "
+        "that is not supported by the mapped resource"
+    )
     def test_aria_role(self, app: Shadowstep, press_home: Any, stability: None):
         el = app.get_element({"content-desc": "Phone"})
         assert isinstance(el.aria_role, str)  # noqa: S101  # noqa: S101
         assert el.aria_role == ""  # noqa: S101  # noqa: S101
 
-    @pytest.mark.skip(reason="UnknownCommandError. "
-                             "The requested resource could not be found, or a request was received using an HTTP method "
-                             "that is not supported by the mapped resource")
+    @pytest.mark.skip(
+        reason="UnknownCommandError. "
+        "The requested resource could not be found, or a request was received using an HTTP method "
+        "that is not supported by the mapped resource"
+    )
     def test_accessible_name(self, app: Shadowstep, press_home: Any, stability: None):
         el = app.get_element({"content-desc": "Phone"})
         assert isinstance(el.accessible_name, str)  # noqa: S101  # noqa: S101
         assert el.accessible_name == ""  # noqa: S101  # noqa: S101
 
-    def test_get_attribute_handles_nosuchdriver_exception(self, app: Shadowstep, press_home: Any, stability: None):
+    def test_get_attribute_handles_nosuchdriver_exception(
+        self, app: Shadowstep, press_home: Any, stability: None
+    ):
         """Test get_attribute method handles NoSuchDriverException gracefully.
-        
+
         Steps:
         1. Create element with valid locator
         2. Simulate NoSuchDriverException by corrupting driver
         3. Call get_attribute method and verify it handles exception
         4. Verify method retries and eventually raises ShadowstepElementException
-        
+
         Тест проверяет обработку NoSuchDriverException в методе get_attribute.
         Шаги:
         1. Создать элемент с валидным локатором
@@ -227,15 +237,17 @@ class TestElementProperties:
         """
         pass
 
-    def test_get_attribute_handles_invalid_session_id_exception(self, app: Shadowstep, press_home: Any, stability: None):
+    def test_get_attribute_handles_invalid_session_id_exception(
+        self, app: Shadowstep, press_home: Any, stability: None
+    ):
         """Test get_attribute method handles InvalidSessionIdException gracefully.
-        
+
         Steps:
         1. Create element with valid locator
         2. Simulate InvalidSessionIdException
         3. Call get_attribute method and verify it handles exception
         4. Verify method retries and eventually raises ShadowstepElementException
-        
+
         Тест проверяет обработку InvalidSessionIdException в методе get_attribute.
         Шаги:
         1. Создать элемент с валидным локатором
@@ -245,16 +257,18 @@ class TestElementProperties:
         """
         pass
 
-    def test_get_attribute_handles_stale_element_reference_exception(self, app: Shadowstep, press_home: Any, stability: None):
+    def test_get_attribute_handles_stale_element_reference_exception(
+        self, app: Shadowstep, press_home: Any, stability: None
+    ):
         """Test get_attribute method handles StaleElementReferenceException and re-acquires element.
-        
+
         Steps:
         1. Create element with valid locator
         2. Simulate StaleElementReferenceException
         3. Call get_attribute method and verify it handles exception
         4. Verify element is re-acquired and method continues
         5. Verify method eventually succeeds or raises ShadowstepElementException
-        
+
         Тест проверяет обработку StaleElementReferenceException в методе get_attribute.
         Шаги:
         1. Создать элемент с валидным локатором
@@ -265,16 +279,18 @@ class TestElementProperties:
         """
         pass
 
-    def test_get_attribute_handles_webdriver_exception(self, app: Shadowstep, press_home: Any, stability: None):
+    def test_get_attribute_handles_webdriver_exception(
+        self, app: Shadowstep, press_home: Any, stability: None
+    ):
         """Test get_attribute method handles WebDriverException with specific error messages.
-        
+
         Steps:
         1. Create element with valid locator
         2. Simulate WebDriverException with "instrumentation process is not running" message
         3. Call get_attribute method and verify it handles exception
         4. Verify method retries and eventually raises ShadowstepElementException
         5. Test with "socket hang up" message as well
-        
+
         Тест проверяет обработку WebDriverException с специфичными сообщениями в методе get_attribute.
         Шаги:
         1. Создать элемент с валидным локатором
@@ -285,16 +301,18 @@ class TestElementProperties:
         """
         pass
 
-    def test_get_attribute_timeout_exceeded(self, app: Shadowstep, press_home: Any, stability: None):
+    def test_get_attribute_timeout_exceeded(
+        self, app: Shadowstep, press_home: Any, stability: None
+    ):
         """Test get_attribute method raises ShadowstepElementException when timeout exceeded.
-        
+
         Steps:
         1. Create element with very short timeout
         2. Simulate continuous failures to trigger timeout
         3. Call get_attribute method
         4. Verify ShadowstepElementException is raised with proper message
         5. Verify exception contains timeout information and stacktrace
-        
+
         Тест проверяет вызов ShadowstepElementException при превышении таймаута в методе get_attribute.
         Шаги:
         1. Создать элемент с очень коротким таймаутом
@@ -305,15 +323,17 @@ class TestElementProperties:
         """
         pass
 
-    def test_get_attribute_with_invalid_attribute_name(self, app: Shadowstep, press_home: Any, stability: None):
+    def test_get_attribute_with_invalid_attribute_name(
+        self, app: Shadowstep, press_home: Any, stability: None
+    ):
         """Test get_attribute method with invalid attribute name.
-        
+
         Steps:
         1. Create element with valid locator
         2. Call get_attribute with invalid attribute name (empty string, None, special characters)
         3. Verify method handles invalid attribute name gracefully
         4. Verify appropriate error handling or return value
-        
+
         Тест проверяет метод get_attribute с невалидным именем атрибута.
         Шаги:
         1. Создать элемент с валидным локатором
@@ -323,15 +343,17 @@ class TestElementProperties:
         """
         pass
 
-    def test_get_attributes_handles_xpath_resolution_error(self, app: Shadowstep, press_home: Any, stability: None):
+    def test_get_attributes_handles_xpath_resolution_error(
+        self, app: Shadowstep, press_home: Any, stability: None
+    ):
         """Test get_attributes method handles XPath resolution errors gracefully.
-        
+
         Steps:
         1. Create element with locator that cannot be resolved to XPath
         2. Call get_attributes method and verify it handles resolution error
         3. Verify method returns empty dictionary when XPath resolution fails
         4. Verify appropriate error logging
-        
+
         Тест проверяет обработку ошибок разрешения XPath в методе get_attributes.
         Шаги:
         1. Создать элемент с локатором, который не может быть разрешен в XPath
@@ -341,15 +363,17 @@ class TestElementProperties:
         """
         pass
 
-    def test_get_attributes_handles_extraction_error(self, app: Shadowstep, press_home: Any, stability: None):
+    def test_get_attributes_handles_extraction_error(
+        self, app: Shadowstep, press_home: Any, stability: None
+    ):
         """Test get_attributes method handles attribute extraction errors gracefully.
-        
+
         Steps:
         1. Create element with valid locator
         2. Mock utilities.extract_el_attrs_from_source to raise exception
         3. Call get_attributes method and verify it handles extraction error
         4. Verify method returns empty dictionary when extraction fails
-        
+
         Тест проверяет обработку ошибок извлечения атрибутов в методе get_attributes.
         Шаги:
         1. Создать элемент с валидным локатором
@@ -359,15 +383,17 @@ class TestElementProperties:
         """
         pass
 
-    def test_get_property_handles_nosuchdriver_exception(self, app: Shadowstep, press_home: Any, stability: None):
+    def test_get_property_handles_nosuchdriver_exception(
+        self, app: Shadowstep, press_home: Any, stability: None
+    ):
         """Test get_property method handles NoSuchDriverException gracefully.
-        
+
         Steps:
         1. Create element with valid locator
         2. Simulate NoSuchDriverException by corrupting driver
         3. Call get_property method and verify it handles exception
         4. Verify method retries and eventually raises ShadowstepElementException
-        
+
         Тест проверяет обработку NoSuchDriverException в методе get_property.
         Шаги:
         1. Создать элемент с валидным локатором
@@ -377,16 +403,18 @@ class TestElementProperties:
         """
         pass
 
-    def test_get_dom_attribute_handles_stale_element_reference_exception(self, app: Shadowstep, press_home: Any, stability: None):
+    def test_get_dom_attribute_handles_stale_element_reference_exception(
+        self, app: Shadowstep, press_home: Any, stability: None
+    ):
         """Test get_dom_attribute method handles StaleElementReferenceException and re-acquires element.
-        
+
         Steps:
         1. Create element with valid locator
         2. Simulate StaleElementReferenceException
         3. Call get_dom_attribute method and verify it handles exception
         4. Verify element is re-acquired and method continues
         5. Verify method eventually succeeds or raises ShadowstepElementException
-        
+
         Тест проверяет обработку StaleElementReferenceException в методе get_dom_attribute.
         Шаги:
         1. Создать элемент с валидным локатором
@@ -397,15 +425,17 @@ class TestElementProperties:
         """
         pass
 
-    def test_is_displayed_handles_nosuchelement_exception(self, app: Shadowstep, press_home: Any, stability: None):
+    def test_is_displayed_handles_nosuchelement_exception(
+        self, app: Shadowstep, press_home: Any, stability: None
+    ):
         """Test is_displayed method handles NoSuchElementException and returns False.
-        
+
         Steps:
         1. Create element with locator that doesn't exist
         2. Call is_displayed method and verify it handles NoSuchElementException
         3. Verify method returns False when element is not found
         4. Verify no exception is raised
-        
+
         Тест проверяет обработку NoSuchElementException в методе is_displayed.
         Шаги:
         1. Создать элемент с локатором, который не существует
@@ -415,16 +445,18 @@ class TestElementProperties:
         """
         pass
 
-    def test_is_displayed_handles_webdriver_exception(self, app: Shadowstep, press_home: Any, stability: None):
+    def test_is_displayed_handles_webdriver_exception(
+        self, app: Shadowstep, press_home: Any, stability: None
+    ):
         """Test is_displayed method handles WebDriverException with specific error messages.
-        
+
         Steps:
         1. Create element with valid locator
         2. Simulate WebDriverException with "instrumentation process is not running" message
         3. Call is_displayed method and verify it handles exception
         4. Verify method retries and eventually raises ShadowstepElementException
         5. Test with "socket hang up" message as well
-        
+
         Тест проверяет обработку WebDriverException с специфичными сообщениями в методе is_displayed.
         Шаги:
         1. Создать элемент с валидным локатором
@@ -435,15 +467,17 @@ class TestElementProperties:
         """
         pass
 
-    def test_is_visible_element_outside_screen_bounds(self, app: Shadowstep, press_home: Any, stability: None):
+    def test_is_visible_element_outside_screen_bounds(
+        self, app: Shadowstep, press_home: Any, stability: None
+    ):
         """Test is_visible method returns False when element is outside screen bounds.
-        
+
         Steps:
         1. Create element that is positioned outside screen bounds
         2. Call is_visible method and verify it returns False
         3. Verify method correctly checks element bounds against screen resolution
         4. Verify appropriate logging of visibility check
-        
+
         Тест проверяет возврат False в методе is_visible когда элемент за границами экрана.
         Шаги:
         1. Создать элемент, который расположен за границами экрана
@@ -453,15 +487,17 @@ class TestElementProperties:
         """
         pass
 
-    def test_is_visible_element_with_displayed_false(self, app: Shadowstep, press_home: Any, stability: None):
+    def test_is_visible_element_with_displayed_false(
+        self, app: Shadowstep, press_home: Any, stability: None
+    ):
         """Test is_visible method returns False when element has displayed="false".
-        
+
         Steps:
         1. Create element with displayed attribute set to "false"
         2. Call is_visible method and verify it returns False
         3. Verify method correctly checks displayed attribute
         4. Verify method doesn't proceed to bounds checking when displayed is false
-        
+
         Тест проверяет возврат False в методе is_visible когда элемент имеет displayed="false".
         Шаги:
         1. Создать элемент с атрибутом displayed установленным в "false"
@@ -471,15 +507,17 @@ class TestElementProperties:
         """
         pass
 
-    def test_is_visible_handles_screen_resolution_error(self, app: Shadowstep, press_home: Any, stability: None):
+    def test_is_visible_handles_screen_resolution_error(
+        self, app: Shadowstep, press_home: Any, stability: None
+    ):
         """Test is_visible method handles screen resolution retrieval errors gracefully.
-        
+
         Steps:
         1. Mock terminal.get_screen_resolution to raise exception
         2. Call is_visible method and verify it handles resolution error
         3. Verify method returns None when screen resolution cannot be obtained
         4. Verify appropriate error handling and logging
-        
+
         Тест проверяет обработку ошибок получения разрешения экрана в методе is_visible.
         Шаги:
         1. Замокать terminal.get_screen_resolution для вызова исключения
@@ -489,16 +527,18 @@ class TestElementProperties:
         """
         pass
 
-    def test_is_visible_handles_location_size_errors(self, app: Shadowstep, press_home: Any, stability: None):
+    def test_is_visible_handles_location_size_errors(
+        self, app: Shadowstep, press_home: Any, stability: None
+    ):
         """Test is_visible method handles element location and size retrieval errors.
-        
+
         Steps:
         1. Create element with valid locator
         2. Mock element.location or element.size to raise exception
         3. Call is_visible method and verify it handles location/size errors
         4. Verify method returns None when location or size cannot be obtained
         5. Verify appropriate error handling and logging
-        
+
         Тест проверяет обработку ошибок получения местоположения и размера элемента в методе is_visible.
         Шаги:
         1. Создать элемент с валидным локатором
@@ -511,14 +551,14 @@ class TestElementProperties:
 
     def test_is_visible_timeout_exceeded(self, app: Shadowstep, press_home: Any, stability: None):
         """Test is_visible method raises ShadowstepElementException when timeout exceeded.
-        
+
         Steps:
         1. Create element with very short timeout
         2. Simulate continuous failures to trigger timeout
         3. Call is_visible method
         4. Verify ShadowstepElementException is raised with proper message
         5. Verify exception contains timeout information and stacktrace
-        
+
         Тест проверяет вызов ShadowstepElementException при превышении таймаута в методе is_visible.
         Шаги:
         1. Создать элемент с очень коротким таймаутом
@@ -529,16 +569,18 @@ class TestElementProperties:
         """
         pass
 
-    def test_is_contains_with_element_locator(self, app: Shadowstep, press_home: Any, stability: None):
+    def test_is_contains_with_element_locator(
+        self, app: Shadowstep, press_home: Any, stability: None
+    ):
         """Test is_contains method with Element as locator.
-        
+
         Steps:
         1. Create parent element with valid locator
         2. Create child element with valid locator
         3. Call is_contains with child element as locator
         4. Verify method correctly handles Element locator type
         5. Verify method returns appropriate boolean result
-        
+
         Тест проверяет метод is_contains с элементом в качестве локатора.
         Шаги:
         1. Создать родительский элемент с валидным локатором
@@ -549,16 +591,18 @@ class TestElementProperties:
         """
         pass
 
-    def test_is_contains_with_ui_selector_locator(self, app: Shadowstep, press_home: Any, stability: None):
+    def test_is_contains_with_ui_selector_locator(
+        self, app: Shadowstep, press_home: Any, stability: None
+    ):
         """Test is_contains method with UiSelector as locator.
-        
+
         Steps:
         1. Create parent element with valid locator
         2. Create UiSelector for child element
         3. Call is_contains with UiSelector as locator
         4. Verify method correctly handles UiSelector locator type
         5. Verify method returns appropriate boolean result
-        
+
         Тест проверяет метод is_contains с UiSelector в качестве локатора.
         Шаги:
         1. Создать родительский элемент с валидным локатором
@@ -569,16 +613,18 @@ class TestElementProperties:
         """
         pass
 
-    def test_is_contains_handles_nosuchelement_exception(self, app: Shadowstep, press_home: Any, stability: None):
+    def test_is_contains_handles_nosuchelement_exception(
+        self, app: Shadowstep, press_home: Any, stability: None
+    ):
         """Test is_contains method handles NoSuchElementException and returns False.
-        
+
         Steps:
         1. Create parent element with valid locator
         2. Use locator for child element that doesn't exist
         3. Call is_contains method and verify it handles NoSuchElementException
         4. Verify method returns False when child element is not found
         5. Verify no exception is raised
-        
+
         Тест проверяет обработку NoSuchElementException в методе is_contains.
         Шаги:
         1. Создать родительский элемент с валидным локатором
@@ -589,16 +635,18 @@ class TestElementProperties:
         """
         pass
 
-    def test_text_handles_stale_element_reference_exception(self, app: Shadowstep, press_home: Any, stability: None):
+    def test_text_handles_stale_element_reference_exception(
+        self, app: Shadowstep, press_home: Any, stability: None
+    ):
         """Test text method handles StaleElementReferenceException and re-acquires element.
-        
+
         Steps:
         1. Create element with valid locator
         2. Simulate StaleElementReferenceException
         3. Call text method and verify it handles exception
         4. Verify element is re-acquired and method continues
         5. Verify method eventually succeeds or raises ShadowstepElementException
-        
+
         Тест проверяет обработку StaleElementReferenceException в методе text.
         Шаги:
         1. Создать элемент с валидным локатором
@@ -609,16 +657,18 @@ class TestElementProperties:
         """
         pass
 
-    def test_resource_id_handles_webdriver_exception(self, app: Shadowstep, press_home: Any, stability: None):
+    def test_resource_id_handles_webdriver_exception(
+        self, app: Shadowstep, press_home: Any, stability: None
+    ):
         """Test resource_id method handles WebDriverException with specific error messages.
-        
+
         Steps:
         1. Create element with valid locator
         2. Simulate WebDriverException with "instrumentation process is not running" message
         3. Call resource_id method and verify it handles exception
         4. Verify method retries and eventually raises ShadowstepElementException
         5. Test with "socket hang up" message as well
-        
+
         Тест проверяет обработку WebDriverException с специфичными сообщениями в методе resource_id.
         Шаги:
         1. Создать элемент с валидным локатором
@@ -629,16 +679,18 @@ class TestElementProperties:
         """
         pass
 
-    def test_class_handles_timeout_exceeded(self, app: Shadowstep, press_home: Any, stability: None):
+    def test_class_handles_timeout_exceeded(
+        self, app: Shadowstep, press_home: Any, stability: None
+    ):
         """Test class_ method raises ShadowstepElementException when timeout exceeded.
-        
+
         Steps:
         1. Create element with very short timeout
         2. Simulate continuous failures to trigger timeout
         3. Call class_ method
         4. Verify ShadowstepElementException is raised with proper message
         5. Verify exception contains timeout information and stacktrace
-        
+
         Тест проверяет вызов ShadowstepElementException при превышении таймаута в методе class_.
         Шаги:
         1. Создать элемент с очень коротким таймаутом
@@ -649,15 +701,17 @@ class TestElementProperties:
         """
         pass
 
-    def test_bounds_handles_invalid_session_id_exception(self, app: Shadowstep, press_home: Any, stability: None):
+    def test_bounds_handles_invalid_session_id_exception(
+        self, app: Shadowstep, press_home: Any, stability: None
+    ):
         """Test bounds method handles InvalidSessionIdException gracefully.
-        
+
         Steps:
         1. Create element with valid locator
         2. Simulate InvalidSessionIdException
         3. Call bounds method and verify it handles exception
         4. Verify method retries and eventually raises ShadowstepElementException
-        
+
         Тест проверяет обработку InvalidSessionIdException в методе bounds.
         Шаги:
         1. Создать элемент с валидным локатором
@@ -667,15 +721,17 @@ class TestElementProperties:
         """
         pass
 
-    def test_checked_handles_attribute_error(self, app: Shadowstep, press_home: Any, stability: None):
+    def test_checked_handles_attribute_error(
+        self, app: Shadowstep, press_home: Any, stability: None
+    ):
         """Test checked method handles AttributeError gracefully.
-        
+
         Steps:
         1. Create element with valid locator
         2. Simulate AttributeError during attribute access
         3. Call checked method and verify it handles exception
         4. Verify method retries and eventually raises ShadowstepElementException
-        
+
         Тест проверяет обработку AttributeError в методе checked.
         Шаги:
         1. Создать элемент с валидным локатором
@@ -685,15 +741,17 @@ class TestElementProperties:
         """
         pass
 
-    def test_enabled_handles_driver_disconnection(self, app: Shadowstep, press_home: Any, stability: None):
+    def test_enabled_handles_driver_disconnection(
+        self, app: Shadowstep, press_home: Any, stability: None
+    ):
         """Test enabled method behavior when WebDriver connection is lost.
-        
+
         Steps:
         1. Create element with valid locator
         2. Simulate driver disconnection during attribute access
         3. Call enabled method and verify it handles disconnection
         4. Verify method retries and eventually raises ShadowstepElementException
-        
+
         Тест проверяет поведение метода enabled при потере соединения с WebDriver.
         Шаги:
         1. Создать элемент с валидным локатором
@@ -703,16 +761,18 @@ class TestElementProperties:
         """
         pass
 
-    def test_focusable_handles_stale_element_reference_exception(self, app: Shadowstep, press_home: Any, stability: None):
+    def test_focusable_handles_stale_element_reference_exception(
+        self, app: Shadowstep, press_home: Any, stability: None
+    ):
         """Test focusable method handles StaleElementReferenceException and re-acquires element.
-        
+
         Steps:
         1. Create element with valid locator
         2. Simulate StaleElementReferenceException
         3. Call focusable method and verify it handles exception
         4. Verify element is re-acquired and method continues
         5. Verify method eventually succeeds or raises ShadowstepElementException
-        
+
         Тест проверяет обработку StaleElementReferenceException в методе focusable.
         Шаги:
         1. Создать элемент с валидным локатором
@@ -723,16 +783,18 @@ class TestElementProperties:
         """
         pass
 
-    def test_focused_handles_webdriver_exception(self, app: Shadowstep, press_home: Any, stability: None):
+    def test_focused_handles_webdriver_exception(
+        self, app: Shadowstep, press_home: Any, stability: None
+    ):
         """Test focused method handles WebDriverException with specific error messages.
-        
+
         Steps:
         1. Create element with valid locator
         2. Simulate WebDriverException with "instrumentation process is not running" message
         3. Call focused method and verify it handles exception
         4. Verify method retries and eventually raises ShadowstepElementException
         5. Test with "socket hang up" message as well
-        
+
         Тест проверяет обработку WebDriverException с специфичными сообщениями в методе focused.
         Шаги:
         1. Создать элемент с валидным локатором
@@ -743,16 +805,18 @@ class TestElementProperties:
         """
         pass
 
-    def test_size_handles_stale_element_reference_exception(self, app: Shadowstep, press_home: Any, stability: None):
+    def test_size_handles_stale_element_reference_exception(
+        self, app: Shadowstep, press_home: Any, stability: None
+    ):
         """Test size method handles StaleElementReferenceException and re-acquires element.
-        
+
         Steps:
         1. Create element with valid locator
         2. Simulate StaleElementReferenceException
         3. Call size method and verify it handles exception
         4. Verify element is re-acquired and method continues
         5. Verify method eventually succeeds or raises ShadowstepElementException
-        
+
         Тест проверяет обработку StaleElementReferenceException в методе size.
         Шаги:
         1. Создать элемент с валидным локатором
@@ -763,15 +827,17 @@ class TestElementProperties:
         """
         pass
 
-    def test_size_handles_webdriver_exception(self, app: Shadowstep, press_home: Any, stability: None):
+    def test_size_handles_webdriver_exception(
+        self, app: Shadowstep, press_home: Any, stability: None
+    ):
         """Test size method handles WebDriverException gracefully.
-        
+
         Steps:
         1. Create element with valid locator
         2. Simulate WebDriverException
         3. Call size method and verify it handles exception
         4. Verify method retries and eventually raises ShadowstepElementException
-        
+
         Тест проверяет обработку WebDriverException в методе size.
         Шаги:
         1. Создать элемент с валидным локатором
@@ -781,15 +847,17 @@ class TestElementProperties:
         """
         pass
 
-    def test_location_handles_nosuchdriver_exception(self, app: Shadowstep, press_home: Any, stability: None):
+    def test_location_handles_nosuchdriver_exception(
+        self, app: Shadowstep, press_home: Any, stability: None
+    ):
         """Test location method handles NoSuchDriverException gracefully.
-        
+
         Steps:
         1. Create element with valid locator
         2. Simulate NoSuchDriverException by corrupting driver
         3. Call location method and verify it handles exception
         4. Verify method retries and eventually raises ShadowstepElementException
-        
+
         Тест проверяет обработку NoSuchDriverException в методе location.
         Шаги:
         1. Создать элемент с валидным локатором
@@ -799,15 +867,17 @@ class TestElementProperties:
         """
         pass
 
-    def test_rect_handles_invalid_session_id_exception(self, app: Shadowstep, press_home: Any, stability: None):
+    def test_rect_handles_invalid_session_id_exception(
+        self, app: Shadowstep, press_home: Any, stability: None
+    ):
         """Test rect method handles InvalidSessionIdException gracefully.
-        
+
         Steps:
         1. Create element with valid locator
         2. Simulate InvalidSessionIdException
         3. Call rect method and verify it handles exception
         4. Verify method retries and eventually raises ShadowstepElementException
-        
+
         Тест проверяет обработку InvalidSessionIdException в методе rect.
         Шаги:
         1. Создать элемент с валидным локатором
@@ -817,15 +887,17 @@ class TestElementProperties:
         """
         pass
 
-    def test_aria_role_handles_attribute_error(self, app: Shadowstep, press_home: Any, stability: None):
+    def test_aria_role_handles_attribute_error(
+        self, app: Shadowstep, press_home: Any, stability: None
+    ):
         """Test aria_role method handles AttributeError gracefully.
-        
+
         Steps:
         1. Create element with valid locator
         2. Simulate AttributeError during aria_role access
         3. Call aria_role method and verify it handles exception
         4. Verify method retries and eventually raises ShadowstepElementException
-        
+
         Тест проверяет обработку AttributeError в методе aria_role.
         Шаги:
         1. Создать элемент с валидным локатором
@@ -835,16 +907,18 @@ class TestElementProperties:
         """
         pass
 
-    def test_accessible_name_handles_stale_element_reference_exception(self, app: Shadowstep, press_home: Any, stability: None):
+    def test_accessible_name_handles_stale_element_reference_exception(
+        self, app: Shadowstep, press_home: Any, stability: None
+    ):
         """Test accessible_name method handles StaleElementReferenceException and re-acquires element.
-        
+
         Steps:
         1. Create element with valid locator
         2. Simulate StaleElementReferenceException
         3. Call accessible_name method and verify it handles exception
         4. Verify element is re-acquired and method continues
         5. Verify method eventually succeeds or raises ShadowstepElementException
-        
+
         Тест проверяет обработку StaleElementReferenceException в методе accessible_name.
         Шаги:
         1. Создать элемент с валидным локатором
@@ -855,15 +929,17 @@ class TestElementProperties:
         """
         pass
 
-    def test_value_of_css_property_handles_webdriver_exception(self, app: Shadowstep, press_home: Any, stability: None):
+    def test_value_of_css_property_handles_webdriver_exception(
+        self, app: Shadowstep, press_home: Any, stability: None
+    ):
         """Test value_of_css_property method handles WebDriverException gracefully.
-        
+
         Steps:
         1. Create element with valid locator
         2. Simulate WebDriverException
         3. Call value_of_css_property method and verify it handles exception
         4. Verify method retries and eventually raises ShadowstepElementException
-        
+
         Тест проверяет обработку WebDriverException в методе value_of_css_property.
         Шаги:
         1. Создать элемент с валидным локатором
@@ -873,15 +949,17 @@ class TestElementProperties:
         """
         pass
 
-    def test_value_of_css_property_with_invalid_property_name(self, app: Shadowstep, press_home: Any, stability: None):
+    def test_value_of_css_property_with_invalid_property_name(
+        self, app: Shadowstep, press_home: Any, stability: None
+    ):
         """Test value_of_css_property method with invalid property name.
-        
+
         Steps:
         1. Create element with valid locator
         2. Call value_of_css_property with invalid property name (empty string, None, special characters)
         3. Verify method handles invalid property name gracefully
         4. Verify appropriate error handling or return value
-        
+
         Тест проверяет метод value_of_css_property с невалидным именем свойства.
         Шаги:
         1. Создать элемент с валидным локатором
@@ -891,15 +969,17 @@ class TestElementProperties:
         """
         pass
 
-    def test_shadow_root_handles_nosuchdriver_exception(self, app: Shadowstep, press_home: Any, stability: None):
+    def test_shadow_root_handles_nosuchdriver_exception(
+        self, app: Shadowstep, press_home: Any, stability: None
+    ):
         """Test shadow_root method handles NoSuchDriverException gracefully.
-        
+
         Steps:
         1. Create element with valid locator
         2. Simulate NoSuchDriverException by corrupting driver
         3. Call shadow_root method and verify it handles exception
         4. Verify method retries and eventually raises ShadowstepElementException
-        
+
         Тест проверяет обработку NoSuchDriverException в методе shadow_root.
         Шаги:
         1. Создать элемент с валидным локатором
@@ -909,15 +989,17 @@ class TestElementProperties:
         """
         pass
 
-    def test_shadow_root_handles_webdriver_exception(self, app: Shadowstep, press_home: Any, stability: None):
+    def test_shadow_root_handles_webdriver_exception(
+        self, app: Shadowstep, press_home: Any, stability: None
+    ):
         """Test shadow_root method handles WebDriverException gracefully.
-        
+
         Steps:
         1. Create element with valid locator
         2. Simulate WebDriverException
         3. Call shadow_root method and verify it handles exception
         4. Verify method retries and eventually raises ShadowstepElementException
-        
+
         Тест проверяет обработку WebDriverException в методе shadow_root.
         Шаги:
         1. Создать элемент с валидным локатором
@@ -927,15 +1009,17 @@ class TestElementProperties:
         """
         pass
 
-    def test_get_attribute_with_empty_string_name(self, app: Shadowstep, press_home: Any, stability: None):
+    def test_get_attribute_with_empty_string_name(
+        self, app: Shadowstep, press_home: Any, stability: None
+    ):
         """Test get_attribute method with empty string attribute name.
-        
+
         Steps:
         1. Create element with valid locator
         2. Call get_attribute with empty string as attribute name
         3. Verify method handles empty string gracefully
         4. Verify appropriate error handling or return value
-        
+
         Тест проверяет метод get_attribute с пустой строкой в качестве имени атрибута.
         Шаги:
         1. Создать элемент с валидным локатором
@@ -947,13 +1031,13 @@ class TestElementProperties:
 
     def test_get_attribute_with_none_name(self, app: Shadowstep, press_home: Any, stability: None):
         """Test get_attribute method with None attribute name.
-        
+
         Steps:
         1. Create element with valid locator
         2. Call get_attribute with None as attribute name
         3. Verify method handles None gracefully
         4. Verify appropriate error handling or return value
-        
+
         Тест проверяет метод get_attribute с None в качестве имени атрибута.
         Шаги:
         1. Создать элемент с валидным локатором
@@ -963,15 +1047,17 @@ class TestElementProperties:
         """
         pass
 
-    def test_get_attributes_with_empty_page_source(self, app: Shadowstep, press_home: Any, stability: None):
+    def test_get_attributes_with_empty_page_source(
+        self, app: Shadowstep, press_home: Any, stability: None
+    ):
         """Test get_attributes method with empty page source.
-        
+
         Steps:
         1. Create element with valid locator
         2. Mock driver.page_source to return empty string
         3. Call get_attributes method and verify it handles empty page source
         4. Verify method returns empty dictionary when page source is empty
-        
+
         Тест проверяет метод get_attributes с пустым исходным кодом страницы.
         Шаги:
         1. Создать элемент с валидным локатором
@@ -983,13 +1069,13 @@ class TestElementProperties:
 
     def test_is_visible_with_none_element(self, app: Shadowstep, press_home: Any, stability: None):
         """Test is_visible method with None element.
-        
+
         Steps:
         1. Create element with valid locator
         2. Mock element.get_native() to return None
         3. Call is_visible method and verify it handles None element
         4. Verify method returns False when element is None
-        
+
         Тест проверяет метод is_visible с None элементом.
         Шаги:
         1. Создать элемент с валидным локатором
@@ -999,15 +1085,17 @@ class TestElementProperties:
         """
         pass
 
-    def test_is_contains_with_invalid_locator_type(self, app: Shadowstep, press_home: Any, stability: None):
+    def test_is_contains_with_invalid_locator_type(
+        self, app: Shadowstep, press_home: Any, stability: None
+    ):
         """Test is_contains method with invalid locator type.
-        
+
         Steps:
         1. Create parent element with valid locator
         2. Call is_contains with invalid locator type (e.g., integer, list)
         3. Verify method handles invalid locator type gracefully
         4. Verify appropriate error handling or return value
-        
+
         Тест проверяет метод is_contains с невалидным типом локатора.
         Шаги:
         1. Создать родительский элемент с валидным локатором
@@ -1017,15 +1105,17 @@ class TestElementProperties:
         """
         pass
 
-    def test_properties_methods_with_concurrent_operations(self, app: Shadowstep, press_home: Any, stability: None):
+    def test_properties_methods_with_concurrent_operations(
+        self, app: Shadowstep, press_home: Any, stability: None
+    ):
         """Test properties methods behavior with concurrent operations on same element.
-        
+
         Steps:
         1. Create element with valid locator
         2. Start multiple property access operations concurrently on same element
         3. Verify all operations complete successfully or handle errors appropriately
         4. Verify no race conditions or conflicts occur
-        
+
         Тест проверяет поведение методов свойств при параллельных операциях с одним элементом.
         Шаги:
         1. Создать элемент с валидным локатором
@@ -1035,15 +1125,17 @@ class TestElementProperties:
         """
         pass
 
-    def test_properties_methods_performance_with_large_elements(self, app: Shadowstep, press_home: Any, stability: None):
+    def test_properties_methods_performance_with_large_elements(
+        self, app: Shadowstep, press_home: Any, stability: None
+    ):
         """Test properties methods performance with large elements.
-        
+
         Steps:
         1. Create element with large number of attributes
         2. Call properties methods and measure performance
         3. Verify methods complete within reasonable time
         4. Verify returned data is correct and complete
-        
+
         Тест проверяет производительность методов свойств с большими элементами.
         Шаги:
         1. Создать элемент с большим количеством атрибутов
@@ -1053,15 +1145,17 @@ class TestElementProperties:
         """
         pass
 
-    def test_properties_methods_with_memory_pressure(self, app: Shadowstep, press_home: Any, stability: None):
+    def test_properties_methods_with_memory_pressure(
+        self, app: Shadowstep, press_home: Any, stability: None
+    ):
         """Test properties methods behavior under memory pressure.
-        
+
         Steps:
         1. Create element with valid locator
         2. Simulate memory pressure conditions
         3. Call properties methods and verify they handle memory pressure
         4. Verify methods don't crash or produce incorrect results
-        
+
         Тест проверяет поведение методов свойств при нехватке памяти.
         Шаги:
         1. Создать элемент с валидным локатором
@@ -1071,15 +1165,17 @@ class TestElementProperties:
         """
         pass
 
-    def test_properties_methods_with_network_issues(self, app: Shadowstep, press_home: Any, stability: None):
+    def test_properties_methods_with_network_issues(
+        self, app: Shadowstep, press_home: Any, stability: None
+    ):
         """Test properties methods behavior with network connectivity issues.
-        
+
         Steps:
         1. Create element with valid locator
         2. Simulate network connectivity issues
         3. Call properties methods and verify they handle network issues
         4. Verify appropriate error handling and retry mechanisms
-        
+
         Тест проверяет поведение методов свойств при проблемах с сетевым подключением.
         Шаги:
         1. Создать элемент с валидным локатором

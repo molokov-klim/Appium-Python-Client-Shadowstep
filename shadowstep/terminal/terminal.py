@@ -250,7 +250,7 @@ class Terminal:
             return False
         return self.start_activity(package=package, activity=activity)
 
-    def install_app(self, source: str, remote_server_path: str, filename: str, udid: str) -> bool:
+    def install_app(self, source: str | Path, remote_server_path: str | Path, filename: str, udid: str) -> bool:
         """Installs an application on the specified mobile device.
 
         :param source: The local path of the application file to install.
@@ -261,9 +261,17 @@ class Terminal:
         :raises NotProvideCredentialsError: If the transport credentials are not provided.
         """
         try:
-            source_filepath = Path(source) / filename
-            destination_filepath = Path(remote_server_path) / filename
-            self.transport.scp.put(files=source_filepath, remote_path=destination_filepath)
+            source_filepath = Path(source)
+            destination_filepath = Path(remote_server_path)
+            if source_filepath.is_dir():
+                source_filepath /= filename
+            if destination_filepath.is_dir():
+                destination_filepath /= filename
+            if not source_filepath.exists():
+                logger.error("File not found: %s", source_filepath)
+                return False
+
+            self.transport.scp.put(files=str(source_filepath), remote_path=str(destination_filepath))
             _, stdout, _ = self.transport.ssh.exec_command(
                 f"adb -s {udid} install -r {destination_filepath}",
             )
@@ -275,7 +283,7 @@ class Terminal:
                 return False
             logger.debug("%s output=%s", get_current_func_name(), output)
         except OSError:
-            logger.exception("appium_extended_terminal.push()")
+            logger.exception("Failed: %s", {get_current_func_name()})
             return False
         else:
             return True

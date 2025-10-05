@@ -891,8 +891,8 @@ class Shadowstep(ShadowstepBase):
             width: int,
             height: int,
             direction: str,
-            percent: float,
-            speed: int,
+            percent: float = 0.5,
+            speed: int = 8000,
     ) -> Shadowstep:
         """Perform a swipe gesture within the specified bounding box.
 

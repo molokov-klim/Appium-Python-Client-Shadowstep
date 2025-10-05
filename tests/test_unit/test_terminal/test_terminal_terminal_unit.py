@@ -246,7 +246,8 @@ class TestTerminal:
         assert result is False  # noqa: S101
 
     @pytest.mark.unit
-    def test_install_app_success(self):
+    @patch('pathlib.Path.exists')
+    def test_install_app_success(self, mock_exists):
         """Test successful app installation."""
         # Arrange
         source = "/local/path"
@@ -259,6 +260,9 @@ class TestTerminal:
         mock_stderr = Mock()
         mock_stdout.channel.recv_exit_status.return_value = 0
         mock_stdout.readlines.return_value = ["success"]
+
+        # Mock file existence check
+        mock_exists.return_value = True
 
         self.mock_transport.scp.put = Mock()
         self.mock_transport.ssh.exec_command.return_value = (mock_stdin, mock_stdout, mock_stderr)

@@ -1,8 +1,13 @@
 # ruff: noqa
 # pyright: ignore
+import logging
+import types
+from io import StringIO
 from typing import Any
 
 import pytest
+
+from page_base import PageBaseShadowstep
 from shadowstep.element.element import Element
 from shadowstep.shadowstep import Shadowstep
 
@@ -358,34 +363,29 @@ class TestShadowstep:
         4. Verify that the method completes without raising exceptions.
         5. Verify that no pages are registered from the problematic module.
         """
-        import logging
-        import types
-        from io import StringIO
-        
         # Step 1: Create a module that raises an exception during inspection
         # We'll create a module that raises an exception when inspect.getmembers() is called
         test_module = types.ModuleType("test_problematic_module")
         
-        # Create a class that raises an exception when inspect.getmembers() tries to inspect it
+        # Create a class that raises an exception when issubclass() is called on it
         # We'll create a class that raises an exception when its __bases__ is accessed
         class ProblematicClass:
             def __init__(self):
-                # This will cause an exception when inspect.getmembers() tries to check if it's a subclass
                 pass
             
-            @property
-            def __bases__(self):
-                raise RuntimeError("Simulated inspection error")
+            def __getattribute__(self, name):
+                if name == '__bases__':
+                    raise RuntimeError("Simulated inspection error")
+                return super().__getattribute__(name)
         
         # Add the problematic class to the module
         test_module.ProblematicClass = ProblematicClass
         
-        # Also add a descriptor that raises an exception when accessed
-        class ProblematicDescriptor:
-            def __get__(self, obj, objtype=None):
-                raise RuntimeError("Simulated descriptor access error")
+        # Also add a regular function that should not cause issues
+        def normal_function():
+            return "normal"
         
-        test_module.problematic_descriptor = ProblematicDescriptor()
+        test_module.normal_function = normal_function
         
         # Store original pages count
         original_pages_count = len(app.pages)
@@ -449,9 +449,6 @@ class TestShadowstep:
         4. Verify that the log contains page names, modules, and class names.
         5. Verify that the log format matches expected pattern.
         """
-        import logging
-        from io import StringIO
-        
         # Step 1: Register some test pages in self.pages
         # Create a test page class dynamically
         from shadowstep.page_base import PageBaseShadowstep
@@ -544,8 +541,6 @@ class TestShadowstep:
         5. Verify that the same singleton instance is returned each time.
         """
         # Step 1: Register a test page in self.pages
-        from shadowstep.page_base import PageBaseShadowstep
-        
         class PageTestGetPage(PageBaseShadowstep):
             def __init__(self) -> None:
                 super().__init__()
@@ -658,7 +653,6 @@ class TestShadowstep:
         5. Verify that the same singleton instance is returned each time.
         """
         # Step 1: Register a test page in self.pages
-        from shadowstep.page_base import PageBaseShadowstep
         
         class PageTestResolvePage(PageBaseShadowstep):
             def __init__(self) -> None:
@@ -919,9 +913,6 @@ class TestShadowstep:
         3. Verify that no exceptions are raised.
         4. Verify that a warning is logged.
         """
-        import logging
-        from io import StringIO
-        
         # Step 1: Call is_text_visible() with non-existent text
         non_existent_texts = [
             "NonExistentText12345",

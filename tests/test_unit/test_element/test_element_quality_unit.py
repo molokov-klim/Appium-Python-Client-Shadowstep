@@ -192,9 +192,10 @@ class TestElementQuality:
             stacktrace=["trace1", "trace2"]
         )
 
-        assert exception.msg == "Test error"  # noqa: S101
-        assert exception.screen == "screenshot.png"  # noqa: S101
-        assert exception.stacktrace == ["trace1", "trace2"]  # noqa: S101
+        assert "Test error" in str(exception)  # noqa: S101
+        assert "screenshot.png" in str(exception)  # noqa: S101
+        assert "trace1" in str(exception)  # noqa: S101
+        assert "trace2" in str(exception)  # noqa: S101
 
     @pytest.mark.unit
     def test_element_getattr_delegation(self):

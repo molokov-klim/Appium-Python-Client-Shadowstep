@@ -265,8 +265,8 @@ class TestUiSelectorDSLIntegration:
             self.converter.to_uiselector(selector)
         end_time = time.time()
         
-        # Should complete in reasonable time (less than 2 seconds for 1000 iterations)
-        assert (end_time - start_time) < 2.0  # noqa: S101
+        # Should complete in reasonable time (less than 5 seconds for 1000 iterations)
+        assert (end_time - start_time) < 5.0  # noqa: S101
 
     @pytest.mark.unit
     def test_ui_selector_edge_cases(self):

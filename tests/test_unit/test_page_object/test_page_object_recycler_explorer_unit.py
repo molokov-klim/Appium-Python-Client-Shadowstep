@@ -42,7 +42,7 @@ class TestPageObjectRecyclerExplorer:
 
         explorer = PageObjectRecyclerExplorer(base, translator)
 
-        with pytest.raises(ShadowstepTerminalNotInitializedError, match="Terminal is not initialized"):
+        with pytest.raises(ShadowstepTerminalNotInitializedError, match=".*Terminal is not initialized.*"):
             explorer.explore("output_dir", timeout=10)
 
     @pytest.mark.unit

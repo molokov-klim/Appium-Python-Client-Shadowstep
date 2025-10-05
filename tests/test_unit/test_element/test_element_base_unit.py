@@ -127,7 +127,7 @@ class TestElementBase:
         element_base = ElementBase(("xpath", "//test"), mock_shadowstep)
         # Make remove_null_value return empty dict
         with patch.object(element_base, "remove_null_value", return_value={}):
-            with pytest.raises(ShadowstepNoSuchElementException, match="Failed to resolve locator"):
+            with pytest.raises(ShadowstepNoSuchElementException, match=".*Failed to resolve locator.*"):
                 element_base._get_web_element({"text": "null"})
 
     @pytest.mark.unit
@@ -161,7 +161,7 @@ class TestElementBase:
         with pytest.raises(ShadowstepNoSuchElementException) as exc_info:
             element_base._get_web_element(("xpath", "//test"))
         
-        assert "Element not found" in exc_info.value.msg
+        assert "Element not found" in str(exc_info.value)
         assert exc_info.value.locator == ("xpath", "//test")
 
     @pytest.mark.unit
@@ -195,7 +195,7 @@ class TestElementBase:
         with pytest.raises(ShadowstepNoSuchElementException) as exc_info:
             element_base._get_web_element(("xpath", "//test"))
         
-        assert exc_info.value.msg == "Timeout"
+        assert "Timeout" in str(exc_info.value)
 
     @pytest.mark.unit
     @patch("shadowstep.element.base.WebDriverSingleton.get_driver")
@@ -228,7 +228,7 @@ class TestElementBase:
         with pytest.raises(ShadowstepTimeoutException) as exc_info:
             element_base._get_web_element(("xpath", "//test"))
         
-        assert "Timeout waiting for element" in exc_info.value.msg
+        assert "Timeout waiting for element" in str(exc_info.value)
         assert exc_info.value.locator == ("xpath", "//test")
 
     @pytest.mark.unit

@@ -146,7 +146,7 @@ class TestPageGraph:
         graph = PageGraph()
         edges = {"page2": lambda: None}
         
-        with pytest.raises(ShadowstepPageCannotBeNoneError, match="page cannot be None"):
+        with pytest.raises(ShadowstepPageCannotBeNoneError, match=".*page cannot be None.*"):
             graph.add_page(None, edges)
     
     @pytest.mark.unit
@@ -298,7 +298,7 @@ class TestPageNavigator:
         """Test that adding None page raises TypeError."""
         edges = {"page2": lambda: None}
         
-        with pytest.raises(ShadowstepPageCannotBeNoneError, match="page cannot be None"):
+        with pytest.raises(ShadowstepPageCannotBeNoneError, match=".*page cannot be None.*"):
             navigator.add_page(None, edges)
     
     @pytest.mark.unit
@@ -315,7 +315,7 @@ class TestPageNavigator:
         """Test that navigating with None from_page raises TypeError."""
         to_page = MockPage("page2")
         
-        with pytest.raises(ShadowstepFromPageCannotBeNoneError, match="from_page cannot be None"):
+        with pytest.raises(ShadowstepFromPageCannotBeNoneError, match=".*from_page cannot be None.*"):
             navigator.navigate(None, to_page)
     
     @pytest.mark.unit
@@ -323,7 +323,7 @@ class TestPageNavigator:
         """Test that navigating with None to_page raises TypeError."""
         from_page = MockPage("page1")
         
-        with pytest.raises(ShadowstepToPageCannotBeNoneError, match="to_page cannot be None"):
+        with pytest.raises(ShadowstepToPageCannotBeNoneError, match=".*to_page cannot be None.*"):
             navigator.navigate(from_page, None)
     
     @pytest.mark.unit
@@ -332,7 +332,7 @@ class TestPageNavigator:
         from_page = MockPage("page1")
         to_page = MockPage("page2")
         
-        with pytest.raises(ShadowstepTimeoutMustBeNonNegativeError, match="timeout must be non-negative"):
+        with pytest.raises(ShadowstepTimeoutMustBeNonNegativeError, match=".*timeout must be non-negative.*"):
             navigator.navigate(from_page, to_page, timeout=-1)
     
     @pytest.mark.unit
@@ -409,7 +409,7 @@ class TestPageNavigator:
     @pytest.mark.unit
     def test_perform_navigation_empty_path_raises_error(self, navigator: PageNavigator) -> None:
         """Test that performing dom with empty path raises ValueError."""
-        with pytest.raises(ShadowstepPathCannotBeEmptyError, match="path cannot be empty"):
+        with pytest.raises(ShadowstepPathCannotBeEmptyError, match=".*path cannot be empty.*"):
             navigator.perform_navigation([])
     
     @pytest.mark.unit
@@ -417,7 +417,7 @@ class TestPageNavigator:
         """Test that performing dom with single page raises ValueError."""
         page = MockPageBase("page1")
         
-        with pytest.raises(ShadowstepPathMustContainAtLeastTwoPagesError, match="path must contain at least 2 pages"):
+        with pytest.raises(ShadowstepPathMustContainAtLeastTwoPagesError, match=".*path must contain at least 2 pages.*"):
             navigator.perform_navigation([page])
     
     @pytest.mark.unit
@@ -434,7 +434,7 @@ class TestPageNavigator:
         
         path = [page1, page2]
         
-        with pytest.raises(ShadowstepNavigationFailedError, match="Navigation error"):
+        with pytest.raises(ShadowstepNavigationFailedError, match=".*Navigation error.*"):
             navigator.perform_navigation(path, timeout=1)
     
     @pytest.mark.unit

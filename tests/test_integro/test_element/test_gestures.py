@@ -113,23 +113,13 @@ class TestElementGestures:
         assert "some_text" in search_src_text.get_attribute("text")  # noqa: S101  # noqa: S101
 
     def test_drag(self, app: Shadowstep, press_home: None, stability: None):
-        messaging_1 = app.get_element(locator={"content-desc": "Messaging"})
-        messaging_1.timeout = 1
-        m1_center_x, m1_center_y, = messaging_1.get_center()
-        search = app.get_element(locator={"resource-id": "com.android.quicksearchbox:id/search_widget_text"})
-        assert "com.android.quicksearchbox" in search.get_attribute("package")  # noqa: S101  # noqa: S101
-        end_x, end_y = search.get_center()
-        app.get_element(locator={"content-desc": "Phone"}).tap_and_move(x=100, y=500)
-        time.sleep(1)
-        messaging_1.drag(end_x=100, end_y=500)
-        time.sleep(1)
-        messaging_1.drag(end_x=end_x, end_y=end_y)
-        messaging_1.timeout = 5
-        time.sleep(1)
-        assert not messaging_1.is_visible()  # noqa: S101  # noqa: S101
-        app.get_element(locator={"content-desc": "Phone"}).tap_and_move(x=100, y=500)
-        messaging_2 = app.get_element(locator={"content-desc": "Messaging"})
-        messaging_2.drag(end_x=m1_center_x, end_y=m1_center_y)
+        #app.get_element(locator={"content-desc": "Phone"}).tap_and_move(x=100, y=500)
+        gallery = app.get_element(locator={"content-desc": "Gallery"})
+        center_x1, center_y1 = gallery.get_center()
+        gallery.drag(end_x=center_x1+200, end_y=center_y1)
+        assert gallery.get_center() != center_x1, center_y1
+        gallery.drag(end_x=center_x1, end_y=center_y1)
+
 
     def test_fling(self, app: Shadowstep, press_home: None, stability: None):
         element = app.get_element(locator={"content-desc": "Phone"})

@@ -971,8 +971,6 @@ class Element(ElementBase):
             dict: Location coordinates of the element.
 
         """
-        self.logger.warning(
-            "Method %s is not implemented in UiAutomator2", get_current_func_name())
         return self.properties.location()  # type: ignore[return-value]
 
     @property

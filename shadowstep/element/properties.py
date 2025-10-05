@@ -20,7 +20,10 @@ from selenium.common import (
 )
 
 from shadowstep.decorators.decorators import log_debug
-from shadowstep.exceptions.shadowstep_exceptions import ShadowstepElementException
+from shadowstep.exceptions.shadowstep_exceptions import (
+    ShadowstepElementException,
+    ShadowstepNoSuchElementException,
+)
 
 if TYPE_CHECKING:
     from selenium.webdriver.remote.shadowroot import ShadowRoot
@@ -1058,9 +1061,6 @@ class ElementProperties:
     @log_debug()
     def location(self) -> dict[str, Any]:
         """Get element location."""
-        self.logger.warning(
-            "Method %s is not implemented in UiAutomator2",
-            inspect.currentframe() if inspect.currentframe() else "unknown")
         start_time = time.time()
         while time.time() - start_time < self.element.timeout:
             try:
@@ -1201,6 +1201,8 @@ class ElementProperties:
             return self._check_element_bounds(
                 element_location, element_size, screen_width, screen_height)  # type: ignore[reportUnknownMemberType]
 
+        except ShadowstepNoSuchElementException:
+            return False
         except NoSuchElementException:
             return False
         except (NoSuchDriverException, InvalidSessionIdException, AttributeError) as error:
