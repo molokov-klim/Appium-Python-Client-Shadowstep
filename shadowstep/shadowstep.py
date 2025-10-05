@@ -87,7 +87,7 @@ class Shadowstep(ShadowstepBase):
             cls._instance = cls()
         return cls._instance
 
-    def __init__(self) -> None:
+    def __init__(self, *args: object, **kwargs: object) -> None:  # noqa: ARG002
         """Initialize the Shadowstep instance.
 
         Sets up logging, page discovery, and initializes core components.
