@@ -38,7 +38,6 @@ from shadowstep.utils.utils import get_current_func_name
 
 if TYPE_CHECKING:
     import numpy as np
-    from locator_types import ModuleType
     from numpy._typing import NDArray
     from PIL import Image
     from selenium.types import WaitExcTypes
@@ -132,7 +131,7 @@ class Shadowstep(ShadowstepBase):
                         except Exception as e:  # noqa: BLE001
                             self.logger.warning("⚠️ Import error %s: %s", file, e)
 
-    def _register_pages_from_module(self, module: ModuleType) -> None:
+    def _register_pages_from_module(self, module: Any) -> None:
         try:
             members = inspect.getmembers(module)
             for name, obj in members:
