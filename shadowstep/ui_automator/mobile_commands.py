@@ -1720,6 +1720,12 @@ class MobileCommands:
         Returns:
             Any: result of script execution
 
+        Description:
+            Locks the device using a simple lock (e.g., without a password). Optionally, the device can be automatically unlocked after a specified number of seconds.
+
+        Supported arguments:
+            seconds (number|string): The number of seconds after which the device should be automatically unlocked. If set to 0 or left empty, the device must be unlocked manually. Optional. Example: 10
+
         """
         self.logger.debug("%s", get_current_func_name())
         return self._execute("mobile: lock", params)
@@ -1742,6 +1748,15 @@ class MobileCommands:
 
         Returns:
             Any: result of script execution
+
+        Description:
+            Unlocks the device if it is currently locked. No operation is performed if the device is not locked.
+
+        Supported arguments:
+            key (string): The unlock key to use. See the documentation for the `appium:unlockKey` capability for more details. Required. Example: "12345"
+            type (string): The unlock type. See the documentation for the `appium:unlockType` capability for more details. Required. Example: "password"
+            strategy (string): The unlock strategy to apply. See the documentation for the `appium:unlockStrategy` capability for more details. Optional. Example: "uiautomator"
+            timeoutMs (number): The timeout in milliseconds to wait for a successful unlock. See the documentation for the `appium:unlockSuccessTimeout` capability. Optional. Example: 5000
 
         """
         self.logger.debug("%s", get_current_func_name())
@@ -1766,6 +1781,12 @@ class MobileCommands:
         Returns:
             Any: result of script execution
 
+        Description:
+            Determine whether the device is locked.
+
+        Returned Result
+            Either true or false
+
         """
         self.logger.debug("%s", get_current_func_name())
         return self._execute("mobile: isLocked", params)
@@ -1788,6 +1809,18 @@ class MobileCommands:
 
         Returns:
             Any: result of script execution
+
+        Description:
+            Sets the emulated geolocation coordinates on the device under test. Supports both real devices and emulators, with additional parameters available depending on the device type.
+
+        Supported arguments:
+            latitude (number): Latitude value to set. Required. Example: 32.456
+            longitude (number): Longitude value to set. Required. Example: 32.456
+            altitude (number): Altitude value in meters. Optional. Defaults to 0. Example: 5.678
+            satellites (number): Number of satellites being tracked (1-12). Only available for emulators. Optional. Example: 2
+            speed (number): Speed in meters per second. Valid value is 0.0 or greater. Optional. Example: 30.0
+            bearing (number): Bearing in degrees at the time of this location. Only available for real devices. Valid range is [0, 360). Optional. Example: 10
+            accuracy (number): Horizontal accuracy in meters. Only available for real devices. Valid value is 0.0 or greater. Optional. Example: 10.0
 
         """
         self.logger.debug("%s", get_current_func_name())
@@ -1812,6 +1845,16 @@ class MobileCommands:
         Returns:
             Any: result of script execution
 
+        Description:
+            Retrieves the current geolocation coordinates from the device under test. If the coordinates are mocked or emulated, the mocked/emulated values will be returned.
+
+        Returned Result:
+            A dictionary containing the current geolocation:
+
+            latitude (number): Latitude value. Example: 32.456
+            longitude (number): Longitude value. Example: 32.456
+            altitude (number): Altitude value in meters. Example: 5.678
+
         """
         self.logger.debug("%s", get_current_func_name())
         return self._execute("mobile: getGeolocation", params)
@@ -1835,6 +1878,9 @@ class MobileCommands:
         Returns:
             Any: result of script execution
 
+        Description:
+            Resets mocked geolocation provider to the default/system one. Only works for real devices.
+
         """
         self.logger.debug("%s", get_current_func_name())
         return self._execute("mobile: resetGeolocation", params)
@@ -1857,6 +1903,15 @@ class MobileCommands:
 
         Returns:
             Any: result of script execution
+
+        Description:
+            Sends a request to refresh the GPS cache on the device under test. By default, location tracking is configured for low battery consumption, so this method may need to be called periodically to get updated geolocation values if the device's actual or mocked location changes frequently. This feature works only if Google Play Services are installed on the device. If the device uses the vanilla LocationManager, the device API level must be 30 (Android R) or higher.
+
+        Supported arguments:
+            timeoutMs (number): Maximum number of milliseconds to wait for GPS cache refresh. If the API call does not confirm a successful cache refresh within this timeout, an error is thrown. A value of 0 or negative skips waiting and does not check for errors. Default is 20000 ms. Example: 60000
+
+        Returned Result:
+            The actual command output. An error is thrown if the GPS cache refresh fails or the timeout is exceeded.
 
         """
         self.logger.debug("%s", get_current_func_name())
@@ -1884,6 +1939,18 @@ class MobileCommands:
         Returns:
             Any: result of script execution
 
+        Description:
+            Starts a new recording of the device screen and audio using the Media Projection API. This API is available since Android 10 (API level 29) and allows high-quality recording. Video and audio encoding is handled by Android, and recording is performed via the Appium Settings helper.
+
+        Supported arguments:
+            resolution (string): The resolution of the recorded video. Supported values: "1920x1080", "1280x720", "720x480", "320x240", "176x144". Optional. Default depends on the device, usually Full HD "1920x1080". Example: "1280x720"
+            maxDurationSec (number): Maximum duration of the recording in seconds. Optional. Default is 900 seconds (15 minutes). Example: 300
+            priority (string): Recording thread priority. Optional. Default is "high". Can be set to "normal" or "low" to reduce performance impact. Example: "low"
+            filename (string): Name of the output video file. Must end with ".mp4". Optional. If not provided, the current timestamp is used. Example: "screen.mp4"
+
+        Returned Result:
+            Boolean: True if a new recording has successfully started, False if another recording is currently running.
+
         """
         self.logger.debug("%s", get_current_func_name())
         return self._execute("mobile: startMediaProjectionRecording", params)
@@ -1909,6 +1976,12 @@ class MobileCommands:
 
         Returns:
             Any: result of script execution
+
+        Description:
+            Check if a media projection recording is currently running
+
+        Returned Result:
+            true if a recording is running.
 
         """
         self.logger.debug("%s", get_current_func_name())
@@ -1936,6 +2009,22 @@ class MobileCommands:
         Returns:
             Any: result of script execution
 
+        Description:
+            Stops the current device recording and retrieves the recently recorded media. If no recording has been started, an error is thrown. If the recording was already finished, the most recent recorded media is returned.
+
+        Supported arguments:
+            remotePath (string): Remote location to upload the resulting video. Supported protocols: http, https, ftp. If null or empty, the file content is returned Base64-encoded. Optional. Example: "https://myserver.com/upload"
+            user (string): Username for remote authentication. Optional. Example: "admin"
+            pass (string): Password for remote authentication. Optional. Example: "pa$$w0rd"
+            method (string): HTTP multipart upload method. Default is "PUT". Optional. Example: "POST"
+            headers (Map<string, string>): Additional headers for HTTP(S) uploads. Optional. Example: {"Agent": "007"}
+            fileFieldName (string): Form field name for file content in HTTP(S) uploads. Default is "file". Optional. Example: "blob"
+            formFields (Map<string, string> or Array<Pair>): Additional form fields for HTTP(S) uploads. Optional. Example: {"name": "yolo.mp4"}
+            uploadTimeout (number): Maximum time in milliseconds to wait for file upload. Default is 240000 ms. Optional. Example: 30000
+
+        Returned Result:
+            Base64-encoded content of the recorded media file if `remotePath` is falsy or empty. Otherwise, the result depends on the upload response.
+
         """
         self.logger.debug("%s", get_current_func_name())
         return self._execute("mobile: stopMediaProjectionRecording", params)
@@ -1958,6 +2047,18 @@ class MobileCommands:
 
         Returns:
             Any: result of script execution
+
+        Description:
+            Returns the connectivity states for various services on the device under test.
+
+        Supported arguments:
+            services (string or Array<string>): One or more service names to query connectivity for. Supported values: "wifi", "data", "airplaneMode". If not provided, all supported services are returned by default. Optional. Example: ["wifi", "data"]
+
+        Returned Result:
+            A map containing the connectivity state of each requested service. Possible keys include:
+                wifi (boolean): True if Wi-Fi is enabled.
+                data (boolean): True if mobile data connection is enabled.
+                airplaneMode (boolean): True if Airplane Mode is enabled.
 
         """
         self.logger.debug("%s", get_current_func_name())
@@ -1982,6 +2083,21 @@ class MobileCommands:
         Returns:
             Any: result of script execution
 
+        Description:
+            Sets the connectivity state for various services on the device under test. At least one service must be specified. Missing values indicate that the corresponding service state should not be changed.
+
+        Note:
+                - Switching Wi-Fi and mobile data states works reliably on emulators for all Android versions. On real devices, proper state switching is supported only from Android 11 onward.
+                - The UiAutomator2 REST server app may be terminated or disconnected by Android when using this API, which can cause the driver session to fail. To restore the session, quit it after changing the network state and then reopen it with the noReset capability set to true once connectivity is restored.
+
+        Supported arguments:
+            wifi (boolean): Whether to enable or disable Wi-Fi. Optional. Example: False
+            data (boolean): Whether to enable or disable mobile data. Optional. Example: False
+            airplaneMode (boolean): Whether to enable or disable Airplane Mode. Optional. Example: False
+
+        Returned Result:
+            The actual command output. An error is thrown if execution fails.
+
         """
         self.logger.debug("%s", get_current_func_name())
         return self._execute("mobile: setConnectivity", params)
@@ -2004,6 +2120,15 @@ class MobileCommands:
 
         Returns:
             Any: result of script execution
+
+        Description:
+            Retrieves string resources for the specified app language. An error is thrown if the strings cannot be fetched or if no strings exist for the given language abbreviation. Available since driver version 2.15.0.
+
+        Supported arguments:
+            language (string): The language abbreviation to fetch app strings for. If not provided, strings for the default language on the device under test will be returned. Optional. Example: "fr"
+
+        Returned Result:
+            A dictionary mapping resource identifiers to string values for the given language. An error is thrown if execution fails.
 
         """
         self.logger.debug("%s", get_current_func_name())
@@ -2028,6 +2153,15 @@ class MobileCommands:
         Returns:
             Any: result of script execution
 
+        Description:
+            Attempts to hide the on-screen keyboard on the device under test. Throws an exception if the keyboard cannot be hidden. Does nothing if the keyboard is already hidden.
+
+        Supported arguments:
+            This method does not accept any arguments.
+
+        Returned Result:
+            Boolean: True if the keyboard was successfully hidden, or False if it was already invisible. An error is thrown if execution fails.
+
         """
         self.logger.debug("%s", get_current_func_name())
         return self._execute("mobile: hideKeyboard", params)
@@ -2050,6 +2184,16 @@ class MobileCommands:
 
         Returns:
             Any: result of script execution
+
+        Description:
+            Checks whether the system on-screen keyboard is currently visible on the device under test.
+
+        Supported arguments:
+            This method does not accept any arguments.
+
+        Returned Result:
+            Boolean: True if the keyboard is visible, False otherwise. An error is thrown if execution fails.
+
 
         """
         self.logger.debug("%s", get_current_func_name())
@@ -2074,6 +2218,15 @@ class MobileCommands:
         Returns:
             Any: result of script execution
 
+        Description:
+            Emulates a single key press event on the device under test using the specified Android key code. Available since driver version 2.17.0.
+
+        Supported arguments:
+            keycode (number): A valid Android key code representing the key to press. Required. Example: 0x00000099 (KEYCODE_NUMPAD_9)
+            metastate (number): An integer in which each bit set to 1 represents a pressed meta key (e.g., SHIFT, ALT). Optional. Example: 0x00000010 (META_ALT_LEFT_ON)
+            flags (number): Flags for the key event as defined in KeyEvent documentation. Optional. Example: 0x00000001 (FLAG_WOKE_HERE)
+            isLongPress (boolean): Whether to emulate a long key press. False by default. Optional. Example: True
+
         """
         self.logger.debug("%s", get_current_func_name())
         return self._execute("mobile: pressKey", params)
@@ -2096,6 +2249,15 @@ class MobileCommands:
 
         Returns:
             Any: result of script execution
+
+        Description:
+            Puts the app under test to the background for a specified duration and optionally restores it afterward. This call is blocking. Available since driver version 2.19.0.
+
+        Supported arguments:
+            seconds (number): The amount of seconds to wait between putting the app to background and restoring it. Negative values indicate that the app should not be restored (default behavior). Optional. Example: 5
+
+        Returned Result:
+            The actual command output. An error is thrown if the operation fails.
 
         """
         self.logger.debug("%s", get_current_func_name())
@@ -2120,6 +2282,15 @@ class MobileCommands:
         Returns:
             Any: result of script execution
 
+        Description:
+            Retrieves the name of the currently focused app activity on the device under test. Available since driver version 2.20.
+
+        Supported arguments:
+            None
+
+        Returned Result:
+            The activity class name as a string. Could be None if no activity is currently focused.
+
         """
         self.logger.debug("%s", get_current_func_name())
         return self._execute("mobile: getCurrentActivity", params)
@@ -2142,6 +2313,15 @@ class MobileCommands:
 
         Returns:
             Any: result of script execution
+
+        Description:
+            Retrieves the package identifier of the currently focused app on the device under test. Available since driver version 2.20.
+
+        Supported arguments:
+            None
+
+        Returned Result:
+            The package class name as a string. Could be None if no app is currently focused.
 
         """
         self.logger.debug("%s", get_current_func_name())
@@ -2166,6 +2346,15 @@ class MobileCommands:
         Returns:
             Any: result of script execution
 
+        Description:
+            Retrieves the display density of the device under test in dots per inch (DPI). Available since driver version 2.21.
+
+        Supported arguments:
+            None
+
+        Returned Result:
+            The display density as an integer value representing DPI.
+
         """
         self.logger.debug("%s", get_current_func_name())
         return self._execute("mobile: getDisplayDensity", params)
@@ -2188,6 +2377,20 @@ class MobileCommands:
 
         Returns:
             Any: result of script execution
+
+        Description:
+            Retrieves properties of various system bars on the device under test. Available since driver version 2.21.
+
+        Supported arguments:
+            None
+
+        Returned Result:
+            A dictionary containing entries for 'statusBar' and 'navigationBar'. Each entry is a dictionary with the following properties:
+                visible (boolean): True if the bar is visible; false if the bar is not present.
+                x (number): X coordinate of the bar; may be 0 if the bar is not present.
+                y (number): Y coordinate of the bar; may be 0 if the bar is not present.
+                width (number): Width of the bar; may be 0 if the bar is not present.
+                height (number): Height of the bar; may be 0 if the bar is not present.
 
         """
         self.logger.debug("%s", get_current_func_name())
@@ -2212,6 +2415,9 @@ class MobileCommands:
         Returns:
             Any: result of script execution
 
+        Description:
+            Emulates a fingerprint scan on the Android Emulator. Only works on API level 23 and above. Available since driver version
+
         """
         self.logger.debug("%s", get_current_func_name())
         return self._execute("mobile: fingerprint", params)
@@ -2234,6 +2440,16 @@ class MobileCommands:
 
         Returns:
             Any: result of script execution
+
+        Description:
+            Emulates sending an SMS to a specified phone number on an Android Emulator. Only works on emulators. Available since driver version 2.22.
+
+        Supported arguments:
+            phoneNumber (string): The phone number to which the SMS should be sent. Required. Example: '0123456789'
+            message (string): The content of the SMS message. Required. Example: 'Hello'
+
+        Returned Result:
+            The actual command output. An error is thrown if SMS emulation fails.
 
         """
         self.logger.debug("%s", get_current_func_name())
@@ -2258,6 +2474,13 @@ class MobileCommands:
         Returns:
             Any: result of script execution
 
+        Description:
+            Emulates a GSM call to a specified phone number on an Android Emulator. Only works on emulators. Available since driver version 2.22.
+
+        Supported arguments:
+            phoneNumber (string): The phone number to call. Required. Example: '0123456789'
+            action (string): The action to perform on the call. Must be one of 'call', 'accept', 'cancel', or 'hold'. Required. Example: 'accept'
+
         """
         self.logger.debug("%s", get_current_func_name())
         return self._execute("mobile: gsmCall", params)
@@ -2280,6 +2503,15 @@ class MobileCommands:
 
         Returns:
             Any: result of script execution
+
+        Description:
+            Emulates a GSM signal strength change event on an Android Emulator. Only works on emulators. Available since driver version 2.22.
+
+        Supported arguments:
+            strength (int): Signal strength value to emulate. Must be one of 0, 1, 2, 3, or 4, where 4 is the best signal. Required. Example: 3
+
+        Returned Result:
+            The actual command output. An error is thrown if GSM signal emulation fails.
 
         """
         self.logger.debug("%s", get_current_func_name())
@@ -2304,6 +2536,15 @@ class MobileCommands:
         Returns:
             Any: result of script execution
 
+        Description:
+            Emulates a GSM voice state change event on an Android Emulator. Only works on emulators. Available since driver version 2.22.
+
+        Supported arguments:
+            state (str): Voice state to emulate. Must be one of 'on', 'off', 'denied', 'searching', 'roaming', 'home', or 'unregistered'. Required. Example: 'off'
+
+        Returned Result:
+            The actual command output. An error is thrown if GSM voice state emulation fails.
+
         """
         self.logger.debug("%s", get_current_func_name())
         return self._execute("mobile: gsmVoice", params)
@@ -2326,6 +2567,12 @@ class MobileCommands:
 
         Returns:
             Any: result of script execution
+
+        Description:
+            Emulates an AC power state change on an Android Emulator. Only works on emulators. Available since driver version 2.22.
+
+        Supported arguments:
+            state (str): AC power state to emulate. Must be either 'on' or 'off'. Required. Example: 'off'
 
         """
         self.logger.debug("%s", get_current_func_name())
@@ -2350,6 +2597,12 @@ class MobileCommands:
         Returns:
             Any: result of script execution
 
+        Description:
+            Emulates a change in battery power capacity on an Android Emulator. Only works on emulators. Available since driver version 2.22.
+
+        Supported arguments:
+            percent (int): Battery percentage to emulate, must be in the range 0 to 100. Required. Example: 50
+
         """
         self.logger.debug("%s", get_current_func_name())
         return self._execute("mobile: powerCapacity", params)
@@ -2372,6 +2625,15 @@ class MobileCommands:
 
         Returns:
             Any: result of script execution
+
+        Description:
+            Emulates different mobile network connection speed modes on an Android Emulator. Only works on emulators. Available since driver version 2.22.
+
+        Supported arguments:
+            speed (str): The mobile network speed mode to emulate. Supported values are "gsm", "scsd", "gprs", "edge", "umts", "hsdpa", "lte", "evdo", or "full". Required. Example: "edge"
+
+        Returned Result:
+            The actual command output. An error is thrown if network speed emulation fails.
 
         """
         self.logger.debug("%s", get_current_func_name())
@@ -2396,6 +2658,16 @@ class MobileCommands:
         Returns:
             Any: result of script execution
 
+        Description:
+            Sends a text to the specified element by replacing its previous content. If the text ends with "\\n" (backslash must be escaped, so it is not translated into 0x0A), the Enter key press will be emulated after typing. Available since driver version 2.22.
+
+        Supported arguments:
+            elementId (str): Hexadecimal identifier of the target text input element. Required. Example: "123456-3456-3435-3453453"
+            text (str): The text to enter. Can include Unicode characters. If ending with "\\n", the Enter key is emulated after typing (the "\\n" substring itself is removed). Required. Example: "yolo"
+
+        Returned Result:
+            The actual command output. An error is thrown if sending text fails.
+
         """
         self.logger.debug("%s", get_current_func_name())
         return self._execute("mobile: replaceElementValue", params)
@@ -2418,6 +2690,9 @@ class MobileCommands:
 
         Returns:
             Any: result of script execution
+
+        Description:
+            Switches GPS setting state. This API only works reliably since Android 12 (API 31). Available since driver version 2.23.
 
         """
         self.logger.debug("%s", get_current_func_name())
@@ -2442,6 +2717,9 @@ class MobileCommands:
         Returns:
             Any: result of script execution
 
+        Description:
+            Returns true if GPS is enabled on the device under test. Available since driver version 2.23.
+
         """
         self.logger.debug("%s", get_current_func_name())
         return self._execute("mobile: isGpsEnabled", params)
@@ -2464,6 +2742,15 @@ class MobileCommands:
 
         Returns:
             Any: result of script execution
+
+        Description:
+            Fetches the list of supported performance data types that can be used as the `dataType` argument for the `mobile: getPerformanceData` extension. Available since driver version 2.24.
+
+        Supported arguments:
+            This command does not require any arguments.
+
+        Returned Result:
+            List[str]: A list of supported performance data type names.
 
         """
         self.logger.debug("%s", get_current_func_name())
@@ -2488,6 +2775,54 @@ class MobileCommands:
         Returns:
             Any: result of script execution
 
+        Description:
+            Retrieves performance data about the specified Android subsystem for a given app. The data is parsed from the output of the `dumpsys` utility. Available since driver version 2.24.
+
+        Supported arguments:
+            packageName (str): The package identifier of the app to fetch performance data for. Required. Example: "com.myapp"
+            dataType (str): The subsystem name for which to retrieve performance data. Must be one of the values returned by `mobile: getPerformanceDataTypes`. Required. Example: "batteryinfo" or "cpuinfo" or "memoryinfo" or "networkinfo"
+
+        Returned Result:
+            List[List[Any]]: The data is organized as a table:
+                - The first row contains column names.
+                - Subsequent rows contain sampled data for each column.
+
+            Example outputs:
+
+            batteryinfo:
+                [
+                    ["power"],
+                    [23]
+                ]
+
+            memoryinfo:
+                [
+                    ["totalPrivateDirty", "nativePrivateDirty", "dalvikPrivateDirty", "eglPrivateDirty", "glPrivateDirty", "totalPss", "nativePss", "dalvikPss", "eglPss", "glPss", "nativeHeapAllocatedSize", "nativeHeapSize"],
+                    [18360, 8296, 6132, None, None, 42588, 8406, 7024, None, None, 26519, 10344]
+                ]
+
+            networkinfo (emulator):
+                [
+                    ["bucketStart", "activeTime", "rxBytes", "rxPackets", "txBytes", "txPackets", "operations", "bucketDuration"],
+                    [1478091600000, None, 1099075, 610947, 928, 114362, 769, 3600000],
+                    [1478095200000, None, 1306300, 405997, 509, 46359, 370, 3600000]
+                ]
+
+            networkinfo (real devices):
+                [
+                    ["st", "activeTime", "rb", "rp", "tb", "tp", "op", "bucketDuration"],
+                    [1478088000, None, None, 32115296, 34291, 2956805, 25705, 3600],
+                    [1478091600, None, None, 2714683, 11821, 1420564, 12650, 3600],
+                    [1478095200, None, None, 10079213, 19962, 2487705, 20015, 3600],
+                    [1478098800, None, None, 4444433, 10227, 1430356, 10493, 3600]
+                ]
+
+            cpuinfo:
+                [
+                    ["user", "kernel"],
+                    [0.9, 1.3]
+                ]
+
         """
         self.logger.debug("%s", get_current_func_name())
         return self._execute("mobile: getPerformanceData", params)
@@ -2510,6 +2845,25 @@ class MobileCommands:
 
         Returns:
             Any: result of script execution
+
+        Description:
+            Performs operations on the system status bar using the `adb shell cmd statusbar` CLI. Only works on Android 8 (Oreo) and newer. Available since driver version 2.25.
+
+        Supported arguments:
+            command (str): The status bar command to execute. Required. Example: "expandNotifications"
+                Supported commands:
+                    - "expandNotifications": Open the notifications panel.
+                    - "expandSettings": Open the notifications panel and expand quick settings if present.
+                    - "collapse": Collapse the notifications and settings panel.
+                    - "addTile": Add a TileService of the specified component.
+                    - "removeTile": Remove a TileService of the specified component.
+                    - "clickTile": Click on a TileService of the specified component.
+                    - "getStatusIcons": Returns the list of status bar icons in the order they appear (each item separated by a newline).
+
+            component (str): The fully qualified name of a TileService component. Only required for "addTile", "removeTile", or "clickTile" commands. Optional. Example: "com.package.name/.service.QuickSettingsTileComponent"
+
+        Returned Result:
+            str: The actual output from the underlying status bar command. The output depends on the selected command and may be empty.
 
         """
         self.logger.debug("%s", get_current_func_name())
@@ -2534,6 +2888,33 @@ class MobileCommands:
         Returns:
             Any: result of script execution
 
+        Description:
+            Adds a new scheduled action consisting of one or more sequential steps. Each step is executed in order, and the overall action is considered failed if at least one step fails. The action can be configured with limits on rescheduling, execution times, and history retention.
+
+        Supported arguments:
+            name (str): Unique name of the action. Required. Example: "popupHandlingAction"
+            steps (List[dict]): List of action steps to execute. Steps are executed sequentially. Required. Example: [{"type": "gesture", "name": "click", "payload": {"subtype": "click", "locator": {"strategy": "id", "selector": "buttonIdentifier"}}}]
+            maxPass (int): Maximum number of times the action can pass before it stops rescheduling. Optional. Example: 1
+            maxFail (int): Maximum number of times the action can fail before it stops rescheduling. Optional. Example: 1
+            times (int): Total number of times the action should execute. Defaults to 1. Optional. Example: 10
+            intervalMs (int): Interval in milliseconds between reschedules. Defaults to 1000 ms. Optional. Example: 100
+            maxHistoryItems (int): Maximum number of history items stored for this action. Defaults to 20. Optional. Example: 100
+
+        Action Step arguments:
+            type (str): Step type. One of "gesture", "source", or "screenshot". Required. Example: "gesture"
+            name (str): Step name for tracking execution history. Required. Example: "click"
+            payload (dict): Step payload. Required. Format depends on step type and subtype.
+
+        Step payload examples:
+            gesture (subtype: click): {"subtype": "click", "locator": {"strategy": "id", "selector": "buttonIdentifier"}}
+            gesture (subtype: longClick): {"subtype": "longClick", "locator": {"strategy": "accessibility id", "selector": "buttonIdentifier"}}
+            gesture (subtype: doubleClick): {"subtype": "doubleClick", "elementId": "yolo", "x": 150, "y": 200}
+            source (subtype: xml): {"subtype": "xml"}
+            screenshot (subtype: png): {"subtype": "png"}
+
+        Returned Result:
+            The actual command output. An error is thrown if adding the action fails.
+
         """
         self.logger.debug("%s", get_current_func_name())
         return self._execute("mobile: scheduleAction", params)
@@ -2556,6 +2937,41 @@ class MobileCommands:
 
         Returns:
             Any: result of script execution
+
+        Description:
+            Unschedules a previously scheduled action from asynchronous execution and returns its execution history. Useful for stopping actions that repeatedly interact with the application (e.g., polling UI snapshots or automating popups) and analyzing what steps were executed.
+
+        Supported arguments:
+            name (str): Unique name of the action to unschedule. Required. Example: "popupHandlingAction"
+
+        Returned Result:
+            Dict containing the execution history of the unscheduled action. The structure matches the output of the `mobile: getActionHistory` endpoint, including step results, timestamps, and pass/fail statuses.
+
+        Usage Example:
+            # Schedule an action to capture page source snapshots every second for 30 seconds
+            driver.execute_script('mobile: scheduleAction', {
+                'name': 'myPopupHandlingAction',
+                'steps': [{
+                    'type': 'source',
+                    'name': 'fetchPageSourceStep',
+                    'payload': {'subtype': 'xml'}
+                }],
+                'intervalMs': 1000,
+                'times': 30,
+                'maxHistoryItems': 30,
+            })
+
+            # Later, unschedule the action and retrieve its history
+            history: Dict[str, Any] = driver.execute_script('mobile: unscheduleAction', {
+                'name': 'myPopupHandlingAction',
+            })
+
+            # Example function to check if all steps in an execution passed
+            def did_execution_pass(execution: List[Dict]) -> bool:
+                return all(step['passed'] for step in execution)
+
+            # Assert that at least one execution fully passed
+            assert any(did_execution_pass(execution) for execution in history['stepResults'])
 
         """
         self.logger.debug("%s", get_current_func_name())
@@ -2580,6 +2996,30 @@ class MobileCommands:
         Returns:
             Any: result of script execution
 
+        Description:
+            Retrieves the execution history of a previously scheduled action. Each action run and its individual steps are recorded, including pass/fail status, results, timestamps, and any exceptions that occurred. An error is thrown if no action with the given name has been scheduled or if it has already been unscheduled.
+
+        Supported arguments:
+            name (str): Unique name of the action whose history is being requested. Required. Example: "popupHandlingAction"
+
+        Returned Result:
+            Dict containing the action execution history:
+
+            repeats (int): Number of times this action has been executed so far. Example: 1
+
+            stepResults (List[List[Dict]]): History of step executions for each action run. The outer list is sorted by execution timestamp in descending order. Its maximum length is limited by the action's maxHistoryItems value. Each step execution is represented as a dictionary with the following keys:
+
+                name (str): Name of the corresponding step. Example: "clickStep"
+                type (str): Type of the step. Example: "gesture"
+                timestamp (int): Unix timestamp in milliseconds when the step execution started. Example: 1685370112000
+                passed (bool): True if the step completed successfully (no exceptions), False otherwise. Example: True
+                result (Any): Actual step result, dependent on step type and subtype. Null if an exception occurred. Example: "something"
+                exception (Dict or None): If the step threw an exception, this dictionary contains:
+                    name (str): Exception class name. Example: "java.lang.Exception"
+                    message (str): Exception message. Example: "Bad things happen"
+                    stacktrace (str): Full exception stack trace. Example: "happened somewhere"
+                If no exception occurred, this value is None.
+
         """
         self.logger.debug("%s", get_current_func_name())
         return self._execute("mobile: getActionHistory", params)
@@ -2602,6 +3042,20 @@ class MobileCommands:
 
         Returns:
             Any: result of script execution
+
+        Description:
+            Captures a screenshot of each display available on the Android device. This functionality is supported on Android 10 and newer.
+
+        Supported arguments:
+            displayId (int or str, optional): Identifier of the display to capture. If not provided, screenshots for all displays will be returned. If the specified display does not exist, an error is thrown. Display identifiers can be retrieved using `adb shell dumpsys SurfaceFlinger --display-id`. Example: 1
+
+        Returned Result:
+            Dict[str, Dict]: A dictionary where each key is a display identifier and each value is a dictionary with the following keys:
+
+                id (int or str): The display identifier. Example: 1
+                name (str): Display name. Example: "Built-in Display"
+                isDefault (bool): True if this display is the default display, False otherwise. Example: True
+                payload (str): PNG screenshot data encoded as a base64 string. Example: "iVBORw0KGgoAAAANSUhEUgAA..."
 
         """
         self.logger.debug("%s", get_current_func_name())
@@ -2626,6 +3080,23 @@ class MobileCommands:
         Returns:
             Any: result of script execution
 
+        Description:
+            Sets the device UI appearance using a thin wrapper over `adb shell cmd uimode`. Supported on Android 10 and newer.
+
+        Supported arguments:
+            mode (str): The UI mode to configure. Supported values are:
+                - "night": Night mode
+                - "car": Car mode
+              Example: "night"
+
+            value (str): The value to apply for the selected UI mode. Supported values depend on the mode:
+                - night: "yes", "no", "auto", "custom_schedule", "custom_bedtime"
+                - car: "yes", "no"
+              Example: "yes" (to enable night/dark mode)
+
+        Returned Result:
+            The actual command output. An error is thrown if command execution fails.
+
         """
         self.logger.debug("%s", get_current_func_name())
         return self._execute("mobile: setUiMode", params)
@@ -2648,6 +3119,20 @@ class MobileCommands:
 
         Returns:
             Any: result of script execution
+
+        Description:
+            Retrieves the current device UI appearance for the specified mode using a thin wrapper over `adb shell cmd uimode`. Supported on Android 10 and newer.
+
+        Supported arguments:
+            mode (str): The UI mode to query. Supported values are:
+                - "night": Night mode
+                - "car": Car mode
+              Example: "night"
+
+        Returned Result:
+            str: The current value of the specified UI mode. Supported values depend on the mode:
+                - night: "yes", "no", "auto", "custom_schedule", "custom_bedtime"
+                - car: "yes", "no"
 
         """
         self.logger.debug("%s", get_current_func_name())
@@ -2672,6 +3157,24 @@ class MobileCommands:
         Returns:
             Any: result of script execution
 
+        Description:
+            Simulates the `onTrimMemory()` event for a given Android package. This allows testing the app's behavior under various memory pressure conditions. For more details, see "Manage your app's memory". Supported since driver version 2.41.
+
+        Supported arguments:
+            pkg (str): The package name to send the trimMemory event to. Required. Example: "com.my.company"
+            level (str): The memory trim level to simulate. Required. Supported values are:
+                - "COMPLETE"
+                - "MODERATE"
+                - "BACKGROUND"
+                - "UI_HIDDEN"
+                - "RUNNING_CRITICAL"
+                - "RUNNING_LOW"
+                - "RUNNING_MODERATE"
+              Example: "RUNNING_CRITICAL"
+
+        Returned Result:
+            The actual command output. An error is thrown if the simulation fails.
+
         """
         self.logger.debug("%s", get_current_func_name())
         return self._execute("mobile: sendTrimMemory", params)
@@ -2694,6 +3197,20 @@ class MobileCommands:
 
         Returns:
             Any: result of script execution
+
+        Description:
+            Simulates an image injection into the VirtualScene emulator camera foreground. After a successful call, the supplied PNG image will appear as the camera's foreground scene (useful for testing QR/barcode scanners, OCR, etc.). This only works on Android emulators. Available since driver version 3.2.0.
+
+        Supported arguments:
+            payload (string): Base64-encoded PNG image payload. Only PNG is supported. Required. Example: "iVBORw0KGgoAAAANSUh..."
+
+        Required preconditions:
+            - This feature only works on Android emulators.
+            - For newly created or reset emulators you must provide the `appium:injectedImageProperties` capability (it may be an empty map to use defaults) so the emulator is prepared for image injection.
+            - Alternatively, you may configure the emulator manually by editing `$ANDROID_HOME/emulator/resources/Toren1BD.posters` as described in the docs (replace contents, save, then restart the emulator). This manual step is only necessary if you prefer not to restart the emulator during session startup.
+
+        Returned Result:
+            Boolean: True if the image was injected successfully. An error is thrown if the operation fails (for example, if the payload is not a valid base64 PNG or the emulator is not prepared).
 
         """
         self.logger.debug("%s", get_current_func_name())
@@ -2718,6 +3235,19 @@ class MobileCommands:
         Returns:
             Any: result of script execution
 
+        Description:
+            Allows controlling the Bluetooth adapter on the device under test. An error is thrown if the device has no default Bluetooth adapter. Available since driver version 3.4.0.
+
+        Supported arguments:
+            action (string): The action to execute on the Bluetooth adapter. Supported values are:
+                - "enable": Turns the Bluetooth adapter on.
+                - "disable": Turns the Bluetooth adapter off.
+                - "unpairAll": Unpairs all currently paired devices.
+              Calling the same action multiple times has no effect. Required. Example: "disable"
+
+        Returned Result:
+            Boolean: True if the action was successfully executed. An error is thrown if the device has no Bluetooth adapter or if the operation fails.
+
         """
         self.logger.debug("%s", get_current_func_name())
         return self._execute("mobile: bluetooth", params)
@@ -2740,6 +3270,18 @@ class MobileCommands:
 
         Returns:
             Any: result of script execution
+
+        Description:
+            Allows controlling the NFC adapter on the device under test. An error is thrown if the device has no default NFC adapter. Available since driver version 3.4.0.
+
+        Supported arguments:
+            action (string): The action to execute on the NFC adapter. Supported values are:
+                - "enable": Turns the NFC adapter on.
+                - "disable": Turns the NFC adapter off.
+              Calling the same action multiple times has no effect. Required. Example: "disable"
+
+        Returned Result:
+            Boolean: True if the action was successfully executed. An error is thrown if the device has no NFC adapter or if the operation fails.
 
         """
         self.logger.debug("%s", get_current_func_name())
@@ -2764,6 +3306,15 @@ class MobileCommands:
         Returns:
             Any: result of script execution
 
+        Description:
+            Pulls a remote file from the device. Supports pulling files from standard device paths or from app bundles (debugging must be enabled for app bundle access).
+
+        Supported arguments:
+            remotePath (string): The full path to the remote file or a specially formatted path inside an app bundle (e.g., "@my.app.id/my/path"). Required. Example: "/sdcard/foo.bar"
+
+        Returned Result:
+            string: Base64-encoded content of the remote file. An error is thrown if the file does not exist or if the operation fails.
+
         """
         self.logger.debug("%s", get_current_func_name())
         return self._execute("mobile: pullFile", params)
@@ -2786,6 +3337,13 @@ class MobileCommands:
 
         Returns:
             Any: result of script execution
+
+        Description:
+            Pushes a local file to the device. If a file already exists at the target path, it will be silently overwritten.
+
+        Supported arguments:
+            remotePath (string): The path on the device where the file should be written. Required. Example: "/sdcard/foo.bar"
+            payload (string): Base64-encoded content of the file to be pushed. Required. Example: "QXBwaXVt"
 
         """
         self.logger.debug("%s", get_current_func_name())
@@ -2810,6 +3368,15 @@ class MobileCommands:
         Returns:
             Any: result of script execution
 
+        Description:
+            Pulls a remote folder from the device. The folder content is zipped and returned as a Base64-encoded string.
+
+        Supported arguments:
+            remotePath (string): The path to the remote folder on the device. Required. Example: "/sdcard/yolo/"
+
+        Returned Result:
+            Base64-encoded string representing the zipped content of the remote folder. An error is thrown if the folder does not exist or the operation fails.
+
         """
         self.logger.debug("%s", get_current_func_name())
         return self._execute("mobile: pullFolder", params)
@@ -2833,6 +3400,15 @@ class MobileCommands:
         Returns:
             Any: result of script execution
 
+        Description:
+            Retrieves the plaintext content of the device's clipboard.
+
+        Supported arguments:
+            This command does not require any arguments.
+
+        Returned Result:
+            Base64-encoded string representing the clipboard content. Returns an empty string if the clipboard is empty. An error is thrown if the operation fails.
+
         """
         self.logger.debug("%s", get_current_func_name())
         return self._execute("mobile: getClipboard", params)
@@ -2855,6 +3431,17 @@ class MobileCommands:
 
         Returns:
             Any: result of script execution
+
+        Description:
+            Sets the plain text content of the device's clipboard.
+
+        Supported arguments:
+            content (string): Base64-encoded clipboard payload. Required. Example: 'YXBwaXVt'
+            contentType (string): The type of content to set. Only 'plaintext' is supported and is used by default. Optional. Example: 'plaintext'
+            label (string): Optional label to identify the current clipboard payload. Optional. Example: 'yolo'
+
+        Returned Result:
+            The actual command output. An error is thrown if the operation fails.
 
         """
         self.logger.debug("%s", get_current_func_name())
