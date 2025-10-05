@@ -13,6 +13,7 @@ from shadowstep.exceptions.shadowstep_exceptions import ShadowstepException
 uv run pytest -svl --log-cli-level INFO --tb=short --setup-show  tests/element/test_element_quality.py
 """
 
+shadowstep = Shadowstep()
 
 class TestShadowstepUnit:
 
@@ -21,6 +22,7 @@ class TestShadowstepUnit:
         # Clear any existing instances
         Shadowstep._instance = None
         return Shadowstep()
+    
     @pytest.mark.unit
     def test_singleton_behavior(self):
         """Test that Shadowstep implements singleton pattern correctly."""

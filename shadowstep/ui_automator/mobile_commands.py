@@ -63,6 +63,18 @@ class MobileCommands:
         Returns:
             Any: result of script execution
 
+        Description:
+            Executes the given shell command on the device under test via ADB connection. This extension exposes a potential security risk and thus is only enabled when explicitly activated by the adb_shell server command line feature specifier.
+
+        Supported arguments:
+            command (string): Shell command name to execute, for example echo or rm. Required. Example: echo
+            args (Array<string>): Array of command arguments. Optional. Example: ['-f', '/sdcard/myfile.txt']
+            timeout (number): Command timeout in milliseconds. If the command blocks for longer than this timeout then an exception is going to be thrown. The default timeout is 20000 ms. Optional. Example: 100000
+            includeStderr (boolean): Whether to include stderr stream into the returned result. false by default. Optional. Example: true
+
+        Returned Result:
+            The actual command output. An error is thrown if command execution fails.
+
         """
         self.logger.debug("%s", get_current_func_name())
         return self._execute("mobile: shell", params)
@@ -85,6 +97,15 @@ class MobileCommands:
 
         Returns:
             Any: result of script execution
+
+        Description:
+            Scrolls the given scrollable element until an element identified by strategy and selector becomes visible. This function returns immediately if the destination element is already visible in the view port. Otherwise it would scroll to the very beginning of the scrollable control and tries to reach the destination element by scrolling its parent to the end step by step. The scroll direction (vertical or horizontal) is detected automatically.
+
+        Supported arguments:
+            elementId (string): The identifier of the scrollable element. It is required that this element is a valid scrollable container and was located using the -android uiautomator strategy. If not provided, the first currently available scrollable view is selected for the interaction. Optional. Example: 123456-3456-3435-3453453
+            strategy (string): The lookup strategy to use. Supported values: accessibility id (UiSelector().description), class name (UiSelector().className), -android uiautomator (UiSelector). Required. Example: 'accessibility id'
+            selector (string): The corresponding lookup value for the selected strategy. Required. Example: 'com.mycompany:id/table'
+            maxSwipes (number): The maximum number of swipes to perform on the target scrollable view in order to reach the destination element. If unset, it will be retrieved from the scrollable element itself via getMaxSearchSwipes() property. Optional. Example: 10
 
         """
         self.logger.debug("%s", get_current_func_name())
@@ -109,6 +130,19 @@ class MobileCommands:
         Returns:
             Any: result of script execution
 
+        Description:
+            This gesture performs long click action on the given element/coordinates.
+
+        Supported arguments:
+            elementId: The id of the element to be clicked. If the element is missing then both click offset coordinates must be provided. If both the element id and offset are provided then the coordinates are parsed as relative offsets from the top left corner of the element.
+            x: The x-offset coordinate
+            y: The y-offset coordinate
+            duration: Click duration in milliseconds. 500 by default. The value must not be negative
+            locator: The map containing strategy and selector items to make it possible to click dynamic elements.
+
+        Example:
+            driver.execute_script('mobile: longClickGesture', {'x': 100, 'y': 100, 'duration': 1000})
+
         """
         self.logger.debug("%s", get_current_func_name())
         return self._execute("mobile: longClickGesture", params)
@@ -131,6 +165,18 @@ class MobileCommands:
 
         Returns:
             Any: result of script execution
+
+        Description:
+            This gesture performs double click action on the given element/coordinates.
+
+        Supported arguments
+            elementId: The id of the element to be clicked. If the element is missing then both click offset coordinates must be provided. If both the element id and offset are provided then the coordinates are parsed as relative offsets from the top left corner of the element.
+            x: The x-offset coordinate
+            y: The y-offset coordinate
+            locator: The map containing strategy and selector items to make it possible to click dynamic elements.
+
+        Example:
+            driver.execute_script('mobile: doubleClickGesture', {'x': 100, 'y': 100})
 
         """
         self.logger.debug("%s", get_current_func_name())
@@ -155,6 +201,18 @@ class MobileCommands:
         Returns:
             Any: result of script execution
 
+        Description:
+            This gesture performs click action on the given element/coordinates. Available since Appium UiAutomator2 driver 1.71.0. Usage of this gesture is recommended as a possible workaround for cases where the "native" tap call fails, even though tap coordinates seem correct. This issue is related to the fact these calls use the legacy UIAutomator-based calls while this extension is based on the same foundation as W3C does.
+
+        Supported arguments
+            elementId: The id of the element to be clicked. If the element is missing then both click offset coordinates must be provided. If both the element id and offset are provided then the coordinates are parsed as relative offsets from the top left corner of the element.
+            x: The x-offset coordinate
+            y: The y-offset coordinate
+            locator: The map containing strategy and selector items to make it possible to click dynamic elements.
+
+        Example:
+            driver.execute_script('mobile: clickGesture', {'x': 100, 'y': 100})
+
         """
         self.logger.debug("%s", get_current_func_name())
         return self._execute("mobile: clickGesture", params)
@@ -177,6 +235,25 @@ class MobileCommands:
 
         Returns:
             Any: result of script execution
+
+        Description:
+            This gesture performs drag action from the given element/coordinates to the given point.
+
+        Supported arguments
+            elementId: The id of the element to be dragged. If the element id is missing then both start coordinates must be provided. If both the element id and the start coordinates are provided then these coordinates are considered as offsets from the top left element corner.
+            startX: The x-start coordinate
+            startY: The y-start coordinate
+            endX: The x-end coordinate. Mandatory argument
+            endY: The y-end coordinate. Mandatory argument
+            speed: The speed at which to perform this gesture in pixels per second. The value must not be negative. The default value is 2500 * displayDensity
+
+        Example:
+            // Java
+            ((JavascriptExecutor) driver).executeScript("mobile: dragGesture", ImmutableMap.of(
+                "elementId", ((RemoteWebElement) element).getId(),
+                "endX", 100,
+                "endY", 100
+            ));
 
         """
         self.logger.debug("%s", get_current_func_name())
@@ -201,6 +278,29 @@ class MobileCommands:
         Returns:
             Any: result of script execution
 
+        Description:
+            This gesture performs fling gesture on the given element/area.
+
+        Supported arguments
+            elementId: The id of the element to be flinged. If the element id is missing then fling bounding area must be provided. If both the element id and the fling bounding area are provided then this area is effectively ignored.
+            left: The left coordinate of the fling bounding area
+            top: The top coordinate of the fling bounding area
+            width: The width of the fling bounding area
+            height: The height of the fling bounding area
+            direction: Direction of the fling. Mandatory value. Acceptable values are: up, down, left and right (case insensitive)
+            speed: The speed at which to perform this gesture in pixels per second. The value must be greater than the minimum fling velocity for the given view (50 by default). The default value is 7500 * displayDensity
+
+        Returned value:
+            The returned value is a boolean one and equals to true if the object can still scroll in the given direction
+
+        Example:
+            // Java
+            boolean canScrollMore = (Boolean) ((JavascriptExecutor) driver).executeScript("mobile: flingGesture", ImmutableMap.of(
+                "elementId", ((RemoteWebElement) element).getId(),
+                "direction", "down",
+                "speed", 500
+            ));
+
         """
         self.logger.debug("%s", get_current_func_name())
         return self._execute("mobile: flingGesture", params)
@@ -223,6 +323,25 @@ class MobileCommands:
 
         Returns:
             Any: result of script execution
+
+        Description:
+            This gesture performs pinch-open gesture on the given element/area.
+
+        Supported arguments
+            elementId: The id of the element to be pinched. If the element id is missing then pinch bounding area must be provided. If both the element id and the pinch bounding area are provided then the area is effectively ignored.
+            left: The left coordinate of the pinch bounding area
+            top: The top coordinate of the pinch bounding area
+            width: The width of the pinch bounding area
+            height: The height of the pinch bounding area
+            percent: The size of the pinch as a percentage of the pinch area size. Valid values must be float numbers in range 0..1, where 1.0 is 100%. Mandatory value.
+            speed: The speed at which to perform this gesture in pixels per second. The value must not be negative. The default value is 2500 * displayDensity
+
+        Example:
+            // Java
+            ((JavascriptExecutor) driver).executeScript("mobile: pinchOpenGesture", ImmutableMap.of(
+                "elementId", ((RemoteWebElement) element).getId(),
+                "percent", 0.75
+            ));
 
         """
         self.logger.debug("%s", get_current_func_name())
@@ -247,6 +366,25 @@ class MobileCommands:
         Returns:
             Any: result of script execution
 
+        Description:
+            This gesture performs pinch-close gesture on the given element/area.
+
+        Supported arguments
+            elementId: The id of the element to be pinched. If the element id is missing then pinch bounding area must be provided. If both the element id and the pinch bounding area are provided then the area is effectively ignored.
+            left: The left coordinate of the pinch bounding area
+            top: The top coordinate of the pinch bounding area
+            width: The width of the pinch bounding area
+            height: The height of the pinch bounding area
+            percent: The size of the pinch as a percentage of the pinch area size. Valid values must be float numbers in range 0..1, where 1.0 is 100%. Mandatory value.
+            speed: The speed at which to perform this gesture in pixels per second. The value must not be negative. The default value is 2500 * displayDensity
+
+        Example:
+            # Python
+            can_scroll_more = driver.execute_script('mobile: pinchCloseGesture', {
+                'elementId': element.id,
+                'percent': 0.75
+            })
+
         """
         self.logger.debug("%s", get_current_func_name())
         return self._execute("mobile: pinchCloseGesture", params)
@@ -269,6 +407,29 @@ class MobileCommands:
 
         Returns:
             Any: result of script execution
+
+        Description:
+            This gesture performs swipe gesture on the given element/area.
+
+        Supported arguments
+            elementId: The id of the element to be swiped. If the element id is missing then swipe bounding area must be provided. If both the element id and the swipe bounding area are provided then the area is effectively ignored.
+            left: The left coordinate of the swipe bounding area
+            top: The top coordinate of the swipe bounding area
+            width: The width of the swipe bounding area
+            height: The height of the swipe bounding area
+            direction: Swipe direction. Mandatory value. Acceptable values are: up, down, left and right (case insensitive)
+            percent: The size of the swipe as a percentage of the swipe area size. Valid values must be float numbers in range 0..1, where 1.0 is 100%. Mandatory value.
+            speed: The speed at which to perform this gesture in pixels per second. The value must not be negative. The default value is 5000 * displayDensity
+
+        Example:
+            # Python
+            driver.execute_script('mobile: swipeGesture', {
+                'left': 100,
+                'top': 100,
+                'width': 200,
+                'height': 200,
+                'direction': direction, 'percent': 0.75
+            })
 
         """
         self.logger.debug("%s", get_current_func_name())
@@ -293,6 +454,30 @@ class MobileCommands:
         Returns:
             Any: result of script execution
 
+        Description:
+            This gesture performs scroll gesture on the given element/area.
+
+        Supported arguments
+            elementId: The id of the element to be scrolled. If the element id is missing then scroll bounding area must be provided. If both the element id and the scroll bounding area are provided then this area is effectively ignored.
+            left: The left coordinate of the scroll bounding area
+            top: The top coordinate of the scroll bounding area
+            width: The width of the scroll bounding area
+            height: The height of the scroll bounding area
+            direction: Scrolling direction. Mandatory value. Acceptable values are: up, down, left and right (case insensitive)
+            percent: The size of the scroll as a percentage of the scrolling area size. Valid values must be float numbers greater than zero, where 1.0 is 100%. Mandatory value.
+            speed: The speed at which to perform this gesture in pixels per second. The value must not be negative. The default value is 5000 * displayDensity
+
+        Returned value:
+            The returned value is a boolean one and equals to true if the object can still scroll in the given direction
+
+        Example:
+            # Python
+            can_scroll_more = driver.execute_script('mobile: scrollGesture', {
+                'left': 100, 'top': 100, 'width': 200, 'height': 200,
+                'direction': 'down',
+                'percent': 3.0
+            })
+
         """
         self.logger.debug("%s", get_current_func_name())
         return self._execute("mobile: scrollGesture", params)
@@ -315,6 +500,18 @@ class MobileCommands:
 
         Returns:
             Any: result of script execution
+
+        Description:
+            Executes a command through emulator telnet console interface and returns its output. The emulator_console server feature must be enabled in order to use this method.
+
+        Supported arguments:
+            command (string): The actual command to execute. See Android Emulator Console Guide for more details on available commands. Required. Example: help-verbose
+            execTimeout (number): Timeout used to wait for a server reply to the given command in milliseconds. Defaults to 60000 ms. Optional. Example: 100000
+            connTimeout (number): Console connection timeout in milliseconds. Defaults to 5000 ms. Optional. Example: 10000
+            initTimeout (number): Telnet console initialization timeout in milliseconds (the time between establishing the connection and receiving the command prompt). Defaults to 5000 ms. Optional. Example: 10000
+
+        Returned Result:
+            The actual command output. An error is thrown if command execution fails.
 
         """
         self.logger.debug("%s", get_current_func_name())
@@ -339,6 +536,14 @@ class MobileCommands:
         Returns:
             Any: result of script execution
 
+        Description:
+            Start URI that may take users directly to the specific content in the app. Read Reliably Opening Deep Links Across Platforms and Devices for more details.
+
+        Supported arguments:
+            url (string): The URL to start. Required. Example: theapp://login/
+            package (string): The name of the package to start the URI with. This argument was required previously but became optional since version 3.9.3. Optional. Example: 'com.mycompany'
+            waitForLaunch (boolean): If false, ADB won't wait for the started activity to return control. Defaults to true. Optional. Example: false
+
         """
         self.logger.debug("%s", get_current_func_name())
         return self._execute("mobile: deepLink", params)
@@ -361,6 +566,10 @@ class MobileCommands:
 
         Returns:
             Any: result of script execution
+
+        Description:
+            Starts Android logcat broadcast websocket on the same host and port where Appium server is running at /ws/session/:sessionId:/appium/device/logcat endpoint. The method will return immediately if the web socket is already listening. Each connected websocket listener will receive logcat log lines as soon as they are visible to Appium. Read Using Mobile Execution Commands to Continuously Stream Device Logs with Appium for more details.
+            Consider using logs broadcast via BiDi over this extension.
 
         """
         self.logger.debug("%s", get_current_func_name())
@@ -385,6 +594,10 @@ class MobileCommands:
         Returns:
             Any: result of script execution
 
+        Description:
+            Stops the previously started logcat broadcasting websocket server. This method will return immediately if no server is running. Read Using Mobile Execution Commands to Continuously Stream Device Logs with Appium for more details.
+            Consider using logs broadcast via BiDi over this extension.
+
         """
         self.logger.debug("%s", get_current_func_name())
         return self._execute("mobile: stopLogsBroadcast", params)
@@ -407,6 +620,13 @@ class MobileCommands:
 
         Returns:
             Any: result of script execution
+
+        Description:
+            This is a wrapper around the 'adb shell dumpsys deviceidle' interface. For more details, see *Diving Into Android 'M' Doze*. This API is available starting from Android 6.
+
+        Supported arguments:
+            action (string): The name of the action to perform. Supported values: whitelistAdd or whitelistRemove. Required. Example: whitelistAdd
+            packages (string or Array<string>): One or more package names to perform the specified action on. Required. Example: 'com.mycompany'
 
         """
         self.logger.debug("%s", get_current_func_name())
@@ -431,6 +651,12 @@ class MobileCommands:
         Returns:
             Any: result of script execution
 
+        Description:
+            Attempts to accept an Android alert. This method may not always be reliable since there is no single standard for how Android alerts appear in the Accessibility representation.
+
+        Supported arguments:
+            buttonLabel (string): The name or text of the alert button to click in order to accept it. If not provided, the driver will attempt to autodetect the appropriate button. Optional. Example: Accept
+
         """
         self.logger.debug("%s", get_current_func_name())
         return self._execute("mobile: acceptAlert", params)
@@ -453,6 +679,15 @@ class MobileCommands:
 
         Returns:
             Any: result of script execution
+
+        Description:
+            Attempts to dismiss an Android alert. This method may not always be reliable since there is no single standard for how Android alerts appear in the Accessibility representation.
+
+        Supported arguments:
+            buttonLabel (string): The name or text of the alert button to click in order to dismiss it. If not provided, the driver will attempt to autodetect the appropriate button. Optional. Example: Dismiss
+
+        Returned Result:
+            True if the alert was successfully dismissed, otherwise an error is thrown.
 
         """
         self.logger.debug("%s", get_current_func_name())
@@ -477,6 +712,21 @@ class MobileCommands:
         Returns:
             Any: result of script execution
 
+        Description:
+            Retrieves the battery information from the device under test.
+
+        Returned Result:
+            A dictionary containing the following entries:
+                level (number): Battery level in the range [0.0, 1.0], where 1.0 represents 100% charge. Returns -1 if the value cannot be retrieved from the system. Example: 0.5
+                state (number): Battery state. Possible values are:
+                    BATTERY_STATUS_UNKNOWN = 1
+                    BATTERY_STATUS_CHARGING = 2
+                    BATTERY_STATUS_DISCHARGING = 3
+                    BATTERY_STATUS_NOT_CHARGING = 4
+                    BATTERY_STATUS_FULL = 5
+                Returns -1 if the value cannot be retrieved from the system. Example: 4
+
+
         """
         self.logger.debug("%s", get_current_func_name())
         return self._execute("mobile: batteryInfo", params)
@@ -499,6 +749,13 @@ class MobileCommands:
 
         Returns:
             Any: result of script execution
+
+        Description:
+            Retrieves information about the device under test, including device model, serial number, network connectivity, and other properties.
+
+        Returned Result:
+            A dictionary containing device properties. For the full list of keys and their corresponding values, refer to:
+            https://github.com/appium/appium-uiautomator2-server/blob/master/app/src/main/java/io/appium/uiautomator2/handler/GetDeviceInfo.java
 
         """
         self.logger.debug("%s", get_current_func_name())
@@ -523,6 +780,16 @@ class MobileCommands:
         Returns:
             Any: result of script execution
 
+        Description:
+            Retrieves the current timestamp of the device.
+
+        Supported arguments:
+            format (string): The set of format specifiers to use for formatting the timestamp. See https://momentjs.com/docs/ for the full list of supported datetime format specifiers. Defaults to 'YYYY-MM-DDTHH:mm:ssZ', which complies with ISO-8601. Optional. Example: 'YYYY-MM-DDTHH:mm:ssZ'
+
+        Returned Result:
+            A string representing the device timestamp formatted according to the given specifiers.
+
+
         """
         self.logger.debug("%s", get_current_func_name())
         return self._execute("mobile: getDeviceTime", params)
@@ -545,6 +812,15 @@ class MobileCommands:
 
         Returns:
             Any: result of script execution
+
+        Description:
+            Changes package permissions at runtime on the device under test.
+
+        Supported arguments:
+            permissions (string or Array<string>): The full name of the permission to be changed or a list of permissions. For standard Android permissions, refer to the Android documentation. If the special value 'all' is passed (available since driver version 2.8.0) and the target is 'pm' (default), the action will be applied to all permissions requested or granted by the 'appPackage'. For the 'appops' target (available since v2.11.0), refer to AppOpsManager.java for supported appops permission names. The 'all' value is not supported for the 'appops' target. Required. Example: ['android.permission.ACCESS_FINE_LOCATION', 'android.permission.BROADCAST_SMS'] or 'all'
+            appPackage (string): The application package to modify permissions for. Defaults to the package under test. Optional. Example: com.mycompany.myapp
+            action (string): The action to perform. For target 'pm', use 'grant' (default) or 'revoke'. For target 'appops', use 'allow' (default), 'deny', 'ignore', or 'default'. Optional. Example: allow
+            target (string): The permission management target. Either 'pm' (default) or 'appops' (available since v2.11.0). The 'appops' target requires the adb_shell server security option to be enabled. Optional. Example: appops
 
         """
         self.logger.debug("%s", get_current_func_name())
@@ -569,6 +845,16 @@ class MobileCommands:
         Returns:
             Any: result of script execution
 
+        Description:
+            Retrieves the runtime permissions list for the specified application package.
+
+        Supported arguments:
+            type (string): The type of permissions to retrieve. Possible values are 'denied', 'granted', or 'requested' (default). Optional. Example: granted
+            appPackage (string): The application package to query permissions from. Defaults to the package under test. Optional. Example: com.mycompany.myapp
+
+        Returned Result:
+            An array of strings, each representing a permission name. The array may be empty if no permissions match the specified type.
+
         """
         self.logger.debug("%s", get_current_func_name())
         return self._execute("mobile: getPermissions", params)
@@ -591,6 +877,12 @@ class MobileCommands:
 
         Returns:
             Any: result of script execution
+
+        Description:
+            Performs an IME (Input Method Editor) action on the currently focused edit element. This emulates the invocation of the onEditorAction callback commonly used in Android development when buttons like Search or Done are pressed on the on-screen keyboard.
+
+        Supported arguments:
+            action (string): The name or integer code of the editor action to execute. Supported action names are: 'normal', 'unspecified', 'none', 'go', 'search', 'send', 'next', 'done', 'previous'. See EditorInfo for more details. Required. Example: search
 
         """
         self.logger.debug("%s", get_current_func_name())
@@ -615,6 +907,25 @@ class MobileCommands:
         Returns:
             Any: result of script execution
 
+        Description:
+            Starts device screen broadcasting by creating an MJPEG server. Multiple calls have no effect unless the previous streaming session is stopped. Requires the adb_screen_streaming feature on the server and GStreamer with gst-plugins-base, gst-plugins-good, and gst-plugins-bad installed and available in PATH on the server machine.
+
+        Supported arguments:
+            width (number): The scaled width of the device's screen in pixels. If unset, the actual screen width is used. Optional. Example: 768
+            height (number): The scaled height of the device's screen in pixels. If unset, the actual screen height is used. Optional. Example: 1024
+            bitRate (number): The video bit rate in bits per second. Default is 4000000 (4 Mb/s). Higher bit rate improves video quality but increases file size. Optional. Example: 1024000
+            host (string): The IP address or hostname to start the MJPEG server on. Use 0.0.0.0 to bind to all available interfaces. Default: 127.0.0.1. Optional. Example: 0.0.0.0
+            pathname (string): The HTTP request path for the MJPEG server. Should start with a slash. Optional. Example: /myserver
+            tcpPort (number): The internal TCP port for MJPEG broadcast on the loopback interface (127.0.0.1). Default: 8094. Optional. Example: 5024
+            port (number): The port number for the MJPEG server. Default: 8093. Optional. Example: 5023
+            quality (number): The JPEG quality for streamed images, in range [1, 100]. Default: 70. Optional. Example: 80
+            considerRotation (boolean): If true, GStreamer adjusts image dimensions for both landscape and portrait orientations. Default: false. Optional. Example: false
+            logPipelineDetails (boolean): Whether to log GStreamer pipeline events to standard output. Useful for debugging. Default: false. Optional. Example: true
+
+        Returned Result:
+            True if the MJPEG server was successfully started; otherwise, an error is thrown.
+
+
         """
         self.logger.debug("%s", get_current_func_name())
         return self._execute("mobile: startScreenStreaming", params)
@@ -637,6 +948,9 @@ class MobileCommands:
 
         Returns:
             Any: result of script execution
+
+        Description:
+            Stop the previously started screen streaming. If no screen streaming server has been started then nothing is done.
 
         """
         self.logger.debug("%s", get_current_func_name())
@@ -661,6 +975,49 @@ class MobileCommands:
         Returns:
             Any: result of script execution
 
+        Description:
+            Retrieves Android notifications via Appium Settings helper. Appium Settings app itself must be manually granted to access notifications under device Settings in order to make this feature working. Different vendors might require more than just the normal Notification permissions at the usual Apps menu. Try to look in places like Privacy menus if you are getting zero items retrieved while expecting some results.
+
+            Appium Settings keeps up to 100 notifications in an internal buffer, including both active notifications and those that appeared while the service was running. Newly appeared notifications are added to the head of the array. Each notification includes an `isRemoved` flag indicating whether it has been removed. For more details, see:
+            https://developer.android.com/reference/android/service/notification/StatusBarNotification
+            https://developer.android.com/reference/android/app/Notification.html
+
+        Supported arguments:
+            None
+
+        Returned Result:
+            A dictionary containing the notifications, for example:
+
+            {
+               "statusBarNotifications":[
+                 {
+                   "isGroup":false,
+                   "packageName":"io.appium.settings",
+                   "isClearable":false,
+                   "isOngoing":true,
+                   "id":1,
+                   "tag":null,
+                   "notification":{
+                     "title":null,
+                     "bigTitle":"Appium Settings",
+                     "text":null,
+                     "bigText":"Keep this service running, so Appium for Android can properly interact with several system APIs",
+                     "tickerText":null,
+                     "subText":null,
+                     "infoText":null,
+                     "template":"android.app.Notification$BigTextStyle"
+                   },
+                   "userHandle":0,
+                   "groupKey":"0|io.appium.settings|1|null|10133",
+                   "overrideGroupKey":null,
+                   "postTime":1576853518850,
+                   "key":"0|io.appium.settings|1|null|10133",
+                   "isRemoved":false
+                 }
+               ]
+            }
+
+
         """
         self.logger.debug("%s", get_current_func_name())
         return self._execute("mobile: getNotifications", params)
@@ -684,6 +1041,9 @@ class MobileCommands:
         Returns:
             Any: result of script execution
 
+        Description:
+            Opens notifications drawer on the device under test. Does nothing if the drawer is already opened.
+
         """
         self.logger.debug("%s", get_current_func_name())
         return self._execute("mobile: openNotifications", params)
@@ -697,7 +1057,7 @@ class MobileCommands:
         ),
     )
     def list_sms(self, params: dict[str, Any] | list[Any] | None = None) -> Any:
-        """Execute mobile: listSms command.
+        r"""Execute mobile: listSms command.
 
         https://github.com/appium/appium-uiautomator2-driver?tab=readme-ov-file#mobile-listsms
 
@@ -706,6 +1066,45 @@ class MobileCommands:
 
         Returns:
             Any: result of script execution
+
+        Description:
+            Retrieves the list of the most recent SMS messages via the Appium Settings helper. Messages are sorted by date in descending order (most recent first).
+
+        Supported arguments:
+            max (number): The maximum number of recent messages to retrieve. Defaults to 100. Optional. Example: 10
+
+        Returned Result:
+            A dictionary containing the retrieved SMS messages, for example:
+
+            {
+               "items":[
+                 {
+                   "id":"2",
+                   "address":"+123456789",
+                   "person":null,
+                   "date":"1581936422203",
+                   "read":"0",
+                   "status":"-1",
+                   "type":"1",
+                   "subject":null,
+                   "body":"\"text message2\"",
+                   "serviceCenter":null
+                 },
+                 {
+                   "id":"1",
+                   "address":"+123456789",
+                   "person":null,
+                   "date":"1581936382740",
+                   "read":"0",
+                   "status":"-1",
+                   "type":"1",
+                   "subject":null,
+                   "body":"\"text message\"",
+                   "serviceCenter":null
+                 }
+               ],
+               "total":2
+            }
 
         """
         self.logger.debug("%s", get_current_func_name())
@@ -730,6 +1129,12 @@ class MobileCommands:
         Returns:
             Any: result of script execution
 
+        Description:
+            Types the given Unicode string into the currently focused input field. Unlike sendKeys, this method emulates real typing as if performed from an on-screen keyboard and properly supports Unicode characters. The input field must already have focus before calling this method.
+
+        Supported arguments:
+            text (string): The text to type. Required. Example: testing
+
         """
         self.logger.debug("%s", get_current_func_name())
         return self._execute("mobile: type", params)
@@ -752,6 +1157,13 @@ class MobileCommands:
 
         Returns:
             Any: result of script execution
+
+        Description:
+            Emulates changing sensor values on the connected Android emulator. This extension does not work on real devices. Use the emulator console or check adb-emu-commands.js (SENSORS object) to see supported sensor types and acceptable value formats.
+
+        Supported arguments:
+            sensorType (string): The type of sensor to emulate. Required. Example: light
+            value (string): The value to set for the sensor. Check the emulator console output for acceptable formats. Required. Example: 50
 
         """
         self.logger.debug("%s", get_current_func_name())
@@ -776,6 +1188,12 @@ class MobileCommands:
         Returns:
             Any: result of script execution
 
+        Description:
+            Deletes a file on the remote device. The file can be a standard file on the filesystem or a file inside an application bundle.
+
+        Supported arguments:
+            remotePath (string): The full path to the remote file or a file inside an application bundle. Required. Example: /sdcard/myfile.txt or @my.app.id/path/in/bundle
+
         """
         self.logger.debug("%s", get_current_func_name())
         return self._execute("mobile: deleteFile", params)
@@ -798,6 +1216,16 @@ class MobileCommands:
 
         Returns:
             Any: result of script execution
+
+        Description:
+            Verifies whether an application is installed on the device under test.
+
+        Supported arguments:
+            appId (string): The identifier of the application package to be checked. Required. Example: my.app.id
+            user (number or string): The user ID for which the package installation is checked. Defaults to the current user if not provided. Optional. Example: 1006
+
+        Returned Result:
+            True if the application is installed for the specified user; otherwise, False.
 
         """
         self.logger.debug("%s", get_current_func_name())
@@ -822,6 +1250,19 @@ class MobileCommands:
         Returns:
             Any: result of script execution
 
+        Description:
+            Queries the current state of the specified application on the device under test.
+
+        Supported arguments:
+            appId (string): The identifier of the application package to be checked. Required. Example: my.app.id
+
+        Returned Result:
+            An integer representing the current state of the app:
+                0: The app is not installed
+                1: The app is installed but not running
+                3: The app is running in the background
+                4: The app is running in the foreground
+
         """
         self.logger.debug("%s", get_current_func_name())
         return self._execute("mobile: queryAppState", params)
@@ -844,6 +1285,12 @@ class MobileCommands:
 
         Returns:
             Any: result of script execution
+
+        Description:
+            Activates the specified application on the device under test, or launches it if it is not already running. This simulates a user clicking the app icon on the device dashboard.
+
+        Supported arguments:
+            appId (string): The identifier of the application package to be activated. Required. Example: my.app.id
 
         """
         self.logger.debug("%s", get_current_func_name())
@@ -868,6 +1315,17 @@ class MobileCommands:
         Returns:
             Any: result of script execution
 
+        Description:
+            Uninstalls the specified application from the device under test if it is installed. If the application is not present, the call is ignored.
+
+        Supported arguments:
+            appId (string): The identifier of the application package to be removed. Required. Example: my.app.id
+            timeout (number): The time in milliseconds to wait until the app is terminated. Optional. Default is 20000 ms. Example: 1500
+            keepData (boolean): If set to true, the application data and cache folders are preserved after uninstall. Optional. Default is false. Example: true
+
+        Returned Result:
+            bool: True if the application was found and successfully removed; False otherwise.
+
         """
         self.logger.debug("%s", get_current_func_name())
         return self._execute("mobile: removeApp", params)
@@ -890,6 +1348,16 @@ class MobileCommands:
 
         Returns:
             Any: result of script execution
+
+        Description:
+            Terminates the specified application on the device under test and waits until the app is fully stopped, up to the provided timeout. If the timeout is zero or negative (since UIAutomator driver 2.9.0), the app state check is skipped, which is useful when the app may automatically restart.
+
+        Supported arguments:
+            appId (string): The identifier of the application package to be terminated. Required. Example: my.app.id
+            timeout (number): Maximum time in milliseconds to wait until the app is terminated. Optional. Default is 500 ms. Example: 1500
+
+        Returned Result:
+            bool: True if the application was successfully terminated; False otherwise.
 
         """
         self.logger.debug("%s", get_current_func_name())
@@ -914,6 +1382,18 @@ class MobileCommands:
         Returns:
             Any: result of script execution
 
+        Description:
+            Installs the specified application package (.apk) on the device under test. May raise INSTALL_FAILED_VERSION_DOWNGRADE if the installed version is lower than the existing version on the device.
+
+        Supported arguments:
+            appPath (string): The local path to the .apk file(s) on the server filesystem or a remote URL. Required. Example: /app/path.apk
+            timeout (number): Maximum time in milliseconds to wait for the installation to complete. Optional. Default is 6000 ms. Example: 120000
+            allowTestPackages (bool): Whether to allow installation of test packages. Optional. Default is False. Example: True
+            useSdcard (bool): Whether to install the app on the SD card instead of device memory. Optional. Default is False. Example: True
+            grantPermissions (bool): Automatically grant all permissions requested in the app manifest after installation (Android 6+). Requires targetSdkVersion ≥ 23 and device API level ≥ 23. Optional. Default is False. Example: True
+            replace (bool): Whether to upgrade/reinstall the app if it already exists. If False, throws an error instead. Optional. Default is True. Example: False
+            checkVersion (bool): Skip installation if the device already has a greater or equal app version, avoiding INSTALL_FAILED_VERSION_DOWNGRADE errors. Optional. Default is False. Example: True
+
         """
         self.logger.debug("%s", get_current_func_name())
         return self._execute("mobile: installApp", params)
@@ -936,6 +1416,15 @@ class MobileCommands:
 
         Returns:
             Any: result of script execution
+
+        Description:
+            Deletes all data associated with the specified application package on the device under test. Internally calls `adb shell pm clear`. The app must exist, be accessible, and not running for this command to succeed.
+
+        Supported arguments:
+            appId (string): The identifier of the application package to be cleared. Required. Example: my.app.id
+
+        Returned Result:
+            Stdout of the corresponding adb command. An error is thrown if the operation fails.
 
         """
         self.logger.debug("%s", get_current_func_name())
@@ -960,6 +1449,29 @@ class MobileCommands:
         Returns:
             Any: result of script execution
 
+        Description:
+            Starts the specified activity intent on the device under test. Internally invokes `am start` / `am start-activity` command. This method extends the functionality of the Start Activity app management API.
+
+        Supported arguments:
+            intent (string): Full name of the activity intent to start. Required. Example: com.some.package.name/.YourActivityClassName
+            user (number|string): User ID for which the service is started. Optional. Defaults to current user. Example: 1006
+            wait (boolean): Block the method call until the Activity Manager process returns control to the system. Optional. Default is false. Example: true
+            stop (boolean): Force stop the target app before starting the activity. Optional. Default is false. Example: true
+            windowingMode (integer): Windowing mode to launch the activity into. Optional. Example: 1
+            activityType (integer): Activity type to launch the activity as. Optional. Example: 1
+            action (string): Action name for the Activity Manager's `-a` argument. Optional. Example: android.intent.action.MAIN
+            uri (string): Unified Resource Identifier for the `-d` argument. Optional. Example: https://appium.io
+            mimeType (string): Mime type for the `-t` argument. Optional. Example: application/json
+            identifier (string): Optional identifier for the `-i` argument. Optional. Example: my_identifier
+            categories (string|Array[string]): One or more category names for the `-c` argument. Optional. Example: ['android.intent.category.LAUNCHER']
+            component (string): Component name for the `-n` argument. Optional. Example: com.myapp/com.myapp.SplashActivity
+            package (string): Package name for the `-p` argument. Optional. Example: com.myapp
+            extras (Array[Array[string]]): Optional intent arguments. Each subarray contains value type, key, and value. Supported types: s, sn, z, i, l, f, u, cn, ia, ial, la, lal, fa, fal, sa, sal. Optional. Example: [['s', 'varName1', 'My String1'], ['ia', 'arrName', '1,2,3,4']]
+            flags (string): Intent startup-specific flags as a hexadecimal string. Optional. Example: 0x10200000
+
+        Returned Result:
+            The actual stdout of the underlying `am` command. An error is thrown if the operation fails.
+
         """
         self.logger.debug("%s", get_current_func_name())
         return self._execute("mobile: startActivity", params)
@@ -982,6 +1494,26 @@ class MobileCommands:
 
         Returns:
             Any: result of script execution
+
+        Description:
+            Starts the specified service intent on the device under test. Internally invokes `am startservice` or `am start-service` command.
+
+        Supported arguments:
+            intent (string): Full name of the service intent to start. Optional. Example: com.some.package.name/.YourServiceSubClassName
+            user (number|string): User ID for which the service is started. Optional. Defaults to current user. Example: 1006
+            foreground (boolean): Start the service as a foreground service (only works on Android 8+). Optional. Default is false. Example: true
+            action (string): See documentation for `startActivity` extension. Optional. Example: android.intent.action.MAIN
+            uri (string): See documentation for `startActivity` extension. Optional. Example: https://appium.io
+            mimeType (string): See documentation for `startActivity` extension. Optional. Example: application/json
+            identifier (string): See documentation for `startActivity` extension. Optional. Example: my_identifier
+            categories (string|Array[string]): See documentation for `startActivity` extension. Optional. Example: ['com.myapp/com.myapp.SplashActivity']
+            component (string): See documentation for `startActivity` extension. Optional. Example: android.intent.category.LAUNCHER
+            package (string): See documentation for `startActivity` extension. Optional. Example: com.myapp
+            extras (Array[Array[string]]): Optional intent arguments. Each subarray contains value type, key, and value. See `startActivity` documentation for supported types. Optional. Example: [['s', 'varName1', 'My String1'], ['ia', 'arrName', '1,2,3,4']]
+            flags (string): Intent startup-specific flags as a hexadecimal string. See `startActivity` documentation for details. Optional. Example: 0x10200000
+
+        Returned Result:
+            The actual stdout of the underlying `am` command. An error is thrown if the operation fails.
 
         """
         self.logger.debug("%s", get_current_func_name())
@@ -1006,6 +1538,25 @@ class MobileCommands:
         Returns:
             Any: result of script execution
 
+        Description:
+            Stops the specified service intent on the device under test. Internally invokes `am stopservice` or `am stop-service` command.
+
+        Supported arguments:
+            intent (string): Full name of the service intent to stop. Optional. Example: com.some.package.name/.YourServiceSubClassName
+            user (number|string): User ID for which the service is stopped. Optional. Defaults to current user. Example: 1006
+            action (string): See documentation for `startActivity` extension. Optional. Example: android.intent.action.MAIN
+            uri (string): See documentation for `startActivity` extension. Optional. Example: https://appium.io
+            mimeType (string): See documentation for `startActivity` extension. Optional. Example: application/json
+            identifier (string): See documentation for `startActivity` extension. Optional. Example: my_identifier
+            categories (string|Array[string]): See documentation for `startActivity` extension. Optional. Example: ['com.myapp/com.myapp.SplashActivity']
+            component (string): See documentation for `startActivity` extension. Optional. Example: android.intent.category.LAUNCHER
+            package (string): See documentation for `startActivity` extension. Optional. Example: com.myapp
+            extras (Array[Array[string]]): Optional intent arguments. Each subarray contains value type, key, and value. See `startActivity` documentation for supported types. Optional. Example: [['s', 'varName1', 'My String1'], ['ia', 'arrName', '1,2,3,4']]
+            flags (string): Intent-specific flags as a hexadecimal string. See `startActivity` documentation for details. Optional. Example: 0x10200000
+
+        Returned Result:
+            The actual stdout of the underlying `am` command. An error is thrown if the operation fails.
+
         """
         self.logger.debug("%s", get_current_func_name())
         return self._execute("mobile: stopService", params)
@@ -1029,6 +1580,27 @@ class MobileCommands:
         Returns:
             Any: result of script execution
 
+        Description:
+            Sends a broadcast Intent on the device under test. Internally invokes the `am broadcast` command.
+
+        Supported arguments:
+            intent (string): Full name of the intent to broadcast. Optional. Example: com.some.package.name/.YourIntentClassName
+            user (number|string): Specify which user to send to; possible values are 'all', 'current', or a numeric user ID. Optional. Example: current
+            receiverPermission (string): Require the receiver to hold the given permission. Optional. Example: android.permission.READ_PROFILE
+            allowBackgroundActivityStarts (boolean): Whether the receiver can start activities even if in the background. Optional. Default: false. Example: true
+            action (string): See documentation for `startActivity` extension. Optional. Example: android.intent.action.MAIN
+            uri (string): See documentation for `startActivity` extension. Optional. Example: https://appium.io
+            mimeType (string): See documentation for `startActivity` extension. Optional. Example: application/json
+            identifier (string): See documentation for `startActivity` extension. Optional. Example: my_identifier
+            categories (string|Array[string]): See documentation for `startActivity` extension. Optional. Example: ['com.myapp/com.myapp.SplashActivity']
+            component (string): See documentation for `startActivity` extension. Optional. Example: android.intent.category.LAUNCHER
+            package (string): See documentation for `startActivity` extension. Optional. Example: com.myapp
+            extras (Array[Array[string]]): Optional intent arguments. Each subarray contains value type, key, and value. See `startActivity` documentation for supported types. Optional. Example: [['s', 'varName1', 'My String1'], ['ia', 'arrName', '1,2,3,4']]
+            flags (string): Intent-specific flags as a hexadecimal string. See `startActivity` documentation for details. Optional. Example: 0x10200000
+
+        Returned Result:
+            The actual stdout of the underlying `am` command. An error is thrown if the operation fails.
+
         """
         self.logger.debug("%s", get_current_func_name())
         return self._execute("mobile: broadcast", params)
@@ -1042,7 +1614,7 @@ class MobileCommands:
         ),
     )
     def get_contexts(self, params: dict[str, Any] | list[Any] | None = None) -> Any:
-        """Execute mobile: getContexts command.
+        r"""Execute mobile: getContexts command.
 
         https://github.com/appium/appium-uiautomator2-driver?tab=readme-ov-file#mobile-getcontexts
 
@@ -1051,6 +1623,41 @@ class MobileCommands:
 
         Returns:
             Any: result of script execution
+
+        Description:
+            Retrieves a mapping of WebViews on the device under test based on Chrome DevTools Protocol (CDP) endpoints. This allows interaction with WebViews in hybrid applications.
+
+        Supported arguments:
+            waitForWebviewMs (number): Maximum time in milliseconds to wait for WebView(s) to appear. If set to 0 (default), the WebView availability is checked only once. Optional. Example: 10000
+
+        Returned Result:
+            A JSON object representing the WebViews mapping. Example structure:
+
+            {
+                "proc": "@webview_devtools_remote_22138",
+                "webview": "WEBVIEW_22138",
+                "info": {
+                    "Android-Package": "io.appium.settings",
+                    "Browser": "Chrome/74.0.3729.185",
+                    "Protocol-Version": "1.3",
+                    "User-Agent": "Mozilla/5.0 (Linux; Android 10; Android SDK built for x86 Build/QSR1.190920.001; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/74.0.3729.185 Mobile Safari/537.36",
+                    "V8-Version": "7.4.288.28",
+                    "WebKit-Version": "537.36 (@22955682f94ce09336197bfb8dffea991fa32f0d)",
+                    "webSocketDebuggerUrl": "ws://127.0.0.1:10900/devtools/browser"
+                },
+                "pages": [
+                    {
+                        "description": "{\"attached\":true,\"empty\":false,\"height\":1458,\"screenX\":0,\"screenY\":336,\"visible\":true,\"width\":1080}",
+                        "devtoolsFrontendUrl": "http://chrome-devtools-frontend.appspot.com/serve_rev/@22955682f94ce09336197bfb8dffea991fa32f0d/inspector.html?ws=127.0.0.1:10900/devtools/page/27325CC50B600D31B233F45E09487B1F",
+                        "id": "27325CC50B600D31B233F45E09487B1F",
+                        "title": "Releases · appium/appium · GitHub",
+                        "type": "page",
+                        "url": "https://github.com/appium/appium/releases",
+                        "webSocketDebuggerUrl": "ws://127.0.0.1:10900/devtools/page/27325CC50B600D31B233F45E09487B1F"
+                    }
+                ],
+                "webviewName": "WEBVIEW_com.io.appium.setting"
+            }
 
         """
         self.logger.debug("%s", get_current_func_name())
@@ -1074,6 +1681,21 @@ class MobileCommands:
 
         Returns:
             Any: result of script execution
+
+        Description:
+            Installs multiple application packages on the device under test using the adb `install-multiple` option. Each APK will be installed in a single command, allowing options like granting permissions or partial installation.
+
+        Supported arguments:
+            apks (Array<string>): List of full paths or URLs to the APK files to be installed. Required. Example: ['/path/to/local.apk', 'https://github.com/appium/ruby_lib_core/blob/master/test/functional/app/api.apk.zip?raw=true']
+            options (object): Installation options. Optional. Supported keys:
+                - grantPermissions (boolean): If true, automatically grant all requested permissions (-g). Example: true
+                - allowTestPackages (boolean): Corresponds to -t flag. Example: true
+                - useSdcard (boolean): Corresponds to -s flag. Example: true
+                - replace (boolean): Corresponds to -r flag; replaces existing app. Default is true. Example: false
+                - partialInstall (boolean): Corresponds to -p flag for partial installation. Example: true
+
+        Returned Result:
+            The stdout of the corresponding adb install-multiple command. An error is thrown if the installation fails.
 
         """
         self.logger.debug("%s", get_current_func_name())
@@ -1249,7 +1871,8 @@ class MobileCommands:
         ),
     )
     def start_media_projection_recording(
-        self, params: dict[str, Any] | list[Any] | None = None,
+        self,
+        params: dict[str, Any] | list[Any] | None = None,
     ) -> Any:
         """Execute mobile: startMediaProjectionRecording command.
 
@@ -1274,7 +1897,8 @@ class MobileCommands:
         ),
     )
     def is_media_projection_recording_running(
-        self, params: dict[str, Any] | list[Any] | None = None,
+        self,
+        params: dict[str, Any] | list[Any] | None = None,
     ) -> Any:
         """Execute mobile: isMediaProjectionRecordingRunning command.
 
@@ -1299,7 +1923,8 @@ class MobileCommands:
         ),
     )
     def stop_media_projection_recording(
-        self, params: dict[str, Any] | list[Any] | None = None,
+        self,
+        params: dict[str, Any] | list[Any] | None = None,
     ) -> Any:
         """Execute mobile: stopMediaProjectionRecording command.
 

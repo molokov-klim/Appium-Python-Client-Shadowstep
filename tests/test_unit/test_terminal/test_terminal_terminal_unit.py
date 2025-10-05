@@ -304,10 +304,8 @@ class TestTerminal:
         mock_file_content = b"file content"
         mock_encoded_content = base64.b64encode(mock_file_content).decode()
 
-        # Mock the extension assertion and execute_script chain
-        mock_extension = Mock()
-        mock_extension.execute_script.return_value = mock_encoded_content
-        self.mock_driver.assert_extension_exists = Mock(return_value=mock_extension)
+        # Mock the driver execute_script to return base64 content
+        self.mock_driver.execute_script.return_value = mock_encoded_content
 
         # Mock the open function
         mock_file = Mock()
@@ -324,8 +322,7 @@ class TestTerminal:
 
             # Assert
             assert result is True  # noqa: S101
-            self.mock_driver.assert_extension_exists.assert_called_once_with("mobile: pullFile")
-            mock_extension.execute_script.assert_called_once_with(
+            self.mock_driver.execute_script.assert_called_once_with(
                 "mobile: pullFile", {"remotePath": source}
             )
 
@@ -336,11 +333,9 @@ class TestTerminal:
         source = "/device/path/file.txt"
         destination = "/local/path/file.txt"
 
-        # Mock the extension assertion to raise exception
+        # Mock the driver execute_script to raise exception
         self.mock_shadowstep.reconnect = Mock()
-        self.mock_driver.assert_extension_exists = Mock(
-            side_effect=NoSuchDriverException("Driver not found")
-        )
+        self.mock_driver.execute_script.side_effect = NoSuchDriverException("Driver not found")
 
         # Act
         result = self.terminal.pull(source, destination)
