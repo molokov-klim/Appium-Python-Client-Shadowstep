@@ -81,13 +81,16 @@ dependencies = [
     { name = "opencv-python", marker = "sys_platform == 'linux' or sys_platform == 'win32' or sys_platform == 'windows'" },
     { name = "paramiko", marker = "sys_platform == 'linux' or sys_platform == 'win32' or sys_platform == 'windows'" },
     { name = "pillow", marker = "sys_platform == 'linux' or sys_platform == 'win32' or sys_platform == 'windows'" },
+    { name = "pyright", marker = "sys_platform == 'linux' or sys_platform == 'win32' or sys_platform == 'windows'" },
     { name = "pytesseract", marker = "sys_platform == 'linux' or sys_platform == 'win32' or sys_platform == 'windows'" },
     { name = "requests", marker = "sys_platform == 'linux' or sys_platform == 'win32' or sys_platform == 'windows'" },
+    { name = "ruff", marker = "sys_platform == 'linux' or sys_platform == 'win32' or sys_platform == 'windows'" },
     { name = "scp", marker = "sys_platform == 'linux' or sys_platform == 'win32' or sys_platform == 'windows'" },
     { name = "selenium", marker = "sys_platform == 'linux' or sys_platform == 'win32' or sys_platform == 'windows'" },
     { name = "setuptools", marker = "sys_platform == 'linux' or sys_platform == 'win32' or sys_platform == 'windows'" },
     { name = "unidecode", marker = "sys_platform == 'linux' or sys_platform == 'win32' or sys_platform == 'windows'" },
     { name = "websocket-client", marker = "sys_platform == 'linux' or sys_platform == 'win32' or sys_platform == 'windows'" },
+    { name = "wheel", marker = "sys_platform == 'linux' or sys_platform == 'win32' or sys_platform == 'windows'" },
 ]
 
 [package.dev-dependencies]
@@ -112,13 +115,16 @@ requires-dist = [
     { name = "opencv-python", specifier = ">=4.12.0.88" },
     { name = "paramiko", specifier = ">=4.0.0" },
     { name = "pillow", specifier = ">=11.3.0" },
+    { name = "pyright", specifier = ">=1.1.405" },
     { name = "pytesseract", specifier = ">=0.3.10" },
     { name = "requests", specifier = ">=2.31.0" },
+    { name = "ruff", specifier = ">=0.13.2" },
     { name = "scp", specifier = ">=0.14.5" },
-    { name = "selenium", specifier = ">=4.12" },
+    { name = "selenium", specifier = ">=4.36" },
     { name = "setuptools", specifier = "==80.9.0" },
     { name = "unidecode", specifier = ">=1.4.0" },
     { name = "websocket-client", specifier = ">=1.8.0" },
+    { name = "wheel", specifier = ">=0.45.1" },
 ]
 
 [package.metadata.requires-dev]
@@ -220,7 +226,7 @@ name = "cffi"
 version = "2.0.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
-    { name = "pycparser", marker = "(implementation_name != 'PyPy' and sys_platform == 'linux') or (implementation_name != 'PyPy' and sys_platform == 'win32') or (implementation_name != 'PyPy' and sys_platform == 'windows')" },
+    { name = "pycparser", marker = "(python_full_version < '3.11' and implementation_name != 'PyPy' and sys_platform == 'linux') or (implementation_name != 'PyPy' and platform_python_implementation != 'PyPy' and sys_platform == 'linux') or (implementation_name != 'PyPy' and sys_platform == 'win32') or (implementation_name != 'PyPy' and sys_platform == 'windows')" },
 ]
 sdist = { url = "https://files.pythonhosted.org/packages/eb/56/b1ba7935a17738ae8453301356628e8147c79dbb825bcbc73dc7401f9846/cffi-2.0.0.tar.gz", hash = "sha256:44d1b5909021139fe36001ae048dbdde8214afa20200eda0f64c068cac5d5529", size = 523588, upload-time = "2025-09-08T23:24:04.541Z" }
 wheels = [
@@ -1430,7 +1436,7 @@ wheels = [
 
 [[package]]
 name = "selenium"
-version = "4.35.0"
+version = "4.36.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "certifi", marker = "sys_platform == 'linux' or sys_platform == 'win32' or sys_platform == 'windows'" },
@@ -1440,9 +1446,9 @@ dependencies = [
     { name = "urllib3", extra = ["socks"], marker = "sys_platform == 'linux' or sys_platform == 'win32' or sys_platform == 'windows'" },
     { name = "websocket-client", marker = "sys_platform == 'linux' or sys_platform == 'win32' or sys_platform == 'windows'" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/75/67/9016942b5781843cfea6f5bc1383cea852d9fa08f85f55a0547874525b5c/selenium-4.35.0.tar.gz", hash = "sha256:83937a538afb40ef01e384c1405c0863fa184c26c759d34a1ebbe7b925d3481c", size = 907991, upload-time = "2025-08-12T15:46:40.822Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/10/35/33d3d84e3399c9d00b489aeccfdc78115e149e45816fb8fe84274329e8a2/selenium-4.36.0.tar.gz", hash = "sha256:0eced83038736c3a013b824116df0b6dbb83e93721545f51b680451013416723", size = 913613, upload-time = "2025-10-02T15:24:37.483Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/17/ef/d0e033e1b3f19a0325ce03863b68d709780908381135fc0f9436dea76a7b/selenium-4.35.0-py3-none-any.whl", hash = "sha256:90bb6c6091fa55805785cf1660fa1e2176220475ccdb466190f654ef8eef6114", size = 9602106, upload-time = "2025-08-12T15:46:38.244Z" },
+    { url = "https://files.pythonhosted.org/packages/74/9e/642a355e43a4ebf68bc4f00dd4ab264f635079c5dc7ed6d9991a0c2be3d7/selenium-4.36.0-py3-none-any.whl", hash = "sha256:525fdfe96b99c27d9a2c773c75aa7413f4c24bdb7b9749c1950aa3b5f79ed915", size = 9587029, upload-time = "2025-10-02T15:24:35.025Z" },
 ]
 
 [[package]]
@@ -1601,6 +1607,15 @@ source = { registry = "https://pypi.org/simple" }
 sdist = { url = "https://files.pythonhosted.org/packages/e6/30/fba0d96b4b5fbf5948ed3f4681f7da2f9f64512e1d303f94b4cc174c24a5/websocket_client-1.8.0.tar.gz", hash = "sha256:3239df9f44da632f96012472805d40a23281a991027ce11d2f45a6f24ac4c3da", size = 54648, upload-time = "2024-04-23T22:16:16.976Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/5a/84/44687a29792a70e111c5c477230a72c4b957d88d16141199bf9acb7537a3/websocket_client-1.8.0-py3-none-any.whl", hash = "sha256:17b44cc997f5c498e809b22cdf2d9c7a9e71c02c8cc2b6c56e7c2d1239bfa526", size = 58826, upload-time = "2024-04-23T22:16:14.422Z" },
+]
+
+[[package]]
+name = "wheel"
+version = "0.45.1"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/8a/98/2d9906746cdc6a6ef809ae6338005b3f21bb568bea3165cfc6a243fdc25c/wheel-0.45.1.tar.gz", hash = "sha256:661e1abd9198507b1409a20c02106d9670b2576e916d58f520316666abca6729", size = 107545, upload-time = "2024-11-23T00:18:23.513Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/0b/2c/87f3254fd8ffd29e4c02732eee68a83a1d3c346ae39bc6822dcbcb697f2b/wheel-0.45.1-py3-none-any.whl", hash = "sha256:708e7481cc80179af0e556bbf0cc00b8444c7321e2700b8d8580231d13017248", size = 72494, upload-time = "2024-11-23T00:18:21.207Z" },
 ]
 
 [[package]]

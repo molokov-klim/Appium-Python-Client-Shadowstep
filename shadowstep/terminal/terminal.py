@@ -129,7 +129,7 @@ class Terminal:
             source_file_path = Path(source_path) / filename
             remote_file_path = Path(remote_server_path) / filename
             destination_file_path = f"{destination}/{filename}"
-            self.transport.scp.put(files=source_file_path, remote_path=remote_file_path)
+            self.transport.scp.put(files=source_file_path, remote_path=str(remote_file_path))
             _, stdout, _ = self.transport.ssh.exec_command(
                 f"adb -s {udid} push {remote_file_path} {destination_file_path}",
             )
@@ -152,7 +152,7 @@ class Terminal:
         else:
             return True
 
-    def pull(self, source: str, destination: str) -> bool:
+    def pull(self, source: str, destination: str | Path) -> bool:
         """Pull a file from a mobile device to a local destination.
 
         :param source: The path of the file on the mobile device to pull.
@@ -167,7 +167,7 @@ class Terminal:
                 # If path not specified, save in current directory
                 destination = Path.cwd() / Path(source).name
 
-            file_contents_base64 = self.driver.execute_script("mobile: pullFile", {"remotePath": source})
+            file_contents_base64 = self.driver.execute_script("mobile: pullFile", {"remotePath": source})   # type: ignore[reportUnknownMemberType]
             if not file_contents_base64:
                 return False
             decoded_contents = base64.b64decode(file_contents_base64)

@@ -5,12 +5,6 @@ Integration tests for page_base.py module.
 
 uv run pytest -svl --log-cli-level INFO --tb=short --setup-show tests/test_integro/test_page_base.py
 """
-from abc import ABC, abstractmethod
-from collections.abc import Callable
-
-import pytest
-
-from shadowstep.page_base import PageBaseShadowstep
 
 
 class TestPageBaseShadowstep:

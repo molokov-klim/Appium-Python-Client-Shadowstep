@@ -9,7 +9,7 @@ requires-python = ">=3.9"
 
 dependencies = [
     "Appium-Python-Client>=5.2.2", # webdriver
-    "selenium>=4.12", # webdriver
+    "selenium>=4.36", # webdriver
     "websocket-client>=1.8.0", # logcat
     "requests>=2.31.0", # http
     "opencv-python>=4.12.0.88", # image
@@ -25,6 +25,9 @@ dependencies = [
     "unidecode>=1.4.0", # page object generator
     "eulxml>=1.1.3", # ast parsing xpath
     "setuptools==80.9.0", # nessecary dependency for eulxml
+    "wheel>=0.45.1",
+    "pyright>=1.1.405",
+    "ruff>=0.13.2",
 ]
 
 keywords = ["appium", "testing", "uiautomator2", "android", "automation", "framework"]
