@@ -15,23 +15,23 @@ from typing import TYPE_CHECKING, Any
 
 import requests
 from appium.options.android.uiautomator2.base import UiAutomator2Options
-from appium.webdriver.webdriver import WebDriver
 from selenium.common import WebDriverException
 from selenium.common.exceptions import (
     InvalidSessionIdException,
     NoSuchDriverException,
 )
-from web_driver.web_driver_singleton import WebDriverSingleton
 
 from shadowstep.terminal.adb import Adb
 from shadowstep.terminal.terminal import Terminal
 from shadowstep.terminal.transport import Transport
 from shadowstep.utils.utils import get_current_func_name
+from shadowstep.web_driver.web_driver_singleton import WebDriverSingleton
 
 if TYPE_CHECKING:
     from collections.abc import Sequence
 
     from appium.options.common.base import AppiumOptions
+    from appium.webdriver.webdriver import WebDriver
 
 logger = logging.getLogger(__name__)
 
