@@ -75,13 +75,6 @@ def fail_safe(  # noqa: C901, PLR0913
             last_exc: Exception | None = None
             for attempt in range(1, retries + 1):
                 try:
-                    if not self.is_connected():
-                        self.logger.warning(
-                            "[fail_safe] Not connected before %s(), reconnecting...",
-                            func.__name__,
-                        )
-                        self.logger.warning("last_exc=%s", last_exc)
-                        self.reconnect()
                     return func(self, *args, **kwargs)
                 except exceptions as e:  # noqa: PERF203
                     last_exc = e
