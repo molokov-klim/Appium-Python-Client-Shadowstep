@@ -19,6 +19,7 @@ from typing import TYPE_CHECKING, cast
 
 from selenium.common import InvalidSessionIdException, NoSuchDriverException
 
+from shadowstep.ui_automator.mobile_commands import MobileCommands
 from shadowstep.utils.utils import get_current_func_name
 
 # Configure the root logger (basic configuration)
@@ -81,6 +82,7 @@ class Terminal:
         self.shadowstep: Shadowstep = Shadowstep.get_instance()
         self.transport: Transport = self.shadowstep.transport
         self.driver: WebDriver = self.shadowstep.driver
+        self.mobile_commands = MobileCommands()
 
     def __del__(self) -> None:
         """Destructor to ensure SSH connection is closed on object deletion.
@@ -95,10 +97,7 @@ class Terminal:
         """Execute commands via ADB on a mobile device."""
         for _ in range(tries):
             try:
-                result = self.driver.execute_script(  #  type: ignore[reportUnknownMemberType]
-                    "mobile: shell",
-                    {"command": command, "args": [args]},
-                )
+                result = self.mobile_commands.shell({"command": command, "args": [args]})
                 return cast("str", result)
             except NoSuchDriverException:  # noqa: PERF203
                 logger.warning("No such driver found")
@@ -166,8 +165,7 @@ class Terminal:
             if not destination:
                 # If path not specified, save in current directory
                 destination = Path.cwd() / Path(source).name
-
-            file_contents_base64 = self.driver.execute_script("mobile: pullFile", {"remotePath": source})   # type: ignore[reportUnknownMemberType]
+            file_contents_base64 = self.mobile_commands.pull_file({"remotePath": source})
             if not file_contents_base64:
                 return False
             decoded_contents = base64.b64decode(file_contents_base64)

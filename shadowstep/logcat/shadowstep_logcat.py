@@ -23,6 +23,8 @@ from websocket import (
     create_connection,
 )
 
+from shadowstep.ui_automator.mobile_commands import MobileCommands
+
 if TYPE_CHECKING:
     import types
     from collections.abc import Callable
@@ -80,6 +82,8 @@ class ShadowstepLogcat:
         if poll_interval < 0:
             msg = "poll_interval must be non-negative"
             raise ShadowstepPollIntervalError(msg)
+
+        self.mobile_commands =MobileCommands()
 
         self._driver_getter = driver_getter
         self._poll_interval = poll_interval
@@ -218,9 +222,8 @@ class ShadowstepLogcat:
 
         # Send command to stop broadcast
         try:
-            driver = self._driver_getter()
-            if driver is not None:
-                driver.execute_script("mobile: stopLogsBroadcast")
+            self._driver_getter()
+            self.mobile_commands.stop_logs_broadcast()
         except WebDriverException as e:
             logger.warning("Failed to stop broadcast: %r", e)
 
@@ -255,7 +258,7 @@ class ShadowstepLogcat:
                             logger.warning("Driver is None, skipping logcat iteration")
                             time.sleep(self._poll_interval)
                             continue
-                        driver.execute_script("mobile: startLogsBroadcast")
+                        self.mobile_commands.start_logs_broadcast()
 
                         # Build shadowstep WebSocket URL
                         session_id = driver.session_id
