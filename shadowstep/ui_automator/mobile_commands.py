@@ -18,8 +18,8 @@ from typing_extensions import Self
 
 from shadowstep.decorators.decorators import fail_safe
 from shadowstep.exceptions.shadowstep_exceptions import ShadowstepException
-from shadowstep.shadowstep_base import WebDriverSingleton
 from shadowstep.utils.utils import get_current_func_name
+from shadowstep.web_driver.web_driver_singleton import WebDriverSingleton
 
 
 class MobileCommands:
@@ -77,6 +77,7 @@ class MobileCommands:
 
         """
         self.logger.debug("%s", get_current_func_name())
+        self.logger.info("shell: %s", params)
         return self._execute("mobile: shell", params)
 
     @fail_safe(
