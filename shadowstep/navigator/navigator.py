@@ -5,7 +5,6 @@ pathfinding algorithms. It supports both NetworkX-based shortest path finding
 and fallback BFS traversal.
 """
 
-
 from __future__ import annotations
 
 import logging
@@ -115,6 +114,7 @@ class PageNavigator:
             return True
 
         path = self.find_path(from_page, to_page)
+
         if not path:
             self.logger.error("❌ No dom path found from %s to %s", from_page, to_page)
             return False
@@ -124,7 +124,7 @@ class PageNavigator:
         )
 
         try:
-            self.perform_navigation(cast("list[PageBaseShadowstep]", path), timeout)
+            self.perform_navigation(path, timeout)
             self.logger.info("✅ Successfully navigated to %s", to_page)
         except WebDriverException:
             self.logger.exception("❗ WebDriverException during dom from %s to %s", from_page, to_page)
@@ -133,185 +133,117 @@ class PageNavigator:
         else:
             return True
 
-    def find_path(self, start: Any, target: Any) -> list[Any] | None:
-        """Find a path from start page to target page.
-
-        Args:
-            start: Starting page (can be string or page object).
-            target: Target page (can be string or page object).
-
-        Returns:
-            List of pages representing the path, or None if no path exists.
-
-        """
-        if isinstance(start, str):
-            start = self.shadowstep.resolve_page(start)
-        if isinstance(target, str):
-            target = self.shadowstep.resolve_page(target)
+    def find_path(self, start: Any, target: Any) -> list[str] | None:
+        """Find a path from start page to target page."""
+        start_key = self.graph_manager._page_key(start)
+        target_key = self.graph_manager._page_key(target)
 
         try:
-            path = self.graph_manager.find_shortest_path(start, target)
+            path = self.graph_manager.find_shortest_path(start_key, target_key)
             if path:
                 return path
         except NetworkXException:
             self.logger.exception("NetworkX error in find_shortest_path")
 
-        # Fallback: BFS traversal
-        return self._find_path_bfs(start, target)
+        # Fallback: BFS
+        return self._find_path_bfs(start_key, target_key)
 
-    def _find_path_bfs(self, start: Any, target: Any) -> list[Any] | None:
-        """Find path using breadth-first search as fallback.
-
-        Args:
-            start: Starting page.
-            target: Target page.
-
-        Returns:
-            List of pages representing the path, or None if no path exists.
-
-        """
+    def _find_path_bfs(self, start: str, target: str) -> list[str] | None:
+        """Find path using breadth-first search as fallback."""
         visited = set()
-        queue = deque([(start, [])])  # type: ignore[arg-type]
+        queue = deque([(start, [])])
         while queue:
-            current_page, path = queue.popleft()
-            visited.add(current_page)
-            transitions = self.graph_manager.get_edges(current_page)
-            for next_page_name in transitions:
-                next_page = self.shadowstep.resolve_page(cast("str", next_page_name))
+            current, path = queue.popleft()
+            visited.add(current)
+            for next_page in self.graph_manager.get_edges(current):
                 if next_page == target:
-                    return [*path, current_page, next_page]
+                    return [*path, current, next_page]
                 if next_page not in visited:
-                    queue.append((next_page, [*path, current_page]))
+                    queue.append((next_page, [*path, current]))
         return None
 
-    def perform_navigation(self, path: list[Any], timeout: int = DEFAULT_NAVIGATION_TIMEOUT) -> None:
-        """Perform dom through a given path of PageBase instances.
-
-        Args:
-            path: List of page objects to traverse.
-            timeout: Timeout for each dom step.
-
-        Raises:
-            ValueError: If path is empty or has only one element.
-            AssertionError: If dom to next page fails.
-
-        """
+    def perform_navigation(self, path: list[str], timeout: int = DEFAULT_NAVIGATION_TIMEOUT) -> None:
+        """Perform navigation through a given path of page names."""
         if not path:
             raise ShadowstepPathCannotBeEmptyError
         if len(path) < MIN_PATH_LENGTH:
             raise ShadowstepPathMustContainAtLeastTwoPagesError
 
         for i in range(len(path) - 1):
-            current_page = path[i]
-            next_page = path[i + 1]
-            transition_method = current_page.edges[next_page.__class__.__name__]
+            current_name = path[i]
+            next_name = path[i + 1]
+
+            current_page = self.shadowstep.resolve_page(current_name)
+            next_page = self.shadowstep.resolve_page(next_name)
+
+            transition_method = current_page.edges[next_name]
             transition_method()
+
             end_time = time.time() + timeout
             while time.time() < end_time:
                 if next_page.is_current_page():
                     break
                 time.sleep(0.5)
             else:
-                raise ShadowstepNavigationFailedError(from_page=str(current_page), to_page=str(next_page), method=str(transition_method))
+                raise ShadowstepNavigationFailedError(current_page, next_page, transition_method)
 
 
 class PageGraph:
-    """Manages the graph of page transitions.
-
-    This class maintains both a simple dictionary-based graph and a NetworkX
-    directed graph for efficient pathfinding operations.
-
-    Attributes:
-        graph: Dictionary-based graph for backward compatibility.
-        nx_graph: NetworkX directed graph for advanced operations.
-
-    """
+    """Manages the graph of page transitions."""
 
     def __init__(self) -> None:
         """Initialize the PageGraph with empty graphs."""
-        self.graph: dict[Any, Any] = {}  # Legacy dictionary-based graph
-        self.nx_graph: DiGraph[Any] = nx.DiGraph()  # NetworkX directed graph
+        self.graph: dict[str, dict[str, Any]] = {}
+        self.nx_graph: nx.DiGraph = nx.DiGraph()
 
-    def add_page(self, page: Any, edges: Any) -> None:
-        """Add a page and its edges to both graph representations.
+    @staticmethod
+    def _page_key(page: str | PageBaseShadowstep) -> str:
+        """Normalize page to a consistent string key for graph operations."""
+        if isinstance(page, str):
+            return page
+        return page.__class__.__name__
 
-        Args:
-            page: The page object to add.
-            edges: Dictionary or list of target pages/names.
-
-        Raises:
-            TypeError: If page is None.
-
-        """
+    def add_page(self, page: Any, edges: dict[str, Any]) -> None:
+        """Add a page and its edges to both graph representations."""
         if page is None:
             raise ShadowstepPageCannotBeNoneError
 
-        self.graph[page] = edges
+        page_key = self._page_key(page)
+        self.graph[page_key] = edges
 
-        # Add vertex and edges to NetworkX graph
-        self.nx_graph.add_node(page)
-        if isinstance(edges, (dict, list, tuple)):
-            for target_name in edges:
-                self.nx_graph.add_edge(page, target_name)
+        self.nx_graph.add_node(page_key)
+        for target_name in edges:
+            self.nx_graph.add_edge(page_key, self._page_key(target_name))
 
-    def get_edges(self, page: Any) -> list[Any]:
-        """Get edges for a given page.
-
-        Args:
-            page: The page to get edges for.
-
-        Returns:
-            List of target pages/names, empty list if page not found.
-
-        """
-        return self.graph.get(page, [])
+    def get_edges(self, page: Any) -> list[str]:
+        """Get edges for a given page."""
+        return list(self.graph.get(self._page_key(page), {}).keys())
 
     def is_valid_edge(self, from_page: Any, to_page: Any) -> bool:
-        """Check if there's a valid edge between two pages.
-
-        Args:
-            from_page: Source page.
-            to_page: Target page.
-
-        Returns:
-            True if edge exists, False otherwise.
-
-        """
-        transitions = self.get_edges(from_page)
-        return to_page in transitions
+        """Check if there's a valid edge between two pages."""
+        from_key = self._page_key(from_page)
+        to_key = self._page_key(to_page)
+        return to_key in self.graph.get(from_key, {})
 
     def has_path(self, from_page: Any, to_page: Any) -> bool:
-        """Check if there's a path between two pages.
-
-        Args:
-            from_page: Source page.
-            to_page: Target page.
-
-        Returns:
-            True if path exists, False otherwise.
-
-        """
+        """Check if there's a path between two pages."""
         try:
-            return nx.has_path(self.nx_graph, from_page, to_page)
+            return nx.has_path(
+                self.nx_graph,
+                self._page_key(from_page),
+                self._page_key(to_page),
+            )
         except (nx.NetworkXError, KeyError):
             return False
 
-    def find_shortest_path(self, from_page: Any, to_page: Any) -> list[Any] | None:
-        """Find the shortest path between two pages.
-
-        Args:
-            from_page: Source page.
-            to_page: Target page.
-
-        Returns:
-            List of pages representing the shortest path, or None if no path exists.
-
-        """
+    def find_shortest_path(self, from_page: Any, to_page: Any) -> list[str] | None:
+        """Find the shortest path between two pages."""
         try:
-            return nx.shortest_path(self.nx_graph, source=from_page, target=to_page)
-        except nx.NetworkXNoPath:
-            return None
-        except nx.NodeNotFound:
-            return None
-        except nx.NetworkXError:
+            return nx.shortest_path(
+                self.nx_graph,
+                source=self._page_key(from_page),
+                target=self._page_key(to_page),
+            )
+        except (nx.NetworkXNoPath, nx.NodeNotFound, nx.NetworkXError):
+            logger.exception("Error finding shortest path")
             return None
