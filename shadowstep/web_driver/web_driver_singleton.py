@@ -6,7 +6,8 @@ from typing import Any, cast
 
 import requests
 from appium.webdriver.webdriver import WebDriver
-from utils.utils import get_current_func_name
+
+from shadowstep.utils.utils import get_current_func_name
 
 logger = logging.getLogger(__name__)
 
