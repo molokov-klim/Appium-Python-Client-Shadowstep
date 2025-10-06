@@ -95,11 +95,7 @@ class ElementGestures:
                          f"within {self.element.timeout=}\n{duration}"),
                     stacktrace=traceback.format_stack(),
                 ) from error
-        raise ShadowstepElementException(
-            msg=(f"Failed to {inspect.currentframe() if inspect.currentframe() else 'unknown'} "
-                 f"within {self.element.timeout=}\n{duration}"),
-            stacktrace=traceback.format_stack(),
-        )
+        return self.element
 
     @log_debug()
     def tap_and_move(
@@ -130,12 +126,7 @@ class ElementGestures:
             if result is not None:
                 return result
             time.sleep(0.1)
-
-        raise ShadowstepElementException(
-            msg=(f"Failed to {inspect.currentframe() if inspect.currentframe() else 'unknown'} "
-                 f"within {self.element.timeout=}\n{locator=}\n{x=}\n{y=}\n{direction}\n{distance}\n"),
-            stacktrace=traceback.format_stack(),
-        )
+        return self.element
 
     @log_debug()
     def click(self, duration: int | None = None) -> Element:
@@ -183,11 +174,7 @@ class ElementGestures:
                          f"within {self.element.timeout=}\n{duration}"),
                     stacktrace=traceback.format_stack(),
                 ) from error
-        raise ShadowstepElementException(
-            msg=(f"Failed to {inspect.currentframe() if inspect.currentframe() else 'unknown'} "
-                 f"within {self.element.timeout=}\n{duration}"),
-            stacktrace=traceback.format_stack(),
-        )
+        return self.element
 
     @log_debug()
     def click_double(self) -> Element:
@@ -228,11 +215,7 @@ class ElementGestures:
                          f"within {self.element.timeout=}"),
                     stacktrace=traceback.format_stack(),
                 ) from error
-        raise ShadowstepElementException(
-            msg=(f"Failed to {inspect.currentframe() if inspect.currentframe() else 'unknown'} "
-                 f"within {self.element.timeout=}"),
-            stacktrace=traceback.format_stack(),
-        )
+        return self.element
 
     @log_debug()
     def drag(self, end_x: int, end_y: int, speed: int = 2500) -> Element:
@@ -281,11 +264,7 @@ class ElementGestures:
                          f"within {self.element.timeout=}"),
                     stacktrace=traceback.format_stack(),
                 ) from error
-        raise ShadowstepElementException(
-            msg=(f"Failed to {inspect.currentframe() if inspect.currentframe() else 'unknown'} "
-                 f"within {self.element.timeout=}"),
-            stacktrace=traceback.format_stack(),
-        )
+        return self.element
 
     @log_debug()
     def fling(self, speed: int, direction: str) -> Element:
@@ -339,11 +318,7 @@ class ElementGestures:
                          f"within {self.element.timeout=}"),
                     stacktrace=traceback.format_stack(),
                 ) from error
-        raise ShadowstepElementException(
-            msg=(f"Failed to {inspect.currentframe() if inspect.currentframe() else 'unknown'} "
-                 f"within {self.element.timeout=}"),
-            stacktrace=traceback.format_stack(),
-        )
+        return self.element
 
     @log_debug()
     def scroll(self, direction: str, percent: float, speed: int, return_bool: bool) -> Element:  # noqa: FBT001
@@ -403,11 +378,7 @@ class ElementGestures:
                          f"within {self.element.timeout=}"),
                     stacktrace=traceback.format_stack(),
                 ) from error
-        raise ShadowstepElementException(
-            msg=(f"Failed to {inspect.currentframe() if inspect.currentframe() else 'unknown'} "
-                 f"within {self.element.timeout=}"),
-            stacktrace=traceback.format_stack(),
-        )
+        return self.element
 
     @log_debug()
     def scroll_to_bottom(self, percent: float = 0.7, speed: int = 8000) -> Element:
@@ -447,10 +418,7 @@ class ElementGestures:
                     msg=f"Failed to scroll to bottom within {self.element.timeout=}",
                     stacktrace=traceback.format_stack(),
                 ) from error
-        raise ShadowstepElementException(
-            msg=f"Failed to scroll to bottom within {self.element.timeout=}",
-            stacktrace=traceback.format_stack(),
-        )
+        return self.element
 
     @log_debug()
     def scroll_to_top(self, percent: float = 0.7, speed: int = 8000) -> Element:
@@ -489,10 +457,7 @@ class ElementGestures:
                     msg=f"Failed to scroll to top within {self.element.timeout=}",
                     stacktrace=traceback.format_stack(),
                 ) from error
-        raise ShadowstepElementException(
-            msg=f"Failed to scroll to top within {self.element.timeout=}",
-            stacktrace=traceback.format_stack(),
-        )
+        return self.element
 
     @log_debug()
     def scroll_to_element(self,
@@ -535,10 +500,7 @@ class ElementGestures:
                     msg=f"Failed to scroll to element with locator: {locator}",
                     stacktrace=traceback.format_stack(),
                 ) from error
-        raise ShadowstepElementException(
-            msg=f"Failed to scroll to element with locator: {locator}",
-            stacktrace=traceback.format_stack(),
-        )
+        return self.element
 
     @log_debug()
     def zoom(self, percent: float = 0.75, speed: int = 2500) -> Element:
@@ -586,11 +548,7 @@ class ElementGestures:
                          f"within {self.element.timeout=}"),
                     stacktrace=traceback.format_stack(),
                 ) from error
-        raise ShadowstepElementException(
-            msg=(f"Failed to {inspect.currentframe() if inspect.currentframe() else 'unknown'} "
-                 f"within {self.element.timeout=}"),
-            stacktrace=traceback.format_stack(),
-        )
+        return self.element
 
     @log_debug()
     def unzoom(self, percent: float = 0.75, speed: int = 2500) -> Element:
@@ -638,11 +596,7 @@ class ElementGestures:
                          f"within {self.element.timeout=}"),
                     stacktrace=traceback.format_stack(),
                 ) from error
-        raise ShadowstepElementException(
-            msg=(f"Failed to {inspect.currentframe() if inspect.currentframe() else 'unknown'} "
-                 f"within {self.element.timeout=}"),
-            stacktrace=traceback.format_stack(),
-        )
+        return self.element
 
     @log_debug()
     def swipe(self, direction: str, percent: float = 0.75, speed: int = 5000) -> Element:
@@ -691,10 +645,7 @@ class ElementGestures:
                     msg=f"Failed to {inspect.currentframe() if inspect.currentframe() else 'unknown'} within {self.element.timeout=} {direction=} {percent=}",
                     stacktrace=traceback.format_stack(),
                 ) from error
-        raise ShadowstepElementException(
-            msg=f"Failed to {inspect.currentframe() if inspect.currentframe() else 'unknown'} within {self.element.timeout=} {direction=} {percent=}",
-            stacktrace=traceback.format_stack(),
-        )
+        return self.element
 
     @log_debug()
     def _execute_scroll_script(self, selector: str, max_swipes: int) -> None:
@@ -776,10 +727,7 @@ class ElementGestures:
                         "socket hang up" in err_msg):
                     self.element.utilities.handle_driver_error(error)
                     continue
-        raise ShadowstepElementException(
-            msg=f"Failed to {get_current_func_name()} within {self.element.timeout=} {direction=}",
-            stacktrace=traceback.format_stack(),
-        )
+        return self.element
 
     @log_debug()
     def _create_touch_actions(self, x1: int, y1: int) -> ActionChains:
