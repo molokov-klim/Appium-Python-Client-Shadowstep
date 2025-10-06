@@ -890,7 +890,29 @@ class Terminal:
                 continue
             if current_key:
                 result[current_key].append(element.replace("'", ""))
-
         (test_path / "temp._apk").unlink()
-
         return result
+
+    def get_wifi_ip(self) -> str:
+        output = self.adb_shell(command="ifconfig", args="")
+        if "command not found" in output or "usage" in output.lower():
+            # fallback to ip addr
+            output = self.adb_shell(command="ip addr show wlan0", args="")
+            return self._extract_ip_from_ip_addr(output)
+        return self._extract_ip_from_ifconfig(output)
+
+    def _extract_ip_from_ifconfig(self, output: str) -> str:
+        blocks = output.split("\n\n")
+        for block in blocks:
+            if "wlan0" in block and "inet addr" in block:
+                # Find IPv4
+                match = re.search(r"inet addr:([\d.]+)", block)
+                if match:
+                    return match.group(1)
+        raise AssertionError("Failed resolve IP address")
+
+    def _extract_ip_from_ip_addr(self, output: str) -> str:
+        match = re.search(r"inet\s+([\d.]+)/\d+\s+brd.*wlan0", output)
+        if match:
+            return match.group(1)
+        raise AssertionError("Failed resolve IP address")
