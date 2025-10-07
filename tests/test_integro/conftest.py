@@ -57,7 +57,20 @@ def app():
     application.connect(server_ip=APPIUM_IP,
                         server_port=APPIUM_PORT,
                         command_executor=APPIUM_COMMAND_EXECUTOR,
-                        capabilities=CAPABILITIES)
+                        capabilities=CAPABILITIES,
+                        ssh_user=os.getenv("SHADOWSTEP_SSH_USER", None),
+                        ssh_password=os.getenv("SHADOWSTEP_SSH_PASSWORD", None))
+    
+    print("+++++++++++")
+    print("+++++++++++")
+    print("+++++++++++")
+    print("+++++++++++")
+    print("+++++++++++")
+    print("+++++++++++")
+    print("+++++++++++")
+    print("+++++++++++")
+    print(f"{application.ssh_user=}")
+    print(f"{application.ssh_password=}")
     
     # Wait for connection to be fully established
     max_wait_time = 60  # seconds
