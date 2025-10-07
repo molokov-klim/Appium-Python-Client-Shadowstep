@@ -33,6 +33,7 @@ from shadowstep.page_object.page_object_generator import PageObjectGenerator
 from shadowstep.page_object.page_object_parser import PageObjectParser
 from shadowstep.page_object.page_object_recycler_explorer import PageObjectRecyclerExplorer
 from shadowstep.shadowstep import Shadowstep
+from translator import YandexTranslate
 
 parser = PageObjectParser()
 POG = PageObjectGenerator()
@@ -79,11 +80,10 @@ class TestPageObjectGenerator:
 
     def test_generator_initialization_with_translator(self):
         """Test PageObjectGenerator can be initialized with translator."""
-        # YandexTranslate requires folder_id and OAuth token, skip actual translator
-        # Just test that generator accepts translator parameter
-        generator = PageObjectGenerator(translator=None)
+        translator = YandexTranslate(folder_id="b1ghf7n3imfg7foodstv")  # type: ignore
+        generator = PageObjectGenerator(translator=translator)
         assert generator is not None
-        assert generator.translator is None
+        assert generator.translator is translator
 
     def test_generate_from_real_device(self, app: Shadowstep, temp_output_dir: str):
         """Test generate() creates page object from real device UI."""
@@ -98,8 +98,7 @@ class TestPageObjectGenerator:
         # Generate page object
         generator = PageObjectGenerator()
         output_path, class_name = generator.generate(
-            ui_element_tree=ui_tree,
-            output_dir=temp_output_dir
+            ui_element_tree=ui_tree, output_dir=temp_output_dir
         )
 
         # Verify file was created
@@ -126,8 +125,7 @@ class TestPageObjectGenerator:
 
         generator = PageObjectGenerator()
         output_path, class_name = generator.generate(
-            ui_element_tree=ui_tree,
-            output_dir=temp_output_dir
+            ui_element_tree=ui_tree, output_dir=temp_output_dir
         )
 
         # Try to import the generated module
@@ -156,9 +154,7 @@ class TestPageObjectGenerator:
 
         generator = PageObjectGenerator()
         output_path, class_name = generator.generate(
-            ui_element_tree=ui_tree,
-            output_dir=temp_output_dir,
-            filename_prefix="test_"
+            ui_element_tree=ui_tree, output_dir=temp_output_dir, filename_prefix="test_"
         )
 
         # Verify filename has prefix
@@ -172,11 +168,10 @@ class TestPageObjectGenerator:
         page_source = app.driver.page_source
         ui_tree = parser.parse(page_source)
 
-        # Test with None translator (actual YandexTranslate requires credentials)
-        generator = PageObjectGenerator(translator=None)
+        translator = YandexTranslate(folder_id="b1ghf7n3imfg7foodstv")
+        generator = PageObjectGenerator(translator=translator)
         output_path, class_name = generator.generate(
-            ui_element_tree=ui_tree,
-            output_dir=temp_output_dir
+            ui_element_tree=ui_tree, output_dir=temp_output_dir
         )
 
         assert output_path.exists()
@@ -193,12 +188,10 @@ class TestPageObjectGenerator:
 
         generator = PageObjectGenerator()
         output_path1, class_name1 = generator.generate(
-            ui_element_tree=ui_tree1,
-            output_dir=temp_output_dir,
-            filename_prefix="1_"
+            ui_element_tree=ui_tree1, output_dir=temp_output_dir, filename_prefix="1_"
         )
 
-        # Navigate to About phone
+        app.terminal.close_app("com.android.settings")
         app.terminal.press_back()
         time.sleep(1)
 
@@ -206,9 +199,7 @@ class TestPageObjectGenerator:
         ui_tree2 = parser.parse(page_source2)
 
         output_path2, class_name2 = generator.generate(
-            ui_element_tree=ui_tree2,
-            output_dir=temp_output_dir,
-            filename_prefix="2_"
+            ui_element_tree=ui_tree2, output_dir=temp_output_dir, filename_prefix="2_"
         )
 
         # Verify both files exist
@@ -227,8 +218,7 @@ class TestPageObjectGenerator:
 
         generator = PageObjectGenerator()
         output_path, class_name = generator.generate(
-            ui_element_tree=ui_tree,
-            output_dir=temp_output_dir
+            ui_element_tree=ui_tree, output_dir=temp_output_dir
         )
 
         # Check if recycler property exists in generated file
@@ -245,10 +235,7 @@ class TestPageObjectGenerator:
         ui_tree = parser.parse(page_source)
 
         generator = PageObjectGenerator()
-        result = generator.generate(
-            ui_element_tree=ui_tree,
-            output_dir=temp_output_dir
-        )
+        result = generator.generate(ui_element_tree=ui_tree, output_dir=temp_output_dir)
 
         assert isinstance(result, tuple)
         assert len(result) == 2
@@ -269,8 +256,7 @@ class TestPageObjectGenerator:
 
         generator = PageObjectGenerator()
         output_path, class_name = generator.generate(
-            ui_element_tree=ui_tree,
-            output_dir=str(new_dir)
+            ui_element_tree=ui_tree, output_dir=str(new_dir)
         )
 
         # Verify directory was created
@@ -292,8 +278,7 @@ class TestPageObjectGenerator:
 
         # All private methods should be called during generate
         output_path, class_name = generator.generate(
-            ui_element_tree=ui_tree,
-            output_dir=temp_output_dir
+            ui_element_tree=ui_tree, output_dir=temp_output_dir
         )
 
         # Verify result shows methods were called
@@ -315,13 +300,12 @@ class TestPageObjectGenerator:
             parent=None,
             children=[],
             depth=0,
-            scrollable_parents=[]
+            scrollable_parents=[],
         )
 
         generator = PageObjectGenerator()
         output_path, class_name = generator.generate(
-            ui_element_tree=root,
-            output_dir=temp_output_dir
+            ui_element_tree=root, output_dir=temp_output_dir
         )
 
         assert output_path.exists()
@@ -423,8 +407,7 @@ class TestPageObjectRecyclerExplorer:
 
         generator = PageObjectGenerator()
         output_path, class_name = generator.generate(
-            ui_element_tree=ui_tree,
-            output_dir=temp_output_dir
+            ui_element_tree=ui_tree, output_dir=temp_output_dir
         )
 
         # Now test loading it
@@ -485,8 +468,7 @@ class TestPageObjectIntegrationEdgeCases:
 
         generator = PageObjectGenerator()
         output_path, class_name = generator.generate(
-            ui_element_tree=ui_tree,
-            output_dir=temp_output_dir
+            ui_element_tree=ui_tree, output_dir=temp_output_dir
         )
 
         assert output_path.exists()
@@ -504,8 +486,7 @@ class TestPageObjectIntegrationEdgeCases:
 
         generator = PageObjectGenerator()
         output_path, class_name = generator.generate(
-            ui_element_tree=ui_tree,
-            output_dir=temp_output_dir
+            ui_element_tree=ui_tree, output_dir=temp_output_dir
         )
 
         # File name should be snake_case
@@ -535,15 +516,11 @@ class TestPageObjectIntegrationEdgeCases:
 
         # Generate twice from same tree
         output_path1, class_name1 = generator.generate(
-            ui_element_tree=ui_tree,
-            output_dir=temp_output_dir,
-            filename_prefix="1_"
+            ui_element_tree=ui_tree, output_dir=temp_output_dir, filename_prefix="1_"
         )
 
         output_path2, class_name2 = generator.generate(
-            ui_element_tree=ui_tree,
-            output_dir=temp_output_dir,
-            filename_prefix="2_"
+            ui_element_tree=ui_tree, output_dir=temp_output_dir, filename_prefix="2_"
         )
 
         # Class names should be identical
@@ -584,8 +561,7 @@ class TestPageObjectIntegrationEdgeCases:
 
         generator = PageObjectGenerator()
         output_path, class_name = generator.generate(
-            ui_element_tree=ui_tree,
-            output_dir=temp_output_dir
+            ui_element_tree=ui_tree, output_dir=temp_output_dir
         )
 
         content = output_path.read_text()
