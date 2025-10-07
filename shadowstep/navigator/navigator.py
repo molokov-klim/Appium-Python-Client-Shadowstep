@@ -11,14 +11,11 @@ import logging
 import time
 import traceback
 from collections import deque
-from typing import TYPE_CHECKING, Any, cast
+from typing import TYPE_CHECKING, Any
 
 import networkx as nx
 from networkx.exception import NetworkXException
 from selenium.common import WebDriverException
-
-if TYPE_CHECKING:
-    from networkx.classes import DiGraph
 
 from shadowstep.exceptions.shadowstep_exceptions import (
     ShadowstepFromPageCannotBeNoneError,

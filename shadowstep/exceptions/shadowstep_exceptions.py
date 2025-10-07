@@ -113,7 +113,7 @@ class ShadowstepTimeoutException(ShadowstepException):
         base = super().__str__()
         if self.locator:
             base += f"\nLocator: {self.locator}"
-        if self.driver and hasattr(self.driver, 'current_url'):
+        if self.driver and hasattr(self.driver, "current_url"):
             base += f"\nCurrent URL: {self.driver.current_url}"
         if self.stacktrace and len(self.stacktrace) > 0:
             base += f"\nStacktrace: {''.join(self.stacktrace)}"
@@ -151,8 +151,8 @@ class ShadowstepDictConversionError(ShadowstepConversionError):
 
     def _construct_message_from_context(self, **context_kwargs: Any) -> str:
         """Construct message from context kwargs."""
-        operation = context_kwargs.get('operation', 'conversion')
-        details = context_kwargs.get('details', 'unknown error')
+        operation = context_kwargs.get("operation", "conversion")
+        details = context_kwargs.get("details", "unknown error")
         return f"Failed to convert dict to {operation}: {details}"
 
 
@@ -209,7 +209,7 @@ class ShadowstepHierarchicalAttributeError(ShadowstepValidationError):
 
     def _construct_message_from_context(self, **context_kwargs: Any) -> str:
         """Construct message from context kwargs."""
-        key = context_kwargs.get('key', 'attribute')
+        key = context_kwargs.get("key", "attribute")
         return f"Hierarchical attribute {key} must have dict value"
 
 
@@ -220,7 +220,7 @@ class ShadowstepUnsupportedSelectorFormatError(ShadowstepConversionError):
 
     def _construct_message_from_context(self, **context_kwargs: Any) -> str:
         """Construct message from context kwargs."""
-        selector = context_kwargs.get('selector', 'unknown')
+        selector = context_kwargs.get("selector", "unknown")
         return f"Unsupported selector format: {selector}"
 
 
@@ -231,9 +231,9 @@ class ShadowstepConversionFailedError(ShadowstepConversionError):
 
     def _construct_message_from_context(self, **context_kwargs: Any) -> str:
         """Construct message from context kwargs."""
-        function_name = context_kwargs.get('function_name', 'Unknown')
-        selector = context_kwargs.get('selector', 'unknown')
-        details = context_kwargs.get('details', 'unknown error')
+        function_name = context_kwargs.get("function_name", "Unknown")
+        selector = context_kwargs.get("selector", "unknown")
+        details = context_kwargs.get("details", "unknown error")
         return f"{function_name} failed to convert selector: {selector}. {details}"
 
 
@@ -244,7 +244,7 @@ class ShadowstepUnsupportedTupleFormatError(ShadowstepValidationError):
 
     def _construct_message_from_context(self, **context_kwargs: Any) -> str:
         """Construct message from context kwargs."""
-        format_type = context_kwargs.get('format_type', 'unknown')
+        format_type = context_kwargs.get("format_type", "unknown")
         return f"Unsupported tuple format: {format_type}"
 
 
@@ -275,7 +275,7 @@ class ShadowstepUnsupportedSelectorTypeError(ShadowstepValidationError):
 
     def _construct_message_from_context(self, **context_kwargs: Any) -> str:
         """Construct message from context kwargs."""
-        selector_type = context_kwargs.get('selector_type', 'unknown')
+        selector_type = context_kwargs.get("selector_type", "unknown")
         return f"Unsupported selector type: {selector_type}"
 
 
@@ -286,8 +286,8 @@ class ShadowstepUiSelectorConversionError(ShadowstepConversionError):
 
     def _construct_message_from_context(self, **context_kwargs: Any) -> str:
         """Construct message from context kwargs."""
-        operation = context_kwargs.get('operation', 'conversion')
-        details = context_kwargs.get('details', 'unknown error')
+        operation = context_kwargs.get("operation", "conversion")
+        details = context_kwargs.get("details", "unknown error")
         return f"Failed to convert UiSelector to {operation}: {details}"
 
 
@@ -298,7 +298,7 @@ class ShadowstepInvalidUiSelectorStringError(ShadowstepInvalidUiSelectorError):
 
     def _construct_message_from_context(self, **context_kwargs: Any) -> str:
         """Construct message from context kwargs."""
-        details = context_kwargs.get('details', 'unknown error')
+        details = context_kwargs.get("details", "unknown error")
         return f"Invalid UiSelector string: {details}"
 
 
@@ -309,7 +309,7 @@ class ShadowstepSelectorToXPathError(ShadowstepConversionError):
 
     def _construct_message_from_context(self, **context_kwargs: Any) -> str:
         """Construct message from context kwargs."""
-        details = context_kwargs.get('details', 'unknown error')
+        details = context_kwargs.get("details", "unknown error")
         return f"Failed to convert selector to XPath: {details}"
 
 
@@ -320,7 +320,7 @@ class ShadowstepMethodRequiresArgumentError(ShadowstepValidationError):
 
     def _construct_message_from_context(self, **context_kwargs: Any) -> str:
         """Construct message from context kwargs."""
-        method_name = context_kwargs.get('method_name', 'method')
+        method_name = context_kwargs.get("method_name", "method")
         return f"Method '{method_name}' requires an argument"
 
 
@@ -341,7 +341,7 @@ class ShadowstepUnsupportedNestedSelectorError(ShadowstepConversionError):
 
     def _construct_message_from_context(self, **context_kwargs: Any) -> str:
         """Construct message from context kwargs."""
-        selector_type = context_kwargs.get('selector_type', 'unknown')
+        selector_type = context_kwargs.get("selector_type", "unknown")
         return f"Unsupported nested selector type: {selector_type}"
 
 
@@ -352,7 +352,7 @@ class ShadowstepUiSelectorMethodArgumentError(ShadowstepConversionError):
 
     def _construct_message_from_context(self, **context_kwargs: Any) -> str:
         """Construct message from context kwargs."""
-        arg_count = context_kwargs.get('arg_count', 0)
+        arg_count = context_kwargs.get("arg_count", 0)
         return f"UiSelector methods typically take 0-1 arguments, got {arg_count}"
 
 
@@ -363,7 +363,7 @@ class ShadowstepLexerError(ShadowstepConversionError):
 
     def _construct_message_from_context(self, **context_kwargs: Any) -> str:
         """Construct message from context kwargs."""
-        message = context_kwargs.get('message', 'lexical error')
+        message = context_kwargs.get("message", "lexical error")
         return message
 
 
@@ -374,7 +374,7 @@ class ShadowstepUnterminatedStringError(ShadowstepLexerError):
 
     def _construct_message_from_context(self, **context_kwargs: Any) -> str:
         """Construct message from context kwargs."""
-        position = context_kwargs.get('position', 0)
+        position = context_kwargs.get("position", 0)
         return f"Unterminated string at {position}"
 
 
@@ -385,7 +385,7 @@ class ShadowstepBadEscapeError(ShadowstepLexerError):
 
     def _construct_message_from_context(self, **context_kwargs: Any) -> str:
         """Construct message from context kwargs."""
-        position = context_kwargs.get('position', 0)
+        position = context_kwargs.get("position", 0)
         return f"Bad escape at {position}"
 
 
@@ -396,8 +396,8 @@ class ShadowstepUnexpectedCharError(ShadowstepLexerError):
 
     def _construct_message_from_context(self, **context_kwargs: Any) -> str:
         """Construct message from context kwargs."""
-        char = context_kwargs.get('char', '?')
-        position = context_kwargs.get('position', 0)
+        char = context_kwargs.get("char", "?")
+        position = context_kwargs.get("position", 0)
         return f"Unexpected char '{char}' at {position}"
 
 
@@ -408,7 +408,7 @@ class ShadowstepParserError(ShadowstepException):
 
     def _construct_message_from_context(self, **context_kwargs: Any) -> str:
         """Construct message from context kwargs."""
-        message = context_kwargs.get('message', 'parse error')
+        message = context_kwargs.get("message", "parse error")
         return message
 
 
@@ -419,9 +419,9 @@ class ShadowstepExpectedTokenError(ShadowstepParserError):
 
     def _construct_message_from_context(self, **context_kwargs: Any) -> str:
         """Construct message from context kwargs."""
-        expected = context_kwargs.get('expected', 'TOKEN')
-        got = context_kwargs.get('got', 'UNKNOWN')
-        position = context_kwargs.get('position', 0)
+        expected = context_kwargs.get("expected", "TOKEN")
+        got = context_kwargs.get("got", "UNKNOWN")
+        position = context_kwargs.get("position", 0)
         return f"Expected {expected}, got {got} at {position}"
 
 
@@ -432,8 +432,8 @@ class ShadowstepUnexpectedTokenError(ShadowstepParserError):
 
     def _construct_message_from_context(self, **context_kwargs: Any) -> str:
         """Construct message from context kwargs."""
-        token_type = context_kwargs.get('token_type', 'UNKNOWN')
-        position = context_kwargs.get('position', 0)
+        token_type = context_kwargs.get("token_type", "UNKNOWN")
+        position = context_kwargs.get("position", 0)
         return f"Unexpected token in arg: {token_type} at {position}"
 
 
@@ -444,7 +444,7 @@ class ShadowstepXPathConversionError(ShadowstepConversionError):
 
     def _construct_message_from_context(self, **context_kwargs: Any) -> str:
         """Construct message from context kwargs."""
-        message = context_kwargs.get('message', 'xpath error')
+        message = context_kwargs.get("message", "xpath error")
         return message
 
 
@@ -455,7 +455,7 @@ class ShadowstepBooleanLiteralError(ShadowstepXPathConversionError):
 
     def _construct_message_from_context(self, **context_kwargs: Any) -> str:
         """Construct message from context kwargs."""
-        value = context_kwargs.get('value', 'unknown')
+        value = context_kwargs.get("value", "unknown")
         return f"Expected boolean literal, got: '{value}'"
 
 
@@ -466,7 +466,7 @@ class ShadowstepNumericLiteralError(ShadowstepXPathConversionError):
 
     def _construct_message_from_context(self, **context_kwargs: Any) -> str:
         """Construct message from context kwargs."""
-        value = context_kwargs.get('value', 'unknown')
+        value = context_kwargs.get("value", "unknown")
         return f"Expected numeric literal, got: '{value}'"
 
 
@@ -487,7 +487,7 @@ class ShadowstepInvalidXPathError(ShadowstepXPathConversionError):
 
     def _construct_message_from_context(self, **context_kwargs: Any) -> str:
         """Construct message from context kwargs."""
-        details = context_kwargs.get('details', 'unknown error')
+        details = context_kwargs.get("details", "unknown error")
         return f"Invalid XPath: {details}"
 
 
@@ -498,7 +498,7 @@ class ShadowstepUnsupportedAbbreviatedStepError(ShadowstepXPathConversionError):
 
     def _construct_message_from_context(self, **context_kwargs: Any) -> str:
         """Construct message from context kwargs."""
-        step = context_kwargs.get('step', 'unknown')
+        step = context_kwargs.get("step", "unknown")
         return f"Unsupported abbreviated step in UiSelector: '{step}'"
 
 
@@ -509,7 +509,7 @@ class ShadowstepUnsupportedASTNodeError(ShadowstepXPathConversionError):
 
     def _construct_message_from_context(self, **context_kwargs: Any) -> str:
         """Construct message from context kwargs."""
-        node = context_kwargs.get('node', {})
+        node = context_kwargs.get("node", {})
         return f"Unsupported AST node in UiSelector: {node}"
 
 
@@ -520,7 +520,7 @@ class ShadowstepUnsupportedASTNodeBuildError(ShadowstepXPathConversionError):
 
     def _construct_message_from_context(self, **context_kwargs: Any) -> str:
         """Construct message from context kwargs."""
-        node = context_kwargs.get('node', 'unknown')
+        node = context_kwargs.get("node", "unknown")
         return f"Unsupported AST node in build: '{node}'"
 
 
@@ -531,7 +531,7 @@ class ShadowstepContainsNotSupportedError(ShadowstepXPathConversionError):
 
     def _construct_message_from_context(self, **context_kwargs: Any) -> str:
         """Construct message from context kwargs."""
-        attr = context_kwargs.get('attr', 'attribute')
+        attr = context_kwargs.get("attr", "attribute")
         return f"contains() is not supported for @{attr}"
 
 
@@ -542,7 +542,7 @@ class ShadowstepStartsWithNotSupportedError(ShadowstepXPathConversionError):
 
     def _construct_message_from_context(self, **context_kwargs: Any) -> str:
         """Construct message from context kwargs."""
-        attr = context_kwargs.get('attr', 'attribute')
+        attr = context_kwargs.get("attr", "attribute")
         return f"starts-with() is not supported for @{attr}"
 
 
@@ -553,7 +553,7 @@ class ShadowstepMatchesNotSupportedError(ShadowstepXPathConversionError):
 
     def _construct_message_from_context(self, **context_kwargs: Any) -> str:
         """Construct message from context kwargs."""
-        attr = context_kwargs.get('attr', 'attribute')
+        attr = context_kwargs.get("attr", "attribute")
         return f"matches() is not supported for @{attr}"
 
 
@@ -564,7 +564,7 @@ class ShadowstepUnsupportedFunctionError(ShadowstepXPathConversionError):
 
     def _construct_message_from_context(self, **context_kwargs: Any) -> str:
         """Construct message from context kwargs."""
-        func_name = context_kwargs.get('func_name', 'unknown')
+        func_name = context_kwargs.get("func_name", "unknown")
         return f"Unsupported function: {func_name}"
 
 
@@ -575,7 +575,7 @@ class ShadowstepUnsupportedComparisonOperatorError(ShadowstepXPathConversionErro
 
     def _construct_message_from_context(self, **context_kwargs: Any) -> str:
         """Construct message from context kwargs."""
-        operator = context_kwargs.get('operator', 'unknown')
+        operator = context_kwargs.get("operator", "unknown")
         return f"Unsupported comparison operator: {operator}"
 
 
@@ -586,7 +586,7 @@ class ShadowstepUnsupportedAttributeError(ShadowstepXPathConversionError):
 
     def _construct_message_from_context(self, **context_kwargs: Any) -> str:
         """Construct message from context kwargs."""
-        attr = context_kwargs.get('attr', 'unknown')
+        attr = context_kwargs.get("attr", "unknown")
         return f"Unsupported attribute: @{attr}"
 
 
@@ -597,7 +597,7 @@ class ShadowstepAttributePresenceNotSupportedError(ShadowstepXPathConversionErro
 
     def _construct_message_from_context(self, **context_kwargs: Any) -> str:
         """Construct message from context kwargs."""
-        attr = context_kwargs.get('attr', 'unknown')
+        attr = context_kwargs.get("attr", "unknown")
         return f"Attribute presence predicate not supported for @{attr}"
 
 
@@ -608,7 +608,7 @@ class ShadowstepUnsupportedPredicateError(ShadowstepXPathConversionError):
 
     def _construct_message_from_context(self, **context_kwargs: Any) -> str:
         """Construct message from context kwargs."""
-        predicate = context_kwargs.get('predicate', 'unknown')
+        predicate = context_kwargs.get("predicate", "unknown")
         return f"Unsupported predicate: '{predicate}'"
 
 
@@ -619,7 +619,7 @@ class ShadowstepUnsupportedAttributeExpressionError(ShadowstepXPathConversionErr
 
     def _construct_message_from_context(self, **context_kwargs: Any) -> str:
         """Construct message from context kwargs."""
-        node = context_kwargs.get('node', 'unknown')
+        node = context_kwargs.get("node", "unknown")
         return f"Unsupported attribute expression: '{node}'"
 
 
@@ -630,7 +630,7 @@ class ShadowstepUnsupportedLiteralError(ShadowstepXPathConversionError):
 
     def _construct_message_from_context(self, **context_kwargs: Any) -> str:
         """Construct message from context kwargs."""
-        node = context_kwargs.get('node', 'unknown')
+        node = context_kwargs.get("node", "unknown")
         return f"Unsupported literal: '{node}'"
 
 
@@ -641,7 +641,7 @@ class ShadowstepUnbalancedUiSelectorError(ShadowstepXPathConversionError):
 
     def _construct_message_from_context(self, **context_kwargs: Any) -> str:
         """Construct message from context kwargs."""
-        selector = context_kwargs.get('selector', 'unknown')
+        selector = context_kwargs.get("selector", "unknown")
         return f"Unbalanced UiSelector string: too many '(' in {selector}"
 
 
@@ -662,8 +662,8 @@ class ShadowstepFunctionArgumentCountError(ShadowstepXPathConversionError):
 
     def _construct_message_from_context(self, **context_kwargs: Any) -> str:
         """Construct message from context kwargs."""
-        func_name = context_kwargs.get('func_name', 'function')
-        arg_count = context_kwargs.get('arg_count', 0)
+        func_name = context_kwargs.get("func_name", "function")
+        arg_count = context_kwargs.get("arg_count", 0)
         return f"{func_name}() must have {arg_count} arguments"
 
 
@@ -674,7 +674,7 @@ class ShadowstepUnsupportedAttributeForUiSelectorError(ShadowstepValidationError
 
     def _construct_message_from_context(self, **context_kwargs: Any) -> str:
         """Construct message from context kwargs."""
-        attr = context_kwargs.get('attr', 'unknown')
+        attr = context_kwargs.get("attr", "unknown")
         return f"Unsupported attribute for UiSelector conversion: {attr}"
 
 
@@ -685,7 +685,7 @@ class ShadowstepUnsupportedHierarchicalAttributeError(ShadowstepValidationError)
 
     def _construct_message_from_context(self, **context_kwargs: Any) -> str:
         """Construct message from context kwargs."""
-        attr = context_kwargs.get('attr', 'unknown')
+        attr = context_kwargs.get("attr", "unknown")
         return f"Unsupported hierarchical attribute: {attr}"
 
 
@@ -696,7 +696,7 @@ class ShadowstepUnsupportedAttributeForXPathError(ShadowstepValidationError):
 
     def _construct_message_from_context(self, **context_kwargs: Any) -> str:
         """Construct message from context kwargs."""
-        attr = context_kwargs.get('attr', 'unknown')
+        attr = context_kwargs.get("attr", "unknown")
         return f"Unsupported attribute for XPath conversion: {attr}"
 
 
@@ -707,7 +707,7 @@ class ShadowstepUnsupportedUiSelectorMethodError(ShadowstepValidationError):
 
     def _construct_message_from_context(self, **context_kwargs: Any) -> str:
         """Construct message from context kwargs."""
-        method = context_kwargs.get('method', 'unknown')
+        method = context_kwargs.get("method", "unknown")
         return f"Unsupported UiSelector method: {method}"
 
 
@@ -718,7 +718,7 @@ class ShadowstepUnsupportedXPathAttributeError(ShadowstepValidationError):
 
     def _construct_message_from_context(self, **context_kwargs: Any) -> str:
         """Construct message from context kwargs."""
-        method = context_kwargs.get('method', 'unknown')
+        method = context_kwargs.get("method", "unknown")
         return f"Unsupported XPath attribute: {method}"
 
 
@@ -739,7 +739,7 @@ class ShadowstepLogcatError(ShadowstepException):
 
     def _construct_message_from_context(self, **context_kwargs: Any) -> str:
         """Construct message from context kwargs."""
-        message = context_kwargs.get('message', 'logcat error')
+        message = context_kwargs.get("message", "logcat error")
         return message
 
 
@@ -780,7 +780,7 @@ class ShadowstepNavigatorError(ShadowstepException):
 
     def _construct_message_from_context(self, **context_kwargs: Any) -> str:
         """Construct message from context kwargs."""
-        message = context_kwargs.get('message', 'navigation error')
+        message = context_kwargs.get("message", "navigation error")
         return message
 
 
@@ -851,9 +851,9 @@ class ShadowstepNavigationFailedError(ShadowstepNavigatorError):
 
     def _construct_message_from_context(self, **context_kwargs: Any) -> str:
         """Construct message from context kwargs."""
-        from_page = context_kwargs.get('from_page', 'unknown')
-        to_page = context_kwargs.get('to_page', 'unknown')
-        method = context_kwargs.get('method', 'unknown')
+        from_page = context_kwargs.get("from_page", "unknown")
+        to_page = context_kwargs.get("to_page", "unknown")
+        method = context_kwargs.get("method", "unknown")
         return f"Navigation error: failed to navigate from {from_page} to {to_page} using method {method}"
 
 
@@ -864,7 +864,7 @@ class ShadowstepPageObjectError(ShadowstepException):
 
     def _construct_message_from_context(self, **context_kwargs: Any) -> str:
         """Construct message from context kwargs."""
-        message = context_kwargs.get('message', 'page object error')
+        message = context_kwargs.get("message", "page object error")
         return message
 
 
@@ -875,7 +875,7 @@ class ShadowstepUnsupportedRendererTypeError(ShadowstepPageObjectError):
 
     def _construct_message_from_context(self, **context_kwargs: Any) -> str:
         """Construct message from context kwargs."""
-        renderer_type = context_kwargs.get('renderer_type', 'unknown')
+        renderer_type = context_kwargs.get("renderer_type", "unknown")
         return f"Unsupported renderer type: {renderer_type}"
 
 
@@ -926,7 +926,7 @@ class ShadowstepFailedToNormalizeScreenNameError(ShadowstepPageObjectError):
 
     def _construct_message_from_context(self, **context_kwargs: Any) -> str:
         """Construct message from context kwargs."""
-        text = context_kwargs.get('text', 'unknown')
+        text = context_kwargs.get("text", "unknown")
         return f"Failed to normalize screen name from '{text}'"
 
 
@@ -977,7 +977,7 @@ class ShadowstepTranslatorError(ShadowstepException):
 
     def _construct_message_from_context(self, **context_kwargs: Any) -> str:
         """Construct message from context kwargs."""
-        message = context_kwargs.get('message', 'translation error')
+        message = context_kwargs.get("message", "translation error")
         return message
 
 
