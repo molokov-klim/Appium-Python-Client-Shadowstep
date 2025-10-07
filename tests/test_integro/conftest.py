@@ -60,7 +60,7 @@ def app():
                         capabilities=CAPABILITIES,
                         ssh_user=os.getenv("SHADOWSTEP_SSH_USER", None),
                         ssh_password=os.getenv("SHADOWSTEP_SSH_PASSWORD", None))
-        
+    
     # Wait for connection to be fully established
     max_wait_time = 60  # seconds
     start_time = time.time()

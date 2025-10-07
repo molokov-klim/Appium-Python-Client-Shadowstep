@@ -10,11 +10,9 @@ from __future__ import annotations
 import base64
 import logging
 import re
-import subprocess
 import sys
 import time
 import traceback
-from pathlib import Path
 from typing import TYPE_CHECKING, cast
 
 from selenium.common import InvalidSessionIdException, NoSuchDriverException
@@ -24,7 +22,8 @@ from shadowstep.utils.utils import get_current_func_name
 
 # Configure the root logger (basic configuration)
 logging.basicConfig(
-    level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+    level=logging.INFO,
+    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
 )
 logger = logging.getLogger(__name__)
 
@@ -32,8 +31,6 @@ logger = logging.getLogger(__name__)
 MIN_PS_COLUMNS_COUNT = 9
 
 if TYPE_CHECKING:
-    from collections.abc import Sequence
-
     from appium.webdriver.webdriver import WebDriver
 
     from shadowstep.shadowstep import Shadowstep
@@ -79,6 +76,7 @@ class Terminal:
     def __init__(self) -> None:
         """Initialize the Terminal."""
         from shadowstep.shadowstep import Shadowstep  # noqa: PLC0415
+
         self.shadowstep: Shadowstep = Shadowstep.get_instance()
         self.transport: Transport = self.shadowstep.transport
         self.driver: WebDriver = self.shadowstep.driver
@@ -112,77 +110,6 @@ class Terminal:
         msg = f"adb_shell failed after {tries} tries: {command} {args}"
         raise AdbShellError(msg)
 
-    def push(
-        self, source_path: str, remote_server_path: str, filename: str, destination: str, udid: str,
-    ) -> bool:
-        """Push files from a local source to a remote destination on a mobile device via ADB.
-
-        :param source_path: The local path of the file to push.
-        :param remote_server_path: The remote path on the server where the file will be pushed.
-        :param filename: The name of the file to push.
-        :param destination: The destination path on the mobile device.
-        :param udid: The unique device identifier of the mobile device.
-        :return: True if the file was successfully pushed, False otherwise.
-        """
-        try:
-            source_file_path = Path(source_path) / filename
-            remote_file_path = Path(remote_server_path) / filename
-            destination_file_path = f"{destination}/{filename}"
-            self.transport.scp.put(files=source_file_path, remote_path=str(remote_file_path))
-            _, stdout, _ = self.transport.ssh.exec_command(
-                f"adb -s {udid} push {remote_file_path} {destination_file_path}",
-            )
-            stdout_exit_status = stdout.channel.recv_exit_status()
-            lines = stdout.readlines()
-            output = "".join(lines)
-            if stdout_exit_status != 0:
-                logger.error("%s output=%s", get_current_func_name(), output)
-                return False
-            logger.debug("%s output=%s", get_current_func_name(), output)
-        except NoSuchDriverException:
-            self.shadowstep.reconnect()
-            return False
-        except InvalidSessionIdException:
-            self.shadowstep.reconnect()
-            return False
-        except OSError:
-            logger.exception("push()")
-            return False
-        else:
-            return True
-
-    def pull(self, source: str, destination: str | Path) -> bool:
-        """Pull a file from a mobile device to a local destination.
-
-        :param source: The path of the file on the mobile device to pull.
-        :param destination: The local path where the pulled file will be saved.
-        :return: True if the file was successfully pulled, False otherwise.
-        :raises NoSuchDriverException: If the WebDriver session does not exist.
-        :raises InvalidSessionIdException: If the session ID is not valid.
-        :raises IOError: If an I/O error occurs during file handling.
-        """
-        try:
-            if not destination:
-                # If path not specified, save in current directory
-                destination = Path.cwd() / Path(source).name
-            file_contents_base64 = self.mobile_commands.pull_file({"remotePath": source})
-            if not file_contents_base64:
-                return False
-            decoded_contents = base64.b64decode(file_contents_base64)
-            with Path(destination).open("wb") as file:
-                file.write(decoded_contents)
-        except NoSuchDriverException:
-            self.shadowstep.reconnect()
-            return False
-        except InvalidSessionIdException:
-            self.shadowstep.reconnect()
-            return False
-        except OSError:
-            logger.exception("appium_extended_terminal.pull")
-            return False
-        else:
-            return True
-
     def start_activity(self, package: str, activity: str) -> bool:
         """Start activity on the device.
 
@@ -210,7 +137,8 @@ class Terminal:
             for line in lines:
                 if "mCurrentFocus" in line or "mFocusedApp" in line:
                     matches = re.search(
-                        r"(([A-Za-z]{1}[A-Za-z\d_]*\.)+([A-Za-z][A-Za-z\d_]*)/)", line,
+                        r"(([A-Za-z]{1}[A-Za-z\d_]*\.)+([A-Za-z][A-Za-z\d_]*)/)",
+                        line,
                     )
                     if matches:
                         return matches.group(1)[:-1]  # removing trailing slash
@@ -245,44 +173,6 @@ class Terminal:
         if not self.close_app(package=package):
             return False
         return self.start_activity(package=package, activity=activity)
-
-    def install_app(self, source: str | Path, remote_server_path: str | Path, filename: str, udid: str) -> bool:
-        """Installs an application on the specified mobile device.
-
-        :param source: The local path of the application file to install.
-        :param remote_server_path: The remote path on the server where the application file will be stored temporarily.
-        :param filename: The name of the application file.
-        :param udid: The unique device identifier (UDID) of the target mobile device.
-        :return: True if the application was successfully installed, False otherwise.
-        :raises NotProvideCredentialsError: If the transport credentials are not provided.
-        """
-        try:
-            source_filepath = Path(source)
-            destination_filepath = Path(remote_server_path)
-            if source_filepath.is_dir():
-                source_filepath /= filename
-            if destination_filepath.is_dir():
-                destination_filepath /= filename
-            if not source_filepath.exists():
-                logger.error("File not found: %s", source_filepath)
-                return False
-
-            self.transport.scp.put(files=str(source_filepath), remote_path=str(destination_filepath))
-            _, stdout, _ = self.transport.ssh.exec_command(
-                f"adb -s {udid} install -r {destination_filepath}",
-            )
-            stdout_exit_status = stdout.channel.recv_exit_status()
-            lines = stdout.readlines()
-            output = "".join(lines)
-            if stdout_exit_status != 0:
-                logger.error("%s output=%s", get_current_func_name(), output)
-                return False
-            logger.debug("%s output=%s", get_current_func_name(), output)
-        except OSError:
-            logger.exception("Failed: %s", {get_current_func_name()})
-            return False
-        else:
-            return True
 
     def is_app_installed(self, package: str) -> bool:
         """Check if the specified application package is installed on the device.
@@ -462,7 +352,11 @@ class Terminal:
         left = int(width * 0.1)
         right = int(width * 0.9)
         return self.swipe(
-            start_x=right, start_y=height // 2, end_x=left, end_y=height // 2, duration=duration,
+            start_x=right,
+            start_y=height // 2,
+            end_x=left,
+            end_y=height // 2,
+            duration=duration,
         )
 
     def swipe_left_to_right(self, duration: int = 300) -> bool:
@@ -477,7 +371,11 @@ class Terminal:
         left = int(width * 0.1)
         right = int(width * 0.9)
         return self.swipe(
-            start_x=left, start_y=height // 2, end_x=right, end_y=height // 2, duration=duration,
+            start_x=left,
+            start_y=height // 2,
+            end_x=right,
+            end_y=height // 2,
+            duration=duration,
         )
 
     def swipe_top_to_bottom(self, duration: int = 300) -> bool:
@@ -491,7 +389,11 @@ class Terminal:
         top = int(height * 0.1)
         bottom = int(height * 0.9)
         return self.swipe(
-            start_x=top, start_y=height // 2, end_x=bottom, end_y=height // 2, duration=duration,
+            start_x=top,
+            start_y=height // 2,
+            end_x=bottom,
+            end_y=height // 2,
+            duration=duration,
         )
 
     def swipe_bottom_to_top(self, duration: int = 300) -> bool:
@@ -505,7 +407,11 @@ class Terminal:
         top = int(height * 0.1)
         bottom = int(height * 0.9)
         return self.swipe(
-            start_x=bottom, start_y=height // 2, end_x=top, end_y=height // 2, duration=duration,
+            start_x=bottom,
+            start_y=height // 2,
+            end_x=top,
+            end_y=height // 2,
+            duration=duration,
         )
 
     def check_vpn(self, ip_address: str = "") -> bool:
@@ -826,72 +732,11 @@ class Terminal:
         lines = output.strip().split("\n")
         return [line.split(":")[-1].replace("\r", "") for line in lines]
 
-    def get_package_path(self, package: str) -> str:
-        """Retrieve the path to the APK file associated with the given package.
-
-        :param package: The name of the package.
-        :return: The path to the APK file.
-        """
-        return (
-            self.adb_shell(command="pm", args=f"path {package}")
-            .replace("package:", "")
-            .replace("\r", "")
-            .replace("\n", "")
-        )
-
-    def pull_package(self, package: str, path: str = "", filename: str = "temp._apk") -> None:
-        """Pull the APK file of the specified package from the device to the local machine.
-
-        :param package: The package name of the app.
-        :param path: The local path where the APK file will be saved. Default is current directory.
-        :param filename: The name of the APK file. If not provided, a default name 'temp._apk' will be used.
-        """
-        package_path = self.get_package_path(package=package)
-        if not filename.endswith("._apk"):
-            filename = f"{filename}._apk"
-        self.pull(source=package_path, destination=str(Path(path) / filename))
-
-    def get_package_manifest(self, package: str) -> dict[str, list[str]]:
-        """Retrieve the manifest of the specified package from the device.
-
-        :param package: The package name of the app.
-        :return: A dictionary representing the package manifest.
-        """
-        test_path = Path("test")
-        if not test_path.exists():
-            test_path.mkdir(parents=True)
-
-        self.pull_package(package=package, path="test", filename="temp._apk")
-
-        command: Sequence[str] = ["aapt", "dump", "badging", str(test_path / "temp._apk")]
-        try:
-            output_bytes = subprocess.check_output(command)  # noqa: S603
-        except subprocess.CalledProcessError:
-            return {}
-
-        output = (
-            output_bytes.decode("utf-8")
-            .strip()
-            .replace("\r\n", " ")
-            .replace('"', "")
-            .replace(":'", ": '")
-        )
-
-        list_of_elements = output.split()
-        result: dict[str, list[str]] = {}
-        current_key: str | None = None
-
-        for element in list_of_elements:
-            if element.endswith(":"):
-                result[element] = []
-                current_key = element
-                continue
-            if current_key:
-                result[current_key].append(element.replace("'", ""))
-        (test_path / "temp._apk").unlink()
-        return result
-
     def get_wifi_ip(self) -> str:
+        """Retrieve Wi-Fi ip address of device.
+
+        :return: ip address str.
+        """
         output = self.adb_shell(command="ifconfig", args="")
         if "command not found" in output or "usage" in output.lower():
             # fallback to ip addr
@@ -907,10 +752,12 @@ class Terminal:
                 match = re.search(r"inet addr:([\d.]+)", block)
                 if match:
                     return match.group(1)
-        raise AssertionError("Failed resolve IP address")
+        msg = "Failed resolve IP address"
+        raise AssertionError(msg)
 
     def _extract_ip_from_ip_addr(self, output: str) -> str:
         match = re.search(r"inet\s+([\d.]+)/\d+\s+brd.*wlan0", output)
         if match:
             return match.group(1)
-        raise AssertionError("Failed resolve IP address")
+        msg = "Failed resolve IP address"
+        raise AssertionError(msg)
