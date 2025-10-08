@@ -2,7 +2,7 @@
 
 This module provides the Terminal class for executing ADB commands
 through Appium server, including device management, app operations,
-input simulation, file operations, and system control via SSH transport.
+input simulation, file operations.
 """
 
 from __future__ import annotations
@@ -34,7 +34,6 @@ if TYPE_CHECKING:
     from appium.webdriver.webdriver import WebDriver
 
     from shadowstep.shadowstep import Shadowstep
-    from shadowstep.terminal import Transport
 
 
 class NotProvideCredentialsError(Exception):
@@ -70,7 +69,6 @@ class Terminal:
     """
 
     shadowstep: Shadowstep
-    transport: Transport
     driver: WebDriver
 
     def __init__(self) -> None:
@@ -78,18 +76,8 @@ class Terminal:
         from shadowstep.shadowstep import Shadowstep  # noqa: PLC0415
 
         self.shadowstep: Shadowstep = Shadowstep.get_instance()
-        self.transport: Transport = self.shadowstep.transport
         self.driver: WebDriver = self.shadowstep.driver
         self.mobile_commands = MobileCommands()
-
-    def __del__(self) -> None:
-        """Destructor to ensure SSH connection is closed on object deletion.
-
-        This method ensures that the SSH connection is properly closed
-        when the Terminal object is garbage collected.
-        """
-        if self.transport is not None:  # type: ignore[comparison-overlap]
-            self.transport.ssh.close()
 
     def adb_shell(self, command: str, args: str = "", tries: int = 3) -> str:
         """Execute commands via ADB on a mobile device."""

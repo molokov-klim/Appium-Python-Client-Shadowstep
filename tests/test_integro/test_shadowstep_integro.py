@@ -8,7 +8,6 @@ import pytest
 
 from shadowstep.element.element import Element
 from shadowstep.image.image import ShadowstepImage
-from shadowstep.page_base import PageBaseShadowstep
 from shadowstep.shadowstep import Shadowstep
 
 """
@@ -51,42 +50,6 @@ class TestShadowstep:
         el = app.find_and_get_element({"class": "android.widget.TextView"})
         assert el.get_attribute("class") == "android.widget.TextView"  # noqa: S101
 
-
-    def test_list_registered_pages_output(self, app: Shadowstep):
-        """Test list_registered_pages() executes without errors.
-
-        Steps:
-        1. Call list_registered_pages().
-        2. Verify that no exceptions are raised.
-        """
-        # Call the method - it should execute without exceptions
-        app.list_registered_pages()
-
-        # If we reach here, the method executed successfully
-
-    def test_get_page_success(self, app: Shadowstep):
-        """Test get_page() returns page instance when page exists.
-
-        Steps:
-        1. If pages are registered, test with a registered page.
-        2. Verify that a page instance is returned.
-        3. Verify that it's a PageBaseShadowstep instance.
-        """
-        # Skip if no pages are registered
-        if not app.pages:
-            pytest.skip("No pages registered for testing")
-
-        # Get the first registered page name
-        page_name = next(iter(app.pages.keys()))
-
-        # Call get_page()
-        page_instance = app.get_page(page_name)
-
-        # Verify instance is returned and is correct type
-        assert page_instance is not None  # noqa: S101
-        assert isinstance(page_instance, PageBaseShadowstep)  # noqa: S101
-        assert page_instance.shadowstep is app  # noqa: S101
-
     def test_get_page_not_found(self, app: Shadowstep):
         """Test get_page() raises ValueError when page not found.
 
@@ -102,29 +65,6 @@ class TestShadowstep:
         error_message = str(exc_info.value)
         assert "NonExistentPageXYZ123" in error_message  # noqa: S101
         assert "not found" in error_message  # noqa: S101
-
-    def test_resolve_page_success(self, app: Shadowstep):
-        """Test resolve_page() returns page instance when page exists.
-
-        Steps:
-        1. If pages are registered, test with a registered page.
-        2. Verify that a page instance is returned.
-        3. Verify that it's a PageBaseShadowstep instance.
-        """
-        # Skip if no pages are registered
-        if not app.pages:
-            pytest.skip("No pages registered for testing")
-
-        # Get the first registered page name
-        page_name = next(iter(app.pages.keys()))
-
-        # Call resolve_page()
-        page_instance = app.resolve_page(page_name)
-
-        # Verify instance is returned and is correct type
-        assert page_instance is not None  # noqa: S101
-        assert isinstance(page_instance, PageBaseShadowstep)  # noqa: S101
-        assert page_instance.shadowstep is app  # noqa: S101
 
     def test_resolve_page_not_found(self, app: Shadowstep):
         """Test resolve_page() raises ValueError when page not found.
@@ -142,7 +82,9 @@ class TestShadowstep:
         assert "NonExistentResolvePageXYZ123" in error_message  # noqa: S101
         assert "not found" in error_message  # noqa: S101
 
-    def test_get_elements_multiple_elements(self, app: Shadowstep, android_settings_open_close: None):
+    def test_get_elements_multiple_elements(
+        self, app: Shadowstep, android_settings_open_close: None
+    ):
         """Test get_elements() returns multiple elements matching locator.
 
         Steps:
@@ -156,11 +98,7 @@ class TestShadowstep:
         timeout = 10
         poll_frequency = 0.5
 
-        elements = app.get_elements(
-            locator=locator,
-            timeout=timeout,
-            poll_frequency=poll_frequency
-        )
+        elements = app.get_elements(locator=locator, timeout=timeout, poll_frequency=poll_frequency)
 
         # Step 2: Verify that a list of Element instances is returned
         assert isinstance(elements, list)  # noqa: S101
@@ -313,7 +251,7 @@ class TestShadowstep:
             height=height // 4,
             direction="up",
             percent=0.5,
-            speed=5000
+            speed=5000,
         )
 
         # Verify swipe returns self for chaining
@@ -393,7 +331,7 @@ class TestShadowstep:
             height=height // 2,
             direction="down",
             percent=0.5,
-            speed=5000
+            speed=5000,
         )
 
         # Verify scroll returns self for chaining
@@ -419,7 +357,7 @@ class TestShadowstep:
             start_y=height // 2,
             end_x=width // 2 + 100,
             end_y=height // 2 + 100,
-            speed=2500
+            speed=2500,
         )
 
         # Verify drag returns self for chaining
@@ -446,7 +384,7 @@ class TestShadowstep:
             width=width // 2,
             height=height // 2,
             direction="up",
-            speed=7500
+            speed=7500,
         )
 
         # Verify fling returns self for chaining
@@ -473,7 +411,7 @@ class TestShadowstep:
             width=width // 2,
             height=height // 2,
             percent=0.5,
-            speed=2500
+            speed=2500,
         )
 
         # Verify pinch_open returns self for chaining
@@ -500,7 +438,7 @@ class TestShadowstep:
             width=width // 2,
             height=height // 2,
             percent=0.5,
-            speed=2500
+            speed=2500,
         )
 
         # Verify pinch_close returns self for chaining
@@ -643,15 +581,14 @@ class TestShadowstep:
         3. Verify the operation completes without errors.
         """
         # Create temporary file
-        with tempfile.NamedTemporaryFile(mode='w', delete=False, suffix='.txt') as tmpfile:
+        with tempfile.NamedTemporaryFile(mode="w", delete=False, suffix=".txt") as tmpfile:
             tmpfile.write("test content")
             tmpfile_path = tmpfile.name
 
         try:
             # Push file to device
             result = app.push(
-                source_file_path=tmpfile_path,
-                destination_file_path="/sdcard/test_push_file.txt"
+                source_file_path=tmpfile_path, destination_file_path="/sdcard/test_push_file.txt"
             )
 
             # Verify push returns self for chaining

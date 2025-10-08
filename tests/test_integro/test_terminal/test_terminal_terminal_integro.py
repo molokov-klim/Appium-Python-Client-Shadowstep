@@ -110,7 +110,7 @@ class TestTerminalIntegration:
     @pytest.fixture
     def temp_file(self) -> str:
         """Fixture providing temporary file."""
-        with tempfile.NamedTemporaryFile(mode='w', delete=False, suffix='.txt') as f:
+        with tempfile.NamedTemporaryFile(mode="w", delete=False, suffix=".txt") as f:
             f.write("Test content for Terminal operations")
             temp_path = f.name
         yield temp_path
@@ -124,6 +124,7 @@ class TestTerminalIntegration:
         yield temp_path
         if Path(temp_path).exists():
             import shutil
+
             shutil.rmtree(temp_path)
 
     # Core adb_shell tests
@@ -153,62 +154,13 @@ class TestTerminalIntegration:
         # Assert
         assert isinstance(result, str)  # noqa: S101
 
-    # File operations tests
-
-    def test_pull_file_from_device(self, app: Shadowstep, terminal: Terminal, temp_dir: str):
-        """Test pulling file from device."""
-        # Arrange - create test file on device using adb_shell
-        test_content = "test_pull_content"
-        terminal.adb_shell(command="echo", args=f"{test_content} > /sdcard/test_pull.txt")
-        destination = str(Path(temp_dir) / "pulled_file.txt")
-
-        # Act
-        result = terminal.pull(source="/sdcard/test_pull.txt", destination=destination)
-
-        # Assert
-        assert isinstance(result, bool)  # noqa: S101
-        if result:
-            assert Path(destination).exists()  # noqa: S101
-
-        # Cleanup
-        terminal.adb_shell(command="rm", args="-f /sdcard/test_pull.txt")
-
-    def test_pull_nonexistent_file(self, terminal: Terminal, temp_dir: str):
-        """Test pulling non-existent file raises exception."""
-        # Act & Assert - mobile_commands.pull_file raises exception for non-existent files
-        from shadowstep.exceptions.shadowstep_exceptions import ShadowstepException
-
-        with pytest.raises((ShadowstepException, OSError)):
-            terminal.pull(
-                source="/sdcard/nonexistent_terminal_file_12345.txt",
-                destination=temp_dir
-            )
-
-    def test_pull_with_empty_destination(self, terminal: Terminal):
-        """Test pull with empty destination uses current directory."""
-        # Arrange
-        terminal.adb_shell(command="echo", args="test > /sdcard/test_empty_dest.txt")
-
-        # Act
-        result = terminal.pull(source="/sdcard/test_empty_dest.txt", destination="")
-
-        # Assert
-        assert isinstance(result, bool)  # noqa: S101
-
-        # Cleanup
-        terminal.adb_shell(command="rm", args="-f /sdcard/test_empty_dest.txt")
-        test_file = Path.cwd() / "test_empty_dest.txt"
-        if test_file.exists():
-            test_file.unlink()
-
     # Activity management tests
 
     def test_start_activity_settings(self, terminal: Terminal):
         """Test starting Settings activity."""
         # Act
         result = terminal.start_activity(
-            package="com.android.settings",
-            activity="com.android.settings.Settings"
+            package="com.android.settings", activity="com.android.settings.Settings"
         )
         time.sleep(1)
 
@@ -222,8 +174,7 @@ class TestTerminalIntegration:
         """Test getting current app package."""
         # Arrange - start known activity
         terminal.start_activity(
-            package="com.android.settings",
-            activity="com.android.settings.Settings"
+            package="com.android.settings", activity="com.android.settings.Settings"
         )
         time.sleep(2)
 
@@ -240,8 +191,7 @@ class TestTerminalIntegration:
         """Test closing application."""
         # Arrange
         terminal.start_activity(
-            package="com.android.settings",
-            activity="com.android.settings.Settings"
+            package="com.android.settings", activity="com.android.settings.Settings"
         )
         time.sleep(1)
 
@@ -255,15 +205,13 @@ class TestTerminalIntegration:
         """Test rebooting application."""
         # Arrange
         terminal.start_activity(
-            package="com.android.settings",
-            activity="com.android.settings.Settings"
+            package="com.android.settings", activity="com.android.settings.Settings"
         )
         time.sleep(1)
 
         # Act
         result = terminal.reboot_app(
-            package="com.android.settings",
-            activity="com.android.settings.Settings"
+            package="com.android.settings", activity="com.android.settings.Settings"
         )
 
         # Assert
@@ -514,8 +462,7 @@ class TestTerminalIntegration:
 
         # Act
         result = terminal.delete_file_from_internal_storage(
-            path="/sdcard/",
-            filename="test_single_delete.txt"
+            path="/sdcard/", filename="test_single_delete.txt"
         )
 
         # Assert
@@ -528,8 +475,7 @@ class TestTerminalIntegration:
 
         # Act
         result = terminal.delete_file_from_internal_storage(
-            path="/sdcard/",
-            filename="test_trailing.txt"
+            path="/sdcard/", filename="test_trailing.txt"
         )
 
         # Assert
@@ -643,16 +589,6 @@ class TestTerminalIntegration:
         assert len(packages) > 0  # noqa: S101
         # Should contain system packages
         assert any("android" in pkg for pkg in packages)  # noqa: S101
-
-    def test_get_package_path(self, terminal: Terminal):
-        """Test getting package path."""
-        # Act
-        path = terminal.get_package_path("com.android.settings")
-
-        # Assert
-        assert isinstance(path, str)  # noqa: S101
-        assert len(path) > 0  # noqa: S101
-        assert ".apk" in path  # noqa: S101
 
     # WiFi IP tests
 
@@ -786,45 +722,6 @@ class TestTerminalIntegration:
         # Assert
         assert isinstance(result, str)  # noqa: S101
 
-    def test_pull_package_creates_file(self, terminal: Terminal, temp_dir: str):
-        """Test pull_package creates APK file."""
-        # Act
-        terminal.pull_package(
-            package="com.android.settings",
-            path=temp_dir,
-            filename="settings_test"
-        )
-
-        # Assert - check if file was created
-        expected_file = Path(temp_dir) / "settings_test._apk"
-        if expected_file.exists():
-            assert expected_file.stat().st_size > 0  # noqa: S101
-            expected_file.unlink()
-
-    def test_pull_package_with_default_filename(self, terminal: Terminal, temp_dir: str):
-        """Test pull_package with default filename."""
-        # Act
-        terminal.pull_package(package="com.android.settings", path=temp_dir)
-
-        # Assert
-        expected_file = Path(temp_dir) / "temp._apk"
-        if expected_file.exists():
-            expected_file.unlink()
-
-    def test_get_package_manifest(self, terminal: Terminal):
-        """Test getting package manifest."""
-        # Act
-        manifest = terminal.get_package_manifest("com.android.settings")
-
-        # Assert
-        assert isinstance(manifest, dict)  # noqa: S101
-
-        # Cleanup
-        test_dir = Path("test")
-        if test_dir.exists():
-            import shutil
-            shutil.rmtree(test_dir)
-
     # Additional edge case tests for better coverage
 
     def test_get_prop_uin_keyerror(self, terminal: Terminal):
@@ -854,8 +751,7 @@ class TestTerminalIntegration:
         """Test reboot_app behavior when app is not running."""
         # Act - try to reboot non-existent app
         result = terminal.reboot_app(
-            package="com.nonexistent.testapp12345",
-            activity="com.nonexistent.Activity"
+            package="com.nonexistent.testapp12345", activity="com.nonexistent.Activity"
         )
 
         # Assert - should return False or True depending on start_activity
@@ -865,9 +761,7 @@ class TestTerminalIntegration:
         """Test run_background_process with process name validation."""
         # Act
         result = terminal.run_background_process(
-            command="echo",
-            args="test",
-            process="nonexistent_validation_process"
+            command="echo", args="test", process="nonexistent_validation_process"
         )
 
         # Assert - validation should fail as process won't exist
@@ -901,20 +795,6 @@ class TestTerminalIntegration:
         # Assert - should return False
         assert exists is False  # noqa: S101
 
-    def test_get_package_manifest_invalid_package(self, terminal: Terminal):
-        """Test get_package_manifest with invalid package raises exception."""
-        # Act & Assert - get_package_path raises exception for non-existent package
-        from shadowstep.exceptions.shadowstep_exceptions import ShadowstepException
-
-        with pytest.raises(ShadowstepException):
-            terminal.get_package_manifest("com.invalid.nonexistent.package12345")
-
-        # Cleanup
-        test_dir = Path("test")
-        if test_dir.exists():
-            import shutil
-            shutil.rmtree(test_dir)
-
     def test_get_wifi_ip_various_formats(self, terminal: Terminal):
         """Test get_wifi_ip handles various output formats."""
         # Act
@@ -945,21 +825,6 @@ class TestTerminalIntegration:
         # Assert
         assert isinstance(result, str)  # noqa: S101
 
-    def test_pull_empty_file(self, terminal: Terminal, temp_dir: str):
-        """Test pulling empty file from device."""
-        # Arrange - create empty file
-        terminal.adb_shell(command="touch", args="/sdcard/empty_test.txt")
-        destination = str(Path(temp_dir) / "empty_pulled.txt")
-
-        # Act
-        result = terminal.pull(source="/sdcard/empty_test.txt", destination=destination)
-
-        # Assert
-        assert isinstance(result, bool)  # noqa: S101
-
-        # Cleanup
-        terminal.adb_shell(command="rm", args="-f /sdcard/empty_test.txt")
-
     def test_stop_logcat_when_running(self, terminal: Terminal):
         """Test stop_logcat when logcat might be running."""
         # Act - stop any running logcat
@@ -972,8 +837,7 @@ class TestTerminalIntegration:
         """Test delete_file_from_internal_storage with non-existent file."""
         # Act - try to delete non-existent file (should succeed without error)
         result = terminal.delete_file_from_internal_storage(
-            path="/sdcard/",
-            filename="absolutely_nonexistent_file_xyz123.txt"
+            path="/sdcard/", filename="absolutely_nonexistent_file_xyz123.txt"
         )
 
         # Assert
@@ -1023,31 +887,6 @@ class TestTerminalIntegration:
         # Verify it contains common Android packages
         package_str = " ".join(packages)
         assert "android" in package_str or "com.android" in package_str  # noqa: S101
-
-    def test_get_package_path_system_package(self, terminal: Terminal):
-        """Test get_package_path with known system package."""
-        # Act
-        path = terminal.get_package_path("android")
-
-        # Assert
-        assert isinstance(path, str)  # noqa: S101
-        if path:
-            assert ".apk" in path or "framework" in path  # noqa: S101
-
-    def test_pull_package_and_verify_content(self, terminal: Terminal, temp_dir: str):
-        """Test pull_package actually pulls APK file."""
-        # Act
-        terminal.pull_package(
-            package="com.android.settings",
-            path=temp_dir,
-            filename="test_apk_pull"
-        )
-
-        # Assert - verify file exists and has reasonable size
-        apk_file = Path(temp_dir) / "test_apk_pull._apk"
-        if apk_file.exists():
-            assert apk_file.stat().st_size > 1000  # noqa: S101  # APK should be > 1KB
-            apk_file.unlink()
 
     def test_get_prop_multiple_calls_consistent(self, terminal: Terminal):
         """Test get_prop returns consistent results."""

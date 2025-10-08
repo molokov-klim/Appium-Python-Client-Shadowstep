@@ -7,10 +7,7 @@ managing WebDriver instances, and handling device connections.
 from __future__ import annotations
 
 import logging
-import site
-import sys
 import time
-from pathlib import Path
 from typing import TYPE_CHECKING, Any
 
 import requests
@@ -75,20 +72,6 @@ class ShadowstepBase:
         self.transport: Transport = None
         self.terminal: Terminal = None
         self.adb: Adb = None
-        self._ignored_auto_discover_dirs: set[str] = {
-            "__pycache__",
-            ".venv",
-            "venv",
-            "site-packages",
-            "dist-packages",
-            ".git",
-            "build",
-            "dist",
-            ".idea",
-            ".pytest_cache",
-            "results",
-        }
-        self._ignored_base_path_parts: set[str] = self._get_ignored_dirs()
 
     def connect(
         self,
@@ -142,7 +125,9 @@ class ShadowstepBase:
         self.logger.info("Connecting to server: %s", self.command_executor)
         WebDriverSingleton.clear_instance()
         self.driver = WebDriverSingleton(
-            command_executor=self.command_executor, options=self.options, extensions=self.extensions,
+            command_executor=self.command_executor,
+            options=self.options,
+            extensions=self.extensions,
         )  # type: ignore[assignment]
         self._wait_for_session_id()
         self.logger.info("Connection established")
@@ -613,41 +598,3 @@ class ShadowstepBase:
                 self.options.new_command_timeout = self.capabilities["appium:newCommandTimeout"]
             if "appium:skipLogcatCapture" in self.capabilities:
                 self.options.skip_logcat_capture = self.capabilities["appium:skipLogcatCapture"]
-
-    def _get_ignored_dirs(self) -> set[str]:
-        self.logger.debug(get_current_func_name())
-
-        # Base paths that we consider "system"
-        system_base = Path(sys.base_prefix).resolve()
-        site_packages = {Path(p).resolve() for p in site.getsitepackages() if Path(p).exists()}
-        stdlib = system_base / "lib"
-
-        def is_system_path(path: Path) -> bool:
-            try:
-                path = path.resolve()
-            except Exception:  # noqa: BLE001
-                return False
-            return (
-                str(path).startswith(str(system_base))  # inside python installation / venv
-                or any(str(path).startswith(str(s)) for s in site_packages)  # site-packages
-                or str(path).startswith(str(stdlib))  # stdlib
-            )
-
-        system_paths = {Path(p).resolve().name for p in sys.path if p and is_system_path(Path(p))}
-        ignored_names = {
-            "venv",
-            ".venv",
-            "env",
-            ".env",
-            "Scripts",
-            "bin",
-            "lib",
-            "include",
-            "__pycache__",
-            ".idea",
-            ".vscode",
-            "build",
-            "dist",
-            "dlls",
-        }
-        return system_paths.union(ignored_names)

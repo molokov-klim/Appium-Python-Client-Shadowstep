@@ -1,6 +1,6 @@
 # Shadowstep
 
-Shadowstep is a UI automation framework for Android applications built on top of Appium.
+Shadowstep is appium-based testing framework with Page Object codegen.
 
 - Lazy element lookup and interaction (driver is touched only when necessary)
 - PageObject generation
