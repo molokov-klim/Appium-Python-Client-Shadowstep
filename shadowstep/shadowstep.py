@@ -26,7 +26,6 @@ from shadowstep.decorators.decorators import fail_safe
 from shadowstep.element.element import Element
 from shadowstep.exceptions.shadowstep_exceptions import ShadowstepException
 from shadowstep.image.image import ShadowstepImage
-from shadowstep.logcat.shadowstep_logcat import ShadowstepLogcat
 from shadowstep.navigator.navigator import PageNavigator
 from shadowstep.shadowstep_base import ShadowstepBase, WebDriverSingleton
 from shadowstep.ui_automator.mobile_commands import MobileCommands
@@ -93,9 +92,6 @@ class Shadowstep(ShadowstepBase):
             return
         super().__init__()
 
-        self._logcat: ShadowstepLogcat = ShadowstepLogcat(
-            driver_getter=WebDriverSingleton.get_driver,
-        )
         self.navigator: PageNavigator = PageNavigator(self)
         self.navigator.auto_discover_pages()
         self.mobile_commands: MobileCommands = MobileCommands()
@@ -133,11 +129,11 @@ class Shadowstep(ShadowstepBase):
         return self.navigator.resolve_page(name)
 
     def get_element(
-        self,
-        locator: tuple[str, str] | dict[str, Any] | Element | UiSelector,
-        timeout: int = 30,
-        poll_frequency: float = 0.5,
-        ignored_exceptions: WaitExcTypes | None = None,
+            self,
+            locator: tuple[str, str] | dict[str, Any] | Element | UiSelector,
+            timeout: int = 30,
+            poll_frequency: float = 0.5,
+            ignored_exceptions: WaitExcTypes | None = None,
     ) -> Element:
         """Get a single element by locator.
 
@@ -161,11 +157,11 @@ class Shadowstep(ShadowstepBase):
         )
 
     def get_elements(
-        self,
-        locator: tuple[str, str] | dict[str, Any] | Element | UiSelector,
-        timeout: int = 30,
-        poll_frequency: float = 0.5,
-        ignored_exceptions: WaitExcTypes | None = None,
+            self,
+            locator: tuple[str, str] | dict[str, Any] | Element | UiSelector,
+            timeout: int = 30,
+            poll_frequency: float = 0.5,
+            ignored_exceptions: WaitExcTypes | None = None,
     ) -> list[Element]:
         """Find multiple elements matching the given locator across the whole page.
 
@@ -197,10 +193,10 @@ class Shadowstep(ShadowstepBase):
         )
 
     def get_image(
-        self,
-        image: bytes | NDArray[np.uint8] | Image.Image | str,
-        threshold: float = 0.5,
-        timeout: float = 5.0,
+            self,
+            image: bytes | NDArray[np.uint8] | Image.Image | str,
+            threshold: float = 0.5,
+            timeout: float = 5.0,
     ) -> ShadowstepImage:
         """Return a lazy ShadowstepImage wrapper for the given template.
 
@@ -222,10 +218,10 @@ class Shadowstep(ShadowstepBase):
         )
 
     def get_images(
-        self,
-        image: bytes | NDArray[np.uint8] | Image.Image | str,
-        threshold: float = 0.5,
-        timeout: float = 5.0,
+            self,
+            image: bytes | NDArray[np.uint8] | Image.Image | str,
+            threshold: float = 0.5,
+            timeout: float = 5.0,
     ) -> list[ShadowstepImage]:
         """Return a list of ShadowstepImage wrappers for the given template.
 
@@ -251,14 +247,14 @@ class Shadowstep(ShadowstepBase):
         ]
 
     def schedule_action(  # noqa: PLR0913
-        self,
-        name: str,
-        steps: list[ActionStep],
-        interval_ms: int = 1000,
-        times: int = 1,
-        max_pass: int | None = None,
-        max_fail: int | None = None,
-        max_history_items: int = 20,
+            self,
+            name: str,
+            steps: list[ActionStep],
+            interval_ms: int = 1000,
+            times: int = 1,
+            max_pass: int | None = None,
+            max_fail: int | None = None,
+            max_history_items: int = 20,
     ) -> Shadowstep:
         """Schedule a server-side action sequence.
 
@@ -305,10 +301,10 @@ class Shadowstep(ShadowstepBase):
         raise NotImplementedError
 
     def start_logcat(
-        self,
-        filename: str,
-        port: int | None = None,
-        filters: list[str] | None = None,
+            self,
+            filename: str,
+            port: int | None = None,
+            filters: list[str] | None = None,
     ) -> None:
         """filename: log file name.
 
@@ -327,12 +323,12 @@ class Shadowstep(ShadowstepBase):
         self._logcat.stop()
 
     def find_and_get_element(
-        self,
-        locator: tuple[str, str] | dict[str, Any] | Element | UiSelector,
-        timeout: int = 30,
-        poll_frequency: float = 0.5,
-        ignored_exceptions: WaitExcTypes | None = None,
-        max_swipes: int = 30,
+            self,
+            locator: tuple[str, str] | dict[str, Any] | Element | UiSelector,
+            timeout: int = 30,
+            poll_frequency: float = 0.5,
+            ignored_exceptions: WaitExcTypes | None = None,
+            max_swipes: int = 30,
     ) -> Element:
         """Find and get an element by scrolling through scrollable elements.
 
@@ -394,14 +390,14 @@ class Shadowstep(ShadowstepBase):
         exceptions=(NoSuchDriverException, InvalidSessionIdException),
     )
     def scroll(  # noqa: PLR0913
-        self,
-        left: int,
-        top: int,
-        width: int,
-        height: int,
-        direction: str,
-        percent: float,
-        speed: int,
+            self,
+            left: int,
+            top: int,
+            width: int,
+            height: int,
+            direction: str,
+            percent: float,
+            speed: int,
     ) -> Shadowstep:
         """Perform a scroll gesture in the specified area.
 
@@ -508,9 +504,9 @@ class Shadowstep(ShadowstepBase):
     @fail_safe(
         raise_exception=ShadowstepException,
         exceptions=(
-            NoSuchDriverException,
-            InvalidSessionIdException,
-            StaleElementReferenceException,
+                NoSuchDriverException,
+                InvalidSessionIdException,
+                StaleElementReferenceException,
         ),
     )
     def double_click(self, x: int, y: int) -> Shadowstep:
@@ -546,9 +542,9 @@ class Shadowstep(ShadowstepBase):
     @fail_safe(
         raise_exception=ShadowstepException,
         exceptions=(
-            NoSuchDriverException,
-            InvalidSessionIdException,
-            StaleElementReferenceException,
+                NoSuchDriverException,
+                InvalidSessionIdException,
+                StaleElementReferenceException,
         ),
     )
     def click(self, x: int, y: int) -> Shadowstep:
@@ -584,18 +580,18 @@ class Shadowstep(ShadowstepBase):
     @fail_safe(
         raise_exception=ShadowstepException,
         exceptions=(
-            NoSuchDriverException,
-            InvalidSessionIdException,
-            StaleElementReferenceException,
+                NoSuchDriverException,
+                InvalidSessionIdException,
+                StaleElementReferenceException,
         ),
     )
     def drag(
-        self,
-        start_x: int,
-        start_y: int,
-        end_x: int,
-        end_y: int,
-        speed: int,
+            self,
+            start_x: int,
+            start_y: int,
+            end_x: int,
+            end_y: int,
+            speed: int,
     ) -> Shadowstep:
         """Perform a drag gesture from one point to another.
 
@@ -643,19 +639,19 @@ class Shadowstep(ShadowstepBase):
     @fail_safe(
         raise_exception=ShadowstepException,
         exceptions=(
-            NoSuchDriverException,
-            InvalidSessionIdException,
-            StaleElementReferenceException,
+                NoSuchDriverException,
+                InvalidSessionIdException,
+                StaleElementReferenceException,
         ),
     )
     def fling(  # noqa: PLR0913
-        self,
-        left: int,
-        top: int,
-        width: int,
-        height: int,
-        direction: str,
-        speed: int,
+            self,
+            left: int,
+            top: int,
+            width: int,
+            height: int,
+            direction: str,
+            speed: int,
     ) -> Shadowstep:
         """Perform a fling gesture in the specified area.
 
@@ -711,19 +707,19 @@ class Shadowstep(ShadowstepBase):
     @fail_safe(
         raise_exception=ShadowstepException,
         exceptions=(
-            NoSuchDriverException,
-            InvalidSessionIdException,
-            StaleElementReferenceException,
+                NoSuchDriverException,
+                InvalidSessionIdException,
+                StaleElementReferenceException,
         ),
     )
     def pinch_open(  # noqa: PLR0913
-        self,
-        left: int,
-        top: int,
-        width: int,
-        height: int,
-        percent: float,
-        speed: int,
+            self,
+            left: int,
+            top: int,
+            width: int,
+            height: int,
+            percent: float,
+            speed: int,
     ) -> Shadowstep:
         """Perform a pinch-open gesture in the given bounding area.
 
@@ -779,19 +775,19 @@ class Shadowstep(ShadowstepBase):
     @fail_safe(
         raise_exception=ShadowstepException,
         exceptions=(
-            NoSuchDriverException,
-            InvalidSessionIdException,
-            StaleElementReferenceException,
+                NoSuchDriverException,
+                InvalidSessionIdException,
+                StaleElementReferenceException,
         ),
     )
     def pinch_close(  # noqa: PLR0913
-        self,
-        left: int,
-        top: int,
-        width: int,
-        height: int,
-        percent: float,
-        speed: int,
+            self,
+            left: int,
+            top: int,
+            width: int,
+            height: int,
+            percent: float,
+            speed: int,
     ) -> Shadowstep:
         """Perform a pinch-close gesture in the given bounding area.
 
@@ -847,20 +843,20 @@ class Shadowstep(ShadowstepBase):
     @fail_safe(
         raise_exception=ShadowstepException,
         exceptions=(
-            NoSuchDriverException,
-            InvalidSessionIdException,
-            StaleElementReferenceException,
+                NoSuchDriverException,
+                InvalidSessionIdException,
+                StaleElementReferenceException,
         ),
     )
     def swipe(  # noqa: PLR0913
-        self,
-        left: int,
-        top: int,
-        width: int,
-        height: int,
-        direction: str,
-        percent: float = 0.5,
-        speed: int = 8000,
+            self,
+            left: int,
+            top: int,
+            width: int,
+            height: int,
+            direction: str,
+            percent: float = 0.5,
+            speed: int = 8000,
     ) -> Shadowstep:
         """Perform a swipe gesture within the specified bounding box.
 
@@ -951,9 +947,9 @@ class Shadowstep(ShadowstepBase):
     @fail_safe(
         raise_exception=ShadowstepException,
         exceptions=(
-            NoSuchDriverException,
-            InvalidSessionIdException,
-            StaleElementReferenceException,
+                NoSuchDriverException,
+                InvalidSessionIdException,
+                StaleElementReferenceException,
         ),
     )
     def swipe_left_to_right(self) -> Shadowstep:
@@ -983,9 +979,9 @@ class Shadowstep(ShadowstepBase):
     @fail_safe(
         raise_exception=ShadowstepException,
         exceptions=(
-            NoSuchDriverException,
-            InvalidSessionIdException,
-            StaleElementReferenceException,
+                NoSuchDriverException,
+                InvalidSessionIdException,
+                StaleElementReferenceException,
         ),
     )
     def swipe_top_to_bottom(self, percent: float = 1.0, speed: int = 5000) -> Shadowstep:
@@ -1015,9 +1011,9 @@ class Shadowstep(ShadowstepBase):
     @fail_safe(
         raise_exception=ShadowstepException,
         exceptions=(
-            NoSuchDriverException,
-            InvalidSessionIdException,
-            StaleElementReferenceException,
+                NoSuchDriverException,
+                InvalidSessionIdException,
+                StaleElementReferenceException,
         ),
     )
     def swipe_bottom_to_top(self, percent: float = 1.0, speed: int = 5000) -> Shadowstep:
@@ -1047,10 +1043,10 @@ class Shadowstep(ShadowstepBase):
     @fail_safe(
         raise_exception=ShadowstepException,
         exceptions=(
-            NoSuchDriverException,
-            InvalidSessionIdException,
-            WebDriverException,
-            StaleElementReferenceException,
+                NoSuchDriverException,
+                InvalidSessionIdException,
+                WebDriverException,
+                StaleElementReferenceException,
         ),
     )
     def save_screenshot(self, path: str = "", filename: str = "screenshot.png") -> bool:
@@ -1109,9 +1105,9 @@ class Shadowstep(ShadowstepBase):
     @fail_safe(
         raise_exception=ShadowstepException,
         exceptions=(
-            NoSuchDriverException,
-            InvalidSessionIdException,
-            StaleElementReferenceException,
+                NoSuchDriverException,
+                InvalidSessionIdException,
+                StaleElementReferenceException,
         ),
     )
     def tap(self, x: int, y: int, duration: int | None = None) -> Shadowstep:

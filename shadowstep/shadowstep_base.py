@@ -18,6 +18,7 @@ from selenium.common.exceptions import (
     NoSuchDriverException,
 )
 
+from shadowstep.logcat.shadowstep_logcat import ShadowstepLogcat
 from shadowstep.terminal.adb import Adb
 from shadowstep.terminal.terminal import Terminal
 from shadowstep.terminal.transport import Transport
@@ -37,10 +38,10 @@ class AppiumDisconnectedError(WebDriverException):
     """Exception raised when Appium connection is lost."""
 
     def __init__(
-        self,
-        msg: str | None = None,
-        screen: str | None = None,
-        stacktrace: Sequence[str] | None = None,
+            self,
+            msg: str | None = None,
+            screen: str | None = None,
+            stacktrace: Sequence[str] | None = None,
     ) -> None:
         """Initialize the AppiumDisconnectedError.
 
@@ -72,17 +73,20 @@ class ShadowstepBase:
         self.transport: Transport = None
         self.terminal: Terminal = None
         self.adb: Adb = None
+        self._logcat: ShadowstepLogcat = ShadowstepLogcat(
+            driver_getter=WebDriverSingleton.get_driver,
+        )
 
     def connect(
-        self,
-        capabilities: dict[str, Any],
-        server_ip: str = "127.0.0.1",
-        server_port: int = 4723,
-        options: (AppiumOptions | list[AppiumOptions]) | UiAutomator2Options | None = None,
-        extensions: list[WebDriver] | None = None,
-        ssh_user: str | None = None,
-        ssh_password: str | None = None,
-        command_executor: str | None = None,
+            self,
+            capabilities: dict[str, Any],
+            server_ip: str = "127.0.0.1",
+            server_port: int = 4723,
+            options: (AppiumOptions | list[AppiumOptions]) | UiAutomator2Options | None = None,
+            extensions: list[WebDriver] | None = None,
+            ssh_user: str | None = None,
+            ssh_password: str | None = None,
+            command_executor: str | None = None,
     ) -> None:
         """Connect to a device using the Appium server and initialize the driver.
 
