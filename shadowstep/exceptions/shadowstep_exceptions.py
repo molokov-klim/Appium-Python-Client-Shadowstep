@@ -7,9 +7,30 @@ and context for the Shadowstep automation framework.
 
 from __future__ import annotations
 
+from collections.abc import Sequence
 from typing import Any
 
 from selenium.common import WebDriverException
+
+
+class AppiumDisconnectedError(WebDriverException):
+    """Exception raised when Appium connection is lost."""
+
+    def __init__(
+            self,
+            msg: str | None = None,
+            screen: str | None = None,
+            stacktrace: Sequence[str] | None = None,
+    ) -> None:
+        """Initialize the AppiumDisconnectedError.
+
+        Args:
+            msg: Error message.
+            screen: Screenshot data.
+            stacktrace: Stack trace information.
+
+        """
+        super().__init__(msg, screen, stacktrace)
 
 
 class ShadowstepException(WebDriverException):
@@ -63,7 +84,8 @@ class ShadowstepElementException(ShadowstepException):
 
     default_message = "ShadowstepElementException occurred"
 
-    def __init__(self, msg: str | None = None, original_exception: Exception | None = None, *context_args: Any, **context_kwargs: Any) -> None:
+    def __init__(self, msg: str | None = None, original_exception: Exception | None = None, *context_args: Any,
+                 **context_kwargs: Any) -> None:
         """Initialize ShadowstepElementException."""
         super().__init__(msg, *context_args, **context_kwargs)
         self.original_exception = original_exception
@@ -80,7 +102,8 @@ class ShadowstepNoSuchElementException(ShadowstepElementException):
 
     default_message = "ShadowstepNoSuchElementException occurred"
 
-    def __init__(self, msg: str | None = None, locator: Any = None, stacktrace: list[str] | None = None, *context_args: Any, **context_kwargs: Any) -> None:
+    def __init__(self, msg: str | None = None, locator: Any = None, stacktrace: list[str] | None = None,
+                 *context_args: Any, **context_kwargs: Any) -> None:
         """Initialize ShadowstepNoSuchElementException."""
         super().__init__(msg, *context_args, **context_kwargs)
         self.locator = locator
@@ -101,7 +124,8 @@ class ShadowstepTimeoutException(ShadowstepException):
 
     default_message = "ShadowstepTimeoutException occurred"
 
-    def __init__(self, msg: str | None = None, locator: Any = None, driver: Any = None, stacktrace: list[str] | None = None, *context_args: Any, **context_kwargs: Any) -> None:
+    def __init__(self, msg: str | None = None, locator: Any = None, driver: Any = None,
+                 stacktrace: list[str] | None = None, *context_args: Any, **context_kwargs: Any) -> None:
         """Initialize ShadowstepTimeoutException."""
         super().__init__(msg, *context_args, **context_kwargs)
         self.locator = locator

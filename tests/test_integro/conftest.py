@@ -53,29 +53,31 @@ def app():
     # Clear any existing instance
     application.disconnect()
     time.sleep(2)
-    
+
     application.connect(server_ip=APPIUM_IP,
                         server_port=APPIUM_PORT,
                         command_executor=APPIUM_COMMAND_EXECUTOR,
                         capabilities=CAPABILITIES,
                         ssh_user=os.getenv("SHADOWSTEP_SSH_USER", None),
                         ssh_password=os.getenv("SHADOWSTEP_SSH_PASSWORD", None))
-    
+
     # Wait for connection to be fully established
     max_wait_time = 60  # seconds
     start_time = time.time()
-    
+
     while time.time() - start_time < max_wait_time:
-        if (application.is_connected() and 
-            application.driver is not None and 
-            application.driver.session_id is not None):
+        if (application.is_connected() and
+                application.driver is not None and  # type: ignore[reportUnnecessaryComparison]
+                application.driver.session_id is not None):
             break
         time.sleep(1)
-    
+
     # Final verification
-    if not (application.is_connected() and application.driver is not None and application.driver.session_id is not None):
+    if not (
+            application.is_connected() and application.driver is not None  # type: ignore[reportUnnecessaryComparison]
+            and application.driver.session_id is not None):
         raise RuntimeError("Failed to establish connection within timeout period")
-    
+
     yield application
     application.disconnect()
 
