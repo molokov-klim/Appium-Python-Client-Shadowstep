@@ -256,12 +256,15 @@ class TestShadowstepLogcat:
         mock_ws = MockWebSocket()
         mock_create_connection.return_value = mock_ws
 
-        # Start logcat
-        logcat.start(temp_file)
-        time.sleep(0.2)  # Give thread time to start
+        # Mock mobile commands
+        with patch.object(logcat.mobile_commands, 'start_logs_broadcast', return_value=None):
+            with patch.object(logcat.mobile_commands, 'stop_logs_broadcast', return_value=None):
+                # Start logcat
+                logcat.start(temp_file)
+                time.sleep(0.2)  # Give thread time to start
 
-        # Stop logcat
-        logcat.stop()
+                # Stop logcat
+                logcat.stop()
 
         # Verify WebSocket was created and closed
         mock_create_connection.assert_called()
@@ -274,12 +277,15 @@ class TestShadowstepLogcat:
         """Test WebSocket connection failure in _run method."""
         mock_create_connection.side_effect = Exception("Connection failed")
 
-        # Start logcat
-        logcat.start(temp_file)
-        time.sleep(0.2)  # Give thread time to start
+        # Mock mobile commands
+        with patch.object(logcat.mobile_commands, 'start_logs_broadcast', return_value=None):
+            with patch.object(logcat.mobile_commands, 'stop_logs_broadcast', return_value=None):
+                # Start logcat
+                logcat.start(temp_file)
+                time.sleep(0.2)  # Give thread time to start
 
-        # Stop logcat
-        logcat.stop()
+                # Stop logcat
+                logcat.stop()
 
         # Verify connection was attempted
         mock_create_connection.assert_called()
@@ -292,12 +298,15 @@ class TestShadowstepLogcat:
         mock_ws = MockWebSocket(should_raise_on_recv=True)
         mock_create_connection.return_value = mock_ws
 
-        # Start logcat
-        logcat.start(temp_file)
-        time.sleep(0.2)  # Give thread time to start
+        # Mock mobile commands
+        with patch.object(logcat.mobile_commands, 'start_logs_broadcast', return_value=None):
+            with patch.object(logcat.mobile_commands, 'stop_logs_broadcast', return_value=None):
+                # Start logcat
+                logcat.start(temp_file)
+                time.sleep(0.2)  # Give thread time to start
 
-        # Stop logcat
-        logcat.stop()
+                # Stop logcat
+                logcat.stop()
 
         # Verify WebSocket was created
         mock_create_connection.assert_called()
@@ -310,12 +319,15 @@ class TestShadowstepLogcat:
         mock_ws = MockWebSocket(should_raise_on_close=True)
         mock_create_connection.return_value = mock_ws
 
-        # Start logcat
-        logcat.start(temp_file)
-        time.sleep(0.2)  # Give thread time to start
+        # Mock mobile commands
+        with patch.object(logcat.mobile_commands, 'start_logs_broadcast', return_value=None):
+            with patch.object(logcat.mobile_commands, 'stop_logs_broadcast', return_value=None):
+                # Start logcat
+                logcat.start(temp_file)
+                time.sleep(0.2)  # Give thread time to start
 
-        # Stop logcat
-        logcat.stop()
+                # Stop logcat
+                logcat.stop()
 
         # Verify WebSocket was created
         mock_create_connection.assert_called()
@@ -496,11 +508,14 @@ class TestShadowstepLogcat:
         mock_ws = MockWebSocket()
         mock_create_connection.return_value = mock_ws
 
-        # Set a custom port
-        logcat.start(temp_file, port=8080)
-        time.sleep(0.2)  # Give thread time to start
+        # Mock mobile commands
+        with patch.object(logcat.mobile_commands, 'start_logs_broadcast', return_value=None):
+            with patch.object(logcat.mobile_commands, 'stop_logs_broadcast', return_value=None):
+                # Set a custom port
+                logcat.start(temp_file, port=8080)
+                time.sleep(0.2)  # Give thread time to start
 
-        logcat.stop()
+                logcat.stop()
 
         # Verify WebSocket was created
         mock_create_connection.assert_called()
@@ -528,10 +543,13 @@ class TestShadowstepLogcat:
         mock_ws = MockWebSocketWithBytes()
         mock_create_connection.return_value = mock_ws
 
-        logcat.start(temp_file)
-        time.sleep(0.2)  # Give thread time to start
+        # Mock mobile commands
+        with patch.object(logcat.mobile_commands, 'start_logs_broadcast', return_value=None):
+            with patch.object(logcat.mobile_commands, 'stop_logs_broadcast', return_value=None):
+                logcat.start(temp_file)
+                time.sleep(0.2)  # Give thread time to start
 
-        logcat.stop()
+                logcat.stop()
 
         # Verify WebSocket was created
         mock_create_connection.assert_called()
@@ -564,10 +582,13 @@ class TestShadowstepLogcat:
         # Set up filtering
         logcat.filters = ["test_filter"]
 
-        logcat.start(temp_file)
-        time.sleep(0.2)  # Give thread time to start
+        # Mock mobile commands
+        with patch.object(logcat.mobile_commands, 'start_logs_broadcast', return_value=None):
+            with patch.object(logcat.mobile_commands, 'stop_logs_broadcast', return_value=None):
+                logcat.start(temp_file)
+                time.sleep(0.2)  # Give thread time to start
 
-        logcat.stop()
+                logcat.stop()
 
         # Verify WebSocket was created
         mock_create_connection.assert_called()
@@ -599,10 +620,13 @@ class TestShadowstepLogcat:
         mock_ws = MockWebSocketWithExceptions()
         mock_create_connection.return_value = mock_ws
 
-        logcat.start(temp_file)
-        time.sleep(0.2)  # Give thread time to start
+        # Mock mobile commands
+        with patch.object(logcat.mobile_commands, 'start_logs_broadcast', return_value=None):
+            with patch.object(logcat.mobile_commands, 'stop_logs_broadcast', return_value=None):
+                logcat.start(temp_file)
+                time.sleep(0.2)  # Give thread time to start
 
-        logcat.stop()
+                logcat.stop()
 
         # Verify WebSocket was created
         mock_create_connection.assert_called()
@@ -632,10 +656,13 @@ class TestShadowstepLogcat:
         mock_ws = MockWebSocketWithCloseException()
         mock_create_connection.return_value = mock_ws
 
-        logcat.start(temp_file)
-        time.sleep(0.2)  # Give thread time to start
+        # Mock mobile commands
+        with patch.object(logcat.mobile_commands, 'start_logs_broadcast', return_value=None):
+            with patch.object(logcat.mobile_commands, 'stop_logs_broadcast', return_value=None):
+                logcat.start(temp_file)
+                time.sleep(0.2)  # Give thread time to start
 
-        logcat.stop()
+                logcat.stop()
 
         # Verify WebSocket was created
         mock_create_connection.assert_called()
