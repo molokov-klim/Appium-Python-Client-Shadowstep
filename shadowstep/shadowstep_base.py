@@ -8,11 +8,10 @@ from __future__ import annotations
 
 import logging
 import time
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, cast
 
 import requests
 from appium.options.android.uiautomator2.base import UiAutomator2Options
-from selenium.common import WebDriverException
 from selenium.common.exceptions import (
     InvalidSessionIdException,
     NoSuchDriverException,
@@ -26,32 +25,10 @@ from shadowstep.utils.utils import get_current_func_name
 from shadowstep.web_driver.web_driver_singleton import WebDriverSingleton
 
 if TYPE_CHECKING:
-    from collections.abc import Sequence
-
     from appium.options.common.base import AppiumOptions
     from appium.webdriver.webdriver import WebDriver
 
 logger = logging.getLogger(__name__)
-
-
-class AppiumDisconnectedError(WebDriverException):
-    """Exception raised when Appium connection is lost."""
-
-    def __init__(
-            self,
-            msg: str | None = None,
-            screen: str | None = None,
-            stacktrace: Sequence[str] | None = None,
-    ) -> None:
-        """Initialize the AppiumDisconnectedError.
-
-        Args:
-            msg: Error message.
-            screen: Screenshot data.
-            stacktrace: Stack trace information.
-
-        """
-        super().__init__(msg, screen, stacktrace)
 
 
 class ShadowstepBase:
@@ -60,33 +37,36 @@ class ShadowstepBase:
     def __init__(self) -> None:
         """Initialize the ShadowstepBase instance."""
         self.logger: logging.Logger = logger
-        self.driver: WebDriver = None
-        self.server_ip: str = None
-        self.server_port: int = None
-        self.capabilities: dict[str, Any] = None
-        self.options: UiAutomator2Options = None
-        self.extensions: list[WebDriver] = None
-        self.ssh_password: str = None
-        self.ssh_user: str = None
+        self.driver: WebDriver = cast("WebDriver", None)
+        self.server_ip: str = cast("str", None)
+        self.server_port: int = cast("int", None)
+        self.capabilities: dict[str, Any] = cast("dict[str, Any]", None)
+        self.options: UiAutomator2Options = cast("UiAutomator2Options", None)
+        self.extensions: list[WebDriver] = cast("list[WebDriver]", None)
+        self.ssh_password: str = cast("str", None)
+        self.ssh_user: str = cast("str", None)
         self.ssh_port: int = 22
-        self.command_executor: str = None
-        self.transport: Transport = None
-        self.terminal: Terminal = None
-        self.adb: Adb = None
+        self.command_executor: str = cast("str", None)
+        self.transport: Transport = cast("Transport", None)
+        self.terminal: Terminal = cast("Terminal", None)
+        self.adb: Adb = cast("Adb", None)
         self._logcat: ShadowstepLogcat = ShadowstepLogcat(
             driver_getter=WebDriverSingleton.get_driver,
         )
 
-    def connect(
-            self,
-            capabilities: dict[str, Any],
-            server_ip: str = "127.0.0.1",
-            server_port: int = 4723,
-            options: (AppiumOptions | list[AppiumOptions]) | UiAutomator2Options | None = None,
-            extensions: list[WebDriver] | None = None,
-            ssh_user: str | None = None,
-            ssh_password: str | None = None,
-            command_executor: str | None = None,
+    def connect(  # noqa: PLR0913
+        self,
+        capabilities: dict[str, Any],
+        server_ip: str = "127.0.0.1",
+        server_port: int = 4723,
+        options: AppiumOptions | list[AppiumOptions] | UiAutomator2Options = cast(  # noqa: B008
+            "AppiumOptions | list[AppiumOptions] | UiAutomator2Options",
+            None,
+        ),
+        extensions: list[WebDriver] = cast("list[WebDriver]", None),  # noqa: B008
+        ssh_user: str = cast("str", None),
+        ssh_password: str = cast("str", None),
+        command_executor: str = cast("str", None),
     ) -> None:
         """Connect to a device using the Appium server and initialize the driver.
 
@@ -123,7 +103,7 @@ class ShadowstepBase:
         self.command_executor = command_executor
 
         self._capabilities_to_options()
-        if self.command_executor is None:
+        if self.command_executor is None:  # type: ignore[reportUnnecessaryComparison]
             self.command_executor = f"http://{server_ip}:{server_port!s}/wd/hub"
 
         self.logger.info("Connecting to server: %s", self.command_executor)
@@ -156,14 +136,14 @@ class ShadowstepBase:
         """
         self.logger.debug("%s", get_current_func_name())
         try:
-            if self.driver is not None:
+            if self.driver is not None:  # type: ignore[reportUnnecessaryComparison]
                 response = requests.delete(
                     f"{self.command_executor}/session/{self.driver.session_id}",
                     timeout=30,
                 )
                 self.logger.info("Response: %s", response)
                 self.driver.quit()
-                self.driver = None
+                self.driver = None  # type: ignore[reportUnnecessaryComparison]
                 WebDriverSingleton.clear_instance()
         except InvalidSessionIdException:
             self.logger.debug("%s InvalidSessionIdException", get_current_func_name())
@@ -243,7 +223,7 @@ class ShadowstepBase:
                     if not session:
                         continue
                     session_id = session.get("sessionId")
-                    if self.driver is not None and session_id == self.driver.session_id:
+                    if self.driver is not None and session_id == self.driver.session_id:  # type: ignore[reportUnnecessaryComparison]
                         self.logger.debug("Session found in Grid: %s", session_id)
                         return True
 
@@ -270,7 +250,7 @@ class ShadowstepBase:
             for node in nodes:
                 session_id = node.get("id", None)
                 node.get("ready", False)
-                if self.driver is not None and self.driver.session_id == session_id:
+                if self.driver is not None and self.driver.session_id == session_id:   # type: ignore[reportUnnecessaryComparison]
                     self.logger.debug("Found session_id on standalone: %s", session_id)
                     return True
             return False  # noqa: TRY300
@@ -294,7 +274,7 @@ class ShadowstepBase:
             for node in nodes:
                 session_id = node.get("id", None)
                 node.get("ready", False)
-                if self.driver is not None and self.driver.session_id == session_id:
+                if self.driver is not None and self.driver.session_id == session_id:   # type: ignore[reportUnnecessaryComparison]
                     self.logger.debug("Found session_id on standalone: %s", session_id)
                     return True
             return False  # noqa: TRY300
@@ -328,7 +308,7 @@ class ShadowstepBase:
     def _capabilities_to_options(self) -> None:  # noqa: C901, PLR0912, PLR0915
         # if provided caps instead options, redeclare caps to options
         # see https://github.com/appium/appium-uiautomator2-driver
-        if self.capabilities is not None and self.options is None:
+        if self.capabilities is not None and self.options is None:   # type: ignore[reportUnnecessaryComparison]
             self.options = UiAutomator2Options()
 
             # General

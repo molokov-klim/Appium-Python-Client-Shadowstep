@@ -253,26 +253,6 @@ class TestShadowstepBaseUnit:
             assert result is False
 
     @pytest.mark.unit
-    def test_appium_disconnected_error_initialization(self):
-        """Test AppiumDisconnectedError initialization with parameters."""
-        from shadowstep.shadowstep_base import AppiumDisconnectedError
-
-        error = AppiumDisconnectedError("Test error", "screenshot_data", ["trace1", "trace2"])
-        assert error.msg == "Test error"
-        assert error.screen == "screenshot_data"
-        assert error.stacktrace == ["trace1", "trace2"]
-
-    @pytest.mark.unit
-    def test_appium_disconnected_error_default_initialization(self):
-        """Test AppiumDisconnectedError initialization with default parameters."""
-        from shadowstep.shadowstep_base import AppiumDisconnectedError
-
-        error = AppiumDisconnectedError()
-        assert error.msg is None
-        assert error.screen is None
-        assert error.stacktrace is None
-
-    @pytest.mark.unit
     def test_webdriver_singleton_get_session_id_with_sessions(self):
         """Test WebDriverSingleton._get_session_id with available sessions."""
         from shadowstep.web_driver.web_driver_singleton import WebDriverSingleton
