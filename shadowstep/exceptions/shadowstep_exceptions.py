@@ -32,7 +32,7 @@ class ShadowstepException(WebDriverException):
             message = self._construct_message_from_context()
         super().__init__(message)
 
-    def _construct_message_from_context(self, **context_kwargs: Any) -> str:
+    def _construct_message_from_context(self, **context_kwargs: Any) -> str:  # noqa: ARG002
         """Construct message from context kwargs."""
         # This method should be overridden by subclasses to provide specific message construction
         return self.default_message
@@ -167,7 +167,7 @@ class ShadowstepSelectorTypeError(ShadowstepValidationError):
 
     default_message = "ShadowstepSelectorTypeError occurred"
 
-    def _construct_message_from_context(self, **context_kwargs: Any) -> str:
+    def _construct_message_from_context(self, **context_kwargs: Any) -> str:  # noqa: ARG002
         """Construct message from context kwargs."""
         return "Selector must be a dictionary"
 
@@ -177,7 +177,7 @@ class ShadowstepEmptySelectorError(ShadowstepValidationError):
 
     default_message = "ShadowstepEmptySelectorError occurred"
 
-    def _construct_message_from_context(self, **context_kwargs: Any) -> str:
+    def _construct_message_from_context(self, **context_kwargs: Any) -> str:  # noqa: ARG002
         """Construct message from context kwargs."""
         return "Selector dictionary cannot be empty"
 
@@ -187,7 +187,7 @@ class ShadowstepConflictingTextAttributesError(ShadowstepValidationError):
 
     default_message = "ShadowstepConflictingTextAttributesError occurred"
 
-    def _construct_message_from_context(self, **context_kwargs: Any) -> str:
+    def _construct_message_from_context(self, **context_kwargs: Any) -> str:  # noqa: ARG002
         """Construct message from context kwargs."""
         return "Conflicting text attributes"
 
@@ -197,7 +197,7 @@ class ShadowstepConflictingDescriptionAttributesError(ShadowstepValidationError)
 
     default_message = "ShadowstepConflictingDescriptionAttributesError occurred"
 
-    def _construct_message_from_context(self, **context_kwargs: Any) -> str:
+    def _construct_message_from_context(self, **context_kwargs: Any) -> str:  # noqa: ARG002
         """Construct message from context kwargs."""
         return "Conflicting description attributes"
 
@@ -253,7 +253,7 @@ class ShadowstepEmptyXPathError(ShadowstepValidationError):
 
     default_message = "ShadowstepEmptyXPathError occurred"
 
-    def _construct_message_from_context(self, **context_kwargs: Any) -> str:
+    def _construct_message_from_context(self, **context_kwargs: Any) -> str:  # noqa: ARG002
         """Construct message from context kwargs."""
         return "XPath string cannot be empty"
 
@@ -263,7 +263,7 @@ class ShadowstepEmptySelectorStringError(ShadowstepValidationError):
 
     default_message = "ShadowstepEmptySelectorStringError occurred"
 
-    def _construct_message_from_context(self, **context_kwargs: Any) -> str:
+    def _construct_message_from_context(self, **context_kwargs: Any) -> str:  # noqa: ARG002
         """Construct message from context kwargs."""
         return "Selector string cannot be empty"
 
@@ -329,7 +329,7 @@ class ShadowstepConflictingMethodsError(ShadowstepValidationError):
 
     default_message = "ShadowstepConflictingMethodsError occurred"
 
-    def _construct_message_from_context(self, **context_kwargs: Any) -> str:
+    def _construct_message_from_context(self, **context_kwargs: Any) -> str:  # noqa: ARG002
         """Construct message from context kwargs."""
         return "Conflicting methods"
 
@@ -363,8 +363,7 @@ class ShadowstepLexerError(ShadowstepConversionError):
 
     def _construct_message_from_context(self, **context_kwargs: Any) -> str:
         """Construct message from context kwargs."""
-        message = context_kwargs.get("message", "lexical error")
-        return message
+        return context_kwargs.get("message", "lexical error")
 
 
 class ShadowstepUnterminatedStringError(ShadowstepLexerError):
@@ -408,8 +407,7 @@ class ShadowstepParserError(ShadowstepException):
 
     def _construct_message_from_context(self, **context_kwargs: Any) -> str:
         """Construct message from context kwargs."""
-        message = context_kwargs.get("message", "parse error")
-        return message
+        return context_kwargs.get("message", "parse error")
 
 
 class ShadowstepExpectedTokenError(ShadowstepParserError):
@@ -444,8 +442,7 @@ class ShadowstepXPathConversionError(ShadowstepConversionError):
 
     def _construct_message_from_context(self, **context_kwargs: Any) -> str:
         """Construct message from context kwargs."""
-        message = context_kwargs.get("message", "xpath error")
-        return message
+        return context_kwargs.get("message", "xpath error")
 
 
 class ShadowstepBooleanLiteralError(ShadowstepXPathConversionError):
@@ -475,7 +472,7 @@ class ShadowstepLogicalOperatorsNotSupportedError(ShadowstepXPathConversionError
 
     default_message = "ShadowstepLogicalOperatorsNotSupportedError occurred"
 
-    def _construct_message_from_context(self, **context_kwargs: Any) -> str:
+    def _construct_message_from_context(self, **context_kwargs: Any) -> str:  # noqa: ARG002
         """Construct message from context kwargs."""
         return "Logical operators (and/or) are not supported"
 
@@ -650,7 +647,7 @@ class ShadowstepEqualityComparisonError(ShadowstepXPathConversionError):
 
     default_message = "ShadowstepEqualityComparisonError occurred"
 
-    def _construct_message_from_context(self, **context_kwargs: Any) -> str:
+    def _construct_message_from_context(self, **context_kwargs: Any) -> str:  # noqa: ARG002
         """Construct message from context kwargs."""
         return "Equality must compare @attribute or text() with a literal"
 
@@ -727,7 +724,7 @@ class ShadowstepInvalidUiSelectorStringFormatError(ShadowstepValidationError):
 
     default_message = "ShadowstepInvalidUiSelectorStringFormatError occurred"
 
-    def _construct_message_from_context(self, **context_kwargs: Any) -> str:
+    def _construct_message_from_context(self, **context_kwargs: Any) -> str:  # noqa: ARG002
         """Construct message from context kwargs."""
         return "Invalid UiSelector string format"
 
@@ -739,8 +736,7 @@ class ShadowstepLogcatError(ShadowstepException):
 
     def _construct_message_from_context(self, **context_kwargs: Any) -> str:
         """Construct message from context kwargs."""
-        message = context_kwargs.get("message", "logcat error")
-        return message
+        return context_kwargs.get("message", "logcat error")
 
 
 class ShadowstepPollIntervalError(ShadowstepLogcatError):
@@ -748,7 +744,7 @@ class ShadowstepPollIntervalError(ShadowstepLogcatError):
 
     default_message = "ShadowstepPollIntervalError occurred"
 
-    def _construct_message_from_context(self, **context_kwargs: Any) -> str:
+    def _construct_message_from_context(self, **context_kwargs: Any) -> str:  # noqa: ARG002
         """Construct message from context kwargs."""
         return "poll_interval must be non-negative"
 
@@ -758,7 +754,7 @@ class ShadowstepEmptyFilenameError(ShadowstepLogcatError):
 
     default_message = "ShadowstepEmptyFilenameError occurred"
 
-    def _construct_message_from_context(self, **context_kwargs: Any) -> str:
+    def _construct_message_from_context(self, **context_kwargs: Any) -> str:  # noqa: ARG002
         """Construct message from context kwargs."""
         return "filename cannot be empty"
 
@@ -768,7 +764,7 @@ class ShadowstepLogcatConnectionError(ShadowstepLogcatError):
 
     default_message = "ShadowstepLogcatConnectionError occurred"
 
-    def _construct_message_from_context(self, **context_kwargs: Any) -> str:
+    def _construct_message_from_context(self, **context_kwargs: Any) -> str:  # noqa: ARG002
         """Construct message from context kwargs."""
         return "Cannot connect to any logcat WS endpoint"
 
@@ -780,8 +776,7 @@ class ShadowstepNavigatorError(ShadowstepException):
 
     def _construct_message_from_context(self, **context_kwargs: Any) -> str:
         """Construct message from context kwargs."""
-        message = context_kwargs.get("message", "navigation error")
-        return message
+        return context_kwargs.get("message", "navigation error")
 
 
 class ShadowstepPageCannotBeNoneError(ShadowstepNavigatorError):
@@ -789,7 +784,7 @@ class ShadowstepPageCannotBeNoneError(ShadowstepNavigatorError):
 
     default_message = "ShadowstepPageCannotBeNoneError occurred"
 
-    def _construct_message_from_context(self, **context_kwargs: Any) -> str:
+    def _construct_message_from_context(self, **context_kwargs: Any) -> str:  # noqa: ARG002
         """Construct message from context kwargs."""
         return "page cannot be None"
 
@@ -799,7 +794,7 @@ class ShadowstepFromPageCannotBeNoneError(ShadowstepNavigatorError):
 
     default_message = "ShadowstepFromPageCannotBeNoneError occurred"
 
-    def _construct_message_from_context(self, **context_kwargs: Any) -> str:
+    def _construct_message_from_context(self, **context_kwargs: Any) -> str:  # noqa: ARG002
         """Construct message from context kwargs."""
         return "from_page cannot be None"
 
@@ -809,7 +804,7 @@ class ShadowstepToPageCannotBeNoneError(ShadowstepNavigatorError):
 
     default_message = "ShadowstepToPageCannotBeNoneError occurred"
 
-    def _construct_message_from_context(self, **context_kwargs: Any) -> str:
+    def _construct_message_from_context(self, **context_kwargs: Any) -> str:  # noqa: ARG002
         """Construct message from context kwargs."""
         return "to_page cannot be None"
 
@@ -819,7 +814,7 @@ class ShadowstepTimeoutMustBeNonNegativeError(ShadowstepNavigatorError):
 
     default_message = "ShadowstepTimeoutMustBeNonNegativeError occurred"
 
-    def _construct_message_from_context(self, **context_kwargs: Any) -> str:
+    def _construct_message_from_context(self, **context_kwargs: Any) -> str:  # noqa: ARG002
         """Construct message from context kwargs."""
         return "timeout must be non-negative"
 
@@ -829,7 +824,7 @@ class ShadowstepPathCannotBeEmptyError(ShadowstepNavigatorError):
 
     default_message = "ShadowstepPathCannotBeEmptyError occurred"
 
-    def _construct_message_from_context(self, **context_kwargs: Any) -> str:
+    def _construct_message_from_context(self, **context_kwargs: Any) -> str:  # noqa: ARG002
         """Construct message from context kwargs."""
         return "path cannot be empty"
 
@@ -839,7 +834,7 @@ class ShadowstepPathMustContainAtLeastTwoPagesError(ShadowstepNavigatorError):
 
     default_message = "ShadowstepPathMustContainAtLeastTwoPagesError occurred"
 
-    def _construct_message_from_context(self, **context_kwargs: Any) -> str:
+    def _construct_message_from_context(self, **context_kwargs: Any) -> str:  # noqa: ARG002
         """Construct message from context kwargs."""
         return "path must contain at least 2 pages for dom"
 
@@ -864,8 +859,7 @@ class ShadowstepPageObjectError(ShadowstepException):
 
     def _construct_message_from_context(self, **context_kwargs: Any) -> str:
         """Construct message from context kwargs."""
-        message = context_kwargs.get("message", "page object error")
-        return message
+        return context_kwargs.get("message", "page object error")
 
 
 class ShadowstepUnsupportedRendererTypeError(ShadowstepPageObjectError):
@@ -884,7 +878,7 @@ class ShadowstepTitleNotFoundError(ShadowstepPageObjectError):
 
     default_message = "ShadowstepTitleNotFoundError occurred"
 
-    def _construct_message_from_context(self, **context_kwargs: Any) -> str:
+    def _construct_message_from_context(self, **context_kwargs: Any) -> str:  # noqa: ARG002
         """Construct message from context kwargs."""
         return "Can't find title"
 
@@ -894,7 +888,7 @@ class ShadowstepNameCannotBeEmptyError(ShadowstepPageObjectError):
 
     default_message = "ShadowstepNameCannotBeEmptyError occurred"
 
-    def _construct_message_from_context(self, **context_kwargs: Any) -> str:
+    def _construct_message_from_context(self, **context_kwargs: Any) -> str:  # noqa: ARG002
         """Construct message from context kwargs."""
         return "Name cannot be empty"
 
@@ -904,7 +898,7 @@ class ShadowstepPageClassNameCannotBeEmptyError(ShadowstepPageObjectError):
 
     default_message = "ShadowstepPageClassNameCannotBeEmptyError occurred"
 
-    def _construct_message_from_context(self, **context_kwargs: Any) -> str:
+    def _construct_message_from_context(self, **context_kwargs: Any) -> str:  # noqa: ARG002
         """Construct message from context kwargs."""
         return "page_class_name cannot be empty"
 
@@ -914,7 +908,7 @@ class ShadowstepTitleNodeNoUsableNameError(ShadowstepPageObjectError):
 
     default_message = "ShadowstepTitleNodeNoUsableNameError occurred"
 
-    def _construct_message_from_context(self, **context_kwargs: Any) -> str:
+    def _construct_message_from_context(self, **context_kwargs: Any) -> str:  # noqa: ARG002
         """Construct message from context kwargs."""
         return "Title node does not contain usable name"
 
@@ -935,7 +929,7 @@ class ShadowstepNoClassDefinitionFoundError(ShadowstepPageObjectError):
 
     default_message = "ShadowstepNoClassDefinitionFoundError occurred"
 
-    def _construct_message_from_context(self, **context_kwargs: Any) -> str:
+    def _construct_message_from_context(self, **context_kwargs: Any) -> str:  # noqa: ARG002
         """Construct message from context kwargs."""
         return "No class definition found in the given source."
 
@@ -945,7 +939,7 @@ class ShadowstepRootNodeFilteredOutError(ShadowstepPageObjectError):
 
     default_message = "ShadowstepRootNodeFilteredOutError occurred"
 
-    def _construct_message_from_context(self, **context_kwargs: Any) -> str:
+    def _construct_message_from_context(self, **context_kwargs: Any) -> str:  # noqa: ARG002
         """Construct message from context kwargs."""
         return "Root node was filtered out and has no valid children."
 
@@ -955,7 +949,7 @@ class ShadowstepTerminalNotInitializedError(ShadowstepPageObjectError):
 
     default_message = "ShadowstepTerminalNotInitializedError occurred"
 
-    def _construct_message_from_context(self, **context_kwargs: Any) -> str:
+    def _construct_message_from_context(self, **context_kwargs: Any) -> str:  # noqa: ARG002
         """Construct message from context kwargs."""
         return "Terminal is not initialized"
 
@@ -965,7 +959,7 @@ class ShadowstepNoClassDefinitionFoundInTreeError(ShadowstepPageObjectError):
 
     default_message = "ShadowstepNoClassDefinitionFoundInTreeError occurred"
 
-    def _construct_message_from_context(self, **context_kwargs: Any) -> str:
+    def _construct_message_from_context(self, **context_kwargs: Any) -> str:  # noqa: ARG002
         """Construct message from context kwargs."""
         return "No class definition found"
 
@@ -977,8 +971,7 @@ class ShadowstepTranslatorError(ShadowstepException):
 
     def _construct_message_from_context(self, **context_kwargs: Any) -> str:
         """Construct message from context kwargs."""
-        message = context_kwargs.get("message", "translation error")
-        return message
+        return context_kwargs.get("message", "translation error")
 
 
 class ShadowstepMissingYandexTokenError(ShadowstepTranslatorError):
@@ -986,7 +979,7 @@ class ShadowstepMissingYandexTokenError(ShadowstepTranslatorError):
 
     default_message = "ShadowstepMissingYandexTokenError occurred"
 
-    def _construct_message_from_context(self, **context_kwargs: Any) -> str:
+    def _construct_message_from_context(self, **context_kwargs: Any) -> str:  # noqa: ARG002
         """Construct message from context kwargs."""
         return "Missing yandexPassportOauthToken environment variable"
 
@@ -996,6 +989,6 @@ class ShadowstepTranslationFailedError(ShadowstepTranslatorError):
 
     default_message = "ShadowstepTranslationFailedError occurred"
 
-    def _construct_message_from_context(self, **context_kwargs: Any) -> str:
+    def _construct_message_from_context(self, **context_kwargs: Any) -> str:  # noqa: ARG002
         """Construct message from context kwargs."""
         return "Translation failed: empty response"

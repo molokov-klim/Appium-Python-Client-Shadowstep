@@ -235,8 +235,6 @@ class Shadowstep(ShadowstepBase):
 
         """
         self.logger.debug("%s", get_current_func_name())
-        # For now, return a single image wrapped in a list
-        # TODO: Implement multiple image matching  # noqa: TD002, TD003, FIX002
         return [
             ShadowstepImage(
                 image=image,

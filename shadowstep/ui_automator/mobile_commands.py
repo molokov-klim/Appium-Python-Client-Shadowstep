@@ -2649,7 +2649,7 @@ class MobileCommands:
         ),
     )
     def replace_element_value(self, params: dict[str, Any] | list[Any] | None = None) -> Any:
-        """Execute mobile: replaceElementValue command.
+        r"""Execute mobile: replaceElementValue command.
 
         https://github.com/appium/appium-uiautomator2-driver?tab=readme-ov-file#mobile-replaceelementvalue
 

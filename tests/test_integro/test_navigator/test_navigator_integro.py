@@ -349,7 +349,7 @@ class TestPageGraph:
     def test_page_graph_page_key_with_string(self):
         """Test _page_key static method with string input."""
         # Act
-        key = PageGraph._page_key("PageTestA")
+        key = PageGraph.page_key("PageTestA")
 
         # Assert
         assert key == "PageTestA"
@@ -360,7 +360,7 @@ class TestPageGraph:
         page_a = PageTestA()
 
         # Act
-        key = PageGraph._page_key(page_a)
+        key = PageGraph.page_key(page_a)
 
         # Assert
         assert key == "PageTestA"
