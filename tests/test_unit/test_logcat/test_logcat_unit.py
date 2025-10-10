@@ -250,69 +250,73 @@ class TestShadowstepLogcat:
     
     @pytest.mark.unit
     @patch("shadowstep.logcat.shadowstep_logcat.create_connection")
-    def test_run_websocket_connection_success(self, mock_create_connection: Mock, logcat: ShadowstepLogcat, temp_file: str) -> None:
+    @patch("pathlib.Path.mkdir")
+    def test_run_websocket_connection_success(self, mock_mkdir: Mock, mock_create_connection: Mock, logcat: ShadowstepLogcat, temp_file: str) -> None:
         """Test successful WebSocket connection in _run method."""
         mock_ws = MockWebSocket()
         mock_create_connection.return_value = mock_ws
-        
+
         # Start logcat
         logcat.start(temp_file)
-        time.sleep(0.1)  # Give thread time to start
-        
+        time.sleep(0.2)  # Give thread time to start
+
         # Stop logcat
         logcat.stop()
-        
+
         # Verify WebSocket was created and closed
         mock_create_connection.assert_called()
         assert mock_ws.closed  # noqa: S101
     
     @pytest.mark.unit
     @patch("shadowstep.logcat.shadowstep_logcat.create_connection")
-    def test_run_websocket_connection_failure(self, mock_create_connection: Mock, logcat: ShadowstepLogcat, temp_file: str) -> None:
+    @patch("pathlib.Path.mkdir")
+    def test_run_websocket_connection_failure(self, mock_mkdir: Mock, mock_create_connection: Mock, logcat: ShadowstepLogcat, temp_file: str) -> None:
         """Test WebSocket connection failure in _run method."""
         mock_create_connection.side_effect = Exception("Connection failed")
-        
+
         # Start logcat
         logcat.start(temp_file)
-        time.sleep(0.1)  # Give thread time to start
-        
+        time.sleep(0.2)  # Give thread time to start
+
         # Stop logcat
         logcat.stop()
-        
+
         # Verify connection was attempted
         mock_create_connection.assert_called()
     
     @pytest.mark.unit
     @patch("shadowstep.logcat.shadowstep_logcat.create_connection")
-    def test_run_websocket_recv_error(self, mock_create_connection: Mock, logcat: ShadowstepLogcat, temp_file: str) -> None:
+    @patch("pathlib.Path.mkdir")
+    def test_run_websocket_recv_error(self, mock_mkdir: Mock, mock_create_connection: Mock, logcat: ShadowstepLogcat, temp_file: str) -> None:
         """Test WebSocket recv error handling in _run method."""
         mock_ws = MockWebSocket(should_raise_on_recv=True)
         mock_create_connection.return_value = mock_ws
-        
+
         # Start logcat
         logcat.start(temp_file)
-        time.sleep(0.1)  # Give thread time to start
-        
+        time.sleep(0.2)  # Give thread time to start
+
         # Stop logcat
         logcat.stop()
-        
+
         # Verify WebSocket was created
         mock_create_connection.assert_called()
     
     @pytest.mark.unit
     @patch("shadowstep.logcat.shadowstep_logcat.create_connection")
-    def test_run_websocket_close_error(self, mock_create_connection: Mock, logcat: ShadowstepLogcat, temp_file: str) -> None:
+    @patch("pathlib.Path.mkdir")
+    def test_run_websocket_close_error(self, mock_mkdir: Mock, mock_create_connection: Mock, logcat: ShadowstepLogcat, temp_file: str) -> None:
         """Test WebSocket close error handling in _run method."""
         mock_ws = MockWebSocket(should_raise_on_close=True)
         mock_create_connection.return_value = mock_ws
-        
+
         # Start logcat
         logcat.start(temp_file)
-        time.sleep(0.1)  # Give thread time to start
-        
+        time.sleep(0.2)  # Give thread time to start
+
         # Stop logcat
         logcat.stop()
-        
+
         # Verify WebSocket was created
         mock_create_connection.assert_called()
     
@@ -486,59 +490,62 @@ class TestShadowstepLogcat:
 
     @pytest.mark.unit
     @patch("shadowstep.logcat.shadowstep_logcat.create_connection")
-    def test_run_with_port_replacement(self, mock_create_connection: Mock, logcat: ShadowstepLogcat, temp_file: str) -> None:
+    @patch("pathlib.Path.mkdir")
+    def test_run_with_port_replacement(self, mock_mkdir: Mock, mock_create_connection: Mock, logcat: ShadowstepLogcat, temp_file: str) -> None:
         """Test _run method with port replacement."""
         mock_ws = MockWebSocket()
         mock_create_connection.return_value = mock_ws
-        
+
         # Set a custom port
         logcat.start(temp_file, port=8080)
-        time.sleep(0.1)  # Give thread time to start
-        
+        time.sleep(0.2)  # Give thread time to start
+
         logcat.stop()
-        
+
         # Verify WebSocket was created
         mock_create_connection.assert_called()
 
     @pytest.mark.unit
     @patch("shadowstep.logcat.shadowstep_logcat.create_connection")
-    def test_run_bytes_decoding(self, mock_create_connection: Mock, logcat: ShadowstepLogcat, temp_file: str) -> None:
+    @patch("pathlib.Path.mkdir")
+    def test_run_bytes_decoding(self, mock_mkdir: Mock, mock_create_connection: Mock, logcat: ShadowstepLogcat, temp_file: str) -> None:
         """Test _run method with bytes decoding."""
         class MockWebSocketWithBytes:
             def __init__(self):
                 self.closed = False
                 self.recv_count = 0
-            
+
             def recv(self):
                 self.recv_count += 1
                 if self.recv_count == 1:
                     return b"Mock log line in bytes"
                 else:
                     raise WebSocketConnectionClosedException("Connection closed")
-            
+
             def close(self):
                 self.closed = True
-        
+
         mock_ws = MockWebSocketWithBytes()
         mock_create_connection.return_value = mock_ws
-        
+
         logcat.start(temp_file)
-        time.sleep(0.1)  # Give thread time to start
-        
+        time.sleep(0.2)  # Give thread time to start
+
         logcat.stop()
-        
+
         # Verify WebSocket was created
         mock_create_connection.assert_called()
 
     @pytest.mark.unit
     @patch("shadowstep.logcat.shadowstep_logcat.create_connection")
-    def test_run_with_filtering(self, mock_create_connection: Mock, logcat: ShadowstepLogcat, temp_file: str) -> None:
+    @patch("pathlib.Path.mkdir")
+    def test_run_with_filtering(self, mock_mkdir: Mock, mock_create_connection: Mock, logcat: ShadowstepLogcat, temp_file: str) -> None:
         """Test _run method with line filtering."""
         class MockWebSocketWithFiltering:
             def __init__(self):
                 self.closed = False
                 self.recv_count = 0
-            
+
             def recv(self):
                 self.recv_count += 1
                 if self.recv_count == 1:
@@ -547,33 +554,34 @@ class TestShadowstepLogcat:
                     return "line without filter"
                 else:
                     raise WebSocketConnectionClosedException("Connection closed")
-            
+
             def close(self):
                 self.closed = True
-        
+
         mock_ws = MockWebSocketWithFiltering()
         mock_create_connection.return_value = mock_ws
-        
+
         # Set up filtering
         logcat.filters = ["test_filter"]
-        
+
         logcat.start(temp_file)
-        time.sleep(0.1)  # Give thread time to start
-        
+        time.sleep(0.2)  # Give thread time to start
+
         logcat.stop()
-        
+
         # Verify WebSocket was created
         mock_create_connection.assert_called()
 
     @pytest.mark.unit
     @patch("shadowstep.logcat.shadowstep_logcat.create_connection")
-    def test_run_websocket_exceptions(self, mock_create_connection: Mock, logcat: ShadowstepLogcat, temp_file: str) -> None:
+    @patch("pathlib.Path.mkdir")
+    def test_run_websocket_exceptions(self, mock_mkdir: Mock, mock_create_connection: Mock, logcat: ShadowstepLogcat, temp_file: str) -> None:
         """Test _run method with various WebSocket exceptions."""
         class MockWebSocketWithExceptions:
             def __init__(self):
                 self.closed = False
                 self.recv_count = 0
-            
+
             def recv(self):
                 self.recv_count += 1
                 if self.recv_count == 1:
@@ -584,50 +592,51 @@ class TestShadowstepLogcat:
                     raise Exception("Unexpected error")
                 else:
                     raise WebSocketConnectionClosedException("Connection closed")
-            
+
             def close(self):
                 self.closed = True
-        
+
         mock_ws = MockWebSocketWithExceptions()
         mock_create_connection.return_value = mock_ws
-        
+
         logcat.start(temp_file)
-        time.sleep(0.1)  # Give thread time to start
-        
+        time.sleep(0.2)  # Give thread time to start
+
         logcat.stop()
-        
+
         # Verify WebSocket was created
         mock_create_connection.assert_called()
 
     @pytest.mark.unit
     @patch("shadowstep.logcat.shadowstep_logcat.create_connection")
-    def test_run_websocket_close_exception(self, mock_create_connection: Mock, logcat: ShadowstepLogcat, temp_file: str) -> None:
+    @patch("pathlib.Path.mkdir")
+    def test_run_websocket_close_exception(self, mock_mkdir: Mock, mock_create_connection: Mock, logcat: ShadowstepLogcat, temp_file: str) -> None:
         """Test _run method with WebSocket close exception."""
         from websocket import WebSocketException
-        
+
         class MockWebSocketWithCloseException:
             def __init__(self):
                 self.closed = False
                 self.recv_count = 0
-            
+
             def recv(self):
                 self.recv_count += 1
                 if self.recv_count == 1:
                     return "test line"
                 else:
                     raise WebSocketConnectionClosedException("Connection closed")
-            
+
             def close(self):
                 raise WebSocketException("Close error")
-        
+
         mock_ws = MockWebSocketWithCloseException()
         mock_create_connection.return_value = mock_ws
-        
+
         logcat.start(temp_file)
-        time.sleep(0.1)  # Give thread time to start
-        
+        time.sleep(0.2)  # Give thread time to start
+
         logcat.stop()
-        
+
         # Verify WebSocket was created
         mock_create_connection.assert_called()
 

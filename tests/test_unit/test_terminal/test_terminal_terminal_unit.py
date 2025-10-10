@@ -61,8 +61,15 @@ class TestTerminal:
         self.mock_transport.ssh = self.mock_ssh
         self.mock_transport.scp = self.mock_scp
 
-        with patch('shadowstep.shadowstep.Shadowstep.get_instance', return_value=self.mock_shadowstep):
-            self.terminal = Terminal()
+        # Patch Shadowstep.get_instance to return our mock
+        self.patcher = patch('shadowstep.shadowstep.Shadowstep.get_instance', return_value=self.mock_shadowstep)
+        self.patcher.start()
+        self.terminal = Terminal()
+
+    def teardown_method(self):
+        """Clean up test fixtures."""
+        if hasattr(self, 'patcher'):
+            self.patcher.stop()
 
     @pytest.mark.unit
     def test_init(self):
@@ -70,28 +77,24 @@ class TestTerminal:
         # Arrange
         mock_shadowstep = Mock()
         mock_driver = Mock()
-        mock_transport = Mock()
 
         mock_shadowstep.driver = mock_driver
-        mock_shadowstep.transport = mock_transport
 
         # Act
         with patch('shadowstep.shadowstep.Shadowstep.get_instance', return_value=mock_shadowstep):
             terminal = Terminal()
 
-        # Assert
-        assert terminal.shadowstep == mock_shadowstep  # noqa: S101
-        assert terminal.driver == mock_driver  # noqa: S101
-        assert terminal.transport == mock_transport  # noqa: S101
+            # Assert
+            assert terminal.shadowstep == mock_shadowstep  # noqa: S101
+            assert terminal.driver == mock_driver  # noqa: S101
+            assert terminal.mobile_commands is not None  # noqa: S101
 
     @pytest.mark.unit
     def test_del(self):
-        """Test Terminal destructor."""
-        # Act
-        del self.terminal
-
-        # Assert
-        self.mock_ssh.close.assert_called_once()
+        """Test Terminal destructor - terminal no longer has __del__ method."""
+        # Terminal class no longer implements __del__ method
+        # This test is no longer applicable
+        pass
 
     @pytest.mark.unit
     def test_adb_shell_success(self):
@@ -101,16 +104,15 @@ class TestTerminal:
         args = ""
         expected_result = "package:com.example.app"
 
-        self.mock_driver.execute_script.return_value = expected_result
+        with patch.object(self.terminal.mobile_commands, "shell", return_value=expected_result):
+            # Act
+            result = self.terminal.adb_shell(command, args)
 
-        # Act
-        result = self.terminal.adb_shell(command, args)
-
-        # Assert
-        assert result == expected_result  # noqa: S101
-        self.mock_driver.execute_script.assert_called_once_with(
-            "mobile: shell", {"command": command, "args": [args]}
-        )
+            # Assert
+            assert result == expected_result  # noqa: S101
+            self.terminal.mobile_commands.shell.assert_called_once_with(
+                {"command": command, "args": [args]}
+            )
 
     @pytest.mark.unit
     def test_adb_shell_with_args(self):
@@ -120,16 +122,15 @@ class TestTerminal:
         args = "list packages"
         expected_result = "package:com.example.app"
 
-        self.mock_driver.execute_script.return_value = expected_result
+        with patch.object(self.terminal.mobile_commands, "shell", return_value=expected_result):
+            # Act
+            result = self.terminal.adb_shell(command, args)
 
-        # Act
-        result = self.terminal.adb_shell(command, args)
-
-        # Assert
-        assert result == expected_result  # noqa: S101
-        self.mock_driver.execute_script.assert_called_once_with(
-            "mobile: shell", {"command": command, "args": [args]}
-        )
+            # Assert
+            assert result == expected_result  # noqa: S101
+            self.terminal.mobile_commands.shell.assert_called_once_with(
+                {"command": command, "args": [args]}
+            )
 
     @pytest.mark.unit
     def test_adb_shell_no_such_driver_exception(self):
@@ -137,14 +138,14 @@ class TestTerminal:
         command = "pm list packages"
         args = ""
 
-        self.mock_driver.execute_script.side_effect = NoSuchDriverException("Driver not found")
-        self.mock_shadowstep.reconnect = Mock()
+        with patch.object(self.terminal.mobile_commands, "shell", side_effect=NoSuchDriverException("Driver not found")):
+            self.mock_shadowstep.reconnect = Mock()
 
-        with pytest.raises(AdbShellError) as exc_info:
-            self.terminal.adb_shell(command, args, tries=1)
+            with pytest.raises(AdbShellError) as exc_info:
+                self.terminal.adb_shell(command, args, tries=1)
 
-        assert "adb_shell failed" in str(exc_info.value)  # noqa: S101
-        self.mock_shadowstep.reconnect.assert_called_once()
+            assert "adb_shell failed" in str(exc_info.value)  # noqa: S101
+            self.mock_shadowstep.reconnect.assert_called_once()
 
     @pytest.mark.unit
     def test_adb_shell_invalid_session_exception(self):
@@ -153,14 +154,14 @@ class TestTerminal:
         command = "pm list packages"
         args = ""
 
-        self.mock_driver.execute_script.side_effect = InvalidSessionIdException("Invalid session")
-        self.mock_shadowstep.reconnect = Mock()
+        with patch.object(self.terminal.mobile_commands, "shell", side_effect=InvalidSessionIdException("Invalid session")):
+            self.mock_shadowstep.reconnect = Mock()
 
-        with pytest.raises(AdbShellError) as exc_info:
-            self.terminal.adb_shell(command, args, tries=1)
+            with pytest.raises(AdbShellError) as exc_info:
+                self.terminal.adb_shell(command, args, tries=1)
 
-        assert "adb_shell failed" in str(exc_info.value)  # noqa: S101
-        self.mock_shadowstep.reconnect.assert_called_once()
+            assert "adb_shell failed" in str(exc_info.value)  # noqa: S101
+            self.mock_shadowstep.reconnect.assert_called_once()
 
     @pytest.mark.unit
     def test_adb_shell_key_error(self):
@@ -168,13 +169,14 @@ class TestTerminal:
         command = "pm list packages"
         args = ""
 
-        self.mock_driver.execute_script.side_effect = KeyError("Key not found")
+        with patch.object(self.terminal.mobile_commands, "shell", side_effect=KeyError("Key not found")):
+            self.mock_shadowstep.reconnect = Mock()
 
-        with pytest.raises(AdbShellError) as exc_info:
-            self.terminal.adb_shell(command, args, tries=1)
+            with pytest.raises(AdbShellError) as exc_info:
+                self.terminal.adb_shell(command, args, tries=1)
 
-        assert "adb_shell failed" in str(exc_info.value)  # noqa: S101
-        self.mock_shadowstep.reconnect.assert_not_called()
+            assert "adb_shell failed" in str(exc_info.value)  # noqa: S101
+            self.mock_shadowstep.reconnect.assert_not_called()
 
     @pytest.mark.unit
     def test_adb_shell_multiple_tries(self):
@@ -185,164 +187,56 @@ class TestTerminal:
         expected_result = "package:com.example.app"
 
         # First call fails, second succeeds
-        self.mock_driver.execute_script.side_effect = [
-            NoSuchDriverException("Driver not found"),
-            expected_result,
-        ]
-        self.mock_shadowstep.reconnect = Mock()
-
-        # Act
-        result = self.terminal.adb_shell(command, args, tries=2)
-
-        # Assert
-        assert result == expected_result  # noqa: S101
-        assert self.mock_driver.execute_script.call_count == 2  # noqa: S101
-        self.mock_shadowstep.reconnect.assert_called_once()
-
-    @pytest.mark.unit
-    def test_push_success(self):
-        """Test successful file push."""
-        # Arrange
-        source_path = "/local/path"
-        remote_server_path = "/remote/path"
-        filename = "file.txt"
-        destination = "/device/path"
-        udid = "emulator-5554"
-
-        mock_stdin = Mock()
-        mock_stdout = Mock()
-        mock_stderr = Mock()
-        mock_stdout.channel.recv_exit_status.return_value = 0
-        mock_stdout.readlines.return_value = ["success"]
-
-        self.mock_transport.scp.put = Mock()
-        self.mock_transport.ssh.exec_command.return_value = (mock_stdin, mock_stdout, mock_stderr)
-
-        # Act
-        result = self.terminal.push(source_path, remote_server_path, filename, destination, udid)
-
-        # Assert
-        assert result is True  # noqa: S101
-        self.mock_transport.scp.put.assert_called_once()
-        self.mock_transport.ssh.exec_command.assert_called_once()
-
-    @pytest.mark.unit
-    def test_push_without_credentials(self):
-        """Test file push without transport credentials."""
-        # Arrange
-        source_path = "/local/path"
-        remote_server_path = "/remote/path"
-        filename = "file.txt"
-        destination = "/device/path"
-        udid = "emulator-5554"
-
-        # Mock transport to raise OSError (simulating missing credentials)
-        self.mock_transport.scp.put.side_effect = OSError("Connection failed")
-
-        # Act
-        result = self.terminal.push(source_path, remote_server_path, filename, destination, udid)
-
-        # Assert
-        assert result is False  # noqa: S101
-
-    @pytest.mark.unit
-    @patch('pathlib.Path.exists')
-    def test_install_app_success(self, mock_exists):
-        """Test successful app installation."""
-        # Arrange
-        source = "/local/path"
-        remote_server_path = "/remote/path"
-        filename = "app._apk"
-        udid = "emulator-5554"
-
-        mock_stdin = Mock()
-        mock_stdout = Mock()
-        mock_stderr = Mock()
-        mock_stdout.channel.recv_exit_status.return_value = 0
-        mock_stdout.readlines.return_value = ["success"]
-
-        # Mock file existence check
-        mock_exists.return_value = True
-
-        self.mock_transport.scp.put = Mock()
-        self.mock_transport.ssh.exec_command.return_value = (mock_stdin, mock_stdout, mock_stderr)
-
-        # Act
-        result = self.terminal.install_app(source, remote_server_path, filename, udid)
-
-        # Assert
-        assert result is True  # noqa: S101
-        self.mock_transport.scp.put.assert_called_once()
-        self.mock_transport.ssh.exec_command.assert_called_once()
-
-    @pytest.mark.unit
-    def test_install_app_without_credentials(self):
-        """Test app installation without transport credentials."""
-        # Arrange
-        source = "/local/path"
-        remote_server_path = "/remote/path"
-        filename = "app._apk"
-        udid = "emulator-5554"
-
-        # Mock transport to raise OSError (simulating missing credentials)
-        self.mock_transport.scp.put.side_effect = OSError("Connection failed")
-
-        # Act
-        result = self.terminal.install_app(source, remote_server_path, filename, udid)
-
-        # Assert
-        assert result is False  # noqa: S101
-
-    @pytest.mark.unit
-    def test_pull_success(self):
-        """Test successful file pull."""
-        # Arrange
-        source = "/device/path/file.txt"
-        destination = "/local/path/file.txt"
-
-        # Mock the base64 encoded file content
-        mock_file_content = b"file content"
-        mock_encoded_content = base64.b64encode(mock_file_content).decode()
-
-        # Mock the driver execute_script to return base64 content
-        self.mock_driver.execute_script.return_value = mock_encoded_content
-
-        # Mock the open function
-        mock_file = Mock()
-        mock_file.__enter__ = Mock(return_value=mock_file)
-        mock_file.__exit__ = Mock(return_value=None)
-        mock_file.write = Mock()
-
-        with (
-            patch("pathlib.Path.open", return_value=mock_file),
-            patch("pathlib.Path.mkdir") as mock_mkdir,
+        with patch.object(
+            self.terminal.mobile_commands,
+            "shell",
+            side_effect=[NoSuchDriverException("Driver not found"), expected_result]
         ):
+            self.mock_shadowstep.reconnect = Mock()
+
             # Act
-            result = self.terminal.pull(source, destination)
+            result = self.terminal.adb_shell(command, args, tries=2)
 
             # Assert
-            assert result is True  # noqa: S101
-            self.mock_driver.execute_script.assert_called_once_with(
-                "mobile: pullFile", {"remotePath": source}
-            )
+            assert result == expected_result  # noqa: S101
+            assert self.terminal.mobile_commands.shell.call_count == 2  # noqa: S101
+            self.mock_shadowstep.reconnect.assert_called_once()
 
     @pytest.mark.unit
+    @pytest.mark.skip(reason="Terminal.push() removed - no longer uses transport/SSH")
+    def test_push_success(self):
+        """Test successful file push."""
+        pass
+
+    @pytest.mark.unit
+    @pytest.mark.skip(reason="Terminal.push() removed - no longer uses transport/SSH")
+    def test_push_without_credentials(self):
+        """Test file push without transport credentials."""
+        pass
+
+    @pytest.mark.unit
+    @pytest.mark.skip(reason="Terminal.install_app() removed - no longer uses transport/SSH")
+    def test_install_app_success(self):
+        """Test successful app installation."""
+        pass
+
+    @pytest.mark.unit
+    @pytest.mark.skip(reason="Terminal.install_app() removed - no longer uses transport/SSH")
+    def test_install_app_without_credentials(self):
+        """Test app installation without transport credentials."""
+        pass
+
+    @pytest.mark.unit
+    @pytest.mark.skip(reason="Terminal.pull() removed - no longer available")
+    def test_pull_success(self):
+        """Test successful file pull."""
+        pass
+
+    @pytest.mark.unit
+    @pytest.mark.skip(reason="Terminal.pull() removed - no longer available")
     def test_pull_driver_exception(self):
         """Test file pull with driver exception."""
-        # Arrange
-        source = "/device/path/file.txt"
-        destination = "/local/path/file.txt"
-
-        # Mock the driver execute_script to raise exception
-        self.mock_shadowstep.reconnect = Mock()
-        self.mock_driver.execute_script.side_effect = NoSuchDriverException("Driver not found")
-
-        # Act
-        result = self.terminal.pull(source, destination)
-
-        # Assert
-        assert result is False  # noqa: S101
-        self.mock_shadowstep.reconnect.assert_called_once()
+        pass
 
     @pytest.mark.unit
     def test_tap_success(self):
@@ -543,32 +437,16 @@ class TestTerminal:
             self.terminal.get_packages()
 
     @pytest.mark.unit
+    @pytest.mark.skip(reason="Terminal.get_package_path() removed - no longer available")
     def test_get_package_path_success(self):
         """Test successful package path retrieval."""
-        # Arrange
-        package = "com.example.app"
-        expected_path = "/data/app/com.example.app/shadowstep._apk"
-
-        with patch.object(self.terminal, "adb_shell", return_value=expected_path):
-            # Act
-            result = self.terminal.get_package_path(package)
-
-            # Assert
-            assert result == expected_path  # noqa: S101
-            self.terminal.adb_shell.assert_called_once_with(command="pm", args=f"path {package}")
+        pass
 
     @pytest.mark.unit
+    @pytest.mark.skip(reason="Terminal.get_package_path() removed - no longer available")
     def test_get_package_path_driver_exception(self):
         """Test package path retrieval with driver exception."""
-        # Arrange
-        package = "com.nonexistent.app"
-
-        with (
-            patch.object(self.terminal, "adb_shell", side_effect=KeyError("Driver not found")),
-            pytest.raises(KeyError, match="Driver not found"),
-        ):
-            # Act & Assert
-            self.terminal.get_package_path(package)
+        pass
 
     @pytest.mark.unit
     def test_record_video_success(self):
@@ -1425,68 +1303,25 @@ class TestTerminal:
             assert result == expected_uin  # noqa: S101
 
     @pytest.mark.unit
+    @pytest.mark.skip(reason="Terminal.pull_package() removed - no longer available")
     def test_pull_package_success(self):
         """Test successful package pull."""
-        # Arrange
-        package = "com.example.app"
-        path = "/local/path"
-        filename = "test_apk"
-
-        with patch.object(self.terminal, "get_package_path", return_value="/data/app/com.example.app/shadowstep._apk"), \
-             patch.object(self.terminal, "pull", return_value=True):
-            # Act
-            self.terminal.pull_package(package, path, filename)
-
-            # Assert
-            self.terminal.get_package_path.assert_called_once_with(package=package)
-            self.terminal.pull.assert_called_once()
+        pass
 
     @pytest.mark.unit
+    @pytest.mark.skip(reason="Terminal.pull_package() removed - no longer available")
     def test_pull_package_default_filename(self):
         """Test package pull with default filename."""
-        # Arrange
-        package = "com.example.app"
-        path = "/local/path"
-        filename = "test_apk"
-
-        with patch.object(self.terminal, "get_package_path", return_value="/data/app/com.example.app/shadowstep._apk"), \
-             patch.object(self.terminal, "pull", return_value=True):
-            # Act
-            self.terminal.pull_package(package, path, filename)
-
-            # Assert
-            self.terminal.pull.assert_called_once()
+        pass
 
     @pytest.mark.unit
+    @pytest.mark.skip(reason="Terminal.get_package_manifest() removed - no longer available")
     def test_get_package_manifest_success(self):
         """Test successful package manifest retrieval."""
-        # Arrange
-        package = "com.example.app"
-        aapt_output = "package: name='com.example.app' versionCode='1' versionName='1.0'"
-
-        with patch.object(self.terminal, "pull_package"), \
-             patch("subprocess.check_output", return_value=aapt_output.encode()), \
-             patch("pathlib.Path.exists", return_value=True), \
-             patch("pathlib.Path.mkdir"), \
-             patch("pathlib.Path.unlink"):
-            # Act
-            result = self.terminal.get_package_manifest(package)
-
-            # Assert
-            assert "package:" in result  # noqa: S101
+        pass
 
     @pytest.mark.unit
+    @pytest.mark.skip(reason="Terminal.get_package_manifest() removed - no longer available")
     def test_get_package_manifest_aapt_error(self):
         """Test package manifest retrieval with aapt error."""
-        # Arrange
-        package = "com.example.app"
-
-        with patch.object(self.terminal, "pull_package"), \
-             patch("subprocess.check_output", side_effect=subprocess.CalledProcessError(1, "aapt")), \
-             patch("pathlib.Path.exists", return_value=True), \
-             patch("pathlib.Path.mkdir"):
-            # Act
-            result = self.terminal.get_package_manifest(package)
-
-            # Assert
-            assert result == {}  # noqa: S101
+        pass

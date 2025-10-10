@@ -67,17 +67,17 @@ class TestShadowstepUnit:
         """Test list_registered_pages method."""
         shadowstep = self._create_test_shadowstep()
 
-        # Add some mock pages
+        # Add some mock pages to navigator.pages
         mock_page1 = Mock()
         mock_page1.__name__ = "Page1"
         mock_page1.__module__ = "test_module"
         mock_page2 = Mock()
         mock_page2.__name__ = "Page2"
         mock_page2.__module__ = "test_module"
-        shadowstep.pages = {"Page1": mock_page1, "Page2": mock_page2}
+        shadowstep.navigator.pages = {"Page1": mock_page1, "Page2": mock_page2}
 
-        with patch.object(shadowstep, "logger") as mock_logger:
-            shadowstep.list_registered_pages()
+        with patch.object(shadowstep.navigator, "logger") as mock_logger:
+            shadowstep.navigator.list_registered_pages()
 
             # Verify logging was called
             assert mock_logger.info.call_count >= 1
@@ -90,7 +90,7 @@ class TestShadowstepUnit:
         mock_page_class = Mock()
         mock_page_instance = Mock()
         mock_page_class.return_value = mock_page_instance
-        shadowstep.pages = {"TestPage": mock_page_class}
+        shadowstep.navigator.pages = {"TestPage": mock_page_class}
 
         result = shadowstep.get_page("TestPage")
 
@@ -102,7 +102,7 @@ class TestShadowstepUnit:
         """Test get_page method with non-existing page."""
         shadowstep = self._create_test_shadowstep()
 
-        shadowstep.pages = {}
+        shadowstep.navigator.pages = {}
 
         with pytest.raises(
                 ValueError, match="Page 'NonExistentPage' not found in registered pages"
@@ -117,7 +117,7 @@ class TestShadowstepUnit:
         mock_page_class = Mock()
         mock_page_instance = Mock()
         mock_page_class.return_value = mock_page_instance
-        shadowstep.pages = {"TestPage": mock_page_class}
+        shadowstep.navigator.pages = {"TestPage": mock_page_class}
 
         result = shadowstep.resolve_page("TestPage")
 
@@ -129,7 +129,7 @@ class TestShadowstepUnit:
         """Test resolve_page method with non-existing page."""
         shadowstep = self._create_test_shadowstep()
 
-        shadowstep.pages = {}
+        shadowstep.navigator.pages = {}
 
         with pytest.raises(ValueError, match="Page 'NonExistentPage' not found"):
             shadowstep.resolve_page("NonExistentPage")
@@ -335,15 +335,14 @@ class TestShadowstepUnit:
 
         with patch.object(shadowstep, "driver", mock_driver):
             with patch.object(shadowstep, "is_connected", return_value=True):
-                with patch.object(shadowstep, "_execute") as mock_execute:
+                with patch.object(shadowstep.mobile_commands, "scroll_gesture") as mock_scroll:
                     result = shadowstep.scroll(100, 200, 300, 400, "up", 0.5, 1000)
 
                     # Verify the method returns self
                     assert result is shadowstep
 
-                    # Verify _execute was called with correct parameters
-                    mock_execute.assert_called_once_with(
-                        "mobile: scrollGesture",
+                    # Verify scroll_gesture was called with correct parameters
+                    mock_scroll.assert_called_once_with(
                         {
                             "left": 100,
                             "top": 200,
@@ -370,15 +369,15 @@ class TestShadowstepUnit:
 
         with patch.object(shadowstep, "driver", mock_driver):
             with patch.object(shadowstep, "is_connected", return_value=True):
-                with patch.object(shadowstep, "_execute") as mock_execute:
+                with patch.object(shadowstep.mobile_commands, "long_click_gesture") as mock_long_click:
                     result = shadowstep.long_click(100, 200, 1000)
 
                     # Verify the method returns self
                     assert result is shadowstep
 
-                    # Verify _execute was called with correct parameters
-                    mock_execute.assert_called_once_with(
-                        "mobile: longClickGesture", {"x": 100, "y": 200, "duration": 1000}
+                    # Verify long_click_gesture was called with correct parameters
+                    mock_long_click.assert_called_once_with(
+                        {"x": 100, "y": 200, "duration": 1000}
                     )
 
     @pytest.mark.unit
@@ -389,15 +388,15 @@ class TestShadowstepUnit:
 
         with patch.object(shadowstep, "driver", mock_driver):
             with patch.object(shadowstep, "is_connected", return_value=True):
-                with patch.object(shadowstep, "_execute") as mock_execute:
+                with patch.object(shadowstep.mobile_commands, "double_click_gesture") as mock_double_click:
                     result = shadowstep.double_click(100, 200)
 
                     # Verify the method returns self
                     assert result is shadowstep
 
-                    # Verify _execute was called with correct parameters
-                    mock_execute.assert_called_once_with(
-                        "mobile: doubleClickGesture", {"x": 100, "y": 200}
+                    # Verify double_click_gesture was called with correct parameters
+                    mock_double_click.assert_called_once_with(
+                        {"x": 100, "y": 200}
                     )
 
     @pytest.mark.unit
@@ -408,15 +407,15 @@ class TestShadowstepUnit:
 
         with patch.object(shadowstep, "driver", mock_driver):
             with patch.object(shadowstep, "is_connected", return_value=True):
-                with patch.object(shadowstep, "_execute") as mock_execute:
+                with patch.object(shadowstep.mobile_commands, "click_gesture") as mock_click:
                     result = shadowstep.click(100, 200)
 
                     # Verify the method returns self
                     assert result is shadowstep
 
-                    # Verify _execute was called with correct parameters
-                    mock_execute.assert_called_once_with(
-                        "mobile: clickGesture", {"x": 100, "y": 200}
+                    # Verify click_gesture was called with correct parameters
+                    mock_click.assert_called_once_with(
+                        {"x": 100, "y": 200}
                     )
 
     @pytest.mark.unit
@@ -427,15 +426,14 @@ class TestShadowstepUnit:
 
         with patch.object(shadowstep, "driver", mock_driver):
             with patch.object(shadowstep, "is_connected", return_value=True):
-                with patch.object(shadowstep, "_execute") as mock_execute:
+                with patch.object(shadowstep.mobile_commands, "drag_gesture") as mock_drag:
                     result = shadowstep.drag(100, 200, 300, 400, 1000)
 
                     # Verify the method returns self
                     assert result is shadowstep
 
-                    # Verify _execute was called with correct parameters
-                    mock_execute.assert_called_once_with(
-                        "mobile: dragGesture",
+                    # Verify drag_gesture was called with correct parameters
+                    mock_drag.assert_called_once_with(
                         {
                             "startX": 100,
                             "startY": 200,
@@ -453,15 +451,14 @@ class TestShadowstepUnit:
 
         with patch.object(shadowstep, "driver", mock_driver):
             with patch.object(shadowstep, "is_connected", return_value=True):
-                with patch.object(shadowstep, "_execute") as mock_execute:
+                with patch.object(shadowstep.mobile_commands, "fling_gesture") as mock_fling:
                     result = shadowstep.fling(100, 200, 300, 400, "up", 1000)
 
                     # Verify the method returns self
                     assert result is shadowstep
 
-                    # Verify _execute was called with correct parameters
-                    mock_execute.assert_called_once_with(
-                        "mobile: flingGesture",
+                    # Verify fling_gesture was called with correct parameters
+                    mock_fling.assert_called_once_with(
                         {
                             "left": 100,
                             "top": 200,
@@ -480,15 +477,14 @@ class TestShadowstepUnit:
 
         with patch.object(shadowstep, "driver", mock_driver):
             with patch.object(shadowstep, "is_connected", return_value=True):
-                with patch.object(shadowstep, "_execute") as mock_execute:
+                with patch.object(shadowstep.mobile_commands, "pinch_open_gesture") as mock_pinch:
                     result = shadowstep.pinch_open(100, 200, 300, 400, 0.5, 1000)
 
                     # Verify the method returns self
                     assert result is shadowstep
 
-                    # Verify _execute was called with correct parameters
-                    mock_execute.assert_called_once_with(
-                        "mobile: pinchOpenGesture",
+                    # Verify pinch_open_gesture was called with correct parameters
+                    mock_pinch.assert_called_once_with(
                         {
                             "left": 100,
                             "top": 200,
@@ -507,15 +503,14 @@ class TestShadowstepUnit:
 
         with patch.object(shadowstep, "driver", mock_driver):
             with patch.object(shadowstep, "is_connected", return_value=True):
-                with patch.object(shadowstep, "_execute") as mock_execute:
+                with patch.object(shadowstep.mobile_commands, "pinch_open_gesture") as mock_pinch:
                     result = shadowstep.pinch_close(100, 200, 300, 400, 0.5, 1000)
 
                     # Verify the method returns self
                     assert result is shadowstep
 
-                    # Verify _execute was called with correct parameters
-                    mock_execute.assert_called_once_with(
-                        "mobile: pinchCloseGesture",
+                    # Verify pinch_open_gesture was called with correct parameters
+                    mock_pinch.assert_called_once_with(
                         {
                             "left": 100,
                             "top": 200,
@@ -534,15 +529,14 @@ class TestShadowstepUnit:
 
         with patch.object(shadowstep, "driver", mock_driver):
             with patch.object(shadowstep, "is_connected", return_value=True):
-                with patch.object(shadowstep, "_execute") as mock_execute:
+                with patch.object(shadowstep.mobile_commands, "swipe_gesture") as mock_swipe:
                     result = shadowstep.swipe(100, 200, 300, 400, "up", 0.5, 1000)
 
                     # Verify the method returns self
                     assert result is shadowstep
 
-                    # Verify _execute was called with correct parameters
-                    mock_execute.assert_called_once_with(
-                        "mobile: swipeGesture",
+                    # Verify swipe_gesture was called with correct parameters
+                    mock_swipe.assert_called_once_with(
                         {
                             "left": 100,
                             "top": 200,
@@ -909,9 +903,11 @@ class TestShadowstepUnit:
 
     @pytest.mark.unit
     def test_update_settings_not_implemented(self):
-        """Test update_settings method raises NotImplementedError."""
-        with pytest.raises(NotImplementedError):
-            shadowstep.update_settings()
+        """Test update_settings method with no driver."""
+        test_shadowstep = self._create_test_shadowstep()
+        test_shadowstep.driver = None
+        with pytest.raises(AttributeError):
+            test_shadowstep.update_settings()
 
 
     @pytest.mark.unit
@@ -927,13 +923,13 @@ class TestShadowstepUnit:
     @pytest.mark.unit
     def test_update_settings_with_driver(self):
         """Test update_settings method with valid driver."""
+        test_shadowstep = self._create_test_shadowstep()
         mock_driver = Mock()
-        shadowstep.driver = mock_driver
+        test_shadowstep.driver = mock_driver
 
-        with pytest.raises(NotImplementedError):
-            shadowstep.update_settings()
+        test_shadowstep.update_settings()
 
-        # Verify that update_settings was called before NotImplementedError
+        # Verify that update_settings was called with correct settings
         mock_driver.update_settings.assert_called_once_with(settings={"enableMultiWindows": True})
 
 

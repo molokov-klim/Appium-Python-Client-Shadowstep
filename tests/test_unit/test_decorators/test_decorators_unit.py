@@ -123,9 +123,15 @@ class TestFailSafe:
         mock_obj = MockClass()
         mock_obj._connected = False  # type: ignore
         mock_obj.reconnect = Mock()
+        call_count = 0
 
-        @fail_safe(retries=2, delay=0.1)
+        @fail_safe(retries=2, delay=0.1, exceptions=(Exception,))
         def test_method(self: MockClass) -> str:
+            nonlocal call_count
+            call_count += 1
+            # Fail on first attempt to trigger reconnection
+            if call_count == 1:
+                raise Exception("First attempt failed")
             return "success"
 
         result = test_method(mock_obj)

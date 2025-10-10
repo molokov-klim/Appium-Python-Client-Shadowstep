@@ -22,7 +22,7 @@ from shadowstep.decorators.decorators import log_debug
 from shadowstep.exceptions.shadowstep_exceptions import ShadowstepElementException
 
 if TYPE_CHECKING:
-    from shadowstep.element.element import Element
+    from shadowstep.element import Element
     from shadowstep.element.utilities import ElementUtilities
     from shadowstep.locator import LocatorConverter
     from shadowstep.shadowstep import Shadowstep

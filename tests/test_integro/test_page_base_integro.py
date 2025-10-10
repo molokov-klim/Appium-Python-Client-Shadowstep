@@ -20,6 +20,7 @@ from shadowstep.page_base import PageBaseShadowstep
 from shadowstep.shadowstep import Shadowstep
 
 
+
 class TestPageBaseShadowstep:
     """Integration tests for PageBaseShadowstep class."""
 

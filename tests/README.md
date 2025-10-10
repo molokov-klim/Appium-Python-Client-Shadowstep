@@ -10,11 +10,14 @@ uv sync
 ```commandline
 sudo apt update
 sudo apt install curl -y
-curl -fsSL https://deb.nodesource.com/setup_lts.x | sudo -E bash -
-sudo apt install -y nodejs
 
-sudo npm install -g appium@latest
-sudo appium driver install uiautomator2
+curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.1/install.sh | bash
+
+nvm install 22
+nvm use 22
+
+npm install -g appium@latest
+appium driver install uiautomator2
 
 appium server -p 4723 -a 0.0.0.0 -pa /wd/hub --relaxed-security --log-level debug
 ```
