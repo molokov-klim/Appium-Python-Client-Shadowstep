@@ -13,6 +13,7 @@ from shadowstep.element import ElementDOM
 from shadowstep.element.actions import ElementActions
 from shadowstep.element.base import ElementBase
 from shadowstep.element.coordinates import ElementCoordinates
+from shadowstep.element.decorators import fail_safe_element
 from shadowstep.element.gestures import ElementGestures
 from shadowstep.element.properties import ElementProperties
 from shadowstep.element.screenshots import ElementScreenshots
@@ -41,13 +42,15 @@ logger = logging.getLogger(__name__)
 class Element(ElementBase):
     """Public API for Element."""
 
-    def __init__(self,  # noqa: PLR0913
-                 locator: tuple[str, str] | dict[str, Any] | Element | UiSelector,
-                 shadowstep: Shadowstep,
-                 timeout: float = 30,
-                 poll_frequency: float = 0.5,
-                 ignored_exceptions: WaitExcTypes | None = None,
-                 native: WebElement | None = None) -> None:
+    def __init__(  # noqa: PLR0913
+        self,
+        locator: tuple[str, str] | dict[str, Any] | Element | UiSelector,
+        shadowstep: Shadowstep,
+        timeout: float = 30,
+        poll_frequency: float = 0.5,
+        ignored_exceptions: WaitExcTypes | None = None,
+        native: WebElement | None = None,
+    ) -> None:
         """Initialize Element with locator and configuration.
 
         Args:
@@ -84,11 +87,15 @@ class Element(ElementBase):
         """
         return f"Element(locator={self.locator!r}"
 
-    def get_element(self,
-                    locator: tuple[str, str] | dict[str, Any] | Element | UiSelector,
-                    timeout: int = 30,
-                    poll_frequency: float = 0.5,
-                    ignored_exceptions: WaitExcTypes | None = None) -> Element:
+    # ------------------------ dom ------------------------
+
+    def get_element(
+        self,
+        locator: tuple[str, str] | dict[str, Any] | Element | UiSelector,
+        timeout: int = 30,
+        poll_frequency: float = 0.5,
+        ignored_exceptions: WaitExcTypes | None = None,
+    ) -> Element:
         """Return a single Element, lazy.
 
         Args:
@@ -103,12 +110,13 @@ class Element(ElementBase):
         """
         return self.dom.get_element(locator, timeout, poll_frequency, ignored_exceptions)
 
+    @fail_safe_element()
     def get_elements(
-            self,
-            locator: tuple[str, str] | dict[str, Any] | Element | UiSelector,
-            timeout: float = 30,
-            poll_frequency: float = 0.5,
-            ignored_exceptions: WaitExcTypes | None = None,
+        self,
+        locator: tuple[str, str] | dict[str, Any] | Element | UiSelector,
+        timeout: float = 30,
+        poll_frequency: float = 0.5,
+        ignored_exceptions: WaitExcTypes | None = None,
     ) -> list[Element]:
         """Find multiple Elements within this element's context. Greedy.
 
@@ -124,10 +132,12 @@ class Element(ElementBase):
         """
         return self.dom.get_elements(locator, timeout, poll_frequency, ignored_exceptions)
 
-    def get_parent(self,
-                   timeout: float = 30,
-                   poll_frequency: float = 0.5,
-                   ignored_exceptions: WaitExcTypes | None = None) -> Element:
+    def get_parent(
+        self,
+        timeout: float = 30,
+        poll_frequency: float = 0.5,
+        ignored_exceptions: WaitExcTypes | None = None,
+    ) -> Element:
         """Get the parent element of this element. Lazy.
 
         Args:
@@ -141,10 +151,13 @@ class Element(ElementBase):
         """
         return self.dom.get_parent(timeout, poll_frequency, ignored_exceptions)
 
-    def get_parents(self,
-                    timeout: float = 30,
-                    poll_frequency: float = 0.5,
-                    ignored_exceptions: WaitExcTypes | None = None) -> list[Element]:
+    @fail_safe_element()
+    def get_parents(
+        self,
+        timeout: float = 30,
+        poll_frequency: float = 0.5,
+        ignored_exceptions: WaitExcTypes | None = None,
+    ) -> list[Element]:
         """Get all parent elements of this element. Greedy.
 
         Args:
@@ -158,11 +171,13 @@ class Element(ElementBase):
         """
         return self.dom.get_parents(timeout, poll_frequency, ignored_exceptions)
 
-    def get_sibling(self,
-                    locator: tuple[str, str] | dict[str, Any] | Element | UiSelector,
-                    timeout: float = 30,
-                    poll_frequency: float = 0.5,
-                    ignored_exceptions: WaitExcTypes | None = None) -> Element:
+    def get_sibling(
+        self,
+        locator: tuple[str, str] | dict[str, Any] | Element | UiSelector,
+        timeout: float = 30,
+        poll_frequency: float = 0.5,
+        ignored_exceptions: WaitExcTypes | None = None,
+    ) -> Element:
         """Get a sibling element of this element. Lazy.
 
         Args:
@@ -177,11 +192,14 @@ class Element(ElementBase):
         """
         return self.dom.get_sibling(locator, timeout, poll_frequency, ignored_exceptions)
 
-    def get_siblings(self,
-                     locator: tuple[str, str] | dict[str, Any] | Element | UiSelector,
-                     timeout: float = 30.0,
-                     poll_frequency: float = 0.5,
-                     ignored_exceptions: WaitExcTypes | None = None) -> list[Element]:
+    @fail_safe_element()
+    def get_siblings(
+        self,
+        locator: tuple[str, str] | dict[str, Any] | Element | UiSelector,
+        timeout: float = 30.0,
+        poll_frequency: float = 0.5,
+        ignored_exceptions: WaitExcTypes | None = None,
+    ) -> list[Element]:
         """Get all sibling elements of this element. Greedy.
 
         Args:
@@ -197,12 +215,12 @@ class Element(ElementBase):
         return self.dom.get_siblings(locator, timeout, poll_frequency, ignored_exceptions)
 
     def get_cousin(
-            self,
-            cousin_locator: tuple[str, str] | dict[str, Any] | Element | UiSelector,
-            depth_to_parent: int = 1,
-            timeout: float = 30.0,
-            poll_frequency: float = 0.5,
-            ignored_exceptions: WaitExcTypes | None = None,
+        self,
+        cousin_locator: tuple[str, str] | dict[str, Any] | Element | UiSelector,
+        depth_to_parent: int = 1,
+        timeout: float = 30.0,
+        poll_frequency: float = 0.5,
+        ignored_exceptions: WaitExcTypes | None = None,
     ) -> Element:
         """Get a cousin element (sibling of parent) of this element. Lazy.
 
@@ -218,16 +236,21 @@ class Element(ElementBase):
 
         """
         return self.dom.get_cousin(
-            cousin_locator, depth_to_parent, timeout, poll_frequency, ignored_exceptions,
+            cousin_locator,
+            depth_to_parent,
+            timeout,
+            poll_frequency,
+            ignored_exceptions,
         )
 
+    @fail_safe_element()
     def get_cousins(
-            self,
-            cousin_locator: tuple[str, str] | dict[str, Any] | Element | UiSelector,
-            depth_to_parent: int = 1,
-            timeout: float = 30.0,
-            poll_frequency: float = 0.5,
-            ignored_exceptions: WaitExcTypes | None = None,
+        self,
+        cousin_locator: tuple[str, str] | dict[str, Any] | Element | UiSelector,
+        depth_to_parent: int = 1,
+        timeout: float = 30.0,
+        poll_frequency: float = 0.5,
+        ignored_exceptions: WaitExcTypes | None = None,
     ) -> list[Element]:
         """Get all cousin elements (siblings of parent) of this element. Greedy.
 
@@ -243,10 +266,17 @@ class Element(ElementBase):
 
         """
         return self.dom.get_cousins(
-            cousin_locator, depth_to_parent, timeout, poll_frequency, ignored_exceptions,
+            cousin_locator,
+            depth_to_parent,
+            timeout,
+            poll_frequency,
+            ignored_exceptions,
         )
 
+    # ----------------------- actions -----------------------
+
     # Override
+    @fail_safe_element()
     def send_keys(self, *value: str) -> Element:
         """Send keys to the element.
 
@@ -260,6 +290,7 @@ class Element(ElementBase):
         return self.actions.send_keys(*value)
 
     # Override
+    @fail_safe_element()
     def clear(self) -> Element:
         """Clear the element's text content.
 
@@ -270,6 +301,7 @@ class Element(ElementBase):
         return self.actions.clear()
 
     # Override
+    @fail_safe_element()
     def set_value(self, value: str) -> Element:
         """Set the value of the element.
 
@@ -280,11 +312,11 @@ class Element(ElementBase):
             Element: Self for method chaining.
 
         """
-        self.logger.warning(
-            "Method %s is not implemented in UiAutomator2", get_current_func_name())
+        self.logger.warning("Method %s is not implemented in UiAutomator2", get_current_func_name())
         return self.actions.set_value(value)
 
     # Override
+    @fail_safe_element()
     def submit(self) -> Element:
         """Submit the element (e.g., form submission).
 
@@ -292,10 +324,12 @@ class Element(ElementBase):
             Element: Self for method chaining.
 
         """
-        self.logger.warning(
-            "Method %s is not implemented in UiAutomator2", get_current_func_name())
+        self.logger.warning("Method %s is not implemented in UiAutomator2", get_current_func_name())
         return self.actions.submit()
 
+    # ------------------------- gestures -------------------------
+
+    @fail_safe_element()
     def tap(self, duration: int | None = None) -> Element:
         """Tap the element.
 
@@ -308,13 +342,14 @@ class Element(ElementBase):
         """
         return self.gestures.tap(duration)
 
+    @fail_safe_element()
     def tap_and_move(
-            self,
-            locator: tuple[str, str] | dict[str, Any] | Element | UiSelector | None = None,
-            x: int | None = None,
-            y: int | None = None,
-            direction: int | None = None,
-            distance: int | None = None,
+        self,
+        locator: tuple[str, str] | dict[str, Any] | Element | UiSelector | None = None,
+        x: int | None = None,
+        y: int | None = None,
+        direction: int | None = None,
+        distance: int | None = None,
     ) -> Element:
         """Tap and move to another element or coordinates.
 
@@ -331,6 +366,7 @@ class Element(ElementBase):
         """
         return self.gestures.tap_and_move(locator, x, y, direction, distance)
 
+    @fail_safe_element()
     def click(self, duration: int | None = None) -> Element:
         """Click the element.
 
@@ -343,6 +379,7 @@ class Element(ElementBase):
         """
         return self.gestures.click(duration)
 
+    @fail_safe_element()
     def click_double(self) -> Element:
         """Perform a double click on the element.
 
@@ -352,6 +389,7 @@ class Element(ElementBase):
         """
         return self.gestures.click_double()
 
+    @fail_safe_element()
     def drag(self, end_x: int, end_y: int, speed: int = 2500) -> Element:
         """Drag the element to target coordinates.
 
@@ -414,6 +452,7 @@ class Element(ElementBase):
         """
         return self.fling(speed=speed, direction="right")
 
+    @fail_safe_element()
     def fling(self, speed: int, direction: str) -> Element:
         """Perform a fling gesture on the element.
 
@@ -427,7 +466,12 @@ class Element(ElementBase):
         """
         return self.gestures.fling(speed, direction)
 
-    def scroll_down(self, percent: float = 0.7, speed: int = 2000, return_bool: bool = False) -> Element:  # noqa: FBT001, FBT002
+    def scroll_down(
+        self,
+        percent: float = 0.7,
+        speed: int = 2000,
+        return_bool: bool = False,  # noqa: FBT001, FBT002
+    ) -> Element:
         """Scroll down within the element.
 
         Args:
@@ -441,7 +485,12 @@ class Element(ElementBase):
         """
         return self.scroll(direction="down", percent=percent, speed=speed, return_bool=return_bool)
 
-    def scroll_up(self, percent: float = 0.7, speed: int = 2000, return_bool: bool = False) -> Element:  # noqa: FBT001, FBT002
+    def scroll_up(
+        self,
+        percent: float = 0.7,
+        speed: int = 2000,
+        return_bool: bool = False,  # noqa: FBT001, FBT002
+    ) -> Element:
         """Scroll up within the element.
 
         Args:
@@ -455,7 +504,12 @@ class Element(ElementBase):
         """
         return self.scroll(direction="up", percent=percent, speed=speed, return_bool=return_bool)
 
-    def scroll_left(self, percent: float = 0.7, speed: int = 2000, return_bool: bool = False) -> Element:  # noqa: FBT001, FBT002
+    def scroll_left(
+        self,
+        percent: float = 0.7,
+        speed: int = 2000,
+        return_bool: bool = False,  # noqa: FBT001, FBT002
+    ) -> Element:
         """Scroll left within the element.
 
         Args:
@@ -469,7 +523,12 @@ class Element(ElementBase):
         """
         return self.scroll(direction="left", percent=percent, speed=speed, return_bool=return_bool)
 
-    def scroll_right(self, percent: float = 0.7, speed: int = 2000, return_bool: bool = False) -> Element:  # noqa: FBT001, FBT002
+    def scroll_right(
+        self,
+        percent: float = 0.7,
+        speed: int = 2000,
+        return_bool: bool = False,  # noqa: FBT001, FBT002
+    ) -> Element:
         """Scroll right within the element.
 
         Args:
@@ -483,6 +542,7 @@ class Element(ElementBase):
         """
         return self.scroll(direction="right", percent=percent, speed=speed, return_bool=return_bool)
 
+    @fail_safe_element()
     def scroll(self, direction: str, percent: float, speed: int, return_bool: bool) -> Element:  # noqa: FBT001
         """Scroll within the element in specified direction.
 
@@ -498,6 +558,7 @@ class Element(ElementBase):
         """
         return self.gestures.scroll(direction, percent, speed, return_bool)
 
+    @fail_safe_element()
     def scroll_to_bottom(self, percent: float = 0.7, speed: int = 8000) -> Element:
         """Scroll to the bottom of the element.
 
@@ -511,6 +572,7 @@ class Element(ElementBase):
         """
         return self.gestures.scroll_to_bottom(percent, speed)
 
+    @fail_safe_element()
     def scroll_to_top(self, percent: float = 0.7, speed: int = 8000) -> Element:
         """Scroll to the top of the element.
 
@@ -524,9 +586,12 @@ class Element(ElementBase):
         """
         return self.gestures.scroll_to_top(percent, speed)
 
-    def scroll_to_element(self,
-                          locator: tuple[str, str] | dict[str, Any] | Element | UiSelector,
-                          max_swipes: int = 30) -> Element:
+    @fail_safe_element()
+    def scroll_to_element(
+        self,
+        locator: tuple[str, str] | dict[str, Any] | Element | UiSelector,
+        max_swipes: int = 30,
+    ) -> Element:
         """Scroll to find and return a specific element.
 
         Args:
@@ -539,6 +604,7 @@ class Element(ElementBase):
         """
         return self.gestures.scroll_to_element(locator, max_swipes)
 
+    @fail_safe_element()
     def zoom(self, percent: float = 0.75, speed: int = 2500) -> Element:
         """Perform a zoom gesture on the element.
 
@@ -552,6 +618,7 @@ class Element(ElementBase):
         """
         return self.gestures.zoom(percent, speed)
 
+    @fail_safe_element()
     def unzoom(self, percent: float = 0.75, speed: int = 2500) -> Element:
         """Perform an unzoom gesture on the element.
 
@@ -617,6 +684,7 @@ class Element(ElementBase):
         """
         return self.swipe(direction="right", percent=percent, speed=speed)
 
+    @fail_safe_element()
     def swipe(self, direction: str, percent: float = 0.75, speed: int = 5000) -> Element:
         """Perform a swipe gesture on the element.
 
@@ -631,7 +699,10 @@ class Element(ElementBase):
         """
         return self.gestures.swipe(direction, percent, speed)
 
+    # ------------------------ properties ------------------------
+
     # Override
+    @fail_safe_element()
     def get_attribute(self, name: str) -> str:  # type: ignore[override]
         """Get the value of the specified attribute.
 
@@ -644,6 +715,7 @@ class Element(ElementBase):
         """
         return self.properties.get_attribute(name)
 
+    @fail_safe_element()
     def get_attributes(self) -> dict[str, Any]:
         """Fetch all XML attributes of the element by matching locator against page source.
 
@@ -653,6 +725,7 @@ class Element(ElementBase):
         """
         return self.properties.get_attributes()
 
+    @fail_safe_element()
     def get_property(self, name: str) -> Any:
         """Get the value of the specified property.
 
@@ -663,10 +736,10 @@ class Element(ElementBase):
             Any: Value of the property.
 
         """
-        self.logger.warning(
-            "Method %s is not implemented in UiAutomator2", get_current_func_name())
+        self.logger.warning("Method %s is not implemented in UiAutomator2", get_current_func_name())
         return self.properties.get_property(name)
 
+    @fail_safe_element()
     def get_dom_attribute(self, name: str) -> str:
         """Get the given attribute of the element from HTML markup.
 
@@ -683,6 +756,7 @@ class Element(ElementBase):
         return self.properties.get_dom_attribute(name)
 
     # Override
+    @fail_safe_element()
     def is_displayed(self) -> bool:
         """Whether the element is visible to a user.
 
@@ -692,6 +766,7 @@ class Element(ElementBase):
         """
         return self.properties.is_displayed()
 
+    @fail_safe_element()
     def is_visible(self) -> bool:
         """Check if the element is visible on screen.
 
@@ -701,6 +776,7 @@ class Element(ElementBase):
         """
         return self.properties.is_visible()
 
+    @fail_safe_element()
     def is_selected(self) -> bool:
         """Return whether the element is selected.
 
@@ -712,6 +788,7 @@ class Element(ElementBase):
         """
         return self.properties.is_selected()
 
+    @fail_safe_element()
     def is_enabled(self) -> bool:
         """Check if the element is enabled.
 
@@ -721,9 +798,11 @@ class Element(ElementBase):
         """
         return self.properties.is_enabled()
 
-    def is_contains(self,
-                    locator: tuple[str, str] | dict[str, Any] | Element | UiSelector,
-                    ) -> bool:
+    @fail_safe_element()
+    def is_contains(
+        self,
+        locator: tuple[str, str] | dict[str, Any] | Element | UiSelector,
+    ) -> bool:
         """Check if the element contains another element.
 
         Args:
@@ -736,6 +815,7 @@ class Element(ElementBase):
         return self.properties.is_contains(locator)  # type: ignore[attr-defined]
 
     @property
+    @fail_safe_element()
     def tag_name(self) -> str:
         """Get the element's tag name.
 
@@ -746,6 +826,7 @@ class Element(ElementBase):
         return self.properties.tag_name()
 
     @property
+    @fail_safe_element()
     def attributes(self) -> Any:
         """Get all element attributes.
 
@@ -756,6 +837,7 @@ class Element(ElementBase):
         return self.get_attributes()
 
     @property
+    @fail_safe_element()
     def text(self) -> str:
         """Get the text content of the element.
 
@@ -766,6 +848,7 @@ class Element(ElementBase):
         return self.properties.text()
 
     @property
+    @fail_safe_element()
     def resource_id(self) -> str:
         """Get the resource ID of the element.
 
@@ -776,6 +859,7 @@ class Element(ElementBase):
         return self.properties.resource_id()
 
     @property
+    @fail_safe_element()
     def class_(self) -> str:  # 'class' is a reserved word, so class_name is better
         """Get the class name of the element.
 
@@ -786,6 +870,7 @@ class Element(ElementBase):
         return self.properties.class_()
 
     @property
+    @fail_safe_element()
     def class_name(self) -> str:  # 'class' is a reserved word, so class_name is better
         """Get the class name of the element.
 
@@ -796,6 +881,7 @@ class Element(ElementBase):
         return self.properties.class_name()
 
     @property
+    @fail_safe_element()
     def index(self) -> str:
         """Get the index of the element.
 
@@ -804,10 +890,13 @@ class Element(ElementBase):
 
         """
         self.logger.warning(
-            "Method %s 'index' attribute is unknown for the element", get_current_func_name())
+            "Method %s 'index' attribute is unknown for the element",
+            get_current_func_name(),
+        )
         return self.properties.index()
 
     @property
+    @fail_safe_element()
     def package(self) -> str:
         """Get the package name of the element.
 
@@ -818,6 +907,7 @@ class Element(ElementBase):
         return self.properties.package()
 
     @property
+    @fail_safe_element()
     def bounds(self) -> str:
         """Get the bounds of the element.
 
@@ -828,6 +918,7 @@ class Element(ElementBase):
         return self.properties.bounds()
 
     @property
+    @fail_safe_element()
     def checked(self) -> str:
         """Get the checked state of the element.
 
@@ -838,6 +929,7 @@ class Element(ElementBase):
         return self.properties.checked()
 
     @property
+    @fail_safe_element()
     def checkable(self) -> str:
         """Get the checkable state of the element.
 
@@ -848,6 +940,7 @@ class Element(ElementBase):
         return self.properties.checkable()
 
     @property
+    @fail_safe_element()
     def enabled(self) -> str:
         """Get the enabled state of the element.
 
@@ -858,6 +951,7 @@ class Element(ElementBase):
         return self.properties.enabled()
 
     @property
+    @fail_safe_element()
     def focusable(self) -> str:
         """Get the focusable state of the element.
 
@@ -868,6 +962,7 @@ class Element(ElementBase):
         return self.properties.focusable()
 
     @property
+    @fail_safe_element()
     def focused(self) -> str:
         """Get the focused state of the element.
 
@@ -878,6 +973,7 @@ class Element(ElementBase):
         return self.properties.focused()
 
     @property
+    @fail_safe_element()
     def long_clickable(self) -> str:
         """Get the long clickable state of the element.
 
@@ -888,6 +984,7 @@ class Element(ElementBase):
         return self.properties.long_clickable()
 
     @property
+    @fail_safe_element()
     def password(self) -> str:
         """Get the password state of the element.
 
@@ -898,6 +995,7 @@ class Element(ElementBase):
         return self.properties.password()
 
     @property
+    @fail_safe_element()
     def scrollable(self) -> str:
         """Get the scrollable state of the element.
 
@@ -908,6 +1006,7 @@ class Element(ElementBase):
         return self.properties.scrollable()
 
     @property
+    @fail_safe_element()
     def selected(self) -> str:
         """Get the selected state of the element.
 
@@ -918,6 +1017,7 @@ class Element(ElementBase):
         return self.properties.selected()
 
     @property
+    @fail_safe_element()
     def displayed(self) -> str:
         """Get the displayed state of the element.
 
@@ -928,6 +1028,7 @@ class Element(ElementBase):
         return self.properties.displayed()
 
     @property
+    @fail_safe_element()
     def shadow_root(self) -> ShadowRoot:
         """Get the shadow root of the element.
 
@@ -935,11 +1036,11 @@ class Element(ElementBase):
             ShadowRoot: Shadow root of the element.
 
         """
-        self.logger.warning(
-            "Method %s is not implemented in UiAutomator2", get_current_func_name())
+        self.logger.warning("Method %s is not implemented in UiAutomator2", get_current_func_name())
         return self.properties.shadow_root()
 
     @property
+    @fail_safe_element()
     def size(self) -> dict[str, Any]:
         """Get the size of the element.
 
@@ -949,6 +1050,7 @@ class Element(ElementBase):
         """
         return self.properties.size()  # type: ignore[return-value]
 
+    @fail_safe_element()
     def value_of_css_property(self, property_name: str) -> str:
         """Get the value of a CSS property.
 
@@ -959,11 +1061,11 @@ class Element(ElementBase):
             str: Value of the CSS property.
 
         """
-        self.logger.warning(
-            "Method %s is not implemented in UiAutomator2", get_current_func_name())
+        self.logger.warning("Method %s is not implemented in UiAutomator2", get_current_func_name())
         return self.properties.value_of_css_property(property_name)
 
     @property
+    @fail_safe_element()
     def location(self) -> dict[str, Any]:
         """Get the location of the element.
 
@@ -974,6 +1076,7 @@ class Element(ElementBase):
         return self.properties.location()  # type: ignore[return-value]
 
     @property
+    @fail_safe_element()
     def rect(self) -> dict[str, Any]:
         """Get the rectangle of the element.
 
@@ -984,6 +1087,7 @@ class Element(ElementBase):
         return self.properties.rect()  # type: ignore[return-value]
 
     @property
+    @fail_safe_element()
     def aria_role(self) -> str:
         """Get the ARIA role of the element.
 
@@ -994,6 +1098,7 @@ class Element(ElementBase):
         return self.properties.aria_role()
 
     @property
+    @fail_safe_element()
     def accessible_name(self) -> str:
         """Get the accessible name of the element.
 
@@ -1002,6 +1107,8 @@ class Element(ElementBase):
 
         """
         return self.properties.accessible_name()
+
+    # ----------------------------- coordinates -----------------------------
 
     def get_coordinates(self, element: WebElement | None = None) -> tuple[int, int, int, int]:
         """Get the coordinates of the element.
@@ -1046,8 +1153,7 @@ class Element(ElementBase):
             dict[str, int]: Location coordinates once scrolled into view.
 
         """
-        self.logger.warning(
-            "Method %s is not implemented in UiAutomator2", get_current_func_name())
+        self.logger.warning("Method %s is not implemented in UiAutomator2", get_current_func_name())
         return self.coordinates.location_once_scrolled_into_view()
 
     @property
@@ -1082,8 +1188,12 @@ class Element(ElementBase):
         """
         return self.screenshots.save_screenshot(filename)
 
-    def wait(self, timeout: int = 10, poll_frequency: float = 0.5,
-             return_bool: bool = False) -> Element | bool:  # noqa: FBT001, FBT002
+    def wait(
+        self,
+        timeout: int = 10,
+        poll_frequency: float = 0.5,
+        return_bool: bool = False,
+    ) -> Element | bool:
         """Wait for the element to appear (present in DOM).
 
         Args:
@@ -1097,7 +1207,12 @@ class Element(ElementBase):
         """
         return self.waiting.wait(timeout, poll_frequency=poll_frequency, return_bool=return_bool)
 
-    def wait_visible(self, timeout: int = 10, poll_frequency: float = 0.5, return_bool: bool = False) -> Element | bool:  # noqa: FBT001, FBT002
+    def wait_visible(
+        self,
+        timeout: int = 10,
+        poll_frequency: float = 0.5,
+        return_bool: bool = False,
+    ) -> Element | bool:
         """Wait until the element is visible.
 
         Args:
@@ -1110,11 +1225,17 @@ class Element(ElementBase):
 
         """
         return self.waiting.wait_visible(
-            timeout, poll_frequency=poll_frequency, return_bool=return_bool,
+            timeout,
+            poll_frequency=poll_frequency,
+            return_bool=return_bool,
         )
 
-    def wait_clickable(self, timeout: int = 10, poll_frequency: float = 0.5,
-                       return_bool: bool = False) -> Element | bool:  # noqa: FBT001, FBT002
+    def wait_clickable(
+        self,
+        timeout: int = 10,
+        poll_frequency: float = 0.5,
+        return_bool: bool = False,
+    ) -> Element | bool:
         """Wait until the element is clickable.
 
         Args:
@@ -1128,7 +1249,12 @@ class Element(ElementBase):
         """
         return self.waiting.wait_clickable(timeout, poll_frequency, return_bool)
 
-    def wait_for_not(self, timeout: int = 10, poll_frequency: float = 0.5, return_bool: bool = False) -> Element | bool:  # noqa: FBT001, FBT002
+    def wait_for_not(
+        self,
+        timeout: int = 10,
+        poll_frequency: float = 0.5,
+        return_bool: bool = False,
+    ) -> Element | bool:
         """Wait until the element is no longer present in the DOM.
 
         Args:
@@ -1141,11 +1267,17 @@ class Element(ElementBase):
 
         """
         return self.waiting.wait_for_not(
-            timeout, poll_frequency=poll_frequency, return_bool=return_bool,
+            timeout,
+            poll_frequency=poll_frequency,
+            return_bool=return_bool,
         )
 
-    def wait_for_not_visible(self, timeout: int = 10, poll_frequency: float = 0.5,
-                             return_bool: bool = False) -> Element | bool:  # noqa: FBT001, FBT002
+    def wait_for_not_visible(
+        self,
+        timeout: int = 10,
+        poll_frequency: float = 0.5,
+        return_bool: bool = False,
+    ) -> Element | bool:
         """Wait until the element becomes invisible.
 
         Args:
@@ -1159,8 +1291,12 @@ class Element(ElementBase):
         """
         return self.waiting.wait_for_not_visible(timeout, poll_frequency, return_bool)
 
-    def wait_for_not_clickable(self, timeout: int = 10, poll_frequency: float = 0.5,
-                               return_bool: bool = False) -> Element | bool:  # noqa: FBT001, FBT002
+    def wait_for_not_clickable(
+        self,
+        timeout: int = 10,
+        poll_frequency: float = 0.5,
+        return_bool: bool = False,
+    ) -> Element | bool:
         """Wait until the element becomes not clickable.
 
         Args:
@@ -1183,6 +1319,7 @@ class Element(ElementBase):
 
         """
         from shadowstep.element.should import Should  # noqa: PLC0415
+
         return Should(self)
 
     def get_native(self) -> WebElement:
