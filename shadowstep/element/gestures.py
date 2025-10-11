@@ -375,6 +375,7 @@ class ElementGestures:
             The element if successful, None otherwise.
 
         """
+        from shadowstep.element.element import Element  # noqa: PLC0415
         self.element.get_driver()
         if isinstance(locator, Element):
             locator = locator.locator
