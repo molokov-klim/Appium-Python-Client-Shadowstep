@@ -9,11 +9,11 @@ from __future__ import annotations
 import logging
 from typing import TYPE_CHECKING, Any
 
-from appium.webdriver.webelement import WebElement
-
 from shadowstep.decorators.decorators import log_debug
 
 if TYPE_CHECKING:
+    from appium.webdriver.webelement import WebElement
+
     from shadowstep.element.element import Element
     from shadowstep.element.utilities import ElementUtilities
     from shadowstep.locator import LocatorConverter
@@ -58,13 +58,7 @@ class ElementCoordinates:
         """
         self.element.get_driver()
         element = self.element.get_native()
-        coordinates = self.get_coordinates(element)
-        if not coordinates:
-            continue
-        left, top, right, bottom = coordinates
-        x = int((left + right) / 2)
-        y = int((top + bottom) / 2)
-        return x, y
+        return self._get_center_from_native(element)
 
     # Override
     @log_debug()
@@ -111,3 +105,17 @@ class ElementCoordinates:
             bounds.strip("[]").replace("][", ",").split(","),
         )
         return left, top, right, bottom
+
+    @log_debug()
+    def _get_center_from_native(self, web_element: WebElement) -> tuple[int, int]:
+        """Get the center coordinates of the element.
+
+        Returns:
+            (x, y) center point or None if element not found.
+
+        """
+        coordinates = self._get_coordinates_from_native(web_element)
+        left, top, right, bottom = coordinates
+        x = int((left + right) / 2)
+        y = int((top + bottom) / 2)
+        return x, y

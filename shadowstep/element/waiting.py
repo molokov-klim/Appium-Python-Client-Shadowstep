@@ -7,15 +7,10 @@ including visibility, clickability, and presence checks.
 from __future__ import annotations
 
 import logging
-import time
 from typing import TYPE_CHECKING
 
 from selenium.common import (
-    InvalidSessionIdException,
-    NoSuchDriverException,
-    StaleElementReferenceException,
     TimeoutException,
-    WebDriverException,
 )
 from selenium.webdriver.support.wait import WebDriverWait
 
@@ -46,7 +41,7 @@ class ElementWaiting:
         self.utilities: ElementUtilities = element.utilities
 
     @log_debug()
-    def wait(  # noqa: C901, PLR0911
+    def wait(
         self,
         timeout: int = 10,
         poll_frequency: float = 0.5,
@@ -63,44 +58,16 @@ class ElementWaiting:
             Element or boolean based on return_bool.
 
         """
-        timeout = max(timeout, 1)
-        start_time: float = time.time()
-        while time.time() - start_time < timeout:
-            try:
-                resolved_locator: tuple[str, str] | None = self.converter.to_xpath(
-                    self.element.remove_null_value(self.element.locator),
-                )
-                if not resolved_locator:
-                    self.logger.error("Resolved locator is None or invalid")
-                    if return_bool:
-                        return False
-                    return self.element
-                WebDriverWait(self.shadowstep.driver, timeout, poll_frequency).until(  # type: ignore[reportArgumentType, reportUnknownMemberType]
-                    conditions.present(resolved_locator),
-                )
-                if return_bool:
-                    return True
-                return self.element  # noqa: TRY300
-            except TimeoutException:  # noqa: PERF203
-                if return_bool:
-                    return False
-                return self.element
-            except NoSuchDriverException as error:
-                self.element.utilities.handle_driver_error(error)
-            except InvalidSessionIdException as error:
-                self.element.utilities.handle_driver_error(error)
-            except StaleElementReferenceException as error:
-                self.logger.debug(error)
-                self.logger.warning("StaleElementReferenceException\nRe-acquire element")
-                self.element.native = None
-                self.element.get_native()
-                continue
-            except WebDriverException as error:
-                self.element.utilities.handle_driver_error(error)
-            except Exception:
-                self.logger.exception("Exception occurred")
-                continue
-        return False
+        resolved_locator: tuple[str, str] | None = self.converter.to_xpath(
+            self.element.remove_null_value(self.element.locator),
+        )
+        try:
+            WebDriverWait(self.shadowstep.driver, timeout, poll_frequency).until(  # type: ignore[reportArgumentType, reportUnknownMemberType]
+                conditions.present(resolved_locator),
+            )
+        except TimeoutException:
+            return False if return_bool else self.element
+        return True if return_bool else self.element
 
     @log_debug()
     def wait_visible(
@@ -120,33 +87,16 @@ class ElementWaiting:
             Element or boolean based on return_bool.
 
         """
-        timeout = max(timeout, 1)
-        start_time: float = time.time()
-
-        while time.time() - start_time < timeout:
-            try:
-                resolved_locator: tuple[str, str] | None = self.converter.to_xpath(
-                    self.element.remove_null_value(self.element.locator),
-                )
-                if not resolved_locator:
-                    self.logger.error("Resolved locator is None or invalid")
-                    return True
-
-                if self._wait_for_visibility_with_locator(
-                    resolved_locator,
-                    timeout,
-                    poll_frequency,
-                ):
-                    if return_bool:
-                        return True
-                    return self.element
-
-            except Exception as error:  # noqa: BLE001, PERF203
-                self._handle_wait_visibility_errors(error)
-                if isinstance(error, StaleElementReferenceException):
-                    continue
-
-        return False if return_bool else self.element
+        resolved_locator: tuple[str, str] | None = self.converter.to_xpath(
+            self.element.remove_null_value(self.element.locator),
+        )
+        if not self._wait_for_visibility_with_locator(
+            resolved_locator,
+            timeout,
+            poll_frequency,
+        ):
+            return False if return_bool else self.element
+        return True if return_bool else self.element
 
     @log_debug()
     def wait_clickable(
@@ -166,33 +116,16 @@ class ElementWaiting:
             Element or boolean based on return_bool.
 
         """
-        timeout = max(timeout, 1)
-        start_time: float = time.time()
-
-        while time.time() - start_time < timeout:
-            try:
-                resolved_locator: tuple[str, str] | None = self.converter.to_xpath(
-                    self.element.remove_null_value(self.element.locator),
-                )
-                if not resolved_locator:
-                    self.logger.error("Resolved locator is None or invalid")
-                    return True
-
-                if self._wait_for_clickability_with_locator(
-                    resolved_locator,
-                    timeout,
-                    poll_frequency,
-                ):
-                    if return_bool:
-                        return True
-                    return self.element
-
-            except Exception as error:  # noqa: BLE001, PERF203
-                self._handle_wait_clickability_errors(error)
-                if isinstance(error, StaleElementReferenceException):
-                    continue
-
-        return False if return_bool else self.element
+        resolved_locator: tuple[str, str] | None = self.converter.to_xpath(
+            self.element.remove_null_value(self.element.locator),
+        )
+        if not self._wait_for_clickability_with_locator(
+            resolved_locator,
+            timeout,
+            poll_frequency,
+        ):
+            return False if return_bool else self.element
+        return True if return_bool else self.element
 
     @log_debug()
     def wait_for_not(
@@ -212,32 +145,16 @@ class ElementWaiting:
             Element or boolean based on return_bool.
 
         """
-        timeout = max(timeout, 1)
-        start_time: float = time.time()
-
-        while time.time() - start_time < timeout:
-            try:
-                resolved_locator: tuple[str, str] | None = self.converter.to_xpath(
-                    self.element.remove_null_value(self.element.locator),
-                )
-                if not resolved_locator:
-                    return True
-
-                if self._wait_for_not_present_with_locator(
-                    resolved_locator,
-                    timeout,
-                    poll_frequency,
-                ):
-                    if return_bool:
-                        return True
-                    return self.element
-
-            except Exception as error:  # noqa: BLE001, PERF203
-                self._handle_wait_for_not_errors(error)
-                if isinstance(error, StaleElementReferenceException):
-                    continue
-
-        return False if return_bool else self.element
+        resolved_locator: tuple[str, str] | None = self.converter.to_xpath(
+            self.element.remove_null_value(self.element.locator),
+        )
+        if not self._wait_for_not_present_with_locator(
+            resolved_locator,
+            timeout,
+            poll_frequency,
+        ):
+            return False if return_bool else self.element
+        return True if return_bool else self.element
 
     @log_debug()
     def wait_for_not_visible(
@@ -257,32 +174,16 @@ class ElementWaiting:
             Element or boolean based on return_bool.
 
         """
-        timeout = max(timeout, 1)
-        start_time: float = time.time()
-
-        while time.time() - start_time < timeout:
-            try:
-                resolved_locator: tuple[str, str] | None = self.converter.to_xpath(
-                    self.element.remove_null_value(self.element.locator),
-                )
-                if not resolved_locator:
-                    return True
-
-                if self._wait_for_not_visible_with_locator(
-                    resolved_locator,
-                    timeout,
-                    poll_frequency,
-                ):
-                    if return_bool:
-                        return True
-                    return self.element
-
-            except Exception as error:  # noqa: BLE001, PERF203
-                self._handle_wait_for_not_visible_errors(error)
-                if isinstance(error, StaleElementReferenceException):
-                    continue
-
-        return False if return_bool else self.element
+        resolved_locator: tuple[str, str] | None = self.converter.to_xpath(
+            self.element.remove_null_value(self.element.locator),
+        )
+        if not self._wait_for_not_visible_with_locator(
+            resolved_locator,
+            timeout,
+            poll_frequency,
+        ):
+            return False if return_bool else self.element
+        return True if return_bool else self.element
 
     @log_debug()
     def wait_for_not_clickable(
@@ -302,33 +203,16 @@ class ElementWaiting:
             Element or boolean based on return_bool.
 
         """
-        timeout = max(timeout, 1)
-        start_time: float = time.time()
-
-        while time.time() - start_time < timeout:
-            try:
-                resolved_locator: tuple[str, str] | None = self.converter.to_xpath(
-                    self.element.remove_null_value(self.element.locator),
-                )
-                if not resolved_locator:
-                    self.logger.error("Resolved locator is None or invalid")
-                    return True
-
-                if self._wait_for_not_clickable_with_locator(
-                    resolved_locator,
-                    timeout,
-                    poll_frequency,
-                ):
-                    if return_bool:
-                        return True
-                    return self.element
-
-            except Exception as error:  # noqa: BLE001, PERF203
-                self._handle_wait_for_not_clickable_errors(error)
-                if isinstance(error, StaleElementReferenceException):
-                    continue
-
-        return False if return_bool else self.element
+        resolved_locator: tuple[str, str] | None = self.converter.to_xpath(
+            self.element.remove_null_value(self.element.locator),
+        )
+        if not self._wait_for_not_clickable_with_locator(
+            resolved_locator,
+            timeout,
+            poll_frequency,
+        ):
+            return False if return_bool else self.element
+        return True if return_bool else self.element
 
     def _wait_for_visibility_with_locator(
         self,
@@ -375,51 +259,6 @@ class ElementWaiting:
         except TimeoutException:
             return False
 
-    def _handle_wait_visibility_errors(self, error: Exception) -> None:
-        """Handle errors during wait visibility operation."""
-        if isinstance(
-            error,  # type: ignore[arg-type]
-            (NoSuchDriverException, InvalidSessionIdException, WebDriverException),
-        ):  # type: ignore[arg-type]
-            self.element.utilities.handle_driver_error(error)
-        elif isinstance(error, StaleElementReferenceException):
-            self.logger.debug(error)
-            self.logger.warning("StaleElementReferenceException\nRe-acquire element")
-            self.element.native = None
-            self.element.get_native()
-        else:
-            self.logger.error("%s", error)
-
-    def _handle_wait_clickability_errors(self, error: Exception) -> None:
-        """Handle errors during wait clickability operation."""
-        if isinstance(
-            error,  # type: ignore[arg-type]
-            (NoSuchDriverException, InvalidSessionIdException, WebDriverException),
-        ):  # type: ignore[arg-type]
-            self.element.utilities.handle_driver_error(error)
-        elif isinstance(error, StaleElementReferenceException):
-            self.logger.debug(error)
-            self.logger.warning("StaleElementReferenceException\nRe-acquire element")
-            self.element.native = None
-            self.element.get_native()
-        else:
-            self.logger.error("%s", error)
-
-    def _handle_wait_for_not_errors(self, error: Exception) -> None:
-        """Handle errors during wait for not operation."""
-        if isinstance(
-            error,  # type: ignore[arg-type]
-            (NoSuchDriverException, InvalidSessionIdException, WebDriverException),
-        ):  # type: ignore[arg-type]
-            self.element.utilities.handle_driver_error(error)
-        elif isinstance(error, StaleElementReferenceException):
-            self.logger.debug(error)
-            self.logger.warning("StaleElementReferenceException\nRe-acquire element")
-            self.element.native = None
-            self.element.get_native()
-        else:
-            self.logger.error("%s", error)
-
     def _wait_for_not_visible_with_locator(
         self,
         resolved_locator: tuple[str, str],
@@ -435,25 +274,6 @@ class ElementWaiting:
         except TimeoutException:
             return False
 
-    def _handle_wait_for_not_visible_errors(self, error: Exception) -> None:
-        """Handle errors during wait for not visible operation."""
-        if isinstance(
-            error,
-            (
-                NoSuchDriverException,
-                InvalidSessionIdException,
-                WebDriverException,
-            ),
-        ):
-            self.element.utilities.handle_driver_error(error)
-        elif isinstance(error, StaleElementReferenceException):
-            self.logger.debug(error)
-            self.logger.warning("StaleElementReferenceException\nRe-acquire element")
-            self.element.native = None
-            self.element.get_native()
-        else:
-            self.logger.error("%s", error)
-
     def _wait_for_not_clickable_with_locator(
         self,
         resolved_locator: tuple[str, str],
@@ -468,22 +288,3 @@ class ElementWaiting:
             return True  # noqa: TRY300
         except TimeoutException:
             return False
-
-    def _handle_wait_for_not_clickable_errors(self, error: Exception) -> None:
-        """Handle errors during wait for not clickable operation."""
-        if isinstance(
-            error,
-            (
-                NoSuchDriverException,
-                InvalidSessionIdException,
-                WebDriverException,
-            ),
-        ):
-            self.element.utilities.handle_driver_error(error)
-        elif isinstance(error, StaleElementReferenceException):
-            self.logger.debug(error)
-            self.logger.warning("StaleElementReferenceException\nRe-acquire element")
-            self.element.native = None
-            self.element.get_native()
-        else:
-            self.logger.error("%s", error)

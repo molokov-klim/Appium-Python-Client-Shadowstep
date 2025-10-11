@@ -1157,6 +1157,7 @@ class Element(ElementBase):
     # ------------------------ screenshots ------------------------
 
     @property
+    @fail_safe_element()
     def screenshot_as_base64(self) -> str:
         """Get the screenshot of the element as base64 encoded string.
 
@@ -1167,6 +1168,7 @@ class Element(ElementBase):
         return self.screenshots.screenshot_as_base64()
 
     @property
+    @fail_safe_element()
     def screenshot_as_png(self) -> bytes:
         """Get the screenshot of the element as binary data.
 
@@ -1176,6 +1178,7 @@ class Element(ElementBase):
         """
         return self.screenshots.screenshot_as_png()
 
+    @fail_safe_element()
     def save_screenshot(self, filename: str) -> bool:
         """Save a screenshot of the element to a PNG file.
 
@@ -1188,11 +1191,14 @@ class Element(ElementBase):
         """
         return self.screenshots.save_screenshot(filename)
 
+    # ------------------------------- waiting -------------------------------
+
+    @fail_safe_element()
     def wait(
         self,
         timeout: int = 10,
         poll_frequency: float = 0.5,
-        return_bool: bool = False,
+        return_bool: bool = False,  # noqa: FBT001, FBT002
     ) -> Element | bool:
         """Wait for the element to appear (present in DOM).
 
@@ -1207,11 +1213,12 @@ class Element(ElementBase):
         """
         return self.waiting.wait(timeout, poll_frequency=poll_frequency, return_bool=return_bool)
 
+    @fail_safe_element()
     def wait_visible(
         self,
         timeout: int = 10,
         poll_frequency: float = 0.5,
-        return_bool: bool = False,
+        return_bool: bool = False,  # noqa: FBT001, FBT002
     ) -> Element | bool:
         """Wait until the element is visible.
 
@@ -1230,11 +1237,12 @@ class Element(ElementBase):
             return_bool=return_bool,
         )
 
+    @fail_safe_element()
     def wait_clickable(
         self,
         timeout: int = 10,
         poll_frequency: float = 0.5,
-        return_bool: bool = False,
+        return_bool: bool = False,  # noqa: FBT001, FBT002
     ) -> Element | bool:
         """Wait until the element is clickable.
 
@@ -1249,11 +1257,12 @@ class Element(ElementBase):
         """
         return self.waiting.wait_clickable(timeout, poll_frequency, return_bool)
 
+    @fail_safe_element()
     def wait_for_not(
         self,
         timeout: int = 10,
         poll_frequency: float = 0.5,
-        return_bool: bool = False,
+        return_bool: bool = False,  # noqa: FBT001, FBT002
     ) -> Element | bool:
         """Wait until the element is no longer present in the DOM.
 
@@ -1272,11 +1281,12 @@ class Element(ElementBase):
             return_bool=return_bool,
         )
 
+    @fail_safe_element()
     def wait_for_not_visible(
         self,
         timeout: int = 10,
         poll_frequency: float = 0.5,
-        return_bool: bool = False,
+        return_bool: bool = False,  # noqa: FBT001, FBT002
     ) -> Element | bool:
         """Wait until the element becomes invisible.
 
@@ -1291,11 +1301,12 @@ class Element(ElementBase):
         """
         return self.waiting.wait_for_not_visible(timeout, poll_frequency, return_bool)
 
+    @fail_safe_element()
     def wait_for_not_clickable(
         self,
         timeout: int = 10,
         poll_frequency: float = 0.5,
-        return_bool: bool = False,
+        return_bool: bool = False,  # noqa: FBT001, FBT002
     ) -> Element | bool:
         """Wait until the element becomes not clickable.
 
@@ -1309,6 +1320,8 @@ class Element(ElementBase):
 
         """
         return self.waiting.wait_for_not_clickable(timeout, poll_frequency, return_bool)
+
+    # ---------------------------- other ----------------------------
 
     @property
     def should(self) -> Should:

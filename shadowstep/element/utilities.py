@@ -3,6 +3,7 @@
 This module provides utility functions for element operations,
 including XPath generation, attribute extraction, and error handling.
 """
+
 from __future__ import annotations
 
 import logging
@@ -41,9 +42,10 @@ class ElementUtilities:
         self.shadowstep: Shadowstep = element.shadowstep
         self.logger: logging.Logger = logging.getLogger(get_current_func_name())
 
-    def remove_null_value(self,
-                          locator: tuple[str, str] | dict[str, Any] | Element | UiSelector,
-                          ) -> tuple[str, str] | dict[str, Any] | Element | UiSelector:
+    def remove_null_value(
+        self,
+        locator: tuple[str, str] | dict[str, Any] | Element | UiSelector,
+    ) -> tuple[str, str] | dict[str, Any] | Element | UiSelector:
         """Remove null values from locator.
 
         Args:
@@ -65,7 +67,9 @@ class ElementUtilities:
         return locator
 
     def extract_el_attrs_from_source(
-            self, xpath_expr: str, page_source: str,
+        self,
+        xpath_expr: str,
+        page_source: str,
     ) -> list[dict[str, Any]]:
         """Parse page source and extract attributes of all elements matching XPath."""
         try:
@@ -74,8 +78,8 @@ class ElementUtilities:
             matches = root.xpath(self.remove_null_value(("xpath", xpath_expr)[1]))  # type: ignore[attr-defined]
             if not matches:
                 self.logger.warning("No matches found for XPath: %s", xpath_expr)
-                msg = "No matches found for XPath: %s"
-                raise ShadowstepElementException(msg, xpath_expr)
+                msg = f"No matches found for XPath: {xpath_expr}"
+                raise ShadowstepElementException(msg)
             result: list[dict[str, Any]] = [
                 {**{k: str(v) for k, v in el.attrib.items()}}  # type: ignore[attr-defined]
                 for el in matches  # type: ignore[reportUnknownVariableType]
@@ -141,8 +145,11 @@ class ElementUtilities:
             return f"[@{key}='{value}']"
         if "'" in value and '"' in value:
             parts = value.split('"')
-            escaped = "concat(" + ", ".join(
-                f'"{part}"' if i % 2 == 0 else "'\"'" for i, part in enumerate(parts)) + ")"
+            escaped = (
+                "concat("
+                + ", ".join(f'"{part}"' if i % 2 == 0 else "'\"'" for i, part in enumerate(parts))
+                + ")"
+            )
             return f"[@{key}={escaped}]"
         return f"[@{key}='{value}']"
 
@@ -192,7 +199,7 @@ class ElementUtilities:
                 parent_element = self
                 parent_class = parent_element.element.get_attribute("class")
                 child_elements = parent_element.element.get_elements(("xpath", "//*[1]"))
-                for _i, child_element in enumerate(child_elements):
+                for _, child_element in enumerate(child_elements):
                     child_class = child_element.get_attribute("class")
                     if parent_class != child_class:
                         return str(child_class)
@@ -204,8 +211,10 @@ class ElementUtilities:
                 continue
             except WebDriverException as error:
                 err_msg = str(error).lower()
-                if ("instrumentation process is not running" in err_msg or
-                        "socket hang up" in err_msg):
+                if (
+                    "instrumentation process is not running" in err_msg
+                    or "socket hang up" in err_msg
+                ):
                     self.handle_driver_error(error)
                     continue
                 raise

@@ -23,7 +23,7 @@ from shadowstep.ui_automator.mobile_commands import MobileCommands
 from shadowstep.utils.utils import find_coordinates_by_vector
 
 if TYPE_CHECKING:
-    from shadowstep.element.element import Element
+    from shadowstep.element.element import Element  # noqa: TC004
     from shadowstep.element.utilities import ElementUtilities
     from shadowstep.locator import LocatorConverter, UiSelector
     from shadowstep.shadowstep import Shadowstep
@@ -466,7 +466,7 @@ class ElementGestures:
 
         """
         target_element = self.element._get_web_element(locator=locator)  # type: ignore[reportPrivateUsage]  # noqa: SLF001
-        x, y = self.element.get_center(target_element)
+        x, y = self.element.coordinates._get_center_from_native(target_element)  # type: ignore[reportPrivateUsage]  # noqa: SLF001
         return self._execute_tap_and_move_to_coordinates(actions, x, y)
 
     @log_debug()

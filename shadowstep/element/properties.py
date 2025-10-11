@@ -20,7 +20,7 @@ from shadowstep.exceptions.shadowstep_exceptions import (
 if TYPE_CHECKING:
     from selenium.webdriver.remote.shadowroot import ShadowRoot
 
-    from shadowstep.element.element import Element
+    from shadowstep.element.element import Element  # noqa: TC004
     from shadowstep.element.utilities import ElementUtilities
     from shadowstep.locator import LocatorConverter, UiSelector
     from shadowstep.shadowstep import Shadowstep
