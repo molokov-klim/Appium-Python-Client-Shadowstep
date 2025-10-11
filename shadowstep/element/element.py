@@ -1110,32 +1110,29 @@ class Element(ElementBase):
 
     # ----------------------------- coordinates -----------------------------
 
-    def get_coordinates(self, element: WebElement | None = None) -> tuple[int, int, int, int]:
+    @fail_safe_element()
+    def get_coordinates(self) -> tuple[int, int, int, int]:
         """Get the coordinates of the element.
-
-        Args:
-            element: Optional WebElement to get coordinates for.
 
         Returns:
             tuple[int, int, int, int]: Coordinates as (x, y, width, height).
 
         """
-        return self.coordinates.get_coordinates(element)
+        return self.coordinates.get_coordinates()
 
-    def get_center(self, element: WebElement | None = None) -> tuple[int, int]:
+    @fail_safe_element()
+    def get_center(self) -> tuple[int, int]:
         """Get the center coordinates of the element.
-
-        Args:
-            element: Optional WebElement to get center for.
 
         Returns:
             tuple[int, int]: Center coordinates as (x, y).
 
         """
-        return self.coordinates.get_center(element)
+        return self.coordinates.get_center()
 
     # Override
     @property
+    @fail_safe_element()
     def location_in_view(self) -> dict[str, int]:
         """Get the location of the element in view.
 
@@ -1146,6 +1143,7 @@ class Element(ElementBase):
         return self.coordinates.location_in_view()
 
     @property
+    @fail_safe_element()
     def location_once_scrolled_into_view(self) -> dict[str, int]:
         """Get the location of the element once scrolled into view.
 
@@ -1155,6 +1153,8 @@ class Element(ElementBase):
         """
         self.logger.warning("Method %s is not implemented in UiAutomator2", get_current_func_name())
         return self.coordinates.location_once_scrolled_into_view()
+
+    # ------------------------ screenshots ------------------------
 
     @property
     def screenshot_as_base64(self) -> str:
