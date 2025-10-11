@@ -26,6 +26,8 @@ from selenium.common import (
 )
 from typing_extensions import Concatenate, ParamSpec
 
+from shadowstep.exceptions.shadowstep_exceptions import ShadowstepException
+
 # Type variables for better type safety
 P = ParamSpec("P")
 T = TypeVar("T")
@@ -39,11 +41,11 @@ DEFAULT_EXCEPTIONS: tuple[type[Exception], ...] = (
     StaleElementReferenceException,
 )
 
-
+# TODO remove it (use decorator in facade module)
 def fail_safe(  # noqa: C901, PLR0913
         retries: int = 3,
         delay: float = 0.5,
-        raise_exception: type[Exception] | None = None,
+        raise_exception: type[Exception] | None = ShadowstepException,
         fallback: Any = None,
         exceptions: tuple[type[Exception], ...] = DEFAULT_EXCEPTIONS,
         log_args: bool = False,  # noqa: FBT001, FBT002
