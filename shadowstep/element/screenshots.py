@@ -7,7 +7,7 @@ including base64 encoding, PNG format, and file saving capabilities.
 import logging
 from typing import TYPE_CHECKING
 
-from shadowstep.decorators.decorators import log_debug
+from shadowstep.decorators.common_decorators import log_debug
 
 if TYPE_CHECKING:
     from shadowstep.element.element import Element

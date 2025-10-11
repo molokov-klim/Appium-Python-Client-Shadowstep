@@ -14,7 +14,7 @@ from selenium.common import (
 )
 from selenium.webdriver.support.wait import WebDriverWait
 
-from shadowstep.decorators.decorators import log_debug
+from shadowstep.decorators.common_decorators import log_debug
 from shadowstep.element import conditions
 
 if TYPE_CHECKING:

@@ -16,7 +16,7 @@ from selenium.common.exceptions import (
 )
 from typing_extensions import Self
 
-from shadowstep.decorators.decorators import fail_safe
+from shadowstep.decorators.common_decorators import fail_safe
 from shadowstep.exceptions.shadowstep_exceptions import ShadowstepException
 from shadowstep.utils.utils import get_current_func_name
 from shadowstep.web_driver.web_driver_singleton import WebDriverSingleton

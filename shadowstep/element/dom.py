@@ -12,7 +12,7 @@ from typing import TYPE_CHECKING, Any
 from selenium.webdriver.support import expected_conditions
 from selenium.webdriver.support.wait import WebDriverWait
 
-from shadowstep.decorators.decorators import log_debug
+from shadowstep.decorators.common_decorators import log_debug
 from shadowstep.exceptions.shadowstep_exceptions import (
     ShadowstepElementException,
     ShadowstepResolvingLocatorError,

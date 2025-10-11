@@ -12,7 +12,7 @@ import time
 import traceback
 from typing import TYPE_CHECKING, Any, cast
 
-from shadowstep.decorators.decorators import log_debug
+from shadowstep.decorators.common_decorators import log_debug
 from shadowstep.exceptions.shadowstep_exceptions import (
     ShadowstepElementException,
 )

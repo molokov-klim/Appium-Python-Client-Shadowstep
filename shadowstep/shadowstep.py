@@ -22,7 +22,7 @@ from selenium.common import (
 )
 from typing_extensions import Self
 
-from shadowstep.decorators.decorators import fail_safe
+from shadowstep.decorators.common_decorators import fail_safe
 from shadowstep.element.element import Element
 from shadowstep.exceptions.shadowstep_exceptions import ShadowstepException
 from shadowstep.image.image import ShadowstepImage

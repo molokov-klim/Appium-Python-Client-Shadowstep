@@ -9,11 +9,11 @@ from __future__ import annotations
 import logging
 from typing import TYPE_CHECKING, Any, cast
 
+from shadowstep.decorators.element_decorators import fail_safe_element
 from shadowstep.element import ElementDOM
 from shadowstep.element.actions import ElementActions
 from shadowstep.element.base import ElementBase
 from shadowstep.element.coordinates import ElementCoordinates
-from shadowstep.element.decorators import fail_safe_element
 from shadowstep.element.gestures import ElementGestures
 from shadowstep.element.properties import ElementProperties
 from shadowstep.element.screenshots import ElementScreenshots
