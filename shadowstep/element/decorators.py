@@ -1,3 +1,4 @@
+"""Decorators for element.py module only."""
 from __future__ import annotations
 
 import time
@@ -12,7 +13,9 @@ from selenium.common import (
 )
 from typing_extensions import ParamSpec
 
-from shadowstep.exceptions.shadowstep_exceptions import ShadowstepException
+from shadowstep.exceptions.shadowstep_exceptions import (
+    ShadowstepElementException,
+)
 
 P = ParamSpec("P")
 T = TypeVar("T")
@@ -23,14 +26,14 @@ SelfT = TypeVar("SelfT")
 def fail_safe_element(
     retries: int = 3,
     delay: float = 0.5,
-    raise_exception: type[Exception] | None = ShadowstepException,
+    raise_exception: type[Exception] | None = ShadowstepElementException,
 ) -> Callable[[F], F]:
     """Only for element.py module."""
 
     def decorator(func: F) -> F:
         @wraps(func)
         def wrapper(self: Any, *args: Any, **kwargs: Any) -> Any:  # noqa: C901, RUF100
-            attempts = retries  # локальная копия
+            attempts = retries
             start_time = time.time()
             while time.time() - start_time < self.timeout:
                 try:
@@ -53,12 +56,8 @@ def fail_safe_element(
                     ):
                         self.utilities.handle_driver_error(error)
                         continue
-                    if raise_exception is not None:
-                        msg = (
-                            f"Failed to execute '{func.__qualname__}' within timeout={self.timeout}"
-                        )
-                        raise raise_exception(msg) from error
-                    raise
+                    msg = f"Failed to execute '{func.__qualname__}' within timeout={self.timeout}"
+                    raise (raise_exception or ShadowstepElementException)(msg) from error
                 if attempts > 0:
                     msg = f"Failed: '{func.__qualname__}', try again in {attempts} attempts"
                     self.logger.warning(msg)
@@ -66,7 +65,8 @@ def fail_safe_element(
                     time.sleep(delay)
                 else:
                     break
-            return self
+            msg = f"Failed to execute '{func.__qualname__}' within timeout={self.timeout}"
+            raise (raise_exception or ShadowstepElementException)(msg)
 
         return cast("F", wrapper)
 
