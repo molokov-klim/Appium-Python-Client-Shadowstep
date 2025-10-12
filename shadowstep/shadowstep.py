@@ -860,7 +860,6 @@ class Shadowstep(ShadowstepBase):
             wait_for_launch (boolean): If false, ADB won't wait for the started activity to return control. Defaults to true. Optional. Example: false
 
         """
-        self.logger.debug("%s", get_current_func_name())
         return self._execute("mobile: deepLink", params)
 
     def deviceidle(self, action: str, packages: str | list[str]) -> Any:
@@ -876,7 +875,6 @@ class Shadowstep(ShadowstepBase):
             packages (string or Array<string>): One or more package names to perform the specified action on. Required. Example: 'com.mycompany'
 
         """
-        self.logger.debug("%s", get_current_func_name())
         return self._execute("mobile: deviceidle", params)
 
     def accept_alert(self, button_label: str | None = None) -> Any:
@@ -891,7 +889,6 @@ class Shadowstep(ShadowstepBase):
             buttonLabel (string): The name or text of the alert button to click in order to accept it. If not provided, the driver will attempt to autodetect the appropriate button. Optional. Example: Accept
 
         """
-        self.logger.debug("%s", get_current_func_name())
         return self._execute("mobile: acceptAlert", params)
 
     def dismiss_alert(self, button_label: str | None = None) -> Any:
@@ -912,7 +909,6 @@ class Shadowstep(ShadowstepBase):
             True if the alert was successfully dismissed, otherwise an error is thrown.
 
         """
-        self.logger.debug("%s", get_current_func_name())
         return self._execute("mobile: dismissAlert", params)
 
     def battery_info(self) -> Any:
@@ -936,7 +932,6 @@ class Shadowstep(ShadowstepBase):
 
 
         """
-        self.logger.debug("%s", get_current_func_name())
         return self._execute("mobile: batteryInfo", params)
 
     def device_info(self) -> Any:
@@ -952,7 +947,6 @@ class Shadowstep(ShadowstepBase):
             https://github.com/appium/appium-uiautomator2-server/blob/master/app/src/main/java/io/appium/uiautomator2/handler/GetDeviceInfo.java
 
         """
-        self.logger.debug("%s", get_current_func_name())
         return self._execute("mobile: deviceInfo", params)
 
     def get_device_time(self, format: str | None = None) -> Any:
@@ -971,7 +965,6 @@ class Shadowstep(ShadowstepBase):
 
 
         """
-        self.logger.debug("%s", get_current_func_name())
         return self._execute("mobile: getDeviceTime", params)
 
     def change_permissions(self, permissions: str | list[str], app_package: str | None = None,
@@ -990,7 +983,6 @@ class Shadowstep(ShadowstepBase):
             target (string): The permission management target. Either 'pm' (default) or 'appops' (available since v2.11.0). The 'appops' target requires the adb_shell server security option to be enabled. Optional. Example: appops
 
         """
-        self.logger.debug("%s", get_current_func_name())
         return self._execute("mobile: changePermissions", params)
 
     def get_permissions(self, type: str | None = None, app_package: str | None = None) -> Any:
@@ -1009,7 +1001,6 @@ class Shadowstep(ShadowstepBase):
             An array of strings, each representing a permission name. The array may be empty if no permissions match the specified type.
 
         """
-        self.logger.debug("%s", get_current_func_name())
         return self._execute("mobile: getPermissions", params)
 
     def perform_editor_action(self, action: str) -> Any:
@@ -1024,7 +1015,6 @@ class Shadowstep(ShadowstepBase):
             action (string): The name or integer code of the editor action to execute. Supported action names are: 'normal', 'unspecified', 'none', 'go', 'search', 'send', 'next', 'done', 'previous'. See EditorInfo for more details. Required. Example: search
 
         """
-        self.logger.debug("%s", get_current_func_name())
         return self._execute("mobile: performEditorAction", params)
 
     def start_screen_streaming(self,
@@ -1063,7 +1053,6 @@ class Shadowstep(ShadowstepBase):
 
 
         """
-        self.logger.debug("%s", get_current_func_name())
         return self._execute("mobile: startScreenStreaming", params)
 
     def stop_screen_streaming(self) -> Any:
@@ -1075,7 +1064,6 @@ class Shadowstep(ShadowstepBase):
             Stop the previously started screen streaming. If no screen streaming server has been started then nothing is done.
 
         """
-        self.logger.debug("%s", get_current_func_name())
         return self._execute("mobile: stopScreenStreaming", params)
 
     def get_notifications(self) -> Any:
@@ -1089,9 +1077,6 @@ class Shadowstep(ShadowstepBase):
             Appium Settings keeps up to 100 notifications in an internal buffer, including both active notifications and those that appeared while the service was running. Newly appeared notifications are added to the head of the array. Each notification includes an `isRemoved` flag indicating whether it has been removed. For more details, see:
             https://developer.android.com/reference/android/service/notification/StatusBarNotification
             https://developer.android.com/reference/android/app/Notification.html
-
-        Args:
-            None
 
         Returns:
             A dictionary containing the notifications, for example:
@@ -1127,7 +1112,6 @@ class Shadowstep(ShadowstepBase):
 
 
         """
-        self.logger.debug("%s", get_current_func_name())
         return self._execute("mobile: getNotifications", params)
 
     def open_notifications(self) -> Any:
@@ -1139,10 +1123,9 @@ class Shadowstep(ShadowstepBase):
             Opens notifications drawer on the device under test. Does nothing if the drawer is already opened.
 
         """
-        self.logger.debug("%s", get_current_func_name())
         return self._execute("mobile: openNotifications", params)
 
-    def list_sms(self) -> Any:
+    def list_sms(self, max: int = 100) -> Any:
         r"""Execute mobile: listSms command.
 
         https://github.com/appium/appium-uiautomator2-driver?tab=readme-ov-file#mobile-listsms
@@ -1187,10 +1170,9 @@ class Shadowstep(ShadowstepBase):
             }
 
         """
-        self.logger.debug("%s", get_current_func_name())
         return self._execute("mobile: listSms", params)
 
-    def type(self) -> Any:
+    def type(self, text: str) -> Any:
         """Execute mobile: type command.
 
         https://github.com/appium/appium-uiautomator2-driver?tab=readme-ov-file#mobile-type
@@ -1202,10 +1184,9 @@ class Shadowstep(ShadowstepBase):
             text (string): The text to type. Required. Example: testing
 
         """
-        self.logger.debug("%s", get_current_func_name())
         return self._execute("mobile: type", params)
 
-    def sensor_set(self) -> Any:
+    def sensor_set(self, sensor_type: str, value: str) -> Any:
         """Execute mobile: sensorSet command.
 
         https://github.com/appium/appium-uiautomator2-driver?tab=readme-ov-file#mobile-sensorset
@@ -1218,10 +1199,9 @@ class Shadowstep(ShadowstepBase):
             value (string): The value to set for the sensor. Check the emulator console output for acceptable formats. Required. Example: 50
 
         """
-        self.logger.debug("%s", get_current_func_name())
         return self._execute("mobile: sensorSet", params)
 
-    def delete_file(self) -> Any:
+    def delete_file(self, remote_path: str) -> Any:
         """Execute mobile: deleteFile command.
 
         https://github.com/appium/appium-uiautomator2-driver?tab=readme-ov-file#mobile-deletefile
@@ -1233,10 +1213,9 @@ class Shadowstep(ShadowstepBase):
             remotePath (string): The full path to the remote file or a file inside an application bundle. Required. Example: /sdcard/myfile.txt or @my.app.id/path/in/bundle
 
         """
-        self.logger.debug("%s", get_current_func_name())
         return self._execute("mobile: deleteFile", params)
 
-    def is_app_installed(self) -> Any:
+    def is_app_installed(self, app_id: str, user: int | str | None = None) -> Any:
         """Execute mobile: isAppInstalled command.
 
         https://github.com/appium/appium-uiautomator2-driver?tab=readme-ov-file#mobile-isappinstalled
@@ -1252,10 +1231,9 @@ class Shadowstep(ShadowstepBase):
             True if the application is installed for the specified user; otherwise, False.
 
         """
-        self.logger.debug("%s", get_current_func_name())
         return self._execute("mobile: isAppInstalled", params)
 
-    def query_app_state(self) -> Any:
+    def query_app_state(self, app_id: str) -> Any:
         """Execute mobile: queryAppState command.
 
         https://github.com/appium/appium-uiautomator2-driver?tab=readme-ov-file#mobile-queryappstate
@@ -1274,10 +1252,9 @@ class Shadowstep(ShadowstepBase):
                 4: The app is running in the foreground
 
         """
-        self.logger.debug("%s", get_current_func_name())
         return self._execute("mobile: queryAppState", params)
 
-    def activate_app(self) -> Any:
+    def activate_app(self, app_id: str) -> Any:
         """Execute mobile: activateApp command.
 
         https://github.com/appium/appium-uiautomator2-driver?tab=readme-ov-file#mobile-activateapp
@@ -1289,10 +1266,9 @@ class Shadowstep(ShadowstepBase):
             appId (string): The identifier of the application package to be activated. Required. Example: my.app.id
 
         """
-        self.logger.debug("%s", get_current_func_name())
         return self._execute("mobile: activateApp", params)
 
-    def remove_app(self) -> Any:
+    def remove_app(self, app_id: str, timeout: int | None = None, keep_data: bool = False) -> Any:
         """Execute mobile: removeApp command.
 
         https://github.com/appium/appium-uiautomator2-driver?tab=readme-ov-file#mobile-removeapp
@@ -1309,10 +1285,9 @@ class Shadowstep(ShadowstepBase):
             bool: True if the application was found and successfully removed; False otherwise.
 
         """
-        self.logger.debug("%s", get_current_func_name())
         return self._execute("mobile: removeApp", params)
 
-    def terminate_app(self) -> Any:
+    def terminate_app(self, app_id: str, timeout: int = 500) -> Any:
         """Execute mobile: terminateApp command.
 
         https://github.com/appium/appium-uiautomator2-driver?tab=readme-ov-file#mobile-terminateapp
@@ -1328,10 +1303,17 @@ class Shadowstep(ShadowstepBase):
             bool: True if the application was successfully terminated; False otherwise.
 
         """
-        self.logger.debug("%s", get_current_func_name())
         return self._execute("mobile: terminateApp", params)
 
-    def install_app(self) -> Any:
+    def install_app(self,
+                    app_path: str,
+                    timeout: int = 6000,
+                    allow_test_packages: bool = False,
+                    use_sdcard: bool = False,
+                    grant_permissions: bool = False,
+                    replace: bool = True,
+                    check_version: bool = False,
+                    ) -> Any:
         """Execute mobile: installApp command.
 
         https://github.com/appium/appium-uiautomator2-driver?tab=readme-ov-file#mobile-installapp
@@ -1349,10 +1331,9 @@ class Shadowstep(ShadowstepBase):
             checkVersion (bool): Skip installation if the device already has a greater or equal app version, avoiding INSTALL_FAILED_VERSION_DOWNGRADE errors. Optional. Default is False. Example: True
 
         """
-        self.logger.debug("%s", get_current_func_name())
         return self._execute("mobile: installApp", params)
 
-    def clear_app(self) -> Any:
+    def clear_app(self, app_id: str) -> Any:
         """Execute mobile: clearApp command.
 
         https://github.com/appium/appium-uiautomator2-driver?tab=readme-ov-file#mobile-clearapp
@@ -1367,10 +1348,25 @@ class Shadowstep(ShadowstepBase):
             Stdout of the corresponding adb command. An error is thrown if the operation fails.
 
         """
-        self.logger.debug("%s", get_current_func_name())
         return self._execute("mobile: clearApp", params)
 
-    def start_activity(self) -> Any:
+    def start_activity(self,
+                       intent: str,
+                       user: int | str | None = None,
+                       wait: bool = False,
+                       stop: bool = False,
+                       windowing_mode: int | None = None,
+                       activity_type: int | None = None,
+                       action: str | None = None,
+                       uri: str | None = None,
+                       mime_type: str | None = None,
+                       identifier: str | None = None,
+                       categories: str | list[str] | None = None,
+                       component: str | None = None,
+                       package: str | None = None,
+                       extras: list[list[str]] | None = None,
+                       flags: str | None = None,
+                       ) -> Any:
         """Execute mobile: startActivity command.
 
         https://github.com/appium/appium-uiautomator2-driver?tab=readme-ov-file#mobile-startactivity
@@ -1399,10 +1395,22 @@ class Shadowstep(ShadowstepBase):
             The actual stdout of the underlying `am` command. An error is thrown if the operation fails.
 
         """
-        self.logger.debug("%s", get_current_func_name())
         return self._execute("mobile: startActivity", params)
 
-    def start_service(self) -> Any:
+    def start_service(self,
+                      intent: str | None = None,
+                      user: int | str | None = None,
+                      foreground: bool = False,
+                      action: str | None = None,
+                      uri: str | None = None,
+                      mime_type: str | None = None,
+                      identifier: str | None = None,
+                      categories: str | list[str] | None = None,
+                      component: str | None = None,
+                      package: str | None = None,
+                      extras: list[list[str]] | None = None,
+                      flags: str | None = None,
+                      ) -> Any:
         """Execute mobile: startService command.
 
         https://github.com/appium/appium-uiautomator2-driver?tab=readme-ov-file#mobile-startservice
@@ -1428,10 +1436,21 @@ class Shadowstep(ShadowstepBase):
             The actual stdout of the underlying `am` command. An error is thrown if the operation fails.
 
         """
-        self.logger.debug("%s", get_current_func_name())
         return self._execute("mobile: startService", params)
 
-    def stop_service(self) -> Any:
+    def stop_service(self,
+                     intent: str | None = None,
+                     user: int | str | None = None,
+                     action: str | None = None,
+                     uri: str | None = None,
+                     mime_type: str | None = None,
+                     identifier: str | None = None,
+                     categories: str | list[str] | None = None,
+                     component: str | None = None,
+                     package: str | None = None,
+                     extras: list[list[str]] | None = None,
+                     flags: str | None = None,
+                     ) -> Any:
         """Execute mobile: stopService command.
 
         https://github.com/appium/appium-uiautomator2-driver?tab=readme-ov-file#mobile-stopservice
@@ -1456,10 +1475,23 @@ class Shadowstep(ShadowstepBase):
             The actual stdout of the underlying `am` command. An error is thrown if the operation fails.
 
         """
-        self.logger.debug("%s", get_current_func_name())
         return self._execute("mobile: stopService", params)
 
-    def broadcast(self) -> Any:
+    def broadcast(self,
+                  intent: str | None = None,
+                  user: int | str | None = None,
+                  receiver_permission: str | None = None,
+                  allow_background_activity_starts: bool = False,
+                  action: str | None = None,
+                  uri: str | None = None,
+                  mime_type: str | None = None,
+                  identifier: str | None = None,
+                  categories: str | list[str] | None = None,
+                  component: str | None = None,
+                  package: str | None = None,
+                  extras: list[list[str]] | None = None,
+                  flags: str | None = None,
+                  ) -> Any:
         """Execute mobile: broadcast command.
 
         https://github.com/appium/appium-uiautomator2-driver?tab=readme-ov-file#mobile-broadcast
@@ -1486,10 +1518,9 @@ class Shadowstep(ShadowstepBase):
             The actual stdout of the underlying `am` command. An error is thrown if the operation fails.
 
         """
-        self.logger.debug("%s", get_current_func_name())
         return self._execute("mobile: broadcast", params)
 
-    def get_contexts(self) -> Any:
+    def get_contexts(self, wait_for_webview_ms: int = 0) -> Any:
         r"""Execute mobile: getContexts command.
 
         https://github.com/appium/appium-uiautomator2-driver?tab=readme-ov-file#mobile-getcontexts
@@ -1530,10 +1561,12 @@ class Shadowstep(ShadowstepBase):
             }
 
         """
-        self.logger.debug("%s", get_current_func_name())
         return self._execute("mobile: getContexts", params)
 
-    def install_multiple_apks(self) -> Any:
+    def install_multiple_apks(self,
+                              apks: list[str],
+                              options: Any,
+                              ) -> Any:
         """Execute mobile: installMultipleApks command.
 
         https://github.com/appium/appium-uiautomator2-driver?tab=readme-ov-file#mobile-installmultipleapks
@@ -1554,10 +1587,9 @@ class Shadowstep(ShadowstepBase):
             The stdout of the corresponding adb install-multiple command. An error is thrown if the installation fails.
 
         """
-        self.logger.debug("%s", get_current_func_name())
         return self._execute("mobile: installMultipleApks", params)
 
-    def lock(self) -> Any:
+    def lock(self, seconds: int | str | None = None) -> Any:
         """Execute mobile: lock command.
 
         https://github.com/appium/appium-uiautomator2-driver?tab=readme-ov-file#mobile-lock
@@ -1569,10 +1601,14 @@ class Shadowstep(ShadowstepBase):
             seconds (number|string): The number of seconds after which the device should be automatically unlocked. If set to 0 or left empty, the device must be unlocked manually. Optional. Example: 10
 
         """
-        self.logger.debug("%s", get_current_func_name())
         return self._execute("mobile: lock", params)
 
-    def unlock(self) -> Any:
+    def unlock(self,
+               key: str,
+               type: str,
+               strategy: str | None = None,
+               timeout_ms: int | None = None,
+               ) -> Any:
         """Execute mobile: unlock command.
 
         https://github.com/appium/appium-uiautomator2-driver?tab=readme-ov-file#mobile-unlock
@@ -1587,7 +1623,6 @@ class Shadowstep(ShadowstepBase):
             timeoutMs (number): The timeout in milliseconds to wait for a successful unlock. See the documentation for the `appium:unlockSuccessTimeout` capability. Optional. Example: 5000
 
         """
-        self.logger.debug("%s", get_current_func_name())
         return self._execute("mobile: unlock", params)
 
     def is_locked(self) -> Any:
@@ -1602,10 +1637,17 @@ class Shadowstep(ShadowstepBase):
             Either true or false
 
         """
-        self.logger.debug("%s", get_current_func_name())
         return self._execute("mobile: isLocked", params)
 
-    def set_geolocation(self) -> Any:
+    def set_geolocation(self,
+                        latitude: int,
+                        longitude: int,
+                        altitude: int | None = None,
+                        satellites: int | None = None,
+                        speed: int | None = None,
+                        bearing: int | None = None,
+                        accuracy: int | None = None,
+                        ) -> Any:
         """Execute mobile: setGeolocation command.
 
         https://github.com/appium/appium-uiautomator2-driver?tab=readme-ov-file#mobile-setgeolocation
@@ -1623,10 +1665,13 @@ class Shadowstep(ShadowstepBase):
             accuracy (number): Horizontal accuracy in meters. Only available for real devices. Valid value is 0.0 or greater. Optional. Example: 10.0
 
         """
-        self.logger.debug("%s", get_current_func_name())
         return self._execute("mobile: setGeolocation", params)
 
-    def get_geolocation(self) -> Any:
+    def get_geolocation(self,
+                        latitude: int,
+                        longitude: int,
+                        altitude: int,
+                        ) -> Any:
         """Execute mobile: getGeolocation command.
 
         https://github.com/appium/appium-uiautomator2-driver?tab=readme-ov-file#mobile-getgeolocation
@@ -1642,7 +1687,6 @@ class Shadowstep(ShadowstepBase):
             altitude (number): Altitude value in meters. Example: 5.678
 
         """
-        self.logger.debug("%s", get_current_func_name())
         return self._execute("mobile: getGeolocation", params)
 
     def reset_geolocation(self) -> Any:
@@ -1650,20 +1694,10 @@ class Shadowstep(ShadowstepBase):
 
         https://github.com/appium/appium-uiautomator2-driver?tab=readme-ov-file#mobile-resetgeolocation
 
-        Args:
-            params (Union[Dict, List]): Parameters for the mobile command.
-
-        Returns:
-            Any: result of script execution
-
-        Description:
-            Resets mocked geolocation provider to the default/system one. Only works for real devices.
-
         """
-        self.logger.debug("%s", get_current_func_name())
         return self._execute("mobile: resetGeolocation", params)
 
-    def refresh_gps_cache(self) -> Any:
+    def refresh_gps_cache(self, timeout_ms: int = 20000) -> Any:
         """Execute mobile: refreshGpsCache command.
 
         https://github.com/appium/appium-uiautomator2-driver?tab=readme-ov-file#mobile-refreshgpscache
@@ -1678,12 +1712,14 @@ class Shadowstep(ShadowstepBase):
             The actual command output. An error is thrown if the GPS cache refresh fails or the timeout is exceeded.
 
         """
-        self.logger.debug("%s", get_current_func_name())
         return self._execute("mobile: refreshGpsCache", params)
 
     def start_media_projection_recording(
             self,
-            params: dict[str, Any] | list[Any] | None = None,
+            resolution: str | None = None,
+            max_duration_sec: int | None = None,
+            priority: str | None = None,
+            filename: str | None = None,
     ) -> Any:
         """Execute mobile: startMediaProjectionRecording command.
 
@@ -1702,7 +1738,6 @@ class Shadowstep(ShadowstepBase):
             Boolean: True if a new recording has successfully started, False if another recording is currently running.
 
         """
-        self.logger.debug("%s", get_current_func_name())
         return self._execute("mobile: startMediaProjectionRecording", params)
 
     def is_media_projection_recording_running(
@@ -1713,19 +1748,19 @@ class Shadowstep(ShadowstepBase):
 
         https://github.com/appium/appium-uiautomator2-driver?tab=readme-ov-file#mobile-ismediaprojectionrecordingrunning
 
-        Description:
-            Check if a media projection recording is currently running
-
-        Returns:
-            true if a recording is running.
-
         """
-        self.logger.debug("%s", get_current_func_name())
         return self._execute("mobile: isMediaProjectionRecordingRunning", params)
 
     def stop_media_projection_recording(
             self,
-            params: dict[str, Any] | list[Any] | None = None,
+            remote_path: str | None = None,
+            user: str | None = None,
+            password: str | None = None,
+            method: str | None = None,
+            headers: dict[str, str] | None = None,
+            file_field_name: str | None = None,
+            form_fields: dict[str, str] | list[str] | None = None,
+            upload_timeout: int = 240000,
     ) -> Any:
         """Execute mobile: stopMediaProjectionRecording command.
 
@@ -1748,7 +1783,6 @@ class Shadowstep(ShadowstepBase):
             Base64-encoded content of the recorded media file if `remotePath` is falsy or empty. Otherwise, the result depends on the upload response.
 
         """
-        self.logger.debug("%s", get_current_func_name())
         return self._execute("mobile: stopMediaProjectionRecording", params)
 
     def get_connectivity(self) -> Any:
@@ -1769,7 +1803,6 @@ class Shadowstep(ShadowstepBase):
                 airplaneMode (boolean): True if Airplane Mode is enabled.
 
         """
-        self.logger.debug("%s", get_current_func_name())
         return self._execute("mobile: getConnectivity", params)
 
     def set_connectivity(self) -> Any:
@@ -1793,7 +1826,6 @@ class Shadowstep(ShadowstepBase):
             The actual command output. An error is thrown if execution fails.
 
         """
-        self.logger.debug("%s", get_current_func_name())
         return self._execute("mobile: setConnectivity", params)
 
     def get_app_strings(self) -> Any:
@@ -1811,7 +1843,6 @@ class Shadowstep(ShadowstepBase):
             A dictionary mapping resource identifiers to string values for the given language. An error is thrown if execution fails.
 
         """
-        self.logger.debug("%s", get_current_func_name())
         return self._execute("mobile: getAppStrings", params)
 
     def hide_keyboard(self) -> Any:
@@ -1829,7 +1860,6 @@ class Shadowstep(ShadowstepBase):
             Boolean: True if the keyboard was successfully hidden, or False if it was already invisible. An error is thrown if execution fails.
 
         """
-        self.logger.debug("%s", get_current_func_name())
         return self._execute("mobile: hideKeyboard", params)
 
     def is_keyboard_shown(self) -> Any:
@@ -1848,7 +1878,6 @@ class Shadowstep(ShadowstepBase):
 
 
         """
-        self.logger.debug("%s", get_current_func_name())
         return self._execute("mobile: isKeyboardShown", params)
 
     def press_key(self) -> Any:
@@ -1866,7 +1895,6 @@ class Shadowstep(ShadowstepBase):
             isLongPress (boolean): Whether to emulate a long key press. False by default. Optional. Example: True
 
         """
-        self.logger.debug("%s", get_current_func_name())
         return self._execute("mobile: pressKey", params)
 
     def background_app(self) -> Any:
@@ -1884,7 +1912,6 @@ class Shadowstep(ShadowstepBase):
             The actual command output. An error is thrown if the operation fails.
 
         """
-        self.logger.debug("%s", get_current_func_name())
         return self._execute("mobile: backgroundApp", params)
 
     def get_current_activity(self) -> Any:
@@ -1902,7 +1929,6 @@ class Shadowstep(ShadowstepBase):
             The activity class name as a string. Could be None if no activity is currently focused.
 
         """
-        self.logger.debug("%s", get_current_func_name())
         return self._execute("mobile: getCurrentActivity", params)
 
     def get_current_package(self) -> Any:
@@ -1920,7 +1946,6 @@ class Shadowstep(ShadowstepBase):
             The package class name as a string. Could be None if no app is currently focused.
 
         """
-        self.logger.debug("%s", get_current_func_name())
         return self._execute("mobile: getCurrentPackage", params)
 
     def get_display_density(self) -> Any:
@@ -1938,7 +1963,6 @@ class Shadowstep(ShadowstepBase):
             The display density as an integer value representing DPI.
 
         """
-        self.logger.debug("%s", get_current_func_name())
         return self._execute("mobile: getDisplayDensity", params)
 
     def get_system_bars(self) -> Any:
@@ -1961,7 +1985,6 @@ class Shadowstep(ShadowstepBase):
                 height (number): Height of the bar; may be 0 if the bar is not present.
 
         """
-        self.logger.debug("%s", get_current_func_name())
         return self._execute("mobile: getSystemBars", params)
 
     def fingerprint(self) -> Any:
@@ -1979,7 +2002,6 @@ class Shadowstep(ShadowstepBase):
             Emulates a fingerprint scan on the Android Emulator. Only works on API level 23 and above. Available since driver version
 
         """
-        self.logger.debug("%s", get_current_func_name())
         return self._execute("mobile: fingerprint", params)
 
     def send_sms(self) -> Any:
@@ -1998,7 +2020,6 @@ class Shadowstep(ShadowstepBase):
             The actual command output. An error is thrown if SMS emulation fails.
 
         """
-        self.logger.debug("%s", get_current_func_name())
         return self._execute("mobile: sendSms", params)
 
     def gsm_call(self) -> Any:
@@ -2014,7 +2035,6 @@ class Shadowstep(ShadowstepBase):
             action (string): The action to perform on the call. Must be one of 'call', 'accept', 'cancel', or 'hold'. Required. Example: 'accept'
 
         """
-        self.logger.debug("%s", get_current_func_name())
         return self._execute("mobile: gsmCall", params)
 
     def gsm_signal(self) -> Any:
@@ -2032,7 +2052,6 @@ class Shadowstep(ShadowstepBase):
             The actual command output. An error is thrown if GSM signal emulation fails.
 
         """
-        self.logger.debug("%s", get_current_func_name())
         return self._execute("mobile: gsmSignal", params)
 
     def gsm_voice(self) -> Any:
@@ -2050,7 +2069,6 @@ class Shadowstep(ShadowstepBase):
             The actual command output. An error is thrown if GSM voice state emulation fails.
 
         """
-        self.logger.debug("%s", get_current_func_name())
         return self._execute("mobile: gsmVoice", params)
 
     def power_ac(self) -> Any:
@@ -2065,7 +2083,6 @@ class Shadowstep(ShadowstepBase):
             state (str): AC power state to emulate. Must be either 'on' or 'off'. Required. Example: 'off'
 
         """
-        self.logger.debug("%s", get_current_func_name())
         return self._execute("mobile: powerAC", params)
 
     def power_capacity(self) -> Any:
@@ -2080,7 +2097,6 @@ class Shadowstep(ShadowstepBase):
             percent (int): Battery percentage to emulate, must be in the range 0 to 100. Required. Example: 50
 
         """
-        self.logger.debug("%s", get_current_func_name())
         return self._execute("mobile: powerCapacity", params)
 
     def network_speed(self) -> Any:
@@ -2098,7 +2114,6 @@ class Shadowstep(ShadowstepBase):
             The actual command output. An error is thrown if network speed emulation fails.
 
         """
-        self.logger.debug("%s", get_current_func_name())
         return self._execute("mobile: networkSpeed", params)
 
     def replace_element_value(self) -> Any:
@@ -2117,7 +2132,6 @@ class Shadowstep(ShadowstepBase):
             The actual command output. An error is thrown if sending text fails.
 
         """
-        self.logger.debug("%s", get_current_func_name())
         return self._execute("mobile: replaceElementValue", params)
 
     def toggle_gps(self) -> Any:
@@ -2129,7 +2143,6 @@ class Shadowstep(ShadowstepBase):
             Switches GPS setting state. This API only works reliably since Android 12 (API 31). Available since driver version 2.23.
 
         """
-        self.logger.debug("%s", get_current_func_name())
         return self._execute("mobile: toggleGps", params)
 
     def is_gps_enabled(self) -> Any:
@@ -2141,7 +2154,6 @@ class Shadowstep(ShadowstepBase):
             Returns true if GPS is enabled on the device under test. Available since driver version 2.23.
 
         """
-        self.logger.debug("%s", get_current_func_name())
         return self._execute("mobile: isGpsEnabled", params)
 
     def get_performance_data_types(self) -> Any:
@@ -2159,7 +2171,6 @@ class Shadowstep(ShadowstepBase):
             List[str]: A list of supported performance data type names.
 
         """
-        self.logger.debug("%s", get_current_func_name())
         return self._execute("mobile: getPerformanceDataTypes", params)
 
     def get_performance_data(self) -> Any:
@@ -2216,7 +2227,6 @@ class Shadowstep(ShadowstepBase):
                 ]
 
         """
-        self.logger.debug("%s", get_current_func_name())
         return self._execute("mobile: getPerformanceData", params)
 
     def status_bar(self) -> Any:
@@ -2244,7 +2254,6 @@ class Shadowstep(ShadowstepBase):
             str: The actual output from the underlying status bar command. The output depends on the selected command and may be empty.
 
         """
-        self.logger.debug("%s", get_current_func_name())
         return self._execute("mobile: statusBar", params)
 
     def schedule_action(self) -> Any:
@@ -2280,7 +2289,6 @@ class Shadowstep(ShadowstepBase):
             The actual command output. An error is thrown if adding the action fails.
 
         """
-        self.logger.debug("%s", get_current_func_name())
         return self._execute("mobile: scheduleAction", params)
 
     def unschedule_action(self) -> Any:
@@ -2324,7 +2332,6 @@ class Shadowstep(ShadowstepBase):
             assert any(did_execution_pass(execution) for execution in history['stepResults'])
 
         """
-        self.logger.debug("%s", get_current_func_name())
         return self._execute("mobile: unscheduleAction", params)
 
     def get_action_history(self) -> Any:
@@ -2357,7 +2364,6 @@ class Shadowstep(ShadowstepBase):
                 If no exception occurred, this value is None.
 
         """
-        self.logger.debug("%s", get_current_func_name())
         return self._execute("mobile: getActionHistory", params)
 
     def screenshots(self) -> Any:
@@ -2380,7 +2386,6 @@ class Shadowstep(ShadowstepBase):
                 payload (str): PNG screenshot data encoded as a base64 string. Example: "iVBORw0KGgoAAAANSUhEUgAA..."
 
         """
-        self.logger.debug("%s", get_current_func_name())
         return self._execute("mobile: screenshots", params)
 
     def set_ui_mode(self) -> Any:
@@ -2406,7 +2411,6 @@ class Shadowstep(ShadowstepBase):
             The actual command output. An error is thrown if command execution fails.
 
         """
-        self.logger.debug("%s", get_current_func_name())
         return self._execute("mobile: setUiMode", params)
 
     def get_ui_mode(self, mode: Literal["night", "car"]) -> str:
