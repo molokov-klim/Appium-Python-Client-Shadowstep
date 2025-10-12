@@ -1030,7 +1030,7 @@ class Shadowstep(ShadowstepBase):
     def start_screen_streaming(self,
                                width: int | None = None,
                                height: int | None = None,
-                               bitRate: int | None = None,
+                               bitRate: int = 4000000,
                                host: str = "127.0.0.1",
                                path_name: str | None = None,
                                tcp_port: int = 8094,
