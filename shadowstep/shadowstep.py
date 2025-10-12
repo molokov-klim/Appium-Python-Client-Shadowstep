@@ -1785,7 +1785,7 @@ class Shadowstep(ShadowstepBase):
         """
         return self._execute("mobile: stopMediaProjectionRecording", params)
 
-    def get_connectivity(self) -> Any:
+    def get_connectivity(self, services: str | list[str] | None = None) -> Any:
         """Execute mobile: getConnectivity command.
 
         https://github.com/appium/appium-uiautomator2-driver?tab=readme-ov-file#mobile-getconnectivity
@@ -1805,7 +1805,11 @@ class Shadowstep(ShadowstepBase):
         """
         return self._execute("mobile: getConnectivity", params)
 
-    def set_connectivity(self) -> Any:
+    def set_connectivity(self,
+                         wifi: bool = False,
+                         data: bool = False,
+                         airplane_mode: bool = False,
+                         ) -> Any:
         """Execute mobile: setConnectivity command.
 
         https://github.com/appium/appium-uiautomator2-driver?tab=readme-ov-file#mobile-setconnectivity
@@ -1828,7 +1832,7 @@ class Shadowstep(ShadowstepBase):
         """
         return self._execute("mobile: setConnectivity", params)
 
-    def get_app_strings(self) -> Any:
+    def get_app_strings(self, language: str | None = None) -> Any:
         """Execute mobile: getAppStrings command.
 
         https://github.com/appium/appium-uiautomator2-driver?tab=readme-ov-file#mobile-getappstrings
@@ -1853,9 +1857,6 @@ class Shadowstep(ShadowstepBase):
         Description:
             Attempts to hide the on-screen keyboard on the device under test. Throws an exception if the keyboard cannot be hidden. Does nothing if the keyboard is already hidden.
 
-        Args:
-            This method does not accept any arguments.
-
         Returns:
             Boolean: True if the keyboard was successfully hidden, or False if it was already invisible. An error is thrown if execution fails.
 
@@ -1870,17 +1871,18 @@ class Shadowstep(ShadowstepBase):
         Description:
             Checks whether the system on-screen keyboard is currently visible on the device under test.
 
-        Args:
-            This method does not accept any arguments.
-
         Returns:
             Boolean: True if the keyboard is visible, False otherwise. An error is thrown if execution fails.
-
 
         """
         return self._execute("mobile: isKeyboardShown", params)
 
-    def press_key(self) -> Any:
+    def press_key(self,
+                  keycode: int,
+                  metastate: int | None = None,
+                  flags: int | None = None,
+                  is_long_press: bool = False,
+                  ) -> Any:
         """Execute mobile: pressKey command.
 
         https://github.com/appium/appium-uiautomator2-driver?tab=readme-ov-file#mobile-presskey
@@ -1897,7 +1899,7 @@ class Shadowstep(ShadowstepBase):
         """
         return self._execute("mobile: pressKey", params)
 
-    def background_app(self) -> Any:
+    def background_app(self, seconds: int | None = None) -> Any:
         """Execute mobile: backgroundApp command.
 
         https://github.com/appium/appium-uiautomator2-driver?tab=readme-ov-file#mobile-backgroundapp
@@ -1922,9 +1924,6 @@ class Shadowstep(ShadowstepBase):
         Description:
             Retrieves the name of the currently focused app activity on the device under test. Available since driver version 2.20.
 
-        Args:
-            None
-
         Returns:
             The activity class name as a string. Could be None if no activity is currently focused.
 
@@ -1938,9 +1937,6 @@ class Shadowstep(ShadowstepBase):
 
         Description:
             Retrieves the package identifier of the currently focused app on the device under test. Available since driver version 2.20.
-
-        Args:
-            None
 
         Returns:
             The package class name as a string. Could be None if no app is currently focused.
@@ -1956,9 +1952,6 @@ class Shadowstep(ShadowstepBase):
         Description:
             Retrieves the display density of the device under test in dots per inch (DPI). Available since driver version 2.21.
 
-        Args:
-            None
-
         Returns:
             The display density as an integer value representing DPI.
 
@@ -1973,9 +1966,6 @@ class Shadowstep(ShadowstepBase):
         Description:
             Retrieves properties of various system bars on the device under test. Available since driver version 2.21.
 
-        Args:
-            None
-
         Returns:
             A dictionary containing entries for 'statusBar' and 'navigationBar'. Each entry is a dictionary with the following properties:
                 visible (boolean): True if the bar is visible; false if the bar is not present.
@@ -1987,24 +1977,28 @@ class Shadowstep(ShadowstepBase):
         """
         return self._execute("mobile: getSystemBars", params)
 
-    def fingerprint(self) -> Any:
+    def fingerprint(self, fingerprint_id: int) -> Any:
         """Execute mobile: fingerprint command.
 
         https://github.com/appium/appium-uiautomator2-driver?tab=readme-ov-file#mobile-fingerprint
 
+        Description:
+            Emulates a fingerprint scan on the Android Emulator. Only works on API level 23 and above. Available since driver version
+
         Args:
-            params (Union[Dict, List]): Parameters for the mobile command.
+            fingerprintId (number):	The value is the id for the finger that was "scanned". It is a unique integer that you assign for each virtual fingerprint. When the app is running you can run this same command each time the emulator prompts you for a fingerprint, you can run the adb command and pass it the fingerprintId to simulate the fingerprint scan. Required. Example: 1
 
         Returns:
             Any: result of script execution
 
-        Description:
-            Emulates a fingerprint scan on the Android Emulator. Only works on API level 23 and above. Available since driver version
 
         """
         return self._execute("mobile: fingerprint", params)
 
-    def send_sms(self) -> Any:
+    def send_sms(self,
+                 phone_number: str,
+                 message: str,
+                 ) -> Any:
         """Execute mobile: sendSms command.
 
         https://github.com/appium/appium-uiautomator2-driver?tab=readme-ov-file#mobile-sendsms
@@ -2022,7 +2016,10 @@ class Shadowstep(ShadowstepBase):
         """
         return self._execute("mobile: sendSms", params)
 
-    def gsm_call(self) -> Any:
+    def gsm_call(self,
+                 phone_number: str,
+                 action: str,
+                 ) -> Any:
         """Execute mobile: gsmCall command.
 
         https://github.com/appium/appium-uiautomator2-driver?tab=readme-ov-file#mobile-gsmcall
@@ -2037,7 +2034,7 @@ class Shadowstep(ShadowstepBase):
         """
         return self._execute("mobile: gsmCall", params)
 
-    def gsm_signal(self) -> Any:
+    def gsm_signal(self, strength: int) -> Any:
         """Execute mobile: gsmSignal command.
 
         https://github.com/appium/appium-uiautomator2-driver?tab=readme-ov-file#mobile-gsmsignal
@@ -2054,7 +2051,9 @@ class Shadowstep(ShadowstepBase):
         """
         return self._execute("mobile: gsmSignal", params)
 
-    def gsm_voice(self) -> Any:
+    def gsm_voice(self,
+                  state: Literal["on", "off", "denied", "searching", "roaming", "home", "unregistered"],
+                  ) -> Any:
         """Execute mobile: gsmVoice command.
 
         https://github.com/appium/appium-uiautomator2-driver?tab=readme-ov-file#mobile-gsmvoice
@@ -2071,7 +2070,7 @@ class Shadowstep(ShadowstepBase):
         """
         return self._execute("mobile: gsmVoice", params)
 
-    def power_ac(self) -> Any:
+    def power_ac(self, state: Literal["on", "off"]) -> Any:
         """Execute mobile: powerAC command.
 
         https://github.com/appium/appium-uiautomator2-driver?tab=readme-ov-file#mobile-powerac
@@ -2085,7 +2084,7 @@ class Shadowstep(ShadowstepBase):
         """
         return self._execute("mobile: powerAC", params)
 
-    def power_capacity(self) -> Any:
+    def power_capacity(self, percent: int) -> Any:
         """Execute mobile: powerCapacity command.
 
         https://github.com/appium/appium-uiautomator2-driver?tab=readme-ov-file#mobile-powercapacity
@@ -2099,7 +2098,9 @@ class Shadowstep(ShadowstepBase):
         """
         return self._execute("mobile: powerCapacity", params)
 
-    def network_speed(self) -> Any:
+    def network_speed(self,
+                      speed: Literal["gsm", "scsd", "gprs", "edge", "umts", "hsdpa", "lte", "evdo", "full"],
+                      ) -> Any:
         """Execute mobile: networkSpeed command.
 
         https://github.com/appium/appium-uiautomator2-driver?tab=readme-ov-file#mobile-networkspeed
@@ -2116,7 +2117,10 @@ class Shadowstep(ShadowstepBase):
         """
         return self._execute("mobile: networkSpeed", params)
 
-    def replace_element_value(self) -> Any:
+    def replace_element_value(self,
+                              locator,
+                              text: str,
+                              ) -> Any:
         r"""Execute mobile: replaceElementValue command.
 
         https://github.com/appium/appium-uiautomator2-driver?tab=readme-ov-file#mobile-replaceelementvalue
@@ -2164,16 +2168,16 @@ class Shadowstep(ShadowstepBase):
         Description:
             Fetches the list of supported performance data types that can be used as the `dataType` argument for the `mobile: getPerformanceData` extension. Available since driver version 2.24.
 
-        Args:
-            This command does not require any arguments.
-
         Returns:
             List[str]: A list of supported performance data type names.
 
         """
         return self._execute("mobile: getPerformanceDataTypes", params)
 
-    def get_performance_data(self) -> Any:
+    def get_performance_data(self,
+                             package_name: str,
+                             data_type: str,
+                             ) -> Any:
         """Execute mobile: getPerformanceData command.
 
         https://github.com/appium/appium-uiautomator2-driver?tab=readme-ov-file#mobile-getperformancedata
@@ -2229,7 +2233,11 @@ class Shadowstep(ShadowstepBase):
         """
         return self._execute("mobile: getPerformanceData", params)
 
-    def status_bar(self) -> Any:
+    def status_bar(self,
+                   command: Literal[
+                       "expandNotifications", "expandSettings", "collapse", "addTile", "removeTile", "clickTile", "getStatusIcons"],
+                   component: Literal["addTile", "removeTile", "clickTile"],
+                   ) -> Any:
         """Execute mobile: statusBar command.
 
         https://github.com/appium/appium-uiautomator2-driver?tab=readme-ov-file#mobile-statusbar
@@ -2256,117 +2264,9 @@ class Shadowstep(ShadowstepBase):
         """
         return self._execute("mobile: statusBar", params)
 
-    def schedule_action(self) -> Any:
-        """Execute mobile: scheduleAction command.
-
-        https://github.com/appium/appium-uiautomator2-driver?tab=readme-ov-file#mobile-scheduleaction
-
-        Description:
-            Adds a new scheduled action consisting of one or more sequential steps. Each step is executed in order, and the overall action is considered failed if at least one step fails. The action can be configured with limits on rescheduling, execution times, and history retention.
-
-        Args:
-            name (str): Unique name of the action. Required. Example: "popupHandlingAction"
-            steps (List[dict]): List of action steps to execute. Steps are executed sequentially. Required. Example: [{"type": "gesture", "name": "click", "payload": {"subtype": "click", "locator": {"strategy": "id", "selector": "buttonIdentifier"}}}]
-            maxPass (int): Maximum number of times the action can pass before it stops rescheduling. Optional. Example: 1
-            maxFail (int): Maximum number of times the action can fail before it stops rescheduling. Optional. Example: 1
-            times (int): Total number of times the action should execute. Defaults to 1. Optional. Example: 10
-            intervalMs (int): Interval in milliseconds between reschedules. Defaults to 1000 ms. Optional. Example: 100
-            maxHistoryItems (int): Maximum number of history items stored for this action. Defaults to 20. Optional. Example: 100
-
-        Action Step arguments:
-            type (str): Step type. One of "gesture", "source", or "screenshot". Required. Example: "gesture"
-            name (str): Step name for tracking execution history. Required. Example: "click"
-            payload (dict): Step payload. Required. Format depends on step type and subtype.
-
-        Step payload examples:
-            gesture (subtype: click): {"subtype": "click", "locator": {"strategy": "id", "selector": "buttonIdentifier"}}
-            gesture (subtype: longClick): {"subtype": "longClick", "locator": {"strategy": "accessibility id", "selector": "buttonIdentifier"}}
-            gesture (subtype: doubleClick): {"subtype": "doubleClick", "elementId": "yolo", "x": 150, "y": 200}
-            source (subtype: xml): {"subtype": "xml"}
-            screenshot (subtype: png): {"subtype": "png"}
-
-        Returns:
-            The actual command output. An error is thrown if adding the action fails.
-
-        """
-        return self._execute("mobile: scheduleAction", params)
-
-    def unschedule_action(self) -> Any:
-        """Execute mobile: unscheduleAction command.
-
-        https://github.com/appium/appium-uiautomator2-driver?tab=readme-ov-file#mobile-unscheduleaction
-
-        Description:
-            Unschedules a previously scheduled action from asynchronous execution and returns its execution history. Useful for stopping actions that repeatedly interact with the application (e.g., polling UI snapshots or automating popups) and analyzing what steps were executed.
-
-        Args:
-            name (str): Unique name of the action to unschedule. Required. Example: "popupHandlingAction"
-
-        Returns:
-            Dict containing the execution history of the unscheduled action. The structure matches the output of the `mobile: getActionHistory` endpoint, including step results, timestamps, and pass/fail statuses.
-
-        Usage Example:
-            # Schedule an action to capture page source snapshots every second for 30 seconds
-            driver.execute_script('mobile: scheduleAction', {
-                'name': 'myPopupHandlingAction',
-                'steps': [{
-                    'type': 'source',
-                    'name': 'fetchPageSourceStep',
-                    'payload': {'subtype': 'xml'}
-                }],
-                'intervalMs': 1000,
-                'times': 30,
-                'maxHistoryItems': 30,
-            })
-
-            # Later, unschedule the action and retrieve its history
-            history: Dict[str, Any] = driver.execute_script('mobile: unscheduleAction', {
-                'name': 'myPopupHandlingAction',
-            })
-
-            # Example function to check if all steps in an execution passed
-            def did_execution_pass(execution: List[Dict]) -> bool:
-                return all(step['passed'] for step in execution)
-
-            # Assert that at least one execution fully passed
-            assert any(did_execution_pass(execution) for execution in history['stepResults'])
-
-        """
-        return self._execute("mobile: unscheduleAction", params)
-
-    def get_action_history(self) -> Any:
-        """Execute mobile: getActionHistory command.
-
-        https://github.com/appium/appium-uiautomator2-driver?tab=readme-ov-file#mobile-getactionhistory
-
-        Description:
-            Retrieves the execution history of a previously scheduled action. Each action run and its individual steps are recorded, including pass/fail status, results, timestamps, and any exceptions that occurred. An error is thrown if no action with the given name has been scheduled or if it has already been unscheduled.
-
-        Args:
-            name (str): Unique name of the action whose history is being requested. Required. Example: "popupHandlingAction"
-
-        Returns:
-            Dict containing the action execution history:
-
-            repeats (int): Number of times this action has been executed so far. Example: 1
-
-            stepResults (List[List[Dict]]): History of step executions for each action run. The outer list is sorted by execution timestamp in descending order. Its maximum length is limited by the action's maxHistoryItems value. Each step execution is represented as a dictionary with the following keys:
-
-                name (str): Name of the corresponding step. Example: "clickStep"
-                type (str): Type of the step. Example: "gesture"
-                timestamp (int): Unix timestamp in milliseconds when the step execution started. Example: 1685370112000
-                passed (bool): True if the step completed successfully (no exceptions), False otherwise. Example: True
-                result (Any): Actual step result, dependent on step type and subtype. Null if an exception occurred. Example: "something"
-                exception (Dict or None): If the step threw an exception, this dictionary contains:
-                    name (str): Exception class name. Example: "java.lang.Exception"
-                    message (str): Exception message. Example: "Bad things happen"
-                    stacktrace (str): Full exception stack trace. Example: "happened somewhere"
-                If no exception occurred, this value is None.
-
-        """
-        return self._execute("mobile: getActionHistory", params)
-
-    def screenshots(self) -> Any:
+    def screenshots(self,
+                    display_id: int | str | None = None,
+                    ) -> Any:
         """Execute mobile: screenshots command.
 
         https://github.com/appium/appium-uiautomator2-driver?tab=readme-ov-file#mobile-screenshots
@@ -2388,7 +2288,10 @@ class Shadowstep(ShadowstepBase):
         """
         return self._execute("mobile: screenshots", params)
 
-    def set_ui_mode(self) -> Any:
+    def set_ui_mode(self,
+                    mode: Literal["night", "car"],
+                    value,
+                    ) -> Any:
         """Execute mobile: setUiMode command.
 
         https://github.com/appium/appium-uiautomator2-driver?tab=readme-ov-file#mobile-setuimode
