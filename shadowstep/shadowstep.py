@@ -132,11 +132,11 @@ class Shadowstep(ShadowstepBase):
 
     @log_debug()
     def get_element(
-        self,
-        locator: tuple[str, str] | dict[str, Any] | Element | UiSelector,
-        timeout: int = 30,
-        poll_frequency: float = 0.5,
-        ignored_exceptions: WaitExcTypes | None = None,
+            self,
+            locator: tuple[str, str] | dict[str, Any] | Element | UiSelector,
+            timeout: int = 30,
+            poll_frequency: float = 0.5,
+            ignored_exceptions: WaitExcTypes | None = None,
     ) -> Element:
         """Get a single element by locator.
 
@@ -160,11 +160,11 @@ class Shadowstep(ShadowstepBase):
 
     @log_debug()
     def get_elements(
-        self,
-        locator: tuple[str, str] | dict[str, Any] | Element | UiSelector,
-        timeout: int = 30,
-        poll_frequency: float = 0.5,
-        ignored_exceptions: WaitExcTypes | None = None,
+            self,
+            locator: tuple[str, str] | dict[str, Any] | Element | UiSelector,
+            timeout: int = 30,
+            poll_frequency: float = 0.5,
+            ignored_exceptions: WaitExcTypes | None = None,
     ) -> list[Element]:
         """Find multiple elements matching the given locator across the whole page.
 
@@ -198,10 +198,10 @@ class Shadowstep(ShadowstepBase):
 
     @log_debug()
     def get_image(
-        self,
-        image: bytes | NDArray[np.uint8] | Image.Image | str,
-        threshold: float = 0.5,
-        timeout: float = 5.0,
+            self,
+            image: bytes | NDArray[np.uint8] | Image.Image | str,
+            threshold: float = 0.5,
+            timeout: float = 5.0,
     ) -> ShadowstepImage:
         """Return a lazy ShadowstepImage wrapper for the given template.
 
@@ -223,10 +223,10 @@ class Shadowstep(ShadowstepBase):
 
     @log_debug()
     def get_images(
-        self,
-        image: bytes | NDArray[np.uint8] | Image.Image | str,
-        threshold: float = 0.5,
-        timeout: float = 5.0,
+            self,
+            image: bytes | NDArray[np.uint8] | Image.Image | str,
+            threshold: float = 0.5,
+            timeout: float = 5.0,
     ) -> list[ShadowstepImage]:
         """Return a list of ShadowstepImage wrappers for the given template.
 
@@ -252,14 +252,14 @@ class Shadowstep(ShadowstepBase):
 
     @log_debug()
     def schedule_action(  # noqa: PLR0913
-        self,
-        name: str,
-        steps: list[ActionStep],
-        interval_ms: int = 1000,
-        times: int = 1,
-        max_pass: int | None = None,
-        max_fail: int | None = None,
-        max_history_items: int = 20,
+            self,
+            name: str,
+            steps: list[ActionStep],
+            interval_ms: int = 1000,
+            times: int = 1,
+            max_pass: int | None = None,
+            max_fail: int | None = None,
+            max_history_items: int = 20,
     ) -> Shadowstep:
         """Schedule a server-side action sequence.
 
@@ -311,10 +311,10 @@ class Shadowstep(ShadowstepBase):
 
     @log_debug()
     def start_logcat(
-        self,
-        filename: str,
-        port: int | None = None,
-        filters: list[str] | None = None,
+            self,
+            filename: str,
+            port: int | None = None,
+            filters: list[str] | None = None,
     ) -> None:
         """filename: log file name.
 
@@ -422,12 +422,12 @@ class Shadowstep(ShadowstepBase):
     @fail_safe_shadowstep(raise_exception=ShadowstepException)
     @log_debug()
     def drag(
-        self,
-        start_x: int,
-        start_y: int,
-        end_x: int,
-        end_y: int,
-        speed: int,
+            self,
+            start_x: int,
+            start_y: int,
+            end_x: int,
+            end_y: int,
+            speed: int,
     ) -> Shadowstep:
         """Perform a drag gesture from one point to another.
 
@@ -461,13 +461,13 @@ class Shadowstep(ShadowstepBase):
     @fail_safe_shadowstep(raise_exception=ShadowstepException)
     @log_debug()
     def fling(  # noqa: PLR0913
-        self,
-        left: int,
-        top: int,
-        width: int,
-        height: int,
-        direction: Literal["up", "down", "left", "right"],
-        speed: int,
+            self,
+            left: int,
+            top: int,
+            width: int,
+            height: int,
+            direction: Literal["up", "down", "left", "right"],
+            speed: int,
     ) -> Shadowstep:
         """Perform a fling gesture in the specified area.
 
@@ -506,13 +506,13 @@ class Shadowstep(ShadowstepBase):
     @fail_safe_shadowstep(raise_exception=ShadowstepException)
     @log_debug()
     def pinch_open(  # noqa: PLR0913
-        self,
-        left: int,
-        top: int,
-        width: int,
-        height: int,
-        percent: float,
-        speed: int,
+            self,
+            left: int,
+            top: int,
+            width: int,
+            height: int,
+            percent: float,
+            speed: int,
     ) -> Shadowstep:
         """Perform a pinch-open gesture in the given bounding area.
 
@@ -551,13 +551,13 @@ class Shadowstep(ShadowstepBase):
     @fail_safe_shadowstep(raise_exception=ShadowstepException)
     @log_debug()
     def pinch_close(  # noqa: PLR0913
-        self,
-        left: int,
-        top: int,
-        width: int,
-        height: int,
-        percent: float,
-        speed: int,
+            self,
+            left: int,
+            top: int,
+            width: int,
+            height: int,
+            percent: float,
+            speed: int,
     ) -> Shadowstep:
         """Perform a pinch-close gesture in the given bounding area.
 
@@ -596,14 +596,14 @@ class Shadowstep(ShadowstepBase):
     @fail_safe_shadowstep(raise_exception=ShadowstepException)
     @log_debug()
     def swipe(  # noqa: PLR0913
-        self,
-        left: int,
-        top: int,
-        width: int,
-        height: int,
-        direction: Literal["up", "down", "left", "right"],
-        percent: float = 0.5,
-        speed: int = 8000,
+            self,
+            left: int,
+            top: int,
+            width: int,
+            height: int,
+            direction: Literal["up", "down", "left", "right"],
+            percent: float = 0.5,
+            speed: int = 8000,
     ) -> Shadowstep:
         """Perform a swipe gesture within the specified bounding box.
 
@@ -739,14 +739,14 @@ class Shadowstep(ShadowstepBase):
     @fail_safe_shadowstep(raise_exception=ShadowstepException)
     @log_debug()
     def scroll(  # noqa: PLR0913
-        self,
-        left: int,
-        top: int,
-        width: int,
-        height: int,
-        direction: str,
-        percent: float,
-        speed: int,
+            self,
+            left: int,
+            top: int,
+            width: int,
+            height: int,
+            direction: str,
+            percent: float,
+            speed: int,
     ) -> Shadowstep:
         """Perform a scroll gesture in the specified area.
 
@@ -793,9 +793,9 @@ class Shadowstep(ShadowstepBase):
 
     @log_debug()
     def scroll_to_element(
-        self,
-        locator: tuple[str, str] | dict[str, Any] | Element | UiSelector,
-        max_swipes: int = 30,
+            self,
+            locator: tuple[str, str] | dict[str, Any] | Element | UiSelector,
+            max_swipes: int = 30,
     ) -> Element:
         """Scroll to find and return a specific element.
 
@@ -815,11 +815,11 @@ class Shadowstep(ShadowstepBase):
 
     @log_debug()
     def exec_emu_console_command(
-        self,
-        command: str,
-        exec_timeout: int = 60000,
-        conn_timeout: int = 5000,
-        init_timeout: int = 5000,
+            self,
+            command: str,
+            exec_timeout: int = 60000,
+            conn_timeout: int = 5000,
+            init_timeout: int = 5000,
     ) -> Any:
         """Execute mobile: execEmuConsoleCommand command.
 
@@ -846,7 +846,7 @@ class Shadowstep(ShadowstepBase):
         }
         return self.mobile_commands.exec_emu_console_command(params)
 
-    def deep_link(self, params: dict[str, Any] | list[Any] | None = None) -> Any:
+    def deep_link(self, url: str, package: str | None = None, wait_for_launch: bool = True) -> Any:
         """Execute mobile: deepLink command.
 
         https://github.com/appium/appium-uiautomator2-driver?tab=readme-ov-file#mobile-deeplink
@@ -857,39 +857,13 @@ class Shadowstep(ShadowstepBase):
         Args:
             url (string): The URL to start. Required. Example: theapp://login/
             package (string): The name of the package to start the URI with. This argument was required previously but became optional since version 3.9.3. Optional. Example: 'com.mycompany'
-            waitForLaunch (boolean): If false, ADB won't wait for the started activity to return control. Defaults to true. Optional. Example: false
+            wait_for_launch (boolean): If false, ADB won't wait for the started activity to return control. Defaults to true. Optional. Example: false
 
         """
         self.logger.debug("%s", get_current_func_name())
         return self._execute("mobile: deepLink", params)
 
-    def start_logs_broadcast(self, params: dict[str, Any] | list[Any] | None = None) -> Any:
-        """Execute mobile: startLogsBroadcast command.
-
-        https://github.com/appium/appium-uiautomator2-driver?tab=readme-ov-file#mobile-startlogsbroadcast
-
-        Description:
-            Starts Android logcat broadcast websocket on the same host and port where Appium server is running at /ws/session/:sessionId:/appium/device/logcat endpoint. The method will return immediately if the web socket is already listening. Each connected websocket listener will receive logcat log lines as soon as they are visible to Appium. Read Using Mobile Execution Commands to Continuously Stream Device Logs with Appium for more details.
-            Consider using logs broadcast via BiDi over this extension.
-
-        """
-        self.logger.debug("%s", get_current_func_name())
-        return self._execute("mobile: startLogsBroadcast", params)
-
-    def stop_logs_broadcast(self, params: dict[str, Any] | list[Any] | None = None) -> Any:
-        """Execute mobile: stopLogsBroadcast command.
-
-        https://github.com/appium/appium-uiautomator2-driver?tab=readme-ov-file#mobile-stoplogsbroadcast
-
-        Description:
-            Stops the previously started logcat broadcasting websocket server. This method will return immediately if no server is running. Read Using Mobile Execution Commands to Continuously Stream Device Logs with Appium for more details.
-            Consider using logs broadcast via BiDi over this extension.
-
-        """
-        self.logger.debug("%s", get_current_func_name())
-        return self._execute("mobile: stopLogsBroadcast", params)
-
-    def deviceidle(self, params: dict[str, Any] | list[Any] | None = None) -> Any:
+    def deviceidle(self, action: str, packages: str | list[str]) -> Any:
         """Execute mobile: deviceidle command.
 
         https://github.com/appium/appium-uiautomator2-driver?tab=readme-ov-file#mobile-deviceidle
@@ -905,7 +879,7 @@ class Shadowstep(ShadowstepBase):
         self.logger.debug("%s", get_current_func_name())
         return self._execute("mobile: deviceidle", params)
 
-    def accept_alert(self, params: dict[str, Any] | list[Any] | None = None) -> Any:
+    def accept_alert(self, button_label: str | None = None) -> Any:
         """Execute mobile: acceptAlert command.
 
         https://github.com/appium/appium-uiautomator2-driver?tab=readme-ov-file#mobile-acceptalert
@@ -920,7 +894,7 @@ class Shadowstep(ShadowstepBase):
         self.logger.debug("%s", get_current_func_name())
         return self._execute("mobile: acceptAlert", params)
 
-    def dismiss_alert(self, params: dict[str, Any] | list[Any] | None = None) -> Any:
+    def dismiss_alert(self, button_label: str | None = None) -> Any:
         """Execute mobile: dismissAlert command.
 
         https://github.com/appium/appium-uiautomator2-driver?tab=readme-ov-file#mobile-dismissalert
@@ -941,7 +915,7 @@ class Shadowstep(ShadowstepBase):
         self.logger.debug("%s", get_current_func_name())
         return self._execute("mobile: dismissAlert", params)
 
-    def battery_info(self, params: dict[str, Any] | list[Any] | None = None) -> Any:
+    def battery_info(self) -> Any:
         """Execute mobile: batteryInfo command.
 
         https://github.com/appium/appium-uiautomator2-driver?tab=readme-ov-file#mobile-batteryinfo
@@ -965,7 +939,7 @@ class Shadowstep(ShadowstepBase):
         self.logger.debug("%s", get_current_func_name())
         return self._execute("mobile: batteryInfo", params)
 
-    def device_info(self, params: dict[str, Any] | list[Any] | None = None) -> Any:
+    def device_info(self) -> Any:
         """Execute mobile: deviceInfo command.
 
         https://github.com/appium/appium-uiautomator2-driver?tab=readme-ov-file#mobile-deviceinfo
@@ -981,7 +955,7 @@ class Shadowstep(ShadowstepBase):
         self.logger.debug("%s", get_current_func_name())
         return self._execute("mobile: deviceInfo", params)
 
-    def get_device_time(self, params: dict[str, Any] | list[Any] | None = None) -> Any:
+    def get_device_time(self, format: str | None = None) -> Any:
         """Execute mobile: getDeviceTime command.
 
         https://github.com/appium/appium-uiautomator2-driver?tab=readme-ov-file#mobile-getdevicetime
@@ -1000,7 +974,8 @@ class Shadowstep(ShadowstepBase):
         self.logger.debug("%s", get_current_func_name())
         return self._execute("mobile: getDeviceTime", params)
 
-    def change_permissions(self, params: dict[str, Any] | list[Any] | None = None) -> Any:
+    def change_permissions(self, permissions: str | list[str], app_package: str | None = None,
+                           action: str | None = None, target: str | None = None) -> Any:
         """Execute mobile: changePermissions command.
 
         https://github.com/appium/appium-uiautomator2-driver?tab=readme-ov-file#mobile-changepermissions
@@ -1018,7 +993,7 @@ class Shadowstep(ShadowstepBase):
         self.logger.debug("%s", get_current_func_name())
         return self._execute("mobile: changePermissions", params)
 
-    def get_permissions(self, params: dict[str, Any] | list[Any] | None = None) -> Any:
+    def get_permissions(self, type: str | None = None, app_package: str | None = None) -> Any:
         """Execute mobile: getPermissions command.
 
         https://github.com/appium/appium-uiautomator2-driver?tab=readme-ov-file#mobile-getpermissions
@@ -1037,7 +1012,7 @@ class Shadowstep(ShadowstepBase):
         self.logger.debug("%s", get_current_func_name())
         return self._execute("mobile: getPermissions", params)
 
-    def perform_editor_action(self, params: dict[str, Any] | list[Any] | None = None) -> Any:
+    def perform_editor_action(self, action: str) -> Any:
         """Execute mobile: performEditorAction command.
 
         https://github.com/appium/appium-uiautomator2-driver?tab=readme-ov-file#mobile-performeditoraction
@@ -1052,7 +1027,18 @@ class Shadowstep(ShadowstepBase):
         self.logger.debug("%s", get_current_func_name())
         return self._execute("mobile: performEditorAction", params)
 
-    def start_screen_streaming(self, params: dict[str, Any] | list[Any] | None = None) -> Any:
+    def start_screen_streaming(self,
+                               width: int | None = None,
+                               height: int | None = None,
+                               bitRate: int | None = None,
+                               host: str = "127.0.0.1",
+                               path_name: str | None = None,
+                               tcp_port: int = 8094,
+                               port: int = 8093,
+                               quality: int = 70,
+                               consider_rotation: bool = False,
+                               log_pipeline_details: bool = False,
+                               ) -> Any:
         """Execute mobile: startScreenStreaming command.
 
         https://github.com/appium/appium-uiautomator2-driver?tab=readme-ov-file#mobile-startscreenstreaming
@@ -1080,7 +1066,7 @@ class Shadowstep(ShadowstepBase):
         self.logger.debug("%s", get_current_func_name())
         return self._execute("mobile: startScreenStreaming", params)
 
-    def stop_screen_streaming(self, params: dict[str, Any] | list[Any] | None = None) -> Any:
+    def stop_screen_streaming(self) -> Any:
         """Execute mobile: stopScreenStreaming command.
 
         https://github.com/appium/appium-uiautomator2-driver?tab=readme-ov-file#mobile-stopscreenstreaming
@@ -1092,7 +1078,7 @@ class Shadowstep(ShadowstepBase):
         self.logger.debug("%s", get_current_func_name())
         return self._execute("mobile: stopScreenStreaming", params)
 
-    def get_notifications(self, params: dict[str, Any] | list[Any] | None = None) -> Any:
+    def get_notifications(self) -> Any:
         """Execute mobile: getNotifications command.
 
         https://github.com/appium/appium-uiautomator2-driver?tab=readme-ov-file#mobile-getnotifications
@@ -1144,7 +1130,7 @@ class Shadowstep(ShadowstepBase):
         self.logger.debug("%s", get_current_func_name())
         return self._execute("mobile: getNotifications", params)
 
-    def open_notifications(self, params: dict[str, Any] | list[Any] | None = None) -> Any:
+    def open_notifications(self) -> Any:
         """Execute mobile: openNotifications command.
 
         https://github.com/appium/appium-uiautomator2-driver?tab=readme-ov-file#mobile-opennotifications
@@ -1156,7 +1142,7 @@ class Shadowstep(ShadowstepBase):
         self.logger.debug("%s", get_current_func_name())
         return self._execute("mobile: openNotifications", params)
 
-    def list_sms(self, params: dict[str, Any] | list[Any] | None = None) -> Any:
+    def list_sms(self) -> Any:
         r"""Execute mobile: listSms command.
 
         https://github.com/appium/appium-uiautomator2-driver?tab=readme-ov-file#mobile-listsms
@@ -1204,7 +1190,7 @@ class Shadowstep(ShadowstepBase):
         self.logger.debug("%s", get_current_func_name())
         return self._execute("mobile: listSms", params)
 
-    def type(self, params: dict[str, Any] | list[Any] | None = None) -> Any:
+    def type(self) -> Any:
         """Execute mobile: type command.
 
         https://github.com/appium/appium-uiautomator2-driver?tab=readme-ov-file#mobile-type
@@ -1219,7 +1205,7 @@ class Shadowstep(ShadowstepBase):
         self.logger.debug("%s", get_current_func_name())
         return self._execute("mobile: type", params)
 
-    def sensor_set(self, params: dict[str, Any] | list[Any] | None = None) -> Any:
+    def sensor_set(self) -> Any:
         """Execute mobile: sensorSet command.
 
         https://github.com/appium/appium-uiautomator2-driver?tab=readme-ov-file#mobile-sensorset
@@ -1235,7 +1221,7 @@ class Shadowstep(ShadowstepBase):
         self.logger.debug("%s", get_current_func_name())
         return self._execute("mobile: sensorSet", params)
 
-    def delete_file(self, params: dict[str, Any] | list[Any] | None = None) -> Any:
+    def delete_file(self) -> Any:
         """Execute mobile: deleteFile command.
 
         https://github.com/appium/appium-uiautomator2-driver?tab=readme-ov-file#mobile-deletefile
@@ -1250,7 +1236,7 @@ class Shadowstep(ShadowstepBase):
         self.logger.debug("%s", get_current_func_name())
         return self._execute("mobile: deleteFile", params)
 
-    def is_app_installed(self, params: dict[str, Any] | list[Any] | None = None) -> Any:
+    def is_app_installed(self) -> Any:
         """Execute mobile: isAppInstalled command.
 
         https://github.com/appium/appium-uiautomator2-driver?tab=readme-ov-file#mobile-isappinstalled
@@ -1269,7 +1255,7 @@ class Shadowstep(ShadowstepBase):
         self.logger.debug("%s", get_current_func_name())
         return self._execute("mobile: isAppInstalled", params)
 
-    def query_app_state(self, params: dict[str, Any] | list[Any] | None = None) -> Any:
+    def query_app_state(self) -> Any:
         """Execute mobile: queryAppState command.
 
         https://github.com/appium/appium-uiautomator2-driver?tab=readme-ov-file#mobile-queryappstate
@@ -1291,7 +1277,7 @@ class Shadowstep(ShadowstepBase):
         self.logger.debug("%s", get_current_func_name())
         return self._execute("mobile: queryAppState", params)
 
-    def activate_app(self, params: dict[str, Any] | list[Any] | None = None) -> Any:
+    def activate_app(self) -> Any:
         """Execute mobile: activateApp command.
 
         https://github.com/appium/appium-uiautomator2-driver?tab=readme-ov-file#mobile-activateapp
@@ -1306,7 +1292,7 @@ class Shadowstep(ShadowstepBase):
         self.logger.debug("%s", get_current_func_name())
         return self._execute("mobile: activateApp", params)
 
-    def remove_app(self, params: dict[str, Any] | list[Any] | None = None) -> Any:
+    def remove_app(self) -> Any:
         """Execute mobile: removeApp command.
 
         https://github.com/appium/appium-uiautomator2-driver?tab=readme-ov-file#mobile-removeapp
@@ -1326,7 +1312,7 @@ class Shadowstep(ShadowstepBase):
         self.logger.debug("%s", get_current_func_name())
         return self._execute("mobile: removeApp", params)
 
-    def terminate_app(self, params: dict[str, Any] | list[Any] | None = None) -> Any:
+    def terminate_app(self) -> Any:
         """Execute mobile: terminateApp command.
 
         https://github.com/appium/appium-uiautomator2-driver?tab=readme-ov-file#mobile-terminateapp
@@ -1345,7 +1331,7 @@ class Shadowstep(ShadowstepBase):
         self.logger.debug("%s", get_current_func_name())
         return self._execute("mobile: terminateApp", params)
 
-    def install_app(self, params: dict[str, Any] | list[Any] | None = None) -> Any:
+    def install_app(self) -> Any:
         """Execute mobile: installApp command.
 
         https://github.com/appium/appium-uiautomator2-driver?tab=readme-ov-file#mobile-installapp
@@ -1366,7 +1352,7 @@ class Shadowstep(ShadowstepBase):
         self.logger.debug("%s", get_current_func_name())
         return self._execute("mobile: installApp", params)
 
-    def clear_app(self, params: dict[str, Any] | list[Any] | None = None) -> Any:
+    def clear_app(self) -> Any:
         """Execute mobile: clearApp command.
 
         https://github.com/appium/appium-uiautomator2-driver?tab=readme-ov-file#mobile-clearapp
@@ -1384,7 +1370,7 @@ class Shadowstep(ShadowstepBase):
         self.logger.debug("%s", get_current_func_name())
         return self._execute("mobile: clearApp", params)
 
-    def start_activity(self, params: dict[str, Any] | list[Any] | None = None) -> Any:
+    def start_activity(self) -> Any:
         """Execute mobile: startActivity command.
 
         https://github.com/appium/appium-uiautomator2-driver?tab=readme-ov-file#mobile-startactivity
@@ -1416,7 +1402,7 @@ class Shadowstep(ShadowstepBase):
         self.logger.debug("%s", get_current_func_name())
         return self._execute("mobile: startActivity", params)
 
-    def start_service(self, params: dict[str, Any] | list[Any] | None = None) -> Any:
+    def start_service(self) -> Any:
         """Execute mobile: startService command.
 
         https://github.com/appium/appium-uiautomator2-driver?tab=readme-ov-file#mobile-startservice
@@ -1445,7 +1431,7 @@ class Shadowstep(ShadowstepBase):
         self.logger.debug("%s", get_current_func_name())
         return self._execute("mobile: startService", params)
 
-    def stop_service(self, params: dict[str, Any] | list[Any] | None = None) -> Any:
+    def stop_service(self) -> Any:
         """Execute mobile: stopService command.
 
         https://github.com/appium/appium-uiautomator2-driver?tab=readme-ov-file#mobile-stopservice
@@ -1473,7 +1459,7 @@ class Shadowstep(ShadowstepBase):
         self.logger.debug("%s", get_current_func_name())
         return self._execute("mobile: stopService", params)
 
-    def broadcast(self, params: dict[str, Any] | list[Any] | None = None) -> Any:
+    def broadcast(self) -> Any:
         """Execute mobile: broadcast command.
 
         https://github.com/appium/appium-uiautomator2-driver?tab=readme-ov-file#mobile-broadcast
@@ -1503,7 +1489,7 @@ class Shadowstep(ShadowstepBase):
         self.logger.debug("%s", get_current_func_name())
         return self._execute("mobile: broadcast", params)
 
-    def get_contexts(self, params: dict[str, Any] | list[Any] | None = None) -> Any:
+    def get_contexts(self) -> Any:
         r"""Execute mobile: getContexts command.
 
         https://github.com/appium/appium-uiautomator2-driver?tab=readme-ov-file#mobile-getcontexts
@@ -1547,7 +1533,7 @@ class Shadowstep(ShadowstepBase):
         self.logger.debug("%s", get_current_func_name())
         return self._execute("mobile: getContexts", params)
 
-    def install_multiple_apks(self, params: dict[str, Any] | list[Any] | None = None) -> Any:
+    def install_multiple_apks(self) -> Any:
         """Execute mobile: installMultipleApks command.
 
         https://github.com/appium/appium-uiautomator2-driver?tab=readme-ov-file#mobile-installmultipleapks
@@ -1571,7 +1557,7 @@ class Shadowstep(ShadowstepBase):
         self.logger.debug("%s", get_current_func_name())
         return self._execute("mobile: installMultipleApks", params)
 
-    def lock(self, params: dict[str, Any] | list[Any] | None = None) -> Any:
+    def lock(self) -> Any:
         """Execute mobile: lock command.
 
         https://github.com/appium/appium-uiautomator2-driver?tab=readme-ov-file#mobile-lock
@@ -1586,7 +1572,7 @@ class Shadowstep(ShadowstepBase):
         self.logger.debug("%s", get_current_func_name())
         return self._execute("mobile: lock", params)
 
-    def unlock(self, params: dict[str, Any] | list[Any] | None = None) -> Any:
+    def unlock(self) -> Any:
         """Execute mobile: unlock command.
 
         https://github.com/appium/appium-uiautomator2-driver?tab=readme-ov-file#mobile-unlock
@@ -1604,7 +1590,7 @@ class Shadowstep(ShadowstepBase):
         self.logger.debug("%s", get_current_func_name())
         return self._execute("mobile: unlock", params)
 
-    def is_locked(self, params: dict[str, Any] | list[Any] | None = None) -> Any:
+    def is_locked(self) -> Any:
         """Execute mobile: isLocked command.
 
         https://github.com/appium/appium-uiautomator2-driver?tab=readme-ov-file#mobile-islocked
@@ -1619,7 +1605,7 @@ class Shadowstep(ShadowstepBase):
         self.logger.debug("%s", get_current_func_name())
         return self._execute("mobile: isLocked", params)
 
-    def set_geolocation(self, params: dict[str, Any] | list[Any] | None = None) -> Any:
+    def set_geolocation(self) -> Any:
         """Execute mobile: setGeolocation command.
 
         https://github.com/appium/appium-uiautomator2-driver?tab=readme-ov-file#mobile-setgeolocation
@@ -1640,7 +1626,7 @@ class Shadowstep(ShadowstepBase):
         self.logger.debug("%s", get_current_func_name())
         return self._execute("mobile: setGeolocation", params)
 
-    def get_geolocation(self, params: dict[str, Any] | list[Any] | None = None) -> Any:
+    def get_geolocation(self) -> Any:
         """Execute mobile: getGeolocation command.
 
         https://github.com/appium/appium-uiautomator2-driver?tab=readme-ov-file#mobile-getgeolocation
@@ -1659,7 +1645,7 @@ class Shadowstep(ShadowstepBase):
         self.logger.debug("%s", get_current_func_name())
         return self._execute("mobile: getGeolocation", params)
 
-    def reset_geolocation(self, params: dict[str, Any] | list[Any] | None = None) -> Any:
+    def reset_geolocation(self) -> Any:
         """Execute mobile: resetGeolocation command.
 
         https://github.com/appium/appium-uiautomator2-driver?tab=readme-ov-file#mobile-resetgeolocation
@@ -1677,7 +1663,7 @@ class Shadowstep(ShadowstepBase):
         self.logger.debug("%s", get_current_func_name())
         return self._execute("mobile: resetGeolocation", params)
 
-    def refresh_gps_cache(self, params: dict[str, Any] | list[Any] | None = None) -> Any:
+    def refresh_gps_cache(self) -> Any:
         """Execute mobile: refreshGpsCache command.
 
         https://github.com/appium/appium-uiautomator2-driver?tab=readme-ov-file#mobile-refreshgpscache
@@ -1696,8 +1682,8 @@ class Shadowstep(ShadowstepBase):
         return self._execute("mobile: refreshGpsCache", params)
 
     def start_media_projection_recording(
-        self,
-        params: dict[str, Any] | list[Any] | None = None,
+            self,
+            params: dict[str, Any] | list[Any] | None = None,
     ) -> Any:
         """Execute mobile: startMediaProjectionRecording command.
 
@@ -1720,8 +1706,8 @@ class Shadowstep(ShadowstepBase):
         return self._execute("mobile: startMediaProjectionRecording", params)
 
     def is_media_projection_recording_running(
-        self,
-        params: dict[str, Any] | list[Any] | None = None,
+            self,
+            params: dict[str, Any] | list[Any] | None = None,
     ) -> Any:
         """Execute mobile: isMediaProjectionRecordingRunning command.
 
@@ -1738,8 +1724,8 @@ class Shadowstep(ShadowstepBase):
         return self._execute("mobile: isMediaProjectionRecordingRunning", params)
 
     def stop_media_projection_recording(
-        self,
-        params: dict[str, Any] | list[Any] | None = None,
+            self,
+            params: dict[str, Any] | list[Any] | None = None,
     ) -> Any:
         """Execute mobile: stopMediaProjectionRecording command.
 
@@ -1765,7 +1751,7 @@ class Shadowstep(ShadowstepBase):
         self.logger.debug("%s", get_current_func_name())
         return self._execute("mobile: stopMediaProjectionRecording", params)
 
-    def get_connectivity(self, params: dict[str, Any] | list[Any] | None = None) -> Any:
+    def get_connectivity(self) -> Any:
         """Execute mobile: getConnectivity command.
 
         https://github.com/appium/appium-uiautomator2-driver?tab=readme-ov-file#mobile-getconnectivity
@@ -1786,7 +1772,7 @@ class Shadowstep(ShadowstepBase):
         self.logger.debug("%s", get_current_func_name())
         return self._execute("mobile: getConnectivity", params)
 
-    def set_connectivity(self, params: dict[str, Any] | list[Any] | None = None) -> Any:
+    def set_connectivity(self) -> Any:
         """Execute mobile: setConnectivity command.
 
         https://github.com/appium/appium-uiautomator2-driver?tab=readme-ov-file#mobile-setconnectivity
@@ -1810,7 +1796,7 @@ class Shadowstep(ShadowstepBase):
         self.logger.debug("%s", get_current_func_name())
         return self._execute("mobile: setConnectivity", params)
 
-    def get_app_strings(self, params: dict[str, Any] | list[Any] | None = None) -> Any:
+    def get_app_strings(self) -> Any:
         """Execute mobile: getAppStrings command.
 
         https://github.com/appium/appium-uiautomator2-driver?tab=readme-ov-file#mobile-getappstrings
@@ -1828,7 +1814,7 @@ class Shadowstep(ShadowstepBase):
         self.logger.debug("%s", get_current_func_name())
         return self._execute("mobile: getAppStrings", params)
 
-    def hide_keyboard(self, params: dict[str, Any] | list[Any] | None = None) -> Any:
+    def hide_keyboard(self) -> Any:
         """Execute mobile: hideKeyboard command.
 
         https://github.com/appium/appium-uiautomator2-driver?tab=readme-ov-file#mobile-hidekeyboard
@@ -1846,7 +1832,7 @@ class Shadowstep(ShadowstepBase):
         self.logger.debug("%s", get_current_func_name())
         return self._execute("mobile: hideKeyboard", params)
 
-    def is_keyboard_shown(self, params: dict[str, Any] | list[Any] | None = None) -> Any:
+    def is_keyboard_shown(self) -> Any:
         """Execute mobile: isKeyboardShown command.
 
         https://github.com/appium/appium-uiautomator2-driver?tab=readme-ov-file#mobile-iskeyboardshown
@@ -1865,7 +1851,7 @@ class Shadowstep(ShadowstepBase):
         self.logger.debug("%s", get_current_func_name())
         return self._execute("mobile: isKeyboardShown", params)
 
-    def press_key(self, params: dict[str, Any] | list[Any] | None = None) -> Any:
+    def press_key(self) -> Any:
         """Execute mobile: pressKey command.
 
         https://github.com/appium/appium-uiautomator2-driver?tab=readme-ov-file#mobile-presskey
@@ -1883,7 +1869,7 @@ class Shadowstep(ShadowstepBase):
         self.logger.debug("%s", get_current_func_name())
         return self._execute("mobile: pressKey", params)
 
-    def background_app(self, params: dict[str, Any] | list[Any] | None = None) -> Any:
+    def background_app(self) -> Any:
         """Execute mobile: backgroundApp command.
 
         https://github.com/appium/appium-uiautomator2-driver?tab=readme-ov-file#mobile-backgroundapp
@@ -1901,7 +1887,7 @@ class Shadowstep(ShadowstepBase):
         self.logger.debug("%s", get_current_func_name())
         return self._execute("mobile: backgroundApp", params)
 
-    def get_current_activity(self, params: dict[str, Any] | list[Any] | None = None) -> Any:
+    def get_current_activity(self) -> Any:
         """Execute mobile: getCurrentActivity command.
 
         https://github.com/appium/appium-uiautomator2-driver?tab=readme-ov-file#mobile-getcurrentactivity
@@ -1919,7 +1905,7 @@ class Shadowstep(ShadowstepBase):
         self.logger.debug("%s", get_current_func_name())
         return self._execute("mobile: getCurrentActivity", params)
 
-    def get_current_package(self, params: dict[str, Any] | list[Any] | None = None) -> Any:
+    def get_current_package(self) -> Any:
         """Execute mobile: getCurrentPackage command.
 
         https://github.com/appium/appium-uiautomator2-driver?tab=readme-ov-file#mobile-getcurrentpackage
@@ -1937,7 +1923,7 @@ class Shadowstep(ShadowstepBase):
         self.logger.debug("%s", get_current_func_name())
         return self._execute("mobile: getCurrentPackage", params)
 
-    def get_display_density(self, params: dict[str, Any] | list[Any] | None = None) -> Any:
+    def get_display_density(self) -> Any:
         """Execute mobile: getDisplayDensity command.
 
         https://github.com/appium/appium-uiautomator2-driver?tab=readme-ov-file#mobile-getdisplaydensity
@@ -1955,7 +1941,7 @@ class Shadowstep(ShadowstepBase):
         self.logger.debug("%s", get_current_func_name())
         return self._execute("mobile: getDisplayDensity", params)
 
-    def get_system_bars(self, params: dict[str, Any] | list[Any] | None = None) -> Any:
+    def get_system_bars(self) -> Any:
         """Execute mobile: getSystemBars command.
 
         https://github.com/appium/appium-uiautomator2-driver?tab=readme-ov-file#mobile-getsystembars
@@ -1978,7 +1964,7 @@ class Shadowstep(ShadowstepBase):
         self.logger.debug("%s", get_current_func_name())
         return self._execute("mobile: getSystemBars", params)
 
-    def fingerprint(self, params: dict[str, Any] | list[Any] | None = None) -> Any:
+    def fingerprint(self) -> Any:
         """Execute mobile: fingerprint command.
 
         https://github.com/appium/appium-uiautomator2-driver?tab=readme-ov-file#mobile-fingerprint
@@ -1996,7 +1982,7 @@ class Shadowstep(ShadowstepBase):
         self.logger.debug("%s", get_current_func_name())
         return self._execute("mobile: fingerprint", params)
 
-    def send_sms(self, params: dict[str, Any] | list[Any] | None = None) -> Any:
+    def send_sms(self) -> Any:
         """Execute mobile: sendSms command.
 
         https://github.com/appium/appium-uiautomator2-driver?tab=readme-ov-file#mobile-sendsms
@@ -2015,7 +2001,7 @@ class Shadowstep(ShadowstepBase):
         self.logger.debug("%s", get_current_func_name())
         return self._execute("mobile: sendSms", params)
 
-    def gsm_call(self, params: dict[str, Any] | list[Any] | None = None) -> Any:
+    def gsm_call(self) -> Any:
         """Execute mobile: gsmCall command.
 
         https://github.com/appium/appium-uiautomator2-driver?tab=readme-ov-file#mobile-gsmcall
@@ -2031,7 +2017,7 @@ class Shadowstep(ShadowstepBase):
         self.logger.debug("%s", get_current_func_name())
         return self._execute("mobile: gsmCall", params)
 
-    def gsm_signal(self, params: dict[str, Any] | list[Any] | None = None) -> Any:
+    def gsm_signal(self) -> Any:
         """Execute mobile: gsmSignal command.
 
         https://github.com/appium/appium-uiautomator2-driver?tab=readme-ov-file#mobile-gsmsignal
@@ -2049,7 +2035,7 @@ class Shadowstep(ShadowstepBase):
         self.logger.debug("%s", get_current_func_name())
         return self._execute("mobile: gsmSignal", params)
 
-    def gsm_voice(self, params: dict[str, Any] | list[Any] | None = None) -> Any:
+    def gsm_voice(self) -> Any:
         """Execute mobile: gsmVoice command.
 
         https://github.com/appium/appium-uiautomator2-driver?tab=readme-ov-file#mobile-gsmvoice
@@ -2067,7 +2053,7 @@ class Shadowstep(ShadowstepBase):
         self.logger.debug("%s", get_current_func_name())
         return self._execute("mobile: gsmVoice", params)
 
-    def power_ac(self, params: dict[str, Any] | list[Any] | None = None) -> Any:
+    def power_ac(self) -> Any:
         """Execute mobile: powerAC command.
 
         https://github.com/appium/appium-uiautomator2-driver?tab=readme-ov-file#mobile-powerac
@@ -2082,7 +2068,7 @@ class Shadowstep(ShadowstepBase):
         self.logger.debug("%s", get_current_func_name())
         return self._execute("mobile: powerAC", params)
 
-    def power_capacity(self, params: dict[str, Any] | list[Any] | None = None) -> Any:
+    def power_capacity(self) -> Any:
         """Execute mobile: powerCapacity command.
 
         https://github.com/appium/appium-uiautomator2-driver?tab=readme-ov-file#mobile-powercapacity
@@ -2097,7 +2083,7 @@ class Shadowstep(ShadowstepBase):
         self.logger.debug("%s", get_current_func_name())
         return self._execute("mobile: powerCapacity", params)
 
-    def network_speed(self, params: dict[str, Any] | list[Any] | None = None) -> Any:
+    def network_speed(self) -> Any:
         """Execute mobile: networkSpeed command.
 
         https://github.com/appium/appium-uiautomator2-driver?tab=readme-ov-file#mobile-networkspeed
@@ -2115,7 +2101,7 @@ class Shadowstep(ShadowstepBase):
         self.logger.debug("%s", get_current_func_name())
         return self._execute("mobile: networkSpeed", params)
 
-    def replace_element_value(self, params: dict[str, Any] | list[Any] | None = None) -> Any:
+    def replace_element_value(self) -> Any:
         r"""Execute mobile: replaceElementValue command.
 
         https://github.com/appium/appium-uiautomator2-driver?tab=readme-ov-file#mobile-replaceelementvalue
@@ -2134,7 +2120,7 @@ class Shadowstep(ShadowstepBase):
         self.logger.debug("%s", get_current_func_name())
         return self._execute("mobile: replaceElementValue", params)
 
-    def toggle_gps(self, params: dict[str, Any] | list[Any] | None = None) -> Any:
+    def toggle_gps(self) -> Any:
         """Execute mobile: toggleGps command.
 
         https://github.com/appium/appium-uiautomator2-driver?tab=readme-ov-file#mobile-togglegps
@@ -2146,7 +2132,7 @@ class Shadowstep(ShadowstepBase):
         self.logger.debug("%s", get_current_func_name())
         return self._execute("mobile: toggleGps", params)
 
-    def is_gps_enabled(self, params: dict[str, Any] | list[Any] | None = None) -> Any:
+    def is_gps_enabled(self) -> Any:
         """Execute mobile: isGpsEnabled command.
 
         https://github.com/appium/appium-uiautomator2-driver?tab=readme-ov-file#mobile-isgpsenabled
@@ -2158,7 +2144,7 @@ class Shadowstep(ShadowstepBase):
         self.logger.debug("%s", get_current_func_name())
         return self._execute("mobile: isGpsEnabled", params)
 
-    def get_performance_data_types(self, params: dict[str, Any] | list[Any] | None = None) -> Any:
+    def get_performance_data_types(self) -> Any:
         """Execute mobile: getPerformanceDataTypes command.
 
         https://github.com/appium/appium-uiautomator2-driver?tab=readme-ov-file#mobile-getperformancedatatypes
@@ -2176,7 +2162,7 @@ class Shadowstep(ShadowstepBase):
         self.logger.debug("%s", get_current_func_name())
         return self._execute("mobile: getPerformanceDataTypes", params)
 
-    def get_performance_data(self, params: dict[str, Any] | list[Any] | None = None) -> Any:
+    def get_performance_data(self) -> Any:
         """Execute mobile: getPerformanceData command.
 
         https://github.com/appium/appium-uiautomator2-driver?tab=readme-ov-file#mobile-getperformancedata
@@ -2233,7 +2219,7 @@ class Shadowstep(ShadowstepBase):
         self.logger.debug("%s", get_current_func_name())
         return self._execute("mobile: getPerformanceData", params)
 
-    def status_bar(self, params: dict[str, Any] | list[Any] | None = None) -> Any:
+    def status_bar(self) -> Any:
         """Execute mobile: statusBar command.
 
         https://github.com/appium/appium-uiautomator2-driver?tab=readme-ov-file#mobile-statusbar
@@ -2261,7 +2247,7 @@ class Shadowstep(ShadowstepBase):
         self.logger.debug("%s", get_current_func_name())
         return self._execute("mobile: statusBar", params)
 
-    def schedule_action(self, params: dict[str, Any] | list[Any] | None = None) -> Any:
+    def schedule_action(self) -> Any:
         """Execute mobile: scheduleAction command.
 
         https://github.com/appium/appium-uiautomator2-driver?tab=readme-ov-file#mobile-scheduleaction
@@ -2297,7 +2283,7 @@ class Shadowstep(ShadowstepBase):
         self.logger.debug("%s", get_current_func_name())
         return self._execute("mobile: scheduleAction", params)
 
-    def unschedule_action(self, params: dict[str, Any] | list[Any] | None = None) -> Any:
+    def unschedule_action(self) -> Any:
         """Execute mobile: unscheduleAction command.
 
         https://github.com/appium/appium-uiautomator2-driver?tab=readme-ov-file#mobile-unscheduleaction
@@ -2341,7 +2327,7 @@ class Shadowstep(ShadowstepBase):
         self.logger.debug("%s", get_current_func_name())
         return self._execute("mobile: unscheduleAction", params)
 
-    def get_action_history(self, params: dict[str, Any] | list[Any] | None = None) -> Any:
+    def get_action_history(self) -> Any:
         """Execute mobile: getActionHistory command.
 
         https://github.com/appium/appium-uiautomator2-driver?tab=readme-ov-file#mobile-getactionhistory
@@ -2374,7 +2360,7 @@ class Shadowstep(ShadowstepBase):
         self.logger.debug("%s", get_current_func_name())
         return self._execute("mobile: getActionHistory", params)
 
-    def screenshots(self, params: dict[str, Any] | list[Any] | None = None) -> Any:
+    def screenshots(self) -> Any:
         """Execute mobile: screenshots command.
 
         https://github.com/appium/appium-uiautomator2-driver?tab=readme-ov-file#mobile-screenshots
@@ -2397,7 +2383,7 @@ class Shadowstep(ShadowstepBase):
         self.logger.debug("%s", get_current_func_name())
         return self._execute("mobile: screenshots", params)
 
-    def set_ui_mode(self, params: dict[str, Any] | list[Any] | None = None) -> Any:
+    def set_ui_mode(self) -> Any:
         """Execute mobile: setUiMode command.
 
         https://github.com/appium/appium-uiautomator2-driver?tab=readme-ov-file#mobile-setuimode
@@ -2446,17 +2432,17 @@ class Shadowstep(ShadowstepBase):
         return self.mobile_commands.get_ui_mode({"mode": mode})
 
     def send_trim_memory(
-        self,
-        pkg: str,
-        level: Literal[
-            "COMPLETE",
-            "MODERATE",
-            "BACKGROUND",
-            "UI_HIDDEN",
-            "RUNNING_CRITICAL",
-            "RUNNING_LOW",
-            "RUNNING_MODERATE",
-        ],
+            self,
+            pkg: str,
+            level: Literal[
+                "COMPLETE",
+                "MODERATE",
+                "BACKGROUND",
+                "UI_HIDDEN",
+                "RUNNING_CRITICAL",
+                "RUNNING_LOW",
+                "RUNNING_MODERATE",
+            ],
     ) -> Any:
         """Execute mobile: sendTrimMemory command.
 
@@ -2616,10 +2602,10 @@ class Shadowstep(ShadowstepBase):
         return self.mobile_commands.get_clipboard()
 
     def set_clipboard(
-        self,
-        content: str,
-        content_type: str = "plaintext",
-        label: str | None = None,
+            self,
+            content: str,
+            content_type: str = "plaintext",
+            label: str | None = None,
     ) -> Any:
         """Execute mobile: setClipboard command.
 
