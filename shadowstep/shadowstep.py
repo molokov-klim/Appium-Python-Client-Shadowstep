@@ -132,11 +132,11 @@ class Shadowstep(ShadowstepBase):
 
     @log_debug()
     def get_element(
-            self,
-            locator: tuple[str, str] | dict[str, Any] | Element | UiSelector,
-            timeout: int = 30,
-            poll_frequency: float = 0.5,
-            ignored_exceptions: WaitExcTypes | None = None,
+        self,
+        locator: tuple[str, str] | dict[str, Any] | Element | UiSelector,
+        timeout: int = 30,
+        poll_frequency: float = 0.5,
+        ignored_exceptions: WaitExcTypes | None = None,
     ) -> Element:
         """Get a single element by locator.
 
@@ -160,11 +160,11 @@ class Shadowstep(ShadowstepBase):
 
     @log_debug()
     def get_elements(
-            self,
-            locator: tuple[str, str] | dict[str, Any] | Element | UiSelector,
-            timeout: int = 30,
-            poll_frequency: float = 0.5,
-            ignored_exceptions: WaitExcTypes | None = None,
+        self,
+        locator: tuple[str, str] | dict[str, Any] | Element | UiSelector,
+        timeout: int = 30,
+        poll_frequency: float = 0.5,
+        ignored_exceptions: WaitExcTypes | None = None,
     ) -> list[Element]:
         """Find multiple elements matching the given locator across the whole page.
 
@@ -198,10 +198,10 @@ class Shadowstep(ShadowstepBase):
 
     @log_debug()
     def get_image(
-            self,
-            image: bytes | NDArray[np.uint8] | Image.Image | str,
-            threshold: float = 0.5,
-            timeout: float = 5.0,
+        self,
+        image: bytes | NDArray[np.uint8] | Image.Image | str,
+        threshold: float = 0.5,
+        timeout: float = 5.0,
     ) -> ShadowstepImage:
         """Return a lazy ShadowstepImage wrapper for the given template.
 
@@ -223,10 +223,10 @@ class Shadowstep(ShadowstepBase):
 
     @log_debug()
     def get_images(
-            self,
-            image: bytes | NDArray[np.uint8] | Image.Image | str,
-            threshold: float = 0.5,
-            timeout: float = 5.0,
+        self,
+        image: bytes | NDArray[np.uint8] | Image.Image | str,
+        threshold: float = 0.5,
+        timeout: float = 5.0,
     ) -> list[ShadowstepImage]:
         """Return a list of ShadowstepImage wrappers for the given template.
 
@@ -252,14 +252,14 @@ class Shadowstep(ShadowstepBase):
 
     @log_debug()
     def schedule_action(  # noqa: PLR0913
-            self,
-            name: str,
-            steps: list[ActionStep],
-            interval_ms: int = 1000,
-            times: int = 1,
-            max_pass: int | None = None,
-            max_fail: int | None = None,
-            max_history_items: int = 20,
+        self,
+        name: str,
+        steps: list[ActionStep],
+        interval_ms: int = 1000,
+        times: int = 1,
+        max_pass: int | None = None,
+        max_fail: int | None = None,
+        max_history_items: int = 20,
     ) -> Shadowstep:
         """Schedule a server-side action sequence.
 
@@ -311,10 +311,10 @@ class Shadowstep(ShadowstepBase):
 
     @log_debug()
     def start_logcat(
-            self,
-            filename: str,
-            port: int | None = None,
-            filters: list[str] | None = None,
+        self,
+        filename: str,
+        port: int | None = None,
+        filters: list[str] | None = None,
     ) -> None:
         """filename: log file name.
 
@@ -422,12 +422,12 @@ class Shadowstep(ShadowstepBase):
     @fail_safe_shadowstep(raise_exception=ShadowstepException)
     @log_debug()
     def drag(
-            self,
-            start_x: int,
-            start_y: int,
-            end_x: int,
-            end_y: int,
-            speed: int,
+        self,
+        start_x: int,
+        start_y: int,
+        end_x: int,
+        end_y: int,
+        speed: int,
     ) -> Shadowstep:
         """Perform a drag gesture from one point to another.
 
@@ -461,13 +461,13 @@ class Shadowstep(ShadowstepBase):
     @fail_safe_shadowstep(raise_exception=ShadowstepException)
     @log_debug()
     def fling(  # noqa: PLR0913
-            self,
-            left: int,
-            top: int,
-            width: int,
-            height: int,
-            direction: Literal["up", "down", "left", "right"],
-            speed: int,
+        self,
+        left: int,
+        top: int,
+        width: int,
+        height: int,
+        direction: Literal["up", "down", "left", "right"],
+        speed: int,
     ) -> Shadowstep:
         """Perform a fling gesture in the specified area.
 
@@ -506,13 +506,13 @@ class Shadowstep(ShadowstepBase):
     @fail_safe_shadowstep(raise_exception=ShadowstepException)
     @log_debug()
     def pinch_open(  # noqa: PLR0913
-            self,
-            left: int,
-            top: int,
-            width: int,
-            height: int,
-            percent: float,
-            speed: int,
+        self,
+        left: int,
+        top: int,
+        width: int,
+        height: int,
+        percent: float,
+        speed: int,
     ) -> Shadowstep:
         """Perform a pinch-open gesture in the given bounding area.
 
@@ -551,13 +551,13 @@ class Shadowstep(ShadowstepBase):
     @fail_safe_shadowstep(raise_exception=ShadowstepException)
     @log_debug()
     def pinch_close(  # noqa: PLR0913
-            self,
-            left: int,
-            top: int,
-            width: int,
-            height: int,
-            percent: float,
-            speed: int,
+        self,
+        left: int,
+        top: int,
+        width: int,
+        height: int,
+        percent: float,
+        speed: int,
     ) -> Shadowstep:
         """Perform a pinch-close gesture in the given bounding area.
 
@@ -596,14 +596,14 @@ class Shadowstep(ShadowstepBase):
     @fail_safe_shadowstep(raise_exception=ShadowstepException)
     @log_debug()
     def swipe(  # noqa: PLR0913
-            self,
-            left: int,
-            top: int,
-            width: int,
-            height: int,
-            direction: Literal["up", "down", "left", "right"],
-            percent: float = 0.5,
-            speed: int = 8000,
+        self,
+        left: int,
+        top: int,
+        width: int,
+        height: int,
+        direction: Literal["up", "down", "left", "right"],
+        percent: float = 0.5,
+        speed: int = 8000,
     ) -> Shadowstep:
         """Perform a swipe gesture within the specified bounding box.
 
@@ -739,14 +739,14 @@ class Shadowstep(ShadowstepBase):
     @fail_safe_shadowstep(raise_exception=ShadowstepException)
     @log_debug()
     def scroll(  # noqa: PLR0913
-            self,
-            left: int,
-            top: int,
-            width: int,
-            height: int,
-            direction: str,
-            percent: float,
-            speed: int,
+        self,
+        left: int,
+        top: int,
+        width: int,
+        height: int,
+        direction: str,
+        percent: float,
+        speed: int,
     ) -> Shadowstep:
         """Perform a scroll gesture in the specified area.
 
@@ -793,9 +793,9 @@ class Shadowstep(ShadowstepBase):
 
     @log_debug()
     def scroll_to_element(
-            self,
-            locator: tuple[str, str] | dict[str, Any] | Element | UiSelector,
-            max_swipes: int = 30,
+        self,
+        locator: tuple[str, str] | dict[str, Any] | Element | UiSelector,
+        max_swipes: int = 30,
     ) -> Element:
         """Scroll to find and return a specific element.
 
@@ -815,11 +815,11 @@ class Shadowstep(ShadowstepBase):
 
     @log_debug()
     def exec_emu_console_command(
-            self,
-            command: str,
-            exec_timeout: int = 60000,
-            conn_timeout: int = 5000,
-            init_timeout: int = 5000,
+        self,
+        command: str,
+        exec_timeout: int = 60000,
+        conn_timeout: int = 5000,
+        init_timeout: int = 5000,
     ) -> Any:
         """Execute mobile: execEmuConsoleCommand command.
 
@@ -846,7 +846,7 @@ class Shadowstep(ShadowstepBase):
         }
         return self.mobile_commands.exec_emu_console_command(params)
 
-    def deep_link(self, url: str, package: str | None = None, wait_for_launch: bool = True) -> Any:
+    def deep_link(self, url: str, package: str | None = None, wait_for_launch: bool = True) -> Any:  # noqa: FBT001, FBT002
         """Execute mobile: deepLink command.
 
         https://github.com/appium/appium-uiautomator2-driver?tab=readme-ov-file#mobile-deeplink
@@ -860,7 +860,12 @@ class Shadowstep(ShadowstepBase):
             wait_for_launch (boolean): If false, ADB won't wait for the started activity to return control. Defaults to true. Optional. Example: false
 
         """
-        return self._execute("mobile: deepLink", params)
+        params = {
+            "url": url,
+            "package": package,
+            "waitForLaunch": wait_for_launch,
+        }
+        return self.mobile_commands.deep_link(params)
 
     def deviceidle(self, action: str, packages: str | list[str]) -> Any:
         """Execute mobile: deviceidle command.
@@ -875,7 +880,11 @@ class Shadowstep(ShadowstepBase):
             packages (string or Array<string>): One or more package names to perform the specified action on. Required. Example: 'com.mycompany'
 
         """
-        return self._execute("mobile: deviceidle", params)
+        params = {
+            "action": action,
+            "packages": packages,
+        }
+        return self.mobile_commands.deviceidle(params)
 
     def accept_alert(self, button_label: str | None = None) -> Any:
         """Execute mobile: acceptAlert command.
@@ -886,10 +895,13 @@ class Shadowstep(ShadowstepBase):
             Attempts to accept an Android alert. This method may not always be reliable since there is no single standard for how Android alerts appear in the Accessibility representation.
 
         Args:
-            buttonLabel (string): The name or text of the alert button to click in order to accept it. If not provided, the driver will attempt to autodetect the appropriate button. Optional. Example: Accept
+            button_label (string): The name or text of the alert button to click in order to accept it. If not provided, the driver will attempt to autodetect the appropriate button. Optional. Example: Accept
 
         """
-        return self._execute("mobile: acceptAlert", params)
+        params = {
+            "buttonLabel": button_label,
+        }
+        return self.mobile_commands.accept_alert(params)
 
     def dismiss_alert(self, button_label: str | None = None) -> Any:
         """Execute mobile: dismissAlert command.
@@ -903,13 +915,16 @@ class Shadowstep(ShadowstepBase):
             Attempts to dismiss an Android alert. This method may not always be reliable since there is no single standard for how Android alerts appear in the Accessibility representation.
 
         Args:
-            buttonLabel (string): The name or text of the alert button to click in order to dismiss it. If not provided, the driver will attempt to autodetect the appropriate button. Optional. Example: Dismiss
+            button_label (string): The name or text of the alert button to click in order to dismiss it. If not provided, the driver will attempt to autodetect the appropriate button. Optional. Example: Dismiss
 
         Returns:
             True if the alert was successfully dismissed, otherwise an error is thrown.
 
         """
-        return self._execute("mobile: dismissAlert", params)
+        params = {
+            "buttonLabel": button_label,
+        }
+        return self.mobile_commands.dismiss_alert(params)
 
     def battery_info(self) -> Any:
         """Execute mobile: batteryInfo command.
@@ -932,7 +947,7 @@ class Shadowstep(ShadowstepBase):
 
 
         """
-        return self._execute("mobile: batteryInfo", params)
+        return self.mobile_commands.battery_info()
 
     def device_info(self) -> Any:
         """Execute mobile: deviceInfo command.
@@ -947,9 +962,9 @@ class Shadowstep(ShadowstepBase):
             https://github.com/appium/appium-uiautomator2-server/blob/master/app/src/main/java/io/appium/uiautomator2/handler/GetDeviceInfo.java
 
         """
-        return self._execute("mobile: deviceInfo", params)
+        return self.mobile_commands.device_info()
 
-    def get_device_time(self, format: str | None = None) -> Any:
+    def get_device_time(self, format_specifiers: str | None = None) -> Any:
         """Execute mobile: getDeviceTime command.
 
         https://github.com/appium/appium-uiautomator2-driver?tab=readme-ov-file#mobile-getdevicetime
@@ -958,17 +973,24 @@ class Shadowstep(ShadowstepBase):
             Retrieves the current timestamp of the device.
 
         Args:
-            format (string): The set of format specifiers to use for formatting the timestamp. See https://momentjs.com/docs/ for the full list of supported datetime format specifiers. Defaults to 'YYYY-MM-DDTHH:mm:ssZ', which complies with ISO-8601. Optional. Example: 'YYYY-MM-DDTHH:mm:ssZ'
+            format_specifiers (string): The set of format specifiers to use for formatting the timestamp. See https://momentjs.com/docs/ for the full list of supported datetime format specifiers. Defaults to 'YYYY-MM-DDTHH:mm:ssZ', which complies with ISO-8601. Optional. Example: 'YYYY-MM-DDTHH:mm:ssZ'
 
         Returns:
             A string representing the device timestamp formatted according to the given specifiers.
 
-
         """
-        return self._execute("mobile: getDeviceTime", params)
+        params = {
+            "format": format_specifiers,
+        }
+        return self.mobile_commands.get_device_time(params)
 
-    def change_permissions(self, permissions: str | list[str], app_package: str | None = None,
-                           action: str | None = None, target: str | None = None) -> Any:
+    def change_permissions(
+        self,
+        permissions: str | list[str],
+        app_package: str | None = None,
+        action: str | None = None,
+        target: str | None = None,
+    ) -> Any:
         """Execute mobile: changePermissions command.
 
         https://github.com/appium/appium-uiautomator2-driver?tab=readme-ov-file#mobile-changepermissions
@@ -978,14 +1000,24 @@ class Shadowstep(ShadowstepBase):
 
         Args:
             permissions (string or Array<string>): The full name of the permission to be changed or a list of permissions. For standard Android permissions, refer to the Android documentation. If the special value 'all' is passed (available since driver version 2.8.0) and the target is 'pm' (default), the action will be applied to all permissions requested or granted by the 'appPackage'. For the 'appops' target (available since v2.11.0), refer to AppOpsManager.java for supported appops permission names. The 'all' value is not supported for the 'appops' target. Required. Example: ['android.permission.ACCESS_FINE_LOCATION', 'android.permission.BROADCAST_SMS'] or 'all'
-            appPackage (string): The application package to modify permissions for. Defaults to the package under test. Optional. Example: com.mycompany.myapp
+            app_package (string): The application package to modify permissions for. Defaults to the package under test. Optional. Example: com.mycompany.myapp
             action (string): The action to perform. For target 'pm', use 'grant' (default) or 'revoke'. For target 'appops', use 'allow' (default), 'deny', 'ignore', or 'default'. Optional. Example: allow
             target (string): The permission management target. Either 'pm' (default) or 'appops' (available since v2.11.0). The 'appops' target requires the adb_shell server security option to be enabled. Optional. Example: appops
 
         """
-        return self._execute("mobile: changePermissions", params)
+        params = {
+            "permissions": permissions,
+            "appPackage": app_package,
+            "action": action,
+            "target": target,
+        }
+        return self.mobile_commands.change_permissions(params)
 
-    def get_permissions(self, type: str | None = None, app_package: str | None = None) -> Any:
+    def get_permissions(
+        self,
+        permissions_type: str | None = None,
+        app_package: str | None = None,
+    ) -> Any:
         """Execute mobile: getPermissions command.
 
         https://github.com/appium/appium-uiautomator2-driver?tab=readme-ov-file#mobile-getpermissions
@@ -994,14 +1026,18 @@ class Shadowstep(ShadowstepBase):
             Retrieves the runtime permissions list for the specified application package.
 
         Args:
-            type (string): The type of permissions to retrieve. Possible values are 'denied', 'granted', or 'requested' (default). Optional. Example: granted
-            appPackage (string): The application package to query permissions from. Defaults to the package under test. Optional. Example: com.mycompany.myapp
+            permissions_type (string): The type of permissions to retrieve. Possible values are 'denied', 'granted', or 'requested' (default). Optional. Example: granted
+            app_package (string): The application package to query permissions from. Defaults to the package under test. Optional. Example: com.mycompany.myapp
 
         Returns:
             An array of strings, each representing a permission name. The array may be empty if no permissions match the specified type.
 
         """
-        return self._execute("mobile: getPermissions", params)
+        params = {
+            "type": permissions_type,
+            "appPackage": app_package,
+        }
+        return self.mobile_commands.get_permissions(params)
 
     def perform_editor_action(self, action: str) -> Any:
         """Execute mobile: performEditorAction command.
@@ -1015,20 +1051,24 @@ class Shadowstep(ShadowstepBase):
             action (string): The name or integer code of the editor action to execute. Supported action names are: 'normal', 'unspecified', 'none', 'go', 'search', 'send', 'next', 'done', 'previous'. See EditorInfo for more details. Required. Example: search
 
         """
-        return self._execute("mobile: performEditorAction", params)
+        params = {
+            "action": action,
+        }
+        return self.mobile_commands.perform_editor_action(params)
 
-    def start_screen_streaming(self,
-                               width: int | None = None,
-                               height: int | None = None,
-                               bitRate: int = 4000000,
-                               host: str = "127.0.0.1",
-                               path_name: str | None = None,
-                               tcp_port: int = 8094,
-                               port: int = 8093,
-                               quality: int = 70,
-                               consider_rotation: bool = False,
-                               log_pipeline_details: bool = False,
-                               ) -> Any:
+    def start_screen_streaming(  # noqa: PLR0913
+        self,
+        width: int | None = None,
+        height: int | None = None,
+        bit_rate: int = 4000000,
+        host: str = "127.0.0.1",
+        path_name: str | None = None,
+        tcp_port: int = 8094,
+        port: int = 8093,
+        quality: int = 70,
+        consider_rotation: bool = False,  # noqa: FBT001, FBT002
+        log_pipeline_details: bool = False,  # noqa: FBT001, FBT002
+    ) -> Any:
         """Execute mobile: startScreenStreaming command.
 
         https://github.com/appium/appium-uiautomator2-driver?tab=readme-ov-file#mobile-startscreenstreaming
@@ -1039,21 +1079,32 @@ class Shadowstep(ShadowstepBase):
         Args:
             width (number): The scaled width of the device's screen in pixels. If unset, the actual screen width is used. Optional. Example: 768
             height (number): The scaled height of the device's screen in pixels. If unset, the actual screen height is used. Optional. Example: 1024
-            bitRate (number): The video bit rate in bits per second. Default is 4000000 (4 Mb/s). Higher bit rate improves video quality but increases file size. Optional. Example: 1024000
+            bit_rate (number): The video bit rate in bits per second. Default is 4000000 (4 Mb/s). Higher bit rate improves video quality but increases file size. Optional. Example: 1024000
             host (string): The IP address or hostname to start the MJPEG server on. Use 0.0.0.0 to bind to all available interfaces. Default: 127.0.0.1. Optional. Example: 0.0.0.0
-            pathname (string): The HTTP request path for the MJPEG server. Should start with a slash. Optional. Example: /myserver
-            tcpPort (number): The internal TCP port for MJPEG broadcast on the loopback interface (127.0.0.1). Default: 8094. Optional. Example: 5024
+            path_name (string): The HTTP request path for the MJPEG server. Should start with a slash. Optional. Example: /myserver
+            tcp_port (number): The internal TCP port for MJPEG broadcast on the loopback interface (127.0.0.1). Default: 8094. Optional. Example: 5024
             port (number): The port number for the MJPEG server. Default: 8093. Optional. Example: 5023
             quality (number): The JPEG quality for streamed images, in range [1, 100]. Default: 70. Optional. Example: 80
-            considerRotation (boolean): If true, GStreamer adjusts image dimensions for both landscape and portrait orientations. Default: false. Optional. Example: false
-            logPipelineDetails (boolean): Whether to log GStreamer pipeline events to standard output. Useful for debugging. Default: false. Optional. Example: true
+            consider_rotation (boolean): If true, GStreamer adjusts image dimensions for both landscape and portrait orientations. Default: false. Optional. Example: false
+            log_pipeline_details (boolean): Whether to log GStreamer pipeline events to standard output. Useful for debugging. Default: false. Optional. Example: true
 
         Returns:
             True if the MJPEG server was successfully started; otherwise, an error is thrown.
 
-
         """
-        return self._execute("mobile: startScreenStreaming", params)
+        params = {
+            "width": width,
+            "height": height,
+            "bitRate": bit_rate,
+            "host": host,
+            "pathname": path_name,
+            "tcpPort": tcp_port,
+            "port": port,
+            "quality": quality,
+            "considerRotation": consider_rotation,
+            "logPipelineDetails": log_pipeline_details,
+        }
+        return self.mobile_commands.start_screen_streaming(params)
 
     def stop_screen_streaming(self) -> Any:
         """Execute mobile: stopScreenStreaming command.
@@ -1064,7 +1115,7 @@ class Shadowstep(ShadowstepBase):
             Stop the previously started screen streaming. If no screen streaming server has been started then nothing is done.
 
         """
-        return self._execute("mobile: stopScreenStreaming", params)
+        return self.mobile_commands.stop_screen_streaming()
 
     def get_notifications(self) -> Any:
         """Execute mobile: getNotifications command.
@@ -1110,9 +1161,8 @@ class Shadowstep(ShadowstepBase):
                ]
             }
 
-
         """
-        return self._execute("mobile: getNotifications", params)
+        return self.mobile_commands.get_notifications()
 
     def open_notifications(self) -> Any:
         """Execute mobile: openNotifications command.
@@ -1123,9 +1173,9 @@ class Shadowstep(ShadowstepBase):
             Opens notifications drawer on the device under test. Does nothing if the drawer is already opened.
 
         """
-        return self._execute("mobile: openNotifications", params)
+        return self.mobile_commands.open_notifications()
 
-    def list_sms(self, max: int = 100) -> Any:
+    def list_sms(self, max_number: int = 100) -> Any:
         r"""Execute mobile: listSms command.
 
         https://github.com/appium/appium-uiautomator2-driver?tab=readme-ov-file#mobile-listsms
@@ -1134,7 +1184,7 @@ class Shadowstep(ShadowstepBase):
             Retrieves the list of the most recent SMS messages via the Appium Settings helper. Messages are sorted by date in descending order (most recent first).
 
         Args:
-            max (number): The maximum number of recent messages to retrieve. Defaults to 100. Optional. Example: 10
+            max_number (number): The maximum number of recent messages to retrieve. Defaults to 100. Optional. Example: 10
 
         Returns:
             A dictionary containing the retrieved SMS messages, for example:
@@ -1170,7 +1220,10 @@ class Shadowstep(ShadowstepBase):
             }
 
         """
-        return self._execute("mobile: listSms", params)
+        params = {
+            "max": max_number,
+        }
+        return self.mobile_commands.list_sms(params)
 
     def type(self, text: str) -> Any:
         """Execute mobile: type command.
@@ -1184,7 +1237,10 @@ class Shadowstep(ShadowstepBase):
             text (string): The text to type. Required. Example: testing
 
         """
-        return self._execute("mobile: type", params)
+        params = {
+            "text": text,
+        }
+        return self.mobile_commands.type(params)
 
     def sensor_set(self, sensor_type: str, value: str) -> Any:
         """Execute mobile: sensorSet command.
@@ -1195,11 +1251,15 @@ class Shadowstep(ShadowstepBase):
             Emulates changing sensor values on the connected Android emulator. This extension does not work on real devices. Use the emulator console or check adb-emu-commands.js (SENSORS object) to see supported sensor types and acceptable value formats.
 
         Args:
-            sensorType (string): The type of sensor to emulate. Required. Example: light
+            sensor_type (string): The type of sensor to emulate. Required. Example: light
             value (string): The value to set for the sensor. Check the emulator console output for acceptable formats. Required. Example: 50
 
         """
-        return self._execute("mobile: sensorSet", params)
+        params = {
+            "sensorType": sensor_type,
+            "value": value,
+        }
+        return self.mobile_commands.sensor_set(params)
 
     def delete_file(self, remote_path: str) -> Any:
         """Execute mobile: deleteFile command.
@@ -1210,10 +1270,13 @@ class Shadowstep(ShadowstepBase):
             Deletes a file on the remote device. The file can be a standard file on the filesystem or a file inside an application bundle.
 
         Args:
-            remotePath (string): The full path to the remote file or a file inside an application bundle. Required. Example: /sdcard/myfile.txt or @my.app.id/path/in/bundle
+            remote_path (string): The full path to the remote file or a file inside an application bundle. Required. Example: /sdcard/myfile.txt or @my.app.id/path/in/bundle
 
         """
-        return self._execute("mobile: deleteFile", params)
+        params = {
+            "remotePath": remote_path,
+        }
+        return self.mobile_commands.delete_file(params)
 
     def is_app_installed(self, app_id: str, user: int | str | None = None) -> Any:
         """Execute mobile: isAppInstalled command.
@@ -1224,14 +1287,18 @@ class Shadowstep(ShadowstepBase):
             Verifies whether an application is installed on the device under test.
 
         Args:
-            appId (string): The identifier of the application package to be checked. Required. Example: my.app.id
+            app_id (string): The identifier of the application package to be checked. Required. Example: my.app.id
             user (number or string): The user ID for which the package installation is checked. Defaults to the current user if not provided. Optional. Example: 1006
 
         Returns:
             True if the application is installed for the specified user; otherwise, False.
 
         """
-        return self._execute("mobile: isAppInstalled", params)
+        params = {
+            "appId": app_id,
+            "user": user,
+        }
+        return self.mobile_commands.is_app_installed(params)
 
     def query_app_state(self, app_id: str) -> Any:
         """Execute mobile: queryAppState command.
@@ -1242,7 +1309,7 @@ class Shadowstep(ShadowstepBase):
             Queries the current state of the specified application on the device under test.
 
         Args:
-            appId (string): The identifier of the application package to be checked. Required. Example: my.app.id
+            app_id (string): The identifier of the application package to be checked. Required. Example: my.app.id
 
         Returns:
             An integer representing the current state of the app:
@@ -1252,7 +1319,10 @@ class Shadowstep(ShadowstepBase):
                 4: The app is running in the foreground
 
         """
-        return self._execute("mobile: queryAppState", params)
+        params = {
+            "appId": app_id,
+        }
+        return self.mobile_commands.query_app_state(params)
 
     def activate_app(self, app_id: str) -> Any:
         """Execute mobile: activateApp command.
@@ -1263,12 +1333,15 @@ class Shadowstep(ShadowstepBase):
             Activates the specified application on the device under test, or launches it if it is not already running. This simulates a user clicking the app icon on the device dashboard.
 
         Args:
-            appId (string): The identifier of the application package to be activated. Required. Example: my.app.id
+            app_id (string): The identifier of the application package to be activated. Required. Example: my.app.id
 
         """
-        return self._execute("mobile: activateApp", params)
+        params = {
+            "appId": app_id,
+        }
+        return self.mobile_commands.activate_app(params)
 
-    def remove_app(self, app_id: str, timeout: int | None = None, keep_data: bool = False) -> Any:
+    def remove_app(self, app_id: str, timeout: int | None = None, keep_data: bool = False) -> Any:  # noqa: FBT001, FBT002
         """Execute mobile: removeApp command.
 
         https://github.com/appium/appium-uiautomator2-driver?tab=readme-ov-file#mobile-removeapp
@@ -1277,15 +1350,20 @@ class Shadowstep(ShadowstepBase):
             Uninstalls the specified application from the device under test if it is installed. If the application is not present, the call is ignored.
 
         Args:
-            appId (string): The identifier of the application package to be removed. Required. Example: my.app.id
+            app_id (string): The identifier of the application package to be removed. Required. Example: my.app.id
             timeout (number): The time in milliseconds to wait until the app is terminated. Optional. Default is 20000 ms. Example: 1500
-            keepData (boolean): If set to true, the application data and cache folders are preserved after uninstall. Optional. Default is false. Example: true
+            keep_data (boolean): If set to true, the application data and cache folders are preserved after uninstall. Optional. Default is false. Example: true
 
         Returns:
             bool: True if the application was found and successfully removed; False otherwise.
 
         """
-        return self._execute("mobile: removeApp", params)
+        params = {
+            "appId": app_id,
+            "timeout": timeout,
+            "keepData": keep_data,
+        }
+        return self.mobile_commands.remove_app(params)
 
     def terminate_app(self, app_id: str, timeout: int = 500) -> Any:
         """Execute mobile: terminateApp command.
@@ -1296,24 +1374,29 @@ class Shadowstep(ShadowstepBase):
             Terminates the specified application on the device under test and waits until the app is fully stopped, up to the provided timeout. If the timeout is zero or negative (since UIAutomator driver 2.9.0), the app state check is skipped, which is useful when the app may automatically restart.
 
         Args:
-            appId (string): The identifier of the application package to be terminated. Required. Example: my.app.id
+            app_id (string): The identifier of the application package to be terminated. Required. Example: my.app.id
             timeout (number): Maximum time in milliseconds to wait until the app is terminated. Optional. Default is 500 ms. Example: 1500
 
         Returns:
             bool: True if the application was successfully terminated; False otherwise.
 
         """
-        return self._execute("mobile: terminateApp", params)
+        params = {
+            "appId": app_id,
+            "timeout": timeout,
+        }
+        return self.mobile_commands.terminate_app(params)
 
-    def install_app(self,
-                    app_path: str,
-                    timeout: int = 6000,
-                    allow_test_packages: bool = False,
-                    use_sdcard: bool = False,
-                    grant_permissions: bool = False,
-                    replace: bool = True,
-                    check_version: bool = False,
-                    ) -> Any:
+    def install_app(  # noqa: PLR0913
+        self,
+        app_path: str,
+        timeout: int = 6000,
+        allow_test_packages: bool = False,  # noqa: FBT001, FBT002
+        use_sdcard: bool = False,  # noqa: FBT001, FBT002
+        grant_permissions: bool = False,  # noqa: FBT001, FBT002
+        replace: bool = True,  # noqa: FBT001, FBT002
+        check_version: bool = False,  # noqa: FBT001, FBT002
+    ) -> Any:
         """Execute mobile: installApp command.
 
         https://github.com/appium/appium-uiautomator2-driver?tab=readme-ov-file#mobile-installapp
@@ -1322,16 +1405,25 @@ class Shadowstep(ShadowstepBase):
             Installs the specified application package (.apk) on the device under test. May raise INSTALL_FAILED_VERSION_DOWNGRADE if the installed version is lower than the existing version on the device.
 
         Args:
-            appPath (string): The local path to the .apk file(s) on the server filesystem or a remote URL. Required. Example: /app/path.apk
+            app_path (string): The local path to the .apk file(s) on the server filesystem or a remote URL. Required. Example: /app/path.apk
             timeout (number): Maximum time in milliseconds to wait for the installation to complete. Optional. Default is 6000 ms. Example: 120000
-            allowTestPackages (bool): Whether to allow installation of test packages. Optional. Default is False. Example: True
-            useSdcard (bool): Whether to install the app on the SD card instead of device memory. Optional. Default is False. Example: True
-            grantPermissions (bool): Automatically grant all permissions requested in the app manifest after installation (Android 6+). Requires targetSdkVersion ≥ 23 and device API level ≥ 23. Optional. Default is False. Example: True
+            allow_test_packages (bool): Whether to allow installation of test packages. Optional. Default is False. Example: True
+            use_sdcard (bool): Whether to install the app on the SD card instead of device memory. Optional. Default is False. Example: True
+            grant_permissions (bool): Automatically grant all permissions requested in the app manifest after installation (Android 6+). Requires targetSdkVersion ≥ 23 and device API level ≥ 23. Optional. Default is False. Example: True
             replace (bool): Whether to upgrade/reinstall the app if it already exists. If False, throws an error instead. Optional. Default is True. Example: False
-            checkVersion (bool): Skip installation if the device already has a greater or equal app version, avoiding INSTALL_FAILED_VERSION_DOWNGRADE errors. Optional. Default is False. Example: True
+            check_version (bool): Skip installation if the device already has a greater or equal app version, avoiding INSTALL_FAILED_VERSION_DOWNGRADE errors. Optional. Default is False. Example: True
 
         """
-        return self._execute("mobile: installApp", params)
+        params = {
+            "appPath": app_path,
+            "timeout": timeout,
+            "allowTestPackages": allow_test_packages,
+            "useSdcard": use_sdcard,
+            "grantPermissions": grant_permissions,
+            "replace": replace,
+            "checkVersion": check_version,
+        }
+        return self.mobile_commands.install_app(params)
 
     def clear_app(self, app_id: str) -> Any:
         """Execute mobile: clearApp command.
@@ -1342,31 +1434,35 @@ class Shadowstep(ShadowstepBase):
             Deletes all data associated with the specified application package on the device under test. Internally calls `adb shell pm clear`. The app must exist, be accessible, and not running for this command to succeed.
 
         Args:
-            appId (string): The identifier of the application package to be cleared. Required. Example: my.app.id
+            app_id (string): The identifier of the application package to be cleared. Required. Example: my.app.id
 
         Returns:
             Stdout of the corresponding adb command. An error is thrown if the operation fails.
 
         """
-        return self._execute("mobile: clearApp", params)
+        params = {
+            "appId": app_id,
+        }
+        return self.mobile_commands.clear_app(params)
 
-    def start_activity(self,
-                       intent: str,
-                       user: int | str | None = None,
-                       wait: bool = False,
-                       stop: bool = False,
-                       windowing_mode: int | None = None,
-                       activity_type: int | None = None,
-                       action: str | None = None,
-                       uri: str | None = None,
-                       mime_type: str | None = None,
-                       identifier: str | None = None,
-                       categories: str | list[str] | None = None,
-                       component: str | None = None,
-                       package: str | None = None,
-                       extras: list[list[str]] | None = None,
-                       flags: str | None = None,
-                       ) -> Any:
+    def start_activity(  # noqa: PLR0913
+        self,
+        intent: str,
+        user: int | str | None = None,
+        wait: bool = False,  # noqa: FBT001, FBT002
+        stop: bool = False,  # noqa: FBT001, FBT002
+        windowing_mode: int | None = None,
+        activity_type: int | None = None,
+        action: str | None = None,
+        uri: str | None = None,
+        mime_type: str | None = None,
+        identifier: str | None = None,
+        categories: str | list[str] | None = None,
+        component: str | None = None,
+        package: str | None = None,
+        extras: list[list[str]] | None = None,
+        flags: str | None = None,
+    ) -> Any:
         """Execute mobile: startActivity command.
 
         https://github.com/appium/appium-uiautomator2-driver?tab=readme-ov-file#mobile-startactivity
@@ -1379,11 +1475,11 @@ class Shadowstep(ShadowstepBase):
             user (number|string): User ID for which the service is started. Optional. Defaults to current user. Example: 1006
             wait (boolean): Block the method call until the Activity Manager process returns control to the system. Optional. Default is false. Example: true
             stop (boolean): Force stop the target app before starting the activity. Optional. Default is false. Example: true
-            windowingMode (integer): Windowing mode to launch the activity into. Optional. Example: 1
-            activityType (integer): Activity type to launch the activity as. Optional. Example: 1
+            windowing_mode (integer): Windowing mode to launch the activity into. Optional. Example: 1
+            activity_type (integer): Activity type to launch the activity as. Optional. Example: 1
             action (string): Action name for the Activity Manager's `-a` argument. Optional. Example: android.intent.action.MAIN
             uri (string): Unified Resource Identifier for the `-d` argument. Optional. Example: https://appium.io
-            mimeType (string): Mime type for the `-t` argument. Optional. Example: application/json
+            mime_type (string): Mime type for the `-t` argument. Optional. Example: application/json
             identifier (string): Optional identifier for the `-i` argument. Optional. Example: my_identifier
             categories (string|Array[string]): One or more category names for the `-c` argument. Optional. Example: ['android.intent.category.LAUNCHER']
             component (string): Component name for the `-n` argument. Optional. Example: com.myapp/com.myapp.SplashActivity
@@ -1395,22 +1491,40 @@ class Shadowstep(ShadowstepBase):
             The actual stdout of the underlying `am` command. An error is thrown if the operation fails.
 
         """
-        return self._execute("mobile: startActivity", params)
+        params = {
+            "intent": intent,
+            "user": user,
+            "wait": wait,
+            "stop": stop,
+            "windowingMode": windowing_mode,
+            "activityType": activity_type,
+            "action": action,
+            "uri": uri,
+            "mimeType": mime_type,
+            "identifier": identifier,
+            "categories": categories,
+            "component": component,
+            "package": package,
+            "extras": extras,
+            "flags": flags,
+        }
+        return self.mobile_commands.start_activity(params)
 
-    def start_service(self,
-                      intent: str | None = None,
-                      user: int | str | None = None,
-                      foreground: bool = False,
-                      action: str | None = None,
-                      uri: str | None = None,
-                      mime_type: str | None = None,
-                      identifier: str | None = None,
-                      categories: str | list[str] | None = None,
-                      component: str | None = None,
-                      package: str | None = None,
-                      extras: list[list[str]] | None = None,
-                      flags: str | None = None,
-                      ) -> Any:
+    def start_service(  # noqa: PLR0913
+        self,
+        intent: str | None = None,
+        user: int | str | None = None,
+        foreground: bool = False,  # noqa: FBT001, FBT002
+        action: str | None = None,
+        uri: str | None = None,
+        mime_type: str | None = None,
+        identifier: str | None = None,
+        categories: str | list[str] | None = None,
+        component: str | None = None,
+        package: str | None = None,
+        extras: list[list[str]] | None = None,
+        flags: str | None = None,
+    ) -> Any:
         """Execute mobile: startService command.
 
         https://github.com/appium/appium-uiautomator2-driver?tab=readme-ov-file#mobile-startservice
@@ -1424,7 +1538,7 @@ class Shadowstep(ShadowstepBase):
             foreground (boolean): Start the service as a foreground service (only works on Android 8+). Optional. Default is false. Example: true
             action (string): See documentation for `startActivity` extension. Optional. Example: android.intent.action.MAIN
             uri (string): See documentation for `startActivity` extension. Optional. Example: https://appium.io
-            mimeType (string): See documentation for `startActivity` extension. Optional. Example: application/json
+            mime_type (string): See documentation for `startActivity` extension. Optional. Example: application/json
             identifier (string): See documentation for `startActivity` extension. Optional. Example: my_identifier
             categories (string|Array[string]): See documentation for `startActivity` extension. Optional. Example: ['com.myapp/com.myapp.SplashActivity']
             component (string): See documentation for `startActivity` extension. Optional. Example: android.intent.category.LAUNCHER
@@ -1436,21 +1550,36 @@ class Shadowstep(ShadowstepBase):
             The actual stdout of the underlying `am` command. An error is thrown if the operation fails.
 
         """
-        return self._execute("mobile: startService", params)
+        params = {
+            "intent": intent,
+            "user": user,
+            "foreground": foreground,
+            "action": action,
+            "uri": uri,
+            "mimeType": mime_type,
+            "identifier": identifier,
+            "categories": categories,
+            "component": component,
+            "package": package,
+            "extras": extras,
+            "flags": flags,
+        }
+        return self.mobile_commands.start_service(params)
 
-    def stop_service(self,
-                     intent: str | None = None,
-                     user: int | str | None = None,
-                     action: str | None = None,
-                     uri: str | None = None,
-                     mime_type: str | None = None,
-                     identifier: str | None = None,
-                     categories: str | list[str] | None = None,
-                     component: str | None = None,
-                     package: str | None = None,
-                     extras: list[list[str]] | None = None,
-                     flags: str | None = None,
-                     ) -> Any:
+    def stop_service(  # noqa: PLR0913
+        self,
+        intent: str | None = None,
+        user: int | str | None = None,
+        action: str | None = None,
+        uri: str | None = None,
+        mime_type: str | None = None,
+        identifier: str | None = None,
+        categories: str | list[str] | None = None,
+        component: str | None = None,
+        package: str | None = None,
+        extras: list[list[str]] | None = None,
+        flags: str | None = None,
+    ) -> Any:
         """Execute mobile: stopService command.
 
         https://github.com/appium/appium-uiautomator2-driver?tab=readme-ov-file#mobile-stopservice
@@ -1463,7 +1592,7 @@ class Shadowstep(ShadowstepBase):
             user (number|string): User ID for which the service is stopped. Optional. Defaults to current user. Example: 1006
             action (string): See documentation for `startActivity` extension. Optional. Example: android.intent.action.MAIN
             uri (string): See documentation for `startActivity` extension. Optional. Example: https://appium.io
-            mimeType (string): See documentation for `startActivity` extension. Optional. Example: application/json
+            mime_type (string): See documentation for `startActivity` extension. Optional. Example: application/json
             identifier (string): See documentation for `startActivity` extension. Optional. Example: my_identifier
             categories (string|Array[string]): See documentation for `startActivity` extension. Optional. Example: ['com.myapp/com.myapp.SplashActivity']
             component (string): See documentation for `startActivity` extension. Optional. Example: android.intent.category.LAUNCHER
@@ -1475,23 +1604,37 @@ class Shadowstep(ShadowstepBase):
             The actual stdout of the underlying `am` command. An error is thrown if the operation fails.
 
         """
-        return self._execute("mobile: stopService", params)
+        params = {
+            "intent": intent,
+            "user": user,
+            "action": action,
+            "uri": uri,
+            "mimeType": mime_type,
+            "identifier": identifier,
+            "categories": categories,
+            "component": component,
+            "package": package,
+            "extras": extras,
+            "flags": flags,
+        }
+        return self.mobile_commands.stop_service(params)
 
-    def broadcast(self,
-                  intent: str | None = None,
-                  user: int | str | None = None,
-                  receiver_permission: str | None = None,
-                  allow_background_activity_starts: bool = False,
-                  action: str | None = None,
-                  uri: str | None = None,
-                  mime_type: str | None = None,
-                  identifier: str | None = None,
-                  categories: str | list[str] | None = None,
-                  component: str | None = None,
-                  package: str | None = None,
-                  extras: list[list[str]] | None = None,
-                  flags: str | None = None,
-                  ) -> Any:
+    def broadcast(  # noqa: PLR0913
+        self,
+        intent: str | None = None,
+        user: int | str | None = None,
+        receiver_permission: str | None = None,
+        allow_background_activity_starts: bool = False,  # noqa: FBT001, FBT002
+        action: str | None = None,
+        uri: str | None = None,
+        mime_type: str | None = None,
+        identifier: str | None = None,
+        categories: str | list[str] | None = None,
+        component: str | None = None,
+        package: str | None = None,
+        extras: list[list[str]] | None = None,
+        flags: str | None = None,
+    ) -> Any:
         """Execute mobile: broadcast command.
 
         https://github.com/appium/appium-uiautomator2-driver?tab=readme-ov-file#mobile-broadcast
@@ -1502,11 +1645,11 @@ class Shadowstep(ShadowstepBase):
         Args:
             intent (string): Full name of the intent to broadcast. Optional. Example: com.some.package.name/.YourIntentClassName
             user (number|string): Specify which user to send to; possible values are 'all', 'current', or a numeric user ID. Optional. Example: current
-            receiverPermission (string): Require the receiver to hold the given permission. Optional. Example: android.permission.READ_PROFILE
-            allowBackgroundActivityStarts (boolean): Whether the receiver can start activities even if in the background. Optional. Default: false. Example: true
+            receiver_permission (string): Require the receiver to hold the given permission. Optional. Example: android.permission.READ_PROFILE
+            allow_background_activity_starts (boolean): Whether the receiver can start activities even if in the background. Optional. Default: false. Example: true
             action (string): See documentation for `startActivity` extension. Optional. Example: android.intent.action.MAIN
             uri (string): See documentation for `startActivity` extension. Optional. Example: https://appium.io
-            mimeType (string): See documentation for `startActivity` extension. Optional. Example: application/json
+            mime_type (string): See documentation for `startActivity` extension. Optional. Example: application/json
             identifier (string): See documentation for `startActivity` extension. Optional. Example: my_identifier
             categories (string|Array[string]): See documentation for `startActivity` extension. Optional. Example: ['com.myapp/com.myapp.SplashActivity']
             component (string): See documentation for `startActivity` extension. Optional. Example: android.intent.category.LAUNCHER
@@ -1518,7 +1661,22 @@ class Shadowstep(ShadowstepBase):
             The actual stdout of the underlying `am` command. An error is thrown if the operation fails.
 
         """
-        return self._execute("mobile: broadcast", params)
+        params = {
+            "intent": intent,
+            "user": user,
+            "receiverPermission": receiver_permission,
+            "allowBackgroundActivityStarts": allow_background_activity_starts,
+            "action": action,
+            "uri": uri,
+            "mimeType": mime_type,
+            "identifier": identifier,
+            "categories": categories,
+            "component": component,
+            "package": package,
+            "extras": extras,
+            "flags": flags,
+        }
+        return self.mobile_commands.broadcast(params)
 
     def get_contexts(self, wait_for_webview_ms: int = 0) -> Any:
         r"""Execute mobile: getContexts command.
@@ -1563,10 +1721,11 @@ class Shadowstep(ShadowstepBase):
         """
         return self._execute("mobile: getContexts", params)
 
-    def install_multiple_apks(self,
-                              apks: list[str],
-                              options: Any,
-                              ) -> Any:
+    def install_multiple_apks(
+        self,
+        apks: list[str],
+        options: Any,
+    ) -> Any:
         """Execute mobile: installMultipleApks command.
 
         https://github.com/appium/appium-uiautomator2-driver?tab=readme-ov-file#mobile-installmultipleapks
@@ -1603,12 +1762,13 @@ class Shadowstep(ShadowstepBase):
         """
         return self._execute("mobile: lock", params)
 
-    def unlock(self,
-               key: str,
-               type: str,
-               strategy: str | None = None,
-               timeout_ms: int | None = None,
-               ) -> Any:
+    def unlock(
+        self,
+        key: str,
+        type: str,
+        strategy: str | None = None,
+        timeout_ms: int | None = None,
+    ) -> Any:
         """Execute mobile: unlock command.
 
         https://github.com/appium/appium-uiautomator2-driver?tab=readme-ov-file#mobile-unlock
@@ -1639,15 +1799,16 @@ class Shadowstep(ShadowstepBase):
         """
         return self._execute("mobile: isLocked", params)
 
-    def set_geolocation(self,
-                        latitude: int,
-                        longitude: int,
-                        altitude: int | None = None,
-                        satellites: int | None = None,
-                        speed: int | None = None,
-                        bearing: int | None = None,
-                        accuracy: int | None = None,
-                        ) -> Any:
+    def set_geolocation(
+        self,
+        latitude: int,
+        longitude: int,
+        altitude: int | None = None,
+        satellites: int | None = None,
+        speed: int | None = None,
+        bearing: int | None = None,
+        accuracy: int | None = None,
+    ) -> Any:
         """Execute mobile: setGeolocation command.
 
         https://github.com/appium/appium-uiautomator2-driver?tab=readme-ov-file#mobile-setgeolocation
@@ -1667,11 +1828,12 @@ class Shadowstep(ShadowstepBase):
         """
         return self._execute("mobile: setGeolocation", params)
 
-    def get_geolocation(self,
-                        latitude: int,
-                        longitude: int,
-                        altitude: int,
-                        ) -> Any:
+    def get_geolocation(
+        self,
+        latitude: int,
+        longitude: int,
+        altitude: int,
+    ) -> Any:
         """Execute mobile: getGeolocation command.
 
         https://github.com/appium/appium-uiautomator2-driver?tab=readme-ov-file#mobile-getgeolocation
@@ -1715,11 +1877,11 @@ class Shadowstep(ShadowstepBase):
         return self._execute("mobile: refreshGpsCache", params)
 
     def start_media_projection_recording(
-            self,
-            resolution: str | None = None,
-            max_duration_sec: int | None = None,
-            priority: str | None = None,
-            filename: str | None = None,
+        self,
+        resolution: str | None = None,
+        max_duration_sec: int | None = None,
+        priority: str | None = None,
+        filename: str | None = None,
     ) -> Any:
         """Execute mobile: startMediaProjectionRecording command.
 
@@ -1741,8 +1903,8 @@ class Shadowstep(ShadowstepBase):
         return self._execute("mobile: startMediaProjectionRecording", params)
 
     def is_media_projection_recording_running(
-            self,
-            params: dict[str, Any] | list[Any] | None = None,
+        self,
+        params: dict[str, Any] | list[Any] | None = None,
     ) -> Any:
         """Execute mobile: isMediaProjectionRecordingRunning command.
 
@@ -1752,15 +1914,15 @@ class Shadowstep(ShadowstepBase):
         return self._execute("mobile: isMediaProjectionRecordingRunning", params)
 
     def stop_media_projection_recording(
-            self,
-            remote_path: str | None = None,
-            user: str | None = None,
-            password: str | None = None,
-            method: str | None = None,
-            headers: dict[str, str] | None = None,
-            file_field_name: str | None = None,
-            form_fields: dict[str, str] | list[str] | None = None,
-            upload_timeout: int = 240000,
+        self,
+        remote_path: str | None = None,
+        user: str | None = None,
+        password: str | None = None,
+        method: str | None = None,
+        headers: dict[str, str] | None = None,
+        file_field_name: str | None = None,
+        form_fields: dict[str, str] | list[str] | None = None,
+        upload_timeout: int = 240000,
     ) -> Any:
         """Execute mobile: stopMediaProjectionRecording command.
 
@@ -1805,11 +1967,12 @@ class Shadowstep(ShadowstepBase):
         """
         return self._execute("mobile: getConnectivity", params)
 
-    def set_connectivity(self,
-                         wifi: bool = False,
-                         data: bool = False,
-                         airplane_mode: bool = False,
-                         ) -> Any:
+    def set_connectivity(
+        self,
+        wifi: bool = False,
+        data: bool = False,
+        airplane_mode: bool = False,
+    ) -> Any:
         """Execute mobile: setConnectivity command.
 
         https://github.com/appium/appium-uiautomator2-driver?tab=readme-ov-file#mobile-setconnectivity
@@ -1877,12 +2040,13 @@ class Shadowstep(ShadowstepBase):
         """
         return self._execute("mobile: isKeyboardShown", params)
 
-    def press_key(self,
-                  keycode: int,
-                  metastate: int | None = None,
-                  flags: int | None = None,
-                  is_long_press: bool = False,
-                  ) -> Any:
+    def press_key(
+        self,
+        keycode: int,
+        metastate: int | None = None,
+        flags: int | None = None,
+        is_long_press: bool = False,
+    ) -> Any:
         """Execute mobile: pressKey command.
 
         https://github.com/appium/appium-uiautomator2-driver?tab=readme-ov-file#mobile-presskey
@@ -1995,10 +2159,11 @@ class Shadowstep(ShadowstepBase):
         """
         return self._execute("mobile: fingerprint", params)
 
-    def send_sms(self,
-                 phone_number: str,
-                 message: str,
-                 ) -> Any:
+    def send_sms(
+        self,
+        phone_number: str,
+        message: str,
+    ) -> Any:
         """Execute mobile: sendSms command.
 
         https://github.com/appium/appium-uiautomator2-driver?tab=readme-ov-file#mobile-sendsms
@@ -2016,10 +2181,11 @@ class Shadowstep(ShadowstepBase):
         """
         return self._execute("mobile: sendSms", params)
 
-    def gsm_call(self,
-                 phone_number: str,
-                 action: str,
-                 ) -> Any:
+    def gsm_call(
+        self,
+        phone_number: str,
+        action: str,
+    ) -> Any:
         """Execute mobile: gsmCall command.
 
         https://github.com/appium/appium-uiautomator2-driver?tab=readme-ov-file#mobile-gsmcall
@@ -2051,9 +2217,10 @@ class Shadowstep(ShadowstepBase):
         """
         return self._execute("mobile: gsmSignal", params)
 
-    def gsm_voice(self,
-                  state: Literal["on", "off", "denied", "searching", "roaming", "home", "unregistered"],
-                  ) -> Any:
+    def gsm_voice(
+        self,
+        state: Literal["on", "off", "denied", "searching", "roaming", "home", "unregistered"],
+    ) -> Any:
         """Execute mobile: gsmVoice command.
 
         https://github.com/appium/appium-uiautomator2-driver?tab=readme-ov-file#mobile-gsmvoice
@@ -2098,9 +2265,10 @@ class Shadowstep(ShadowstepBase):
         """
         return self._execute("mobile: powerCapacity", params)
 
-    def network_speed(self,
-                      speed: Literal["gsm", "scsd", "gprs", "edge", "umts", "hsdpa", "lte", "evdo", "full"],
-                      ) -> Any:
+    def network_speed(
+        self,
+        speed: Literal["gsm", "scsd", "gprs", "edge", "umts", "hsdpa", "lte", "evdo", "full"],
+    ) -> Any:
         """Execute mobile: networkSpeed command.
 
         https://github.com/appium/appium-uiautomator2-driver?tab=readme-ov-file#mobile-networkspeed
@@ -2117,10 +2285,11 @@ class Shadowstep(ShadowstepBase):
         """
         return self._execute("mobile: networkSpeed", params)
 
-    def replace_element_value(self,
-                              locator,
-                              text: str,
-                              ) -> Any:
+    def replace_element_value(
+        self,
+        locator,
+        text: str,
+    ) -> Any:
         r"""Execute mobile: replaceElementValue command.
 
         https://github.com/appium/appium-uiautomator2-driver?tab=readme-ov-file#mobile-replaceelementvalue
@@ -2174,10 +2343,11 @@ class Shadowstep(ShadowstepBase):
         """
         return self._execute("mobile: getPerformanceDataTypes", params)
 
-    def get_performance_data(self,
-                             package_name: str,
-                             data_type: str,
-                             ) -> Any:
+    def get_performance_data(
+        self,
+        package_name: str,
+        data_type: str,
+    ) -> Any:
         """Execute mobile: getPerformanceData command.
 
         https://github.com/appium/appium-uiautomator2-driver?tab=readme-ov-file#mobile-getperformancedata
@@ -2233,11 +2403,19 @@ class Shadowstep(ShadowstepBase):
         """
         return self._execute("mobile: getPerformanceData", params)
 
-    def status_bar(self,
-                   command: Literal[
-                       "expandNotifications", "expandSettings", "collapse", "addTile", "removeTile", "clickTile", "getStatusIcons"],
-                   component: Literal["addTile", "removeTile", "clickTile"],
-                   ) -> Any:
+    def status_bar(
+        self,
+        command: Literal[
+            "expandNotifications",
+            "expandSettings",
+            "collapse",
+            "addTile",
+            "removeTile",
+            "clickTile",
+            "getStatusIcons",
+        ],
+        component: Literal["addTile", "removeTile", "clickTile"],
+    ) -> Any:
         """Execute mobile: statusBar command.
 
         https://github.com/appium/appium-uiautomator2-driver?tab=readme-ov-file#mobile-statusbar
@@ -2264,9 +2442,10 @@ class Shadowstep(ShadowstepBase):
         """
         return self._execute("mobile: statusBar", params)
 
-    def screenshots(self,
-                    display_id: int | str | None = None,
-                    ) -> Any:
+    def screenshots(
+        self,
+        display_id: int | str | None = None,
+    ) -> Any:
         """Execute mobile: screenshots command.
 
         https://github.com/appium/appium-uiautomator2-driver?tab=readme-ov-file#mobile-screenshots
@@ -2288,10 +2467,11 @@ class Shadowstep(ShadowstepBase):
         """
         return self._execute("mobile: screenshots", params)
 
-    def set_ui_mode(self,
-                    mode: Literal["night", "car"],
-                    value,
-                    ) -> Any:
+    def set_ui_mode(
+        self,
+        mode: Literal["night", "car"],
+        value,
+    ) -> Any:
         """Execute mobile: setUiMode command.
 
         https://github.com/appium/appium-uiautomator2-driver?tab=readme-ov-file#mobile-setuimode
@@ -2339,17 +2519,17 @@ class Shadowstep(ShadowstepBase):
         return self.mobile_commands.get_ui_mode({"mode": mode})
 
     def send_trim_memory(
-            self,
-            pkg: str,
-            level: Literal[
-                "COMPLETE",
-                "MODERATE",
-                "BACKGROUND",
-                "UI_HIDDEN",
-                "RUNNING_CRITICAL",
-                "RUNNING_LOW",
-                "RUNNING_MODERATE",
-            ],
+        self,
+        pkg: str,
+        level: Literal[
+            "COMPLETE",
+            "MODERATE",
+            "BACKGROUND",
+            "UI_HIDDEN",
+            "RUNNING_CRITICAL",
+            "RUNNING_LOW",
+            "RUNNING_MODERATE",
+        ],
     ) -> Any:
         """Execute mobile: sendTrimMemory command.
 
@@ -2509,10 +2689,10 @@ class Shadowstep(ShadowstepBase):
         return self.mobile_commands.get_clipboard()
 
     def set_clipboard(
-            self,
-            content: str,
-            content_type: str = "plaintext",
-            label: str | None = None,
+        self,
+        content: str,
+        content_type: str = "plaintext",
+        label: str | None = None,
     ) -> Any:
         """Execute mobile: setClipboard command.
 
