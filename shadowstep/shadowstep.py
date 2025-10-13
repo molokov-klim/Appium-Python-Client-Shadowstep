@@ -813,6 +813,7 @@ class Shadowstep(ShadowstepBase):
         )
         return root.scroll_to_element(locator, max_swipes)
 
+    @fail_safe_shadowstep(raise_exception=ShadowstepException)
     @log_debug()
     def exec_emu_console_command(
         self,
@@ -846,6 +847,8 @@ class Shadowstep(ShadowstepBase):
         }
         return self.mobile_commands.exec_emu_console_command(params)
 
+    @fail_safe_shadowstep(raise_exception=ShadowstepException)
+    @log_debug()
     def deep_link(self, url: str, package: str | None = None, wait_for_launch: bool = True) -> Any:  # noqa: FBT001, FBT002
         """Execute mobile: deepLink command.
 
@@ -867,6 +870,8 @@ class Shadowstep(ShadowstepBase):
         }
         return self.mobile_commands.deep_link(params)
 
+    @fail_safe_shadowstep(raise_exception=ShadowstepException)
+    @log_debug()
     def deviceidle(self, action: str, packages: str | list[str]) -> Any:
         """Execute mobile: deviceidle command.
 
@@ -886,6 +891,8 @@ class Shadowstep(ShadowstepBase):
         }
         return self.mobile_commands.deviceidle(params)
 
+    @fail_safe_shadowstep(raise_exception=ShadowstepException)
+    @log_debug()
     def accept_alert(self, button_label: str | None = None) -> Any:
         """Execute mobile: acceptAlert command.
 
@@ -903,6 +910,8 @@ class Shadowstep(ShadowstepBase):
         }
         return self.mobile_commands.accept_alert(params)
 
+    @fail_safe_shadowstep(raise_exception=ShadowstepException)
+    @log_debug()
     def dismiss_alert(self, button_label: str | None = None) -> Any:
         """Execute mobile: dismissAlert command.
 
@@ -926,6 +935,8 @@ class Shadowstep(ShadowstepBase):
         }
         return self.mobile_commands.dismiss_alert(params)
 
+    @fail_safe_shadowstep(raise_exception=ShadowstepException)
+    @log_debug()
     def battery_info(self) -> Any:
         """Execute mobile: batteryInfo command.
 
@@ -949,6 +960,8 @@ class Shadowstep(ShadowstepBase):
         """
         return self.mobile_commands.battery_info()
 
+    @fail_safe_shadowstep(raise_exception=ShadowstepException)
+    @log_debug()
     def device_info(self) -> Any:
         """Execute mobile: deviceInfo command.
 
@@ -964,6 +977,8 @@ class Shadowstep(ShadowstepBase):
         """
         return self.mobile_commands.device_info()
 
+    @fail_safe_shadowstep(raise_exception=ShadowstepException)
+    @log_debug()
     def get_device_time(self, format_specifiers: str | None = None) -> Any:
         """Execute mobile: getDeviceTime command.
 
@@ -984,6 +999,8 @@ class Shadowstep(ShadowstepBase):
         }
         return self.mobile_commands.get_device_time(params)
 
+    @fail_safe_shadowstep(raise_exception=ShadowstepException)
+    @log_debug()
     def change_permissions(
         self,
         permissions: str | list[str],
@@ -1013,6 +1030,8 @@ class Shadowstep(ShadowstepBase):
         }
         return self.mobile_commands.change_permissions(params)
 
+    @fail_safe_shadowstep(raise_exception=ShadowstepException)
+    @log_debug()
     def get_permissions(
         self,
         permissions_type: str | None = None,
@@ -1039,6 +1058,8 @@ class Shadowstep(ShadowstepBase):
         }
         return self.mobile_commands.get_permissions(params)
 
+    @fail_safe_shadowstep(raise_exception=ShadowstepException)
+    @log_debug()
     def perform_editor_action(self, action: str) -> Any:
         """Execute mobile: performEditorAction command.
 
@@ -1056,6 +1077,8 @@ class Shadowstep(ShadowstepBase):
         }
         return self.mobile_commands.perform_editor_action(params)
 
+    @fail_safe_shadowstep(raise_exception=ShadowstepException)
+    @log_debug()
     def start_screen_streaming(  # noqa: PLR0913
         self,
         width: int | None = None,
@@ -1106,6 +1129,8 @@ class Shadowstep(ShadowstepBase):
         }
         return self.mobile_commands.start_screen_streaming(params)
 
+    @fail_safe_shadowstep(raise_exception=ShadowstepException)
+    @log_debug()
     def stop_screen_streaming(self) -> Any:
         """Execute mobile: stopScreenStreaming command.
 
@@ -1117,6 +1142,8 @@ class Shadowstep(ShadowstepBase):
         """
         return self.mobile_commands.stop_screen_streaming()
 
+    @fail_safe_shadowstep(raise_exception=ShadowstepException)
+    @log_debug()
     def get_notifications(self) -> Any:
         """Execute mobile: getNotifications command.
 
@@ -1164,6 +1191,8 @@ class Shadowstep(ShadowstepBase):
         """
         return self.mobile_commands.get_notifications()
 
+    @fail_safe_shadowstep(raise_exception=ShadowstepException)
+    @log_debug()
     def open_notifications(self) -> Any:
         """Execute mobile: openNotifications command.
 
@@ -1175,6 +1204,8 @@ class Shadowstep(ShadowstepBase):
         """
         return self.mobile_commands.open_notifications()
 
+    @fail_safe_shadowstep(raise_exception=ShadowstepException)
+    @log_debug()
     def list_sms(self, max_number: int = 100) -> Any:
         r"""Execute mobile: listSms command.
 
@@ -1225,6 +1256,8 @@ class Shadowstep(ShadowstepBase):
         }
         return self.mobile_commands.list_sms(params)
 
+    @fail_safe_shadowstep(raise_exception=ShadowstepException)
+    @log_debug()
     def type(self, text: str) -> Any:
         """Execute mobile: type command.
 
@@ -1242,6 +1275,8 @@ class Shadowstep(ShadowstepBase):
         }
         return self.mobile_commands.type(params)
 
+    @fail_safe_shadowstep(raise_exception=ShadowstepException)
+    @log_debug()
     def sensor_set(self, sensor_type: str, value: str) -> Any:
         """Execute mobile: sensorSet command.
 
@@ -1261,6 +1296,8 @@ class Shadowstep(ShadowstepBase):
         }
         return self.mobile_commands.sensor_set(params)
 
+    @fail_safe_shadowstep(raise_exception=ShadowstepException)
+    @log_debug()
     def delete_file(self, remote_path: str) -> Any:
         """Execute mobile: deleteFile command.
 
@@ -1278,6 +1315,8 @@ class Shadowstep(ShadowstepBase):
         }
         return self.mobile_commands.delete_file(params)
 
+    @fail_safe_shadowstep(raise_exception=ShadowstepException)
+    @log_debug()
     def is_app_installed(self, app_id: str, user: int | str | None = None) -> Any:
         """Execute mobile: isAppInstalled command.
 
@@ -1300,6 +1339,8 @@ class Shadowstep(ShadowstepBase):
         }
         return self.mobile_commands.is_app_installed(params)
 
+    @fail_safe_shadowstep(raise_exception=ShadowstepException)
+    @log_debug()
     def query_app_state(self, app_id: str) -> Any:
         """Execute mobile: queryAppState command.
 
@@ -1324,6 +1365,8 @@ class Shadowstep(ShadowstepBase):
         }
         return self.mobile_commands.query_app_state(params)
 
+    @fail_safe_shadowstep(raise_exception=ShadowstepException)
+    @log_debug()
     def activate_app(self, app_id: str) -> Any:
         """Execute mobile: activateApp command.
 
@@ -1341,6 +1384,8 @@ class Shadowstep(ShadowstepBase):
         }
         return self.mobile_commands.activate_app(params)
 
+    @fail_safe_shadowstep(raise_exception=ShadowstepException)
+    @log_debug()
     def remove_app(self, app_id: str, timeout: int | None = None, keep_data: bool = False) -> Any:  # noqa: FBT001, FBT002
         """Execute mobile: removeApp command.
 
@@ -1365,6 +1410,8 @@ class Shadowstep(ShadowstepBase):
         }
         return self.mobile_commands.remove_app(params)
 
+    @fail_safe_shadowstep(raise_exception=ShadowstepException)
+    @log_debug()
     def terminate_app(self, app_id: str, timeout: int = 500) -> Any:
         """Execute mobile: terminateApp command.
 
@@ -1387,6 +1434,8 @@ class Shadowstep(ShadowstepBase):
         }
         return self.mobile_commands.terminate_app(params)
 
+    @fail_safe_shadowstep(raise_exception=ShadowstepException)
+    @log_debug()
     def install_app(  # noqa: PLR0913
         self,
         app_path: str,
@@ -1425,6 +1474,8 @@ class Shadowstep(ShadowstepBase):
         }
         return self.mobile_commands.install_app(params)
 
+    @fail_safe_shadowstep(raise_exception=ShadowstepException)
+    @log_debug()
     def clear_app(self, app_id: str) -> Any:
         """Execute mobile: clearApp command.
 
@@ -1445,6 +1496,8 @@ class Shadowstep(ShadowstepBase):
         }
         return self.mobile_commands.clear_app(params)
 
+    @fail_safe_shadowstep(raise_exception=ShadowstepException)
+    @log_debug()
     def start_activity(  # noqa: PLR0913
         self,
         intent: str,
@@ -1510,6 +1563,8 @@ class Shadowstep(ShadowstepBase):
         }
         return self.mobile_commands.start_activity(params)
 
+    @fail_safe_shadowstep(raise_exception=ShadowstepException)
+    @log_debug()
     def start_service(  # noqa: PLR0913
         self,
         intent: str | None = None,
@@ -1566,6 +1621,8 @@ class Shadowstep(ShadowstepBase):
         }
         return self.mobile_commands.start_service(params)
 
+    @fail_safe_shadowstep(raise_exception=ShadowstepException)
+    @log_debug()
     def stop_service(  # noqa: PLR0913
         self,
         intent: str | None = None,
@@ -1619,6 +1676,8 @@ class Shadowstep(ShadowstepBase):
         }
         return self.mobile_commands.stop_service(params)
 
+    @fail_safe_shadowstep(raise_exception=ShadowstepException)
+    @log_debug()
     def broadcast(  # noqa: PLR0913
         self,
         intent: str | None = None,
@@ -1678,6 +1737,8 @@ class Shadowstep(ShadowstepBase):
         }
         return self.mobile_commands.broadcast(params)
 
+    @fail_safe_shadowstep(raise_exception=ShadowstepException)
+    @log_debug()
     def get_contexts(self, wait_for_webview_ms: int = 0) -> Any:
         r"""Execute mobile: getContexts command.
 
@@ -1724,6 +1785,8 @@ class Shadowstep(ShadowstepBase):
         }
         return self.mobile_commands.get_contexts(params)
 
+    @fail_safe_shadowstep(raise_exception=ShadowstepException)
+    @log_debug()
     def install_multiple_apks(
         self,
         apks: list[str],
@@ -1755,6 +1818,8 @@ class Shadowstep(ShadowstepBase):
         }
         return self.mobile_commands.install_multiple_apks(params)
 
+    @fail_safe_shadowstep(raise_exception=ShadowstepException)
+    @log_debug()
     def lock(self, seconds: int | str | None = None) -> Any:
         """Execute mobile: lock command.
 
@@ -1772,6 +1837,8 @@ class Shadowstep(ShadowstepBase):
         }
         return self.mobile_commands.lock(params)
 
+    @fail_safe_shadowstep(raise_exception=ShadowstepException)
+    @log_debug()
     def unlock(
         self,
         key: str,
@@ -1801,6 +1868,8 @@ class Shadowstep(ShadowstepBase):
         }
         return self.mobile_commands.unlock(params)
 
+    @fail_safe_shadowstep(raise_exception=ShadowstepException)
+    @log_debug()
     def is_locked(self) -> Any:
         """Execute mobile: isLocked command.
 
@@ -1813,9 +1882,11 @@ class Shadowstep(ShadowstepBase):
             Either true or false
 
         """
-        return self._execute("mobile: isLocked", params)
+        return self.mobile_commands.is_locked()
 
-    def set_geolocation(
+    @fail_safe_shadowstep(raise_exception=ShadowstepException)
+    @log_debug()
+    def set_geolocation(  # noqa: PLR0913
         self,
         latitude: int,
         longitude: int,
@@ -1842,8 +1913,19 @@ class Shadowstep(ShadowstepBase):
             accuracy (number): Horizontal accuracy in meters. Only available for real devices. Valid value is 0.0 or greater. Optional. Example: 10.0
 
         """
-        return self._execute("mobile: setGeolocation", params)
+        params = {
+            "latitude": latitude,
+            "longitude": longitude,
+            "altitude": altitude,
+            "satellites": satellites,
+            "speed": speed,
+            "bearing": bearing,
+            "accuracy": accuracy,
+        }
+        return self.mobile_commands.set_geolocation(params)
 
+    @fail_safe_shadowstep(raise_exception=ShadowstepException)
+    @log_debug()
     def get_geolocation(
         self,
         latitude: int,
@@ -1865,16 +1947,25 @@ class Shadowstep(ShadowstepBase):
             altitude (number): Altitude value in meters. Example: 5.678
 
         """
-        return self._execute("mobile: getGeolocation", params)
+        params = {
+            "latitude": latitude,
+            "longitude": longitude,
+            "altitude": altitude,
+        }
+        return self.mobile_commands.get_geolocation(params)
 
+    @fail_safe_shadowstep(raise_exception=ShadowstepException)
+    @log_debug()
     def reset_geolocation(self) -> Any:
         """Execute mobile: resetGeolocation command.
 
         https://github.com/appium/appium-uiautomator2-driver?tab=readme-ov-file#mobile-resetgeolocation
 
         """
-        return self._execute("mobile: resetGeolocation", params)
+        return self.mobile_commands.reset_geolocation()
 
+    @fail_safe_shadowstep(raise_exception=ShadowstepException)
+    @log_debug()
     def refresh_gps_cache(self, timeout_ms: int = 20000) -> Any:
         """Execute mobile: refreshGpsCache command.
 
@@ -1884,14 +1975,19 @@ class Shadowstep(ShadowstepBase):
             Sends a request to refresh the GPS cache on the device under test. By default, location tracking is configured for low battery consumption, so this method may need to be called periodically to get updated geolocation values if the device's actual or mocked location changes frequently. This feature works only if Google Play Services are installed on the device. If the device uses the vanilla LocationManager, the device API level must be 30 (Android R) or higher.
 
         Args:
-            timeoutMs (number): Maximum number of milliseconds to wait for GPS cache refresh. If the API call does not confirm a successful cache refresh within this timeout, an error is thrown. A value of 0 or negative skips waiting and does not check for errors. Default is 20000 ms. Example: 60000
+            timeout_ms (number): Maximum number of milliseconds to wait for GPS cache refresh. If the API call does not confirm a successful cache refresh within this timeout, an error is thrown. A value of 0 or negative skips waiting and does not check for errors. Default is 20000 ms. Example: 60000
 
         Returns:
             The actual command output. An error is thrown if the GPS cache refresh fails or the timeout is exceeded.
 
         """
-        return self._execute("mobile: refreshGpsCache", params)
+        params = {
+            "timeoutMs": timeout_ms,
+        }
+        return self.mobile_commands.refresh_gps_cache(params)
 
+    @fail_safe_shadowstep(raise_exception=ShadowstepException)
+    @log_debug()
     def start_media_projection_recording(
         self,
         resolution: str | None = None,
@@ -1908,7 +2004,7 @@ class Shadowstep(ShadowstepBase):
 
         Args:
             resolution (string): The resolution of the recorded video. Supported values: "1920x1080", "1280x720", "720x480", "320x240", "176x144". Optional. Default depends on the device, usually Full HD "1920x1080". Example: "1280x720"
-            maxDurationSec (number): Maximum duration of the recording in seconds. Optional. Default is 900 seconds (15 minutes). Example: 300
+            max_duration_sec (number): Maximum duration of the recording in seconds. Optional. Default is 900 seconds (15 minutes). Example: 300
             priority (string): Recording thread priority. Optional. Default is "high". Can be set to "normal" or "low" to reduce performance impact. Example: "low"
             filename (string): Name of the output video file. Must end with ".mp4". Optional. If not provided, the current timestamp is used. Example: "screen.mp4"
 
@@ -1916,20 +2012,29 @@ class Shadowstep(ShadowstepBase):
             Boolean: True if a new recording has successfully started, False if another recording is currently running.
 
         """
-        return self._execute("mobile: startMediaProjectionRecording", params)
+        params = {
+            "resolution": resolution,
+            "maxDurationSec": max_duration_sec,
+            "priority": priority,
+            "filename": filename,
+        }
+        return self.mobile_commands.start_media_projection_recording(params)
 
+    @fail_safe_shadowstep(raise_exception=ShadowstepException)
+    @log_debug()
     def is_media_projection_recording_running(
         self,
-        params: dict[str, Any] | list[Any] | None = None,
     ) -> Any:
         """Execute mobile: isMediaProjectionRecordingRunning command.
 
         https://github.com/appium/appium-uiautomator2-driver?tab=readme-ov-file#mobile-ismediaprojectionrecordingrunning
 
         """
-        return self._execute("mobile: isMediaProjectionRecordingRunning", params)
+        return self.mobile_commands.is_media_projection_recording_running()
 
-    def stop_media_projection_recording(
+    @fail_safe_shadowstep(raise_exception=ShadowstepException)
+    @log_debug()
+    def stop_media_projection_recording(  # noqa: PLR0913
         self,
         remote_path: str | None = None,
         user: str | None = None,
@@ -1948,21 +2053,33 @@ class Shadowstep(ShadowstepBase):
             Stops the current device recording and retrieves the recently recorded media. If no recording has been started, an error is thrown. If the recording was already finished, the most recent recorded media is returned.
 
         Args:
-            remotePath (string): Remote location to upload the resulting video. Supported protocols: http, https, ftp. If null or empty, the file content is returned Base64-encoded. Optional. Example: "https://myserver.com/upload"
+            remote_path (string): Remote location to upload the resulting video. Supported protocols: http, https, ftp. If null or empty, the file content is returned Base64-encoded. Optional. Example: "https://myserver.com/upload"
             user (string): Username for remote authentication. Optional. Example: "admin"
-            pass (string): Password for remote authentication. Optional. Example: "pa$$w0rd"
+            password (string): Password for remote authentication. Optional. Example: "pa$$w0rd"
             method (string): HTTP multipart upload method. Default is "PUT". Optional. Example: "POST"
             headers (Map<string, string>): Additional headers for HTTP(S) uploads. Optional. Example: {"Agent": "007"}
-            fileFieldName (string): Form field name for file content in HTTP(S) uploads. Default is "file". Optional. Example: "blob"
-            formFields (Map<string, string> or Array<Pair>): Additional form fields for HTTP(S) uploads. Optional. Example: {"name": "yolo.mp4"}
-            uploadTimeout (number): Maximum time in milliseconds to wait for file upload. Default is 240000 ms. Optional. Example: 30000
+            file_field_name (string): Form field name for file content in HTTP(S) uploads. Default is "file". Optional. Example: "blob"
+            form_fields (Map<string, string> or Array<Pair>): Additional form fields for HTTP(S) uploads. Optional. Example: {"name": "yolo.mp4"}
+            upload_timeout (number): Maximum time in milliseconds to wait for file upload. Default is 240000 ms. Optional. Example: 30000
 
         Returns:
             Base64-encoded content of the recorded media file if `remotePath` is falsy or empty. Otherwise, the result depends on the upload response.
 
         """
-        return self._execute("mobile: stopMediaProjectionRecording", params)
+        params = {
+            "remotePath": remote_path,
+            "user": user,
+            "pass": password,
+            "method": method,
+            "headers": headers,
+            "fileFieldName": file_field_name,
+            "formFields": form_fields,
+            "uploadTimeout": upload_timeout,
+        }
+        return self.mobile_commands.stop_media_projection_recording(params)
 
+    @fail_safe_shadowstep(raise_exception=ShadowstepException)
+    @log_debug()
     def get_connectivity(self, services: str | list[str] | None = None) -> Any:
         """Execute mobile: getConnectivity command.
 
@@ -1981,13 +2098,18 @@ class Shadowstep(ShadowstepBase):
                 airplaneMode (boolean): True if Airplane Mode is enabled.
 
         """
-        return self._execute("mobile: getConnectivity", params)
+        params = {
+            "services": services,
+        }
+        return self.mobile_commands.get_connectivity(params)
 
+    @fail_safe_shadowstep(raise_exception=ShadowstepException)
+    @log_debug()
     def set_connectivity(
         self,
-        wifi: bool = False,
-        data: bool = False,
-        airplane_mode: bool = False,
+        wifi: bool = False,  # noqa: FBT001, FBT002
+        data: bool = False,  # noqa: FBT001, FBT002
+        airplane_mode: bool = False,  # noqa: FBT001, FBT002
     ) -> Any:
         """Execute mobile: setConnectivity command.
 
@@ -2003,14 +2125,21 @@ class Shadowstep(ShadowstepBase):
         Args:
             wifi (boolean): Whether to enable or disable Wi-Fi. Optional. Example: False
             data (boolean): Whether to enable or disable mobile data. Optional. Example: False
-            airplaneMode (boolean): Whether to enable or disable Airplane Mode. Optional. Example: False
+            airplane_mode (boolean): Whether to enable or disable Airplane Mode. Optional. Example: False
 
         Returns:
             The actual command output. An error is thrown if execution fails.
 
         """
-        return self._execute("mobile: setConnectivity", params)
+        params = {
+            "wifi": wifi,
+            "data": data,
+            "airplaneMode": airplane_mode,
+        }
+        return self.mobile_commands.set_connectivity(params)
 
+    @fail_safe_shadowstep(raise_exception=ShadowstepException)
+    @log_debug()
     def get_app_strings(self, language: str | None = None) -> Any:
         """Execute mobile: getAppStrings command.
 
@@ -2026,8 +2155,13 @@ class Shadowstep(ShadowstepBase):
             A dictionary mapping resource identifiers to string values for the given language. An error is thrown if execution fails.
 
         """
-        return self._execute("mobile: getAppStrings", params)
+        params = {
+            "language": language,
+        }
+        return self.mobile_commands.get_app_strings(params)
 
+    @fail_safe_shadowstep(raise_exception=ShadowstepException)
+    @log_debug()
     def hide_keyboard(self) -> Any:
         """Execute mobile: hideKeyboard command.
 
@@ -2040,8 +2174,10 @@ class Shadowstep(ShadowstepBase):
             Boolean: True if the keyboard was successfully hidden, or False if it was already invisible. An error is thrown if execution fails.
 
         """
-        return self._execute("mobile: hideKeyboard", params)
+        return self.mobile_commands.hide_keyboard()
 
+    @fail_safe_shadowstep(raise_exception=ShadowstepException)
+    @log_debug()
     def is_keyboard_shown(self) -> Any:
         """Execute mobile: isKeyboardShown command.
 
@@ -2054,14 +2190,16 @@ class Shadowstep(ShadowstepBase):
             Boolean: True if the keyboard is visible, False otherwise. An error is thrown if execution fails.
 
         """
-        return self._execute("mobile: isKeyboardShown", params)
+        return self.mobile_commands.is_keyboard_shown()
 
+    @fail_safe_shadowstep(raise_exception=ShadowstepException)
+    @log_debug()
     def press_key(
         self,
         keycode: int,
         metastate: int | None = None,
         flags: int | None = None,
-        is_long_press: bool = False,
+        is_long_press: bool = False,  # noqa: FBT001, FBT002
     ) -> Any:
         """Execute mobile: pressKey command.
 
@@ -2074,11 +2212,19 @@ class Shadowstep(ShadowstepBase):
             keycode (number): A valid Android key code representing the key to press. Required. Example: 0x00000099 (KEYCODE_NUMPAD_9)
             metastate (number): An integer in which each bit set to 1 represents a pressed meta key (e.g., SHIFT, ALT). Optional. Example: 0x00000010 (META_ALT_LEFT_ON)
             flags (number): Flags for the key event as defined in KeyEvent documentation. Optional. Example: 0x00000001 (FLAG_WOKE_HERE)
-            isLongPress (boolean): Whether to emulate a long key press. False by default. Optional. Example: True
+            is_long_press (boolean): Whether to emulate a long key press. False by default. Optional. Example: True
 
         """
-        return self._execute("mobile: pressKey", params)
+        params = {
+            "keycode": keycode,
+            "metastate": metastate,
+            "flags": flags,
+            "isLongPress": is_long_press,
+        }
+        return self.mobile_commands.press_key(params)
 
+    @fail_safe_shadowstep(raise_exception=ShadowstepException)
+    @log_debug()
     def background_app(self, seconds: int | None = None) -> Any:
         """Execute mobile: backgroundApp command.
 
@@ -2094,8 +2240,13 @@ class Shadowstep(ShadowstepBase):
             The actual command output. An error is thrown if the operation fails.
 
         """
-        return self._execute("mobile: backgroundApp", params)
+        params = {
+            "seconds": seconds,
+        }
+        return self.mobile_commands.background_app(params)
 
+    @fail_safe_shadowstep(raise_exception=ShadowstepException)
+    @log_debug()
     def get_current_activity(self) -> Any:
         """Execute mobile: getCurrentActivity command.
 
@@ -2108,8 +2259,10 @@ class Shadowstep(ShadowstepBase):
             The activity class name as a string. Could be None if no activity is currently focused.
 
         """
-        return self._execute("mobile: getCurrentActivity", params)
+        return self.mobile_commands.get_current_activity()
 
+    @fail_safe_shadowstep(raise_exception=ShadowstepException)
+    @log_debug()
     def get_current_package(self) -> Any:
         """Execute mobile: getCurrentPackage command.
 
@@ -2122,8 +2275,10 @@ class Shadowstep(ShadowstepBase):
             The package class name as a string. Could be None if no app is currently focused.
 
         """
-        return self._execute("mobile: getCurrentPackage", params)
+        return self.mobile_commands.get_current_package()
 
+    @fail_safe_shadowstep(raise_exception=ShadowstepException)
+    @log_debug()
     def get_display_density(self) -> Any:
         """Execute mobile: getDisplayDensity command.
 
@@ -2136,8 +2291,10 @@ class Shadowstep(ShadowstepBase):
             The display density as an integer value representing DPI.
 
         """
-        return self._execute("mobile: getDisplayDensity", params)
+        return self.mobile_commands.get_display_density()
 
+    @fail_safe_shadowstep(raise_exception=ShadowstepException)
+    @log_debug()
     def get_system_bars(self) -> Any:
         """Execute mobile: getSystemBars command.
 
@@ -2155,8 +2312,10 @@ class Shadowstep(ShadowstepBase):
                 height (number): Height of the bar; may be 0 if the bar is not present.
 
         """
-        return self._execute("mobile: getSystemBars", params)
+        return self.mobile_commands.get_system_bars()
 
+    @fail_safe_shadowstep(raise_exception=ShadowstepException)
+    @log_debug()
     def fingerprint(self, fingerprint_id: int) -> Any:
         """Execute mobile: fingerprint command.
 
@@ -2166,15 +2325,19 @@ class Shadowstep(ShadowstepBase):
             Emulates a fingerprint scan on the Android Emulator. Only works on API level 23 and above. Available since driver version
 
         Args:
-            fingerprintId (number):	The value is the id for the finger that was "scanned". It is a unique integer that you assign for each virtual fingerprint. When the app is running you can run this same command each time the emulator prompts you for a fingerprint, you can run the adb command and pass it the fingerprintId to simulate the fingerprint scan. Required. Example: 1
+            fingerprint_id (number):	The value is the id for the finger that was "scanned". It is a unique integer that you assign for each virtual fingerprint. When the app is running you can run this same command each time the emulator prompts you for a fingerprint, you can run the adb command and pass it the fingerprintId to simulate the fingerprint scan. Required. Example: 1
 
         Returns:
             Any: result of script execution
 
-
         """
-        return self._execute("mobile: fingerprint", params)
+        params = {
+            "fingerprintId": fingerprint_id,
+        }
+        return self.mobile_commands.fingerprint(params)
 
+    @fail_safe_shadowstep(raise_exception=ShadowstepException)
+    @log_debug()
     def send_sms(
         self,
         phone_number: str,
@@ -2188,15 +2351,21 @@ class Shadowstep(ShadowstepBase):
             Emulates sending an SMS to a specified phone number on an Android Emulator. Only works on emulators. Available since driver version 2.22.
 
         Args:
-            phoneNumber (string): The phone number to which the SMS should be sent. Required. Example: '0123456789'
+            phone_number (string): The phone number to which the SMS should be sent. Required. Example: '0123456789'
             message (string): The content of the SMS message. Required. Example: 'Hello'
 
         Returns:
             The actual command output. An error is thrown if SMS emulation fails.
 
         """
-        return self._execute("mobile: sendSms", params)
+        params = {
+            "phoneNumber": phone_number,
+            "message": message,
+        }
+        return self.mobile_commands.send_sms(params)
 
+    @fail_safe_shadowstep(raise_exception=ShadowstepException)
+    @log_debug()
     def gsm_call(
         self,
         phone_number: str,
@@ -2210,12 +2379,18 @@ class Shadowstep(ShadowstepBase):
             Emulates a GSM call to a specified phone number on an Android Emulator. Only works on emulators. Available since driver version 2.22.
 
         Args:
-            phoneNumber (string): The phone number to call. Required. Example: '0123456789'
+            phone_number (string): The phone number to call. Required. Example: '0123456789'
             action (string): The action to perform on the call. Must be one of 'call', 'accept', 'cancel', or 'hold'. Required. Example: 'accept'
 
         """
-        return self._execute("mobile: gsmCall", params)
+        params = {
+            "phoneNumber": phone_number,
+            "action": action,
+        }
+        return self.mobile_commands.gsm_call(params)
 
+    @fail_safe_shadowstep(raise_exception=ShadowstepException)
+    @log_debug()
     def gsm_signal(self, strength: int) -> Any:
         """Execute mobile: gsmSignal command.
 
@@ -2231,8 +2406,13 @@ class Shadowstep(ShadowstepBase):
             The actual command output. An error is thrown if GSM signal emulation fails.
 
         """
-        return self._execute("mobile: gsmSignal", params)
+        params = {
+            "strength": strength,
+        }
+        return self.mobile_commands.gsm_signal(params)
 
+    @fail_safe_shadowstep(raise_exception=ShadowstepException)
+    @log_debug()
     def gsm_voice(
         self,
         state: Literal["on", "off", "denied", "searching", "roaming", "home", "unregistered"],
@@ -2251,8 +2431,13 @@ class Shadowstep(ShadowstepBase):
             The actual command output. An error is thrown if GSM voice state emulation fails.
 
         """
-        return self._execute("mobile: gsmVoice", params)
+        params = {
+            "state": state,
+        }
+        return self.mobile_commands.gsm_voice(params)
 
+    @fail_safe_shadowstep(raise_exception=ShadowstepException)
+    @log_debug()
     def power_ac(self, state: Literal["on", "off"]) -> Any:
         """Execute mobile: powerAC command.
 
@@ -2265,8 +2450,13 @@ class Shadowstep(ShadowstepBase):
             state (str): AC power state to emulate. Must be either 'on' or 'off'. Required. Example: 'off'
 
         """
-        return self._execute("mobile: powerAC", params)
+        params = {
+            "state": state,
+        }
+        return self.mobile_commands.power_ac(params)
 
+    @fail_safe_shadowstep(raise_exception=ShadowstepException)
+    @log_debug()
     def power_capacity(self, percent: int) -> Any:
         """Execute mobile: powerCapacity command.
 
@@ -2279,8 +2469,13 @@ class Shadowstep(ShadowstepBase):
             percent (int): Battery percentage to emulate, must be in the range 0 to 100. Required. Example: 50
 
         """
-        return self._execute("mobile: powerCapacity", params)
+        params = {
+            "percent": percent,
+        }
+        return self.mobile_commands.power_capacity(params)
 
+    @fail_safe_shadowstep(raise_exception=ShadowstepException)
+    @log_debug()
     def network_speed(
         self,
         speed: Literal["gsm", "scsd", "gprs", "edge", "umts", "hsdpa", "lte", "evdo", "full"],
@@ -2299,8 +2494,13 @@ class Shadowstep(ShadowstepBase):
             The actual command output. An error is thrown if network speed emulation fails.
 
         """
-        return self._execute("mobile: networkSpeed", params)
+        params = {
+            "speed": speed,
+        }
+        return self.mobile_commands.network_speed(params)
 
+    @fail_safe_shadowstep(raise_exception=ShadowstepException)
+    @log_debug()
     def replace_element_value(
         self,
         locator,
@@ -2323,6 +2523,8 @@ class Shadowstep(ShadowstepBase):
         """
         return self._execute("mobile: replaceElementValue", params)
 
+    @fail_safe_shadowstep(raise_exception=ShadowstepException)
+    @log_debug()
     def toggle_gps(self) -> Any:
         """Execute mobile: toggleGps command.
 
@@ -2332,8 +2534,10 @@ class Shadowstep(ShadowstepBase):
             Switches GPS setting state. This API only works reliably since Android 12 (API 31). Available since driver version 2.23.
 
         """
-        return self._execute("mobile: toggleGps", params)
+        return self.mobile_commands.toggle_gps()
 
+    @fail_safe_shadowstep(raise_exception=ShadowstepException)
+    @log_debug()
     def is_gps_enabled(self) -> Any:
         """Execute mobile: isGpsEnabled command.
 
@@ -2343,8 +2547,10 @@ class Shadowstep(ShadowstepBase):
             Returns true if GPS is enabled on the device under test. Available since driver version 2.23.
 
         """
-        return self._execute("mobile: isGpsEnabled", params)
+        return self.mobile_commands.is_gps_enabled()
 
+    @fail_safe_shadowstep(raise_exception=ShadowstepException)
+    @log_debug()
     def get_performance_data_types(self) -> Any:
         """Execute mobile: getPerformanceDataTypes command.
 
@@ -2357,8 +2563,10 @@ class Shadowstep(ShadowstepBase):
             List[str]: A list of supported performance data type names.
 
         """
-        return self._execute("mobile: getPerformanceDataTypes", params)
+        return self.mobile_commands.get_performance_data_types()
 
+    @fail_safe_shadowstep(raise_exception=ShadowstepException)
+    @log_debug()
     def get_performance_data(
         self,
         package_name: str,
@@ -2372,8 +2580,8 @@ class Shadowstep(ShadowstepBase):
             Retrieves performance data about the specified Android subsystem for a given app. The data is parsed from the output of the `dumpsys` utility. Available since driver version 2.24.
 
         Args:
-            packageName (str): The package identifier of the app to fetch performance data for. Required. Example: "com.myapp"
-            dataType (str): The subsystem name for which to retrieve performance data. Must be one of the values returned by `mobile: getPerformanceDataTypes`. Required. Example: "batteryinfo" or "cpuinfo" or "memoryinfo" or "networkinfo"
+            package_name (str): The package identifier of the app to fetch performance data for. Required. Example: "com.myapp"
+            data_type (str): The subsystem name for which to retrieve performance data. Must be one of the values returned by `mobile: getPerformanceDataTypes`. Required. Example: "batteryinfo" or "cpuinfo" or "memoryinfo" or "networkinfo"
 
         Returns:
             List[List[Any]]: The data is organized as a table:
@@ -2417,8 +2625,14 @@ class Shadowstep(ShadowstepBase):
                 ]
 
         """
-        return self._execute("mobile: getPerformanceData", params)
+        params = {
+            "packageName": package_name,
+            "dataType": data_type,
+        }
+        return self.mobile_commands.get_performance_data(params)
 
+    @fail_safe_shadowstep(raise_exception=ShadowstepException)
+    @log_debug()
     def status_bar(
         self,
         command: Literal[
@@ -2456,8 +2670,14 @@ class Shadowstep(ShadowstepBase):
             str: The actual output from the underlying status bar command. The output depends on the selected command and may be empty.
 
         """
-        return self._execute("mobile: statusBar", params)
+        params = {
+            "command": command,
+            "component": component,
+        }
+        return self.mobile_commands.status_bar(params)
 
+    @fail_safe_shadowstep(raise_exception=ShadowstepException)
+    @log_debug()
     def screenshots(
         self,
         display_id: int | str | None = None,
@@ -2470,7 +2690,7 @@ class Shadowstep(ShadowstepBase):
             Captures a screenshot of each display available on the Android device. This functionality is supported on Android 10 and newer.
 
         Args:
-            displayId (int or str, optional): Identifier of the display to capture. If not provided, screenshots for all displays will be returned. If the specified display does not exist, an error is thrown. Display identifiers can be retrieved using `adb shell dumpsys SurfaceFlinger --display-id`. Example: 1
+            display_id (int or str, optional): Identifier of the display to capture. If not provided, screenshots for all displays will be returned. If the specified display does not exist, an error is thrown. Display identifiers can be retrieved using `adb shell dumpsys SurfaceFlinger --display-id`. Example: 1
 
         Returns:
             Dict[str, Dict]: A dictionary where each key is a display identifier and each value is a dictionary with the following keys:
@@ -2481,12 +2701,17 @@ class Shadowstep(ShadowstepBase):
                 payload (str): PNG screenshot data encoded as a base64 string. Example: "iVBORw0KGgoAAAANSUhEUgAA..."
 
         """
-        return self._execute("mobile: screenshots", params)
+        params = {
+            "displayId": display_id,
+        }
+        return self.mobile_commands.screenshots(params)
 
+    @fail_safe_shadowstep(raise_exception=ShadowstepException)
+    @log_debug()
     def set_ui_mode(
         self,
         mode: Literal["night", "car"],
-        value,
+        value: str,
     ) -> Any:
         """Execute mobile: setUiMode command.
 
@@ -2510,8 +2735,14 @@ class Shadowstep(ShadowstepBase):
             The actual command output. An error is thrown if command execution fails.
 
         """
-        return self._execute("mobile: setUiMode", params)
+        params = {
+            "mode": mode,
+            "value": value,
+        }
+        return self.mobile_commands.set_ui_mode(params)
 
+    @fail_safe_shadowstep(raise_exception=ShadowstepException)
+    @log_debug()
     def get_ui_mode(self, mode: Literal["night", "car"]) -> str:
         """Execute mobile: getUiMode command.
 
@@ -2532,8 +2763,13 @@ class Shadowstep(ShadowstepBase):
                 - car: "yes", "no"
 
         """
-        return self.mobile_commands.get_ui_mode({"mode": mode})
+        params = {
+            "mode": mode,
+        }
+        return self.mobile_commands.get_ui_mode(params)
 
+    @fail_safe_shadowstep(raise_exception=ShadowstepException)
+    @log_debug()
     def send_trim_memory(
         self,
         pkg: str,
@@ -2570,8 +2806,14 @@ class Shadowstep(ShadowstepBase):
             The actual command output. An error is thrown if the simulation fails.
 
         """
-        return self.mobile_commands.send_trim_memory({"pkg": pkg, "level": level})
+        params = {
+            "pkg": pkg,
+            "level": level,
+        }
+        return self.mobile_commands.send_trim_memory(params)
 
+    @fail_safe_shadowstep(raise_exception=ShadowstepException)
+    @log_debug()
     def inject_emulator_camera_image(self, payload: str) -> Any:
         """Execute mobile: injectEmulatorCameraImage command.
 
@@ -2592,8 +2834,13 @@ class Shadowstep(ShadowstepBase):
             Boolean: True if the image was injected successfully. An error is thrown if the operation fails (for example, if the payload is not a valid base64 PNG or the emulator is not prepared).
 
         """
-        return self.mobile_commands.inject_emulator_camera_image({"payload": payload})
+        params = {
+            "payload": payload,
+        }
+        return self.mobile_commands.inject_emulator_camera_image(params)
 
+    @fail_safe_shadowstep(raise_exception=ShadowstepException)
+    @log_debug()
     def bluetooth(self, action: Literal["enable", "disable", "unpairAll"]) -> Any:
         """Execute mobile: bluetooth command.
 
@@ -2613,8 +2860,13 @@ class Shadowstep(ShadowstepBase):
             Boolean: True if the action was successfully executed. An error is thrown if the device has no Bluetooth adapter or if the operation fails.
 
         """
-        return self.mobile_commands.bluetooth({"action": action})
+        params = {
+            "action": action,
+        }
+        return self.mobile_commands.bluetooth(params)
 
+    @fail_safe_shadowstep(raise_exception=ShadowstepException)
+    @log_debug()
     def nfc(self, action: Literal["enable", "disable"]) -> Any:
         """Execute mobile: nfc command.
 
@@ -2633,8 +2885,13 @@ class Shadowstep(ShadowstepBase):
             Boolean: True if the action was successfully executed. An error is thrown if the device has no NFC adapter or if the operation fails.
 
         """
-        return self.mobile_commands.nfc({"action": action})
+        params = {
+            "action": action,
+        }
+        return self.mobile_commands.nfc(params)
 
+    @fail_safe_shadowstep(raise_exception=ShadowstepException)
+    @log_debug()
     def pull_file(self, remote_path: str) -> str:
         """Execute mobile: pullFile command.
 
@@ -2650,8 +2907,13 @@ class Shadowstep(ShadowstepBase):
             string: Base64-encoded content of the remote file. An error is thrown if the file does not exist or if the operation fails.
 
         """
-        return self.mobile_commands.pull_file({"remotePath": remote_path})
+        params = {
+            "remotePath": remote_path,
+        }
+        return self.mobile_commands.pull_file(params)
 
+    @fail_safe_shadowstep(raise_exception=ShadowstepException)
+    @log_debug()
     def push_file(self, remote_path: str, payload: str) -> Any:
         """Execute mobile: pushFile command.
 
@@ -2668,8 +2930,14 @@ class Shadowstep(ShadowstepBase):
             Any: result of script execution
 
         """
-        return self.mobile_commands.push_file({"remotePath": remote_path, "payload": payload})
+        params = {
+            "remotePath": remote_path,
+            "payload": payload,
+        }
+        return self.mobile_commands.push_file(params)
 
+    @fail_safe_shadowstep(raise_exception=ShadowstepException)
+    @log_debug()
     def pull_folder(self, remote_path: str) -> Any:
         """Execute mobile: pullFolder command.
 
@@ -2685,8 +2953,13 @@ class Shadowstep(ShadowstepBase):
             Any: Base64-encoded string representing the zipped content of the remote folder. An error is thrown if the folder does not exist or the operation fails.
 
         """
-        return self.mobile_commands.pull_folder({"remotePath": remote_path})
+        params = {
+            "remotePath": remote_path,
+        }
+        return self.mobile_commands.pull_folder(params)
 
+    @fail_safe_shadowstep(raise_exception=ShadowstepException)
+    @log_debug()
     def get_clipboard(self) -> str:
         """Execute mobile: getClipboard command.
 
@@ -2704,6 +2977,8 @@ class Shadowstep(ShadowstepBase):
         """
         return self.mobile_commands.get_clipboard()
 
+    @fail_safe_shadowstep(raise_exception=ShadowstepException)
+    @log_debug()
     def set_clipboard(
         self,
         content: str,
@@ -2726,12 +3001,14 @@ class Shadowstep(ShadowstepBase):
             Any: result of script execution
 
         """
-        return self.mobile_commands.set_clipboard(
-            {"content": content, "contentType": content_type, "label": label},
-        )
+        params = {
+            "content": content,
+            "contentType": content_type,
+            "label": label,
+        }
+        return self.mobile_commands.set_clipboard(params)
 
-    # TODO
-
+    @fail_safe_shadowstep(raise_exception=ShadowstepException)
     @log_debug()
     def shell(self, command: str, args: str = "") -> str:
         """Execute mobile: shell command.
@@ -2746,7 +3023,11 @@ class Shadowstep(ShadowstepBase):
             Any: result of script execution
 
         """
-        return self.mobile_commands.shell({"command": command, "args": [args]})
+        params = {
+            "command": command,
+            "args": [args],
+        }
+        return self.mobile_commands.shell(params)
 
     # -------------------------- screenshot --------------------------
 
