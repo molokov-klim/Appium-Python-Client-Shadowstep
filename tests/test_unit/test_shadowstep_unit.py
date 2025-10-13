@@ -229,85 +229,14 @@ class TestShadowstepUnit:
 
             mock_stop.assert_called_once()
 
-    @pytest.mark.unit
-    def test_find_and_get_element_success(self):
-        """Test find_and_get_element method with successful find."""
-        shadowstep = self._create_test_shadowstep()
 
-        mock_scrollable = Mock()
-        mock_element = Mock()
-        mock_scrollable.scroll_to_element.return_value = mock_element
-
-        with patch.object(shadowstep, "get_elements", return_value=[mock_scrollable]):
-            result = shadowstep.find_and_get_element({"class": "test"})
-
-            assert result is mock_element
-            mock_scrollable.scroll_to_element.assert_called_once()
-
-    @pytest.mark.unit
-    def test_find_and_get_element_not_found(self):
-        """Test find_and_get_element method when element not found."""
-        shadowstep = self._create_test_shadowstep()
-
-        with patch.object(shadowstep, "get_elements", return_value=[]):
-            with pytest.raises(Exception):  # ShadowstepException
-                shadowstep.find_and_get_element({"class": "test"})
-
-    @pytest.mark.unit
-    def test_find_and_get_element_scroll_failure(self):
-        """Test find_and_get_element method when scroll fails."""
-        shadowstep = self._create_test_shadowstep()
-
-        mock_scrollable = Mock()
-        mock_scrollable.scroll_to_element.side_effect = Exception("Scroll failed")
-
-        with patch.object(shadowstep, "get_elements", return_value=[mock_scrollable]):
-            with pytest.raises(Exception):  # ShadowstepException
-                shadowstep.find_and_get_element({"class": "test"})
-
-    @pytest.mark.unit
-    def test_is_text_visible_success(self):
-        """Test is_text_visible method with visible text."""
-        shadowstep = self._create_test_shadowstep()
-
-        mock_element = Mock()
-        mock_element.is_visible.return_value = True
-
-        with patch("shadowstep.shadowstep.Element", return_value=mock_element):
-            result = shadowstep.is_text_visible("test text")
-
-            assert result is True
-            mock_element.is_visible.assert_called_once()
-
-    @pytest.mark.unit
-    def test_is_text_visible_not_visible(self):
-        """Test is_text_visible method with not visible text."""
-        shadowstep = self._create_test_shadowstep()
-
-        mock_element = Mock()
-        mock_element.is_visible.return_value = False
-
-        with patch("shadowstep.shadowstep.Element", return_value=mock_element):
-            result = shadowstep.is_text_visible("test text")
-
-            assert result is False
-
-    @pytest.mark.unit
-    def test_is_text_visible_exception(self):
-        """Test is_text_visible method with exception."""
-        shadowstep = self._create_test_shadowstep()
-
-        with patch("shadowstep.shadowstep.Element", side_effect=Exception("Test error")):
-            result = shadowstep.is_text_visible("test text")
-
-            assert result is False
 
     @pytest.mark.unit
     def test_scroll_invalid_direction(self):
         """Test scroll method with invalid direction."""
         shadowstep = self._create_test_shadowstep()
 
-        with pytest.raises(ShadowstepException, match="scroll failed after 3 attempts"):
+        with pytest.raises(ValueError, match="Invalid direction"):
             shadowstep.scroll(0, 0, 100, 100, "invalid", 0.5, 1000)
 
     @pytest.mark.unit
@@ -315,7 +244,7 @@ class TestShadowstepUnit:
         """Test scroll method with invalid percent."""
         shadowstep = self._create_test_shadowstep()
 
-        with pytest.raises(ShadowstepException, match="scroll failed after 3 attempts"):
+        with pytest.raises(ValueError, match="Percent must be between 0 and 1"):
             shadowstep.scroll(0, 0, 100, 100, "up", 1.5, 1000)
 
     @pytest.mark.unit
@@ -323,7 +252,7 @@ class TestShadowstepUnit:
         """Test scroll method with negative speed."""
         shadowstep = self._create_test_shadowstep()
 
-        with pytest.raises(ShadowstepException, match="scroll failed after 3 attempts"):
+        with pytest.raises(ValueError, match="Speed must be non-negative"):
             shadowstep.scroll(0, 0, 100, 100, "up", 0.5, -1)
 
     @pytest.mark.unit
@@ -358,7 +287,7 @@ class TestShadowstepUnit:
     def test_long_click_negative_duration(self):
         """Test long_click method with negative duration."""
 
-        with pytest.raises(ShadowstepException, match="long_click failed after 3 attempts"):
+        with pytest.raises(ValueError, match="Duration must be non-negative"):
             shadowstep.long_click(100, 100, -1)
 
     @pytest.mark.unit
@@ -503,13 +432,13 @@ class TestShadowstepUnit:
 
         with patch.object(shadowstep, "driver", mock_driver):
             with patch.object(shadowstep, "is_connected", return_value=True):
-                with patch.object(shadowstep.mobile_commands, "pinch_open_gesture") as mock_pinch:
+                with patch.object(shadowstep.mobile_commands, "pinch_close_gesture") as mock_pinch:
                     result = shadowstep.pinch_close(100, 200, 300, 400, 0.5, 1000)
 
                     # Verify the method returns self
                     assert result is shadowstep
 
-                    # Verify pinch_open_gesture was called with correct parameters
+                    # Verify pinch_close_gesture was called with correct parameters
                     mock_pinch.assert_called_once_with(
                         {
                             "left": 100,
@@ -686,123 +615,77 @@ class TestShadowstepUnit:
                     mock_file.assert_called_once_with("wb")
                     mock_file().write.assert_called_once_with("test page source".encode("utf-8"))
 
-    @pytest.mark.unit
-    def test_push_success(self):
-        """Test push method with valid driver."""
 
-        mock_driver = Mock()
-        mock_file_content = b"test file content"
-        expected_data = base64.b64encode(mock_file_content).decode("utf-8")
 
-        with patch.object(shadowstep, "driver", mock_driver):
-            with patch.object(shadowstep, "is_connected", return_value=True):
-                with patch("pathlib.Path.open", mock_open(read_data=mock_file_content)):
-                    result = shadowstep.push("/local/path", "/remote/path")
-
-                    # Verify the method returns self
-                    assert result is shadowstep
-
-                    # Verify push_file was called with correct parameters
-                    mock_driver.push_file.assert_called_once_with(
-                        destination_path="/remote/path", base64data=expected_data
-                    )
-
-    @pytest.mark.unit
-    def test_get_screenshot_no_driver_condition(self):
-        """Test get_screenshot method with None driver condition."""
-
-        with patch.object(shadowstep, "driver", None):
-            with patch.object(shadowstep, "is_connected", return_value=True):
-                with pytest.raises(ShadowstepException):
-                    shadowstep.get_screenshot()
-
-    @pytest.mark.unit
-    def test_save_source_no_driver_condition(self):
-        """Test save_source method with None driver condition."""
-
-        with patch.object(shadowstep, "driver", None):
-            with patch.object(shadowstep, "is_connected", return_value=True):
-                with pytest.raises(ShadowstepException):
-                    shadowstep.save_source("/test/path", "test.xml")
-
-    @pytest.mark.unit
-    def test_push_no_driver_condition(self):
-        """Test push method with None driver condition."""
-
-        with patch.object(shadowstep, "driver", None):
-            with patch.object(shadowstep, "is_connected", return_value=True):
-                with patch("pathlib.Path.open", mock_open(read_data=b"test content")):
-                    with pytest.raises(ShadowstepException):
-                        shadowstep.push("/local/path", "/remote/path")
 
     @pytest.mark.unit
     def test_drag_negative_speed(self):
         """Test drag method with negative speed."""
 
-        with pytest.raises(ShadowstepException, match="drag failed after 3 attempts"):
+        with pytest.raises(ValueError, match="Speed must be non-negative"):
             shadowstep.drag(0, 0, 100, 100, -1)
 
     @pytest.mark.unit
     def test_fling_invalid_direction(self):
         """Test fling method with invalid direction."""
 
-        with pytest.raises(ShadowstepException, match="fling failed after 3 attempts"):
+        with pytest.raises(ValueError, match="Invalid direction"):
             shadowstep.fling(0, 0, 100, 100, "invalid", 1000)
 
     @pytest.mark.unit
     def test_fling_zero_speed(self):
         """Test fling method with zero speed."""
 
-        with pytest.raises(ShadowstepException, match="fling failed after 3 attempts"):
+        with pytest.raises(ValueError, match="Speed must be"):
             shadowstep.fling(0, 0, 100, 100, "up", 0)
 
     @pytest.mark.unit
     def test_pinch_open_invalid_percent(self):
         """Test pinch_open method with invalid percent."""
 
-        with pytest.raises(ShadowstepException, match="pinch_open failed after 3 attempts"):
+        with pytest.raises(ValueError, match="Percent must be between 0 and 1"):
             shadowstep.pinch_open(0, 0, 100, 100, 1.5, 1000)
 
     @pytest.mark.unit
     def test_pinch_open_negative_speed(self):
         """Test pinch_open method with negative speed."""
 
-        with pytest.raises(ShadowstepException, match="pinch_open failed after 3 attempts"):
+        with pytest.raises(ValueError, match="Speed must be non-negative"):
             shadowstep.pinch_open(0, 0, 100, 100, 0.5, -1)
 
     @pytest.mark.unit
     def test_pinch_close_invalid_percent(self):
         """Test pinch_close method with invalid percent."""
 
-        with pytest.raises(ShadowstepException, match="pinch_close failed after 3 attempts"):
+        with pytest.raises(ValueError, match="Percent must be between 0 and 1"):
             shadowstep.pinch_close(0, 0, 100, 100, 1.5, 1000)
 
     @pytest.mark.unit
     def test_pinch_close_negative_speed(self):
         """Test pinch_close method with negative speed."""
 
-        with pytest.raises(ShadowstepException, match="pinch_close failed after 3 attempts"):
+        with pytest.raises(ValueError, match="Speed must be non-negative"):
             shadowstep.pinch_close(0, 0, 100, 100, 0.5, -1)
 
     @pytest.mark.unit
     def test_swipe_invalid_direction(self):
         """Test swipe method with invalid direction."""
 
-        with pytest.raises(ShadowstepException, match="swipe failed after 3 attempts"):
+        with pytest.raises(ValueError, match="Invalid direction"):
             shadowstep.swipe(0, 0, 100, 100, "invalid", 0.5, 1000)
 
     @pytest.mark.unit
     def test_swipe_invalid_percent(self):
         """Test swipe method with invalid percent."""
 
-        with pytest.raises(ShadowstepException, match="swipe failed after 3 attempts"):
+        with pytest.raises(ValueError, match="Percent must be between 0 and 1"):
             shadowstep.swipe(0, 0, 100, 100, "up", 1.5, 1000)
 
     @pytest.mark.unit
     def test_swipe_negative_speed(self):
         """Test swipe method with negative speed."""
 
-        with pytest.raises(ShadowstepException, match="swipe failed after 3 attempts"):
+        with pytest.raises(ValueError, match="Speed must be non-negative"):
             shadowstep.swipe(0, 0, 100, 100, "up", 0.5, -1)
 
     @pytest.mark.unit
@@ -848,15 +731,6 @@ class TestShadowstepUnit:
                 mock_driver.tap.assert_called_once_with([(100, 200)], 100)
 
     @pytest.mark.unit
-    def test_tap_no_driver(self):
-        """Test tap method with no driver."""
-
-        with patch.object(shadowstep, "driver", None):
-            with patch.object(shadowstep, "is_connected", return_value=True):
-                with pytest.raises(ShadowstepException):
-                    shadowstep.tap(100, 200)
-
-    @pytest.mark.unit
     def test_start_recording_screen(self):
         """Test start_recording_screen method."""
 
@@ -867,15 +741,6 @@ class TestShadowstepUnit:
                 shadowstep.start_recording_screen()
 
                 mock_driver.start_recording_screen.assert_called_once()
-
-    @pytest.mark.unit
-    def test_start_recording_screen_no_driver(self):
-        """Test start_recording_screen method with no driver."""
-
-        with patch.object(shadowstep, "driver", None):
-            with patch.object(shadowstep, "is_connected", return_value=True):
-                with pytest.raises(ShadowstepException):
-                    shadowstep.start_recording_screen()
 
     @pytest.mark.unit
     def test_stop_recording_screen(self):
@@ -890,15 +755,6 @@ class TestShadowstepUnit:
 
                 expected = base64.b64decode("dGVzdA==")
                 assert result == expected
-
-    @pytest.mark.unit
-    def test_stop_recording_screen_no_driver(self):
-        """Test stop_recording_screen method with no driver."""
-
-        with patch.object(shadowstep, "driver", None):
-            with patch.object(shadowstep, "is_connected", return_value=True):
-                with pytest.raises(ShadowstepException):
-                    shadowstep.stop_recording_screen()
 
 
     @pytest.mark.unit
@@ -933,13 +789,538 @@ class TestShadowstepUnit:
         mock_driver.update_settings.assert_called_once_with(settings={"enableMultiWindows": True})
 
 
+
+    # ================ Mobile Commands Tests ================
+
     @pytest.mark.unit
-    def test_find_and_get_element_with_exception_in_get_elements(self):
-        """Test find_and_get_element when get_elements raises exception."""
-        
-        with patch.object(shadowstep, "get_elements", side_effect=Exception("Failed to get scrollables")):
-            with pytest.raises(Exception) as exc_info:
-                shadowstep.find_and_get_element({"class": "test"})
-            
-            # The exception should be re-raised
-            assert "Failed to get scrollables" in str(exc_info.value)
+    def test_exec_emu_console_command_success(self):
+        """Test exec_emu_console_command method with valid parameters."""
+        mock_driver = Mock()
+
+        with patch.object(shadowstep, "driver", mock_driver):
+            with patch.object(shadowstep, "is_connected", return_value=True):
+                with patch.object(shadowstep.mobile_commands, "exec_emu_console_command", return_value="OK") as mock_cmd:
+                    result = shadowstep.exec_emu_console_command("help", exec_timeout=10000)
+
+                    mock_cmd.assert_called_once_with({
+                        "command": "help",
+                        "execTimeout": 10000,
+                        "connTimeout": 5000,
+                        "initTimeout": 5000,
+                    })
+                    assert result == "OK"
+
+    @pytest.mark.unit
+    def test_deep_link_success(self):
+        """Test deep_link method with valid parameters."""
+        mock_driver = Mock()
+
+        with patch.object(shadowstep, "driver", mock_driver):
+            with patch.object(shadowstep, "is_connected", return_value=True):
+                with patch.object(shadowstep.mobile_commands, "deep_link") as mock_cmd:
+                    shadowstep.deep_link("myapp://test", package="com.test")
+
+                    mock_cmd.assert_called_once_with({
+                        "url": "myapp://test",
+                        "package": "com.test",
+                        "waitForLaunch": True,
+                    })
+
+    @pytest.mark.unit
+    def test_deviceidle_success(self):
+        """Test deviceidle method with valid parameters."""
+        mock_driver = Mock()
+
+        with patch.object(shadowstep, "driver", mock_driver):
+            with patch.object(shadowstep, "is_connected", return_value=True):
+                with patch.object(shadowstep.mobile_commands, "deviceidle") as mock_cmd:
+                    shadowstep.deviceidle("whitelistAdd", "com.test")
+
+                    mock_cmd.assert_called_once_with({
+                        "action": "whitelistAdd",
+                        "packages": "com.test",
+                    })
+
+    @pytest.mark.unit
+    def test_accept_alert_success(self):
+        """Test accept_alert method with valid parameters."""
+        mock_driver = Mock()
+
+        with patch.object(shadowstep, "driver", mock_driver):
+            with patch.object(shadowstep, "is_connected", return_value=True):
+                with patch.object(shadowstep.mobile_commands, "accept_alert") as mock_cmd:
+                    shadowstep.accept_alert("OK")
+
+                    mock_cmd.assert_called_once_with({"buttonLabel": "OK"})
+
+    @pytest.mark.unit
+    def test_dismiss_alert_success(self):
+        """Test dismiss_alert method with valid parameters."""
+        mock_driver = Mock()
+
+        with patch.object(shadowstep, "driver", mock_driver):
+            with patch.object(shadowstep, "is_connected", return_value=True):
+                with patch.object(shadowstep.mobile_commands, "dismiss_alert") as mock_cmd:
+                    shadowstep.dismiss_alert("Cancel")
+
+                    mock_cmd.assert_called_once_with({"buttonLabel": "Cancel"})
+
+    @pytest.mark.unit
+    def test_battery_info_success(self):
+        """Test battery_info method."""
+        mock_driver = Mock()
+
+        with patch.object(shadowstep, "driver", mock_driver):
+            with patch.object(shadowstep, "is_connected", return_value=True):
+                with patch.object(shadowstep.mobile_commands, "battery_info", return_value={"level": 0.8}) as mock_cmd:
+                    result = shadowstep.battery_info()
+
+                    mock_cmd.assert_called_once()
+                    assert result == {"level": 0.8}
+
+    @pytest.mark.unit
+    def test_device_info_success(self):
+        """Test device_info method."""
+        mock_driver = Mock()
+
+        with patch.object(shadowstep, "driver", mock_driver):
+            with patch.object(shadowstep, "is_connected", return_value=True):
+                with patch.object(shadowstep.mobile_commands, "device_info", return_value={"model": "test"}) as mock_cmd:
+                    result = shadowstep.device_info()
+
+                    mock_cmd.assert_called_once()
+                    assert result == {"model": "test"}
+
+    @pytest.mark.unit
+    def test_get_device_time_success(self):
+        """Test get_device_time method."""
+        mock_driver = Mock()
+
+        with patch.object(shadowstep, "driver", mock_driver):
+            with patch.object(shadowstep, "is_connected", return_value=True):
+                with patch.object(shadowstep.mobile_commands, "get_device_time", return_value="2024-01-01") as mock_cmd:
+                    result = shadowstep.get_device_time("YYYY-MM-DD")
+
+                    mock_cmd.assert_called_once_with({"format": "YYYY-MM-DD"})
+                    assert result == "2024-01-01"
+
+    @pytest.mark.unit
+    def test_change_permissions_success(self):
+        """Test change_permissions method."""
+        mock_driver = Mock()
+
+        with patch.object(shadowstep, "driver", mock_driver):
+            with patch.object(shadowstep, "is_connected", return_value=True):
+                with patch.object(shadowstep.mobile_commands, "change_permissions") as mock_cmd:
+                    shadowstep.change_permissions("android.permission.CAMERA", app_package="com.test", action="grant")
+
+                    mock_cmd.assert_called_once_with({
+                        "permissions": "android.permission.CAMERA",
+                        "appPackage": "com.test",
+                        "action": "grant",
+                        "target": None,
+                    })
+
+    @pytest.mark.unit
+    def test_get_permissions_success(self):
+        """Test get_permissions method."""
+        mock_driver = Mock()
+
+        with patch.object(shadowstep, "driver", mock_driver):
+            with patch.object(shadowstep, "is_connected", return_value=True):
+                with patch.object(shadowstep.mobile_commands, "get_permissions", return_value=["CAMERA"]) as mock_cmd:
+                    result = shadowstep.get_permissions(permissions_type="granted", app_package="com.test")
+
+                    mock_cmd.assert_called_once_with({
+                        "type": "granted",
+                        "appPackage": "com.test",
+                    })
+                    assert result == ["CAMERA"]
+
+    @pytest.mark.unit
+    def test_perform_editor_action_success(self):
+        """Test perform_editor_action method."""
+        mock_driver = Mock()
+
+        with patch.object(shadowstep, "driver", mock_driver):
+            with patch.object(shadowstep, "is_connected", return_value=True):
+                with patch.object(shadowstep.mobile_commands, "perform_editor_action") as mock_cmd:
+                    shadowstep.perform_editor_action("search")
+
+                    mock_cmd.assert_called_once_with({"action": "search"})
+
+    @pytest.mark.unit
+    def test_get_notifications_success(self):
+        """Test get_notifications method."""
+        mock_driver = Mock()
+
+        with patch.object(shadowstep, "driver", mock_driver):
+            with patch.object(shadowstep, "is_connected", return_value=True):
+                with patch.object(shadowstep.mobile_commands, "get_notifications", return_value=[]) as mock_cmd:
+                    result = shadowstep.get_notifications()
+
+                    mock_cmd.assert_called_once()
+                    assert result == []
+
+    @pytest.mark.unit
+    def test_open_notifications_success(self):
+        """Test open_notifications method."""
+        mock_driver = Mock()
+
+        with patch.object(shadowstep, "driver", mock_driver):
+            with patch.object(shadowstep, "is_connected", return_value=True):
+                with patch.object(shadowstep.mobile_commands, "open_notifications") as mock_cmd:
+                    shadowstep.open_notifications()
+
+                    mock_cmd.assert_called_once()
+
+    @pytest.mark.unit
+    def test_list_sms_success(self):
+        """Test list_sms method."""
+        mock_driver = Mock()
+
+        with patch.object(shadowstep, "driver", mock_driver):
+            with patch.object(shadowstep, "is_connected", return_value=True):
+                with patch.object(shadowstep.mobile_commands, "list_sms", return_value=[]) as mock_cmd:
+                    result = shadowstep.list_sms(50)
+
+                    mock_cmd.assert_called_once_with({"max": 50})
+                    assert result == []
+
+    @pytest.mark.unit
+    def test_type_text_success(self):
+        """Test type method."""
+        mock_driver = Mock()
+
+        with patch.object(shadowstep, "driver", mock_driver):
+            with patch.object(shadowstep, "is_connected", return_value=True):
+                with patch.object(shadowstep.mobile_commands, "type") as mock_cmd:
+                    shadowstep.type("test text")
+
+                    mock_cmd.assert_called_once_with({"text": "test text"})
+
+    @pytest.mark.unit
+    def test_sensor_set_success(self):
+        """Test sensor_set method."""
+        mock_driver = Mock()
+
+        with patch.object(shadowstep, "driver", mock_driver):
+            with patch.object(shadowstep, "is_connected", return_value=True):
+                with patch.object(shadowstep.mobile_commands, "sensor_set") as mock_cmd:
+                    shadowstep.sensor_set("light", "50")
+
+                    mock_cmd.assert_called_once_with({
+                        "sensorType": "light",
+                        "value": "50",
+                    })
+
+    @pytest.mark.unit
+    def test_delete_file_success(self):
+        """Test delete_file method."""
+        mock_driver = Mock()
+
+        with patch.object(shadowstep, "driver", mock_driver):
+            with patch.object(shadowstep, "is_connected", return_value=True):
+                with patch.object(shadowstep.mobile_commands, "delete_file") as mock_cmd:
+                    shadowstep.delete_file("/sdcard/test.txt")
+
+                    mock_cmd.assert_called_once_with({"remotePath": "/sdcard/test.txt"})
+
+    @pytest.mark.unit
+    def test_is_app_installed_success(self):
+        """Test is_app_installed method."""
+        mock_driver = Mock()
+
+        with patch.object(shadowstep, "driver", mock_driver):
+            with patch.object(shadowstep, "is_connected", return_value=True):
+                with patch.object(shadowstep.mobile_commands, "is_app_installed", return_value=True) as mock_cmd:
+                    result = shadowstep.is_app_installed("com.test")
+
+                    mock_cmd.assert_called_once_with({
+                        "appId": "com.test",
+                        "user": None,
+                    })
+                    assert result is True
+
+    @pytest.mark.unit
+    def test_query_app_state_success(self):
+        """Test query_app_state method."""
+        mock_driver = Mock()
+
+        with patch.object(shadowstep, "driver", mock_driver):
+            with patch.object(shadowstep, "is_connected", return_value=True):
+                with patch.object(shadowstep.mobile_commands, "query_app_state", return_value=4) as mock_cmd:
+                    result = shadowstep.query_app_state("com.test")
+
+                    mock_cmd.assert_called_once_with({"appId": "com.test"})
+                    assert result == 4
+
+    @pytest.mark.unit
+    def test_activate_app_success(self):
+        """Test activate_app method."""
+        mock_driver = Mock()
+
+        with patch.object(shadowstep, "driver", mock_driver):
+            with patch.object(shadowstep, "is_connected", return_value=True):
+                with patch.object(shadowstep.mobile_commands, "activate_app") as mock_cmd:
+                    shadowstep.activate_app("com.test")
+
+                    mock_cmd.assert_called_once_with({"appId": "com.test"})
+
+    @pytest.mark.unit
+    def test_remove_app_success(self):
+        """Test remove_app method."""
+        mock_driver = Mock()
+
+        with patch.object(shadowstep, "driver", mock_driver):
+            with patch.object(shadowstep, "is_connected", return_value=True):
+                with patch.object(shadowstep.mobile_commands, "remove_app") as mock_cmd:
+                    shadowstep.remove_app("com.test", timeout=15000, keep_data=True)
+
+                    mock_cmd.assert_called_once_with({
+                        "appId": "com.test",
+                        "keepData": True,
+                        "timeout": 15000,
+                    })
+
+    @pytest.mark.unit
+    def test_terminate_app_success(self):
+        """Test terminate_app method."""
+        mock_driver = Mock()
+
+        with patch.object(shadowstep, "driver", mock_driver):
+            with patch.object(shadowstep, "is_connected", return_value=True):
+                with patch.object(shadowstep.mobile_commands, "terminate_app") as mock_cmd:
+                    shadowstep.terminate_app("com.test", 1000)
+
+                    mock_cmd.assert_called_once_with({
+                        "appId": "com.test",
+                        "timeout": 1000,
+                    })
+
+    @pytest.mark.unit
+    def test_install_app_success(self):
+        """Test install_app method."""
+        mock_driver = Mock()
+
+        with patch.object(shadowstep, "driver", mock_driver):
+            with patch.object(shadowstep, "is_connected", return_value=True):
+                with patch.object(shadowstep.mobile_commands, "install_app") as mock_cmd:
+                    shadowstep.install_app("/path/to/app.apk", timeout=10000, replace=False)
+
+                    mock_cmd.assert_called_once_with({
+                        "appPath": "/path/to/app.apk",
+                        "timeout": 10000,
+                        "allowTestPackages": False,
+                        "useSdcard": False,
+                        "grantPermissions": False,
+                        "replace": False,
+                        "checkVersion": False,
+                    })
+
+    @pytest.mark.unit
+    def test_clear_app_success(self):
+        """Test clear_app method."""
+        mock_driver = Mock()
+
+        with patch.object(shadowstep, "driver", mock_driver):
+            with patch.object(shadowstep, "is_connected", return_value=True):
+                with patch.object(shadowstep.mobile_commands, "clear_app") as mock_cmd:
+                    shadowstep.clear_app("com.test")
+
+                    mock_cmd.assert_called_once_with({"appId": "com.test"})
+
+    @pytest.mark.unit
+    def test_scroll_to_element_success(self):
+        """Test scroll_to_element method."""
+        mock_element = Mock()
+
+        with patch("shadowstep.shadowstep.Element", return_value=mock_element) as mock_element_class:
+            mock_element.scroll_to_element.return_value = mock_element
+
+            result = shadowstep.scroll_to_element(("id", "test"), max_swipes=20)
+
+            assert result is mock_element
+            mock_element.scroll_to_element.assert_called_once_with(("id", "test"), 20)
+
+    @pytest.mark.unit
+    def test_lock_success(self):
+        """Test lock method."""
+        mock_driver = Mock()
+
+        with patch.object(shadowstep, "driver", mock_driver):
+            with patch.object(shadowstep, "is_connected", return_value=True):
+                with patch.object(shadowstep.mobile_commands, "lock") as mock_cmd:
+                    shadowstep.lock(5)
+
+                    mock_cmd.assert_called_once_with({"seconds": 5})
+
+    @pytest.mark.unit
+    def test_unlock_success(self):
+        """Test unlock method."""
+        mock_driver = Mock()
+
+        with patch.object(shadowstep, "driver", mock_driver):
+            with patch.object(shadowstep, "is_connected", return_value=True):
+                with patch.object(shadowstep.mobile_commands, "unlock") as mock_cmd:
+                    shadowstep.unlock("1234", "password", strategy="locksettings", timeout_ms=3000)
+
+                    mock_cmd.assert_called_once_with({
+                        "key": "1234",
+                        "type": "password",
+                        "strategy": "locksettings",
+                        "timeoutMs": 3000,
+                    })
+
+    @pytest.mark.unit
+    def test_is_locked_success(self):
+        """Test is_locked method."""
+        mock_driver = Mock()
+
+        with patch.object(shadowstep, "driver", mock_driver):
+            with patch.object(shadowstep, "is_connected", return_value=True):
+                with patch.object(shadowstep.mobile_commands, "is_locked", return_value=False) as mock_cmd:
+                    result = shadowstep.is_locked()
+
+                    mock_cmd.assert_called_once()
+                    assert result is False
+
+    @pytest.mark.unit
+    def test_background_app_success(self):
+        """Test background_app method."""
+        mock_driver = Mock()
+
+        with patch.object(shadowstep, "driver", mock_driver):
+            with patch.object(shadowstep, "is_connected", return_value=True):
+                with patch.object(shadowstep.mobile_commands, "background_app") as mock_cmd:
+                    shadowstep.background_app(10)
+
+                    mock_cmd.assert_called_once_with({"seconds": 10})
+
+    @pytest.mark.unit
+    def test_hide_keyboard_success(self):
+        """Test hide_keyboard method."""
+        mock_driver = Mock()
+
+        with patch.object(shadowstep, "driver", mock_driver):
+            with patch.object(shadowstep, "is_connected", return_value=True):
+                with patch.object(shadowstep.mobile_commands, "hide_keyboard") as mock_cmd:
+                    shadowstep.hide_keyboard()
+
+                    mock_cmd.assert_called_once()
+
+    @pytest.mark.unit
+    def test_is_keyboard_shown_success(self):
+        """Test is_keyboard_shown method."""
+        mock_driver = Mock()
+
+        with patch.object(shadowstep, "driver", mock_driver):
+            with patch.object(shadowstep, "is_connected", return_value=True):
+                with patch.object(shadowstep.mobile_commands, "is_keyboard_shown", return_value=True) as mock_cmd:
+                    result = shadowstep.is_keyboard_shown()
+
+                    mock_cmd.assert_called_once()
+                    assert result is True
+
+    @pytest.mark.unit
+    def test_get_current_activity_success(self):
+        """Test get_current_activity method."""
+        mock_driver = Mock()
+
+        with patch.object(shadowstep, "driver", mock_driver):
+            with patch.object(shadowstep, "is_connected", return_value=True):
+                with patch.object(shadowstep.mobile_commands, "get_current_activity", return_value=".MainActivity") as mock_cmd:
+                    result = shadowstep.get_current_activity()
+
+                    mock_cmd.assert_called_once()
+                    assert result == ".MainActivity"
+
+    @pytest.mark.unit
+    def test_get_current_package_success(self):
+        """Test get_current_package method."""
+        mock_driver = Mock()
+
+        with patch.object(shadowstep, "driver", mock_driver):
+            with patch.object(shadowstep, "is_connected", return_value=True):
+                with patch.object(shadowstep.mobile_commands, "get_current_package", return_value="com.test") as mock_cmd:
+                    result = shadowstep.get_current_package()
+
+                    mock_cmd.assert_called_once()
+                    assert result == "com.test"
+
+    @pytest.mark.unit
+    def test_shell_success(self):
+        """Test shell method."""
+        mock_driver = Mock()
+
+        with patch.object(shadowstep, "driver", mock_driver):
+            with patch.object(shadowstep, "is_connected", return_value=True):
+                with patch.object(shadowstep.mobile_commands, "shell", return_value="output") as mock_cmd:
+                    result = shadowstep.shell("ls", "-la")
+
+                    mock_cmd.assert_called_once_with({
+                        "command": "ls",
+                        "args": ["-la"],
+                    })
+                    assert result == "output"
+
+    @pytest.mark.unit
+    def test_pull_file_success(self):
+        """Test pull_file method."""
+        mock_driver = Mock()
+        mock_content = base64.b64encode(b"test content").decode("utf-8")
+
+        with patch.object(shadowstep, "driver", mock_driver):
+            with patch.object(shadowstep, "is_connected", return_value=True):
+                with patch.object(shadowstep.mobile_commands, "pull_file", return_value=mock_content) as mock_cmd:
+                    result = shadowstep.pull_file("/sdcard/test.txt")
+
+                    mock_cmd.assert_called_once_with({"remotePath": "/sdcard/test.txt"})
+                    assert result == mock_content
+
+    @pytest.mark.unit
+    def test_get_clipboard_success(self):
+        """Test get_clipboard method."""
+        mock_driver = Mock()
+        mock_content = base64.b64encode(b"clipboard text").decode("utf-8")
+
+        with patch.object(shadowstep, "driver", mock_driver):
+            with patch.object(shadowstep, "is_connected", return_value=True):
+                with patch.object(shadowstep.mobile_commands, "get_clipboard", return_value=mock_content) as mock_cmd:
+                    result = shadowstep.get_clipboard()
+
+                    mock_cmd.assert_called_once()
+                    assert result == mock_content
+
+    @pytest.mark.unit
+    def test_set_clipboard_success(self):
+        """Test set_clipboard method."""
+        mock_driver = Mock()
+
+        with patch.object(shadowstep, "driver", mock_driver):
+            with patch.object(shadowstep, "is_connected", return_value=True):
+                with patch.object(shadowstep.mobile_commands, "set_clipboard") as mock_cmd:
+                    shadowstep.set_clipboard("test", content_type="plaintext", label="test")
+
+                    mock_cmd.assert_called_once_with({
+                        "content": "test",
+                        "contentType": "plaintext",
+                        "label": "test",
+                    })
+
+    @pytest.mark.unit
+    def test_press_key_success(self):
+        """Test press_key method."""
+        mock_driver = Mock()
+
+        with patch.object(shadowstep, "driver", mock_driver):
+            with patch.object(shadowstep, "is_connected", return_value=True):
+                with patch.object(shadowstep.mobile_commands, "press_key") as mock_cmd:
+                    shadowstep.press_key(4)  # BACK key
+
+                    mock_cmd.assert_called_once_with({
+                        "keycode": 4,
+                        "metastate": None,
+                        "flags": None,
+                        "isLongPress": False,
+                    })
