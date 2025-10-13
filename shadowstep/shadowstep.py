@@ -1687,7 +1687,7 @@ class Shadowstep(ShadowstepBase):
             Retrieves a mapping of WebViews on the device under test based on Chrome DevTools Protocol (CDP) endpoints. This allows interaction with WebViews in hybrid applications.
 
         Args:
-            waitForWebviewMs (number): Maximum time in milliseconds to wait for WebView(s) to appear. If set to 0 (default), the WebView availability is checked only once. Optional. Example: 10000
+            wait_for_webview_ms (number): Maximum time in milliseconds to wait for WebView(s) to appear. If set to 0 (default), the WebView availability is checked only once. Optional. Example: 10000
 
         Returns:
             A JSON object representing the WebViews mapping. Example structure:
@@ -1719,7 +1719,10 @@ class Shadowstep(ShadowstepBase):
             }
 
         """
-        return self._execute("mobile: getContexts", params)
+        params = {
+            "waitForWebviewMs": wait_for_webview_ms,
+        }
+        return self.mobile_commands.get_contexts(params)
 
     def install_multiple_apks(
         self,
@@ -1746,7 +1749,11 @@ class Shadowstep(ShadowstepBase):
             The stdout of the corresponding adb install-multiple command. An error is thrown if the installation fails.
 
         """
-        return self._execute("mobile: installMultipleApks", params)
+        params = {
+            "apks": apks,
+            "options": options,
+        }
+        return self.mobile_commands.install_multiple_apks(params)
 
     def lock(self, seconds: int | str | None = None) -> Any:
         """Execute mobile: lock command.
@@ -1760,12 +1767,15 @@ class Shadowstep(ShadowstepBase):
             seconds (number|string): The number of seconds after which the device should be automatically unlocked. If set to 0 or left empty, the device must be unlocked manually. Optional. Example: 10
 
         """
-        return self._execute("mobile: lock", params)
+        params = {
+            "seconds": seconds,
+        }
+        return self.mobile_commands.lock(params)
 
     def unlock(
         self,
         key: str,
-        type: str,
+        unlock_type: str,
         strategy: str | None = None,
         timeout_ms: int | None = None,
     ) -> Any:
@@ -1778,12 +1788,18 @@ class Shadowstep(ShadowstepBase):
 
         Args:
             key (string): The unlock key to use. See the documentation for the `appium:unlockKey` capability for more details. Required. Example: "12345"
-            type (string): The unlock type. See the documentation for the `appium:unlockType` capability for more details. Required. Example: "password"
+            unlock_type (string): The unlock type. See the documentation for the `appium:unlockType` capability for more details. Required. Example: "password"
             strategy (string): The unlock strategy to apply. See the documentation for the `appium:unlockStrategy` capability for more details. Optional. Example: "uiautomator"
-            timeoutMs (number): The timeout in milliseconds to wait for a successful unlock. See the documentation for the `appium:unlockSuccessTimeout` capability. Optional. Example: 5000
+            timeout_ms (number): The timeout in milliseconds to wait for a successful unlock. See the documentation for the `appium:unlockSuccessTimeout` capability. Optional. Example: 5000
 
         """
-        return self._execute("mobile: unlock", params)
+        params = {
+            "key": key,
+            "type": unlock_type,
+            "strategy": strategy,
+            "timeoutMs": timeout_ms,
+        }
+        return self.mobile_commands.unlock(params)
 
     def is_locked(self) -> Any:
         """Execute mobile: isLocked command.
