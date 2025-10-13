@@ -8,13 +8,12 @@ from typing import Any, Callable, TypeVar, cast
 from selenium.common import (
     InvalidSessionIdException,
     NoSuchDriverException,
-    StaleElementReferenceException,
     WebDriverException,
 )
 from typing_extensions import ParamSpec
 
 from shadowstep.exceptions.shadowstep_exceptions import (
-    ShadowstepElementException,
+    ShadowstepException,
 )
 
 P = ParamSpec("P")
@@ -26,9 +25,9 @@ SelfT = TypeVar("SelfT")
 def fail_safe_shadowstep(
     retries: int = 3,
     delay: float = 0.5,
-    raise_exception: type[Exception] | None = ShadowstepElementException,
+    raise_exception: type[Exception] | None = ShadowstepException,
 ) -> Callable[[F], F]:
-    """Only for element.py module."""
+    """Only for shadowstep.py module."""
 
     def decorator(func: F) -> F:
         @wraps(func)
@@ -37,27 +36,21 @@ def fail_safe_shadowstep(
             start_time = time.time()
             while time.time() - start_time < self.timeout:
                 try:
-                    self.get_driver()
-                    self._get_web_element(locator=self.locator)  # type: ignore[reportPrivateUsage]
                     return func(self, *args, **kwargs)
-                except (NoSuchDriverException, InvalidSessionIdException, AttributeError) as error:
-                    self.utilities.handle_driver_error(error)
-                except StaleElementReferenceException as error:
-                    self.logger.debug(error)
-                    self.logger.warning("StaleElementReferenceException\nRe-acquire element")
-                    self.native = None
-                    self.get_native()
-                    continue
+                except (NoSuchDriverException, InvalidSessionIdException):
+                    self.shadowstep.reconnect()
+                    time.sleep(0.3)
                 except WebDriverException as error:
                     err_msg = str(error).lower()
                     if (
                         "instrumentation process is not running" in err_msg
                         or "socket hang up" in err_msg
                     ):
-                        self.utilities.handle_driver_error(error)
+                        self.shadowstep.reconnect()
+                        time.sleep(0.3)
                         continue
                     msg = f"Failed to execute '{func.__qualname__}' within timeout={self.timeout}"
-                    raise (raise_exception or ShadowstepElementException)(msg) from error
+                    raise (raise_exception or ShadowstepException)(msg) from error
                 if attempts > 0:
                     msg = f"Failed: '{func.__qualname__}', try again in {attempts} attempts"
                     self.logger.warning(msg)
@@ -66,7 +59,7 @@ def fail_safe_shadowstep(
                 else:
                     break
             msg = f"Failed to execute '{func.__qualname__}' within timeout={self.timeout}"
-            raise (raise_exception or ShadowstepElementException)(msg)
+            raise (raise_exception or ShadowstepException)(msg)
 
         return cast("F", wrapper)
 

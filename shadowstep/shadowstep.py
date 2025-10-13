@@ -93,6 +93,7 @@ class Shadowstep(ShadowstepBase):
         self.mobile_commands: MobileCommands = MobileCommands()
         self.logger = logging.getLogger(f"{__name__}.{self.__class__.__name__}")
         self._initialized = True
+        self.timeout = 10
 
     # ------------------ navigator ------------------
 
@@ -581,7 +582,7 @@ class Shadowstep(ShadowstepBase):
         if speed < 0:
             error_msg = f"Speed must be non-negative, got {speed}"
             raise ValueError(error_msg)
-        self.mobile_commands.pinch_open_gesture(
+        self.mobile_commands.pinch_close_gesture(
             {
                 "left": left,
                 "top": top,
@@ -821,7 +822,7 @@ class Shadowstep(ShadowstepBase):
         exec_timeout: int = 60000,
         conn_timeout: int = 5000,
         init_timeout: int = 5000,
-    ) -> Any:
+    ) -> None:  # real signature unknown
         """Execute mobile: execEmuConsoleCommand command.
 
         https://github.com/appium/appium-uiautomator2-driver?tab=readme-ov-file#mobile-execemuconsolecommand
@@ -849,7 +850,12 @@ class Shadowstep(ShadowstepBase):
 
     @fail_safe_shadowstep(raise_exception=ShadowstepException)
     @log_debug()
-    def deep_link(self, url: str, package: str | None = None, wait_for_launch: bool = True) -> Any:  # noqa: FBT001, FBT002
+    def deep_link(
+        self,
+        url: str,
+        package: str | None = None,
+        wait_for_launch: bool = True,  # noqa: FBT001, FBT002
+    ) -> None:  # real signature unknown
         """Execute mobile: deepLink command.
 
         https://github.com/appium/appium-uiautomator2-driver?tab=readme-ov-file#mobile-deeplink
@@ -872,7 +878,7 @@ class Shadowstep(ShadowstepBase):
 
     @fail_safe_shadowstep(raise_exception=ShadowstepException)
     @log_debug()
-    def deviceidle(self, action: str, packages: str | list[str]) -> Any:
+    def deviceidle(self, action: str, packages: str | list[str]) -> None:  # real signature unknown
         """Execute mobile: deviceidle command.
 
         https://github.com/appium/appium-uiautomator2-driver?tab=readme-ov-file#mobile-deviceidle
@@ -893,7 +899,7 @@ class Shadowstep(ShadowstepBase):
 
     @fail_safe_shadowstep(raise_exception=ShadowstepException)
     @log_debug()
-    def accept_alert(self, button_label: str | None = None) -> Any:
+    def accept_alert(self, button_label: str | None = None) -> None:  # real signature unknown
         """Execute mobile: acceptAlert command.
 
         https://github.com/appium/appium-uiautomator2-driver?tab=readme-ov-file#mobile-acceptalert
@@ -912,7 +918,7 @@ class Shadowstep(ShadowstepBase):
 
     @fail_safe_shadowstep(raise_exception=ShadowstepException)
     @log_debug()
-    def dismiss_alert(self, button_label: str | None = None) -> Any:
+    def dismiss_alert(self, button_label: str | None = None) -> None:  # real signature unknown
         """Execute mobile: dismissAlert command.
 
         https://github.com/appium/appium-uiautomator2-driver?tab=readme-ov-file#mobile-dismissalert
@@ -937,7 +943,7 @@ class Shadowstep(ShadowstepBase):
 
     @fail_safe_shadowstep(raise_exception=ShadowstepException)
     @log_debug()
-    def battery_info(self) -> Any:
+    def battery_info(self) -> None:  # real signature unknown
         """Execute mobile: batteryInfo command.
 
         https://github.com/appium/appium-uiautomator2-driver?tab=readme-ov-file#mobile-batteryinfo
@@ -962,7 +968,7 @@ class Shadowstep(ShadowstepBase):
 
     @fail_safe_shadowstep(raise_exception=ShadowstepException)
     @log_debug()
-    def device_info(self) -> Any:
+    def device_info(self) -> None:  # real signature unknown
         """Execute mobile: deviceInfo command.
 
         https://github.com/appium/appium-uiautomator2-driver?tab=readme-ov-file#mobile-deviceinfo
@@ -979,7 +985,9 @@ class Shadowstep(ShadowstepBase):
 
     @fail_safe_shadowstep(raise_exception=ShadowstepException)
     @log_debug()
-    def get_device_time(self, format_specifiers: str | None = None) -> Any:
+    def get_device_time(
+        self, format_specifiers: str | None = None,
+    ) -> None:  # real signature unknown
         """Execute mobile: getDeviceTime command.
 
         https://github.com/appium/appium-uiautomator2-driver?tab=readme-ov-file#mobile-getdevicetime
@@ -1007,7 +1015,7 @@ class Shadowstep(ShadowstepBase):
         app_package: str | None = None,
         action: str | None = None,
         target: str | None = None,
-    ) -> Any:
+    ) -> None:  # real signature unknown
         """Execute mobile: changePermissions command.
 
         https://github.com/appium/appium-uiautomator2-driver?tab=readme-ov-file#mobile-changepermissions
@@ -1036,7 +1044,7 @@ class Shadowstep(ShadowstepBase):
         self,
         permissions_type: str | None = None,
         app_package: str | None = None,
-    ) -> Any:
+    ) -> None:  # real signature unknown
         """Execute mobile: getPermissions command.
 
         https://github.com/appium/appium-uiautomator2-driver?tab=readme-ov-file#mobile-getpermissions
@@ -1060,7 +1068,7 @@ class Shadowstep(ShadowstepBase):
 
     @fail_safe_shadowstep(raise_exception=ShadowstepException)
     @log_debug()
-    def perform_editor_action(self, action: str) -> Any:
+    def perform_editor_action(self, action: str) -> None:  # real signature unknown
         """Execute mobile: performEditorAction command.
 
         https://github.com/appium/appium-uiautomator2-driver?tab=readme-ov-file#mobile-performeditoraction
@@ -1091,7 +1099,7 @@ class Shadowstep(ShadowstepBase):
         quality: int = 70,
         consider_rotation: bool = False,  # noqa: FBT001, FBT002
         log_pipeline_details: bool = False,  # noqa: FBT001, FBT002
-    ) -> Any:
+    ) -> None:  # real signature unknown
         """Execute mobile: startScreenStreaming command.
 
         https://github.com/appium/appium-uiautomator2-driver?tab=readme-ov-file#mobile-startscreenstreaming
@@ -1131,7 +1139,7 @@ class Shadowstep(ShadowstepBase):
 
     @fail_safe_shadowstep(raise_exception=ShadowstepException)
     @log_debug()
-    def stop_screen_streaming(self) -> Any:
+    def stop_screen_streaming(self) -> None:  # real signature unknown
         """Execute mobile: stopScreenStreaming command.
 
         https://github.com/appium/appium-uiautomator2-driver?tab=readme-ov-file#mobile-stopscreenstreaming
@@ -1144,7 +1152,7 @@ class Shadowstep(ShadowstepBase):
 
     @fail_safe_shadowstep(raise_exception=ShadowstepException)
     @log_debug()
-    def get_notifications(self) -> Any:
+    def get_notifications(self) -> None:  # real signature unknown
         """Execute mobile: getNotifications command.
 
         https://github.com/appium/appium-uiautomator2-driver?tab=readme-ov-file#mobile-getnotifications
@@ -1193,7 +1201,7 @@ class Shadowstep(ShadowstepBase):
 
     @fail_safe_shadowstep(raise_exception=ShadowstepException)
     @log_debug()
-    def open_notifications(self) -> Any:
+    def open_notifications(self) -> None:  # real signature unknown
         """Execute mobile: openNotifications command.
 
         https://github.com/appium/appium-uiautomator2-driver?tab=readme-ov-file#mobile-opennotifications
@@ -1206,7 +1214,7 @@ class Shadowstep(ShadowstepBase):
 
     @fail_safe_shadowstep(raise_exception=ShadowstepException)
     @log_debug()
-    def list_sms(self, max_number: int = 100) -> Any:
+    def list_sms(self, max_number: int = 100) -> None:  # real signature unknown
         r"""Execute mobile: listSms command.
 
         https://github.com/appium/appium-uiautomator2-driver?tab=readme-ov-file#mobile-listsms
@@ -1258,7 +1266,7 @@ class Shadowstep(ShadowstepBase):
 
     @fail_safe_shadowstep(raise_exception=ShadowstepException)
     @log_debug()
-    def type(self, text: str) -> Any:
+    def type(self, text: str) -> None:  # real signature unknown
         """Execute mobile: type command.
 
         https://github.com/appium/appium-uiautomator2-driver?tab=readme-ov-file#mobile-type
@@ -1277,7 +1285,7 @@ class Shadowstep(ShadowstepBase):
 
     @fail_safe_shadowstep(raise_exception=ShadowstepException)
     @log_debug()
-    def sensor_set(self, sensor_type: str, value: str) -> Any:
+    def sensor_set(self, sensor_type: str, value: str) -> None:  # real signature unknown
         """Execute mobile: sensorSet command.
 
         https://github.com/appium/appium-uiautomator2-driver?tab=readme-ov-file#mobile-sensorset
@@ -1298,7 +1306,7 @@ class Shadowstep(ShadowstepBase):
 
     @fail_safe_shadowstep(raise_exception=ShadowstepException)
     @log_debug()
-    def delete_file(self, remote_path: str) -> Any:
+    def delete_file(self, remote_path: str) -> None:  # real signature unknown
         """Execute mobile: deleteFile command.
 
         https://github.com/appium/appium-uiautomator2-driver?tab=readme-ov-file#mobile-deletefile
@@ -1317,7 +1325,9 @@ class Shadowstep(ShadowstepBase):
 
     @fail_safe_shadowstep(raise_exception=ShadowstepException)
     @log_debug()
-    def is_app_installed(self, app_id: str, user: int | str | None = None) -> Any:
+    def is_app_installed(
+        self, app_id: str, user: int | str | None = None,
+    ) -> None:  # real signature unknown
         """Execute mobile: isAppInstalled command.
 
         https://github.com/appium/appium-uiautomator2-driver?tab=readme-ov-file#mobile-isappinstalled
@@ -1341,7 +1351,7 @@ class Shadowstep(ShadowstepBase):
 
     @fail_safe_shadowstep(raise_exception=ShadowstepException)
     @log_debug()
-    def query_app_state(self, app_id: str) -> Any:
+    def query_app_state(self, app_id: str) -> None:  # real signature unknown
         """Execute mobile: queryAppState command.
 
         https://github.com/appium/appium-uiautomator2-driver?tab=readme-ov-file#mobile-queryappstate
@@ -1367,7 +1377,7 @@ class Shadowstep(ShadowstepBase):
 
     @fail_safe_shadowstep(raise_exception=ShadowstepException)
     @log_debug()
-    def activate_app(self, app_id: str) -> Any:
+    def activate_app(self, app_id: str) -> None:  # real signature unknown
         """Execute mobile: activateApp command.
 
         https://github.com/appium/appium-uiautomator2-driver?tab=readme-ov-file#mobile-activateapp
@@ -1386,7 +1396,9 @@ class Shadowstep(ShadowstepBase):
 
     @fail_safe_shadowstep(raise_exception=ShadowstepException)
     @log_debug()
-    def remove_app(self, app_id: str, timeout: int | None = None, keep_data: bool = False) -> Any:  # noqa: FBT001, FBT002
+    def remove_app(
+        self, app_id: str, timeout: int | None = None, keep_data: bool = False,
+    ) -> None:  # real signature unknown
         """Execute mobile: removeApp command.
 
         https://github.com/appium/appium-uiautomator2-driver?tab=readme-ov-file#mobile-removeapp
@@ -1412,7 +1424,7 @@ class Shadowstep(ShadowstepBase):
 
     @fail_safe_shadowstep(raise_exception=ShadowstepException)
     @log_debug()
-    def terminate_app(self, app_id: str, timeout: int = 500) -> Any:
+    def terminate_app(self, app_id: str, timeout: int = 500) -> None:  # real signature unknown
         """Execute mobile: terminateApp command.
 
         https://github.com/appium/appium-uiautomator2-driver?tab=readme-ov-file#mobile-terminateapp
@@ -1445,7 +1457,7 @@ class Shadowstep(ShadowstepBase):
         grant_permissions: bool = False,  # noqa: FBT001, FBT002
         replace: bool = True,  # noqa: FBT001, FBT002
         check_version: bool = False,  # noqa: FBT001, FBT002
-    ) -> Any:
+    ) -> None:  # real signature unknown
         """Execute mobile: installApp command.
 
         https://github.com/appium/appium-uiautomator2-driver?tab=readme-ov-file#mobile-installapp
@@ -1476,7 +1488,7 @@ class Shadowstep(ShadowstepBase):
 
     @fail_safe_shadowstep(raise_exception=ShadowstepException)
     @log_debug()
-    def clear_app(self, app_id: str) -> Any:
+    def clear_app(self, app_id: str) -> None:  # real signature unknown
         """Execute mobile: clearApp command.
 
         https://github.com/appium/appium-uiautomator2-driver?tab=readme-ov-file#mobile-clearapp
@@ -1515,7 +1527,7 @@ class Shadowstep(ShadowstepBase):
         package: str | None = None,
         extras: list[list[str]] | None = None,
         flags: str | None = None,
-    ) -> Any:
+    ) -> None:  # real signature unknown
         """Execute mobile: startActivity command.
 
         https://github.com/appium/appium-uiautomator2-driver?tab=readme-ov-file#mobile-startactivity
@@ -1579,7 +1591,7 @@ class Shadowstep(ShadowstepBase):
         package: str | None = None,
         extras: list[list[str]] | None = None,
         flags: str | None = None,
-    ) -> Any:
+    ) -> None:  # real signature unknown
         """Execute mobile: startService command.
 
         https://github.com/appium/appium-uiautomator2-driver?tab=readme-ov-file#mobile-startservice
@@ -1636,7 +1648,7 @@ class Shadowstep(ShadowstepBase):
         package: str | None = None,
         extras: list[list[str]] | None = None,
         flags: str | None = None,
-    ) -> Any:
+    ) -> None:  # real signature unknown
         """Execute mobile: stopService command.
 
         https://github.com/appium/appium-uiautomator2-driver?tab=readme-ov-file#mobile-stopservice
@@ -1693,7 +1705,7 @@ class Shadowstep(ShadowstepBase):
         package: str | None = None,
         extras: list[list[str]] | None = None,
         flags: str | None = None,
-    ) -> Any:
+    ) -> None:  # real signature unknown
         """Execute mobile: broadcast command.
 
         https://github.com/appium/appium-uiautomator2-driver?tab=readme-ov-file#mobile-broadcast
@@ -1739,7 +1751,7 @@ class Shadowstep(ShadowstepBase):
 
     @fail_safe_shadowstep(raise_exception=ShadowstepException)
     @log_debug()
-    def get_contexts(self, wait_for_webview_ms: int = 0) -> Any:
+    def get_contexts(self, wait_for_webview_ms: int = 0) -> None:  # real signature unknown
         r"""Execute mobile: getContexts command.
 
         https://github.com/appium/appium-uiautomator2-driver?tab=readme-ov-file#mobile-getcontexts
@@ -1791,7 +1803,7 @@ class Shadowstep(ShadowstepBase):
         self,
         apks: list[str],
         options: Any,
-    ) -> Any:
+    ) -> None:  # real signature unknown
         """Execute mobile: installMultipleApks command.
 
         https://github.com/appium/appium-uiautomator2-driver?tab=readme-ov-file#mobile-installmultipleapks
@@ -1820,7 +1832,7 @@ class Shadowstep(ShadowstepBase):
 
     @fail_safe_shadowstep(raise_exception=ShadowstepException)
     @log_debug()
-    def lock(self, seconds: int | str | None = None) -> Any:
+    def lock(self, seconds: int | str | None = None) -> None:  # real signature unknown
         """Execute mobile: lock command.
 
         https://github.com/appium/appium-uiautomator2-driver?tab=readme-ov-file#mobile-lock
@@ -1845,7 +1857,7 @@ class Shadowstep(ShadowstepBase):
         unlock_type: str,
         strategy: str | None = None,
         timeout_ms: int | None = None,
-    ) -> Any:
+    ) -> None:  # real signature unknown
         """Execute mobile: unlock command.
 
         https://github.com/appium/appium-uiautomator2-driver?tab=readme-ov-file#mobile-unlock
@@ -1870,7 +1882,7 @@ class Shadowstep(ShadowstepBase):
 
     @fail_safe_shadowstep(raise_exception=ShadowstepException)
     @log_debug()
-    def is_locked(self) -> Any:
+    def is_locked(self) -> None:  # real signature unknown
         """Execute mobile: isLocked command.
 
         https://github.com/appium/appium-uiautomator2-driver?tab=readme-ov-file#mobile-islocked
@@ -1895,7 +1907,7 @@ class Shadowstep(ShadowstepBase):
         speed: int | None = None,
         bearing: int | None = None,
         accuracy: int | None = None,
-    ) -> Any:
+    ) -> None:  # real signature unknown
         """Execute mobile: setGeolocation command.
 
         https://github.com/appium/appium-uiautomator2-driver?tab=readme-ov-file#mobile-setgeolocation
@@ -1931,7 +1943,7 @@ class Shadowstep(ShadowstepBase):
         latitude: int,
         longitude: int,
         altitude: int,
-    ) -> Any:
+    ) -> None:  # real signature unknown
         """Execute mobile: getGeolocation command.
 
         https://github.com/appium/appium-uiautomator2-driver?tab=readme-ov-file#mobile-getgeolocation
@@ -1956,7 +1968,7 @@ class Shadowstep(ShadowstepBase):
 
     @fail_safe_shadowstep(raise_exception=ShadowstepException)
     @log_debug()
-    def reset_geolocation(self) -> Any:
+    def reset_geolocation(self) -> None:  # real signature unknown
         """Execute mobile: resetGeolocation command.
 
         https://github.com/appium/appium-uiautomator2-driver?tab=readme-ov-file#mobile-resetgeolocation
@@ -1966,7 +1978,7 @@ class Shadowstep(ShadowstepBase):
 
     @fail_safe_shadowstep(raise_exception=ShadowstepException)
     @log_debug()
-    def refresh_gps_cache(self, timeout_ms: int = 20000) -> Any:
+    def refresh_gps_cache(self, timeout_ms: int = 20000) -> None:  # real signature unknown
         """Execute mobile: refreshGpsCache command.
 
         https://github.com/appium/appium-uiautomator2-driver?tab=readme-ov-file#mobile-refreshgpscache
@@ -1994,7 +2006,7 @@ class Shadowstep(ShadowstepBase):
         max_duration_sec: int | None = None,
         priority: str | None = None,
         filename: str | None = None,
-    ) -> Any:
+    ) -> None:  # real signature unknown
         """Execute mobile: startMediaProjectionRecording command.
 
         https://github.com/appium/appium-uiautomator2-driver?tab=readme-ov-file#mobile-startmediaprojectionrecording
@@ -2024,7 +2036,7 @@ class Shadowstep(ShadowstepBase):
     @log_debug()
     def is_media_projection_recording_running(
         self,
-    ) -> Any:
+    ) -> None:  # real signature unknown
         """Execute mobile: isMediaProjectionRecordingRunning command.
 
         https://github.com/appium/appium-uiautomator2-driver?tab=readme-ov-file#mobile-ismediaprojectionrecordingrunning
@@ -2044,7 +2056,7 @@ class Shadowstep(ShadowstepBase):
         file_field_name: str | None = None,
         form_fields: dict[str, str] | list[str] | None = None,
         upload_timeout: int = 240000,
-    ) -> Any:
+    ) -> None:  # real signature unknown
         """Execute mobile: stopMediaProjectionRecording command.
 
         https://github.com/appium/appium-uiautomator2-driver?tab=readme-ov-file#mobile-stopmediaprojectionrecording
@@ -2080,7 +2092,9 @@ class Shadowstep(ShadowstepBase):
 
     @fail_safe_shadowstep(raise_exception=ShadowstepException)
     @log_debug()
-    def get_connectivity(self, services: str | list[str] | None = None) -> Any:
+    def get_connectivity(
+        self, services: str | list[str] | None = None,
+    ) -> None:  # real signature unknown
         """Execute mobile: getConnectivity command.
 
         https://github.com/appium/appium-uiautomator2-driver?tab=readme-ov-file#mobile-getconnectivity
@@ -2110,7 +2124,7 @@ class Shadowstep(ShadowstepBase):
         wifi: bool = False,  # noqa: FBT001, FBT002
         data: bool = False,  # noqa: FBT001, FBT002
         airplane_mode: bool = False,  # noqa: FBT001, FBT002
-    ) -> Any:
+    ) -> None:  # real signature unknown
         """Execute mobile: setConnectivity command.
 
         https://github.com/appium/appium-uiautomator2-driver?tab=readme-ov-file#mobile-setconnectivity
@@ -2140,7 +2154,7 @@ class Shadowstep(ShadowstepBase):
 
     @fail_safe_shadowstep(raise_exception=ShadowstepException)
     @log_debug()
-    def get_app_strings(self, language: str | None = None) -> Any:
+    def get_app_strings(self, language: str | None = None) -> None:  # real signature unknown
         """Execute mobile: getAppStrings command.
 
         https://github.com/appium/appium-uiautomator2-driver?tab=readme-ov-file#mobile-getappstrings
@@ -2162,7 +2176,7 @@ class Shadowstep(ShadowstepBase):
 
     @fail_safe_shadowstep(raise_exception=ShadowstepException)
     @log_debug()
-    def hide_keyboard(self) -> Any:
+    def hide_keyboard(self) -> None:  # real signature unknown
         """Execute mobile: hideKeyboard command.
 
         https://github.com/appium/appium-uiautomator2-driver?tab=readme-ov-file#mobile-hidekeyboard
@@ -2178,7 +2192,7 @@ class Shadowstep(ShadowstepBase):
 
     @fail_safe_shadowstep(raise_exception=ShadowstepException)
     @log_debug()
-    def is_keyboard_shown(self) -> Any:
+    def is_keyboard_shown(self) -> None:  # real signature unknown
         """Execute mobile: isKeyboardShown command.
 
         https://github.com/appium/appium-uiautomator2-driver?tab=readme-ov-file#mobile-iskeyboardshown
@@ -2200,7 +2214,7 @@ class Shadowstep(ShadowstepBase):
         metastate: int | None = None,
         flags: int | None = None,
         is_long_press: bool = False,  # noqa: FBT001, FBT002
-    ) -> Any:
+    ) -> None:  # real signature unknown
         """Execute mobile: pressKey command.
 
         https://github.com/appium/appium-uiautomator2-driver?tab=readme-ov-file#mobile-presskey
@@ -2225,7 +2239,7 @@ class Shadowstep(ShadowstepBase):
 
     @fail_safe_shadowstep(raise_exception=ShadowstepException)
     @log_debug()
-    def background_app(self, seconds: int | None = None) -> Any:
+    def background_app(self, seconds: int | None = None) -> None:  # real signature unknown
         """Execute mobile: backgroundApp command.
 
         https://github.com/appium/appium-uiautomator2-driver?tab=readme-ov-file#mobile-backgroundapp
@@ -2247,7 +2261,7 @@ class Shadowstep(ShadowstepBase):
 
     @fail_safe_shadowstep(raise_exception=ShadowstepException)
     @log_debug()
-    def get_current_activity(self) -> Any:
+    def get_current_activity(self) -> None:  # real signature unknown
         """Execute mobile: getCurrentActivity command.
 
         https://github.com/appium/appium-uiautomator2-driver?tab=readme-ov-file#mobile-getcurrentactivity
@@ -2263,7 +2277,7 @@ class Shadowstep(ShadowstepBase):
 
     @fail_safe_shadowstep(raise_exception=ShadowstepException)
     @log_debug()
-    def get_current_package(self) -> Any:
+    def get_current_package(self) -> None:  # real signature unknown
         """Execute mobile: getCurrentPackage command.
 
         https://github.com/appium/appium-uiautomator2-driver?tab=readme-ov-file#mobile-getcurrentpackage
@@ -2279,7 +2293,7 @@ class Shadowstep(ShadowstepBase):
 
     @fail_safe_shadowstep(raise_exception=ShadowstepException)
     @log_debug()
-    def get_display_density(self) -> Any:
+    def get_display_density(self) -> None:  # real signature unknown
         """Execute mobile: getDisplayDensity command.
 
         https://github.com/appium/appium-uiautomator2-driver?tab=readme-ov-file#mobile-getdisplaydensity
@@ -2295,7 +2309,7 @@ class Shadowstep(ShadowstepBase):
 
     @fail_safe_shadowstep(raise_exception=ShadowstepException)
     @log_debug()
-    def get_system_bars(self) -> Any:
+    def get_system_bars(self) -> None:  # real signature unknown
         """Execute mobile: getSystemBars command.
 
         https://github.com/appium/appium-uiautomator2-driver?tab=readme-ov-file#mobile-getsystembars
@@ -2316,7 +2330,7 @@ class Shadowstep(ShadowstepBase):
 
     @fail_safe_shadowstep(raise_exception=ShadowstepException)
     @log_debug()
-    def fingerprint(self, fingerprint_id: int) -> Any:
+    def fingerprint(self, fingerprint_id: int) -> None:  # real signature unknown
         """Execute mobile: fingerprint command.
 
         https://github.com/appium/appium-uiautomator2-driver?tab=readme-ov-file#mobile-fingerprint
@@ -2342,7 +2356,7 @@ class Shadowstep(ShadowstepBase):
         self,
         phone_number: str,
         message: str,
-    ) -> Any:
+    ) -> None:  # real signature unknown
         """Execute mobile: sendSms command.
 
         https://github.com/appium/appium-uiautomator2-driver?tab=readme-ov-file#mobile-sendsms
@@ -2370,7 +2384,7 @@ class Shadowstep(ShadowstepBase):
         self,
         phone_number: str,
         action: str,
-    ) -> Any:
+    ) -> None:  # real signature unknown
         """Execute mobile: gsmCall command.
 
         https://github.com/appium/appium-uiautomator2-driver?tab=readme-ov-file#mobile-gsmcall
@@ -2391,7 +2405,7 @@ class Shadowstep(ShadowstepBase):
 
     @fail_safe_shadowstep(raise_exception=ShadowstepException)
     @log_debug()
-    def gsm_signal(self, strength: int) -> Any:
+    def gsm_signal(self, strength: int) -> None:  # real signature unknown
         """Execute mobile: gsmSignal command.
 
         https://github.com/appium/appium-uiautomator2-driver?tab=readme-ov-file#mobile-gsmsignal
@@ -2416,7 +2430,7 @@ class Shadowstep(ShadowstepBase):
     def gsm_voice(
         self,
         state: Literal["on", "off", "denied", "searching", "roaming", "home", "unregistered"],
-    ) -> Any:
+    ) -> None:  # real signature unknown
         """Execute mobile: gsmVoice command.
 
         https://github.com/appium/appium-uiautomator2-driver?tab=readme-ov-file#mobile-gsmvoice
@@ -2438,7 +2452,7 @@ class Shadowstep(ShadowstepBase):
 
     @fail_safe_shadowstep(raise_exception=ShadowstepException)
     @log_debug()
-    def power_ac(self, state: Literal["on", "off"]) -> Any:
+    def power_ac(self, state: Literal["on", "off"]) -> None:  # real signature unknown
         """Execute mobile: powerAC command.
 
         https://github.com/appium/appium-uiautomator2-driver?tab=readme-ov-file#mobile-powerac
@@ -2457,7 +2471,7 @@ class Shadowstep(ShadowstepBase):
 
     @fail_safe_shadowstep(raise_exception=ShadowstepException)
     @log_debug()
-    def power_capacity(self, percent: int) -> Any:
+    def power_capacity(self, percent: int) -> None:  # real signature unknown
         """Execute mobile: powerCapacity command.
 
         https://github.com/appium/appium-uiautomator2-driver?tab=readme-ov-file#mobile-powercapacity
@@ -2479,7 +2493,7 @@ class Shadowstep(ShadowstepBase):
     def network_speed(
         self,
         speed: Literal["gsm", "scsd", "gprs", "edge", "umts", "hsdpa", "lte", "evdo", "full"],
-    ) -> Any:
+    ) -> None:  # real signature unknown
         """Execute mobile: networkSpeed command.
 
         https://github.com/appium/appium-uiautomator2-driver?tab=readme-ov-file#mobile-networkspeed
@@ -2505,7 +2519,7 @@ class Shadowstep(ShadowstepBase):
         self,
         locator: tuple[str, str] | dict[str, Any] | Element | UiSelector,
         text: str,
-    ) -> Any:
+    ) -> None:  # real signature unknown
         r"""Execute mobile: replaceElementValue command.
 
         https://github.com/appium/appium-uiautomator2-driver?tab=readme-ov-file#mobile-replaceelementvalue
@@ -2531,7 +2545,7 @@ class Shadowstep(ShadowstepBase):
 
     @fail_safe_shadowstep(raise_exception=ShadowstepException)
     @log_debug()
-    def toggle_gps(self) -> Any:
+    def toggle_gps(self) -> None:  # real signature unknown
         """Execute mobile: toggleGps command.
 
         https://github.com/appium/appium-uiautomator2-driver?tab=readme-ov-file#mobile-togglegps
@@ -2544,7 +2558,7 @@ class Shadowstep(ShadowstepBase):
 
     @fail_safe_shadowstep(raise_exception=ShadowstepException)
     @log_debug()
-    def is_gps_enabled(self) -> Any:
+    def is_gps_enabled(self) -> None:  # real signature unknown
         """Execute mobile: isGpsEnabled command.
 
         https://github.com/appium/appium-uiautomator2-driver?tab=readme-ov-file#mobile-isgpsenabled
@@ -2557,7 +2571,7 @@ class Shadowstep(ShadowstepBase):
 
     @fail_safe_shadowstep(raise_exception=ShadowstepException)
     @log_debug()
-    def get_performance_data_types(self) -> Any:
+    def get_performance_data_types(self) -> None:  # real signature unknown
         """Execute mobile: getPerformanceDataTypes command.
 
         https://github.com/appium/appium-uiautomator2-driver?tab=readme-ov-file#mobile-getperformancedatatypes
@@ -2577,7 +2591,7 @@ class Shadowstep(ShadowstepBase):
         self,
         package_name: str,
         data_type: str,
-    ) -> Any:
+    ) -> None:  # real signature unknown
         """Execute mobile: getPerformanceData command.
 
         https://github.com/appium/appium-uiautomator2-driver?tab=readme-ov-file#mobile-getperformancedata
@@ -2651,7 +2665,7 @@ class Shadowstep(ShadowstepBase):
             "getStatusIcons",
         ],
         component: Literal["addTile", "removeTile", "clickTile"],
-    ) -> Any:
+    ) -> None:  # real signature unknown
         """Execute mobile: statusBar command.
 
         https://github.com/appium/appium-uiautomator2-driver?tab=readme-ov-file#mobile-statusbar
@@ -2687,7 +2701,7 @@ class Shadowstep(ShadowstepBase):
     def screenshots(
         self,
         display_id: int | str | None = None,
-    ) -> Any:
+    ) -> None:  # real signature unknown
         """Execute mobile: screenshots command.
 
         https://github.com/appium/appium-uiautomator2-driver?tab=readme-ov-file#mobile-screenshots
@@ -2718,7 +2732,7 @@ class Shadowstep(ShadowstepBase):
         self,
         mode: Literal["night", "car"],
         value: str,
-    ) -> Any:
+    ) -> None:  # real signature unknown
         """Execute mobile: setUiMode command.
 
         https://github.com/appium/appium-uiautomator2-driver?tab=readme-ov-file#mobile-setuimode
@@ -2788,7 +2802,7 @@ class Shadowstep(ShadowstepBase):
             "RUNNING_LOW",
             "RUNNING_MODERATE",
         ],
-    ) -> Any:
+    ) -> None:  # real signature unknown
         """Execute mobile: sendTrimMemory command.
 
         https://github.com/appium/appium-uiautomator2-driver?tab=readme-ov-file#mobile-sendtrimmemory
@@ -2820,7 +2834,7 @@ class Shadowstep(ShadowstepBase):
 
     @fail_safe_shadowstep(raise_exception=ShadowstepException)
     @log_debug()
-    def inject_emulator_camera_image(self, payload: str) -> Any:
+    def inject_emulator_camera_image(self, payload: str) -> None:  # real signature unknown
         """Execute mobile: injectEmulatorCameraImage command.
 
         https://github.com/appium/appium-uiautomator2-driver?tab=readme-ov-file#mobile-injectemulatorcameraimage
@@ -2847,7 +2861,9 @@ class Shadowstep(ShadowstepBase):
 
     @fail_safe_shadowstep(raise_exception=ShadowstepException)
     @log_debug()
-    def bluetooth(self, action: Literal["enable", "disable", "unpairAll"]) -> Any:
+    def bluetooth(
+        self, action: Literal["enable", "disable", "unpairAll"],
+    ) -> None:  # real signature unknown
         """Execute mobile: bluetooth command.
 
         https://github.com/appium/appium-uiautomator2-driver?tab=readme-ov-file#mobile-bluetooth
@@ -2873,7 +2889,7 @@ class Shadowstep(ShadowstepBase):
 
     @fail_safe_shadowstep(raise_exception=ShadowstepException)
     @log_debug()
-    def nfc(self, action: Literal["enable", "disable"]) -> Any:
+    def nfc(self, action: Literal["enable", "disable"]) -> None:  # real signature unknown
         """Execute mobile: nfc command.
 
         https://github.com/appium/appium-uiautomator2-driver?tab=readme-ov-file#mobile-nfc
@@ -2920,7 +2936,7 @@ class Shadowstep(ShadowstepBase):
 
     @fail_safe_shadowstep(raise_exception=ShadowstepException)
     @log_debug()
-    def push_file(self, remote_path: str, payload: str) -> Any:
+    def push_file(self, remote_path: str, payload: str) -> None:  # real signature unknown
         """Execute mobile: pushFile command.
 
         https://github.com/appium/appium-uiautomator2-driver?tab=readme-ov-file#mobile-pushfile
@@ -2944,7 +2960,7 @@ class Shadowstep(ShadowstepBase):
 
     @fail_safe_shadowstep(raise_exception=ShadowstepException)
     @log_debug()
-    def pull_folder(self, remote_path: str) -> Any:
+    def pull_folder(self, remote_path: str) -> None:  # real signature unknown
         """Execute mobile: pullFolder command.
 
         https://github.com/appium/appium-uiautomator2-driver?tab=readme-ov-file#mobile-pullfolder
@@ -2990,7 +3006,7 @@ class Shadowstep(ShadowstepBase):
         content: str,
         content_type: str = "plaintext",
         label: str | None = None,
-    ) -> Any:
+    ) -> None:  # real signature unknown
         """Execute mobile: setClipboard command.
 
         https://github.com/appium/appium-uiautomator2-driver?tab=readme-ov-file#mobile-setclipboard

@@ -618,3 +618,10 @@ class TestShadowstep:
         # Verify video is bytes
         assert isinstance(video, bytes)  # noqa: S101
         assert len(video) > 0  # noqa: S101
+
+    def test_debug(self, app: Shadowstep):
+        print("++++++++++++++++++")
+        print("++++++++++++++++++")
+        print("++++++++++++++++++")
+        print("++++++++++++++++++")
+        print(app.deep_link("theapp://login/"))
