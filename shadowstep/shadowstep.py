@@ -2503,7 +2503,7 @@ class Shadowstep(ShadowstepBase):
     @log_debug()
     def replace_element_value(
         self,
-        locator,
+        locator: tuple[str, str] | dict[str, Any] | Element | UiSelector,
         text: str,
     ) -> Any:
         r"""Execute mobile: replaceElementValue command.
@@ -2514,14 +2514,20 @@ class Shadowstep(ShadowstepBase):
             Sends a text to the specified element by replacing its previous content. If the text ends with "\\n" (backslash must be escaped, so it is not translated into 0x0A), the Enter key press will be emulated after typing. Available since driver version 2.22.
 
         Args:
-            elementId (str): Hexadecimal identifier of the target text input element. Required. Example: "123456-3456-3435-3453453"
+            locator (tuple[str, str] | dict[str, Any] | Element | UiSelector): locator of element to retreive
             text (str): The text to enter. Can include Unicode characters. If ending with "\\n", the Enter key is emulated after typing (the "\\n" substring itself is removed). Required. Example: "yolo"
 
         Returns:
             The actual command output. An error is thrown if sending text fails.
 
         """
-        return self._execute("mobile: replaceElementValue", params)
+        element = self.get_element(locator)
+        native_element = element.get_native()
+        params = {
+            "elementId": native_element.id,
+            "text": text,
+        }
+        return self.mobile_commands.replace_element_value(params)
 
     @fail_safe_shadowstep(raise_exception=ShadowstepException)
     @log_debug()
