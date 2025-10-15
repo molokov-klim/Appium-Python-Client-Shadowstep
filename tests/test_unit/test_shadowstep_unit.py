@@ -918,7 +918,6 @@ class TestShadowstepUnit:
                         "permissions": "android.permission.CAMERA",
                         "appPackage": "com.test",
                         "action": "grant",
-                        "target": None,
                     })
 
     @pytest.mark.unit
