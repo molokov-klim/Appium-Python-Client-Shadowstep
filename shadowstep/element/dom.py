@@ -7,19 +7,12 @@ including getting child elements, parents, siblings, and cousins.
 from __future__ import annotations
 
 import logging
-import time
 from typing import TYPE_CHECKING, Any
 
-from selenium.common import (
-    InvalidSessionIdException,
-    NoSuchDriverException,
-    StaleElementReferenceException,
-    WebDriverException,
-)
 from selenium.webdriver.support import expected_conditions
 from selenium.webdriver.support.wait import WebDriverWait
 
-from shadowstep.decorators.decorators import log_debug
+from shadowstep.decorators.common_decorators import log_debug
 from shadowstep.exceptions.shadowstep_exceptions import (
     ShadowstepElementException,
     ShadowstepResolvingLocatorError,
@@ -158,50 +151,29 @@ class ElementDOM:
         locator = self.utilities.remove_null_value(locator)
         locator = self.converter.to_xpath(locator)
 
-        start_time = time.time()
-        while time.time() - start_time < self.element.timeout:
-            try:
-                self.element.get_driver()
-                wait = WebDriverWait(
-                    driver=self.element.driver,
-                    timeout=timeout,
-                    poll_frequency=poll_frequency,
-                    ignored_exceptions=ignored_exceptions,
-                )
-                wait.until(expected_conditions.presence_of_element_located(locator))
-                attributes_list = self.utilities.extract_el_attrs_from_source(
-                    xpath_expr=locator[1],
-                    page_source=self.shadowstep.driver.page_source,  # type: ignore[attr-defined]
-                )
-                elements: list[Element] = []
-                for attributes in attributes_list:
-                    element = Element(  # type: ignore[return-value]
-                        locator=attributes,
-                        shadowstep=self.shadowstep,
-                        timeout=timeout,
-                        poll_frequency=poll_frequency,
-                        ignored_exceptions=ignored_exceptions,
-                    )
-                    elements.append(element)  # type: ignore[arg-type]
-                return elements  # noqa: TRY300
-            except (NoSuchDriverException, InvalidSessionIdException) as error:  # noqa: PERF203
-                self.element.utilities.handle_driver_error(error)
-            except StaleElementReferenceException as error:
-                self.logger.debug(error)
-                self.logger.warning("StaleElementReferenceException \n Re-acquire element")
-                self.element.native = None
-                self.element.get_native()
-                continue
-            except WebDriverException as error:
-                err_msg = str(error).lower()
-                if (
-                    "instrumentation process is not running" in err_msg
-                    or "socket hang up" in err_msg
-                ):
-                    self.element.utilities.handle_driver_error(error)
-                    continue
-                raise
-        return []
+        self.element.get_driver()
+        wait = WebDriverWait(
+            driver=self.element.driver,
+            timeout=timeout,
+            poll_frequency=poll_frequency,
+            ignored_exceptions=ignored_exceptions,
+        )
+        wait.until(expected_conditions.presence_of_element_located(locator))
+        attributes_list = self.utilities.extract_el_attrs_from_source(
+            xpath_expr=locator[1],
+            page_source=self.shadowstep.driver.page_source,  # type: ignore[attr-defined]
+        )
+        elements: list[Element] = []
+        for attributes in attributes_list:
+            element = Element(  # type: ignore[return-value]
+                locator=attributes,
+                shadowstep=self.shadowstep,
+                timeout=timeout,
+                poll_frequency=poll_frequency,
+                ignored_exceptions=ignored_exceptions,
+            )
+            elements.append(element)  # type: ignore[arg-type]
+        return elements
 
     @log_debug()
     def get_parent(

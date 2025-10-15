@@ -41,7 +41,6 @@ DEFAULT_EXCEPTIONS: tuple[type[Exception], ...] = (
     StaleElementReferenceException,
 )
 
-# TODO remove it (use decorator in facade module)
 def fail_safe(  # noqa: C901, PLR0913
         retries: int = 3,
         delay: float = 0.5,

@@ -9,15 +9,8 @@ from __future__ import annotations
 import logging
 from typing import Any, ClassVar
 
-from selenium.common.exceptions import (
-    InvalidSessionIdException,
-    NoSuchDriverException,
-    StaleElementReferenceException,
-)
 from typing_extensions import Self
 
-from shadowstep.decorators.decorators import fail_safe
-from shadowstep.exceptions.shadowstep_exceptions import ShadowstepException
 from shadowstep.utils.utils import get_current_func_name
 from shadowstep.web_driver.web_driver_singleton import WebDriverSingleton
 
@@ -44,14 +37,6 @@ class MobileCommands:
         if not hasattr(self, "logger"):
             self.logger = logging.getLogger(f"{__name__}.{self.__class__.__name__}")
 
-    @fail_safe(
-        raise_exception=ShadowstepException,
-        exceptions=(
-            NoSuchDriverException,
-            InvalidSessionIdException,
-            StaleElementReferenceException,
-        ),
-    )
     def shell(self, params: dict[str, Any] | list[Any] | None = None) -> Any:
         """Execute mobile: shell command.
 
@@ -80,14 +65,6 @@ class MobileCommands:
         self.logger.info("shell: %s", params)
         return self._execute("mobile: shell", params)
 
-    @fail_safe(
-        raise_exception=ShadowstepException,
-        exceptions=(
-            NoSuchDriverException,
-            InvalidSessionIdException,
-            StaleElementReferenceException,
-        ),
-    )
     def scroll(self, params: dict[str, Any] | list[Any] | None = None) -> Any:
         """Execute mobile: scroll command.
 
@@ -112,14 +89,33 @@ class MobileCommands:
         self.logger.debug("%s", get_current_func_name())
         return self._execute("mobile: scroll", params)
 
-    @fail_safe(
-        raise_exception=ShadowstepException,
-        exceptions=(
-            NoSuchDriverException,
-            InvalidSessionIdException,
-            StaleElementReferenceException,
-        ),
-    )
+    def click_gesture(self, params: dict[str, Any] | list[Any] | None = None) -> Any:
+        """Execute mobile: clickGesture command.
+
+        https://github.com/appium/appium-uiautomator2-driver/blob/master/docs/android-mobile-gestures.md#mobile-clickgesture
+
+        Args:
+            params (Union[Dict, List]): Parameters for the mobile command.
+
+        Returns:
+            Any: result of script execution
+
+        Description:
+            This gesture performs click action on the given element/coordinates. Available since Appium UiAutomator2 driver 1.71.0. Usage of this gesture is recommended as a possible workaround for cases where the "native" tap call fails, even though tap coordinates seem correct. This issue is related to the fact these calls use the legacy UIAutomator-based calls while this extension is based on the same foundation as W3C does.
+
+        Supported arguments
+            elementId: The id of the element to be clicked. If the element is missing then both click offset coordinates must be provided. If both the element id and offset are provided then the coordinates are parsed as relative offsets from the top left corner of the element.
+            x: The x-offset coordinate
+            y: The y-offset coordinate
+            locator: The map containing strategy and selector items to make it possible to click dynamic elements.
+
+        Example:
+            driver.execute_script('mobile: clickGesture', {'x': 100, 'y': 100})
+
+        """
+        self.logger.debug("%s", get_current_func_name())
+        return self._execute("mobile: clickGesture", params)
+
     def long_click_gesture(self, params: dict[str, Any] | list[Any] | None = None) -> Any:
         """Execute mobile: longClickGesture command.
 
@@ -148,14 +144,6 @@ class MobileCommands:
         self.logger.debug("%s", get_current_func_name())
         return self._execute("mobile: longClickGesture", params)
 
-    @fail_safe(
-        raise_exception=ShadowstepException,
-        exceptions=(
-            NoSuchDriverException,
-            InvalidSessionIdException,
-            StaleElementReferenceException,
-        ),
-    )
     def double_click_gesture(self, params: dict[str, Any] | list[Any] | None = None) -> Any:
         """Execute mobile: doubleClickGesture command.
 
@@ -183,49 +171,6 @@ class MobileCommands:
         self.logger.debug("%s", get_current_func_name())
         return self._execute("mobile: doubleClickGesture", params)
 
-    @fail_safe(
-        raise_exception=ShadowstepException,
-        exceptions=(
-            NoSuchDriverException,
-            InvalidSessionIdException,
-            StaleElementReferenceException,
-        ),
-    )
-    def click_gesture(self, params: dict[str, Any] | list[Any] | None = None) -> Any:
-        """Execute mobile: clickGesture command.
-
-        https://github.com/appium/appium-uiautomator2-driver/blob/master/docs/android-mobile-gestures.md#mobile-clickgesture
-
-        Args:
-            params (Union[Dict, List]): Parameters for the mobile command.
-
-        Returns:
-            Any: result of script execution
-
-        Description:
-            This gesture performs click action on the given element/coordinates. Available since Appium UiAutomator2 driver 1.71.0. Usage of this gesture is recommended as a possible workaround for cases where the "native" tap call fails, even though tap coordinates seem correct. This issue is related to the fact these calls use the legacy UIAutomator-based calls while this extension is based on the same foundation as W3C does.
-
-        Supported arguments
-            elementId: The id of the element to be clicked. If the element is missing then both click offset coordinates must be provided. If both the element id and offset are provided then the coordinates are parsed as relative offsets from the top left corner of the element.
-            x: The x-offset coordinate
-            y: The y-offset coordinate
-            locator: The map containing strategy and selector items to make it possible to click dynamic elements.
-
-        Example:
-            driver.execute_script('mobile: clickGesture', {'x': 100, 'y': 100})
-
-        """
-        self.logger.debug("%s", get_current_func_name())
-        return self._execute("mobile: clickGesture", params)
-
-    @fail_safe(
-        raise_exception=ShadowstepException,
-        exceptions=(
-            NoSuchDriverException,
-            InvalidSessionIdException,
-            StaleElementReferenceException,
-        ),
-    )
     def drag_gesture(self, params: dict[str, Any] | list[Any] | None = None) -> Any:
         """Execute mobile: dragGesture command.
 
@@ -260,14 +205,6 @@ class MobileCommands:
         self.logger.debug("%s", get_current_func_name())
         return self._execute("mobile: dragGesture", params)
 
-    @fail_safe(
-        raise_exception=ShadowstepException,
-        exceptions=(
-            NoSuchDriverException,
-            InvalidSessionIdException,
-            StaleElementReferenceException,
-        ),
-    )
     def fling_gesture(self, params: dict[str, Any] | list[Any] | None = None) -> Any:
         """Execute mobile: flingGesture command.
 
@@ -306,14 +243,6 @@ class MobileCommands:
         self.logger.debug("%s", get_current_func_name())
         return self._execute("mobile: flingGesture", params)
 
-    @fail_safe(
-        raise_exception=ShadowstepException,
-        exceptions=(
-            NoSuchDriverException,
-            InvalidSessionIdException,
-            StaleElementReferenceException,
-        ),
-    )
     def pinch_open_gesture(self, params: dict[str, Any] | list[Any] | None = None) -> Any:
         """Execute mobile: pinchOpenGesture command.
 
@@ -348,14 +277,6 @@ class MobileCommands:
         self.logger.debug("%s", get_current_func_name())
         return self._execute("mobile: pinchOpenGesture", params)
 
-    @fail_safe(
-        raise_exception=ShadowstepException,
-        exceptions=(
-            NoSuchDriverException,
-            InvalidSessionIdException,
-            StaleElementReferenceException,
-        ),
-    )
     def pinch_close_gesture(self, params: dict[str, Any] | list[Any] | None = None) -> Any:
         """Execute mobile: pinchCloseGesture command.
 
@@ -390,14 +311,6 @@ class MobileCommands:
         self.logger.debug("%s", get_current_func_name())
         return self._execute("mobile: pinchCloseGesture", params)
 
-    @fail_safe(
-        raise_exception=ShadowstepException,
-        exceptions=(
-            NoSuchDriverException,
-            InvalidSessionIdException,
-            StaleElementReferenceException,
-        ),
-    )
     def swipe_gesture(self, params: dict[str, Any] | list[Any] | None = None) -> Any:
         """Execute mobile: swipeGesture command.
 
@@ -436,14 +349,6 @@ class MobileCommands:
         self.logger.debug("%s", get_current_func_name())
         return self._execute("mobile: swipeGesture", params)
 
-    @fail_safe(
-        raise_exception=ShadowstepException,
-        exceptions=(
-            NoSuchDriverException,
-            InvalidSessionIdException,
-            StaleElementReferenceException,
-        ),
-    )
     def scroll_gesture(self, params: dict[str, Any] | list[Any] | None = None) -> Any:
         """Execute mobile: scrollGesture command.
 
@@ -483,14 +388,6 @@ class MobileCommands:
         self.logger.debug("%s", get_current_func_name())
         return self._execute("mobile: scrollGesture", params)
 
-    @fail_safe(
-        raise_exception=ShadowstepException,
-        exceptions=(
-            NoSuchDriverException,
-            InvalidSessionIdException,
-            StaleElementReferenceException,
-        ),
-    )
     def exec_emu_console_command(self, params: dict[str, Any] | list[Any] | None = None) -> Any:
         """Execute mobile: execEmuConsoleCommand command.
 
@@ -518,14 +415,6 @@ class MobileCommands:
         self.logger.debug("%s", get_current_func_name())
         return self._execute("mobile: execEmuConsoleCommand", params)
 
-    @fail_safe(
-        raise_exception=ShadowstepException,
-        exceptions=(
-            NoSuchDriverException,
-            InvalidSessionIdException,
-            StaleElementReferenceException,
-        ),
-    )
     def deep_link(self, params: dict[str, Any] | list[Any] | None = None) -> Any:
         """Execute mobile: deepLink command.
 
@@ -549,14 +438,6 @@ class MobileCommands:
         self.logger.debug("%s", get_current_func_name())
         return self._execute("mobile: deepLink", params)
 
-    @fail_safe(
-        raise_exception=ShadowstepException,
-        exceptions=(
-            NoSuchDriverException,
-            InvalidSessionIdException,
-            StaleElementReferenceException,
-        ),
-    )
     def start_logs_broadcast(self, params: dict[str, Any] | list[Any] | None = None) -> Any:
         """Execute mobile: startLogsBroadcast command.
 
@@ -576,14 +457,6 @@ class MobileCommands:
         self.logger.debug("%s", get_current_func_name())
         return self._execute("mobile: startLogsBroadcast", params)
 
-    @fail_safe(
-        raise_exception=ShadowstepException,
-        exceptions=(
-            NoSuchDriverException,
-            InvalidSessionIdException,
-            StaleElementReferenceException,
-        ),
-    )
     def stop_logs_broadcast(self, params: dict[str, Any] | list[Any] | None = None) -> Any:
         """Execute mobile: stopLogsBroadcast command.
 
@@ -603,14 +476,6 @@ class MobileCommands:
         self.logger.debug("%s", get_current_func_name())
         return self._execute("mobile: stopLogsBroadcast", params)
 
-    @fail_safe(
-        raise_exception=ShadowstepException,
-        exceptions=(
-            NoSuchDriverException,
-            InvalidSessionIdException,
-            StaleElementReferenceException,
-        ),
-    )
     def deviceidle(self, params: dict[str, Any] | list[Any] | None = None) -> Any:
         """Execute mobile: deviceidle command.
 
@@ -633,14 +498,6 @@ class MobileCommands:
         self.logger.debug("%s", get_current_func_name())
         return self._execute("mobile: deviceidle", params)
 
-    @fail_safe(
-        raise_exception=ShadowstepException,
-        exceptions=(
-            NoSuchDriverException,
-            InvalidSessionIdException,
-            StaleElementReferenceException,
-        ),
-    )
     def accept_alert(self, params: dict[str, Any] | list[Any] | None = None) -> Any:
         """Execute mobile: acceptAlert command.
 
@@ -662,14 +519,6 @@ class MobileCommands:
         self.logger.debug("%s", get_current_func_name())
         return self._execute("mobile: acceptAlert", params)
 
-    @fail_safe(
-        raise_exception=ShadowstepException,
-        exceptions=(
-            NoSuchDriverException,
-            InvalidSessionIdException,
-            StaleElementReferenceException,
-        ),
-    )
     def dismiss_alert(self, params: dict[str, Any] | list[Any] | None = None) -> Any:
         """Execute mobile: dismissAlert command.
 
@@ -694,14 +543,6 @@ class MobileCommands:
         self.logger.debug("%s", get_current_func_name())
         return self._execute("mobile: dismissAlert", params)
 
-    @fail_safe(
-        raise_exception=ShadowstepException,
-        exceptions=(
-            NoSuchDriverException,
-            InvalidSessionIdException,
-            StaleElementReferenceException,
-        ),
-    )
     def battery_info(self, params: dict[str, Any] | list[Any] | None = None) -> Any:
         """Execute mobile: batteryInfo command.
 
@@ -732,14 +573,6 @@ class MobileCommands:
         self.logger.debug("%s", get_current_func_name())
         return self._execute("mobile: batteryInfo", params)
 
-    @fail_safe(
-        raise_exception=ShadowstepException,
-        exceptions=(
-            NoSuchDriverException,
-            InvalidSessionIdException,
-            StaleElementReferenceException,
-        ),
-    )
     def device_info(self, params: dict[str, Any] | list[Any] | None = None) -> Any:
         """Execute mobile: deviceInfo command.
 
@@ -762,14 +595,6 @@ class MobileCommands:
         self.logger.debug("%s", get_current_func_name())
         return self._execute("mobile: deviceInfo", params)
 
-    @fail_safe(
-        raise_exception=ShadowstepException,
-        exceptions=(
-            NoSuchDriverException,
-            InvalidSessionIdException,
-            StaleElementReferenceException,
-        ),
-    )
     def get_device_time(self, params: dict[str, Any] | list[Any] | None = None) -> Any:
         """Execute mobile: getDeviceTime command.
 
@@ -795,14 +620,6 @@ class MobileCommands:
         self.logger.debug("%s", get_current_func_name())
         return self._execute("mobile: getDeviceTime", params)
 
-    @fail_safe(
-        raise_exception=ShadowstepException,
-        exceptions=(
-            NoSuchDriverException,
-            InvalidSessionIdException,
-            StaleElementReferenceException,
-        ),
-    )
     def change_permissions(self, params: dict[str, Any] | list[Any] | None = None) -> Any:
         """Execute mobile: changePermissions command.
 
@@ -827,14 +644,6 @@ class MobileCommands:
         self.logger.debug("%s", get_current_func_name())
         return self._execute("mobile: changePermissions", params)
 
-    @fail_safe(
-        raise_exception=ShadowstepException,
-        exceptions=(
-            NoSuchDriverException,
-            InvalidSessionIdException,
-            StaleElementReferenceException,
-        ),
-    )
     def get_permissions(self, params: dict[str, Any] | list[Any] | None = None) -> Any:
         """Execute mobile: getPermissions command.
 
@@ -860,14 +669,6 @@ class MobileCommands:
         self.logger.debug("%s", get_current_func_name())
         return self._execute("mobile: getPermissions", params)
 
-    @fail_safe(
-        raise_exception=ShadowstepException,
-        exceptions=(
-            NoSuchDriverException,
-            InvalidSessionIdException,
-            StaleElementReferenceException,
-        ),
-    )
     def perform_editor_action(self, params: dict[str, Any] | list[Any] | None = None) -> Any:
         """Execute mobile: performEditorAction command.
 
@@ -889,14 +690,6 @@ class MobileCommands:
         self.logger.debug("%s", get_current_func_name())
         return self._execute("mobile: performEditorAction", params)
 
-    @fail_safe(
-        raise_exception=ShadowstepException,
-        exceptions=(
-            NoSuchDriverException,
-            InvalidSessionIdException,
-            StaleElementReferenceException,
-        ),
-    )
     def start_screen_streaming(self, params: dict[str, Any] | list[Any] | None = None) -> Any:
         """Execute mobile: startScreenStreaming command.
 
@@ -931,14 +724,6 @@ class MobileCommands:
         self.logger.debug("%s", get_current_func_name())
         return self._execute("mobile: startScreenStreaming", params)
 
-    @fail_safe(
-        raise_exception=ShadowstepException,
-        exceptions=(
-            NoSuchDriverException,
-            InvalidSessionIdException,
-            StaleElementReferenceException,
-        ),
-    )
     def stop_screen_streaming(self, params: dict[str, Any] | list[Any] | None = None) -> Any:
         """Execute mobile: stopScreenStreaming command.
 
@@ -957,14 +742,6 @@ class MobileCommands:
         self.logger.debug("%s", get_current_func_name())
         return self._execute("mobile: stopScreenStreaming", params)
 
-    @fail_safe(
-        raise_exception=ShadowstepException,
-        exceptions=(
-            NoSuchDriverException,
-            InvalidSessionIdException,
-            StaleElementReferenceException,
-        ),
-    )
     def get_notifications(self, params: dict[str, Any] | list[Any] | None = None) -> Any:
         """Execute mobile: getNotifications command.
 
@@ -1023,14 +800,6 @@ class MobileCommands:
         self.logger.debug("%s", get_current_func_name())
         return self._execute("mobile: getNotifications", params)
 
-    @fail_safe(
-        raise_exception=ShadowstepException,
-        exceptions=(
-            NoSuchDriverException,
-            InvalidSessionIdException,
-            StaleElementReferenceException,
-        ),
-    )
     def open_notifications(self, params: dict[str, Any] | list[Any] | None = None) -> Any:
         """Execute mobile: openNotifications command.
 
@@ -1049,14 +818,6 @@ class MobileCommands:
         self.logger.debug("%s", get_current_func_name())
         return self._execute("mobile: openNotifications", params)
 
-    @fail_safe(
-        raise_exception=ShadowstepException,
-        exceptions=(
-            NoSuchDriverException,
-            InvalidSessionIdException,
-            StaleElementReferenceException,
-        ),
-    )
     def list_sms(self, params: dict[str, Any] | list[Any] | None = None) -> Any:
         r"""Execute mobile: listSms command.
 
@@ -1111,14 +872,6 @@ class MobileCommands:
         self.logger.debug("%s", get_current_func_name())
         return self._execute("mobile: listSms", params)
 
-    @fail_safe(
-        raise_exception=ShadowstepException,
-        exceptions=(
-            NoSuchDriverException,
-            InvalidSessionIdException,
-            StaleElementReferenceException,
-        ),
-    )
     def type(self, params: dict[str, Any] | list[Any] | None = None) -> Any:
         """Execute mobile: type command.
 
@@ -1140,14 +893,6 @@ class MobileCommands:
         self.logger.debug("%s", get_current_func_name())
         return self._execute("mobile: type", params)
 
-    @fail_safe(
-        raise_exception=ShadowstepException,
-        exceptions=(
-            NoSuchDriverException,
-            InvalidSessionIdException,
-            StaleElementReferenceException,
-        ),
-    )
     def sensor_set(self, params: dict[str, Any] | list[Any] | None = None) -> Any:
         """Execute mobile: sensorSet command.
 
@@ -1170,14 +915,6 @@ class MobileCommands:
         self.logger.debug("%s", get_current_func_name())
         return self._execute("mobile: sensorSet", params)
 
-    @fail_safe(
-        raise_exception=ShadowstepException,
-        exceptions=(
-            NoSuchDriverException,
-            InvalidSessionIdException,
-            StaleElementReferenceException,
-        ),
-    )
     def delete_file(self, params: dict[str, Any] | list[Any] | None = None) -> Any:
         """Execute mobile: deleteFile command.
 
@@ -1199,14 +936,6 @@ class MobileCommands:
         self.logger.debug("%s", get_current_func_name())
         return self._execute("mobile: deleteFile", params)
 
-    @fail_safe(
-        raise_exception=ShadowstepException,
-        exceptions=(
-            NoSuchDriverException,
-            InvalidSessionIdException,
-            StaleElementReferenceException,
-        ),
-    )
     def is_app_installed(self, params: dict[str, Any] | list[Any] | None = None) -> Any:
         """Execute mobile: isAppInstalled command.
 
@@ -1232,14 +961,6 @@ class MobileCommands:
         self.logger.debug("%s", get_current_func_name())
         return self._execute("mobile: isAppInstalled", params)
 
-    @fail_safe(
-        raise_exception=ShadowstepException,
-        exceptions=(
-            NoSuchDriverException,
-            InvalidSessionIdException,
-            StaleElementReferenceException,
-        ),
-    )
     def query_app_state(self, params: dict[str, Any] | list[Any] | None = None) -> Any:
         """Execute mobile: queryAppState command.
 
@@ -1268,14 +989,6 @@ class MobileCommands:
         self.logger.debug("%s", get_current_func_name())
         return self._execute("mobile: queryAppState", params)
 
-    @fail_safe(
-        raise_exception=ShadowstepException,
-        exceptions=(
-            NoSuchDriverException,
-            InvalidSessionIdException,
-            StaleElementReferenceException,
-        ),
-    )
     def activate_app(self, params: dict[str, Any] | list[Any] | None = None) -> Any:
         """Execute mobile: activateApp command.
 
@@ -1297,14 +1010,6 @@ class MobileCommands:
         self.logger.debug("%s", get_current_func_name())
         return self._execute("mobile: activateApp", params)
 
-    @fail_safe(
-        raise_exception=ShadowstepException,
-        exceptions=(
-            NoSuchDriverException,
-            InvalidSessionIdException,
-            StaleElementReferenceException,
-        ),
-    )
     def remove_app(self, params: dict[str, Any] | list[Any] | None = None) -> Any:
         """Execute mobile: removeApp command.
 
@@ -1331,14 +1036,6 @@ class MobileCommands:
         self.logger.debug("%s", get_current_func_name())
         return self._execute("mobile: removeApp", params)
 
-    @fail_safe(
-        raise_exception=ShadowstepException,
-        exceptions=(
-            NoSuchDriverException,
-            InvalidSessionIdException,
-            StaleElementReferenceException,
-        ),
-    )
     def terminate_app(self, params: dict[str, Any] | list[Any] | None = None) -> Any:
         """Execute mobile: terminateApp command.
 
@@ -1364,14 +1061,6 @@ class MobileCommands:
         self.logger.debug("%s", get_current_func_name())
         return self._execute("mobile: terminateApp", params)
 
-    @fail_safe(
-        raise_exception=ShadowstepException,
-        exceptions=(
-            NoSuchDriverException,
-            InvalidSessionIdException,
-            StaleElementReferenceException,
-        ),
-    )
     def install_app(self, params: dict[str, Any] | list[Any] | None = None) -> Any:
         """Execute mobile: installApp command.
 
@@ -1399,14 +1088,6 @@ class MobileCommands:
         self.logger.debug("%s", get_current_func_name())
         return self._execute("mobile: installApp", params)
 
-    @fail_safe(
-        raise_exception=ShadowstepException,
-        exceptions=(
-            NoSuchDriverException,
-            InvalidSessionIdException,
-            StaleElementReferenceException,
-        ),
-    )
     def clear_app(self, params: dict[str, Any] | list[Any] | None = None) -> Any:
         """Execute mobile: clearApp command.
 
@@ -1431,14 +1112,6 @@ class MobileCommands:
         self.logger.debug("%s", get_current_func_name())
         return self._execute("mobile: clearApp", params)
 
-    @fail_safe(
-        raise_exception=ShadowstepException,
-        exceptions=(
-            NoSuchDriverException,
-            InvalidSessionIdException,
-            StaleElementReferenceException,
-        ),
-    )
     def start_activity(self, params: dict[str, Any] | list[Any] | None = None) -> Any:
         """Execute mobile: startActivity command.
 
@@ -1477,14 +1150,6 @@ class MobileCommands:
         self.logger.debug("%s", get_current_func_name())
         return self._execute("mobile: startActivity", params)
 
-    @fail_safe(
-        raise_exception=ShadowstepException,
-        exceptions=(
-            NoSuchDriverException,
-            InvalidSessionIdException,
-            StaleElementReferenceException,
-        ),
-    )
     def start_service(self, params: dict[str, Any] | list[Any] | None = None) -> Any:
         """Execute mobile: startService command.
 
@@ -1520,14 +1185,6 @@ class MobileCommands:
         self.logger.debug("%s", get_current_func_name())
         return self._execute("mobile: startService", params)
 
-    @fail_safe(
-        raise_exception=ShadowstepException,
-        exceptions=(
-            NoSuchDriverException,
-            InvalidSessionIdException,
-            StaleElementReferenceException,
-        ),
-    )
     def stop_service(self, params: dict[str, Any] | list[Any] | None = None) -> Any:
         """Execute mobile: stopService command.
 
@@ -1562,14 +1219,6 @@ class MobileCommands:
         self.logger.debug("%s", get_current_func_name())
         return self._execute("mobile: stopService", params)
 
-    @fail_safe(
-        raise_exception=ShadowstepException,
-        exceptions=(
-            NoSuchDriverException,
-            InvalidSessionIdException,
-            StaleElementReferenceException,
-        ),
-    )
     def broadcast(self, params: dict[str, Any] | list[Any] | None = None) -> Any:
         """Execute mobile: broadcast command.
 
@@ -1606,14 +1255,6 @@ class MobileCommands:
         self.logger.debug("%s", get_current_func_name())
         return self._execute("mobile: broadcast", params)
 
-    @fail_safe(
-        raise_exception=ShadowstepException,
-        exceptions=(
-            NoSuchDriverException,
-            InvalidSessionIdException,
-            StaleElementReferenceException,
-        ),
-    )
     def get_contexts(self, params: dict[str, Any] | list[Any] | None = None) -> Any:
         r"""Execute mobile: getContexts command.
 
@@ -1664,14 +1305,6 @@ class MobileCommands:
         self.logger.debug("%s", get_current_func_name())
         return self._execute("mobile: getContexts", params)
 
-    @fail_safe(
-        raise_exception=ShadowstepException,
-        exceptions=(
-            NoSuchDriverException,
-            InvalidSessionIdException,
-            StaleElementReferenceException,
-        ),
-    )
     def install_multiple_apks(self, params: dict[str, Any] | list[Any] | None = None) -> Any:
         """Execute mobile: installMultipleApks command.
 
@@ -1702,14 +1335,6 @@ class MobileCommands:
         self.logger.debug("%s", get_current_func_name())
         return self._execute("mobile: installMultipleApks", params)
 
-    @fail_safe(
-        raise_exception=ShadowstepException,
-        exceptions=(
-            NoSuchDriverException,
-            InvalidSessionIdException,
-            StaleElementReferenceException,
-        ),
-    )
     def lock(self, params: dict[str, Any] | list[Any] | None = None) -> Any:
         """Execute mobile: lock command.
 
@@ -1731,14 +1356,6 @@ class MobileCommands:
         self.logger.debug("%s", get_current_func_name())
         return self._execute("mobile: lock", params)
 
-    @fail_safe(
-        raise_exception=ShadowstepException,
-        exceptions=(
-            NoSuchDriverException,
-            InvalidSessionIdException,
-            StaleElementReferenceException,
-        ),
-    )
     def unlock(self, params: dict[str, Any] | list[Any] | None = None) -> Any:
         """Execute mobile: unlock command.
 
@@ -1763,14 +1380,6 @@ class MobileCommands:
         self.logger.debug("%s", get_current_func_name())
         return self._execute("mobile: unlock", params)
 
-    @fail_safe(
-        raise_exception=ShadowstepException,
-        exceptions=(
-            NoSuchDriverException,
-            InvalidSessionIdException,
-            StaleElementReferenceException,
-        ),
-    )
     def is_locked(self, params: dict[str, Any] | list[Any] | None = None) -> Any:
         """Execute mobile: isLocked command.
 
@@ -1792,14 +1401,6 @@ class MobileCommands:
         self.logger.debug("%s", get_current_func_name())
         return self._execute("mobile: isLocked", params)
 
-    @fail_safe(
-        raise_exception=ShadowstepException,
-        exceptions=(
-            NoSuchDriverException,
-            InvalidSessionIdException,
-            StaleElementReferenceException,
-        ),
-    )
     def set_geolocation(self, params: dict[str, Any] | list[Any] | None = None) -> Any:
         """Execute mobile: setGeolocation command.
 
@@ -1827,14 +1428,6 @@ class MobileCommands:
         self.logger.debug("%s", get_current_func_name())
         return self._execute("mobile: setGeolocation", params)
 
-    @fail_safe(
-        raise_exception=ShadowstepException,
-        exceptions=(
-            NoSuchDriverException,
-            InvalidSessionIdException,
-            StaleElementReferenceException,
-        ),
-    )
     def get_geolocation(self, params: dict[str, Any] | list[Any] | None = None) -> Any:
         """Execute mobile: getGeolocation command.
 
@@ -1860,14 +1453,6 @@ class MobileCommands:
         self.logger.debug("%s", get_current_func_name())
         return self._execute("mobile: getGeolocation", params)
 
-    @fail_safe(
-        raise_exception=ShadowstepException,
-        exceptions=(
-            NoSuchDriverException,
-            InvalidSessionIdException,
-            StaleElementReferenceException,
-        ),
-    )
     def reset_geolocation(self, params: dict[str, Any] | list[Any] | None = None) -> Any:
         """Execute mobile: resetGeolocation command.
 
@@ -1886,14 +1471,6 @@ class MobileCommands:
         self.logger.debug("%s", get_current_func_name())
         return self._execute("mobile: resetGeolocation", params)
 
-    @fail_safe(
-        raise_exception=ShadowstepException,
-        exceptions=(
-            NoSuchDriverException,
-            InvalidSessionIdException,
-            StaleElementReferenceException,
-        ),
-    )
     def refresh_gps_cache(self, params: dict[str, Any] | list[Any] | None = None) -> Any:
         """Execute mobile: refreshGpsCache command.
 
@@ -1918,14 +1495,6 @@ class MobileCommands:
         self.logger.debug("%s", get_current_func_name())
         return self._execute("mobile: refreshGpsCache", params)
 
-    @fail_safe(
-        raise_exception=ShadowstepException,
-        exceptions=(
-            NoSuchDriverException,
-            InvalidSessionIdException,
-            StaleElementReferenceException,
-        ),
-    )
     def start_media_projection_recording(
         self,
         params: dict[str, Any] | list[Any] | None = None,
@@ -1956,14 +1525,6 @@ class MobileCommands:
         self.logger.debug("%s", get_current_func_name())
         return self._execute("mobile: startMediaProjectionRecording", params)
 
-    @fail_safe(
-        raise_exception=ShadowstepException,
-        exceptions=(
-            NoSuchDriverException,
-            InvalidSessionIdException,
-            StaleElementReferenceException,
-        ),
-    )
     def is_media_projection_recording_running(
         self,
         params: dict[str, Any] | list[Any] | None = None,
@@ -1988,14 +1549,6 @@ class MobileCommands:
         self.logger.debug("%s", get_current_func_name())
         return self._execute("mobile: isMediaProjectionRecordingRunning", params)
 
-    @fail_safe(
-        raise_exception=ShadowstepException,
-        exceptions=(
-            NoSuchDriverException,
-            InvalidSessionIdException,
-            StaleElementReferenceException,
-        ),
-    )
     def stop_media_projection_recording(
         self,
         params: dict[str, Any] | list[Any] | None = None,
@@ -2030,14 +1583,6 @@ class MobileCommands:
         self.logger.debug("%s", get_current_func_name())
         return self._execute("mobile: stopMediaProjectionRecording", params)
 
-    @fail_safe(
-        raise_exception=ShadowstepException,
-        exceptions=(
-            NoSuchDriverException,
-            InvalidSessionIdException,
-            StaleElementReferenceException,
-        ),
-    )
     def get_connectivity(self, params: dict[str, Any] | list[Any] | None = None) -> Any:
         """Execute mobile: getConnectivity command.
 
@@ -2065,14 +1610,6 @@ class MobileCommands:
         self.logger.debug("%s", get_current_func_name())
         return self._execute("mobile: getConnectivity", params)
 
-    @fail_safe(
-        raise_exception=ShadowstepException,
-        exceptions=(
-            NoSuchDriverException,
-            InvalidSessionIdException,
-            StaleElementReferenceException,
-        ),
-    )
     def set_connectivity(self, params: dict[str, Any] | list[Any] | None = None) -> Any:
         """Execute mobile: setConnectivity command.
 
@@ -2103,14 +1640,6 @@ class MobileCommands:
         self.logger.debug("%s", get_current_func_name())
         return self._execute("mobile: setConnectivity", params)
 
-    @fail_safe(
-        raise_exception=ShadowstepException,
-        exceptions=(
-            NoSuchDriverException,
-            InvalidSessionIdException,
-            StaleElementReferenceException,
-        ),
-    )
     def get_app_strings(self, params: dict[str, Any] | list[Any] | None = None) -> Any:
         """Execute mobile: getAppStrings command.
 
@@ -2135,14 +1664,6 @@ class MobileCommands:
         self.logger.debug("%s", get_current_func_name())
         return self._execute("mobile: getAppStrings", params)
 
-    @fail_safe(
-        raise_exception=ShadowstepException,
-        exceptions=(
-            NoSuchDriverException,
-            InvalidSessionIdException,
-            StaleElementReferenceException,
-        ),
-    )
     def hide_keyboard(self, params: dict[str, Any] | list[Any] | None = None) -> Any:
         """Execute mobile: hideKeyboard command.
 
@@ -2167,14 +1688,6 @@ class MobileCommands:
         self.logger.debug("%s", get_current_func_name())
         return self._execute("mobile: hideKeyboard", params)
 
-    @fail_safe(
-        raise_exception=ShadowstepException,
-        exceptions=(
-            NoSuchDriverException,
-            InvalidSessionIdException,
-            StaleElementReferenceException,
-        ),
-    )
     def is_keyboard_shown(self, params: dict[str, Any] | list[Any] | None = None) -> Any:
         """Execute mobile: isKeyboardShown command.
 
@@ -2200,14 +1713,6 @@ class MobileCommands:
         self.logger.debug("%s", get_current_func_name())
         return self._execute("mobile: isKeyboardShown", params)
 
-    @fail_safe(
-        raise_exception=ShadowstepException,
-        exceptions=(
-            NoSuchDriverException,
-            InvalidSessionIdException,
-            StaleElementReferenceException,
-        ),
-    )
     def press_key(self, params: dict[str, Any] | list[Any] | None = None) -> Any:
         """Execute mobile: pressKey command.
 
@@ -2232,14 +1737,6 @@ class MobileCommands:
         self.logger.debug("%s", get_current_func_name())
         return self._execute("mobile: pressKey", params)
 
-    @fail_safe(
-        raise_exception=ShadowstepException,
-        exceptions=(
-            NoSuchDriverException,
-            InvalidSessionIdException,
-            StaleElementReferenceException,
-        ),
-    )
     def background_app(self, params: dict[str, Any] | list[Any] | None = None) -> Any:
         """Execute mobile: backgroundApp command.
 
@@ -2264,14 +1761,6 @@ class MobileCommands:
         self.logger.debug("%s", get_current_func_name())
         return self._execute("mobile: backgroundApp", params)
 
-    @fail_safe(
-        raise_exception=ShadowstepException,
-        exceptions=(
-            NoSuchDriverException,
-            InvalidSessionIdException,
-            StaleElementReferenceException,
-        ),
-    )
     def get_current_activity(self, params: dict[str, Any] | list[Any] | None = None) -> Any:
         """Execute mobile: getCurrentActivity command.
 
@@ -2296,14 +1785,6 @@ class MobileCommands:
         self.logger.debug("%s", get_current_func_name())
         return self._execute("mobile: getCurrentActivity", params)
 
-    @fail_safe(
-        raise_exception=ShadowstepException,
-        exceptions=(
-            NoSuchDriverException,
-            InvalidSessionIdException,
-            StaleElementReferenceException,
-        ),
-    )
     def get_current_package(self, params: dict[str, Any] | list[Any] | None = None) -> Any:
         """Execute mobile: getCurrentPackage command.
 
@@ -2328,14 +1809,6 @@ class MobileCommands:
         self.logger.debug("%s", get_current_func_name())
         return self._execute("mobile: getCurrentPackage", params)
 
-    @fail_safe(
-        raise_exception=ShadowstepException,
-        exceptions=(
-            NoSuchDriverException,
-            InvalidSessionIdException,
-            StaleElementReferenceException,
-        ),
-    )
     def get_display_density(self, params: dict[str, Any] | list[Any] | None = None) -> Any:
         """Execute mobile: getDisplayDensity command.
 
@@ -2360,14 +1833,6 @@ class MobileCommands:
         self.logger.debug("%s", get_current_func_name())
         return self._execute("mobile: getDisplayDensity", params)
 
-    @fail_safe(
-        raise_exception=ShadowstepException,
-        exceptions=(
-            NoSuchDriverException,
-            InvalidSessionIdException,
-            StaleElementReferenceException,
-        ),
-    )
     def get_system_bars(self, params: dict[str, Any] | list[Any] | None = None) -> Any:
         """Execute mobile: getSystemBars command.
 
@@ -2397,14 +1862,6 @@ class MobileCommands:
         self.logger.debug("%s", get_current_func_name())
         return self._execute("mobile: getSystemBars", params)
 
-    @fail_safe(
-        raise_exception=ShadowstepException,
-        exceptions=(
-            NoSuchDriverException,
-            InvalidSessionIdException,
-            StaleElementReferenceException,
-        ),
-    )
     def fingerprint(self, params: dict[str, Any] | list[Any] | None = None) -> Any:
         """Execute mobile: fingerprint command.
 
@@ -2423,14 +1880,6 @@ class MobileCommands:
         self.logger.debug("%s", get_current_func_name())
         return self._execute("mobile: fingerprint", params)
 
-    @fail_safe(
-        raise_exception=ShadowstepException,
-        exceptions=(
-            NoSuchDriverException,
-            InvalidSessionIdException,
-            StaleElementReferenceException,
-        ),
-    )
     def send_sms(self, params: dict[str, Any] | list[Any] | None = None) -> Any:
         """Execute mobile: sendSms command.
 
@@ -2456,14 +1905,6 @@ class MobileCommands:
         self.logger.debug("%s", get_current_func_name())
         return self._execute("mobile: sendSms", params)
 
-    @fail_safe(
-        raise_exception=ShadowstepException,
-        exceptions=(
-            NoSuchDriverException,
-            InvalidSessionIdException,
-            StaleElementReferenceException,
-        ),
-    )
     def gsm_call(self, params: dict[str, Any] | list[Any] | None = None) -> Any:
         """Execute mobile: gsmCall command.
 
@@ -2486,14 +1927,6 @@ class MobileCommands:
         self.logger.debug("%s", get_current_func_name())
         return self._execute("mobile: gsmCall", params)
 
-    @fail_safe(
-        raise_exception=ShadowstepException,
-        exceptions=(
-            NoSuchDriverException,
-            InvalidSessionIdException,
-            StaleElementReferenceException,
-        ),
-    )
     def gsm_signal(self, params: dict[str, Any] | list[Any] | None = None) -> Any:
         """Execute mobile: gsmSignal command.
 
@@ -2518,14 +1951,6 @@ class MobileCommands:
         self.logger.debug("%s", get_current_func_name())
         return self._execute("mobile: gsmSignal", params)
 
-    @fail_safe(
-        raise_exception=ShadowstepException,
-        exceptions=(
-            NoSuchDriverException,
-            InvalidSessionIdException,
-            StaleElementReferenceException,
-        ),
-    )
     def gsm_voice(self, params: dict[str, Any] | list[Any] | None = None) -> Any:
         """Execute mobile: gsmVoice command.
 
@@ -2550,14 +1975,6 @@ class MobileCommands:
         self.logger.debug("%s", get_current_func_name())
         return self._execute("mobile: gsmVoice", params)
 
-    @fail_safe(
-        raise_exception=ShadowstepException,
-        exceptions=(
-            NoSuchDriverException,
-            InvalidSessionIdException,
-            StaleElementReferenceException,
-        ),
-    )
     def power_ac(self, params: dict[str, Any] | list[Any] | None = None) -> Any:
         """Execute mobile: powerAC command.
 
@@ -2579,14 +1996,6 @@ class MobileCommands:
         self.logger.debug("%s", get_current_func_name())
         return self._execute("mobile: powerAC", params)
 
-    @fail_safe(
-        raise_exception=ShadowstepException,
-        exceptions=(
-            NoSuchDriverException,
-            InvalidSessionIdException,
-            StaleElementReferenceException,
-        ),
-    )
     def power_capacity(self, params: dict[str, Any] | list[Any] | None = None) -> Any:
         """Execute mobile: powerCapacity command.
 
@@ -2608,14 +2017,6 @@ class MobileCommands:
         self.logger.debug("%s", get_current_func_name())
         return self._execute("mobile: powerCapacity", params)
 
-    @fail_safe(
-        raise_exception=ShadowstepException,
-        exceptions=(
-            NoSuchDriverException,
-            InvalidSessionIdException,
-            StaleElementReferenceException,
-        ),
-    )
     def network_speed(self, params: dict[str, Any] | list[Any] | None = None) -> Any:
         """Execute mobile: networkSpeed command.
 
@@ -2640,14 +2041,6 @@ class MobileCommands:
         self.logger.debug("%s", get_current_func_name())
         return self._execute("mobile: networkSpeed", params)
 
-    @fail_safe(
-        raise_exception=ShadowstepException,
-        exceptions=(
-            NoSuchDriverException,
-            InvalidSessionIdException,
-            StaleElementReferenceException,
-        ),
-    )
     def replace_element_value(self, params: dict[str, Any] | list[Any] | None = None) -> Any:
         r"""Execute mobile: replaceElementValue command.
 
@@ -2673,14 +2066,6 @@ class MobileCommands:
         self.logger.debug("%s", get_current_func_name())
         return self._execute("mobile: replaceElementValue", params)
 
-    @fail_safe(
-        raise_exception=ShadowstepException,
-        exceptions=(
-            NoSuchDriverException,
-            InvalidSessionIdException,
-            StaleElementReferenceException,
-        ),
-    )
     def toggle_gps(self, params: dict[str, Any] | list[Any] | None = None) -> Any:
         """Execute mobile: toggleGps command.
 
@@ -2699,14 +2084,6 @@ class MobileCommands:
         self.logger.debug("%s", get_current_func_name())
         return self._execute("mobile: toggleGps", params)
 
-    @fail_safe(
-        raise_exception=ShadowstepException,
-        exceptions=(
-            NoSuchDriverException,
-            InvalidSessionIdException,
-            StaleElementReferenceException,
-        ),
-    )
     def is_gps_enabled(self, params: dict[str, Any] | list[Any] | None = None) -> Any:
         """Execute mobile: isGpsEnabled command.
 
@@ -2725,14 +2102,6 @@ class MobileCommands:
         self.logger.debug("%s", get_current_func_name())
         return self._execute("mobile: isGpsEnabled", params)
 
-    @fail_safe(
-        raise_exception=ShadowstepException,
-        exceptions=(
-            NoSuchDriverException,
-            InvalidSessionIdException,
-            StaleElementReferenceException,
-        ),
-    )
     def get_performance_data_types(self, params: dict[str, Any] | list[Any] | None = None) -> Any:
         """Execute mobile: getPerformanceDataTypes command.
 
@@ -2757,14 +2126,6 @@ class MobileCommands:
         self.logger.debug("%s", get_current_func_name())
         return self._execute("mobile: getPerformanceDataTypes", params)
 
-    @fail_safe(
-        raise_exception=ShadowstepException,
-        exceptions=(
-            NoSuchDriverException,
-            InvalidSessionIdException,
-            StaleElementReferenceException,
-        ),
-    )
     def get_performance_data(self, params: dict[str, Any] | list[Any] | None = None) -> Any:
         """Execute mobile: getPerformanceData command.
 
@@ -2828,14 +2189,6 @@ class MobileCommands:
         self.logger.debug("%s", get_current_func_name())
         return self._execute("mobile: getPerformanceData", params)
 
-    @fail_safe(
-        raise_exception=ShadowstepException,
-        exceptions=(
-            NoSuchDriverException,
-            InvalidSessionIdException,
-            StaleElementReferenceException,
-        ),
-    )
     def status_bar(self, params: dict[str, Any] | list[Any] | None = None) -> Any:
         """Execute mobile: statusBar command.
 
@@ -2870,14 +2223,6 @@ class MobileCommands:
         self.logger.debug("%s", get_current_func_name())
         return self._execute("mobile: statusBar", params)
 
-    @fail_safe(
-        raise_exception=ShadowstepException,
-        exceptions=(
-            NoSuchDriverException,
-            InvalidSessionIdException,
-            StaleElementReferenceException,
-        ),
-    )
     def schedule_action(self, params: dict[str, Any] | list[Any] | None = None) -> Any:
         """Execute mobile: scheduleAction command.
 
@@ -2920,14 +2265,6 @@ class MobileCommands:
         self.logger.debug("%s", get_current_func_name())
         return self._execute("mobile: scheduleAction", params)
 
-    @fail_safe(
-        raise_exception=ShadowstepException,
-        exceptions=(
-            NoSuchDriverException,
-            InvalidSessionIdException,
-            StaleElementReferenceException,
-        ),
-    )
     def unschedule_action(self, params: dict[str, Any] | list[Any] | None = None) -> Any:
         """Execute mobile: unscheduleAction command.
 
@@ -2978,14 +2315,6 @@ class MobileCommands:
         self.logger.debug("%s", get_current_func_name())
         return self._execute("mobile: unscheduleAction", params)
 
-    @fail_safe(
-        raise_exception=ShadowstepException,
-        exceptions=(
-            NoSuchDriverException,
-            InvalidSessionIdException,
-            StaleElementReferenceException,
-        ),
-    )
     def get_action_history(self, params: dict[str, Any] | list[Any] | None = None) -> Any:
         """Execute mobile: getActionHistory command.
 
@@ -3025,14 +2354,6 @@ class MobileCommands:
         self.logger.debug("%s", get_current_func_name())
         return self._execute("mobile: getActionHistory", params)
 
-    @fail_safe(
-        raise_exception=ShadowstepException,
-        exceptions=(
-            NoSuchDriverException,
-            InvalidSessionIdException,
-            StaleElementReferenceException,
-        ),
-    )
     def screenshots(self, params: dict[str, Any] | list[Any] | None = None) -> Any:
         """Execute mobile: screenshots command.
 
@@ -3062,14 +2383,6 @@ class MobileCommands:
         self.logger.debug("%s", get_current_func_name())
         return self._execute("mobile: screenshots", params)
 
-    @fail_safe(
-        raise_exception=ShadowstepException,
-        exceptions=(
-            NoSuchDriverException,
-            InvalidSessionIdException,
-            StaleElementReferenceException,
-        ),
-    )
     def set_ui_mode(self, params: dict[str, Any] | list[Any] | None = None) -> Any:
         """Execute mobile: setUiMode command.
 
@@ -3102,14 +2415,6 @@ class MobileCommands:
         self.logger.debug("%s", get_current_func_name())
         return self._execute("mobile: setUiMode", params)
 
-    @fail_safe(
-        raise_exception=ShadowstepException,
-        exceptions=(
-            NoSuchDriverException,
-            InvalidSessionIdException,
-            StaleElementReferenceException,
-        ),
-    )
     def get_ui_mode(self, params: dict[str, Any] | list[Any] | None = None) -> Any:
         """Execute mobile: getUiMode command.
 
@@ -3139,14 +2444,6 @@ class MobileCommands:
         self.logger.debug("%s", get_current_func_name())
         return self._execute("mobile: getUiMode", params)
 
-    @fail_safe(
-        raise_exception=ShadowstepException,
-        exceptions=(
-            NoSuchDriverException,
-            InvalidSessionIdException,
-            StaleElementReferenceException,
-        ),
-    )
     def send_trim_memory(self, params: dict[str, Any] | list[Any] | None = None) -> Any:
         """Execute mobile: sendTrimMemory command.
 
@@ -3180,14 +2477,6 @@ class MobileCommands:
         self.logger.debug("%s", get_current_func_name())
         return self._execute("mobile: sendTrimMemory", params)
 
-    @fail_safe(
-        raise_exception=ShadowstepException,
-        exceptions=(
-            NoSuchDriverException,
-            InvalidSessionIdException,
-            StaleElementReferenceException,
-        ),
-    )
     def inject_emulator_camera_image(self, params: dict[str, Any] | list[Any] | None = None) -> Any:
         """Execute mobile: injectEmulatorCameraImage command.
 
@@ -3217,14 +2506,6 @@ class MobileCommands:
         self.logger.debug("%s", get_current_func_name())
         return self._execute("mobile: injectEmulatorCameraImage", params)
 
-    @fail_safe(
-        raise_exception=ShadowstepException,
-        exceptions=(
-            NoSuchDriverException,
-            InvalidSessionIdException,
-            StaleElementReferenceException,
-        ),
-    )
     def bluetooth(self, params: dict[str, Any] | list[Any] | None = None) -> Any:
         """Execute mobile: bluetooth command.
 
@@ -3253,14 +2534,6 @@ class MobileCommands:
         self.logger.debug("%s", get_current_func_name())
         return self._execute("mobile: bluetooth", params)
 
-    @fail_safe(
-        raise_exception=ShadowstepException,
-        exceptions=(
-            NoSuchDriverException,
-            InvalidSessionIdException,
-            StaleElementReferenceException,
-        ),
-    )
     def nfc(self, params: dict[str, Any] | list[Any] | None = None) -> Any:
         """Execute mobile: nfc command.
 
@@ -3288,14 +2561,6 @@ class MobileCommands:
         self.logger.debug("%s", get_current_func_name())
         return self._execute("mobile: nfc", params)
 
-    @fail_safe(
-        raise_exception=ShadowstepException,
-        exceptions=(
-            NoSuchDriverException,
-            InvalidSessionIdException,
-            StaleElementReferenceException,
-        ),
-    )
     def pull_file(self, params: dict[str, Any] | list[Any] | None = None) -> Any:
         """Execute mobile: pullFile command.
 
@@ -3320,14 +2585,6 @@ class MobileCommands:
         self.logger.debug("%s", get_current_func_name())
         return self._execute("mobile: pullFile", params)
 
-    @fail_safe(
-        raise_exception=ShadowstepException,
-        exceptions=(
-            NoSuchDriverException,
-            InvalidSessionIdException,
-            StaleElementReferenceException,
-        ),
-    )
     def push_file(self, params: dict[str, Any] | list[Any] | None = None) -> Any:
         """Execute mobile: pushFile command.
 
@@ -3350,14 +2607,6 @@ class MobileCommands:
         self.logger.debug("%s", get_current_func_name())
         return self._execute("mobile: pushFile", params)
 
-    @fail_safe(
-        raise_exception=ShadowstepException,
-        exceptions=(
-            NoSuchDriverException,
-            InvalidSessionIdException,
-            StaleElementReferenceException,
-        ),
-    )
     def pull_folder(self, params: dict[str, Any] | list[Any] | None = None) -> Any:
         """Execute mobile: pullFolder command.
 
@@ -3382,14 +2631,6 @@ class MobileCommands:
         self.logger.debug("%s", get_current_func_name())
         return self._execute("mobile: pullFolder", params)
 
-    @fail_safe(
-        raise_exception=ShadowstepException,
-        exceptions=(
-            NoSuchDriverException,
-            InvalidSessionIdException,
-            StaleElementReferenceException,
-        ),
-    )
     def get_clipboard(self, params: dict[str, Any] | list[Any] | None = None) -> Any:
         """Execute mobile: getClipboard command.
 
@@ -3414,14 +2655,6 @@ class MobileCommands:
         self.logger.debug("%s", get_current_func_name())
         return self._execute("mobile: getClipboard", params)
 
-    @fail_safe(
-        raise_exception=ShadowstepException,
-        exceptions=(
-            NoSuchDriverException,
-            InvalidSessionIdException,
-            StaleElementReferenceException,
-        ),
-    )
     def set_clipboard(self, params: dict[str, Any] | list[Any] | None = None) -> Any:
         """Execute mobile: setClipboard command.
 

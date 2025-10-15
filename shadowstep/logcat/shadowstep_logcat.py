@@ -224,7 +224,7 @@ class ShadowstepLogcat:
         try:
             self._driver_getter()
             self.mobile_commands.stop_logs_broadcast()
-        except WebDriverException as e:
+        except (WebDriverException, AttributeError) as e:
             logger.warning("Failed to stop broadcast: %r", e)
 
         # Wait for background thread to complete and file to close

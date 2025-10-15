@@ -3,23 +3,13 @@
 This module provides coordinate-related functionality for elements,
 including getting bounds, center coordinates, and view locations.
 """
+
 from __future__ import annotations
 
 import logging
-import time
-import traceback
 from typing import TYPE_CHECKING, Any
 
-from selenium.common import (
-    InvalidSessionIdException,
-    NoSuchDriverException,
-    StaleElementReferenceException,
-    WebDriverException,
-)
-
-from shadowstep.decorators.decorators import log_debug
-from shadowstep.exceptions.shadowstep_exceptions import ShadowstepElementException
-from shadowstep.utils.utils import get_current_func_name
+from shadowstep.decorators.common_decorators import log_debug
 
 if TYPE_CHECKING:
     from appium.webdriver.webelement import WebElement
@@ -47,102 +37,28 @@ class ElementCoordinates:
         self.utilities: ElementUtilities = element.utilities
 
     @log_debug()
-    def get_coordinates(self, element: WebElement | None = None) -> tuple[int, int, int, int]:
+    def get_coordinates(self) -> tuple[int, int, int, int]:
         """Get the bounding box coordinates of the element.
-
-        Args:
-            element: Element to get bounds from. If None, uses internal locator.
 
         Returns:
             (left, top, right, bottom) or None.
 
         """
-        start_time = time.time()
-        while time.time() - start_time < self.element.timeout:
-            try:
-                self.element.get_driver()
-                if element is None:
-                    element = self.element.get_native()
-                bounds: Any = element.get_attribute("bounds")  # type: ignore[attr-defined]
-                if not bounds:
-                    continue
-                left, top, right, bottom = map(
-                    int, bounds.strip("[]").replace("][", ",").split(","),
-                )  # type: ignore[arg-type]
-                return left, top, right, bottom  # noqa: TRY300
-            except NoSuchDriverException as error:
-                self.element.utilities.handle_driver_error(error)
-            except InvalidSessionIdException as error:
-                self.element.utilities.handle_driver_error(error)
-            except AttributeError as error:
-                self.element.utilities.handle_driver_error(error)
-            except StaleElementReferenceException as error:
-                self.logger.debug(error)
-                self.logger.warning("StaleElementReferenceException\nRe-acquire element")
-                self.element.native = None
-                self.element.get_native()
-                continue
-            except WebDriverException as error:
-                err_msg = str(error).lower()
-                if ("instrumentation process is not running" in err_msg or
-                        "socket hang up" in err_msg):
-                    self.element.utilities.handle_driver_error(error)
-                    continue
-                raise
-
-        raise ShadowstepElementException(
-            msg=f"Failed to {get_current_func_name()} within {self.element.timeout=}",
-            stacktrace=traceback.format_stack(),
-        )
+        self.element.get_driver()
+        element = self.element.get_native()
+        return self._get_coordinates_from_native(element)
 
     @log_debug()
-    def get_center(self, element: WebElement | None = None) -> tuple[int, int]:
+    def get_center(self) -> tuple[int, int]:
         """Get the center coordinates of the element.
-
-        Args:
-            element: Optional direct WebElement. If not provided, uses current locator.
 
         Returns:
             (x, y) center point or None if element not found.
 
         """
-        start_time = time.time()
-        while time.time() - start_time < self.element.timeout:
-            try:
-                self.element.get_driver()
-                if element is None:
-                    element = self.element.get_native()
-                coordinates = self.get_coordinates(element)
-                if not coordinates:
-                    continue
-                left, top, right, bottom = coordinates
-                x = int((left + right) / 2)
-                y = int((top + bottom) / 2)
-                return x, y  # noqa: TRY300
-            except NoSuchDriverException as error:
-                self.element.utilities.handle_driver_error(error)
-            except InvalidSessionIdException as error:
-                self.element.utilities.handle_driver_error(error)
-            except AttributeError as error:
-                self.element.utilities.handle_driver_error(error)
-            except StaleElementReferenceException as error:
-                self.logger.debug(error)
-                self.logger.warning("StaleElementReferenceException\nRe-acquire element")
-                self.element.native = None
-                self.element.get_native()
-                continue
-            except WebDriverException as error:
-                err_msg = str(error).lower()
-                if ("instrumentation process is not running" in err_msg or
-                        "socket hang up" in err_msg):
-                    self.element.utilities.handle_driver_error(error)
-                    continue
-                raise
-
-        raise ShadowstepElementException(
-            msg=f"Failed to {get_current_func_name()} within {self.element.timeout=}",
-            stacktrace=traceback.format_stack(),
-        )
+        self.element.get_driver()
+        element = self.element.get_native()
+        return self._get_center_from_native(element)
 
     # Override
     @log_debug()
@@ -153,38 +69,9 @@ class ElementCoordinates:
             Dictionary with keys 'x' and 'y', or None on failure.
 
         """
-        start_time = time.time()
-
-        while time.time() - start_time < self.element.timeout:
-            try:
-                self.element.get_driver()
-
-                current_element = self.element.get_native()
-
-                return current_element.location_in_view  # type: ignore[attr-defined]  # Appium WebElement property  # noqa: TRY300
-            except NoSuchDriverException as error:  # noqa: PERF203
-                self.element.utilities.handle_driver_error(error)
-            except InvalidSessionIdException as error:
-                self.element.utilities.handle_driver_error(error)
-            except AttributeError as error:
-                self.element.utilities.handle_driver_error(error)
-            except StaleElementReferenceException as error:
-                self.logger.debug(error)
-                self.logger.warning("StaleElementReferenceException\nRe-acquire element")
-                self.element.native = None
-                self.element.get_native()
-                continue
-            except WebDriverException as error:
-                err_msg = str(error).lower()
-                if ("instrumentation process is not running" in err_msg or
-                        "socket hang up" in err_msg):
-                    self.element.utilities.handle_driver_error(error)
-                    continue
-                raise
-        raise ShadowstepElementException(
-            msg=f"Failed to get location_in_view within {self.element.timeout=}",
-            stacktrace=traceback.format_stack(),
-        )
+        self.element.get_driver()
+        current_element = self.element.get_native()
+        return current_element.location_in_view  # type: ignore[attr-defined]  # Appium WebElement property
 
     @log_debug()
     def location_once_scrolled_into_view(self) -> dict[str, Any]:
@@ -200,29 +87,35 @@ class ElementCoordinates:
                 location determined.
 
         """
-        self.logger.warning(
-            "Method %s is not implemented in UiAutomator2", get_current_func_name())
+        self.element.get_driver()
+        current_element = self.element.get_native()
+        return current_element.location_once_scrolled_into_view  # type: ignore[attr-defined]
 
-        start_time = time.time()
+    @log_debug()
+    def _get_coordinates_from_native(self, web_element: WebElement) -> tuple[int, int, int, int]:
+        """Get the bounding box coordinates of the element.
 
-        while time.time() - start_time < self.element.timeout:
-            try:
-                self.element.get_driver()
+        Returns:
+            (left, top, right, bottom) or None.
 
-                current_element = self.element.get_native()
-
-                return current_element.location_once_scrolled_into_view  # type: ignore[attr-defined]  # noqa: TRY300
-
-            except NoSuchDriverException as error:  # noqa: PERF203
-                self.element.utilities.handle_driver_error(error)
-            except InvalidSessionIdException as error:
-                self.element.utilities.handle_driver_error(error)
-            except AttributeError as error:
-                self.element.utilities.handle_driver_error(error)
-            except WebDriverException as error:
-                self.element.utilities.handle_driver_error(error)
-
-        raise ShadowstepElementException(
-            msg=f"Failed to get location_once_scrolled_into_view within {self.element.timeout=}",
-            stacktrace=traceback.format_stack(),
+        """
+        bounds: Any = web_element.get_attribute("bounds")  # type: ignore[attr-defined]
+        left, top, right, bottom = map(
+            int,
+            bounds.strip("[]").replace("][", ",").split(","),
         )
+        return left, top, right, bottom
+
+    @log_debug()
+    def _get_center_from_native(self, web_element: WebElement) -> tuple[int, int]:
+        """Get the center coordinates of the element.
+
+        Returns:
+            (x, y) center point or None if element not found.
+
+        """
+        coordinates = self._get_coordinates_from_native(web_element)
+        left, top, right, bottom = coordinates
+        x = int((left + right) / 2)
+        y = int((top + bottom) / 2)
+        return x, y

@@ -3,20 +3,11 @@
 This module provides screenshot functionality for elements,
 including base64 encoding, PNG format, and file saving capabilities.
 """
+
 import logging
-import time
-import traceback
 from typing import TYPE_CHECKING
 
-from selenium.common import (
-    InvalidSessionIdException,
-    NoSuchDriverException,
-    StaleElementReferenceException,
-    WebDriverException,
-)
-
-from shadowstep.decorators.decorators import log_debug
-from shadowstep.exceptions.shadowstep_exceptions import ShadowstepElementException
+from shadowstep.decorators.common_decorators import log_debug
 
 if TYPE_CHECKING:
     from shadowstep.element.element import Element
@@ -49,35 +40,9 @@ class ElementScreenshots:
             str: Base64-encoded screenshot string.
 
         """
-        start_time = time.time()
-
-        while time.time() - start_time < self.element.timeout:
-            try:
-                self.element.get_driver()
-
-                current_element = self.element.get_native()
-
-                return current_element.screenshot_as_base64  # noqa: TRY300
-
-            except NoSuchDriverException as error:  # noqa: PERF203
-                self.element.utilities.handle_driver_error(error)
-            except InvalidSessionIdException as error:
-                self.element.utilities.handle_driver_error(error)
-            except AttributeError as error:
-                self.element.utilities.handle_driver_error(error)
-            except StaleElementReferenceException as error:
-                self.logger.debug(error)
-                self.logger.warning("StaleElementReferenceException\nRe-acquire element")
-                self.element.native = None
-                self.element.get_native()
-                continue
-            except WebDriverException as error:
-                self.element.utilities.handle_driver_error(error)
-
-        raise ShadowstepElementException(
-            msg=f"Failed to get screenshot_as_base64 within {self.element.timeout=}",
-            stacktrace=traceback.format_stack(),
-        )
+        self.element.get_driver()
+        current_element = self.element.get_native()
+        return current_element.screenshot_as_base64
 
     @log_debug()
     def screenshot_as_png(self) -> bytes:
@@ -87,35 +52,9 @@ class ElementScreenshots:
             bytes: PNG-encoded screenshot bytes.
 
         """
-        start_time = time.time()
-
-        while time.time() - start_time < self.element.timeout:
-            try:
-                self.element.get_driver()
-
-                current_element = self.element.get_native()
-
-                return current_element.screenshot_as_png  # noqa: TRY300
-
-            except NoSuchDriverException as error:  # noqa: PERF203
-                self.element.utilities.handle_driver_error(error)
-            except InvalidSessionIdException as error:
-                self.element.utilities.handle_driver_error(error)
-            except AttributeError as error:
-                self.element.utilities.handle_driver_error(error)
-            except StaleElementReferenceException as error:
-                self.logger.debug(error)
-                self.logger.warning("StaleElementReferenceException\nRe-acquire element")
-                self.element.native = None
-                self.element.get_native()
-                continue
-            except WebDriverException as error:
-                self.element.utilities.handle_driver_error(error)
-
-        raise ShadowstepElementException(
-            msg=f"Failed to get screenshot_as_png within {self.element.timeout=}",
-            stacktrace=traceback.format_stack(),
-        )
+        self.element.get_driver()
+        current_element = self.element.get_native()
+        return current_element.screenshot_as_png
 
     @log_debug()
     def save_screenshot(self, filename: str) -> bool:
@@ -128,35 +67,6 @@ class ElementScreenshots:
             True if successful, False otherwise.
 
         """
-        start_time = time.time()
-
-        while time.time() - start_time < self.element.timeout:
-            try:
-                self.element.get_driver()
-
-                current_element = self.element.get_native()
-
-                return current_element.screenshot(filename)  # type: ignore[reportUnknownMemberType]
-
-            except NoSuchDriverException as error:  # noqa: PERF203
-                self.element.utilities.handle_driver_error(error)
-            except InvalidSessionIdException as error:
-                self.element.utilities.handle_driver_error(error)
-            except AttributeError as error:
-                self.element.utilities.handle_driver_error(error)
-            except StaleElementReferenceException as error:
-                self.logger.debug(error)
-                self.logger.warning("StaleElementReferenceException\nRe-acquire element")
-                self.element.native = None
-                self.element.get_native()
-                continue
-            except OSError:
-                self.logger.exception("IOError while saving screenshot to %s", filename)
-                return False
-            except WebDriverException as error:
-                self.element.utilities.handle_driver_error(error)
-
-        raise ShadowstepElementException(
-            msg=f"Failed to save screenshot to {filename} within {self.element.timeout=}",
-            stacktrace=traceback.format_stack(),
-        )
+        self.element.get_driver()
+        current_element = self.element.get_native()
+        return current_element.screenshot(filename)  # type: ignore[reportUnknownMemberType]

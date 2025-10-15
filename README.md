@@ -10,7 +10,9 @@ Shadowstep is appium-based testing framework with Page Object codegen.
 - DSL-style assertions for readable checks (`should.have`, `should.be`)
 - Image-based actions on screen
 
+[![YouTube Playlist](https://img.shields.io/badge/YouTube--Playlist-red?logo=youtube)](https://www.youtube.com/playlist?list=PLGFbKpf3cI31d1TLlQXCszl88dutdruKx)
 [![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/molokov-klim/Appium-Python-Client-Shadowstep)
+
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 
 [![PyPI version](https://badge.fury.io/py/appium-python-client-shadowstep.svg)](https://badge.fury.io/py/appium-python-client-shadowstep)

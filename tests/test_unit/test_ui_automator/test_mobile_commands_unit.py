@@ -266,25 +266,21 @@ class TestMobileCommands:
     def test_fail_safe_decorator_handles_no_such_driver_exception(
         self, mock_get_driver
     ):
-        """Test that fail_safe decorator handles NoSuchDriverException."""
-        from shadowstep.exceptions.shadowstep_exceptions import ShadowstepException
-
+        """Test that _execute propagates NoSuchDriverException."""
         mock_driver = Mock()
         mock_driver.execute_script.side_effect = NoSuchDriverException("Driver not found")
         mock_get_driver.return_value = mock_driver
 
         mobile = MobileCommands()
 
-        with pytest.raises(ShadowstepException):
+        with pytest.raises(NoSuchDriverException):
             mobile.shell({"command": "ls"})
 
     @patch("shadowstep.ui_automator.mobile_commands.WebDriverSingleton.get_driver")
     def test_fail_safe_decorator_handles_invalid_session_exception(
         self, mock_get_driver
     ):
-        """Test that fail_safe decorator handles InvalidSessionIdException."""
-        from shadowstep.exceptions.shadowstep_exceptions import ShadowstepException
-
+        """Test that _execute propagates InvalidSessionIdException."""
         mock_driver = Mock()
         mock_driver.execute_script.side_effect = InvalidSessionIdException(
             "Invalid session"
@@ -293,16 +289,14 @@ class TestMobileCommands:
 
         mobile = MobileCommands()
 
-        with pytest.raises(ShadowstepException):
+        with pytest.raises(InvalidSessionIdException):
             mobile.battery_info()
 
     @patch("shadowstep.ui_automator.mobile_commands.WebDriverSingleton.get_driver")
     def test_fail_safe_decorator_handles_stale_element_exception(
         self, mock_get_driver
     ):
-        """Test that fail_safe decorator handles StaleElementReferenceException."""
-        from shadowstep.exceptions.shadowstep_exceptions import ShadowstepException
-
+        """Test that _execute propagates StaleElementReferenceException."""
         mock_driver = Mock()
         mock_driver.execute_script.side_effect = StaleElementReferenceException(
             "Stale element"
@@ -311,7 +305,7 @@ class TestMobileCommands:
 
         mobile = MobileCommands()
 
-        with pytest.raises(ShadowstepException):
+        with pytest.raises(StaleElementReferenceException):
             mobile.get_device_time()
 
     @patch("shadowstep.ui_automator.mobile_commands.WebDriverSingleton.get_driver")
