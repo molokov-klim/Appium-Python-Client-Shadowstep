@@ -23,7 +23,7 @@ from shadowstep.ui_automator.mobile_commands import MobileCommands
 from shadowstep.utils.utils import find_coordinates_by_vector
 
 if TYPE_CHECKING:
-    from shadowstep.element.element import Element  # noqa: TC004
+    from shadowstep.element.element import Element
     from shadowstep.element.utilities import ElementUtilities
     from shadowstep.locator import LocatorConverter, UiSelector
     from shadowstep.shadowstep import Shadowstep

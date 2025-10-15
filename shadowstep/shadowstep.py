@@ -986,7 +986,8 @@ class Shadowstep(ShadowstepBase):
     @fail_safe_shadowstep(raise_exception=ShadowstepException)
     @log_debug()
     def get_device_time(
-        self, format_specifiers: str | None = None,
+        self,
+        format_specifiers: str | None = None,
     ) -> None:  # real signature unknown
         """Execute mobile: getDeviceTime command.
 
@@ -1036,6 +1037,8 @@ class Shadowstep(ShadowstepBase):
             "action": action,
             "target": target,
         }
+        # Remove None values - Appium expects these params to be omitted, not null
+        params = {k: v for k, v in params.items() if v is not None}
         return self.mobile_commands.change_permissions(params)
 
     @fail_safe_shadowstep(raise_exception=ShadowstepException)
@@ -1326,7 +1329,9 @@ class Shadowstep(ShadowstepBase):
     @fail_safe_shadowstep(raise_exception=ShadowstepException)
     @log_debug()
     def is_app_installed(
-        self, app_id: str, user: int | str | None = None,
+        self,
+        app_id: str,
+        user: int | str | None = None,
     ) -> None:  # real signature unknown
         """Execute mobile: isAppInstalled command.
 
@@ -1397,7 +1402,10 @@ class Shadowstep(ShadowstepBase):
     @fail_safe_shadowstep(raise_exception=ShadowstepException)
     @log_debug()
     def remove_app(
-        self, app_id: str, timeout: int | None = None, keep_data: bool = False,
+        self,
+        app_id: str,
+        timeout: int | None = None,
+        keep_data: bool = False,  # noqa: FBT001, FBT002
     ) -> None:  # real signature unknown
         """Execute mobile: removeApp command.
 
@@ -1631,6 +1639,8 @@ class Shadowstep(ShadowstepBase):
             "extras": extras,
             "flags": flags,
         }
+        # Remove None values - Appium expects these params to be omitted, not null
+        params = {k: v for k, v in params.items() if v is not None}
         return self.mobile_commands.start_service(params)
 
     @fail_safe_shadowstep(raise_exception=ShadowstepException)
@@ -1686,6 +1696,8 @@ class Shadowstep(ShadowstepBase):
             "extras": extras,
             "flags": flags,
         }
+        # Remove None values - Appium expects these params to be omitted, not null
+        params = {k: v for k, v in params.items() if v is not None}
         return self.mobile_commands.stop_service(params)
 
     @fail_safe_shadowstep(raise_exception=ShadowstepException)
@@ -1964,6 +1976,8 @@ class Shadowstep(ShadowstepBase):
             "longitude": longitude,
             "altitude": altitude,
         }
+        # Remove None values - Appium expects these params to be omitted, not null
+        params = {k: v for k, v in params.items() if v is not None}  # type: ignore[reportUnnecessaryComparison]
         return self.mobile_commands.get_geolocation(params)
 
     @fail_safe_shadowstep(raise_exception=ShadowstepException)
@@ -2093,7 +2107,8 @@ class Shadowstep(ShadowstepBase):
     @fail_safe_shadowstep(raise_exception=ShadowstepException)
     @log_debug()
     def get_connectivity(
-        self, services: str | list[str] | None = None,
+        self,
+        services: str | list[str] | None = None,
     ) -> None:  # real signature unknown
         """Execute mobile: getConnectivity command.
 
@@ -2172,6 +2187,8 @@ class Shadowstep(ShadowstepBase):
         params = {
             "language": language,
         }
+        # Remove None values - Appium expects these params to be omitted, not null
+        params = {k: v for k, v in params.items() if v is not None}
         return self.mobile_commands.get_app_strings(params)
 
     @fail_safe_shadowstep(raise_exception=ShadowstepException)
@@ -2724,6 +2741,8 @@ class Shadowstep(ShadowstepBase):
         params = {
             "displayId": display_id,
         }
+        # Remove None values - Appium expects these params to be omitted, not null
+        params = {k: v for k, v in params.items() if v is not None}
         return self.mobile_commands.screenshots(params)
 
     @fail_safe_shadowstep(raise_exception=ShadowstepException)
@@ -2862,7 +2881,8 @@ class Shadowstep(ShadowstepBase):
     @fail_safe_shadowstep(raise_exception=ShadowstepException)
     @log_debug()
     def bluetooth(
-        self, action: Literal["enable", "disable", "unpairAll"],
+        self,
+        action: Literal["enable", "disable", "unpairAll"],
     ) -> None:  # real signature unknown
         """Execute mobile: bluetooth command.
 
@@ -2992,9 +3012,6 @@ class Shadowstep(ShadowstepBase):
 
         Returns:
             Base64-encoded string representing the clipboard content. Returns an empty string if the clipboard is empty. An error is thrown if the operation fails.
-
-
-        Args:
 
         """
         return self.mobile_commands.get_clipboard()
