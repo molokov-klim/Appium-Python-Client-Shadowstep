@@ -10,7 +10,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        test_dir: [ tests/test_integro/test_shadowstep_integro.py, tests/test_integro/test_shadowstep_base_integro.py, tests/test_integro/test_page_base_integro.py, tests/test_integro/test_ui_automator/test_mobile_commands_integro.py, tests/test_integro/test_terminal/test_terminal_aapt_integro.py, tests/test_integro/test_terminal/test_terminal_adb_integro.py ]
+        test_dir: [ tests/test_integro/test_shadowstep_integro.py, tests/test_integro/test_shadowstep_base_integro.py, tests/test_integro/test_page_base_integro.py, tests/test_integro/test_terminal/test_terminal_aapt_integro.py, tests/test_integro/test_terminal/test_terminal_adb_integro.py, tests/test_integro/test_terminal/test_terminal_terminal_integro.py ]
 
     env:
       CI: true
