@@ -1,6 +1,6 @@
 # Shadowstep
 
-**Shadowstep** — a modern Python framework for Android test automation powered by Appium. \n
+**Shadowstep** — a modern Python framework for Android test automation powered by Appium.  
 _Write tests, not boilerplate._
 
 ___
