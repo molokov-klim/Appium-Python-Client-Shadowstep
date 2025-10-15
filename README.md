@@ -1,6 +1,7 @@
 # Shadowstep
 
-**Shadowstep** — A Python framework for mobile test automation built on top of Appium, implementing the Facade pattern and providing a high-level API for interacting with Android applications via UiAutomator2.
+**Shadowstep** — a modern Python framework for Android test automation powered by Appium.
+_Write tests, not boilerplate._
 
 ___
 
