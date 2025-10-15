@@ -5,19 +5,16 @@ _Write tests, not boilerplate._
 
 ___
 
-[![Python](https://img.shields.io/badge/python-3.9%2B-blue)](https://www.python.org)
-[![Appium](https://img.shields.io/badge/appium-5.2.2%2B-green)](https://appium.io)
-[![License](https://img.shields.io/badge/license-MIT-orange)](LICENSE)
-
-___
-
 [![YouTube Playlist](https://img.shields.io/badge/YouTube--Playlist-red?logo=youtube)](https://www.youtube.com/playlist?list=PLGFbKpf3cI31d1TLlQXCszl88dutdruKx)
 [![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/molokov-klim/Appium-Python-Client-Shadowstep)
+[![License](https://img.shields.io/badge/license-MIT-orange)](LICENSE)
 
 ___
 
 [![PyPI version](https://badge.fury.io/py/appium-python-client-shadowstep.svg)](https://badge.fury.io/py/appium-python-client-shadowstep)
 [![Downloads](https://pepy.tech/badge/appium-python-client-shadowstep)](https://pepy.tech/project/appium-python-client-shadowstep)
+[![Python](https://img.shields.io/badge/python-3.9%2B-blue)](https://www.python.org)
+[![Appium](https://img.shields.io/badge/appium-5.2.2%2B-green)](https://appium.io)
 
 ___
 
@@ -35,16 +32,16 @@ ___
 - [Quick Start](#quick-start)
 - [Architecture](#architecture)
 - [Core API](#core-api)
-  - [Shadowstep (Facade)](#shadowstep-facade)
-  - [Element (Facade)](#element-facade)
-  - [PageBase](#pagebase)
+    - [Shadowstep (Facade)](#shadowstep-facade)
+    - [Element (Facade)](#element-facade)
+    - [PageBase](#pagebase)
 - [Additional Modules](#additional-modules)
-  - [Navigator](#navigator)
-  - [Locator System](#locator-system)
-  - [Terminal](#terminal)
-  - [Logcat](#logcat)
-  - [Image Recognition](#image-recognition)
-  - [Page Object Generator](#page-object-generator)
+    - [Navigator](#navigator)
+    - [Locator System](#locator-system)
+    - [Terminal](#terminal)
+    - [Logcat](#logcat)
+    - [Image Recognition](#image-recognition)
+    - [Page Object Generator](#page-object-generator)
 - [Usage Examples](#usage-examples)
 - [Quality Tools](#quality-tools)
 
@@ -53,12 +50,14 @@ ___
 ## 🚀 Key Features
 
 ### 🎯 Architectural Patterns
+
 - **Facade Pattern** — simplified interface for Appium interactions
 - **Page Object Pattern** — structured UI representation
 - **Singleton Pattern** — single point of access to driver
 - **Navigator Pattern** — graph-based page navigation
 
 ### 🔧 Functionality
+
 - **Flexible locator system** — dict, xpath, UiSelector with auto-conversion
 - **Rich DOM navigation** — parent, sibling, cousin relationships
 - **Advanced gestures** — tap, swipe, fling, scroll, pinch, zoom
@@ -75,6 +74,7 @@ ___
 ## 📦 Installation
 
 ### Requirements
+
 - Python 3.9+
 - Appium Server 2.x
 - UiAutomator2 Driver
@@ -104,6 +104,7 @@ uv pip install appium-python-client-shadowstep
 ### Dependencies
 
 Core:
+
 - `Appium-Python-Client >= 5.2.2`
 - `selenium >= 4.36`
 - `networkx >= 3.2.1` — navigation
@@ -112,6 +113,7 @@ Core:
 - `websocket-client >= 1.8.0` — logcat
 
 Additional:
+
 - `lxml >= 6.0.2` — XML parsing
 - `jinja2 >= 3.1.6` — template engine
 - `pytesseract >= 0.3.10` — OCR
@@ -163,38 +165,40 @@ app.disconnect()
 ```python
 from shadowstep import PageBaseShadowstep, Element
 
+
 class PageSettings(PageBaseShadowstep):
     @property
     def edges(self):
         return {
             "PageNetworkInternet": self.to_network_internet,
         }
-    
+
     @property
     def title(self) -> Element:
         return self.shadowstep.get_element({
             "text": "Settings",
             "resource-id": "com.android.settings:id/homepage_title"
         })
-    
+
     @property
     def network_internet(self) -> Element:
         return self.recycler.scroll_to_element({
             "text": "Network & internet"
         })
-    
+
     @property
     def recycler(self) -> Element:
         return self.shadowstep.get_element({
             "resource-id": "com.android.settings:id/settings_homepage_container"
         })
-    
+
     def to_network_internet(self):
         self.network_internet.tap()
         return self.shadowstep.get_page("PageNetworkInternet")
-    
+
     def is_current_page(self) -> bool:
         return self.title.is_visible()
+
 
 # Usage
 app = Shadowstep()
@@ -220,7 +224,7 @@ The project implements **Facade Pattern** at two levels:
 ```python
 class Shadowstep(ShadowstepBase):
     """Main Facade for mobile automation."""
-    
+
     def __init__(self):
         super().__init__()
         self.navigator = PageNavigator(self)
@@ -229,6 +233,7 @@ class Shadowstep(ShadowstepBase):
 ```
 
 **Hidden subsystems:**
+
 - `ShadowstepBase` — WebDriver management, connections
 - `PageNavigator` — page navigation
 - `LocatorConverter` — locator conversion
@@ -243,7 +248,7 @@ class Shadowstep(ShadowstepBase):
 ```python
 class Element(ElementBase):
     """Public API for Element."""
-    
+
     def __init__(self, locator, shadowstep, ...):
         super().__init__(...)
         self.utilities = ElementUtilities(self)
@@ -257,6 +262,7 @@ class Element(ElementBase):
 ```
 
 **Hidden subsystems:**
+
 - `ElementDOM` — finding related elements (parent, sibling, cousin)
 - `ElementActions` — text input, clearing
 - `ElementGestures` — tap, swipe, scroll, fling
@@ -377,6 +383,7 @@ element = app.get_element(("xpath", '//android.widget.TextView[@text="Settings"]
 
 # Via UiSelector
 from shadowstep.locator import UiSelector
+
 element = app.get_element(UiSelector().text("Settings"))
 
 # Multiple search (greedy)
@@ -653,6 +660,7 @@ element = app.get_element({"text": "Settings"})
 
 # Directly
 from shadowstep.element import Element
+
 element = Element(
     locator={"text": "Settings"},
     shadowstep=app,
@@ -662,6 +670,7 @@ element = Element(
 
 # With native WebElement
 from appium.webdriver.webelement import WebElement
+
 native_el = driver.find_element(...)
 element = Element(
     locator={"text": "Settings"},
@@ -939,9 +948,10 @@ Abstract base class for Page Object pattern with automatic navigation.
 ```python
 from shadowstep import PageBaseShadowstep, Element
 
+
 class PageSettings(PageBaseShadowstep):
     """Settings page representation."""
-    
+
     # Required: define relationships with other pages
     @property
     def edges(self):
@@ -949,12 +959,12 @@ class PageSettings(PageBaseShadowstep):
             "PageNetworkInternet": self.to_network_internet,
             "PageAboutPhone": self.to_about_phone,
         }
-    
+
     # Page name
     @property
     def name(self) -> str:
         return "Settings"
-    
+
     # Title element for page verification
     @property
     def title(self) -> Element:
@@ -962,14 +972,14 @@ class PageSettings(PageBaseShadowstep):
             "text": "Settings",
             "resource-id": "com.android.settings:id/homepage_title"
         })
-    
+
     # Recycler (scrollable container)
     @property
     def recycler(self) -> Element:
         return self.shadowstep.get_element({
             "resource-id": "com.android.settings:id/settings_homepage_container"
         })
-    
+
     # Page elements
     @property
     def network_internet(self) -> Element:
@@ -977,30 +987,30 @@ class PageSettings(PageBaseShadowstep):
             "text": "Network & internet",
             "resource-id": "android:id/title"
         })
-    
+
     @property
     def network_internet_summary(self) -> Element:
         return self.network_internet.get_sibling({
             "resource-id": "android:id/summary"
         })
-    
+
     @property
     def about_phone(self) -> Element:
         return self.recycler.scroll_to_element({
             "text": "About phone"
         })
-    
+
     # Navigation methods
     def to_network_internet(self):
         """Navigate to Network & Internet page."""
         self.network_internet.tap()
         return self.shadowstep.get_page("PageNetworkInternet")
-    
+
     def to_about_phone(self):
         """Navigate to About Phone page."""
         self.about_phone.tap()
         return self.shadowstep.get_page("PageAboutPhone")
-    
+
     # Required: check current page
     def is_current_page(self) -> bool:
         """Check if Settings page is currently displayed."""
@@ -1172,9 +1182,9 @@ locator = UiSelector().text("Settings")
 
 # Chaining
 locator = (UiSelector()
-    .text("Network & internet")
-    .resourceId("android:id/title")
-    .className("android.widget.TextView"))
+           .text("Network & internet")
+           .resourceId("android:id/title")
+           .className("android.widget.TextView"))
 
 # Contains
 locator = UiSelector().textContains("Network")
@@ -1463,6 +1473,7 @@ logcat.filters = ["MyApp", "Firebase"]  # filter by tags
 ```
 
 **Features:**
+
 - Works via WebSocket to Appium server
 - Automatic reconnection on connection drops
 - Buffered file writing (buffering=1)
@@ -1481,11 +1492,12 @@ image_path = "tests/_test_data/connected_devices.png"
 image = app.get_image(
     image=image_path,
     threshold=0.5,  # match accuracy [0-1]
-    timeout=5.0     # search timeout
+    timeout=5.0  # search timeout
 )
 
 # Can pass bytes, ndarray, PIL.Image or file path
 from PIL import Image
+
 pil_image = Image.open("icon.png")
 image = app.get_image(image=pil_image, threshold=0.8)
 
@@ -1554,6 +1566,7 @@ print(f"Class: {class_name}")
 ```
 
 **Capabilities:**
+
 - Auto-detection of title, recycler
 - Recognition of anchor-switcher pairs (for switch elements)
 - Recognition of anchor-summary pairs
@@ -1608,6 +1621,7 @@ test_path = test_generator.generate(
 ```python
 from shadowstep import Shadowstep
 
+
 def test_settings_navigation():
     app = Shadowstep()
     app.connect(
@@ -1619,23 +1633,23 @@ def test_settings_navigation():
             "appium:appActivity": ".Settings",
         }
     )
-    
+
     # Find element
     network = app.get_element({
         "text": "Network & internet",
         "resource-id": "android:id/title"
     })
-    
+
     # Check visibility
     assert network.is_visible()
-    
+
     # Interact
     network.tap()
-    
+
     # Verify navigation
     title = app.get_element({"text": "Network & internet"})
     assert title.wait_visible(timeout=5)
-    
+
     app.disconnect()
 ```
 
@@ -1645,25 +1659,25 @@ def test_settings_navigation():
 def test_search_form():
     app = Shadowstep()
     # ... connect ...
-    
+
     # Find search field
     search_field = app.get_element({
         "resource-id": "com.android.quicksearchbox:id/search_widget_text"
     })
     search_field.tap()
-    
+
     # Wait for input to appear
     search_input = app.get_element({
         "resource-id": "com.android.quicksearchbox:id/search_src_text"
     })
     search_input.wait_visible(timeout=3)
-    
+
     # Enter text
     search_input.send_keys("test query")
-    
+
     # Check value
     assert "test query" in search_input.text
-    
+
     # Clear
     search_input.clear()
     assert search_input.text == ""
@@ -1675,21 +1689,21 @@ def test_search_form():
 def test_scroll_to_element():
     app = Shadowstep()
     # ... connect to Settings ...
-    
+
     # Get scrollable container
     recycler = app.get_element({
         "resource-id": "com.android.settings:id/settings_homepage_container"
     })
-    
+
     # Scroll to element
     about_phone = recycler.scroll_to_element(
         locator={"text": "About phone"},
         max_swipes=30
     )
-    
+
     # Check element found
     assert about_phone.is_visible()
-    
+
     # Interact
     about_phone.tap()
 ```
@@ -1700,23 +1714,23 @@ def test_scroll_to_element():
 def test_dom_navigation():
     app = Shadowstep()
     # ... connect to Settings ...
-    
+
     # Find anchor element
     network = app.get_element({
         "text": "Network & internet",
         "resource-id": "android:id/title"
     })
-    
+
     # Find sibling (summary)
     summary = network.get_sibling({
         "resource-id": "android:id/summary"
     })
     print(f"Summary: {summary.text}")
-    
+
     # Get parent
     parent = network.get_parent()
     print(f"Parent class: {parent.class_name}")
-    
+
     # Find cousin (same level, different parent)
     cousin = network.get_cousin(
         cousin_locator={"resource-id": "android:id/summary"},
@@ -1730,12 +1744,12 @@ def test_dom_navigation():
 def test_multiple_elements():
     app = Shadowstep()
     # ... connect to Settings ...
-    
+
     # Find all TextView
     textviews = app.get_elements({
         "class": "android.widget.TextView"
     })
-    
+
     # Process each
     for tv in textviews:
         text = tv.text
@@ -1749,23 +1763,23 @@ def test_multiple_elements():
 def test_gestures():
     app = Shadowstep()
     # ... connect ...
-    
+
     # Get element
     icon = app.get_element({"content-desc": "Gallery"})
-    
+
     # Remember position
     x1, y1 = icon.get_center()
-    
+
     # Drag
     icon.drag(end_x=x1 + 200, end_y=y1, speed=2500)
-    
+
     # Check new position
     x2, y2 = icon.get_center()
     assert x2 > x1
-    
+
     # Drag back
     icon.drag(end_x=x1, end_y=y1, speed=2500)
-    
+
     # Fling gesture
     recycler = app.get_element({"resource-id": "recycler_view"})
     recycler.fling_up(speed=5000)
@@ -1776,6 +1790,7 @@ def test_gestures():
 ```python
 from shadowstep import PageBaseShadowstep, Element
 
+
 class PageSettings(PageBaseShadowstep):
     @property
     def edges(self):
@@ -1783,41 +1798,42 @@ class PageSettings(PageBaseShadowstep):
             "PageNetwork": self.to_network,
             "PageApps": self.to_apps,
         }
-    
+
     @property
     def recycler(self) -> Element:
         return self.shadowstep.get_element({
             "resource-id": "com.android.settings:id/settings_homepage_container"
         })
-    
+
     @property
     def network(self) -> Element:
         return self.recycler.scroll_to_element({"text": "Network & internet"})
-    
+
     @property
     def apps(self) -> Element:
         return self.recycler.scroll_to_element({"text": "Apps"})
-    
+
     def to_network(self):
         self.network.tap()
         return self.shadowstep.get_page("PageNetwork")
-    
+
     def to_apps(self):
         self.apps.tap()
         return self.shadowstep.get_page("PageApps")
-    
+
     def is_current_page(self) -> bool:
         title = self.shadowstep.get_element({"text": "Settings"})
         return title.is_visible()
+
 
 # Test
 def test_page_navigation():
     app = Shadowstep()
     # ... connect ...
-    
+
     settings = app.get_page("PageSettings")
     assert settings.is_current_page()
-    
+
     # Automatic navigation via Navigator
     network = settings.to_network()
     assert network.is_current_page()
@@ -1829,21 +1845,21 @@ def test_page_navigation():
 def test_with_logs_and_screenshots():
     app = Shadowstep()
     # ... connect ...
-    
+
     # Start logcat
     app.start_logcat(filename="test_logs.log")
-    
+
     try:
         # Perform actions
         element = app.get_element({"text": "Settings"})
         element.tap()
-        
+
         # Take screenshot
         app.save_screenshot(path="./screenshots", filename="settings.png")
-        
+
         # Element screenshot
         element.save_screenshot("./screenshots/element.png")
-        
+
     finally:
         # Stop logcat
         app.stop_logcat()
@@ -1856,19 +1872,19 @@ def test_with_logs_and_screenshots():
 def test_image_recognition():
     app = Shadowstep()
     # ... connect ...
-    
+
     # Search by image
     icon = app.get_image(
         image="icons/settings_icon.png",
         threshold=0.8,
         timeout=10
     )
-    
+
     # Check visibility
     if icon.is_visible():
         # Tap on image
         icon.tap()
-    
+
     # Coordinates
     x, y = icon.get_center()
     print(f"Icon center: {x}, {y}")
@@ -1880,23 +1896,24 @@ def test_image_recognition():
 def test_adb_commands():
     app = Shadowstep()
     # ... connect ...
-    
+
     # Via Terminal (Appium)
     app.terminal.start_activity(
         package="com.android.settings",
         activity=".Settings"
     )
-    
+
     # Check current application
     package = app.terminal.get_current_app_package()
     assert "settings" in package.lower()
-    
+
     # Via local ADB
     devices = app.adb.get_devices()
     print(f"Connected devices: {devices}")
-    
+
     model = app.adb.get_device_model(udid="emulator-5554")
     print(f"Device model: {model}")
+
 
 def test_ssh_commands():
     app = Shadowstep()
@@ -1906,12 +1923,12 @@ def test_ssh_commands():
         ssh_user="user",
         ssh_password="password"
     )
-    
+
     # SSH commands via transport
     stdin, stdout, stderr = app.transport.ssh.exec_command("adb devices")
     output = stdout.read().decode()
     print(output)
-    
+
     # SCP files
     app.transport.scp.put("local.txt", remote_path="/tmp/remote.txt")
     app.transport.scp.get("/tmp/remote.txt", local_path="downloaded.txt")
@@ -1976,6 +1993,7 @@ Tool settings are in `pyproject.toml`:
 ## 📖 Additional Information
 
 ### Supported Python Versions
+
 - Python 3.9+
 - Python 3.10
 - Python 3.11
@@ -1983,11 +2001,13 @@ Tool settings are in `pyproject.toml`:
 - Python 3.13
 
 ### Links
+
 - [GitHub Repository](https://github.com/molokov-klim/Appium-Python-Client-Shadowstep)
 - [Appium Documentation](https://appium.io/docs/en/latest/)
 - [UiAutomator2 Driver](https://github.com/appium/appium-uiautomator2-driver)
 
 ### License
+
 MIT License
 
 ---
@@ -1995,6 +2015,7 @@ MIT License
 ## 🤝 Contributing
 
 The project follows:
+
 - **Clean Architecture** — separation of concerns
 - **Clean Code** — readability and maintainability
 - **Best Practices** — design patterns
@@ -2002,6 +2023,7 @@ The project follows:
 - **PEP 8** — Python coding style
 
 When developing, use:
+
 - Strict typing with `typing`
 - Docstrings in English
 - Comments in English
