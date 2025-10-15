@@ -5,7 +5,7 @@ _Write tests, not boilerplate._
 
 ___
 
-[![Watch in Action](https://img.shields.io/badge/YouTube--Playlist-red?logo=youtube)](https://www.youtube.com/playlist?list=PLGFbKpf3cI31d1TLlQXCszl88dutdruKx)
+[![Watch in Action](https://img.shields.io/badge/Watch-in-Action-red?logo=youtube)](https://www.youtube.com/playlist?list=PLGFbKpf3cI31d1TLlQXCszl88dutdruKx)
 [![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/molokov-klim/Appium-Python-Client-Shadowstep)
 [![License](https://img.shields.io/badge/license-MIT-orange)](LICENSE)
 
