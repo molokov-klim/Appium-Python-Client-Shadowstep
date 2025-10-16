@@ -1959,3 +1959,54 @@ class TestShadowstep:
             # Expected to fail on real devices
             # Method signature is correct
             pass
+
+    def test_get_driver(self, app: Shadowstep):
+        """Test get_driver() returns WebDriver instance.
+
+        Steps:
+        1. Call get_driver() to get the WebDriver instance.
+        2. Verify that WebDriver instance is returned.
+        3. Verify that session_id is not None.
+        """
+        # Get WebDriver instance
+        driver = app.get_driver()
+
+        # Verify driver is returned
+        assert driver is not None  # noqa: S101
+
+        # Verify driver has session_id
+        assert hasattr(driver, "session_id")  # noqa: S101
+        assert driver.session_id is not None  # noqa: S101
+
+        # Verify it's the same as app.driver
+        assert driver is app.driver  # noqa: S101
+
+    def test_reconnect(self, app: Shadowstep):
+        """Test reconnect() reconnects to the device.
+
+        Steps:
+        1. Get initial session_id.
+        2. Call reconnect() to reconnect to device.
+        3. Verify new session is established.
+        4. Verify app is connected.
+        """
+        # Get initial session_id
+        initial_session_id = app.driver.session_id
+        assert initial_session_id is not None  # noqa: S101
+
+        # Reconnect to device
+        app.reconnect()
+
+        # Wait for reconnection to complete
+        time.sleep(3)
+
+        # Verify new session is established
+        assert app.driver is not None  # noqa: S101
+        assert app.driver.session_id is not None  # noqa: S101
+
+        # Verify app is connected
+        assert app.is_connected()  # noqa: S101
+
+        # Session ID may be the same or different depending on server
+        # Just verify we have a valid session
+        assert len(app.driver.session_id) > 0  # noqa: S101

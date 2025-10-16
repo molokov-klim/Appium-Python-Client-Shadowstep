@@ -253,12 +253,6 @@ class ShadowstepImage:
         """
         raise NotImplementedError
 
-    def _preprocess(self, image: np.ndarray[Any, Any]) -> np.ndarray[Any, Any]:
-        raise NotImplementedError
-
-    def _enhance_image(self, image: np.ndarray[Any, Any]) -> np.ndarray[Any, Any]:
-        raise NotImplementedError
-
     def multi_scale_matching(
         self, full_image: np.ndarray[Any, Any], template_image: np.ndarray[Any, Any],
     ) -> tuple[float, tuple[int, int]]:
