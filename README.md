@@ -1051,9 +1051,6 @@ from shadowstep.navigator import PageNavigator
 # Navigator is created automatically in Shadowstep
 # app.navigator = PageNavigator(app)
 
-# Automatic page discovery and registration
-app.navigator.auto_discover_pages()
-
 # List registered pages
 app.navigator.list_registered_pages()
 
