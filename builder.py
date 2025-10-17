@@ -15,7 +15,6 @@ from shadowstep.page_object.page_object_generator import PageObjectGenerator
 from shadowstep.page_object.page_object_parser import PageObjectParser
 from shadowstep.page_object.page_object_recycler_explorer import PageObjectRecyclerExplorer
 from shadowstep.shadowstep import Shadowstep
-from shadowstep.utils.translator import YandexTranslate
 from tests.test_integro.conftest import (
             APPIUM_COMMAND_EXECUTOR,
             APPIUM_IP,
@@ -30,9 +29,9 @@ app.connect(server_ip=APPIUM_IP,
             capabilities=CAPABILITIES)
 
 parser = PageObjectParser()
-translator = YandexTranslate(folder_id="b1ghf7n3imfg7foodstv")
-generator = PageObjectGenerator(translator)
-recycler_explorer = PageObjectRecyclerExplorer(app, translator)
+#translator = YandexTranslate(folder_id="b1ghf7n3imfg7foodstv")
+generator = PageObjectGenerator()
+recycler_explorer = PageObjectRecyclerExplorer(app, translator=None)
 
 source = app.driver.page_source    # type: ignore[reportOptionalMemberAccess]
 print(source)   # noqa: T201

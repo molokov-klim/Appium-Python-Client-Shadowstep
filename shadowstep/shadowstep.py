@@ -88,9 +88,9 @@ class Shadowstep(ShadowstepBase):
         super().__init__()
 
         self.navigator: PageNavigator = PageNavigator(self)
-        self.navigator.auto_discover_pages()
         self.converter: LocatorConverter = LocatorConverter()
         self.mobile_commands: MobileCommands = MobileCommands()
+        self.navigator.auto_discover_pages()
         self.logger = logging.getLogger(f"{__name__}.{self.__class__.__name__}")
         self._initialized = True
         self.timeout = 10

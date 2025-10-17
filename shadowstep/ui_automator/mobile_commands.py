@@ -62,7 +62,6 @@ class MobileCommands:
 
         """
         self.logger.debug("%s", get_current_func_name())
-        self.logger.info("shell: %s", params)
         return self._execute("mobile: shell", params)
 
     def scroll(self, params: dict[str, Any] | list[Any] | None = None) -> Any:

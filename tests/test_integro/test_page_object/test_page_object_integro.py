@@ -33,7 +33,6 @@ from shadowstep.page_object.page_object_generator import PageObjectGenerator
 from shadowstep.page_object.page_object_parser import PageObjectParser
 from shadowstep.page_object.page_object_recycler_explorer import PageObjectRecyclerExplorer
 from shadowstep.shadowstep import Shadowstep
-from translator import YandexTranslate
 
 parser = PageObjectParser()
 POG = PageObjectGenerator()
@@ -84,6 +83,7 @@ class TestPageObjectGenerator:
         generator = PageObjectGenerator(translator=translator)
         assert generator is not None
         assert generator.translator is translator
+
 
     def test_generate_from_real_device(self, app: Shadowstep, temp_output_dir: str):
         """Test generate() creates page object from real device UI."""

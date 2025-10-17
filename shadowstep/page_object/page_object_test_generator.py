@@ -112,7 +112,7 @@ class PageObjectTestGenerator:
             f.write(rendered)
 
         self.logger.info("Generated test → %s", test_path)
-        return test_path, test_class_name
+        return str(test_path), test_class_name
 
     def _extract_properties(self, source: str) -> list[str]:
         """Parse Python AST and extract list of class properties."""
