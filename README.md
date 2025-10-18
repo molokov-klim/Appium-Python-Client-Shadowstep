@@ -6,6 +6,10 @@ _Write tests, not boilerplate._
 ___
 
 [![License](https://img.shields.io/badge/license-MIT-orange)](LICENSE)
+[![License Check](https://github.com/molokov-klim/Appium-Python-Client-Shadowstep/actions/workflows/license-check.yml/badge.svg)](https://github.com/molokov-klim/Appium-Python-Client-Shadowstep/actions/workflows/license-check.yml)
+
+___
+
 [![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/molokov-klim/Appium-Python-Client-Shadowstep)
 [![Watch in Action](https://img.shields.io/badge/YouTube-red?logo=youtube)](https://www.youtube.com/playlist?list=PLGFbKpf3cI31d1TLlQXCszl88dutdruKx)
 
