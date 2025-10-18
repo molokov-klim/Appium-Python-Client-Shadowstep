@@ -99,17 +99,13 @@ from shadowstep.page_base import PageBaseShadowstep  # noqa: E402
 from shadowstep.shadowstep import Shadowstep  # noqa: E402
 
 __all__ = [
-    # Core classes
-    "Shadowstep",
     "Element",
-    "PageBaseShadowstep",
-    "ShadowstepImage",
-    # Locators
-    "UiSelector",
     "LocatorConverter",
-    # Exceptions
+    "PageBaseShadowstep",
+    "Shadowstep",
     "ShadowstepException",
-    # Decorators
+    "ShadowstepImage",
+    "UiSelector",
     "current_page",
     "fail_safe",
     "log_info",
