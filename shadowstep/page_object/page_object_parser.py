@@ -154,7 +154,7 @@ class PageObjectParser:
         id_counter = 0
 
         def _recurse(
-            el: etree._Element,
+            el: Any, # etree._Element
             parent: UiElementNode | None,
             scroll_stack: ScrollStack,
             depth: int,
@@ -172,7 +172,7 @@ class PageObjectParser:
 
             """
             nonlocal id_counter
-            attrib = dict(cast("Any", el.attrib))
+            attrib = dict(cast("Any", el.attrib))  # type: ignore[reportUnknownMemberType]
             el_id = f"el_{id_counter}"
             id_counter += 1
 
@@ -189,7 +189,7 @@ class PageObjectParser:
             if self._is_element_allowed(attrib):
                 node = UiElementNode(
                     id=el_id,
-                    tag=cast("Any", el.tag),
+                    tag=cast("Any", el.tag),  # type: ignore[reportUnknownMemberType]
                     attrs=attrib,
                     parent=parent,
                     depth=depth,
@@ -205,7 +205,7 @@ class PageObjectParser:
                 return None
             virtual = UiElementNode(
                 id=el_id,
-                tag=cast("Any", el.tag),
+                tag=cast("Any", el.tag),  # type: ignore[reportUnknownMemberType]
                 attrs=attrib,
                 parent=parent,
                 depth=depth,
@@ -217,7 +217,7 @@ class PageObjectParser:
                 virtual.children.append(child)
             return virtual
 
-        if root_et.tag == "hierarchy":
+        if root_et.tag == "hierarchy":  # type: ignore[reportUnknownMemberType]
             root_et = next(iter(cast("Any", root_et)))
 
         root_node = _recurse(cast("Any", root_et), None, [], 0)
