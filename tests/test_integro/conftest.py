@@ -157,10 +157,25 @@ def cleanup_pages():
 
 @pytest.fixture
 def cleanup_log():
+    """Cleanup all logcat test files after test execution."""
     yield
-    path = Path("logcat_test.log")
-    if path.exists() and path.is_file():
-        path.unlink()
-    path = Path("/tests/logcat_test.log")
-    if path.exists() and path.is_file():
-        path.unlink()
+    # List of all logcat test files that might be created
+    log_files = [
+        "logcat_test.log",
+        "/tests/logcat_test.log",
+        "logcat_duplicate_test.log",
+        "logcat_filtered_test.log",
+        "logcat_restart1.log",
+        "logcat_restart2.log",
+        "logcat_context_test.log",
+        "logcat_port_test.log",
+        "logcat_append_test.log",
+        "logcat_thread_name_test.log",
+        "logcat_websocket_test.log",
+        "logcat_filter_verification.log",
+    ]
+    
+    for log_file in log_files:
+        path = Path(log_file)
+        if path.exists() and path.is_file():
+            path.unlink()

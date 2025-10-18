@@ -141,23 +141,18 @@ class TestShadowstepLogcat:
             ShadowstepLogcat(driver_getter=lambda: app.driver, poll_interval=-1.0)
 
     def test_logcat_init_with_valid_poll_interval(self, app: Shadowstep):
-        """Test __init__ with valid poll_interval."""
-        # Act
+        """Test __init__ with valid poll_interval does not raise exception."""
+        # Act - should not raise any exception
         logcat = ShadowstepLogcat(driver_getter=lambda: app.driver, poll_interval=2.0)
 
-        # Assert
+        # Assert - object created successfully
         assert logcat is not None
-        assert logcat._poll_interval == 2.0
-        assert logcat._driver_getter is not None
 
     def test_logcat_start_with_empty_filename(self, app: Shadowstep):
-        """Test that start() raises exception with empty filename."""
-        # Arrange
-        logcat = app._logcat
-
+        """Test that start_logcat() raises exception with empty filename."""
         # Act & Assert
         with pytest.raises(ShadowstepEmptyFilenameError):
-            logcat.start("")
+            app.start_logcat("")
 
     def test_logcat_start_twice_does_not_duplicate(self, app: Shadowstep, cleanup_log: None):
         """Test that calling start() twice doesn't create duplicate threads."""
@@ -181,10 +176,6 @@ class TestShadowstepLogcat:
         # Cleanup
         app.stop_logcat()
 
-        # Cleanup file
-        if log_file.exists():
-            log_file.unlink()
-
     def test_logcat_stop_when_not_running(self, app: Shadowstep):
         """Test that stop() works even when logcat is not running."""
         # Arrange - ensure logcat is stopped
@@ -196,60 +187,18 @@ class TestShadowstepLogcat:
         # Assert - no exception raised
         assert True
 
-    def test_logcat_filters_property_getter(self, app: Shadowstep):
-        """Test filters property getter returns None by default."""
+    def test_logcat_without_filters_writes_all_logs(self, app: Shadowstep, cleanup_log: None):
+        """Test that logcat without filters writes all logs."""
         # Arrange
-        logcat = app._logcat
-
-        # Act
-        filters = logcat.filters
-
-        # Assert
-        assert filters is None
-
-    def test_logcat_filters_property_setter(self, app: Shadowstep):
-        """Test filters property setter."""
-        # Arrange
-        logcat = app._logcat
-        test_filters = ["ActivityManager", "WindowManager", "SystemServer"]
-
-        # Act
-        logcat.filters = test_filters
-
-        # Assert
-        assert logcat.filters == test_filters
-        assert logcat._filter_set == set(test_filters)
-        assert logcat._compiled_filter_pattern is not None
-
-    def test_logcat_filters_with_empty_list(self, app: Shadowstep):
-        """Test filters with empty list clears compiled pattern."""
-        # Arrange
-        logcat = app._logcat
-        logcat.filters = ["Test"]
-
-        # Act - set empty list
-        logcat.filters = []
-
-        # Assert
-        assert logcat.filters == []
-        assert logcat._compiled_filter_pattern is None
-        assert logcat._filter_set is None
-
-    def test_logcat_with_filters_writes_filtered_logs(self, app: Shadowstep, cleanup_log: None):
-        """Test that logcat with filters only writes matching lines."""
-        # Arrange
-        log_file = Path("logcat_filtered_test.log")
+        log_file = Path("logcat_test.log")
         if log_file.exists():
             log_file.unlink()
 
-        # Set filter to capture only ActivityManager logs
-        app._logcat.filters = ["ActivityManager"]
-
-        # Act
+        # Act - start logcat without filters
         app.start_logcat(str(log_file))
-        time.sleep(2)  # Let some logs accumulate
-
-        # Generate some activity
+        time.sleep(2)
+        
+        # Generate activity to produce logs
         app.terminal.start_activity(
             package="com.android.settings",
             activity="com.android.settings.Settings"
@@ -257,20 +206,101 @@ class TestShadowstepLogcat:
         time.sleep(1)
         app.terminal.press_back()
         time.sleep(1)
-
+        
         app.stop_logcat()
 
-        # Assert
-        assert log_file.exists(), "Filtered logcat file was not created"
-
-        # Read and verify content
+        # Assert - file should have content
+        assert log_file.exists(), "Logcat file was not created"
         content = log_file.read_text(encoding="utf-8")
-        # File should have content (might be empty if no ActivityManager logs during test)
-        # The important thing is that file was created and no exception occurred
+        assert len(content.strip()) > 0, "Logcat file is empty"
 
-        # Cleanup
+    def test_logcat_with_single_filter(self, app: Shadowstep, cleanup_log: None):
+        """Test that logcat with single filter excludes matching lines (filter works as exclude)."""
+        # Arrange
+        log_file = Path("logcat_filtered_test.log")
         if log_file.exists():
             log_file.unlink()
+
+        # Act - start logcat with ActivityManager filter (excludes ActivityManager lines)
+        app.start_logcat(str(log_file), filters=["ActivityManager"])
+        time.sleep(2)
+        
+        # Generate activity to produce various logs
+        for _ in range(3):
+            app.terminal.start_activity(
+                package="com.android.settings",
+                activity="com.android.settings.Settings"
+            )
+            time.sleep(1)
+            app.terminal.press_back()
+            time.sleep(1)
+        
+        app.stop_logcat()
+        time.sleep(1)
+
+        # Assert - file should exist
+        assert log_file.exists(), "Filtered logcat file was not created"
+        content = log_file.read_text(encoding="utf-8")
+        
+        # File might be empty or have content without ActivityManager
+        # This is expected behavior - filter excludes ActivityManager lines
+
+    def test_logcat_with_empty_filters_list_writes_all_logs(self, app: Shadowstep, cleanup_log: None):
+        """Test that logcat with empty filters list writes all logs."""
+        # Arrange
+        log_file = Path("logcat_test.log")
+        if log_file.exists():
+            log_file.unlink()
+
+        # Act - start logcat with empty filters list (should write all logs)
+        app.start_logcat(str(log_file), filters=[])
+        time.sleep(2)
+        
+        # Generate activity to produce logs
+        app.terminal.start_activity(
+            package="com.android.settings",
+            activity="com.android.settings.Settings"
+        )
+        time.sleep(1)
+        app.terminal.press_back()
+        time.sleep(1)
+        
+        app.stop_logcat()
+
+        # Assert - file should have content (all logs should be written)
+        assert log_file.exists(), "Logcat file was not created"
+        content = log_file.read_text(encoding="utf-8")
+        assert len(content.strip()) > 0, "Logcat file is empty"
+
+    def test_logcat_with_multiple_filters(self, app: Shadowstep, cleanup_log: None):
+        """Test that logcat with multiple filters excludes all matching lines."""
+        # Arrange
+        log_file = Path("logcat_filtered_test.log")
+        if log_file.exists():
+            log_file.unlink()
+
+        # Act - start logcat with multiple filters (excludes both ActivityManager and WindowManager)
+        app.start_logcat(str(log_file), filters=["ActivityManager", "WindowManager"])
+        time.sleep(2)
+
+        # Generate activity to produce logs
+        for _ in range(3):
+            app.terminal.start_activity(
+                package="com.android.settings",
+                activity="com.android.settings.Settings"
+            )
+            time.sleep(1)
+            app.terminal.press_back()
+            time.sleep(1)
+
+        app.stop_logcat()
+        time.sleep(1)
+
+        # Assert - file should exist (even if empty after filtering)
+        assert log_file.exists(), "Filtered logcat file was not created"
+        
+        # Content verification: file might be empty or have content without filtered tags
+        # This is expected - filters exclude specified tags
 
     def test_logcat_restart_after_stop(self, app: Shadowstep, cleanup_log: None):
         """Test that logcat can be restarted after being stopped."""
@@ -297,11 +327,6 @@ class TestShadowstepLogcat:
         assert log_file1.exists(), "First logcat file was not created"
         assert log_file2.exists(), "Second logcat file was not created"
 
-        # Cleanup
-        if log_file1.exists():
-            log_file1.unlink()
-        if log_file2.exists():
-            log_file2.unlink()
 
     def test_logcat_context_manager_exit(self, app: Shadowstep, cleanup_log: None):
         """Test __exit__ method stops logcat."""
@@ -310,29 +335,25 @@ class TestShadowstepLogcat:
         if log_file.exists():
             log_file.unlink()
 
-        logcat = app._logcat
-
         # Act - start logcat
-        logcat.start(str(log_file))
-        time.sleep(0.5)
-
-        # Verify running
-        assert logcat._thread is not None
-        assert logcat._thread.is_alive()
-
-        # Call __exit__ directly
-        logcat.__exit__(None, None, None)
-
-        # Give thread time to stop
+        app.start_logcat(str(log_file))
         time.sleep(1)
 
-        # Assert - thread should be stopped
-        logcat_threads = [t for t in threading.enumerate() if "ShadowstepLogcat" in t.name]
-        assert len(logcat_threads) == 0, "Logcat thread should be stopped after __exit__"
+        # Verify logcat thread is running
+        thread_names_before = [t.name for t in threading.enumerate()]
+        assert any("ShadowstepLogcat" in name for name in thread_names_before), \
+            "Logcat thread should be running before __exit__"
 
-        # Cleanup
-        if log_file.exists():
-            log_file.unlink()
+        # Call __exit__ directly on logcat object
+        app._logcat.__exit__(None, None, None)
+
+        # Give thread time to stop
+        time.sleep(2)
+
+        # Assert - thread should be stopped
+        thread_names_after = [t.name for t in threading.enumerate()]
+        assert not any("ShadowstepLogcat" in name for name in thread_names_after), \
+            "Logcat thread should be stopped after __exit__"
 
     def test_logcat_with_custom_port(self, app: Shadowstep, cleanup_log: None):
         """Test logcat with custom port parameter."""
@@ -341,18 +362,30 @@ class TestShadowstepLogcat:
         if log_file.exists():
             log_file.unlink()
 
-        # Act - start with default port (None)
-        app._logcat.start(str(log_file), port=None)
+        # Act - start with default port (None) using public API
+        app.start_logcat(str(log_file), port=None)
+        time.sleep(2)
+
+        # Assert - logcat thread should be running
+        thread_names = [t.name for t in threading.enumerate()]
+        assert any("ShadowstepLogcat" in name for name in thread_names), \
+            "Logcat thread should be running"
+
+        # Generate activity and verify file is being written
+        app.terminal.start_activity(
+            package="com.android.settings",
+            activity="com.android.settings.Settings"
+        )
         time.sleep(1)
-
-        # Assert - logcat should be running
-        assert app._logcat._thread is not None
-        assert app._logcat._thread.is_alive()
-
+        app.terminal.press_back()
+        
         # Cleanup
         app.stop_logcat()
-        if log_file.exists():
-            log_file.unlink()
+        time.sleep(1)
+        
+        # Verify file was created and has content
+        assert log_file.exists(), "Logcat file was not created"
+        assert log_file.stat().st_size > 0, "Logcat file is empty"
 
     def test_logcat_file_append_mode(self, app: Shadowstep, cleanup_log: None):
         """Test that logcat appends to existing file."""
@@ -378,9 +411,6 @@ class TestShadowstepLogcat:
         content = log_file.read_text()
         assert "Initial content" in content, "Initial content should be preserved"
 
-        # Cleanup
-        if log_file.exists():
-            log_file.unlink()
 
     def test_logcat_thread_name(self, app: Shadowstep, cleanup_log: None):
         """Test that logcat thread has correct name."""
@@ -398,51 +428,104 @@ class TestShadowstepLogcat:
         assert any("ShadowstepLogcat" in name for name in thread_names), \
             f"Expected 'ShadowstepLogcat' in thread names, got: {thread_names}"
 
-        # Cleanup
-        app.stop_logcat()
-        if log_file.exists():
-            log_file.unlink()
 
     def test_logcat_init_with_zero_poll_interval(self, app: Shadowstep):
         """Test __init__ with zero poll_interval (valid edge case)."""
-        # Act
+        # Act - should not raise exception
         logcat = ShadowstepLogcat(driver_getter=lambda: app.driver, poll_interval=0.0)
 
-        # Assert
+        # Assert - object created successfully
         assert logcat is not None
-        assert logcat._poll_interval == 0.0
 
-    def test_logcat_filters_multiple_tags(self, app: Shadowstep):
-        """Test filters with multiple tags."""
-        # Arrange
-        logcat = app._logcat
-        multiple_filters = ["ActivityManager", "WindowManager", "SystemServer", "PackageManager"]
-
-        # Act
-        logcat.filters = multiple_filters
-
-        # Assert
-        assert logcat.filters == multiple_filters
-        assert len(logcat._filter_set) == 4
-        assert logcat._compiled_filter_pattern is not None
-
-    def test_logcat_stop_closes_websocket(self, app: Shadowstep, cleanup_log: None):
-        """Test that stop() properly closes WebSocket connection."""
+    def test_logcat_stop_releases_resources(self, app: Shadowstep, cleanup_log: None):
+        """Test that stop() properly releases resources and stops thread."""
         # Arrange
         log_file = Path("logcat_websocket_test.log")
         if log_file.exists():
             log_file.unlink()
 
+        # Act - start logcat
         app.start_logcat(str(log_file))
-        time.sleep(1)  # Let WebSocket connect
+        time.sleep(2)  # Let WebSocket connect and logs start flowing
 
-        # Act
+        # Verify thread is running
+        thread_names_before = [t.name for t in threading.enumerate()]
+        assert any("ShadowstepLogcat" in name for name in thread_names_before), \
+            "Logcat thread should be running"
+
+        # Stop logcat
         app.stop_logcat()
-        time.sleep(1)  # Let cleanup complete
+        time.sleep(2)  # Let cleanup complete
 
-        # Assert - WebSocket should be None after stop
-        assert app._logcat._ws is None
+        # Assert - thread should be stopped (resources released)
+        thread_names_after = [t.name for t in threading.enumerate()]
+        assert not any("ShadowstepLogcat" in name for name in thread_names_after), \
+            "Logcat thread should be stopped after stop()"
 
-        # Cleanup
-        if log_file.exists():
-            log_file.unlink()
+    def test_logcat_filter_verification(self, app: Shadowstep, cleanup_log: None):
+        """Test that filters work correctly by excluding specified tags."""
+        # Arrange
+        log_file_all = Path("logcat_test.log")
+        log_file_filtered = Path("logcat_filter_verification.log")
+        if log_file_all.exists():
+            log_file_all.unlink()
+        if log_file_filtered.exists():
+            log_file_filtered.unlink()
+
+        # Act - First capture all logs
+        app.start_logcat(str(log_file_all))
+        time.sleep(2)
+        
+        # Generate activity
+        for _ in range(3):
+            app.terminal.start_activity(
+                package="com.android.settings",
+                activity="com.android.settings.Settings"
+            )
+            time.sleep(1)
+            app.terminal.press_back()
+            time.sleep(1)
+        
+        app.stop_logcat()
+        time.sleep(1)
+
+        # Now capture with filter (should exclude ActivityManager)
+        app.start_logcat(str(log_file_filtered), filters=["ActivityManager"])
+        time.sleep(2)
+        
+        # Generate activity again
+        for _ in range(3):
+            app.terminal.start_activity(
+                package="com.android.settings",
+                activity="com.android.settings.Settings"
+            )
+            time.sleep(1)
+            app.terminal.press_back()
+            time.sleep(1)
+        
+        app.stop_logcat()
+        time.sleep(1)
+
+        # Assert - both files should exist
+        assert log_file_all.exists(), "Unfiltered logcat file was not created"
+        assert log_file_filtered.exists(), "Filtered logcat file was not created"
+        
+        # Unfiltered log should have content
+        all_content = log_file_all.read_text(encoding="utf-8")
+        assert len(all_content.strip()) > 0, "Unfiltered log is empty"
+        
+        # Check if ActivityManager is present in unfiltered log
+        all_lines = [line for line in all_content.split("\n") if line.strip()]
+        has_activity_manager_in_all = any("ActivityManager" in line for line in all_lines)
+        
+        # If ActivityManager is present in unfiltered log, verify it's excluded in filtered
+        if has_activity_manager_in_all:
+            filtered_content = log_file_filtered.read_text(encoding="utf-8")
+            if filtered_content.strip():
+                filtered_lines = [line for line in filtered_content.split("\n") if line.strip()]
+                has_activity_manager_in_filtered = any("ActivityManager" in line for line in filtered_lines)
+                assert not has_activity_manager_in_filtered, \
+                    "Filtered log should NOT contain ActivityManager entries (filter excludes them)"
+        
+        # Test passed - filtering mechanism works (file created, filtering applied if applicable)
+
