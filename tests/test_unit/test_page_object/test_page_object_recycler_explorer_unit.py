@@ -9,7 +9,10 @@ from unittest.mock import Mock, patch
 
 import pytest
 
-from shadowstep.exceptions.shadowstep_exceptions import ShadowstepTerminalNotInitializedError
+from shadowstep.exceptions.shadowstep_exceptions import (
+    ShadowstepPageObjectError,
+    ShadowstepTerminalNotInitializedError,
+)
 from shadowstep.page_object.page_object_recycler_explorer import PageObjectRecyclerExplorer
 
 """
@@ -154,9 +157,8 @@ class TestPage:
         explorer._load_class_from_file = Mock(return_value=None)
 
         with tempfile.TemporaryDirectory() as temp_dir:
-            result = explorer.explore(temp_dir, timeout=10)
-
-            assert result == ""  # noqa: S101
+            with pytest.raises(ShadowstepPageObjectError, match=".*page object error.*"):
+                explorer.explore(temp_dir, timeout=10)
 
     @pytest.mark.unit
     def test_explore_no_recycler_property(self):
@@ -188,9 +190,8 @@ class TestPage:
 
         explorer._load_class_from_file = Mock(return_value=PageWithoutRecycler)
 
-        result = explorer.explore("temp_dir", timeout=5)
-
-        assert result == ""  # noqa: S101
+        with pytest.raises(ShadowstepPageObjectError, match=".*page object error.*"):
+            explorer.explore("temp_dir", timeout=5)
 
     @pytest.mark.unit
     def test_explore_recycler_no_scroll_down(self):
@@ -226,9 +227,8 @@ class TestPage:
 
         explorer._load_class_from_file = Mock(return_value=PageWithRecyclerNoScroll)
 
-        result = explorer.explore("temp_dir", timeout=10)
-
-        assert result == ""  # noqa: S101
+        with pytest.raises(ShadowstepPageObjectError, match=".*page object error.*"):
+            explorer.explore("temp_dir", timeout=10)
 
     @pytest.mark.unit
     def test_explore_with_scroll_down_loop(self):
