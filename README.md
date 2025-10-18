@@ -18,7 +18,7 @@ ___
 [![PyPI version](https://badge.fury.io/py/appium-python-client-shadowstep.svg)](https://badge.fury.io/py/appium-python-client-shadowstep)
 [![Downloads](https://pepy.tech/badge/appium-python-client-shadowstep)](https://pepy.tech/project/appium-python-client-shadowstep)
 [![Python](https://img.shields.io/badge/python-3.9%2B-blue)](https://www.python.org)
-[![Appium](https://img.shields.io/badge/appium-5.2.2%2B-green)](https://appium.io)
+[![Appium](https://img.shields.io/badge/appium-5.2.2%2B-blue)](https://appium.io)
 
 ___
 
