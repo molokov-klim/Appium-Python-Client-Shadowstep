@@ -7,6 +7,10 @@ further processing and conversion.
 from __future__ import annotations
 
 from dataclasses import dataclass, field
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from typing import Union
 
 
 @dataclass
@@ -18,7 +22,7 @@ class MethodCall:
     """
 
     name: str
-    args: list[str | int | bool | Selector] = field(default_factory=list)
+    args: list[Union[str, int, bool, "Selector"]] = field(default_factory=list)  # type: ignore[var-annotated]
 
 @dataclass
 class Selector:
@@ -28,4 +32,4 @@ class Selector:
     method calls that can be chained together to form complex selectors.
     """
 
-    methods: list[MethodCall] = field(default_factory=list)
+    methods: list[MethodCall] = field(default_factory=list)  # type: ignore[var-annotated]

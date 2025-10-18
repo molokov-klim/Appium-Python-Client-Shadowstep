@@ -14,8 +14,8 @@ from typing import TYPE_CHECKING, Any
 if TYPE_CHECKING:
     from collections.abc import Iterable
 
-from eulxml.xpath import parse
-from eulxml.xpath.ast import (
+from eulxml.xpath import parse  # type: ignore[import-untyped]
+from eulxml.xpath.ast import (  # type: ignore[import-untyped]
     AbbreviatedStep,
     AbsolutePath,
     BinaryExpression,
@@ -113,15 +113,15 @@ def _to_bool(val: str | float | bool) -> bool:  # noqa: FBT001
             return True
         if v in ("false", "0"):
             return False
-    raise ShadowstepBooleanLiteralError(val)
+    raise ShadowstepBooleanLiteralError(str(val))
 
 
 def _to_number(val: str | float) -> int:
     if isinstance(val, (int, float)):
         return int(val)
-    if isinstance(val, str) and val.isdigit():
+    if val.isdigit():  # type: ignore[union-attr]
         return int(val)
-    raise ShadowstepNumericLiteralError(val)
+    raise ShadowstepNumericLiteralError(str(val))
 
 
 # Constants
@@ -159,8 +159,8 @@ class XPathConverter:
 
         """
         self._validate_xpath(xpath_str)
-        node = parse(xpath_str)
-        node_list = self._ast_to_list(node.relative)  # type: ignore[arg-type]
+        node = parse(xpath_str)  # type: ignore[var-annotated]
+        node_list = self._ast_to_list(node.relative)  # type: ignore[arg-type,attr-defined]
         return self._ast_to_dict(node_list)
 
     def xpath_to_ui_selector(self, xpath_str: str) -> str:
@@ -174,8 +174,8 @@ class XPathConverter:
 
         """
         self._validate_xpath(xpath_str)
-        node = parse(xpath_str)
-        node_list = self._ast_to_list(node.relative)  # type: ignore[arg-type]
+        node = parse(xpath_str)  # type: ignore[var-annotated]
+        node_list = self._ast_to_list(node.relative)  # type: ignore[arg-type,attr-defined]
         result = self._balance_parentheses(self._ast_to_ui_selector(node_list))
         return "new UiSelector()" + result + ";"
 
@@ -188,21 +188,21 @@ class XPathConverter:
         parts: list[str] = []
         if isinstance(node, Step):
             # add predicates (e.g. @class, @resource-id)
-            for predicate in node.predicates:
+            for predicate in node.predicates:  # type: ignore[attr-defined]
                 parts.append(self._predicate_to_ui(predicate))  # type: ignore[arg-type]  # noqa: PERF401
 
             if len(node_list) > 1:
                 next_node = node_list[1]
                 child_str = self._ast_to_ui_selector(node_list[1:])  # recurse on next node(s)
                 if child_str:
-                    if isinstance(next_node, AbbreviatedStep) and next_node.abbr == "..":
+                    if isinstance(next_node, AbbreviatedStep) and next_node.abbr == "..":  # type: ignore[attr-defined]
                         # consecutive ..
                         parent_count = 1
                         i = 2
                         while (
                             i < len(node_list)
                             and isinstance(node_list[i], AbbreviatedStep)
-                            and node_list[i].abbr == ".."
+                            and node_list[i].abbr == ".."  # type: ignore[attr-defined]
                         ):
                             parent_count += 1
                             i += 1
@@ -214,7 +214,7 @@ class XPathConverter:
                         parts.append(rest_str)
                         return "".join(parts)
 
-                    if isinstance(next_node, Step) and next_node.axis in (
+                    if isinstance(next_node, Step) and next_node.axis in (  # type: ignore[attr-defined]
                         "following-sibling",
                         "preceding-sibling",
                     ):
@@ -224,17 +224,17 @@ class XPathConverter:
                         parts.append(f".childSelector(new UiSelector(){child_str})")
 
         elif isinstance(node, AbbreviatedStep):  # type: ignore[arg-type]
-            if node.abbr == "..":
+            if node.abbr == "..":  # type: ignore[attr-defined]
                 if len(node_list) > 1:
                     child_str = self._ast_to_ui_selector(node_list[1:])
                     if child_str:
                         return f".fromParent(new UiSelector(){child_str})"
                 return ""
-            if node.abbr == ".":
+            if node.abbr == ".":  # type: ignore[attr-defined]
                 return self._ast_to_ui_selector(node_list[1:])
-            raise ShadowstepUnsupportedAbbreviatedStepError(node)
+            raise ShadowstepUnsupportedAbbreviatedStepError(str(node))
         else:
-            raise ShadowstepUnsupportedASTNodeError(node)
+            raise ShadowstepUnsupportedASTNodeError(str(node))
         return "".join(parts)
 
     def _ast_to_dict(self, node_list: list[Any]) -> dict[str, Any]:
@@ -252,7 +252,7 @@ class XPathConverter:
         node = node_list[0]
 
         if isinstance(node, Step):
-            for predicate in node.predicates:
+            for predicate in node.predicates:  # type: ignore[attr-defined]
                 self._apply_predicate_to_dict(predicate, shadowstep_dict)  # type: ignore[arg-type]
 
             i = 1
@@ -260,7 +260,7 @@ class XPathConverter:
             if (
                 i < len(node_list)
                 and isinstance(node_list[i], AbbreviatedStep)
-                and node_list[i].abbr == ".."
+                and node_list[i].abbr == ".."  # type: ignore[attr-defined]
             ):
                 # create fromParent
                 shadowstep_dict[ShadowstepDictAttribute.FROM_PARENT.value] = (
@@ -272,7 +272,7 @@ class XPathConverter:
             if (
                 i < len(node_list)
                 and isinstance(node_list[i], Step)
-                and node_list[i].axis
+                and node_list[i].axis  # type: ignore[attr-defined]
                 in (
                     "following-sibling",
                     "preceding-sibling",
@@ -291,13 +291,13 @@ class XPathConverter:
                 )
             return shadowstep_dict
 
-        if isinstance(node, AbbreviatedStep) and node.abbr == "..":  # type: ignore[arg-type]
+        if isinstance(node, AbbreviatedStep) and node.abbr == "..":  # type: ignore[arg-type,attr-defined]
             # count ".."
             depth = 1
             while (
                 depth < len(node_list)
                 and isinstance(node_list[depth], AbbreviatedStep)
-                and node_list[depth].abbr == ".."
+                and node_list[depth].abbr == ".."  # type: ignore[attr-defined]
             ):
                 depth += 1
 
@@ -311,23 +311,23 @@ class XPathConverter:
             shadowstep_dict.update(rest_dict)
             return shadowstep_dict
 
-        raise ShadowstepUnsupportedASTNodeBuildError(node)
+        raise ShadowstepUnsupportedASTNodeBuildError(str(node))
 
     def _ast_to_list(
         self,
         node: Step | AbbreviatedStep | BinaryExpression,
     ) -> list[AbbreviatedStep | Step]:  # type: ignore[return-any]
-        result = []
+        result: list[AbbreviatedStep | Step] = []
 
         if isinstance(node, (Step, AbbreviatedStep)):  # type: ignore[arg-type]
-            result.append(node)
+            result.append(node)  # type: ignore[arg-type]
 
-        elif isinstance(node, BinaryExpression):
-            result.extend(self._ast_to_list(node.left))
-            result.extend(self._ast_to_list(node.right))
+        elif isinstance(node, BinaryExpression):  # type: ignore[misc]
+            result.extend(self._ast_to_list(node.left))  # type: ignore[attr-defined,arg-type]
+            result.extend(self._ast_to_list(node.right))  # type: ignore[attr-defined,arg-type]
 
         else:
-            raise ShadowstepUnsupportedASTNodeError(node)
+            raise ShadowstepUnsupportedASTNodeError(str(node))
 
         return result
 
@@ -336,24 +336,24 @@ class XPathConverter:
         node: AbsolutePath | PredicatedExpression,
     ) -> Iterable[Step | FunctionCall | BinaryExpression | int | float]:
         if isinstance(node, AbsolutePath):
-            if node.relative is not None:
-                yield from self._collect_predicates(node.relative)
+            if node.relative is not None:  # type: ignore[attr-defined]
+                yield from self._collect_predicates(node.relative)  # type: ignore[attr-defined,arg-type]
             return
 
-        if isinstance(node, PredicatedExpression):
-            for p in node.predicates:
+        if isinstance(node, PredicatedExpression):  # type: ignore[arg-type]
+            for p in node.predicates:  # type: ignore[attr-defined]
                 yield p
-            yield from self._collect_predicates(node.base)
+            yield from self._collect_predicates(node.base)  # type: ignore[attr-defined,arg-type]
             return
 
         if isinstance(node, Step):
-            for p in node.predicates:
+            for p in node.predicates:  # type: ignore[attr-defined]
                 yield p
             return
 
         if isinstance(node, BinaryExpression):
-            yield from self._collect_predicates(node.left)
-            yield from self._collect_predicates(node.right)
+            yield from self._collect_predicates(node.left)  # type: ignore[attr-defined,arg-type]
+            yield from self._collect_predicates(node.right)  # type: ignore[attr-defined,arg-type]
             return
 
     # ========== predicate handlers (DICT) ==========
@@ -389,25 +389,25 @@ class XPathConverter:
                     raise ShadowstepMatchesNotSupportedError(attr)
                 out[d_attr[0].value] = value  # type: ignore[assignment]
                 return
-            raise ShadowstepUnsupportedFunctionError(pred_expr.name)
+            raise ShadowstepUnsupportedFunctionError(pred_expr.name)  # type: ignore[attr-defined,arg-type]
 
         if isinstance(pred_expr, (int, float)):  # type: ignore[arg-type]
             out[ShadowstepDictAttribute.INSTANCE.value] = int(pred_expr) - 1
             return
 
-        if isinstance(pred_expr, BinaryExpression):
+        if isinstance(pred_expr, BinaryExpression):  # type: ignore[misc]
             if (
-                pred_expr.op == "="
-                and isinstance(pred_expr.left, FunctionCall)
-                and pred_expr.left.name == "position"
-                and not pred_expr.left.args
-                and isinstance(pred_expr.right, (int, float))  # type: ignore[arg-type]
+                pred_expr.op == "="  # type: ignore[attr-defined]
+                and isinstance(pred_expr.left, FunctionCall)  # type: ignore[attr-defined]
+                and pred_expr.left.name == "position"  # type: ignore[attr-defined]
+                and not pred_expr.left.args  # type: ignore[attr-defined]
+                and isinstance(pred_expr.right, (int, float))  # type: ignore[arg-type,attr-defined]
             ):
-                out[ShadowstepDictAttribute.INDEX.value] = int(pred_expr.right) - 1
+                out[ShadowstepDictAttribute.INDEX.value] = int(pred_expr.right) - 1  # type: ignore[attr-defined]
                 return
 
-            if pred_expr.op not in ("=",):
-                raise ShadowstepUnsupportedComparisonOperatorError(pred_expr.op)
+            if pred_expr.op not in ("=",):  # type: ignore[attr-defined]
+                raise ShadowstepUnsupportedComparisonOperatorError(pred_expr.op)  # type: ignore[attr-defined,arg-type]
             attr, value = self._parse_equality_comparison(pred_expr)
             if attr in _EQ_ATTRS:
                 out[_EQ_ATTRS[attr][0].value] = value  # type: ignore[assignment]
@@ -462,13 +462,13 @@ class XPathConverter:
 
         if isinstance(pred_expr, BinaryExpression):
             if (
-                pred_expr.op == "="
-                and isinstance(pred_expr.left, FunctionCall)
-                and pred_expr.left.name == "position"
-                and not pred_expr.left.args
-                and isinstance(pred_expr.right, (int, float))
+                pred_expr.op == "="  # type: ignore[attr-defined]
+                and isinstance(pred_expr.left, FunctionCall)  # type: ignore[attr-defined]
+                and pred_expr.left.name == "position"  # type: ignore[attr-defined]
+                and not pred_expr.left.args  # type: ignore[attr-defined]
+                and isinstance(pred_expr.right, (int, float))  # type: ignore[attr-defined]
             ):
-                return f".{UiAttribute.INDEX.value}({int(pred_expr.right) - 1})"
+                return f".{UiAttribute.INDEX.value}({int(pred_expr.right) - 1})"  # type: ignore[attr-defined]
             attr, value = self._parse_equality_comparison(pred_expr)
             if attr in _EQ_ATTRS:
                 return f'.{_EQ_ATTRS[attr][1].value}("{value}")'
@@ -477,30 +477,30 @@ class XPathConverter:
             if attr in _NUM_ATTRS:
                 return f".{_NUM_ATTRS[attr][1].value}({_to_number(value)})"
             raise ShadowstepUnsupportedAttributeError(attr)
-        raise ShadowstepUnsupportedPredicateError(pred_expr)
+        raise ShadowstepUnsupportedPredicateError(str(pred_expr))
 
     def _parse_function_predicate(self, func: FunctionCall) -> tuple[str, str, Any]:
-        name = func.name
+        name = func.name  # type: ignore[attr-defined]
         if name not in ("contains", "starts-with", "matches"):
-            raise ShadowstepUnsupportedFunctionError(name)
-        if len(func.args) != FUNCTION_ARGUMENT_COUNT:  # type: ignore[arg-type]
-            raise ShadowstepFunctionArgumentCountError(name, FUNCTION_ARGUMENT_COUNT)
-        lhs, rhs = func.args
-        attr = self._extract_attr_name(lhs)
-        value = self._extract_literal(rhs)
-        return attr, name, value
+            raise ShadowstepUnsupportedFunctionError(str(name))  # type: ignore[arg-type]
+        if len(func.args) != FUNCTION_ARGUMENT_COUNT:  # type: ignore[arg-type,attr-defined]
+            raise ShadowstepFunctionArgumentCountError(str(name), str(FUNCTION_ARGUMENT_COUNT))
+        lhs, rhs = func.args  # type: ignore[attr-defined]
+        attr = self._extract_attr_name(lhs)  # type: ignore[arg-type]
+        value = self._extract_literal(rhs)  # type: ignore[arg-type]
+        return attr, name, value  # type: ignore[return-value]
 
     def _parse_equality_comparison(self, bexpr: BinaryExpression) -> tuple[str, Any]:
-        left_attr = self._maybe_attr(bexpr.left)
-        right_attr = self._maybe_attr(bexpr.right)
+        left_attr = self._maybe_attr(bexpr.left)  # type: ignore[attr-defined,arg-type]
+        right_attr = self._maybe_attr(bexpr.right)  # type: ignore[attr-defined,arg-type]
         if left_attr is not None:
-            return left_attr, self._extract_literal(bexpr.right)
+            return left_attr, self._extract_literal(bexpr.right)  # type: ignore[attr-defined,arg-type]
         if right_attr is not None:
-            return right_attr, self._extract_literal(bexpr.left)
-        if isinstance(bexpr.left, FunctionCall) and bexpr.left.name == "text":
-            return "text", self._extract_literal(bexpr.right)
-        if isinstance(bexpr.right, FunctionCall) and bexpr.right.name == "text":
-            return "text", self._extract_literal(bexpr.left)
+            return right_attr, self._extract_literal(bexpr.left)  # type: ignore[attr-defined,arg-type]
+        if isinstance(bexpr.left, FunctionCall) and bexpr.left.name == "text":  # type: ignore[attr-defined]
+            return "text", self._extract_literal(bexpr.right)  # type: ignore[attr-defined,arg-type]
+        if isinstance(bexpr.right, FunctionCall) and bexpr.right.name == "text":  # type: ignore[attr-defined]
+            return "text", self._extract_literal(bexpr.left)  # type: ignore[attr-defined,arg-type]
         raise ShadowstepEqualityComparisonError
 
     def _maybe_attr(self, node: Step | FunctionCall | NodeType) -> str | None:  # type: ignore[return-any]
@@ -511,21 +511,21 @@ class XPathConverter:
 
     @staticmethod
     def _extract_attr_name(node: Step | FunctionCall | NodeType) -> str:
-        if isinstance(node, Step) and node.axis == "@" and isinstance(node.node_test, NameTest):
-            return node.node_test.name
-        if isinstance(node, FunctionCall) and node.name == "text":
+        if isinstance(node, Step) and node.axis == "@" and isinstance(node.node_test, NameTest):  # type: ignore[attr-defined]
+            return node.node_test.name  # type: ignore[attr-defined,return-value]
+        if isinstance(node, FunctionCall) and node.name == "text":  # type: ignore[attr-defined]
             return "text"
-        if isinstance(node, NodeType) and node.name == "text":
+        if isinstance(node, NodeType) and node.name == "text":  # type: ignore[attr-defined]
             return "text"
-        raise ShadowstepUnsupportedAttributeExpressionError(node)
+        raise ShadowstepUnsupportedAttributeExpressionError(str(node))
 
     @staticmethod
     def _extract_literal(node: str | float | bool | FunctionCall) -> str | int | float | bool:  # noqa: FBT001
         if isinstance(node, (str, int, float, bool)):
             return node
-        if isinstance(node, FunctionCall) and node.name in ("true", "false") and not node.args:
-            return node.name == "true"
-        raise ShadowstepUnsupportedLiteralError(node)
+        if isinstance(node, FunctionCall) and node.name in ("true", "false") and not node.args:  # type: ignore[attr-defined]
+            return node.name == "true"  # type: ignore[attr-defined]
+        raise ShadowstepUnsupportedLiteralError(str(node))
 
     @staticmethod
     def _balance_parentheses(selector: str) -> str:

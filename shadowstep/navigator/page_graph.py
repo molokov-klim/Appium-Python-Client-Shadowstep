@@ -20,7 +20,7 @@ class PageGraph:
     def __init__(self) -> None:
         """Initialize the PageGraph with empty graphs."""
         self.graph: dict[str, dict[str, Any]] = {}
-        self.nx_graph: nx.DiGraph = nx.DiGraph()
+        self.nx_graph: nx.DiGraph[str] = nx.DiGraph()
 
     @staticmethod
     def page_key(page: str | PageBaseShadowstep) -> str:
@@ -65,7 +65,7 @@ class PageGraph:
     def find_shortest_path(self, from_page: Any, to_page: Any) -> list[str] | None:
         """Find the shortest path between two pages."""
         try:
-            return nx.shortest_path(
+            return nx.shortest_path(  # type: ignore[misc]
                 self.nx_graph,
                 source=self.page_key(from_page),
                 target=self.page_key(to_page),

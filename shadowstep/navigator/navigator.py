@@ -276,8 +276,8 @@ class PageNavigator:
 
     def _find_path_bfs(self, start: str, target: str) -> list[str] | None:
         """Find path using breadth-first search as fallback."""
-        visited = set()
-        queue = deque([(start, [])])
+        visited: set[str] = set()
+        queue: deque[tuple[str, list[str]]] = deque([(start, [])])
         while queue:
             current, path = queue.popleft()
             visited.add(current)
@@ -311,11 +311,11 @@ class PageNavigator:
 
             end_time = time.time() + timeout
             while time.time() < end_time:
-                if next_page.is_current_page():
+                if next_page.is_current_page():  # type: ignore[attr-defined]
                     break
                 time.sleep(0.5)
             else:
-                raise ShadowstepNavigationFailedError(current_page, next_page, transition_method)
+                raise ShadowstepNavigationFailedError(str(current_page), str(next_page), str(transition_method))
 
     def _get_ignored_dirs(self) -> set[str]:
         logger.debug(get_current_func_name())

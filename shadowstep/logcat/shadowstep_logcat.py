@@ -16,11 +16,11 @@ from pathlib import Path
 from typing import TYPE_CHECKING, Any
 
 from selenium.common import WebDriverException
-from websocket import (
+from websocket import (  # type: ignore[import-untyped]
     WebSocket,
     WebSocketConnectionClosedException,
     WebSocketException,
-    create_connection,
+    create_connection,  # type: ignore[reportUnknownVariableType]
 )
 
 from shadowstep.ui_automator.mobile_commands import MobileCommands
@@ -292,6 +292,7 @@ class ShadowstepLogcat:
 
                         # Store ws reference so stop() can close it
                         self._ws = ws
+                        assert ws is not None  # For type checker: ws is guaranteed not to be None here
 
                         # Read until stop event
                         while not self._stop_evt.is_set():

@@ -5,7 +5,7 @@ to UiSelector method calls with proper attribute mapping and hierarchy handling.
 """
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 if TYPE_CHECKING:
     from collections.abc import Callable
@@ -18,7 +18,7 @@ from shadowstep.locator.locator_types.shadowstep_dict import ShadowstepDictAttri
 from shadowstep.locator.locator_types.ui_selector import UiAttribute
 
 
-def dict_to_ui_attribute(attr: ShadowstepDictAttribute, value: str | float | bool | dict) -> str:  # noqa: FBT001
+def dict_to_ui_attribute(attr: ShadowstepDictAttribute, value: str | float | bool | dict[str, Any]) -> str:  # noqa: FBT001
     """Convert a single dictionary attribute to UiSelector method call.
 
     Args:
@@ -33,7 +33,7 @@ def dict_to_ui_attribute(attr: ShadowstepDictAttribute, value: str | float | boo
 
     """
     if attr in DICT_TO_UI_MAPPING:
-        return DICT_TO_UI_MAPPING[attr](value)
+        return DICT_TO_UI_MAPPING[attr](value)  # type: ignore[arg-type]
     raise ShadowstepUnsupportedAttributeForUiSelectorError(attr)
 
 

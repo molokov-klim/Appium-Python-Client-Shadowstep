@@ -169,7 +169,7 @@ class UiSelector:
 
     def to_dict(self) -> dict[str, Any]:
         """Convert UiSelector to dictionary format."""
-        result = {}
+        result: dict[str, Any] = {}
 
         # Add regular methods
         for method_name, value in self._methods:

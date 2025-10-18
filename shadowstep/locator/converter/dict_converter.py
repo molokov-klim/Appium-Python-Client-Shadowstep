@@ -265,9 +265,9 @@ class DictConverter(Generic[T]):
         ]
 
         if len(found_text_attrs) > 1:
-            raise ShadowstepConflictingTextAttributesError(found_text_attrs)
+            raise ShadowstepConflictingTextAttributesError(str(found_text_attrs))
         if len(found_desc_attrs) > 1:
-            raise ShadowstepConflictingDescriptionAttributesError(found_desc_attrs)
+            raise ShadowstepConflictingDescriptionAttributesError(str(found_desc_attrs))
 
         # Validate hierarchical attributes
         for key, value in selector_dict.items():
