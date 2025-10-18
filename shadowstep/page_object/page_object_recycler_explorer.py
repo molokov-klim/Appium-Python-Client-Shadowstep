@@ -5,6 +5,7 @@ automatically exploring scrollable content in mobile applications
 by generating page objects for different scroll positions and
 merging them into a comprehensive page object.
 """
+
 from __future__ import annotations
 
 import importlib.util
@@ -67,10 +68,15 @@ class PageObjectRecyclerExplorer:
         y_start = int(height * 0.2)
         y_end = int(height * 0.8)
         for _ in range(9):
-            self.base.swipe(left=100, top=100,
-                            width=width, height=height,
-                            direction="down", percent=1.0,
-                            speed=10000)  # scroll up
+            self.base.swipe(
+                left=100,
+                top=100,
+                width=width,
+                height=height,
+                direction="down",
+                percent=1.0,
+                speed=10000,
+            )  # scroll up
             self.base.terminal.adb_shell(
                 command="input",
                 args=f"swipe {x} {y_start} {x} {y_end}",
@@ -78,12 +84,19 @@ class PageObjectRecyclerExplorer:
 
         pages = []
         original_tree = self.parser.parse(self.base.driver.page_source)
-        original_page_path, original_page_class_name = self.generator.generate(original_tree, output_dir=output_dir)
-        pages.append((original_page_path, original_page_class_name))
+        original_page_path, original_page_class_name = self.generator.generate(
+            original_tree,
+            output_dir=output_dir,
+        )
+        pages.append((original_page_path, original_page_class_name))  # type: ignore[reportUnknownMemberType]
 
         original_cls = self._load_class_from_file(original_page_path, original_page_class_name)
         if not original_cls:
-            self.logger.warning("Failed to load class %s from %s", original_page_class_name, original_page_path)
+            self.logger.warning(
+                "Failed to load class %s from %s",
+                original_page_class_name,
+                original_page_path,
+            )
             return ""
 
         original_page = original_cls()
@@ -106,8 +119,11 @@ class PageObjectRecyclerExplorer:
             # tree changed!!! recycler_raw needs to be redefined
             prefix += 1
             tree = self.parser.parse(self.base.driver.page_source)
-            page_path, page_class_name = self.generator.generate(tree, output_dir=output_dir,
-                                                                 filename_prefix=str(prefix))
+            page_path, page_class_name = self.generator.generate(
+                tree,
+                output_dir=output_dir,
+                filename_prefix=str(prefix),
+            )
             pages.append((page_path, page_class_name))
 
         width, height = self.base.terminal.get_screen_resolution()
@@ -115,17 +131,26 @@ class PageObjectRecyclerExplorer:
         y_start = int(height * 0.8)
         y_end = int(height * 0.2)
         for _ in range(9):
-            self.base.swipe(left=100, top=100,
-                            width=width, height=height,
-                            direction="up", percent=1.0,
-                            speed=10000)  # scroll up
+            self.base.swipe(
+                left=100,
+                top=100,
+                width=width,
+                height=height,
+                direction="up",
+                percent=1.0,
+                speed=10000,
+            )  # scroll up
             self.base.terminal.adb_shell(
                 command="input",
                 args=f"swipe {x} {y_start} {x} {y_end}",
             )
         prefix += 1
         tree = self.parser.parse(self.base.driver.page_source)
-        page_path, page_class_name = self.generator.generate(tree, output_dir=output_dir, filename_prefix=str(prefix))
+        page_path, page_class_name = self.generator.generate(
+            tree,
+            output_dir=output_dir,
+            filename_prefix=str(prefix),
+        )
         pages.append((page_path, page_class_name))
 
         output_path = Path("merged_pages") / original_page_path.name
@@ -138,14 +163,19 @@ class PageObjectRecyclerExplorer:
             self.merger.merge(output_path, cast("str", page_path), output_path)
 
         for _ in range(5):
-            self.base.swipe(left=100, top=100,
-                            width=width, height=height,
-                            direction="up", percent=1.0,
-                            speed=10000)  # scroll down
+            self.base.swipe(
+                left=100,
+                top=100,
+                width=width,
+                height=height,
+                direction="up",
+                percent=1.0,
+                speed=10000,
+            )  # scroll down
 
         return output_path
 
-    def _load_class_from_file(self, path: str, class_name: str) -> type | None:
+    def _load_class_from_file(self, path: str | Path, class_name: str) -> type | None:
         spec = importlib.util.spec_from_file_location("loaded_po", path)
         if spec is None or spec.loader is None:
             return None

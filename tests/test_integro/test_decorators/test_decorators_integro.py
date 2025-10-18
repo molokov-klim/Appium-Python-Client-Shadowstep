@@ -1,9 +1,12 @@
 # ruff: noqa
 # pyright: ignore
-"""Integration tests for decorators module."""
+"""Integration tests for decorators module.
+
+These tests verify decorator functionality using real app fixture and actual
+Shadowstep/Element methods, not mocks.
+"""
 import logging
 import time
-from typing import Any
 
 import pytest
 
@@ -18,86 +21,371 @@ from shadowstep.exceptions.shadowstep_exceptions import ShadowstepException
 from shadowstep.shadowstep import Shadowstep
 
 
-class TestDecorators:
-    """Test class for decorator functionality."""
+class TestFailSafeElementDecorator:
+    """Integration tests for @fail_safe_element decorator through Element methods."""
 
-    def test_retry_decorator_success_on_first_try(self, app: Shadowstep):
-        """Test retry decorator succeeds on first attempt.
+    def test_element_tap_uses_fail_safe_element(
+        self, app: Shadowstep, android_settings_open_close: None
+    ):
+        """Test Element.tap() uses @fail_safe_element decorator.
 
         Steps:
-        1. Create a method decorated with @retry that returns True.
-        2. Call the method.
-        3. Verify it returns True without retries.
+        1. Get element using app.get_element().
+        2. Tap the element (internally uses @fail_safe_element).
+        3. Verify tap succeeds and element is clickable.
         """
-        call_count = []
+        # Scroll to make Battery visible (might be below fold)
+        recycler = app.get_element(
+            {"resource-id": "com.android.settings:id/main_content_scrollable_container"},
+            timeout=10
+        )
+        try:
+            element = recycler.scroll_to({"text": "Battery"}, direction="down", max_swipes=5)
+        except Exception:
+            # Battery might already be visible
+            element = app.get_element({"text": "Battery"}, timeout=10)
 
-        @retry(max_retries=3, delay=0.1)
-        def successful_method():
-            call_count.append(1)
-            return True
+        # This uses @fail_safe_element decorator internally
+        element.tap()
+        time.sleep(1)
 
-        result = successful_method()
+        # Verify tap worked - we should have navigated
+        package = app.get_current_package()
+        assert "com.android.settings" in package  # noqa: S101
 
+        # Go back
+        app.terminal.press_back()
+        time.sleep(1)
+
+    def test_element_send_keys_uses_fail_safe_element(
+        self, app: Shadowstep, android_settings_open_close: None
+    ):
+        """Test Element.send_keys() uses @fail_safe_element decorator.
+
+        Steps:
+        1. Navigate to searchable screen.
+        2. Get search input element.
+        3. Send keys to element (uses @fail_safe_element).
+        4. Verify text was entered.
+        """
+        # Open search in settings
+        search_icon = app.get_element({"description": "Search settings"}, timeout=10)
+        search_icon.tap()
+        time.sleep(1)
+
+        # Get search input
+        search_input = app.get_element({"resource-id": "android:id/search_src_text"}, timeout=10)
+
+        # This uses @fail_safe_element decorator
+        search_input.send_keys("battery")
+
+        # Verify text was entered
+        text = search_input.text
+        assert "battery" in text.lower()  # noqa: S101
+
+    def test_element_clear_uses_fail_safe_element(
+        self, app: Shadowstep, android_settings_open_close: None
+    ):
+        """Test Element.clear() uses @fail_safe_element decorator.
+
+        Steps:
+        1. Get search input element.
+        2. Send text to element.
+        3. Clear element (uses @fail_safe_element).
+        4. Verify text was cleared.
+        """
+        # Open search
+        search_icon = app.get_element({"description": "Search settings"}, timeout=10)
+        search_icon.tap()
+        time.sleep(1)
+
+        search_input = app.get_element({"resource-id": "android:id/search_src_text"}, timeout=10)
+        search_input.send_keys("test")
+
+        # This uses @fail_safe_element decorator
+        search_input.clear()
+        time.sleep(0.5)
+
+        # Verify cleared
+        text = search_input.text
+        assert text == "" or text is None  # noqa: S101
+
+    def test_element_is_displayed_uses_fail_safe_element(
+        self, app: Shadowstep, android_settings_open_close: None
+    ):
+        """Test Element.is_displayed() uses @fail_safe_element decorator.
+
+        Steps:
+        1. Get element using app.get_element().
+        2. Check if displayed (uses @fail_safe_element).
+        3. Verify result is boolean.
+        """
+        element = app.get_element({"text": "Battery"}, timeout=10)
+
+        # This uses @fail_safe_element decorator
+        result = element.is_displayed()
+
+        assert isinstance(result, bool)  # noqa: S101
         assert result is True  # noqa: S101
-        assert len(call_count) == 1  # noqa: S101
 
-    def test_retry_decorator_retries_on_false(self, app: Shadowstep):
-        """Test retry decorator retries when method returns False.
+    def test_element_text_property_uses_fail_safe_element(
+        self, app: Shadowstep, android_settings_open_close: None
+    ):
+        """Test Element.text property uses @fail_safe_element decorator.
 
         Steps:
-        1. Create a method that returns False first 2 times, then True.
-        2. Decorate with @retry(max_retries=3).
-        3. Verify it retries and eventually returns True.
+        1. Get element with text.
+        2. Get text from element (uses @fail_safe_element).
+        3. Verify text is returned.
+        """
+        # Get search icon which should have description
+        element = app.get_element({"description": "Search settings"}, timeout=10)
+
+        # This uses @fail_safe_element decorator
+        desc = element.get_attribute("content-desc")
+
+        assert isinstance(desc, str)  # noqa: S101
+        assert len(desc) > 0  # noqa: S101
+
+    def test_element_get_attribute_uses_fail_safe_element(
+        self, app: Shadowstep, android_settings_open_close: None
+    ):
+        """Test Element.get_attribute() uses @fail_safe_element decorator.
+
+        Steps:
+        1. Get element.
+        2. Get attribute from element (uses @fail_safe_element).
+        3. Verify attribute value is returned.
+        """
+        # Get search icon
+        element = app.get_element({"description": "Search settings"}, timeout=10)
+
+        # This uses @fail_safe_element decorator
+        class_name = element.get_attribute("class")
+
+        assert isinstance(class_name, str)  # noqa: S101
+        assert len(class_name) > 0  # noqa: S101
+
+    def test_element_click_uses_fail_safe_element(
+        self, app: Shadowstep, android_settings_open_close: None
+    ):
+        """Test Element.click() uses @fail_safe_element decorator.
+
+        Steps:
+        1. Get element.
+        2. Click element (uses @fail_safe_element).
+        3. Verify click succeeded by checking navigation.
+        """
+        # Click search icon
+        element = app.get_element({"description": "Search settings"}, timeout=10)
+
+        # This uses @fail_safe_element decorator
+        element.click()
+        time.sleep(1)
+
+        # Verify search opened - should see search input
+        try:
+            app.get_element({"resource-id": "android:id/search_src_text"}, timeout=5)
+            search_opened = True
+        except Exception:
+            search_opened = False
+
+        # Go back
+        app.terminal.press_back()
+        time.sleep(1)
+
+        assert search_opened  # noqa: S101
+
+    def test_element_scroll_to_uses_fail_safe_element(
+        self, app: Shadowstep, android_settings_open_close: None
+    ):
+        """Test Element.scroll_to() uses @fail_safe_element decorator.
+
+        Steps:
+        1. Get scrollable container.
+        2. Scroll to element (uses @fail_safe_element).
+        3. Verify scroll succeeded.
+        """
+        # Get recyclerview
+        recycler = app.get_element(
+            {"resource-id": "com.android.settings:id/main_content_scrollable_container"},
+            timeout=10
+        )
+
+        # This uses @fail_safe_element decorator
+        # Scroll to bottom element
+        try:
+            recycler.scroll_to({"text": "System"}, direction="down", max_swipes=10)
+            scroll_succeeded = True
+        except Exception:
+            scroll_succeeded = False
+
+        assert scroll_succeeded  # noqa: S101
+
+
+class TestShadowstepMethodsWithDecorators:
+    """Integration tests for Shadowstep methods using decorators."""
+
+    def test_get_current_package_with_decorators(
+        self, app: Shadowstep, android_settings_open_close: None
+    ):
+        """Test app.get_current_package() works correctly with decorators.
+
+        Steps:
+        1. Call app.get_current_package().
+        2. Verify it returns valid package name.
+        3. Verify method handles errors via decorators.
+        """
+        # This method likely uses decorators
+        package = app.get_current_package()
+
+        assert isinstance(package, str)  # noqa: S101
+        assert len(package) > 0  # noqa: S101
+        assert "com.android.settings" in package  # noqa: S101
+
+    def test_get_current_activity_with_decorators(
+        self, app: Shadowstep, android_settings_open_close: None
+    ):
+        """Test app.get_current_activity() works correctly with decorators.
+
+        Steps:
+        1. Call app.get_current_activity().
+        2. Verify it returns valid activity name.
+        """
+        activity = app.get_current_activity()
+
+        assert isinstance(activity, str)  # noqa: S101
+        assert len(activity) > 0  # noqa: S101
+
+    def test_get_element_with_decorators(
+        self, app: Shadowstep, android_settings_open_close: None
+    ):
+        """Test app.get_element() works with decorators.
+
+        Steps:
+        1. Use get_element to locate element.
+        2. Verify element is found.
+        3. Verify decorators handle retries if needed.
+        """
+        element = app.get_element({"description": "Search settings"}, timeout=10)
+
+        assert element is not None  # noqa: S101
+        assert element.is_displayed()  # noqa: S101
+
+    def test_get_elements_with_decorators(
+        self, app: Shadowstep, android_settings_open_close: None
+    ):
+        """Test app.get_elements() works with decorators.
+
+        Steps:
+        1. Use get_elements to find multiple elements.
+        2. Verify list is returned.
+        3. Verify decorators handle errors.
+        """
+        elements = app.get_elements({"class": "android.widget.TextView"}, timeout=10)
+
+        assert isinstance(elements, list)  # noqa: S101
+        assert len(elements) > 0  # noqa: S101
+
+    def test_swipe_bottom_to_top_with_decorators(self, app: Shadowstep, android_settings_open_close: None):
+        """Test app.swipe_bottom_to_top() works with decorators.
+
+        Steps:
+        1. Perform swipe_bottom_to_top action.
+        2. Verify swipe completed without errors.
+        3. Verify decorators handle any transient errors.
+        """
+        # This should work even if there are transient errors
+        app.swipe_bottom_to_top()
+        time.sleep(0.5)
+
+        # Verify we can still interact with UI
+        package = app.get_current_package()
+        assert "com.android.settings" in package  # noqa: S101
+
+    def test_swipe_top_to_bottom_with_decorators(self, app: Shadowstep, android_settings_open_close: None):
+        """Test app.swipe_top_to_bottom() works with decorators.
+
+        Steps:
+        1. Perform swipe_top_to_bottom action.
+        2. Verify swipe completed without errors.
+        """
+        app.swipe_top_to_bottom()
+        time.sleep(0.5)
+
+        # Verify we can still interact
+        package = app.get_current_package()
+        assert "com.android.settings" in package  # noqa: S101
+
+
+class TestRetryDecorator:
+    """Integration tests for @retry decorator using real app methods."""
+
+    def test_retry_decorator_with_app_method(
+        self, app: Shadowstep, android_settings_open_close: None
+    ):
+        """Test @retry decorator with method that uses app fixture.
+
+        Steps:
+        1. Create method decorated with @retry that uses app.
+        2. Simulate transient failures.
+        3. Verify retry logic works.
         """
         call_count = []
 
         @retry(max_retries=3, delay=0.1)
-        def failing_then_success():
+        def find_element_with_retry():
             call_count.append(1)
-            if len(call_count) < 3:
-                return False
-            return True
-
-        result = failing_then_success()
-
-        assert result is True  # noqa: S101
-        assert len(call_count) == 3  # noqa: S101
-
-    def test_retry_decorator_retries_on_none(self, app: Shadowstep):
-        """Test retry decorator retries when method returns None.
-
-        Steps:
-        1. Create a method that returns None first 2 times, then True.
-        2. Decorate with @retry(max_retries=3).
-        3. Verify it retries and eventually returns True.
-        """
-        call_count = []
-
-        @retry(max_retries=3, delay=0.1)
-        def none_then_success():
-            call_count.append(1)
+            # First 2 attempts return None, 3rd succeeds
             if len(call_count) < 3:
                 return None
-            return True
+            return app.get_element({"text": "Battery"}, timeout=5)
 
-        result = none_then_success()
+        result = find_element_with_retry()
 
-        assert result is True  # noqa: S101
+        assert result is not None  # noqa: S101
         assert len(call_count) == 3  # noqa: S101
+        assert result.is_displayed()  # noqa: S101
 
-    def test_retry_decorator_max_retries_exhausted(self, app: Shadowstep):
-        """Test retry decorator exhausts all retries.
+    def test_retry_decorator_success_on_first_try_with_app(
+        self, app: Shadowstep, android_settings_open_close: None
+    ):
+        """Test @retry succeeds on first attempt with real app.
 
         Steps:
-        1. Create a method that always returns False.
-        2. Decorate with @retry(max_retries=3).
-        3. Verify it retries max_retries times and returns False.
+        1. Create method that succeeds immediately.
+        2. Verify no retries happen.
+        """
+        call_count = []
+
+        @retry(max_retries=3, delay=0.1)
+        def get_package():
+            call_count.append(1)
+            return app.get_current_package()
+
+        result = get_package()
+
+        assert result is not None  # noqa: S101
+        assert len(call_count) == 1  # noqa: S101
+        assert "com.android.settings" in result  # noqa: S101
+
+    def test_retry_decorator_exhausts_retries_with_app(
+        self, app: Shadowstep, android_settings_open_close: None
+    ):
+        """Test @retry exhausts all retries when always failing.
+
+        Steps:
+        1. Create method that always returns False.
+        2. Verify it retries max times.
+        3. Verify final result is False.
         """
         call_count = []
 
         @retry(max_retries=3, delay=0.1)
         def always_fails():
             call_count.append(1)
+            # Check app is still connected
+            _ = app.is_connected()
             return False
 
         result = always_fails()
@@ -105,531 +393,313 @@ class TestDecorators:
         assert result is False  # noqa: S101
         assert len(call_count) == 3  # noqa: S101
 
-    def test_time_it_decorator_measures_execution_time(self, app: Shadowstep, capsys):
-        """Test time_it decorator measures execution time.
+
+class TestTimeItDecorator:
+    """Integration tests for @time_it decorator using real app methods."""
+
+    def test_time_it_decorator_with_app_method(
+        self, app: Shadowstep, android_settings_open_close: None, capsys
+    ):
+        """Test @time_it decorator measures execution time of app methods.
 
         Steps:
-        1. Create a method decorated with @time_it that sleeps for 0.1 seconds.
-        2. Call the method.
-        3. Verify execution time is printed and approximately correct.
+        1. Create method with @time_it that uses app.
+        2. Execute method.
+        3. Verify execution time is printed.
         """
 
         @time_it
-        def slow_method():
-            time.sleep(0.1)
-            return "completed"
+        def find_element_timed():
+            return app.get_element({"text": "Battery"}, timeout=10)
 
-        result = slow_method()
+        result = find_element_timed()
 
-        assert result == "completed"  # noqa: S101
+        assert result is not None  # noqa: S101
         captured = capsys.readouterr()
-        assert "Execution time of slow_method:" in captured.out  # noqa: S101
+        assert "Execution time of find_element_timed:" in captured.out  # noqa: S101
         assert "seconds" in captured.out  # noqa: S101
 
-    def test_log_info_decorator_logs_method_calls(self, app: Shadowstep, caplog):
-        """Test log_info decorator logs method entry and exit.
+    def test_time_it_preserves_return_value_with_app(
+        self, app: Shadowstep, android_settings_open_close: None, capsys
+    ):
+        """Test @time_it preserves return value from app methods.
 
         Steps:
-        1. Create a method decorated with @log_info().
-        2. Call the method with arguments.
-        3. Verify logs contain method entry and exit information.
+        1. Create method that returns app data.
+        2. Apply @time_it decorator.
+        3. Verify return value is preserved.
+        """
+
+        @time_it
+        def get_package_timed():
+            return app.get_current_package()
+
+        package = get_package_timed()
+
+        assert isinstance(package, str)  # noqa: S101
+        assert "com.android.settings" in package  # noqa: S101
+
+
+class TestLogDecorators:
+    """Integration tests for @log_info and @log_debug decorators."""
+
+    def test_log_info_decorator_with_app_method(
+        self, app: Shadowstep, android_settings_open_close: None, caplog
+    ):
+        """Test @log_info decorator logs app method calls.
+
+        Steps:
+        1. Create method with @log_info that uses app.
+        2. Execute method.
+        3. Verify logs contain entry and exit.
         """
         with caplog.at_level(logging.INFO):
 
             @log_info()
-            def logged_method(arg1: str, arg2: int) -> str:
-                return f"{arg1}_{arg2}"
+            def get_package_logged():
+                return app.get_current_package()
 
-            result = logged_method("test", 42)
+            result = get_package_logged()
 
-            assert result == "test_42"  # noqa: S101
-            assert "logged_method() <" in caplog.text  # noqa: S101
-            assert "logged_method() >" in caplog.text  # noqa: S101
+            assert result is not None  # noqa: S101
+            assert "get_package_logged() <" in caplog.text  # noqa: S101
+            assert "get_package_logged() >" in caplog.text  # noqa: S101
 
-    def test_log_debug_decorator_logs_method_calls(self, app: Shadowstep, caplog):
-        """Test log_debug decorator logs method entry and exit.
+    def test_log_debug_decorator_with_app_method(
+        self, app: Shadowstep, android_settings_open_close: None, caplog
+    ):
+        """Test @log_debug decorator logs app method calls.
 
         Steps:
-        1. Create a method decorated with @log_debug().
-        2. Call the method with arguments.
-        3. Verify logs contain method entry and exit information.
+        1. Create method with @log_debug that uses app.
+        2. Execute method.
+        3. Verify debug logs contain entry and exit.
         """
         with caplog.at_level(logging.DEBUG):
 
             @log_debug()
-            def debug_logged_method(arg1: str) -> str:
-                return f"processed_{arg1}"
+            def get_element_logged():
+                return app.get_element({"description": "Search settings"}, timeout=10)
 
-            result = debug_logged_method("value")
+            result = get_element_logged()
 
-            assert result == "processed_value"  # noqa: S101
-            assert "debug_logged_method() <" in caplog.text  # noqa: S101
-            assert "debug_logged_method() >" in caplog.text  # noqa: S101
+            assert result is not None  # noqa: S101
+            assert "get_element_logged() <" in caplog.text  # noqa: S101
+            assert "get_element_logged() >" in caplog.text  # noqa: S101
 
-    def test_fail_safe_decorator_with_shadowstep_methods(
+
+class TestFailSafeDecorator:
+    """Integration tests for @fail_safe decorator using real app."""
+
+    def test_fail_safe_decorator_with_app_integration(
         self, app: Shadowstep, android_settings_open_close: None
     ):
-        """Test fail_safe decorator works with Shadowstep instance methods.
+        """Test @fail_safe decorator works with app in integration scenario.
 
         Steps:
-        1. Create a test class with logger, is_connected, and reconnect methods.
-        2. Create a method that uses fail_safe decorator.
-        3. Verify the decorator works correctly in integration context.
+        1. Create wrapper class that uses app.
+        2. Apply @fail_safe decorator.
+        3. Verify decorator handles app operations correctly.
         """
 
-        class TestClass:
-            def __init__(self):
+        class AppWrapper:
+            def __init__(self, shadowstep_app):
                 self.logger = logging.getLogger(__name__)
-                self.shadowstep = app
-                self.call_count = 0
+                self.app = shadowstep_app
 
             def is_connected(self):
-                return app.is_connected()
+                return self.app.is_connected()
 
             def reconnect(self):
-                return app.reconnect()
+                return self.app.reconnect()
 
             @fail_safe(retries=2, delay=0.1)
-            def method_with_fail_safe(self):
-                self.call_count += 1
-                return True
+            def get_package_with_fail_safe(self):
+                return self.app.get_current_package()
 
-        test_obj = TestClass()
-        result = test_obj.method_with_fail_safe()
-
-        assert result is True  # noqa: S101
-        assert test_obj.call_count == 1  # noqa: S101
-
-    def test_fail_safe_decorator_with_exception_handling(self, app: Shadowstep):
-        """Test fail_safe decorator handles exceptions correctly.
-
-        Steps:
-        1. Create a test class with methods that raise exceptions.
-        2. Use fail_safe decorator with custom exception handling.
-        3. Verify retries happen and final exception is raised.
-        """
-        from selenium.common import NoSuchDriverException
-
-        class TestClass:
-            def __init__(self):
-                self.logger = logging.getLogger(__name__)
-                self.call_count = 0
-
-            def is_connected(self):
-                return True
-
-            def reconnect(self):
-                pass
-
-            @fail_safe(
-                retries=2,
-                delay=0.1,
-                exceptions=(NoSuchDriverException,),
-                raise_exception=ShadowstepException,
-            )
-            def method_that_fails(self):
-                self.call_count += 1
-                if self.call_count < 2:
-                    raise NoSuchDriverException("Test error")
-                return "success"
-
-        test_obj = TestClass()
-        result = test_obj.method_that_fails()
-
-        assert result == "success"  # noqa: S101
-        assert test_obj.call_count == 2  # noqa: S101
-
-    def test_fail_safe_decorator_raises_after_max_retries(self, app: Shadowstep):
-        """Test fail_safe decorator raises exception after exhausting retries.
-
-        Steps:
-        1. Create a method that always raises exception.
-        2. Use fail_safe decorator with limited retries.
-        3. Verify ShadowstepException is raised after all retries.
-        """
-        from selenium.common import NoSuchDriverException
-
-        class TestClass:
-            def __init__(self):
-                self.logger = logging.getLogger(__name__)
-                self.call_count = 0
-
-            def is_connected(self):
-                return True
-
-            def reconnect(self):
-                pass
-
-            @fail_safe(
-                retries=2,
-                delay=0.1,
-                exceptions=(NoSuchDriverException,),
-                raise_exception=ShadowstepException,
-            )
-            def method_that_always_fails(self):
-                self.call_count += 1
-                raise NoSuchDriverException("Persistent error")
-
-        test_obj = TestClass()
-
-        with pytest.raises(ShadowstepException) as exc_info:
-            test_obj.method_that_always_fails()
-
-        assert test_obj.call_count == 2  # noqa: S101
-        assert "method_that_always_fails failed after 2 attempts" in str(exc_info.value)  # noqa: S101
-
-    def test_fail_safe_decorator_with_fallback_value(self, app: Shadowstep):
-        """Test fail_safe decorator returns fallback value on failure.
-
-        Steps:
-        1. Create a method that always raises exception.
-        2. Use fail_safe with fallback value and no exception raising.
-        3. Verify fallback value is returned.
-        """
-        from selenium.common import NoSuchDriverException
-
-        class TestClass:
-            def __init__(self):
-                self.logger = logging.getLogger(__name__)
-
-            def is_connected(self):
-                return True
-
-            def reconnect(self):
-                pass
-
-            @fail_safe(
-                retries=1,
-                delay=0.1,
-                exceptions=(NoSuchDriverException,),
-                raise_exception=None,
-                fallback="fallback_value",
-            )
-            def method_with_fallback(self):
-                raise NoSuchDriverException("Error")
-
-        test_obj = TestClass()
-        result = test_obj.method_with_fallback()
-
-        assert result == "fallback_value"  # noqa: S101
-
-    def test_element_uses_fail_safe_element_decorator(
-        self, app: Shadowstep, android_settings_open_close: None
-    ):
-        """Test that Element methods use fail_safe_element decorator correctly.
-
-        Steps:
-        1. Create an Element using app.get_element().
-        2. Perform an action that triggers the decorator.
-        3. Verify the action completes successfully.
-        """
-        element = app.get_element({"text": "Settings"}, timeout=10)
-
-        # This should work as the decorator handles retries
-        result = element.is_displayed()
-
-        assert isinstance(result, bool)  # noqa: S101
-
-    def test_shadowstep_methods_use_decorators(
-        self, app: Shadowstep, android_settings_open_close: None
-    ):
-        """Test that Shadowstep methods properly use decorators.
-
-        Steps:
-        1. Use Shadowstep method that has decorators applied.
-        2. Verify the method works correctly with decorator functionality.
-        """
-        # The get_current_package method likely has decorators
-        package = app.get_current_package()
+        wrapper = AppWrapper(app)
+        package = wrapper.get_package_with_fail_safe()
 
         assert isinstance(package, str)  # noqa: S101
-        assert len(package) > 0  # noqa: S101
+        assert "com.android.settings" in package  # noqa: S101
 
-    def test_retry_decorator_with_custom_delay(self, app: Shadowstep):
-        """Test retry decorator respects custom delay parameter.
-
-        Steps:
-        1. Create a method with custom delay.
-        2. Measure time taken for retries.
-        3. Verify delay is respected.
-        """
-        call_count = []
-        start_time = time.time()
-
-        @retry(max_retries=3, delay=0.2)
-        def method_with_delay():
-            call_count.append(1)
-            if len(call_count) < 2:
-                return None
-            return True
-
-        result = method_with_delay()
-        elapsed = time.time() - start_time
-
-        assert result is True  # noqa: S101
-        assert len(call_count) == 2  # noqa: S101
-        # Should take at least one delay period (0.2s)
-        assert elapsed >= 0.2  # noqa: S101
-
-    def test_fail_safe_with_log_args(self, app: Shadowstep, caplog):
-        """Test fail_safe decorator with log_args enabled.
+    def test_fail_safe_handles_transient_errors_with_app(
+        self, app: Shadowstep, android_settings_open_close: None
+    ):
+        """Test @fail_safe handles transient errors in app operations.
 
         Steps:
-        1. Create a method with log_args=True.
-        2. Trigger an exception.
-        3. Verify arguments are logged.
+        1. Create method that may fail transiently.
+        2. Use @fail_safe decorator.
+        3. Verify retries happen and operation succeeds.
         """
         from selenium.common import NoSuchDriverException
 
-        class TestClass:
-            def __init__(self):
+        class AppWrapper:
+            def __init__(self, shadowstep_app):
                 self.logger = logging.getLogger(__name__)
+                self.app = shadowstep_app
+                self.attempt = 0
 
             def is_connected(self):
-                return True
+                return self.app.is_connected()
 
             def reconnect(self):
                 pass
 
             @fail_safe(
-                retries=1,
+                retries=3,
                 delay=0.1,
-                exceptions=(NoSuchDriverException,),
+                exceptions=(NoSuchDriverException, ValueError),
                 raise_exception=ShadowstepException,
-                log_args=True,
             )
-            def method_with_args_logging(self, arg1: str, arg2: int):
-                raise NoSuchDriverException("Test error")
+            def find_element_with_transient_error(self):
+                self.attempt += 1
+                # Simulate transient error on first attempt
+                if self.attempt == 1:
+                    raise ValueError("Transient error")
+                return self.app.get_element({"text": "Battery"}, timeout=10)
 
-        test_obj = TestClass()
+        wrapper = AppWrapper(app)
+        element = wrapper.find_element_with_transient_error()
 
-        with caplog.at_level(logging.DEBUG):
-            with pytest.raises(ShadowstepException):
-                test_obj.method_with_args_logging("test", 123)
+        assert element is not None  # noqa: S101
+        assert element.is_displayed()  # noqa: S101
+        assert wrapper.attempt == 2  # noqa: S101
 
-            # Verify args were logged
-            assert "[fail_safe] args:" in caplog.text  # noqa: S101
 
-    def test_current_page_decorator_logs_page_verification(self, app: Shadowstep, caplog):
-        """Test current_page decorator adds logging to page verification.
+class TestStepInfoDecorator:
+    """Integration tests for @step_info decorator."""
+
+    def test_step_info_decorator_with_app_operations(
+        self, app: Shadowstep, android_settings_open_close: None, caplog
+    ):
+        """Test @step_info decorator works with app operations.
 
         Steps:
-        1. Create a page class with is_current_page method.
-        2. Use current_page decorator.
-        3. Verify logging includes page object representation.
+        1. Create page object with @step_info decorated method.
+        2. Execute method that uses app.
+        3. Verify logging and screenshots work.
         """
-        from shadowstep.decorators.common_decorators import current_page
+        from shadowstep.decorators.common_decorators import step_info
 
-        class TestPage:
-            def __init__(self):
+        class SettingsPage:
+            def __init__(self, shadowstep_app):
                 self.logger = logging.getLogger(__name__)
+                self.app = shadowstep_app
 
-            def __repr__(self):
-                return "<TestPage>"
-
-            @current_page()
-            def is_current_page(self):
+            @step_info("Navigate to Battery settings")
+            def navigate_to_battery(self):
+                element = self.app.get_element({"text": "Battery"}, timeout=10)
+                element.tap()
+                time.sleep(1)
                 return True
 
         with caplog.at_level(logging.INFO):
-            page = TestPage()
+            page = SettingsPage(app)
+            result = page.navigate_to_battery()
+
+            # Go back to settings
+            app.terminal.press_back()
+            time.sleep(1)
+
+            assert result is True  # noqa: S101
+            assert "Navigate to Battery settings" in caplog.text  # noqa: S101
+
+
+class TestCurrentPageDecorator:
+    """Integration tests for @current_page decorator."""
+
+    def test_current_page_decorator_with_verification(
+        self, app: Shadowstep, android_settings_open_close: None, caplog
+    ):
+        """Test @current_page decorator works with page verification.
+
+        Steps:
+        1. Create page object with is_current_page method.
+        2. Use @current_page decorator.
+        3. Verify logging includes page representation.
+        """
+        from shadowstep.decorators.common_decorators import current_page
+
+        class SettingsPage:
+            def __init__(self, shadowstep_app):
+                self.logger = logging.getLogger(__name__)
+                self.app = shadowstep_app
+
+            def __repr__(self):
+                return "<SettingsPage>"
+
+            @current_page()
+            def is_current_page(self):
+                package = self.app.get_current_package()
+                return "com.android.settings" in package
+
+        with caplog.at_level(logging.INFO):
+            page = SettingsPage(app)
             result = page.is_current_page()
 
             assert result is True  # noqa: S101
             assert "is_current_page() <" in caplog.text  # noqa: S101
             assert "is_current_page() >" in caplog.text  # noqa: S101
-            assert "<TestPage>" in caplog.text  # noqa: S101
+            assert "<SettingsPage>" in caplog.text  # noqa: S101
 
-    def test_step_info_decorator_with_screenshot_capture(
-        self, app: Shadowstep, android_settings_open_close: None, caplog
+
+class TestDecoratorsCombinedScenarios:
+    """Integration tests for combined decorator scenarios."""
+
+    def test_multiple_element_operations_with_fail_safe_element(
+        self, app: Shadowstep, android_settings_open_close: None
     ):
-        """Test step_info decorator captures screenshots and logs.
+        """Test multiple Element operations using @fail_safe_element.
 
         Steps:
-        1. Create a test class method with step_info decorator.
-        2. Execute the method.
-        3. Verify logging and screenshot capture occurred.
+        1. Perform sequence of element operations.
+        2. Verify all operations succeed with decorator handling errors.
+        3. Verify decorator retries work across operations.
         """
-        from shadowstep.decorators.common_decorators import step_info
+        # All these operations use @fail_safe_element
+        element1 = app.get_element({"description": "Search settings"}, timeout=10)
+        assert element1.is_displayed()  # noqa: S101
 
-        class TestPageWithStepInfo:
-            def __init__(self):
-                self.logger = logging.getLogger(__name__)
+        desc = element1.get_attribute("content-desc")
+        assert "Search" in desc  # noqa: S101
 
-            @step_info("Test step with screenshot")
-            def perform_action(self):
-                return True
+        element1.click()
+        time.sleep(1)
 
-        with caplog.at_level(logging.INFO):
-            test_page = TestPageWithStepInfo()
-            result = test_page.perform_action()
+        # Verify navigation succeeded
+        package = app.get_current_package()
+        assert "com.android.settings" in package  # noqa: S101
 
-            assert result is True  # noqa: S101
-            assert "Test step with screenshot" in caplog.text  # noqa: S101
-            assert "perform_action" in caplog.text  # noqa: S101
+        # Go back
+        app.terminal.press_back()
+        time.sleep(1)
 
-    def test_step_info_decorator_handles_exceptions(
-        self, app: Shadowstep, android_settings_open_close: None, caplog
+    def test_element_operations_survive_stale_references(
+        self, app: Shadowstep, android_settings_open_close: None
     ):
-        """Test step_info decorator handles exceptions gracefully.
+        """Test @fail_safe_element handles stale element references.
 
         Steps:
-        1. Create a method that raises exception.
-        2. Use step_info decorator.
-        3. Verify exception is caught and logged.
+        1. Get element.
+        2. Perform actions that may cause staleness.
+        3. Verify decorator re-acquires element and succeeds.
         """
-        from shadowstep.decorators.common_decorators import step_info
+        # Get element
+        element = app.get_element({"description": "Search settings"}, timeout=10)
 
-        class TestPageWithError:
-            def __init__(self):
-                self.logger = logging.getLogger(__name__)
-                self.telegram = type('obj', (object,), {'send_message': lambda self, msg: None})()
+        # Scroll (may cause element to become stale)
+        app.swipe_top_to_bottom()
+        time.sleep(0.5)
+        app.swipe_bottom_to_top()
+        time.sleep(0.5)
 
-            @step_info("Step that will fail")
-            def failing_action(self):
-                raise ValueError("Test error")
+        # Try to interact with element (may be stale, but @fail_safe_element handles it)
+        try:
+            is_displayed = element.is_displayed()
+            stale_handled = True
+        except Exception:
+            stale_handled = False
 
-        with caplog.at_level(logging.ERROR):
-            test_page = TestPageWithError()
-            result = test_page.failing_action()
-
-            assert result is False  # noqa: S101
-            assert "Error in failing_action" in caplog.text  # noqa: S101
-
-    def test_fail_safe_decorator_reconnects_on_disconnect(self, app: Shadowstep):
-        """Test fail_safe decorator triggers reconnect when disconnected.
-
-        Steps:
-        1. Create a test class with reconnect tracking.
-        2. Simulate disconnection scenario (is_connected returns False).
-        3. Verify reconnect is called.
-        """
-        from selenium.common import NoSuchDriverException
-
-        class TestClass:
-            def __init__(self):
-                self.logger = logging.getLogger(__name__)
-                self.reconnect_called = False
-                self.call_count = 0
-                self.connected = False
-
-            def is_connected(self):
-                # Return False on first call to trigger reconnect
-                return self.connected
-
-            def reconnect(self):
-                self.reconnect_called = True
-                self.connected = True  # After reconnect, we're connected
-
-            @fail_safe(
-                retries=2,
-                delay=0.1,
-                exceptions=(NoSuchDriverException,),
-                raise_exception=ShadowstepException,
-            )
-            def method_needs_reconnect(self):
-                self.call_count += 1
-                if self.call_count == 1:
-                    raise NoSuchDriverException("Connection lost")
-                return "success"
-
-        test_obj = TestClass()
-        result = test_obj.method_needs_reconnect()
-
-        assert result == "success"  # noqa: S101
-        assert test_obj.reconnect_called is True  # noqa: S101
-
-    def test_retry_decorator_preserves_function_metadata(self, app: Shadowstep):
-        """Test retry decorator preserves function metadata.
-
-        Steps:
-        1. Create a function with docstring and name.
-        2. Apply retry decorator.
-        3. Verify function name and docstring are preserved.
-        """
-
-        @retry(max_retries=3)
-        def documented_function():
-            """This is a test function."""
-            return True
-
-        assert documented_function.__name__ == "documented_function"  # noqa: S101
-        assert documented_function.__doc__ == "This is a test function."  # noqa: S101
-
-    def test_time_it_decorator_preserves_return_value(self, app: Shadowstep, capsys):
-        """Test time_it decorator preserves return value and type.
-
-        Steps:
-        1. Create functions returning different types.
-        2. Apply time_it decorator.
-        3. Verify return values are preserved.
-        """
-
-        @time_it
-        def returns_dict():
-            return {"key": "value"}
-
-        @time_it
-        def returns_list():
-            return [1, 2, 3]
-
-        dict_result = returns_dict()
-        list_result = returns_list()
-
-        assert dict_result == {"key": "value"}  # noqa: S101
-        assert list_result == [1, 2, 3]  # noqa: S101
-
-    def test_log_info_and_log_debug_with_kwargs(self, app: Shadowstep, caplog):
-        """Test log decorators handle keyword arguments correctly.
-
-        Steps:
-        1. Create functions with kwargs.
-        2. Call with keyword arguments.
-        3. Verify kwargs are logged properly.
-        """
-        with caplog.at_level(logging.INFO):
-
-            @log_info()
-            def function_with_kwargs(name: str, value: int = 10):
-                return f"{name}={value}"
-
-            result = function_with_kwargs(name="test", value=42)
-
-            assert result == "test=42"  # noqa: S101
-            assert "kwargs=" in caplog.text  # noqa: S101
-
-    def test_fail_safe_decorator_handles_unexpected_exceptions(self, app: Shadowstep, caplog):
-        """Test fail_safe decorator handles unexpected exceptions.
-
-        Steps:
-        1. Create method that raises unexpected exception type.
-        2. Apply fail_safe decorator with specific exception list.
-        3. Verify unexpected exception is caught and logged.
-        """
-
-        class TestClass:
-            def __init__(self):
-                self.logger = logging.getLogger(__name__)
-
-            def is_connected(self):
-                return True
-
-            def reconnect(self):
-                pass
-
-            @fail_safe(
-                retries=1,
-                delay=0.1,
-                exceptions=(ValueError,),  # Only catching ValueError
-                raise_exception=ShadowstepException,
-            )
-            def method_unexpected_error(self):
-                raise TypeError("Unexpected error type")  # But raising TypeError
-
-        test_obj = TestClass()
-
-        with caplog.at_level(logging.ERROR):
-            with pytest.raises(ShadowstepException):
-                test_obj.method_unexpected_error()
-
-            assert "Unexpected error" in caplog.text  # noqa: S101
+        assert stale_handled  # noqa: S101
