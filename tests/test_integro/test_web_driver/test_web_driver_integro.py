@@ -224,44 +224,72 @@ class TestWebDriverSingleton:
         assert size["width"] > 0  # noqa: S101
         assert size["height"] > 0  # noqa: S101
 
-    def test_web_driver_singleton_class_attributes(self, app: Shadowstep) -> None:
-        """Test WebDriverSingleton has expected class attributes.
+    def test_web_driver_singleton_inherits_from_webdriver(self, app: Shadowstep) -> None:
+        """Test WebDriverSingleton inherits from WebDriver.
 
         Steps:
-        1. Verify _instance attribute exists.
-        2. Verify _driver attribute exists.
-        3. Verify _command_executor attribute exists.
+        1. Verify WebDriverSingleton is a subclass of WebDriver.
+        2. Verify it has WebDriver capabilities.
         """
-        # Verify class attributes exist
-        assert hasattr(WebDriverSingleton, "_instance")  # noqa: S101
-        assert hasattr(WebDriverSingleton, "_driver")  # noqa: S101
-        assert hasattr(WebDriverSingleton, "_command_executor")  # noqa: S101
+        # Verify class hierarchy
+        assert issubclass(WebDriverSingleton, WebDriver)  # noqa: S101
 
-    def test_get_driver_docstring(self, app: Shadowstep) -> None:
-        """Test get_driver() has proper docstring.
+    def test_driver_can_execute_basic_commands(self, app: Shadowstep) -> None:
+        """Test driver can execute basic WebDriver commands.
 
         Steps:
-        1. Get docstring of get_driver method.
-        2. Verify docstring is not None.
-        3. Verify docstring contains relevant keywords.
+        1. Get driver from get_driver().
+        2. Execute basic commands (get_window_size, page_source).
+        3. Verify commands complete successfully.
         """
-        docstring = WebDriverSingleton.get_driver.__doc__
+        driver = WebDriverSingleton.get_driver()
 
-        # Verify docstring exists and contains relevant info
-        assert docstring is not None  # noqa: S101
-        assert "WebDriver" in docstring  # noqa: S101
-        assert "Get" in docstring or "get" in docstring  # noqa: S101
+        # Test get_window_size
+        size = driver.get_window_size()
+        assert isinstance(size, dict)  # noqa: S101
+        assert "width" in size and "height" in size  # noqa: S101
 
-    def test_clear_instance_docstring(self, app: Shadowstep) -> None:
-        """Test clear_instance() has proper docstring.
+        # Test page_source
+        source = driver.page_source
+        assert isinstance(source, str)  # noqa: S101
+        assert len(source) > 0  # noqa: S101
+
+    def test_driver_session_remains_active(self, app: Shadowstep) -> None:
+        """Test driver session remains active across multiple get_driver calls.
 
         Steps:
-        1. Get docstring of clear_instance method.
-        2. Verify docstring is not None.
-        3. Verify docstring contains relevant keywords.
+        1. Get driver and store session_id.
+        2. Perform some operation.
+        3. Get driver again and verify session_id unchanged.
         """
-        docstring = WebDriverSingleton.clear_instance.__doc__
+        # Get initial driver and session
+        driver1 = WebDriverSingleton.get_driver()
+        session_id1 = driver1.session_id
 
-        # Verify docstring exists and contains relevant info
-        assert docstring is not None  # noqa: S101
-        assert "clear" in docstring.lower() or "remove" in docstring.lower()  # noqa: S101
+        # Perform operation
+        app.terminal.press_home()
+        
+        # Get driver again
+        driver2 = WebDriverSingleton.get_driver()
+        session_id2 = driver2.session_id
+
+        # Verify session is the same
+        assert session_id1 == session_id2  # noqa: S101
+        assert driver1 is driver2  # noqa: S101
+
+    def test_driver_can_find_elements(self, app: Shadowstep, android_settings_open_close: None) -> None:
+        """Test driver can find elements on screen.
+
+        Steps:
+        1. Get driver from get_driver().
+        2. Use find_elements to find elements.
+        3. Verify elements are found.
+        """
+        driver = WebDriverSingleton.get_driver()
+
+        # Find elements using xpath
+        elements = driver.find_elements("xpath", "//*")
+
+        # Verify elements were found
+        assert isinstance(elements, list)  # noqa: S101
+        assert len(elements) > 0  # noqa: S101

@@ -41,18 +41,32 @@ DEFAULT_BLACK_LIST_CLASSES: tuple[str, ...] = (
 )
 
 DEFAULT_WHITE_LIST_RESOURCE_ID: tuple[str, ...] = (
-    "button", "btn", "edit", "input",
-    "search", "list", "recycler", "nav",
-    "menu", "scrollable", "checkbox", "switch", "toggle",
+    "button",
+    "btn",
+    "edit",
+    "input",
+    "search",
+    "list",
+    "recycler",
+    "nav",
+    "menu",
+    "scrollable",
+    "checkbox",
+    "switch",
+    "toggle",
 )
 
 DEFAULT_BLACK_LIST_RESOURCE_ID: tuple[str, ...] = (
-    "decor", "divider", "wrapper",
+    "decor",
+    "divider",
+    "wrapper",
 )
 
 # Important containers that are allowed even if they contain 'container'
 DEFAULT_CONTAINER_WHITELIST: tuple[str, ...] = (
-    "main", "dialog", "scrollable",
+    "main",
+    "dialog",
+    "scrollable",
 )
 
 

@@ -28,6 +28,21 @@ import pytest
 from shadowstep.terminal.aapt import Aapt
 
 
+def check_aapt_available():
+    """Check if aapt is available in system PATH."""
+    try:
+        subprocess.run(["aapt", "version"], capture_output=True, check=False)
+        return True
+    except FileNotFoundError:
+        return False
+
+
+pytestmark = pytest.mark.skipif(
+    not check_aapt_available(),
+    reason="aapt utility not available in system PATH - install Android SDK build-tools"
+)
+
+
 class TestAaptIntegration:
     """Integration test cases for Aapt class."""
 

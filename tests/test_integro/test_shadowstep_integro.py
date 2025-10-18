@@ -513,14 +513,17 @@ class TestShadowstep:
         Steps:
         1. Call get_image() with image path.
         2. Verify that ShadowstepImage instance is returned.
-        3. Verify that instance has correct attributes.
+        3. Verify that instance can be used for image operations.
         """
         # Get image
         image = app.get_image(image=connected_devices_image_path, threshold=0.5, timeout=5.0)
 
         # Verify image is ShadowstepImage instance
         assert isinstance(image, ShadowstepImage)  # noqa: S101
-        assert image._base is app  # noqa: S101
+        # Verify image has expected public methods
+        assert hasattr(image, "tap")  # noqa: S101
+        assert hasattr(image, "wait")  # noqa: S101
+        assert hasattr(image, "is_visible")  # noqa: S101
 
     def test_get_images(self, app: Shadowstep, connected_devices_image_path: str):
         """Test get_images() returns list of ShadowstepImage wrappers.
@@ -537,10 +540,12 @@ class TestShadowstep:
         assert isinstance(images, list)  # noqa: S101
         assert len(images) > 0  # noqa: S101
 
-        # Verify all elements are ShadowstepImage instances
+        # Verify all elements are ShadowstepImage instances with expected methods
         for image in images:
             assert isinstance(image, ShadowstepImage)  # noqa: S101
-            assert image._base is app  # noqa: S101
+            assert hasattr(image, "tap")  # noqa: S101
+            assert hasattr(image, "wait")  # noqa: S101
+            assert hasattr(image, "is_visible")  # noqa: S101
 
     def test_push_file(self, app: Shadowstep):
         """Test push() pushes file to device.

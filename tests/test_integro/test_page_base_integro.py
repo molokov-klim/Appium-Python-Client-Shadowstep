@@ -255,25 +255,37 @@ class TestPageBaseShadowstep:
         assert isinstance(instance, PageSettings), "get_instance should return PageSettings instance"
         assert isinstance(instance, PageBaseShadowstep), "Should be instance of PageBaseShadowstep"
 
-    def test_instance_storage_in_class_variable(self, app: Shadowstep):
-        """Test that instances are stored in _instances class variable.
+    def test_clear_and_recreate_creates_new_instance(self, app: Shadowstep):
+        """Test that clear_instance followed by creation creates new instance.
 
         Steps:
-        1. Create page instance.
-        2. Check _instances class variable.
-        3. Verify instance is stored there.
+        1. Create page instance and get its id.
+        2. Clear instance.
+        3. Create new instance and verify it has different id.
+        4. Verify new instance still follows singleton pattern.
         """
         from _pages.page_settings import PageSettings
 
         # Clear first to ensure clean state
         PageSettings.clear_instance()
 
-        # Create instance
-        instance = PageSettings()
+        # Create first instance
+        instance1 = PageSettings()
+        id1 = id(instance1)
 
-        # Verify storage in _instances
-        assert PageSettings in PageBaseShadowstep._instances, "Page class should be in _instances"
-        assert PageBaseShadowstep._instances[PageSettings] is instance, "Stored instance should match created instance"
+        # Clear instance
+        PageSettings.clear_instance()
+
+        # Create new instance
+        instance2 = PageSettings()
+        id2 = id(instance2)
+
+        # Verify new instance was created
+        assert id1 != id2, "New instance should be created after clear_instance"
+
+        # Verify new instance follows singleton
+        instance3 = PageSettings()
+        assert instance3 is instance2, "New instance should follow singleton pattern"
 
     def test_shadowstep_instance_is_singleton(self, app: Shadowstep):
         """Test that all pages share the same Shadowstep instance.

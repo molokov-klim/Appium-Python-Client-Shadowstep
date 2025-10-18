@@ -354,24 +354,20 @@ class TestTransportIntegration:
         # Cleanup
         transport.ssh.close()
 
-    def test_transport_create_ssh_client_static_method(self, ssh_credentials):
-        """Test _create_ssh_client static method works correctly."""
+    def test_transport_multiple_instances(self, ssh_credentials):
+        """Test creating multiple Transport instances."""
         # Act
-        client = Transport._create_ssh_client(
-            server=ssh_credentials["server"],
-            port=ssh_credentials["port"],
-            user=ssh_credentials["user"],
-            password=ssh_credentials["password"]
-        )
+        transport1 = Transport(**ssh_credentials)
+        transport2 = Transport(**ssh_credentials)
 
-        # Assert
-        assert client is not None
-        assert isinstance(client, paramiko.SSHClient)
-        assert client.get_transport() is not None
-        assert client.get_transport().is_active()
+        # Assert - both should be independent and active
+        assert transport1 is not transport2
+        assert transport1.ssh.get_transport().is_active()
+        assert transport2.ssh.get_transport().is_active()
 
         # Cleanup
-        client.close()
+        transport1.ssh.close()
+        transport2.ssh.close()
 
     def test_transport_ssh_exec_command_with_timeout(self, ssh_credentials):
         """Test SSH command execution with reasonable timeout."""
