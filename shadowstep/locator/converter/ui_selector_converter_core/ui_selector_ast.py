@@ -4,13 +4,10 @@ This module defines the AST node classes used to represent
 parsed UiSelector expressions in a structured format for
 further processing and conversion.
 """
+
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import TYPE_CHECKING
-
-if TYPE_CHECKING:
-    from typing import Union
 
 
 @dataclass
@@ -22,7 +19,8 @@ class MethodCall:
     """
 
     name: str
-    args: list[Union[str, int, bool, "Selector"]] = field(default_factory=list)  # type: ignore[var-annotated]
+    args: list[str | int | bool | Selector] = field(default_factory=list)  # type: ignore[var-annotated]
+
 
 @dataclass
 class Selector:

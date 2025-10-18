@@ -33,7 +33,7 @@ class UiElementNode:
     tag: str
     attrs: dict[str, Any]
     parent: UiElementNode | None
-    children: list["UiElementNode"] = field(default_factory=list)  # type: ignore[var-annotated]
+    children: list[UiElementNode] = field(default_factory=list)  # type: ignore[var-annotated]
     depth: int = 0
     scrollable_parents: list[str] = field(default_factory=list)  # type: ignore[var-annotated]
 
