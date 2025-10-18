@@ -2,6 +2,16 @@
 
 This package provides a comprehensive Appium Python client with additional
 functionality for mobile automation testing.
+
+Public API:
+    - Shadowstep: Main framework class for mobile automation
+    - Element: Element interaction and assertion class
+    - PageBaseShadowstep: Base class for Page Object Model
+    - ShadowstepImage: Image processing and OCR capabilities
+    - UiSelector: Android UiSelector locator builder
+    - LocatorConverter: Convert between locator formats
+    - ShadowstepException: Base exception for the framework
+    - Decorators: Common decorators for test methods
 """
 import logging
 import sys
@@ -71,3 +81,39 @@ def configure_logging() -> None:
     logger.propagate = False
 
 configure_logging()
+
+# Public API exports
+from shadowstep.decorators import (  # noqa: E402
+    current_page,
+    fail_safe,
+    log_info,
+    retry,
+    step_info,
+    time_it,
+)
+from shadowstep.element import Element  # noqa: E402
+from shadowstep.exceptions.shadowstep_exceptions import ShadowstepException  # noqa: E402
+from shadowstep.image.image import ShadowstepImage  # noqa: E402
+from shadowstep.locator import LocatorConverter, UiSelector  # noqa: E402
+from shadowstep.page_base import PageBaseShadowstep  # noqa: E402
+from shadowstep.shadowstep import Shadowstep  # noqa: E402
+
+__all__ = [
+    # Core classes
+    "Shadowstep",
+    "Element",
+    "PageBaseShadowstep",
+    "ShadowstepImage",
+    # Locators
+    "UiSelector",
+    "LocatorConverter",
+    # Exceptions
+    "ShadowstepException",
+    # Decorators
+    "current_page",
+    "fail_safe",
+    "log_info",
+    "retry",
+    "step_info",
+    "time_it",
+]

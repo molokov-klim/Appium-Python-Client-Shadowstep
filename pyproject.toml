@@ -1,6 +1,6 @@
 [project]
 name = "appium-python-client-shadowstep"
-version = "0.34.174"
+version = "0.34.175"
 description = "UI Testing Framework powered by Appium Python Client"
 authors = [{ name = "Molokov Klim", email = "ultrakawaii9654449192@gmail.com" }]
 license = "MIT"
@@ -165,4 +165,5 @@ build-backend = "setuptools.build_meta"
 include = ["shadowstep*"]
 
 [tool.setuptools.package-data]
+"shadowstep" = ["py.typed"]
 "shadowstep.page_object.templates" = ["*.j2"]
