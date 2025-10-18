@@ -12,8 +12,8 @@ import re
 from pathlib import Path
 from typing import TYPE_CHECKING, Any
 
+from anyascii import anyascii
 from jinja2 import Environment, FileSystemLoader
-from unidecode import unidecode
 
 from shadowstep.exceptions.shadowstep_exceptions import (
     ShadowstepFailedToNormalizeScreenNameError,
@@ -811,7 +811,7 @@ class PageObjectGenerator:
 
         """
         self.logger.debug("%s", get_current_func_name())
-        parts = re.split(r"[^\w]+", unidecode(s))
+        parts = re.split(r"[^\w]+", anyascii(s))
         return [p.lower() for p in parts if p]
 
     def _strip_package_prefix(self, resource_id: str) -> str:

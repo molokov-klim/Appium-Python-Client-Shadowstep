@@ -22,7 +22,7 @@ dependencies = [
     "networkx>=3.2.1", # navigator
     "lxml>=6.0.2", # page object generator
     "jinja2>=3.1.6", # page object generator
-    "unidecode>=1.4.0", # page object generator
+    "anyascii>=0.3.3", # page object generator
     "eulxml>=1.1.3", # ast parsing xpath
     "setuptools==80.9.0", # nessecary dependency for eulxml
     "wheel>=0.45.1",
