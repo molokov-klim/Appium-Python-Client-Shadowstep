@@ -1,26 +1,26 @@
-# 📋 МАНИФЕСТ ТЕСТИРОВАНИЯ SHADOWSTEP
+# 📋 SHADOWSTEP TESTING MANIFEST
 
-> **Принцип:** Тестируй ПОВЕДЕНИЕ, а не реализацию. Тестируй КОНТРАКТЫ, а не детали.
+> **Principle:** Test BEHAVIOR, not implementation. Test CONTRACTS, not details.
 
 ---
 
-## 🎯 ПИРАМИДА ТЕСТИРОВАНИЯ
+## 🎯 TESTING PYRAMID
 
 ```
                 E2E / Smoke
                ╱────────────╲      5-10%
-              ╱  Критичные   ╲     
-             ╱    flows с      ╲   • Полные user scenarios
-            ╱  реальным Appium  ╲  • Regression suite
-           ╱──────────────────────╲ • Медленные (минуты)
+              ╱   Critical   ╲     
+             ╱    flows with   ╲   • Complete user scenarios
+            ╱   real Appium    ╲  • Regression suite
+           ╱──────────────────────╲ • Slow (minutes)
           ╱                        ╲
          ╱──────────────────────────╲
         ╱                            ╲
        ╱       Integration Tests      ╲   20-25%
-      ╱   Реальный Appium (мок driver) ╲
-     ╱     Проверка границ модулей      ╲  • Element + Appium
+      ╱    Real Appium (mock driver)   ╲
+     ╱      Module boundary checks      ╲  • Element + Appium
     ╱────────────────────────────────────╲ • Terminal + ADB  
-   ╱                                      ╲ • Средняя скорость
+   ╱                                      ╲ • Medium speed
   ╱────────────────────────────────────────╲
  ╱                                          ╲
 ╱─────────────────────────────────────────────╲
@@ -30,51 +30,51 @@
    ╲─────────────────────────────────────╱    Unit Tests
     ╲───────────────────────────────────╱     75-80%
      ╲─────────────────────────────────╱
-      ╲───────────────────────────────╱      • Изолированные
-       ╲─────────────────────────────╱       • С моками
-        ╲───────────────────────────╱        • Мгновенные (<1с)
-         ╲─────────────────────────╱         • Детальные проверки
+      ╲───────────────────────────────╱      • Isolated
+       ╲─────────────────────────────╱       • With mocks
+        ╲───────────────────────────╱        • Instant (<1s)
+         ╲─────────────────────────╱         • Detailed checks
           ╲───────────────────────╱
            ╲─────────────────────╱
             ╲───────────────────╱
              ╲─────────────────╱
 ```
 
-**Целевое распределение:** 75% unit / 20% integration / 5% e2e
+**Target distribution:** 75% unit / 20% integration / 5% e2e
 
 ---
 
-## 📊 ЦЕЛЕВЫЕ МЕТРИКИ
+## 📊 TARGET METRICS
 
 ```
 ╔═══════════════════════════════════════════════════════════╗
-║  ПОКАЗАТЕЛЬ                    ЦЕЛЕВОЕ ЗНАЧЕНИЕ          ║
+║  METRIC                        TARGET VALUE              ║
 ╠═══════════════════════════════════════════════════════════╣
-║  Общее test coverage           ≥ 90%                     ║
-║  Unit tests                     150-170 тестов (75%)     ║
-║  Integration tests              40-50 тестов (20%)       ║
-║  E2E/Smoke tests                10-15 тестов (5%)        ║
-║  Время выполнения unit          < 30 секунд              ║
-║  Время выполнения integration   < 5 минут                ║
-║  Время выполнения полного suite < 6-7 минут             ║
+║  Overall test coverage         ≥ 90%                     ║
+║  Unit tests                     150-170 tests (75%)      ║
+║  Integration tests              40-50 tests (20%)        ║
+║  E2E/Smoke tests                10-15 tests (5%)         ║
+║  Unit execution time            < 30 seconds             ║
+║  Integration execution time     < 5 minutes              ║
+║  Full suite execution time      < 6-7 minutes            ║
 ╚═══════════════════════════════════════════════════════════╝
 ```
 
-### **Coverage по модулям (минимальные требования):**
+### **Coverage by modules (minimum requirements):**
 
 ```
-КРИТИЧНЫЕ (100%):
+CRITICAL (100%):
 ├─ locator/converter/ui_selector_lexer.py      100%
 ├─ locator/converter/ui_selector_parser.py     100%
 └─ locator/converter/ui_selector_ast.py        100%
 
-ВАЖНЫЕ (95%+):
+IMPORTANT (95%+):
 ├─ locator/converter/locator_converter.py      95%
 ├─ locator/converter/*_converter.py            95%
 ├─ exceptions/shadowstep_exceptions.py         95%
 └─ element/element.py (public methods)         95%
 
-СТАНДАРТНЫЕ (85-90%):
+STANDARD (85-90%):
 ├─ element/actions.py                          90%
 ├─ element/gestures.py                         90%
 ├─ element/properties.py                       90%
@@ -85,7 +85,7 @@
 ├─ page_object/page_object_generator.py        85%
 └─ page_object/page_object_parser.py           85%
 
-БАЗОВЫЕ (70-80%):
+BASIC (70-80%):
 ├─ utils/                                      80%
 ├─ decorators/                                 80%
 ├─ terminal/                                   75%
@@ -95,60 +95,60 @@
 
 ---
 
-## 🏗️ СТРУКТУРА ТЕСТОВ
+## 🏗️ TEST STRUCTURE
 
-### **Обязательная организация:**
+### **Mandatory organization:**
 
 ```
 tests/
-├─ test_unit/              # 75% всех тестов, мгновенное выполнение
-│  ├─ test_locator/        # 100% coverage парсера и конверторов
-│  ├─ test_element/        # Моки WebElement, детальные проверки
-│  ├─ test_navigator/      # Моки графа и страниц
-│  ├─ test_page_object/    # XML фикстуры, проверка логики
-│  ├─ test_exceptions/     # Все 88 exception классов
-│  ├─ test_utils/          # Чистые функции
-│  └─ test_decorators/     # Декораторы с моками
+├─ test_unit/              # 75% of all tests, instant execution
+│  ├─ test_locator/        # 100% coverage parser and converters
+│  ├─ test_element/        # WebElement mocks, detailed checks
+│  ├─ test_navigator/      # Graph and page mocks
+│  ├─ test_page_object/    # XML fixtures, logic checks
+│  ├─ test_exceptions/     # All 88 exception classes
+│  ├─ test_utils/          # Pure functions
+│  └─ test_decorators/     # Decorators with mocks
 │
-├─ test_integro/           # 20% всех тестов, реальный Appium
-│  ├─ test_element/        # Реальные взаимодействия с UI
-│  ├─ test_terminal/       # ADB/AAPT/SSH команды
-│  ├─ test_navigator/      # Реальная навигация
-│  ├─ test_locator/        # Smoke tests (конверторы работают)
-│  ├─ test_page_object/    # Реальный page source
-│  └─ test_*_integro.py    # Интеграционные проверки
+├─ test_integro/           # 20% of all tests, real Appium
+│  ├─ test_element/        # Real UI interactions
+│  ├─ test_terminal/       # ADB/AAPT/SSH commands
+│  ├─ test_navigator/      # Real navigation
+│  ├─ test_locator/        # Smoke tests (converters work)
+│  ├─ test_page_object/    # Real page source
+│  └─ test_*_integro.py    # Integration checks
 │
-└─ test_e2e/               # 5% тестов (опционально, можно выделить позже)
-   └─ test_critical_flows.py   # Полные user scenarios
+└─ test_e2e/               # 5% tests (optional, can be added later)
+   └─ test_critical_flows.py   # Complete user scenarios
 ```
 
 ---
 
-## 📜 ПРАВИЛА НАПИСАНИЯ ТЕСТОВ
+## 📜 TEST WRITING RULES
 
-### **ПРАВИЛО 1: Unit тесты**
+### **RULE 1: Unit tests**
 
 ```
-ЧТО ТЕСТИРУЕМ В UNIT:
-✅ Чистая логика (парсинг, конвертация, валидация)
-✅ Публичный API (методы классов)
-✅ Edge cases (пустой ввод, None, некорректные данные)
+WHAT TO TEST IN UNIT:
+✅ Pure logic (parsing, conversion, validation)
+✅ Public API (class methods)
+✅ Edge cases (empty input, None, invalid data)
 ✅ Exception handling
-✅ Утилиты и хелперы
+✅ Utilities and helpers
 
-КАК ТЕСТИРУЕМ:
-✅ Моки для внешних зависимостей (WebDriver, WebElement)
-✅ Фикстуры для тестовых данных (XML, словари)
-✅ Параметризация (@pytest.mark.parametrize)
-✅ Изоляция (без сети, БД, файловой системы)
+HOW TO TEST:
+✅ Mocks for external dependencies (WebDriver, WebElement)
+✅ Fixtures for test data (XML, dictionaries)
+✅ Parametrization (@pytest.mark.parametrize)
+✅ Isolation (no network, DB, file system)
 
-ОБЯЗАТЕЛЬНО:
-✅ Время выполнения: < 100ms на тест
-✅ Нет реальных Appium/Selenium вызовов
-✅ Нет sleep/time.sleep
-✅ Тестируем контракт, не реализацию
+MANDATORY:
+✅ Execution time: < 100ms per test
+✅ No real Appium/Selenium calls
+✅ No sleep/time.sleep
+✅ Test contract, not implementation
 
-ПРИМЕР:
+EXAMPLE:
 ```python
 @pytest.mark.parametrize("locator,expected", [
     ({"text": "foo"}, ("//*[@text='foo']", "xpath")),
@@ -161,70 +161,70 @@ def test_to_xpath_all_formats(locator, expected):
 ```
 ```
 
-### **ПРАВИЛО 2: Integration тесты**
+### **RULE 2: Integration tests**
 
 ```
-ЧТО ТЕСТИРУЕМ В INTEGRATION:
-✅ Взаимодействие Element с реальным Appium
-✅ ADB/AAPT команды на реальном устройстве
-✅ Terminal команды (SSH, транспорт)
-✅ Навигация между реальными страницами
-✅ Page source парсинг
-✅ Логи (logcat через WebSocket)
-✅ Timing и race conditions
+WHAT TO TEST IN INTEGRATION:
+✅ Element interaction with real Appium
+✅ ADB/AAPT commands on real device
+✅ Terminal commands (SSH, transport)
+✅ Navigation between real pages
+✅ Page source parsing
+✅ Logs (logcat via WebSocket)
+✅ Timing and race conditions
 
-КОГДА ПИСАТЬ INTEGRATION:
-✅ Когда НЕ МОЖЕМ адекватно замокировать
-✅ Когда проверяем РЕАЛЬНОЕ устройство/Appium
-✅ Когда важны timing/async/race conditions
-✅ Когда проверяем boundary между системами
+WHEN TO WRITE INTEGRATION:
+✅ When we CANNOT adequately mock
+✅ When checking REAL device/Appium
+✅ When timing/async/race conditions matter
+✅ When checking boundary between systems
 
-НЕ ПИСАТЬ INTEGRATION:
-❌ Для чистой логики (парсинг, конвертация)
-❌ Для exception классов
-❌ Для утилит без внешних зависимостей
-❌ Если можно адекватно замокировать
+DO NOT WRITE INTEGRATION:
+❌ For pure logic (parsing, conversion)
+❌ For exception classes
+❌ For utilities without external dependencies
+❌ If can adequately mock
 
-ОБЯЗАТЕЛЬНО:
-✅ Фикстура app: Shadowstep (conftest.py)
-✅ Фикстура stability (ожидание стабильности UI)
-✅ Smoke tests с параметризацией (не детальные проверки)
-✅ Минимум дублирования с unit
+MANDATORY:
+✅ Fixture app: Shadowstep (conftest.py)
+✅ Fixture stability (wait for UI stability)
+✅ Smoke tests with parametrization (not detailed checks)
+✅ Minimum duplication with unit
 
-ПРИМЕР:
+EXAMPLE:
 ```python
 @pytest.mark.parametrize("gesture", ["swipe_up", "swipe_down", "scroll_left"])
 def test_element_gestures_work_on_real_device(self, app, gesture):
-    """Smoke: жесты работают на реальном устройстве"""
+    """Smoke: gestures work on real device"""
     element = app.get_element({"class": "android.widget.ScrollView"})
     method = getattr(element, gesture)
-    result = method()  # Выполняем на реальном устройстве
+    result = method()  # Execute on real device
     assert result is element  # Chainable
 ```
 ```
 
-### **ПРАВИЛО 3: E2E/Smoke тесты**
+### **RULE 3: E2E/Smoke tests**
 
 ```
-ЧТО ТЕСТИРУЕМ В E2E:
-✅ Критичные user flows (end-to-end)
-✅ Регрессионные сценарии
-✅ Примеры использования фреймворка
+WHAT TO TEST IN E2E:
+✅ Critical user flows (end-to-end)
+✅ Regression scenarios
+✅ Framework usage examples
 
-КОГДА ПИСАТЬ:
-✅ После major рефакторинга (regression check)
-✅ Перед релизом (smoke suite)
-✅ Для документации (живые примеры)
+WHEN TO WRITE:
+✅ After major refactoring (regression check)
+✅ Before release (smoke suite)
+✅ For documentation (live examples)
 
-ХАРАКТЕРИСТИКИ:
-✅ Полные сценарии (несколько действий)
-✅ Реалистичные use cases
-✅ Минимум ассертов (проверяем flow, не детали)
+CHARACTERISTICS:
+✅ Complete scenarios (multiple actions)
+✅ Realistic use cases
+✅ Minimum asserts (check flow, not details)
 
-ПРИМЕР:
+EXAMPLE:
 ```python
 def test_full_page_object_workflow_e2e(app):
-    """E2E: полный workflow с Page Objects"""
+    """E2E: complete workflow with Page Objects"""
     # 1. Navigate
     app.navigator.navigate(PageA(), PageB())
     
@@ -238,102 +238,102 @@ def test_full_page_object_workflow_e2e(app):
 
 ---
 
-## 🚫 АНТИ-ПАТТЕРНЫ (что НЕ делать)
+## 🚫 ANTI-PATTERNS (what NOT to do)
 
-### **❌ Анти-паттерн 1: Тестирование implementation details**
+### **❌ Anti-pattern 1: Testing implementation details**
 
 ```python
-# ❌ ПЛОХО:
+# ❌ BAD:
 def test_element_has_actions_attribute():
     element = Element(...)
-    assert hasattr(element, 'actions')  # Тестируем структуру!
+    assert hasattr(element, 'actions')  # Testing structure!
     assert isinstance(element.actions, ElementActions)
 
-# ✅ ХОРОШО:
+# ✅ GOOD:
 def test_element_provides_action_methods():
     element = Element(...)
-    result = element.click()  # Тестируем поведение!
+    result = element.click()  # Testing behavior!
     assert result is element
 ```
 
-### **❌ Анти-паттерн 2: Дублирование unit и integration**
+### **❌ Anti-pattern 2: Duplicating unit and integration**
 
 ```python
-# ❌ ПЛОХО:
+# ❌ BAD:
 # unit test:
 def test_converter_to_dict():
     assert converter.to_dict({"text": "foo"}) == {"text": "foo"}
 
-# integration test (ДУБЛЬ!):
+# integration test (DUPLICATE!):
 def test_converter_to_dict_integro(app):
     assert converter.to_dict({"text": "foo"}) == {"text": "foo"}
-    element = app.get_element(...)  # Лишняя проверка
+    element = app.get_element(...)  # Unnecessary check
 
-# ✅ ХОРОШО:
-# unit test (детально):
-@pytest.mark.parametrize("input,expected", [...])  # 20 кейсов
+# ✅ GOOD:
+# unit test (detailed):
+@pytest.mark.parametrize("input,expected", [...])  # 20 cases
 def test_converter_all_cases(input, expected):
     assert converter.to_dict(input) == expected
 
 # integration test (smoke):
 def test_converted_locators_work_with_app(app):
-    for loc in [dict, xpath, ui]:  # Только проверка что работает
+    for loc in [dict, xpath, ui]:  # Only check it works
         assert app.get_element(converter.to_dict(loc)) is not None
 ```
 
-### **❌ Анти-паттерн 3: Мокирование внутренних методов**
+### **❌ Anti-pattern 3: Mocking internal methods**
 
 ```python
-# ❌ ПЛОХО:
+# ❌ BAD:
 def test_element_click():
-    with patch.object(element, '_internal_method'):  # Внутренний метод!
+    with patch.object(element, '_internal_method'):  # Internal method!
         element.click()
 
-# ✅ ХОРОШО:
+# ✅ GOOD:
 def test_element_click():
-    mock_native = Mock(spec=WebElement)  # Граница системы!
+    mock_native = Mock(spec=WebElement)  # System boundary!
     element = Element(..., native=mock_native)
     element.click()
     mock_native.click.assert_called_once()
 ```
 
-### **❌ Анти-паттерн 4: Integration для чистой логики**
+### **❌ Anti-pattern 4: Integration for pure logic**
 
 ```python
-# ❌ ПЛОХО:
-def test_parser_integro(app):  # Парсеру НЕ НУЖЕН app!
+# ❌ BAD:
+def test_parser_integro(app):  # Parser DOESN'T NEED app!
     result = Parser(Lexer("text('foo')").tokens()).parse()
     assert result.methods[0].name == "text"
 
-# ✅ ХОРОШО:
-def test_parser_unit():  # Чистая логика в unit!
+# ✅ GOOD:
+def test_parser_unit():  # Pure logic in unit!
     result = Parser(Lexer("text('foo')").tokens()).parse()
     assert result.methods[0].name == "text"
 ```
 
 ---
 
-## 📊 ТРЕБОВАНИЯ ПО МОДУЛЯМ
+## 📊 MODULE REQUIREMENTS
 
-### **Tier 1: КРИТИЧНЫЕ (100% coverage обязательно)**
-
-```
-Модули где баг = катастрофа
-
-locator/converter/ui_selector_lexer.py       [100%] ← Парсер ядро
-locator/converter/ui_selector_parser.py      [100%] ← Парсер ядро
-locator/converter/ui_selector_ast.py         [100%] ← Парсер ядро
-
-Тесты:
-├─ Unit: ВСЕ edge cases (malformed input, escaped, unicode)
-├─ Параметризация: каждый метод UiSelector
-└─ Integration: smoke test "парсер работает с Appium"
-```
-
-### **Tier 2: ВАЖНЫЕ (95%+ coverage)**
+### **Tier 1: CRITICAL (100% coverage mandatory)**
 
 ```
-Модули публичного API
+Modules where bug = catastrophe
+
+locator/converter/ui_selector_lexer.py       [100%] ← Parser core
+locator/converter/ui_selector_parser.py      [100%] ← Parser core
+locator/converter/ui_selector_ast.py         [100%] ← Parser core
+
+Tests:
+├─ Unit: ALL edge cases (malformed input, escaped, unicode)
+├─ Parametrization: every UiSelector method
+└─ Integration: smoke test "parser works with Appium"
+```
+
+### **Tier 2: IMPORTANT (95%+ coverage)**
+
+```
+Public API modules
 
 locator/converter/locator_converter.py       [95%+]
 locator/converter/xpath_converter.py         [95%+]
@@ -341,13 +341,13 @@ locator/converter/dict_converter.py          [95%+]
 element/element.py (public methods only)     [95%+]
 exceptions/shadowstep_exceptions.py          [95%+]
 
-Тесты:
-├─ Unit: Все публичные методы + edge cases
-├─ Integration: Smoke tests (работает с реальным app)
-└─ Не тестируем private методы (начинающиеся с _)
+Tests:
+├─ Unit: All public methods + edge cases
+├─ Integration: Smoke tests (works with real app)
+└─ Don't test private methods (starting with _)
 ```
 
-### **Tier 3: СТАНДАРТНЫЕ (85-90% coverage)**
+### **Tier 3: STANDARD (85-90% coverage)**
 
 ```
 element/actions.py                           [90%]
@@ -362,13 +362,13 @@ navigator/page_graph.py                      [85%]
 page_object/page_object_generator.py         [85%]
 page_object/page_object_parser.py            [85%]
 
-Тесты:
-├─ Unit: Публичные методы, основные edge cases
-├─ Integration: Критичные flows с реальным устройством
-└─ Баланс между покрытием и практичностью
+Tests:
+├─ Unit: Public methods, main edge cases
+├─ Integration: Critical flows with real device
+└─ Balance between coverage and practicality
 ```
 
-### **Tier 4: БАЗОВЫЕ (70-80% coverage)**
+### **Tier 4: BASIC (70-80% coverage)**
 
 ```
 utils/utils.py                               [80%]
@@ -379,87 +379,87 @@ terminal/adb.py                              [75%]
 image/image.py                               [70%]
 logcat/shadowstep_logcat.py                  [70%]
 
-Тесты:
-├─ Unit: Основные функции
-├─ Integration: Если требуют внешние зависимости (ADB, SSH)
-└─ Не гонимся за 100%
+Tests:
+├─ Unit: Main functions
+├─ Integration: If require external dependencies (ADB, SSH)
+└─ Don't chase 100%
 ```
 
 ---
 
-## 🎯 ПРАВИЛА РАСПРЕДЕЛЕНИЯ ТЕСТОВ
+## 🎯 TEST DISTRIBUTION RULES
 
-### **В UNIT должны быть:**
+### **UNIT tests should include:**
 
 ```
-✅ Парсеры (Lexer, Parser, AST)
-   └─ Чистая логика, строка → структура
+✅ Parsers (Lexer, Parser, AST)
+   └─ Pure logic, string → structure
 
-✅ Конверторы (все *_converter.py)
-   └─ Преобразование данных между форматами
+✅ Converters (all *_converter.py)
+   └─ Data transformation between formats
 
-✅ Exceptions (все классы исключений)
-   └─ Чистый Python, raise/catch проверки
+✅ Exceptions (all exception classes)
+   └─ Pure Python, raise/catch checks
 
-✅ Utils (чистые функции без I/O)
-   └─ Функции преобразования, вычисления
+✅ Utils (pure functions without I/O)
+   └─ Transformation functions, calculations
 
-✅ Element публичный API (с моками)
-   └─ click(), send_keys(), get_element() и т.д.
-   └─ Мокируем WebElement
+✅ Element public API (with mocks)
+   └─ click(), send_keys(), get_element() etc.
+   └─ Mock WebElement
 
-✅ Navigator логика (с моками)
-   └─ Граф, pathfinding с мок страницами
+✅ Navigator logic (with mocks)
+   └─ Graph, pathfinding with mock pages
 
 ✅ Decorators
-   └─ Проверка логики обёрток
+   └─ Check wrapper logic
 ```
 
-### **В INTEGRATION должны быть:**
+### **INTEGRATION tests should include:**
 
 ```
-✅ Element взаимодействия (actions, gestures, waiting)
-   └─ Реальные клики, свайпы на устройстве
+✅ Element interactions (actions, gestures, waiting)
+   └─ Real clicks, swipes on device
 
-✅ Terminal команды (ADB, AAPT, SSH)
-   └─ Нельзя адекватно замокировать
+✅ Terminal commands (ADB, AAPT, SSH)
+   └─ Cannot adequately mock
 
-✅ Navigator с реальными страницами
-   └─ Навигация требует реальный UI
+✅ Navigator with real pages
+   └─ Navigation requires real UI
 
-✅ Page Object с реальным page source
-   └─ Crawler, реальное XML дерево
+✅ Page Object with real page source
+   └─ Crawler, real XML tree
 
 ✅ Logcat
-   └─ WebSocket соединение к Appium
+   └─ WebSocket connection to Appium
 
 ✅ Image processing
-   └─ OpenCV с реальными screenshots
+   └─ OpenCV with real screenshots
 
 ✅ Smoke tests
-   └─ Конверторы/парсеры работают с Appium
+   └─ Converters/parsers work with Appium
 ```
 
 ---
 
-## 🛠️ СТАНДАРТЫ КОДА ТЕСТОВ
+## 🛠️ TEST CODE STANDARDS
 
-### **Именование:**
+### **Naming:**
 
 ```
 test_unit/test_[module]/test_[feature]_unit.py
 test_integro/test_[module]/test_[feature]_integro.py
 
-Классы:
+Classes:
 class Test[Feature]:
     def test_[specific_case](self):
         ...
 
-Описания:
+Descriptions:
 """Test that [subject] [action] when [condition]."""
 ```
 
-### **Структура unit теста:**
+### **Unit test structure:**
 
 ```python
 # Arrange
@@ -474,297 +474,278 @@ assert result == expected
 mock_dependency.some_method.assert_called_once()
 ```
 
-### **Структура integration теста:**
+### **Integration test structure:**
 
 ```python
 def test_feature_integro(self, app: Shadowstep, stability: None):
-    """Integration: [что проверяется] на реальном устройстве"""
-    # Arrange (минимальный setup)
+    """Integration: [what is checked] on real device"""
+    # Arrange (minimal setup)
     element = app.get_element({"text": "foo"})
     
-    # Act (реальное действие)
+    # Act (real action)
     result = element.click()
     
-    # Assert (базовая проверка)
+    # Assert (basic check)
     assert result is element
 ```
 
-### **Обязательные фикстуры:**
+### **Mandatory fixtures:**
 
 ```python
 # conftest.py
 @pytest.fixture(scope="session")
 def app() -> Shadowstep:
-    """Shadowstep instance для integration тестов"""
+    """Shadowstep instance for integration tests"""
     ...
 
 @pytest.fixture
 def stability() -> None:
-    """Ожидание стабильности UI перед тестом"""
+    """Wait for UI stability before test"""
     time.sleep(1)
 ```
 
 ---
 
-## 🎯 КРИТЕРИИ КАЧЕСТВА ТЕСТА
+## 🎯 TEST QUALITY CRITERIA
 
-### **Хороший unit тест:**
-
-```
-✅ Выполняется мгновенно (< 100ms)
-✅ Изолирован (без внешних зависимостей)
-✅ Использует моки для границ
-✅ Параметризован (много кейсов, мало кода)
-✅ Проверяет edge cases
-✅ Тестирует контракт, не реализацию
-✅ Понятное описание (docstring)
-✅ Fallible (падает если функционал сломан)
-✅ Устойчив к рефакторингу
-✅ Не использует time.sleep
-```
-
-### **Хороший integration тест:**
+### **Good unit test:**
 
 ```
-✅ Проверяет реальное взаимодействие
-✅ Не дублирует unit тесты
-✅ Smoke характер (базовая работоспособность)
-✅ Параметризован (где возможно)
-✅ Быстрый (1-5 секунд на тест)
-✅ Надёжный (не flaky)
-✅ Использует stability фикстуру
-✅ Минимум ассертов (проверяем flow, не детали)
+✅ Executes instantly (< 100ms)
+✅ Isolated (no external dependencies)
+✅ Uses mocks for boundaries
+✅ Parametrized (many cases, little code)
+✅ Checks edge cases
+✅ Tests contract, not implementation
+✅ Clear description (docstring)
+✅ Fallible (fails if functionality breaks)
+✅ Resistant to refactoring
+✅ Doesn't use time.sleep
 ```
 
----
-
-## 🔍 PROCESS: Code Review чеклист
-
-### **Перед merge нового теста:**
+### **Good integration test:**
 
 ```
-□ Тест в правильной категории (unit/integration)?
-□ Нет дублирования с существующими тестами?
-□ Unit тест использует моки (не реальный Appium)?
-□ Integration тест РЕАЛЬНО требует Appium?
-□ Параметризация использована где возможно?
-□ Тестируется контракт, не реализация?
-□ Docstring понятно описывает что проверяется?
-□ Тест проходит (зелёный)?
-□ Тест падает при поломке функционала (проверено)?
-□ Coverage не упало?
+✅ Checks real interaction
+✅ Doesn't duplicate unit tests
+✅ Smoke nature (basic operability)
+✅ Parametrized (where possible)
+✅ Fast (1-5 seconds per test)
+✅ Reliable (not flaky)
+✅ Uses stability fixture
+✅ Minimum asserts (check flow, not details)
 ```
 
 ---
 
-## 📈 МОНИТОРИНГ И МЕТРИКИ
+## 🔍 PROCESS: Code Review checklist
 
-### **Команды для проверки:**
+### **Before merging a new test:**
+
+```
+□ Test in correct category (unit/integration)?
+□ No duplication with existing tests?
+□ Unit test uses mocks (not real Appium)?
+□ Integration test REALLY requires Appium?
+□ Parametrization used where possible?
+□ Tests contract, not implementation?
+□ Docstring clearly describes what is tested?
+□ Test passes (green)?
+□ Test fails when functionality breaks (verified)?
+□ Coverage hasn't dropped?
+```
+
+---
+
+## 📈 MONITORING AND METRICS
+
+### **Commands for checking:**
 
 ```bash
-# Coverage общее
+# Overall coverage
 uv run pytest --cov=shadowstep --cov-report=term-missing
 
-# Coverage конкретного модуля
+# Specific module coverage
 uv run pytest --cov=shadowstep.element --cov-report=html
 
-# Только unit тесты
+# Unit tests only
 uv run pytest tests/test_unit -v
 
-# Только integration тесты
+# Integration tests only
 uv run pytest tests/test_integro -v
 
-# Время выполнения
+# Execution time
 time uv run pytest tests/test_unit
 time uv run pytest tests/test_integro
 
-# Количество тестов
+# Test count
 pytest --collect-only tests/ | grep "test session starts" -A 1
 ```
 
-### **CI/CD требования:**
+### **CI/CD requirements:**
 
 ```
 Pre-commit hook:
-└─ Запускать только unit тесты (быстро)
+└─ Run only unit tests (fast)
 
 Pull Request:
-└─ Запускать unit + integration
+└─ Run unit + integration
 
 Release:
-└─ Полный suite + coverage report
+└─ Full suite + coverage report
 ```
 
 ---
 
-## 🏆 ТЕКУЩЕЕ СОСТОЯНИЕ
+## 🏆 CURRENT STATE
 
-### **Фактические метрики (обновлено 2025-10-18):**
+### **Actual metrics (updated 2025-10-18):**
 
 ```
-ТЕСТЫ:
-├─ Unit:        162 теста (78%) ✅ ЦЕЛЬ: 75%
-├─ Integration:  46 тестов (22%) ✅ ЦЕЛЬ: 20-25%
-└─ Общее:       208 тестов
+TESTS:
+├─ Unit:        162 tests (78%) ✅ TARGET: 75%
+├─ Integration:  46 tests (22%) ✅ TARGET: 20-25%
+└─ Total:       208 tests
 
-ФАЙЛЫ:
-├─ test_unit:    41 файл
-├─ test_integro: 46 файлов
-└─ Общее:        87 файлов
+FILES:
+├─ test_unit:    41 files
+├─ test_integro: 46 files
+└─ Total:        87 files
 
-ПОКРЫТИЕ:
-└─ Целевое: 90%+ (требуется проверка)
+COVERAGE:
+└─ Target: 90%+ (needs verification)
 
-ВРЕМЯ ВЫПОЛНЕНИЯ:
-└─ Требуется замер
+EXECUTION TIME:
+└─ Needs measurement
 ```
 
 ---
 
-## ✅ СООТВЕТСТВИЕ МАНИФЕСТУ
+## ✅ MANIFEST COMPLIANCE
 
-### **Unit тесты (ПРОВЕРЕНО):**
+### **Unit tests (VERIFIED):**
 
 ```
-✅ locator/converter/ - полное покрытие
+✅ locator/converter/ - full coverage
    ├─ test_converter_xpath_unit.py (70KB!)
    ├─ test_converter_dict_unit.py (29KB)
    ├─ test_converter_ui_selector_unit.py (29KB)
    └─ test_converter_unit.py (11KB)
 
-✅ element/ - детальное покрытие
+✅ element/ - detailed coverage
    ├─ test_element_unit.py (43KB)
-   ├─ test_actions_unit.py (12KB) ⚠️ потенциальное дублирование
+   ├─ test_actions_unit.py (12KB) ⚠️ potential duplication
    ├─ test_gestures_unit.py (22KB)
    ├─ test_dom_unit.py (24KB)
    ├─ test_utilities_unit.py (30KB)
    ├─ test_waiting_unit.py (18KB)
    └─ test_should_unit.py (18KB)
 
-✅ exceptions/ - перенесено из integro
-✅ utils/ - чистые функции в unit
-✅ decorators/ - есть unit тесты
+✅ exceptions/ - moved from integro
+✅ utils/ - pure functions in unit
+✅ decorators/ - has unit tests
 ```
 
-### **Integration тесты (ПРОВЕРЕНО):**
+### **Integration tests (VERIFIED):**
 
 ```
-✅ element/ - критичные взаимодействия
-   ├─ test_actions_integro.py (реальные клики)
-   ├─ test_gestures_integro.py (реальные свайпы)
-   └─ test_waiting_integro.py (реальные таймауты)
+✅ element/ - critical interactions
+   ├─ test_actions_integro.py (real clicks)
+   ├─ test_gestures_integro.py (real swipes)
+   └─ test_waiting_integro.py (real timeouts)
 
-✅ terminal/ - команды требуют устройство
+✅ terminal/ - commands require device
    ├─ test_terminal_adb_integro.py
    ├─ test_terminal_aapt_integro.py
    └─ test_terminal_transport_integro.py
 
 ✅ locator/ - smoke tests
-   └─ test_locator_converter_integro.py (параметризован!)
+   └─ test_locator_converter_integro.py (parametrized!)
 
-✅ navigator/ - реальная навигация
-✅ page_object/ - реальное UI дерево
-✅ logcat/ - WebSocket к Appium
+✅ navigator/ - real navigation
+✅ page_object/ - real UI tree
+✅ logcat/ - WebSocket to Appium
 ```
 
 ---
 
-## ⚠️ ВЫЯВЛЕННЫЕ ПРОБЛЕМЫ
+## ✅ ARCHITECTURE: Three-tier system (ADVANCED)
 
-### **ПРОБЛЕМА 1: Дублирование в test_element/**
-
-```
-ДУБЛЬ ОБНАРУЖЕН:
-
-test_element_unit.py (43KB):
-└─ class TestElementActions:
-   ├─ def test_send_keys(self):
-   ├─ def test_clear(self):
-   └─ def test_click(self):
-
-test_actions_unit.py (12KB):
-└─ class TestSendKeys:
-   ├─ def test_send_keys_with_single_string(self):
-   ├─ def test_send_keys_with_multiple_strings(self):
-   └─ def test_send_keys_returns_element_for_chaining(self):
-└─ class TestClear:
-   └─ def test_clear_calls_native_clear(self):
-
-РЕШЕНИЕ: Убрать базовые тесты из test_element_unit.py,
-         оставить только детальные в test_actions_unit.py
-
-СТАТУС: Требует очистки ⚠️
-```
-
-### **ПРОБЛЕМА 2: Возможное дублирование в других модулях**
+### **IMPORTANT: test_element_unit.py - these are NOT DUPLICATES!**
 
 ```
-Потенциально:
-├─ test_element_unit.py содержит TestElement[Feature]
-└─ test_[feature]_unit.py содержит детальные тесты
+ARCHITECTURE:
 
-Требуется проверка:
-□ test_element_unit.py vs test_gestures_unit.py
-□ test_element_unit.py vs test_dom_unit.py
-□ test_element_unit.py vs test_waiting_unit.py
-□ test_element_unit.py vs test_utilities_unit.py
+test_element_unit.py:
+└─ Checks DELEGATION
+   Example: Element.click() → correctly calls gestures.click()
+   
+test_actions_unit.py, test_gestures_unit.py, etc:
+└─ Check component LOGIC
+   Example: ElementActions.send_keys() → works correctly
+
+THESE ARE DIFFERENT ABSTRACTION LEVELS!
+
+Analogy:
+├─ test_element_unit.py = testing the car (component integration)
+└─ test_actions_unit.py = testing the engine (component logic)
+
+BOTH ARE NEEDED!
+```
+
+### **Three testing levels:**
+
+```
+╔═══════════════════════════════════════════════════════════╗
+║  LEVEL                    WHAT IT CHECKS                  ║
+╠═══════════════════════════════════════════════════════════╣
+║  1. Real Integration      Element + Appium + device      ║
+║     (test_integro/)       Real clicks, swipes            ║
+║                                                           ║
+║  2. Component Integration Element delegates correctly    ║
+║     (test_element_unit)   Element.click() → gestures     ║
+║                                                           ║
+║  3. Component Unit        Component logic in isolation   ║
+║     (test_actions_unit)   ElementActions.send_keys()     ║
+║                                                           ║
+╚═══════════════════════════════════════════════════════════╝
+
+ADVANTAGES:
+✅ Fast bug localization (see which level)
+✅ Safe refactoring (only needed levels break)
+✅ Complete coverage (test ENTIRE chain)
 ```
 
 ---
 
-## 🔧 РЕКОМЕНДАЦИИ ПО ИСПРАВЛЕНИЮ
+## 🎯 IMPROVEMENT RECOMMENDATIONS
 
-### **Рекомендация 1: Рефакторинг test_element_unit.py**
-
-```
-ЦЕЛЬ: Убрать дублирование с специализированными файлами
-
-СТРАТЕГИЯ:
-test_element_unit.py должен содержать ТОЛЬКО:
-├─ TestElementInit (инициализация)
-├─ TestElementIntegration (как элементы работают вместе)
-└─ TestElementContract (проверка контрактов)
-
-Специализированные тесты ТОЛЬКО в:
-├─ test_actions_unit.py → ВСЕ тесты actions
-├─ test_gestures_unit.py → ВСЕ тесты gestures
-├─ test_dom_unit.py → ВСЕ тесты DOM navigation
-├─ test_waiting_unit.py → ВСЕ тесты waiting
-└─ test_utilities_unit.py → ВСЕ тесты utilities
-
-ПЛАН:
-1. Определи что в test_element_unit.py дублируется
-2. Если метод детально покрыт в специализированном файле
-   → Удали из test_element_unit.py
-3. Оставь только уникальные проверки и контракты
-```
-
-### **Рекомендация 2: Создать Contract Tests**
+### **Recommendation 1: Add Contract Tests (optional)**
 
 ```
-Создать: tests/test_unit/test_element/test_element_contract_unit.py
+Create: tests/test_unit/test_element/test_element_contract_unit.py
 
-Цель: Проверка КОНТРАКТОВ публичного API
+Goal: Verify public API CONTRACTS
 
-Содержание:
-├─ Все публичные методы существуют
-├─ Все методы chainable (return self)
-├─ Все методы имеют правильные signatures
-└─ Обратная совместимость
+Content:
+├─ All public methods exist
+├─ All methods chainable (return self)
+├─ All methods have correct signatures
+└─ Backward compatibility
 
-Пример:
+Example:
 ```python
 class TestElementPublicAPIContract:
-    """Contract tests: публичный API не должен меняться без major version"""
+    """Contract tests: public API should not change without major version"""
     
     def test_element_has_all_required_methods(self):
-        """Element имеет все обязательные публичные методы"""
+        """Element has all required public methods"""
         required_methods = [
             'click', 'tap', 'send_keys', 'clear',
             'get_element', 'get_elements', 'get_parent',
             'swipe_up', 'swipe_down', 'scroll_to_element',
             'wait', 'wait_visible', 'wait_clickable',
-            # ... полный список
+            # ... complete list
         ]
         
         element = Element({"text": "test"}, Mock())
@@ -777,7 +758,7 @@ class TestElementPublicAPIContract:
         "click", "tap", "clear", "swipe_up", "scroll_down", ...
     ])
     def test_action_methods_are_chainable(self, method_name):
-        """Все action методы возвращают self для chaining"""
+        """All action methods return self for chaining"""
         element = Element({"text": "test"}, Mock())
         method = getattr(element, method_name)
         
@@ -790,134 +771,138 @@ class TestElementPublicAPIContract:
 
 ---
 
-## 📋 TODO: Очистка дублирования
+## 📋 RECOMMENDED IMPROVEMENTS
 
-### **Задача 1: test_element_unit.py cleanup**
+### **Improvement 1: Add comments for clarity**
 
 ```
-Файл: tests/test_unit/test_element/test_element_unit.py (43KB)
+File: tests/test_unit/test_element/test_element_unit.py
 
-АНАЛИЗ:
-□ Проверить какие тесты дублируются с:
-  □ test_actions_unit.py
-  □ test_gestures_unit.py
-  □ test_dom_unit.py
-  □ test_waiting_unit.py
+ACTION:
+□ Add docstring at module start:
+  """Component Integration Tests - check Element → components delegation"""
+
+□ Can rename classes for clarity:
+  class TestElementActions → class TestElementActionsDelegation
+  class TestElementGestures → class TestElementGesturesDelegation
   
-□ Удалить дубликаты
+To make it clear these are delegation tests, not logic!
 
-□ Оставить только:
-  □ TestElementInit
-  □ TestElementContract (создать новый класс)
-  □ Уникальные интеграционные проверки
-
-ОЖИДАЕМЫЙ РАЗМЕР: 15-20KB (сокращение 50%)
+GOAL: Clarity for contributors
 ```
 
-### **Задача 2: Проверка других дублей**
+### **Improvement 2: Pytest markers**
 
 ```
-□ Проверить test_shadowstep_unit.py vs test_shadowstep_base_unit.py
-□ Проверить test_terminal_*_unit.py на дубли
-□ Проверить test_navigator_unit.py
+ADD markers for categorization:
+
+@pytest.mark.unit - all unit tests
+@pytest.mark.integration - all integration tests
+@pytest.mark.smoke - smoke tests
+@pytest.mark.slow - slow tests
+
+USAGE:
+pytest -m unit              # Unit only (fast)
+pytest -m integration       # Integration only
+pytest -m "not slow"        # Exclude slow
 ```
 
 ---
 
-## 📊 ОТЧЁТНОСТЬ
+## 📊 REPORTING
 
-### **После каждого изменения:**
+### **After each change:**
 
 ```markdown
-## [Дата] - [Модуль] оптимизация
+## [Date] - [Module] optimization
 
-БЫЛО:
-- test_element_unit.py: 1153 строки
-- Дублирование: да
+BEFORE:
+- test_element_unit.py: 1153 lines
+- Duplication: yes
 
-СТАЛО:
-- test_element_unit.py: XXX строк
-- Дублирование: нет
+AFTER:
+- test_element_unit.py: XXX lines
+- Duplication: no
 
-УДАЛЕНО:
-- XX дублирующихся тестов
+REMOVED:
+- XX duplicate tests
 
 COVERAGE:
-- До: X%
-- После: Y%
-- Изменение: +/-Z%
+- Before: X%
+- After: Y%
+- Change: +/-Z%
 ```
 
 ---
 
-## 🚀 БЫСТРЫЙ СТАРТ
+## 🚀 QUICK START
 
-### **Проверка соответствия манифесту:**
+### **Manifest compliance check:**
 
 ```bash
-# 1. Проверить coverage
+# 1. Check coverage
 cd /home/sigma/Projects/Appium-Python-Client-Shadowstep
 uv run pytest --cov=shadowstep --cov-report=html --cov-report=term-missing
 
-# 2. Проверить время
+# 2. Check timing
 time uv run pytest tests/test_unit -v
 time uv run pytest tests/test_integro -v
 
-# 3. Найти дубли
+# 3. Find duplicates
 grep "def test_send_keys\|def test_clear\|def test_click" tests/test_unit/test_element/*.py
 
-# 4. Сравнить с метриками
-# Записать результаты в этот файл (секция "Текущее состояние")
+# 4. Compare with metrics
+# Record results in this file (section "Current State")
 ```
 
-### **Очистка дублирования:**
+### **Cleanup duplication:**
 
 ```bash
-# Для каждого дубля:
-# 1. Открыть оба файла
-# 2. Сравнить тесты
-# 3. Если детальный тест в специализированном файле:
-#    → Удалить базовый из test_element_unit.py
-# 4. Запустить оба файла
-# 5. Проверить coverage
+# For each duplicate:
+# 1. Open both files
+# 2. Compare tests
+# 3. If detailed test in specialized file:
+#    → Remove basic from test_element_unit.py
+# 4. Run both files
+# 5. Check coverage
 ```
 
 ---
 
-## 📚 ССЫЛКИ И РЕСУРСЫ
+## 📚 LINKS AND RESOURCES
 
 **Best Practices:**
 - [Testing Pyramid](https://martinfowler.com/articles/practical-test-pyramid.html)
 - [Pytest Best Practices](https://docs.pytest.org/en/stable/goodpractices.html)
 - [Test Doubles](https://martinfowler.com/bliki/TestDouble.html)
 
-**Примеры качественных тестов:**
+**Quality test examples:**
 - [requests tests](https://github.com/psf/requests/tree/main/tests)
 - [flask tests](https://github.com/pallets/flask/tree/main/tests)
 - [pytest tests](https://github.com/pytest-dev/pytest/tree/main/testing)
 
 ---
 
-## 🎯 ЦЕЛИ НА СЛЕДУЮЩИЙ РЕЛИЗ
+## 🎯 GOALS FOR NEXT RELEASE
 
 ```
 v0.36.0: Test Quality Milestone
 □ Coverage ≥ 90%
-□ Нет дублирования тестов
-□ Все тесты категоризированы правильно
-□ Contract tests добавлены
-□ Coverage badge в README
-□ Документация по написанию тестов
-□ CI/CD оптимизирован (< 7 минут)
+□ No test duplication
+□ All tests categorized correctly
+□ Contract tests added
+□ Coverage badge in README
+□ Test writing documentation
+□ CI/CD optimized (< 7 minutes)
 ```
 
 ---
 
-*Этот манифест - живой документ. Обновляй метрики и статусы по мере развития проекта.*
+*This manifest is a living document. Update metrics and statuses as the project evolves.*
 
 ---
 
-## 📞 КОНТАКТЫ
+## 📞 CONTACTS
 
-Вопросы по тестированию: GitHub Discussions
-Баги в тестах: GitHub Issues (label: tests)
+Testing questions: GitHub Discussions
+Test bugs: GitHub Issues (label: tests)
