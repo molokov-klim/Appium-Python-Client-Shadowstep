@@ -5,7 +5,7 @@ _Write tests, not boilerplate._
 
 ___
 
-[![License](https://img.shields.io/badge/license-MIT-orange)](LICENSE)
+[![License](https://img.shields.io/badge/license-MIT-green)](LICENSE)
 [![License Check](https://github.com/molokov-klim/Appium-Python-Client-Shadowstep/actions/workflows/license-check.yml/badge.svg)](https://github.com/molokov-klim/Appium-Python-Client-Shadowstep/actions/workflows/license-check.yml)
 
 ___
