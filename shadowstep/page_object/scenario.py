@@ -1,8 +1,5 @@
 """Architecture design document for ShadowstepScenarioEngine.
 
-You're right, Navigator already exists. Great job. Amazing that something came out of your hands that doesn't cause eye bleeding.
-
-Now **the question sounds different**:
 **What's above Navigator? What's the next level of architectural evolution?**
 
 ---
