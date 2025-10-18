@@ -594,7 +594,6 @@ class TestShadowstep:
         assert isinstance(video, bytes)  # noqa: S101
         assert len(video) > 0  # noqa: S101
 
-    @pytest.mark.xfail
     def test_deep_link(self, app: Shadowstep):
         """Test deep_link() opens URI and launches corresponding activity.
 
@@ -1279,7 +1278,6 @@ class TestShadowstep:
         app.bluetooth(action="enable")
         time.sleep(0.5)
 
-    @pytest.mark.xfail
     def test_nfc(self, app: Shadowstep):
         """Test nfc() controls NFC state.
 
@@ -1501,7 +1499,6 @@ class TestShadowstep:
             else:
                 raise
 
-    @pytest.mark.xfail
     def test_refresh_gps_cache(self, app: Shadowstep):
         """Test refresh_gps_cache() refreshes GPS cache.
 
@@ -1524,7 +1521,6 @@ class TestShadowstep:
         app.reset_geolocation()
         time.sleep(0.3)
 
-    @pytest.mark.xfail
     def test_get_geolocation(self, app: Shadowstep):
         """Test get_geolocation() returns device location.
 
@@ -1557,7 +1553,6 @@ class TestShadowstep:
         )
         time.sleep(0.3)
 
-    @pytest.mark.xfail
     def test_deviceidle(self, app: Shadowstep):
         """Test deviceidle() controls device idle mode.
 
@@ -1599,7 +1594,6 @@ class TestShadowstep:
         # Verify permissions data is returned
         assert permissions is not None  # noqa: S101
 
-    @pytest.mark.xfail
     def test_get_app_strings(self, app: Shadowstep):
         """Test get_app_strings() returns app strings.
 
@@ -1613,7 +1607,6 @@ class TestShadowstep:
         # Verify strings data is returned (can be dict or None)
         assert strings is not None or strings is None  # noqa: S101
 
-    @pytest.mark.xfail
     def test_send_trim_memory(self, app: Shadowstep):
         """Test send_trim_memory() sends trim memory signal.
 
@@ -1625,7 +1618,6 @@ class TestShadowstep:
         app.send_trim_memory(pkg="com.android.settings", level="MODERATE")
         time.sleep(0.3)
 
-    @pytest.mark.xfail
     def test_start_service(self, app: Shadowstep):
         """Test start_service() starts Android service.
 
@@ -1641,7 +1633,6 @@ class TestShadowstep:
         )
         time.sleep(0.3)
 
-    @pytest.mark.xfail
     def test_stop_service(self, app: Shadowstep):
         """Test stop_service() stops Android service.
 
@@ -1838,7 +1829,6 @@ class TestShadowstep:
         # Verify boolean is returned
         assert isinstance(is_running, bool)  # noqa: S101
 
-    @pytest.mark.xfail
     def test_stop_media_projection_recording(self, app: Shadowstep):
         """Test stop_media_projection_recording() stops recording.
 
