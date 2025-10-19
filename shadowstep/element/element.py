@@ -1301,7 +1301,7 @@ class Element(ElementBase):
         """
         return self.waiting.wait_for_not_visible(timeout, poll_frequency, return_bool)
 
-    @fail_safe_element_check()
+    @fail_safe_element()
     def wait_for_not_clickable(
         self,
         timeout: int = 10,
