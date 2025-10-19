@@ -1,6 +1,6 @@
 # ruff: noqa
 # pyright: ignore
-"""Integration tests for ShadowstepImage class."""
+"""Integration tests for ShadowstepImage class. Do not run in CI"""
 
 from typing import Any
 
