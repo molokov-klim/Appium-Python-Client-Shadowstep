@@ -23,7 +23,7 @@ from shadowstep.exceptions.shadowstep_exceptions import (
 if TYPE_CHECKING:
     from selenium.webdriver.remote.shadowroot import ShadowRoot
 
-    from shadowstep.element.element import Element  # noqa: TC004
+    from shadowstep.element.element import Element
     from shadowstep.element.utilities import ElementUtilities
     from shadowstep.locator import LocatorConverter, UiSelector
     from shadowstep.shadowstep import Shadowstep
@@ -135,6 +135,8 @@ class ElementProperties:
         locator: tuple[str, str] | dict[str, Any] | Element | UiSelector,
     ) -> bool:
         """Check if element contains another element."""
+        from shadowstep.element.element import Element  # noqa: PLC0415
+
         if isinstance(locator, Element):
             locator = locator.locator
         child_element = self.element._get_web_element(  # type: ignore[reportPrivateUsage]  # noqa: SLF001

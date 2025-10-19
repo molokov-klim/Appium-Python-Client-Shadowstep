@@ -117,7 +117,7 @@ def android_settings_open_close(app: Shadowstep, handle_not_responding: Any):
 @pytest.fixture
 def handle_not_responding(app: Shadowstep):
     close_app = app.get_element({"text": "Close app"})
-    close_app.timeout = 1.5
+    close_app.timeout = 60
     if close_app.is_visible():
         close_app.tap()
     close_app.wait_for_not()
