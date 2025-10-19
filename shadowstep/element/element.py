@@ -9,7 +9,7 @@ from __future__ import annotations
 import logging
 from typing import TYPE_CHECKING, Any, cast
 
-from shadowstep.decorators.element_decorators import fail_safe_element
+from shadowstep.decorators.element_decorators import fail_safe_element, fail_safe_element_check
 from shadowstep.element import ElementDOM
 from shadowstep.element.actions import ElementActions
 from shadowstep.element.base import ElementBase
@@ -756,7 +756,7 @@ class Element(ElementBase):
         return self.properties.get_dom_attribute(name)
 
     # Override
-    @fail_safe_element()
+    @fail_safe_element_check()
     def is_displayed(self) -> bool:
         """Whether the element is visible to a user.
 
@@ -766,7 +766,7 @@ class Element(ElementBase):
         """
         return self.properties.is_displayed()
 
-    @fail_safe_element()
+    @fail_safe_element_check()
     def is_visible(self) -> bool:
         """Check if the element is visible on screen.
 
