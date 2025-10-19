@@ -57,7 +57,7 @@ class ElementScreenshots:
         return current_element.screenshot_as_png
 
     @log_debug()
-    def save_screenshot(self, filename: str) -> bool:
+    def save_screenshot(self, filename: str = "screenshot.png") -> bool:
         """Save a screenshot of the current element to a PNG image file.
 
         Args:

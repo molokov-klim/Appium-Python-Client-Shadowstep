@@ -26,7 +26,7 @@ from selenium.webdriver.common.actions.action_builder import ActionBuilder
 from selenium.webdriver.common.actions.pointer_input import PointerInput
 from selenium.webdriver.support.wait import WebDriverWait
 
-from shadowstep.decorators.common_decorators import log_debug
+from shadowstep.decorators.common_decorators import log_image
 from shadowstep.ui_automator.mobile_commands import MobileCommands
 from shadowstep.utils.utils import get_current_func_name
 
@@ -62,7 +62,6 @@ class ShadowstepImage:
     def __init__(
         self,
         image: bytes | np.ndarray[Any, Any] | PILImage.Image | str,
-        base: Shadowstep,
         threshold: float = 0.7,
         timeout: float = 5.0,
     ) -> None:
@@ -80,8 +79,11 @@ class ShadowstepImage:
             timeout: Timeout in seconds for visibility/wait operations. Default: 5.0.
 
         """
+        from shadowstep.shadowstep import Shadowstep  # noqa: PLC0415
+
+        self.shadowstep: Shadowstep = Shadowstep.get_instance()
+
         self._image = image
-        self._base: Shadowstep = base
         self.threshold = threshold
         self.timeout = timeout
 
@@ -94,13 +96,13 @@ class ShadowstepImage:
         self.MIN_SUFFICIENT_MATCH = 0.95
 
         self.logger = logging.getLogger(__name__)
-        self.logger.debug(
+        self.logger.info(
             "Initialized ShadowstepImage with threshold=%s, timeout=%s",
             threshold,
             timeout,
         )
 
-    @log_debug()
+    @log_image()
     def tap(self, duration: int | None = None) -> ShadowstepImage:
         """Tap on the image center.
 
@@ -120,11 +122,11 @@ class ShadowstepImage:
         """
         self.ensure_visible()
         x, y = self._center  # type: ignore[misc]
-        self._base.driver.tap(positions=[(x, y)], duration=duration)
+        self.shadowstep.driver.tap(positions=[(x, y)], duration=duration)
         self.logger.info("Tapped at (%s, %s) with duration=%s", x, y, duration)
         return self
 
-    @log_debug()
+    @log_image()
     def drag(
         self,
         to: tuple[int, int] | ShadowstepImage,
@@ -157,9 +159,9 @@ class ShadowstepImage:
         else:
             end_x, end_y = to
 
-        actions = ActionChains(self._base.driver)
+        actions = ActionChains(self.shadowstep.driver)
         actions.w3c_actions = ActionBuilder(
-            self._base.driver,
+            self.shadowstep.driver,
             mouse=PointerInput(interaction.POINTER_TOUCH, "touch"),
         )
         actions.w3c_actions.pointer_action.move_to_location(start_x, start_y)  # type: ignore[reportUnknownMemberType]
@@ -172,7 +174,7 @@ class ShadowstepImage:
         self.logger.info("Dragged from (%s, %s) to (%s, %s)", start_x, start_y, end_x, end_y)
         return self
 
-    @log_debug()
+    @log_image()
     def zoom(self, percent: float = 1.5, steps: int = 10) -> ShadowstepImage:
         """Zoom in on the image center using pinch-open gesture.
 
@@ -220,7 +222,7 @@ class ShadowstepImage:
         self.logger.info("Zoomed at (%s, %s) by %s%%", x, y, percent * 100)
         return self
 
-    @log_debug()
+    @log_image()
     def unzoom(self, percent: float = 0.5, steps: int = 10) -> ShadowstepImage:
         """Zoom out from the image center using pinch-close gesture.
 
@@ -266,7 +268,7 @@ class ShadowstepImage:
         self.logger.info("Unzoomed at (%s, %s) by %s%%", x, y, percent * 100)
         return self
 
-    @log_debug()
+    @log_image()
     def wait(self) -> bool:
         """Wait for the image to become visible.
 
@@ -288,7 +290,7 @@ class ShadowstepImage:
             return self._get_image_coordinates() is not None
 
         try:
-            WebDriverWait(self._base.driver, self.timeout, poll_frequency=0.5).until(
+            WebDriverWait(self.shadowstep.driver, self.timeout, poll_frequency=0.5).until(
                 image_visible,
             )
             self.ensure_visible()  # Cache coordinates
@@ -299,7 +301,7 @@ class ShadowstepImage:
         else:
             return True
 
-    @log_debug()
+    @log_image()
     def wait_not(self) -> bool:
         """Wait for the image to become invisible.
 
@@ -321,7 +323,7 @@ class ShadowstepImage:
             return self._get_image_coordinates() is None
 
         try:
-            WebDriverWait(self._base.driver, self.timeout, poll_frequency=0.5).until(
+            WebDriverWait(self.shadowstep.driver, self.timeout, poll_frequency=0.5).until(
                 image_not_visible,
             )
             # Clear cache since image is no longer visible
@@ -334,7 +336,7 @@ class ShadowstepImage:
         else:
             return True
 
-    @log_debug()
+    @log_image()
     def is_visible(self) -> bool:
         """Check if the image is currently visible on screen.
 
@@ -401,7 +403,7 @@ class ShadowstepImage:
             self.ensure_visible()
         return self._center  # type: ignore[return-value]
 
-    @log_debug()
+    @log_image()
     def scroll_down(
         self,
         from_percent: float = 0.5,
@@ -435,7 +437,7 @@ class ShadowstepImage:
             step_delay=step_delay,
         )
 
-    @log_debug()
+    @log_image()
     def scroll_up(
         self,
         max_attempts: int = 10,
@@ -463,7 +465,7 @@ class ShadowstepImage:
             step_delay=step_delay,
         )
 
-    @log_debug()
+    @log_image()
     def scroll_left(
         self,
         max_attempts: int = 10,
@@ -488,7 +490,7 @@ class ShadowstepImage:
             step_delay=step_delay,
         )
 
-    @log_debug()
+    @log_image()
     def scroll_right(
         self,
         max_attempts: int = 10,
@@ -513,7 +515,7 @@ class ShadowstepImage:
             step_delay=step_delay,
         )
 
-    @log_debug()
+    @log_image()
     def scroll_to(
         self,
         max_attempts: int = 10,
@@ -545,7 +547,7 @@ class ShadowstepImage:
             # If not found, try scrolling up
             return self.scroll_up(max_attempts=max_attempts // 2, step_delay=step_delay)
 
-    @log_debug()
+    @log_image()
     def is_contains(
         self,
         image: bytes | np.ndarray[Any, Any] | PILImage.Image | str,
@@ -589,7 +591,7 @@ class ShadowstepImage:
         )
 
         result = max_val >= self.threshold
-        self.logger.debug(
+        self.logger.info(
             "is_contains: max_val=%.3f, threshold=%.3f, result=%s",
             max_val,
             self.threshold,
@@ -609,11 +611,11 @@ class ShadowstepImage:
             Not yet implemented. Reserved for future assertion DSL.
 
         """
-        self.logger.debug("%s", get_current_func_name())
+        self.logger.info("%s", get_current_func_name())
         msg = "ImageShould functionality not yet implemented"
         raise NotImplementedError(msg)
 
-    @log_debug()
+    @log_image()
     def to_ndarray(
         self,
         image: bytes | np.ndarray[Any, Any] | PILImage.Image | str,
@@ -674,7 +676,7 @@ class ShadowstepImage:
 
         return result
 
-    @log_debug()
+    @log_image()
     def multi_scale_matching(
         self,
         full_image: np.ndarray[Any, Any],
@@ -744,12 +746,12 @@ class ShadowstepImage:
                 self.logger.warning("Template matching error at scale %.2f: %s", scale, e)
                 continue
 
-        self.logger.debug("Multi-scale matching: best_val=%.3f at %s", best_val, best_loc)
+        self.logger.info("Multi-scale matching: best_val=%.3f at %s", best_val, best_loc)
         return best_val, best_loc
 
     # ==================== ADDITIONAL METHODS (P2 - Extended functionality) ====================
 
-    @log_debug()
+    @log_image()
     def find_all(
         self,
         coord_threshold: int = 5,
@@ -811,7 +813,7 @@ class ShadowstepImage:
         self.logger.info("Found %d unique matches", len(bounding_boxes))
         return bounding_boxes
 
-    @log_debug()
+    @log_image()
     def draw_rectangle(
         self,
         output_path: str = "debug_screenshot.png",
@@ -857,7 +859,7 @@ class ShadowstepImage:
         else:
             return success
 
-    @log_debug()
+    @log_image()
     def ensure_visible(self) -> None:
         """Check visibility and cache coordinates/center if found.
 
@@ -877,12 +879,13 @@ class ShadowstepImage:
         if coords is None:
             msg = f"Image not visible on screen (threshold={self.threshold})"
             self.logger.error(msg)
+            self.shadowstep.save_screenshot(filename="debug_screenshot.png")  # FIXME
             raise TimeoutException(msg)
 
         self._coords = coords
         self._center = self._calculate_center(coords)
         self._last_screenshot_time = time.time()
-        self.logger.debug("Image found at coords=%s, center=%s", self._coords, self._center)
+        self.logger.info("Image found at coords=%s, center=%s", self._coords, self._center)
 
     def _get_screenshot_as_bytes(self) -> bytes:
         """Get current screenshot as bytes.
@@ -891,7 +894,7 @@ class ShadowstepImage:
             bytes: Screenshot in PNG format as bytes.
 
         """
-        screenshot_b64 = self._base.driver.get_screenshot_as_base64()
+        screenshot_b64 = self.shadowstep.driver.get_screenshot_as_base64()
         return base64.b64decode(screenshot_b64.encode("utf-8"))
 
     def _get_image_coordinates(self) -> tuple[int, int, int, int] | None:
@@ -918,7 +921,7 @@ class ShadowstepImage:
 
             # Check if match is good enough
             if max_val < self.threshold:
-                self.logger.debug(
+                self.logger.info(
                     "Match quality %.3f below threshold %.3f",
                     max_val,
                     self.threshold,
@@ -1034,8 +1037,8 @@ class ShadowstepImage:
 
         """
         # Get screen dimensions
-        width = int(self._base.driver.get_window_size()["width"])  # type: ignore[reportUnknownMemberType]
-        height = int(self._base.driver.get_window_size()["height"])  # type: ignore[reportUnknownMemberType]
+        width = int(self.shadowstep.driver.get_window_size()["width"])  # type: ignore[reportUnknownMemberType]
+        height = int(self.shadowstep.driver.get_window_size()["height"])  # type: ignore[reportUnknownMemberType]
 
         # Calculate scroll coordinates based on direction
         if direction == "down":
@@ -1063,8 +1066,8 @@ class ShadowstepImage:
             raise ValueError(msg)
 
         # Perform swipe
-        self._base.driver.swipe(start_x, start_y, end_x, end_y, duration=500)
-        self.logger.debug(
+        self.shadowstep.driver.swipe(start_x, start_y, end_x, end_y, duration=500)
+        self.logger.info(
             "Scrolled %s: (%d,%d) -> (%d,%d)",
             direction,
             start_x,

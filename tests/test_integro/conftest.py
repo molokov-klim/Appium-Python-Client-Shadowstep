@@ -53,29 +53,29 @@ def app():
     # Clear any existing instance
     application.disconnect()
     time.sleep(2)
-    
-    application.connect(server_ip=APPIUM_IP,
-                        server_port=APPIUM_PORT,
-                        command_executor=APPIUM_COMMAND_EXECUTOR,
-                        capabilities=CAPABILITIES,
-                        ssh_user=os.getenv("SHADOWSTEP_SSH_USER", None),
-                        ssh_password=os.getenv("SHADOWSTEP_SSH_PASSWORD", None))
-    
+
+    application.connect(
+        server_ip=APPIUM_IP,
+        server_port=APPIUM_PORT,
+        command_executor=APPIUM_COMMAND_EXECUTOR,
+        capabilities=CAPABILITIES,
+        ssh_user=os.getenv("SHADOWSTEP_SSH_USER", ""),
+        ssh_password=os.getenv("SHADOWSTEP_SSH_PASSWORD", ""),
+    )
+
     # Wait for connection to be fully established
     max_wait_time = 60  # seconds
     start_time = time.time()
-    
+
     while time.time() - start_time < max_wait_time:
-        if (application.is_connected() and 
-            application.driver is not None and 
-            application.driver.session_id is not None):
+        if application.is_connected() and application.driver.session_id is not None:
             break
         time.sleep(1)
-    
+
     # Final verification
-    if not (application.is_connected() and application.driver is not None and application.driver.session_id is not None):
+    if not (application.is_connected() and application.driver.session_id is not None):
         raise RuntimeError("Failed to establish connection within timeout period")
-    
+
     yield application
     application.disconnect()
 
@@ -102,7 +102,9 @@ def android_settings_open_close(app: Shadowstep):
     app.terminal.press_back()
     app.terminal.press_back()
     app.terminal.close_app("com.android.settings")
-    app.terminal.start_activity(package="com.android.settings", activity="com.android.settings.Settings")
+    app.terminal.start_activity(
+        package="com.android.settings", activity="com.android.settings.Settings"
+    )
     time.sleep(3)
     yield
     app.terminal.press_back()
@@ -118,13 +120,11 @@ def stability(press_home: None):
 
 @pytest.fixture
 def touch_sounds(app: Shadowstep, android_settings_open_close: None):
-    sounds_and_vibrations_element = app.find_and_get_element({"text": "Sound & vibration"})
-    # sounds_and_vibrations_element = app.find_and_get_element({'text': 'Звук и вибрация'})
+    sounds_and_vibrations_element = app.scroll_to_element({"text": "Sound & vibration"})
     assert sounds_and_vibrations_element.is_visible()  # noqa: S101  # noqa: S101
     sounds_and_vibrations_element.tap(duration=3)
     time.sleep(5)
-    touch_sounds_element = app.find_and_get_element({"text": "Touch sounds"})
-    # touch_sounds_element = app.find_and_get_element({'text': 'Улучшение звука'})
+    touch_sounds_element = app.scroll_to_element({"text": "Touch sounds"})
     assert touch_sounds_element.is_visible()  # noqa: S101  # noqa: S101
     time.sleep(5)
 
@@ -132,8 +132,10 @@ def touch_sounds(app: Shadowstep, android_settings_open_close: None):
 @pytest.fixture
 def android_settings_recycler(app: Shadowstep, android_settings_open_close: None):
     return app.get_element(
-        locator={"resource-id": "com.android.settings:id/main_content_scrollable_container",
-                 })
+        locator={
+            "resource-id": "com.android.settings:id/main_content_scrollable_container",
+        }
+    )
 
 
 @pytest.fixture
@@ -174,7 +176,7 @@ def cleanup_log():
         "logcat_websocket_test.log",
         "logcat_filter_verification.log",
     ]
-    
+
     for log_file in log_files:
         path = Path(log_file)
         if path.exists() and path.is_file():

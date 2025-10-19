@@ -1179,7 +1179,7 @@ class Element(ElementBase):
         return self.screenshots.screenshot_as_png()
 
     @fail_safe_element()
-    def save_screenshot(self, filename: str) -> bool:
+    def save_screenshot(self, filename: str = "screenshot.png") -> bool:
         """Save a screenshot of the element to a PNG file.
 
         Args:

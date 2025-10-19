@@ -217,7 +217,6 @@ class Shadowstep(ShadowstepBase):
         """
         return ShadowstepImage(
             image=image,
-            base=self,
             threshold=threshold,
             timeout=timeout,
         )
@@ -243,7 +242,6 @@ class Shadowstep(ShadowstepBase):
         return [
             ShadowstepImage(
                 image=image,
-                base=self,
                 threshold=threshold,
                 timeout=timeout,
             ),

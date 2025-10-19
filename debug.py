@@ -12,7 +12,7 @@ from shadowstep.page_object.page_object_parser import PageObjectParser
 from shadowstep.page_object.page_object_recycler_explorer import PageObjectRecyclerExplorer
 from shadowstep.shadowstep import Shadowstep
 from shadowstep.utils.translator import YandexTranslate
-from tests.conftest import APPIUM_IP, APPIUM_COMMAND_EXECUTOR, CAPABILITIES, APPIUM_PORT
+from tests.test_integro.conftest import APPIUM_IP, APPIUM_COMMAND_EXECUTOR, CAPABILITIES, APPIUM_PORT
 
 app = Shadowstep()
 app.connect(server_ip=APPIUM_IP,
@@ -20,6 +20,6 @@ app.connect(server_ip=APPIUM_IP,
             command_executor=APPIUM_COMMAND_EXECUTOR,
             capabilities=CAPABILITIES)
 
-page_source = app.driver.page_source
-parser = etree.XMLParser(recover=True)
-root = etree.fromstring(page_source.encode(), parser=parser)
+element = app.get_element({"text": "Connected devices"})
+element.save_screenshot("element.png")
+

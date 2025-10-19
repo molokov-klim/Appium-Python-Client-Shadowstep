@@ -1,6 +1,9 @@
 # ruff: noqa
 # pyright: ignore
 """Integration tests for ShadowstepImage class."""
+
+from typing import Any
+
 import pytest
 
 from shadowstep.image.image import ShadowstepImage
@@ -66,18 +69,9 @@ class TestShadowstepImage:
         assert img.threshold == 0.7  # noqa: S101
         assert img.timeout == 5.0  # noqa: S101
 
-    def test_tap_raises_not_implemented_error(self, app: Shadowstep):
-        """Test tap() method raises NotImplementedError.
-
-        Steps:
-        1. Create ShadowstepImage instance.
-        2. Call tap() method.
-        3. Verify NotImplementedError is raised.
-        """
-        img = ShadowstepImage("/path/to/image.png", app)
-
-        with pytest.raises(NotImplementedError):
-            img.tap()
+    def test_tap(self, app: Shadowstep, android_settings_open_close: Any):
+        img = ShadowstepImage("tests/test_integro/_test_data/element.png")
+        img.tap()
 
     def test_tap_with_duration_raises_not_implemented_error(self, app: Shadowstep):
         """Test tap() with duration raises NotImplementedError.
