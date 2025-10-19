@@ -2,6 +2,8 @@
 
 This module provides various decorators for enhancing method functionality
 including retry logic, logging, timing, and Allure reporting integration.
+The functionality of decorators can be duplicated with other decorators while violating the DRY principle. This was done consciously.
+The current decorators are separated from the others so that the changes only apply to a specific module.
 """
 
 from __future__ import annotations
@@ -442,9 +444,9 @@ def log_image() -> Callable[[Callable[P, T]], Callable[P, T]]:
             safe_args = tuple(_shorten(a) for a in args)
             safe_kwargs = {k: _shorten(v) for k, v in kwargs.items()}
 
-            logger.info("%s() < args=%s, kwargs=%s", method_name, safe_args, safe_kwargs)
+            logger.debug("%s() < args=%s, kwargs=%s", method_name, safe_args, safe_kwargs)
             result: T = func(*args, **kwargs)
-            logger.info("%s() > %s", method_name, _shorten(result))
+            logger.debug("%s() > %s", method_name, _shorten(result))
             return result
 
         return wrapper

@@ -992,3 +992,67 @@ class ShadowstepTranslationFailedError(ShadowstepTranslatorError):
     def _construct_message_from_context(self, **context_kwargs: Any) -> str:  # noqa: ARG002
         """Construct message from context kwargs."""
         return "Translation failed: empty response"
+
+
+class ShadowstepImageException(ShadowstepException):
+    """Base class for all ShadowstepImage exceptions."""
+
+    default_message = "ShadowstepImageException occurred"
+
+
+class ShadowstepImageNotFoundError(ShadowstepImageException):
+    """Raised when image is not found on screen."""
+
+    default_message = "ShadowstepImageNotFoundError occurred"
+
+    def _construct_message_from_context(self, **context_kwargs: Any) -> str:
+        """Construct message from context kwargs."""
+        threshold = context_kwargs.get("threshold", "unknown")
+        timeout = context_kwargs.get("timeout", "unknown")
+        operation = context_kwargs.get("operation", "visibility check")
+        return f"Image not found during {operation} (threshold={threshold}, timeout={timeout}s)"
+
+
+class ShadowstepImageLoadError(ShadowstepImageException):
+    """Raised when image fails to load from file."""
+
+    default_message = "ShadowstepImageLoadError occurred"
+
+    def _construct_message_from_context(self, **context_kwargs: Any) -> str:
+        """Construct message from context kwargs."""
+        path = context_kwargs.get("path", "unknown")
+        return f"Failed to load image from path: {path}"
+
+
+class ShadowstepUnsupportedImageTypeError(ShadowstepImageException):
+    """Raised when image type is not supported."""
+
+    default_message = "ShadowstepUnsupportedImageTypeError occurred"
+
+    def _construct_message_from_context(self, **context_kwargs: Any) -> str:
+        """Construct message from context kwargs."""
+        image_type = context_kwargs.get("image_type", "unknown")
+        return f"Unsupported image type: {image_type}"
+
+
+class ShadowstepInvalidScrollDirectionError(ShadowstepImageException):
+    """Raised when scroll direction is invalid."""
+
+    default_message = "ShadowstepInvalidScrollDirectionError occurred"
+
+    def _construct_message_from_context(self, **context_kwargs: Any) -> str:
+        """Construct message from context kwargs."""
+        direction = context_kwargs.get("direction", "unknown")
+        valid_directions = context_kwargs.get("valid_directions", ["up", "down", "left", "right"])
+        return f"Invalid scroll direction: '{direction}'. Valid directions: {', '.join(valid_directions)}"
+
+
+class ShadowstepImageNotImplementedError(ShadowstepImageException):
+    """Raised when functionality is not yet implemented."""
+
+    default_message = "ShadowstepImageNotImplementedError occurred"
+
+    def _construct_message_from_context(self, **context_kwargs: Any) -> str:
+        """Construct message from context kwargs."""
+        feature = context_kwargs.get("feature", "functionality")
+        return f"{feature} is not yet implemented"

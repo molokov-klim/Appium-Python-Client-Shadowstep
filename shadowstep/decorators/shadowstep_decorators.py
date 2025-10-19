@@ -1,4 +1,9 @@
-"""Decorators for element.py module only."""
+"""Decorators for element.py module only.
+
+The functionality of decorators can be duplicated with other decorators while violating the DRY principle. This was done consciously.
+The current decorators are separated from the others so that the changes only apply to a specific module.
+"""
+
 from __future__ import annotations
 
 import time

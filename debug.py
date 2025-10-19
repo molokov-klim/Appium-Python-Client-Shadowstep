@@ -20,6 +20,6 @@ app.connect(server_ip=APPIUM_IP,
             command_executor=APPIUM_COMMAND_EXECUTOR,
             capabilities=CAPABILITIES)
 
-element = app.get_element({"text": "Connected devices"})
-element.save_screenshot("element.png")
+element = app.get_element({"text": "Notifications"})
+element.save_screenshot("element2.png")
 

@@ -12,9 +12,12 @@ import time
 import traceback
 from typing import TYPE_CHECKING, Any, cast
 
+from selenium.common import NoSuchElementException
+
 from shadowstep.decorators.common_decorators import log_debug
 from shadowstep.exceptions.shadowstep_exceptions import (
     ShadowstepElementException,
+    ShadowstepNoSuchElementException,
 )
 
 if TYPE_CHECKING:
@@ -96,7 +99,14 @@ class ElementProperties:
     @log_debug()
     def is_visible(self) -> bool:
         """Check if element is visible."""
-        result = self._check_element_visibility()
+        try:
+            result = self._check_element_visibility()
+        except NoSuchElementException:
+            return False
+        except ShadowstepNoSuchElementException:
+            return False
+        except ShadowstepElementException:
+            return False
         if result is not None:
             return result
         time.sleep(0.1)

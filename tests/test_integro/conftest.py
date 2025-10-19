@@ -5,6 +5,7 @@ import os
 import shutil
 import time
 from pathlib import Path
+from typing import Any
 
 import pytest
 
@@ -98,18 +99,28 @@ def press_home(app: Shadowstep):
 
 
 @pytest.fixture
-def android_settings_open_close(app: Shadowstep):
+def android_settings_open_close(app: Shadowstep, handle_not_responding: Any):
     app.terminal.press_back()
     app.terminal.press_back()
     app.terminal.close_app("com.android.settings")
     app.terminal.start_activity(
         package="com.android.settings", activity="com.android.settings.Settings"
     )
-    time.sleep(3)
+    app.get_element({"text": "Connected devices"}).wait(timeout=10)
+    time.sleep(1)
     yield
     app.terminal.press_back()
     app.terminal.press_back()
     app.terminal.close_app("com.android.settings")
+
+
+@pytest.fixture
+def handle_not_responding(app: Shadowstep):
+    close_app = app.get_element({"text": "Close app"})
+    close_app.timeout = 1.5
+    if close_app.is_visible():
+        close_app.tap()
+    close_app.wait_for_not()
 
 
 @pytest.fixture

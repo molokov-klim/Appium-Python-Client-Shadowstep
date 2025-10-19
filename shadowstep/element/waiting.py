@@ -12,6 +12,7 @@ from typing import TYPE_CHECKING
 from selenium.common import (
     TimeoutException,
 )
+from selenium.common.exceptions import NoSuchElementException
 from selenium.webdriver.support.wait import WebDriverWait
 
 from shadowstep.decorators.common_decorators import log_debug
@@ -256,6 +257,8 @@ class ElementWaiting:
                 conditions.not_present(resolved_locator),
             )
             return True  # noqa: TRY300
+        except NoSuchElementException:
+            return True
         except TimeoutException:
             return False
 
@@ -271,6 +274,8 @@ class ElementWaiting:
                 conditions.not_visible(resolved_locator),
             )
             return True  # noqa: TRY300
+        except NoSuchElementException:
+            return True
         except TimeoutException:
             return False
 

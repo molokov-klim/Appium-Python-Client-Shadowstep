@@ -27,6 +27,14 @@ from selenium.webdriver.common.actions.pointer_input import PointerInput
 from selenium.webdriver.support.wait import WebDriverWait
 
 from shadowstep.decorators.common_decorators import log_image
+from shadowstep.decorators.image_decorators import fail_safe_image
+from shadowstep.exceptions.shadowstep_exceptions import (
+    ShadowstepImageLoadError,
+    ShadowstepImageNotFoundError,
+    ShadowstepImageNotImplementedError,
+    ShadowstepInvalidScrollDirectionError,
+    ShadowstepUnsupportedImageTypeError,
+)
 from shadowstep.ui_automator.mobile_commands import MobileCommands
 from shadowstep.utils.utils import get_current_func_name
 
@@ -102,6 +110,7 @@ class ShadowstepImage:
             timeout,
         )
 
+    @fail_safe_image()
     @log_image()
     def tap(self, duration: int | None = None) -> ShadowstepImage:
         """Tap on the image center.
@@ -117,7 +126,7 @@ class ShadowstepImage:
             image.tap(duration=500)  # Long press for 500ms
 
         Raises:
-            TimeoutException: If image not found on screen.
+            ShadowstepImageNotFoundError: If image not found on screen.
 
         """
         self.ensure_visible()
@@ -126,6 +135,7 @@ class ShadowstepImage:
         self.logger.info("Tapped at (%s, %s) with duration=%s", x, y, duration)
         return self
 
+    @fail_safe_image()
     @log_image()
     def drag(
         self,
@@ -146,7 +156,7 @@ class ShadowstepImage:
             image1.drag(to=image2)  # Drag to another image
 
         Raises:
-            TimeoutException: If source or target image not found.
+            ShadowstepImageNotFoundError: If source or target image not found.
 
         """
         self.ensure_visible()
@@ -174,6 +184,7 @@ class ShadowstepImage:
         self.logger.info("Dragged from (%s, %s) to (%s, %s)", start_x, start_y, end_x, end_y)
         return self
 
+    @fail_safe_image()
     @log_image()
     def zoom(self, percent: float = 1.5, steps: int = 10) -> ShadowstepImage:
         """Zoom in on the image center using pinch-open gesture.
@@ -190,7 +201,7 @@ class ShadowstepImage:
             image.zoom(percent=2.0, steps=20)  # 200% zoom, smooth
 
         Raises:
-            TimeoutException: If image not found on screen.
+            ShadowstepImageNotFoundError: If image not found on screen.
 
         """
         self.ensure_visible()
@@ -222,6 +233,7 @@ class ShadowstepImage:
         self.logger.info("Zoomed at (%s, %s) by %s%%", x, y, percent * 100)
         return self
 
+    @fail_safe_image()
     @log_image()
     def unzoom(self, percent: float = 0.5, steps: int = 10) -> ShadowstepImage:
         """Zoom out from the image center using pinch-close gesture.
@@ -238,7 +250,7 @@ class ShadowstepImage:
             image.unzoom(percent=0.3, steps=15)  # 30% zoom out
 
         Raises:
-            TimeoutException: If image not found on screen.
+            ShadowstepImageNotFoundError: If image not found on screen.
 
         """
         self.ensure_visible()
@@ -268,6 +280,7 @@ class ShadowstepImage:
         self.logger.info("Unzoomed at (%s, %s) by %s%%", x, y, percent * 100)
         return self
 
+    @fail_safe_image()
     @log_image()
     def wait(self) -> bool:
         """Wait for the image to become visible.
@@ -301,6 +314,7 @@ class ShadowstepImage:
         else:
             return True
 
+    @fail_safe_image()
     @log_image()
     def wait_not(self) -> bool:
         """Wait for the image to become invisible.
@@ -336,6 +350,7 @@ class ShadowstepImage:
         else:
             return True
 
+    @fail_safe_image()
     @log_image()
     def is_visible(self) -> bool:
         """Check if the image is currently visible on screen.
@@ -364,6 +379,7 @@ class ShadowstepImage:
         else:
             return False
 
+    @fail_safe_image()
     @property
     def coordinates(self) -> tuple[int, int, int, int]:
         """Get the bounding box coordinates of the image.
@@ -377,13 +393,14 @@ class ShadowstepImage:
             height = y2 - y1
 
         Raises:
-            TimeoutException: If image not found on screen.
+            ShadowstepImageNotFoundError: If image not found on screen.
 
         """
         if self._coords is None:  # type: ignore[reportUnnecessaryComparison]
             self.ensure_visible()
         return self._coords  # type: ignore[return-value]
 
+    @fail_safe_image()
     @property
     def center(self) -> tuple[int, int]:
         """Get the center coordinates of the image.
@@ -396,7 +413,7 @@ class ShadowstepImage:
             print(f"Center at ({x}, {y})")
 
         Raises:
-            TimeoutException: If image not found on screen.
+            ShadowstepImageNotFoundError: If image not found on screen.
 
         """
         if self._center is None:  # type: ignore[reportUnnecessaryComparison]
@@ -426,7 +443,7 @@ class ShadowstepImage:
             image.scroll_down().tap()  # Scroll down until visible, then tap
 
         Raises:
-            TimeoutException: If image not found after max_attempts.
+            ShadowstepImageNotFoundError: If image not found after max_attempts.
 
         """
         return self._scroll_to_image(
@@ -456,7 +473,7 @@ class ShadowstepImage:
             image.scroll_up().tap()
 
         Raises:
-            TimeoutException: If image not found after max_attempts.
+            ShadowstepImageNotFoundError: If image not found after max_attempts.
 
         """
         return self._scroll_to_image(
@@ -481,7 +498,7 @@ class ShadowstepImage:
             ShadowstepImage: Self for method chaining.
 
         Raises:
-            TimeoutException: If image not found after max_attempts.
+            ShadowstepImageNotFoundError: If image not found after max_attempts.
 
         """
         return self._scroll_to_image(
@@ -506,7 +523,7 @@ class ShadowstepImage:
             ShadowstepImage: Self for method chaining.
 
         Raises:
-            TimeoutException: If image not found after max_attempts.
+            ShadowstepImageNotFoundError: If image not found after max_attempts.
 
         """
         return self._scroll_to_image(
@@ -534,7 +551,7 @@ class ShadowstepImage:
             image.scroll_to().tap()  # Smart scroll then tap
 
         Raises:
-            TimeoutException: If image not found after max_attempts.
+            ShadowstepImageNotFoundError: If image not found after max_attempts.
 
         Note:
             This method tries scrolling down first, then up if not found.
@@ -543,7 +560,7 @@ class ShadowstepImage:
         # Try scrolling down first
         try:
             return self.scroll_down(max_attempts=max_attempts // 2, step_delay=step_delay)
-        except TimeoutException:
+        except ShadowstepImageNotFoundError:
             # If not found, try scrolling up
             return self.scroll_up(max_attempts=max_attempts // 2, step_delay=step_delay)
 
@@ -566,7 +583,7 @@ class ShadowstepImage:
             ...     print("Button is inside dialog")
 
         Raises:
-            TimeoutException: If container image not found on screen.
+            ShadowstepImageNotFoundError: If container image not found on screen.
 
         Note:
             This performs template matching within the bounding box of this image.
@@ -612,8 +629,7 @@ class ShadowstepImage:
 
         """
         self.logger.info("%s", get_current_func_name())
-        msg = "ImageShould functionality not yet implemented"
-        raise NotImplementedError(msg)
+        raise ShadowstepImageNotImplementedError(feature="ImageShould functionality")
 
     @log_image()
     def to_ndarray(
@@ -652,8 +668,7 @@ class ShadowstepImage:
         elif isinstance(image, str):
             result = cv2.imread(image, cv2.IMREAD_COLOR)  # type: ignore[reportAssignmentType]
             if result is None:  # type: ignore[reportUnnecessaryComparison]
-                msg = f"Failed to load image from path: {image}"
-                raise FileNotFoundError(msg)
+                raise ShadowstepImageLoadError(path=image)
 
         # Handle PIL Image
         elif isinstance(image, PILImage.Image):
@@ -667,8 +682,7 @@ class ShadowstepImage:
             result = image
 
         else:
-            msg = f"Unsupported image type: {type(image)}"
-            raise TypeError(msg)
+            raise ShadowstepUnsupportedImageTypeError(image_type=type(image).__name__)
 
         # Convert to grayscale if requested
         if grayscale:
@@ -718,25 +732,25 @@ class ShadowstepImage:
         )
 
         for scale in scales:
-            # Resize full image to current scale
-            new_width = int(full_image.shape[1] * scale)
-            new_height = int(full_image.shape[0] * scale)
-            resized = cv2.resize(full_image, (new_width, new_height))
+            # Resize template to current scale
+            new_width = int(origin_width * scale)
+            new_height = int(origin_height * scale)
 
-            # Skip if resized image is smaller than template
-            if resized.shape[0] < origin_height or resized.shape[1] < origin_width:
+            # Skip if resized template is larger than full image
+            if new_height > full_image.shape[0] or new_width > full_image.shape[1]:
                 continue
+
+            resized_template = cv2.resize(template_image, (new_width, new_height))
 
             # Perform template matching
             try:
-                result = cv2.matchTemplate(resized, template_image, cv2.TM_CCOEFF_NORMED)
+                result = cv2.matchTemplate(full_image, resized_template, cv2.TM_CCOEFF_NORMED)
                 _, max_val, _, max_loc = cv2.minMaxLoc(result)
 
                 # Update best match if this is better
                 if max_val > best_val:
                     best_val = max_val
-                    # Scale coordinates back to original image size
-                    best_loc = (int(max_loc[0] / scale), int(max_loc[1] / scale))
+                    best_loc = max_loc
 
                 # Early exit if we found a very good match
                 if max_val > self.MIN_SUFFICIENT_MATCH:
@@ -868,7 +882,7 @@ class ShadowstepImage:
         automatically by most methods that need coordinates.
 
         Raises:
-            TimeoutException: If image not found within timeout period.
+            ShadowstepImageNotFoundError: If image not found within timeout period.
 
         Note:
             Results are cached and reused. Call this method explicitly
@@ -877,10 +891,12 @@ class ShadowstepImage:
         """
         coords = self._get_image_coordinates()
         if coords is None:
-            msg = f"Image not visible on screen (threshold={self.threshold})"
-            self.logger.error(msg)
-            self.shadowstep.save_screenshot(filename="debug_screenshot.png")  # FIXME
-            raise TimeoutException(msg)
+            self.logger.error("Image not visible on screen")
+            raise ShadowstepImageNotFoundError(
+                threshold=self.threshold,
+                timeout=self.timeout,
+                operation="visibility check",
+            )
 
         self._coords = coords
         self._center = self._calculate_center(coords)
@@ -1002,7 +1018,7 @@ class ShadowstepImage:
             ShadowstepImage: Self for method chaining.
 
         Raises:
-            TimeoutException: If image not found after max_attempts.
+            ShadowstepImageNotFoundError: If image not found after max_attempts.
 
         """
         for attempt in range(max_attempts):
@@ -1018,9 +1034,12 @@ class ShadowstepImage:
             time.sleep(step_delay)
 
         # Not found after all attempts
-        msg = f"Image not found after {max_attempts} scroll attempts ({direction})"
-        self.logger.error(msg)
-        raise TimeoutException(msg)
+        self.logger.error("Image not found after scroll attempts")
+        raise ShadowstepImageNotFoundError(
+            threshold=self.threshold,
+            timeout=self.timeout,
+            operation=f"{max_attempts} scroll attempts ({direction})",
+        )
 
     def _perform_scroll(
         self,
@@ -1062,8 +1081,10 @@ class ShadowstepImage:
             end_x = int(width * from_percent)
             end_y = int(height // 2)
         else:
-            msg = f"Invalid scroll direction: {direction}"
-            raise ValueError(msg)
+            raise ShadowstepInvalidScrollDirectionError(
+                direction=direction,
+                valid_directions=["up", "down", "left", "right"],
+            )
 
         # Perform swipe
         self.shadowstep.driver.swipe(start_x, start_y, end_x, end_y, duration=500)
@@ -1104,15 +1125,17 @@ class ShadowstepImage:
         )
 
         for scale in scales:
-            new_width = int(full_image.shape[1] * scale)
-            new_height = int(full_image.shape[0] * scale)
-            resized = cv2.resize(full_image, (new_width, new_height))
+            new_width = int(origin_width * scale)
+            new_height = int(origin_height * scale)
 
-            if resized.shape[0] < origin_height or resized.shape[1] < origin_width:
+            # Skip if resized template is larger than full image
+            if new_height > full_image.shape[0] or new_width > full_image.shape[1]:
                 continue
 
+            resized_template = cv2.resize(template_image, (new_width, new_height))
+
             try:
-                result = cv2.matchTemplate(resized, template_image, cv2.TM_CCOEFF_NORMED)
+                result = cv2.matchTemplate(full_image, resized_template, cv2.TM_CCOEFF_NORMED)
                 _, max_val, _, _ = cv2.minMaxLoc(result)
 
                 if max_val > self.threshold:
