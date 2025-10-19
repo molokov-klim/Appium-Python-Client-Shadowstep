@@ -31,12 +31,10 @@ from shadowstep.decorators.image_decorators import fail_safe_image
 from shadowstep.exceptions.shadowstep_exceptions import (
     ShadowstepImageLoadError,
     ShadowstepImageNotFoundError,
-    ShadowstepImageNotImplementedError,
     ShadowstepInvalidScrollDirectionError,
     ShadowstepUnsupportedImageTypeError,
 )
 from shadowstep.ui_automator.mobile_commands import MobileCommands
-from shadowstep.utils.utils import get_current_func_name
 
 if TYPE_CHECKING:
     from shadowstep.shadowstep import Shadowstep
@@ -618,16 +616,17 @@ class ShadowstepImage:
     def should(self) -> Any:  # type: ignore[return-any]
         """ImageShould functionality - assertions interface.
 
-        Example:
-            image.should.be_visible()
-            image.should.have_text("Hello")
+        Returns:
+            ImageShould: Assertions interface for fluent DSL.
 
-        Note:
-            Not yet implemented. Reserved for future assertion DSL.
+        Example:
+            image.should.be.visible()
+            image.should.contain("button.png")
 
         """
-        self.logger.info("%s", get_current_func_name())
-        raise ShadowstepImageNotImplementedError(feature="ImageShould functionality")
+        from shadowstep.image.should import ImageShould  # noqa: PLC0415
+
+        return ImageShould(self)
 
     @log_image()
     def to_ndarray(

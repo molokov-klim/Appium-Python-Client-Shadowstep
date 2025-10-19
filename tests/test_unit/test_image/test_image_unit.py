@@ -651,8 +651,7 @@ class TestShadowstepImageShould:
         
         img = ShadowstepImage("test.png")
 
-        with pytest.raises(Exception, match="ImageShould functionality"):
-            _ = img.should
+        _ = img.should
 
 
 class TestShadowstepImageToNdarray:
