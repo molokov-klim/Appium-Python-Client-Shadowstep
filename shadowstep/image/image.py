@@ -373,13 +373,12 @@ class ShadowstepImage:
                 self._coords = coords
                 self._center = self._calculate_center(coords)
                 return True
-        except Exception:  # FIXME
+        except Exception:
             self.logger.exception("Error checking visibility")
             return False
         else:
             return False
 
-    @fail_safe_image()
     @property
     def coordinates(self) -> tuple[int, int, int, int]:
         """Get the bounding box coordinates of the image.
@@ -400,7 +399,6 @@ class ShadowstepImage:
             self.ensure_visible()
         return self._coords  # type: ignore[return-value]
 
-    @fail_safe_image()
     @property
     def center(self) -> tuple[int, int]:
         """Get the center coordinates of the image.
@@ -746,6 +744,7 @@ class ShadowstepImage:
             try:
                 result = cv2.matchTemplate(full_image, resized_template, cv2.TM_CCOEFF_NORMED)
                 _, max_val, _, max_loc = cv2.minMaxLoc(result)
+                max_loc = (int(max_loc[0]), int(max_loc[1]))
 
                 # Update best match if this is better
                 if max_val > best_val:
