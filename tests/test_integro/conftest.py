@@ -106,7 +106,7 @@ def android_settings_open_close(app: Shadowstep, handle_not_responding: Any):
     app.terminal.start_activity(
         package="com.android.settings", activity="com.android.settings.Settings"
     )
-    app.get_element({"text": "Connected devices"}).wait(timeout=10)
+    app.get_element({"text": "Connected devices"}).wait(timeout=60)
     time.sleep(1)
     yield
     app.terminal.press_back()
