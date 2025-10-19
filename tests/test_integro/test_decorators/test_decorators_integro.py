@@ -24,19 +24,19 @@ def test_fail_safe_decorator_works_with_real_element(
     Testing through real element interaction verifies the decorator chain works.
     """
     # Get element (uses fail_safe internally for finding)
-            element = app.get_element({"text": "Battery"}, timeout=10)
+    element = app.get_element({"text": "Battery"}, timeout=10)
 
     # Tap uses @fail_safe_element decorator
-        element.tap()
-        time.sleep(1)
+    element.tap()
+    time.sleep(1)
 
     # Verify tap worked by checking we're still in Settings
-        package = app.get_current_package()
+    package = app.get_current_package()
     assert "com.android.settings" in package
 
-        # Go back
-        app.terminal.press_back()
-        time.sleep(1)
+    # Go back
+    app.terminal.press_back()
+    time.sleep(1)
 
 
 def test_retry_decorator_works_with_real_element(
