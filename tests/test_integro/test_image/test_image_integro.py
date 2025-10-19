@@ -23,7 +23,7 @@ class TestShadowstepImage:
         """
         # Create instance with string path
         image_path = "/path/to/image.png"
-        img = ShadowstepImage(image_path, app, threshold=0.8, timeout=10.0)
+        img = ShadowstepImage(image_path, threshold=0.8, timeout=10.0)
 
         # Verify instance
         assert img is not None  # noqa: S101
@@ -31,7 +31,7 @@ class TestShadowstepImage:
 
         # Verify attributes
         assert img._image == image_path  # noqa: S101
-        assert img._base is app  # noqa: S101
+        assert img.shadowstep is app  # noqa: S101
         assert img.threshold == 0.8  # noqa: S101
         assert img.timeout == 10.0  # noqa: S101
         assert img._coords is None  # noqa: S101
@@ -47,13 +47,13 @@ class TestShadowstepImage:
         """
         # Create instance with bytes
         image_bytes = b"fake_image_data"
-        img = ShadowstepImage(image_bytes, app)
+        img = ShadowstepImage(image_bytes)
 
         # Verify instance
         assert img is not None  # noqa: S101
         assert isinstance(img, ShadowstepImage)  # noqa: S101
         assert img._image == image_bytes  # noqa: S101
-        assert img._base is app  # noqa: S101
+        assert img.shadowstep is app  # noqa: S101
 
     def test_initialization_with_default_values(self, app: Shadowstep):
         """Test ShadowstepImage initialization with default threshold and timeout.
@@ -63,7 +63,7 @@ class TestShadowstepImage:
         2. Verify default values are set.
         """
         # Create instance with defaults
-        img = ShadowstepImage("/path/to/image.png", app)
+        img = ShadowstepImage("/path/to/image.png")
 
         # Verify defaults
         assert img.threshold == 0.7  # noqa: S101
@@ -507,7 +507,7 @@ class TestShadowstepImage:
         """
         img = ShadowstepImage("/path/to/image.png", app)
 
-        assert img._base is app  # noqa: S101
+        assert img.shadowstep is app  # noqa: S101
         assert id(img._base) == id(app)  # noqa: S101
 
     def test_multiple_instances_can_be_created(self, app: Shadowstep):
