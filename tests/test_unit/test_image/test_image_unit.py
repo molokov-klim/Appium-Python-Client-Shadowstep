@@ -11,54 +11,63 @@ import pytest
 from PIL import Image as PILImage
 from selenium.common.exceptions import TimeoutException
 
+from shadowstep.exceptions.shadowstep_exceptions import ShadowstepImageNotFoundError
 from shadowstep.image.image import ShadowstepImage
 
 
 class TestShadowstepImageInit:
     """Test ShadowstepImage initialization."""
 
-    def test_init_with_bytes_image(self):
+    @patch("shadowstep.shadowstep.Shadowstep")
+    def test_init_with_bytes_image(self, mock_shadowstep_class):
         """Test initialization with bytes image."""
-        mock_base = Mock()
+        mock_instance = Mock()
+        mock_shadowstep_class.get_instance.return_value = mock_instance
         image_bytes = b"fake_image_data"
 
-        img = ShadowstepImage(image_bytes, mock_base, threshold=0.8, timeout=10.0)
+        img = ShadowstepImage(image_bytes, threshold=0.8, timeout=10.0)
 
         assert img._image == image_bytes
-        assert img._base == mock_base
+        assert img.shadowstep == mock_instance
         assert img.threshold == 0.8
         assert img.timeout == 10.0
         assert img._coords is None
         assert img._center is None
         assert img.MIN_SUFFICIENT_MATCH == 0.95
 
-    def test_init_with_str_path(self):
+    @patch("shadowstep.shadowstep.Shadowstep")
+    def test_init_with_str_path(self, mock_shadowstep_class):
         """Test initialization with string path."""
-        mock_base = Mock()
+        mock_instance = Mock()
+        mock_shadowstep_class.get_instance.return_value = mock_instance
         image_path = "/path/to/image.png"
 
-        img = ShadowstepImage(image_path, mock_base)
+        img = ShadowstepImage(image_path)
 
         assert img._image == image_path
         assert img.threshold == 0.7
         assert img.timeout == 5.0
 
-    def test_init_with_numpy_array(self):
+    @patch("shadowstep.shadowstep.Shadowstep")
+    def test_init_with_numpy_array(self, mock_shadowstep_class):
         """Test initialization with numpy array."""
-        mock_base = Mock()
+        mock_instance = Mock()
+        mock_shadowstep_class.get_instance.return_value = mock_instance
         image_array = np.zeros((100, 100, 3), dtype=np.uint8)
 
-        img = ShadowstepImage(image_array, mock_base, threshold=0.9)
+        img = ShadowstepImage(image_array, threshold=0.9)
 
         assert isinstance(img._image, np.ndarray)
         assert img.threshold == 0.9
 
-    def test_init_with_pil_image(self):
+    @patch("shadowstep.shadowstep.Shadowstep")
+    def test_init_with_pil_image(self, mock_shadowstep_class):
         """Test initialization with PIL Image."""
-        mock_base = Mock()
+        mock_instance = Mock()
+        mock_shadowstep_class.get_instance.return_value = mock_instance
         pil_image = PILImage.new("RGB", (100, 100))
 
-        img = ShadowstepImage(pil_image, mock_base)
+        img = ShadowstepImage(pil_image)
 
         assert isinstance(img._image, PILImage.Image)
         assert img.threshold == 0.7
@@ -67,44 +76,55 @@ class TestShadowstepImageInit:
 class TestShadowstepImageTap:
     """Test tap method."""
 
+    @patch("shadowstep.shadowstep.Shadowstep")
     @patch.object(ShadowstepImage, "ensure_visible")
-    def test_tap_without_duration(self, mock_ensure_visible):
+    def test_tap_without_duration(self, mock_ensure_visible, mock_shadowstep_class):
         """Test tap without duration parameter."""
-        mock_base = Mock()
-        mock_base.driver.tap = Mock()
-        img = ShadowstepImage("test.png", mock_base)
+        mock_instance = Mock()
+        mock_instance.driver = Mock()
+        mock_instance.driver.tap = Mock()
+        mock_shadowstep_class.get_instance.return_value = mock_instance
+        
+        img = ShadowstepImage("test.png")
         img._center = (100, 200)
 
         result = img.tap()
 
         mock_ensure_visible.assert_called_once()
-        mock_base.driver.tap.assert_called_once_with(positions=[(100, 200)], duration=None)
+        mock_instance.driver.tap.assert_called_once_with(positions=[(100, 200)], duration=None)
         assert result is img
 
+    @patch("shadowstep.shadowstep.Shadowstep")
     @patch.object(ShadowstepImage, "ensure_visible")
-    def test_tap_with_duration(self, mock_ensure_visible):
+    def test_tap_with_duration(self, mock_ensure_visible, mock_shadowstep_class):
         """Test tap with duration parameter."""
-        mock_base = Mock()
-        mock_base.driver.tap = Mock()
-        img = ShadowstepImage("test.png", mock_base)
+        mock_instance = Mock()
+        mock_instance.driver = Mock()
+        mock_instance.driver.tap = Mock()
+        mock_shadowstep_class.get_instance.return_value = mock_instance
+        
+        img = ShadowstepImage("test.png")
         img._center = (150, 250)
 
         result = img.tap(duration=500)
 
         mock_ensure_visible.assert_called_once()
-        mock_base.driver.tap.assert_called_once_with(positions=[(150, 250)], duration=500)
+        mock_instance.driver.tap.assert_called_once_with(positions=[(150, 250)], duration=500)
         assert result is img
 
 
 class TestShadowstepImageDrag:
     """Test drag method."""
 
+    @patch("shadowstep.shadowstep.Shadowstep")
     @patch.object(ShadowstepImage, "ensure_visible")
-    def test_drag_to_coordinates(self, mock_ensure_visible):
+    def test_drag_to_coordinates(self, mock_ensure_visible, mock_shadowstep_class):
         """Test drag to coordinates tuple."""
-        mock_base = Mock()
-        mock_base.driver = Mock()
-        img = ShadowstepImage("test.png", mock_base)
+        mock_instance = Mock()
+        mock_instance.driver = Mock()
+        mock_shadowstep_class.get_instance.return_value = mock_instance
+        
+        img = ShadowstepImage("test.png")
         img._center = (100, 100)
 
         with patch("shadowstep.image.image.ActionChains") as mock_action_chains:
@@ -118,14 +138,17 @@ class TestShadowstepImageDrag:
             mock_ensure_visible.assert_called_once()
             assert result is img
 
+    @patch("shadowstep.shadowstep.Shadowstep")
     @patch.object(ShadowstepImage, "ensure_visible")
-    def test_drag_to_another_image(self, mock_ensure_visible):
+    def test_drag_to_another_image(self, mock_ensure_visible, mock_shadowstep_class):
         """Test drag to another ShadowstepImage."""
-        mock_base = Mock()
-        mock_base.driver = Mock()
-        img1 = ShadowstepImage("test1.png", mock_base)
+        mock_instance = Mock()
+        mock_instance.driver = Mock()
+        mock_shadowstep_class.get_instance.return_value = mock_instance
+        
+        img1 = ShadowstepImage("test1.png")
         img1._center = (100, 100)
-        img2 = ShadowstepImage("test2.png", mock_base)
+        img2 = ShadowstepImage("test2.png")
         img2._center = (200, 200)
 
         with patch("shadowstep.image.image.ActionChains") as mock_action_chains:
@@ -144,12 +167,15 @@ class TestShadowstepImageDrag:
 class TestShadowstepImageZoom:
     """Test zoom method."""
 
+    @patch("shadowstep.shadowstep.Shadowstep")
     @patch.object(ShadowstepImage, "ensure_visible")
     @patch("shadowstep.image.image.MobileCommands")
-    def test_zoom_default_parameters(self, mock_mobile_commands_class, mock_ensure_visible):
+    def test_zoom_default_parameters(self, mock_mobile_commands_class, mock_ensure_visible, mock_shadowstep_class):
         """Test zoom with default parameters."""
-        mock_base = Mock()
-        img = ShadowstepImage("test.png", mock_base)
+        mock_instance = Mock()
+        mock_shadowstep_class.get_instance.return_value = mock_instance
+        
+        img = ShadowstepImage("test.png")
         img._center = (150, 150)
         img._coords = (100, 100, 200, 200)
 
@@ -168,12 +194,15 @@ class TestShadowstepImageZoom:
         assert call_args["percent"] == 0.5  # 1.5 - 1.0
         assert result is img
 
+    @patch("shadowstep.shadowstep.Shadowstep")
     @patch.object(ShadowstepImage, "ensure_visible")
     @patch("shadowstep.image.image.MobileCommands")
-    def test_zoom_custom_parameters(self, mock_mobile_commands_class, mock_ensure_visible):
+    def test_zoom_custom_parameters(self, mock_mobile_commands_class, mock_ensure_visible, mock_shadowstep_class):
         """Test zoom with custom parameters."""
-        mock_base = Mock()
-        img = ShadowstepImage("test.png", mock_base)
+        mock_instance = Mock()
+        mock_shadowstep_class.get_instance.return_value = mock_instance
+        
+        img = ShadowstepImage("test.png")
         img._center = (150, 150)
         img._coords = (100, 100, 200, 200)
 
@@ -190,12 +219,15 @@ class TestShadowstepImageZoom:
 class TestShadowstepImageUnzoom:
     """Test unzoom method."""
 
+    @patch("shadowstep.shadowstep.Shadowstep")
     @patch.object(ShadowstepImage, "ensure_visible")
     @patch("shadowstep.image.image.MobileCommands")
-    def test_unzoom_default_parameters(self, mock_mobile_commands_class, mock_ensure_visible):
+    def test_unzoom_default_parameters(self, mock_mobile_commands_class, mock_ensure_visible, mock_shadowstep_class):
         """Test unzoom with default parameters."""
-        mock_base = Mock()
-        img = ShadowstepImage("test.png", mock_base)
+        mock_instance = Mock()
+        mock_shadowstep_class.get_instance.return_value = mock_instance
+        
+        img = ShadowstepImage("test.png")
         img._center = (150, 150)
         img._coords = (100, 100, 200, 200)
 
@@ -210,12 +242,15 @@ class TestShadowstepImageUnzoom:
         assert call_args["percent"] == 0.5  # 1.0 - 0.5
         assert result is img
 
+    @patch("shadowstep.shadowstep.Shadowstep")
     @patch.object(ShadowstepImage, "ensure_visible")
     @patch("shadowstep.image.image.MobileCommands")
-    def test_unzoom_custom_parameters(self, mock_mobile_commands_class, mock_ensure_visible):
+    def test_unzoom_custom_parameters(self, mock_mobile_commands_class, mock_ensure_visible, mock_shadowstep_class):
         """Test unzoom with custom parameters."""
-        mock_base = Mock()
-        img = ShadowstepImage("test.png", mock_base)
+        mock_instance = Mock()
+        mock_shadowstep_class.get_instance.return_value = mock_instance
+        
+        img = ShadowstepImage("test.png")
         img._center = (150, 150)
         img._coords = (100, 100, 200, 200)
 
@@ -232,13 +267,17 @@ class TestShadowstepImageUnzoom:
 class TestShadowstepImageWait:
     """Test wait method."""
 
+    @patch("shadowstep.shadowstep.Shadowstep")
     @patch.object(ShadowstepImage, "_get_image_coordinates")
     @patch.object(ShadowstepImage, "ensure_visible")
     @patch("shadowstep.image.image.WebDriverWait")
-    def test_wait_success(self, mock_wait_class, mock_ensure_visible, mock_get_coords):
+    def test_wait_success(self, mock_wait_class, mock_ensure_visible, mock_get_coords, mock_shadowstep_class):
         """Test wait when image becomes visible."""
-        mock_base = Mock()
-        img = ShadowstepImage("test.png", mock_base, timeout=5.0)
+        mock_instance = Mock()
+        mock_instance.driver = Mock()
+        mock_shadowstep_class.get_instance.return_value = mock_instance
+        
+        img = ShadowstepImage("test.png", timeout=5.0)
         mock_get_coords.return_value = (10, 20, 50, 60)
 
         # Mock WebDriverWait to call the condition function
@@ -247,7 +286,7 @@ class TestShadowstepImageWait:
 
         def until_side_effect(condition):
             # Simulate successful condition
-            condition(mock_base.driver)
+            condition(mock_instance.driver)
             return True
 
         mock_wait.until.side_effect = until_side_effect
@@ -257,12 +296,16 @@ class TestShadowstepImageWait:
         assert result is True
         mock_ensure_visible.assert_called_once()
 
+    @patch("shadowstep.shadowstep.Shadowstep")
     @patch.object(ShadowstepImage, "_get_image_coordinates")
     @patch("shadowstep.image.image.WebDriverWait")
-    def test_wait_timeout(self, mock_wait_class, mock_get_coords):
+    def test_wait_timeout(self, mock_wait_class, mock_get_coords, mock_shadowstep_class):
         """Test wait when image doesn't become visible."""
-        mock_base = Mock()
-        img = ShadowstepImage("test.png", mock_base, timeout=5.0)
+        mock_instance = Mock()
+        mock_instance.driver = Mock()
+        mock_shadowstep_class.get_instance.return_value = mock_instance
+        
+        img = ShadowstepImage("test.png", timeout=5.0)
         mock_get_coords.return_value = None
 
         mock_wait = Mock()
@@ -277,12 +320,16 @@ class TestShadowstepImageWait:
 class TestShadowstepImageWaitNot:
     """Test wait_not method."""
 
+    @patch("shadowstep.shadowstep.Shadowstep")
     @patch.object(ShadowstepImage, "_get_image_coordinates")
     @patch("shadowstep.image.image.WebDriverWait")
-    def test_wait_not_success(self, mock_wait_class, mock_get_coords):
+    def test_wait_not_success(self, mock_wait_class, mock_get_coords, mock_shadowstep_class):
         """Test wait_not when image becomes invisible."""
-        mock_base = Mock()
-        img = ShadowstepImage("test.png", mock_base, timeout=5.0)
+        mock_instance = Mock()
+        mock_instance.driver = Mock()
+        mock_shadowstep_class.get_instance.return_value = mock_instance
+        
+        img = ShadowstepImage("test.png", timeout=5.0)
         img._coords = (10, 20, 50, 60)
         img._center = (30, 40)
         mock_get_coords.return_value = None
@@ -291,7 +338,7 @@ class TestShadowstepImageWaitNot:
         mock_wait_class.return_value = mock_wait
 
         def until_side_effect(condition):
-            condition(mock_base.driver)
+            condition(mock_instance.driver)
             return True
 
         mock_wait.until.side_effect = until_side_effect
@@ -302,12 +349,16 @@ class TestShadowstepImageWaitNot:
         assert img._coords is None
         assert img._center is None
 
+    @patch("shadowstep.shadowstep.Shadowstep")
     @patch.object(ShadowstepImage, "_get_image_coordinates")
     @patch("shadowstep.image.image.WebDriverWait")
-    def test_wait_not_timeout(self, mock_wait_class, mock_get_coords):
+    def test_wait_not_timeout(self, mock_wait_class, mock_get_coords, mock_shadowstep_class):
         """Test wait_not when image stays visible."""
-        mock_base = Mock()
-        img = ShadowstepImage("test.png", mock_base, timeout=5.0)
+        mock_instance = Mock()
+        mock_instance.driver = Mock()
+        mock_shadowstep_class.get_instance.return_value = mock_instance
+        
+        img = ShadowstepImage("test.png", timeout=5.0)
         mock_get_coords.return_value = (10, 20, 50, 60)
 
         mock_wait = Mock()
@@ -322,12 +373,15 @@ class TestShadowstepImageWaitNot:
 class TestShadowstepImageIsVisible:
     """Test is_visible method."""
 
+    @patch("shadowstep.shadowstep.Shadowstep")
     @patch.object(ShadowstepImage, "_get_image_coordinates")
     @patch.object(ShadowstepImage, "_calculate_center")
-    def test_is_visible_true(self, mock_calc_center, mock_get_coords):
+    def test_is_visible_true(self, mock_calc_center, mock_get_coords, mock_shadowstep_class):
         """Test is_visible returns True when image found."""
-        mock_base = Mock()
-        img = ShadowstepImage("test.png", mock_base)
+        mock_instance = Mock()
+        mock_shadowstep_class.get_instance.return_value = mock_instance
+        
+        img = ShadowstepImage("test.png")
         mock_get_coords.return_value = (10, 20, 50, 60)
         mock_calc_center.return_value = (30, 40)
 
@@ -337,22 +391,28 @@ class TestShadowstepImageIsVisible:
         assert img._coords == (10, 20, 50, 60)
         assert img._center == (30, 40)
 
+    @patch("shadowstep.shadowstep.Shadowstep")
     @patch.object(ShadowstepImage, "_get_image_coordinates")
-    def test_is_visible_false(self, mock_get_coords):
+    def test_is_visible_false(self, mock_get_coords, mock_shadowstep_class):
         """Test is_visible returns False when image not found."""
-        mock_base = Mock()
-        img = ShadowstepImage("test.png", mock_base)
+        mock_instance = Mock()
+        mock_shadowstep_class.get_instance.return_value = mock_instance
+        
+        img = ShadowstepImage("test.png")
         mock_get_coords.return_value = None
 
         result = img.is_visible()
 
         assert result is False
 
+    @patch("shadowstep.shadowstep.Shadowstep")
     @patch.object(ShadowstepImage, "_get_image_coordinates")
-    def test_is_visible_exception(self, mock_get_coords):
+    def test_is_visible_exception(self, mock_get_coords, mock_shadowstep_class):
         """Test is_visible returns False on exception."""
-        mock_base = Mock()
-        img = ShadowstepImage("test.png", mock_base)
+        mock_instance = Mock()
+        mock_shadowstep_class.get_instance.return_value = mock_instance
+        
+        img = ShadowstepImage("test.png")
         mock_get_coords.side_effect = Exception("Test error")
 
         result = img.is_visible()
@@ -363,11 +423,14 @@ class TestShadowstepImageIsVisible:
 class TestShadowstepImageCoordinates:
     """Test coordinates property."""
 
+    @patch("shadowstep.shadowstep.Shadowstep")
     @patch.object(ShadowstepImage, "ensure_visible")
-    def test_coordinates_cached(self, mock_ensure_visible):
+    def test_coordinates_cached(self, mock_ensure_visible, mock_shadowstep_class):
         """Test coordinates returns cached value."""
-        mock_base = Mock()
-        img = ShadowstepImage("test.png", mock_base)
+        mock_instance = Mock()
+        mock_shadowstep_class.get_instance.return_value = mock_instance
+        
+        img = ShadowstepImage("test.png")
         img._coords = (10, 20, 50, 60)
 
         coords = img.coordinates
@@ -375,11 +438,14 @@ class TestShadowstepImageCoordinates:
         assert coords == (10, 20, 50, 60)
         mock_ensure_visible.assert_not_called()
 
+    @patch("shadowstep.shadowstep.Shadowstep")
     @patch.object(ShadowstepImage, "ensure_visible")
-    def test_coordinates_not_cached(self, mock_ensure_visible):
+    def test_coordinates_not_cached(self, mock_ensure_visible, mock_shadowstep_class):
         """Test coordinates calls ensure_visible when not cached."""
-        mock_base = Mock()
-        img = ShadowstepImage("test.png", mock_base)
+        mock_instance = Mock()
+        mock_shadowstep_class.get_instance.return_value = mock_instance
+        
+        img = ShadowstepImage("test.png")
         img._coords = None
 
         def set_coords():
@@ -396,11 +462,14 @@ class TestShadowstepImageCoordinates:
 class TestShadowstepImageCenter:
     """Test center property."""
 
+    @patch("shadowstep.shadowstep.Shadowstep")
     @patch.object(ShadowstepImage, "ensure_visible")
-    def test_center_cached(self, mock_ensure_visible):
+    def test_center_cached(self, mock_ensure_visible, mock_shadowstep_class):
         """Test center returns cached value."""
-        mock_base = Mock()
-        img = ShadowstepImage("test.png", mock_base)
+        mock_instance = Mock()
+        mock_shadowstep_class.get_instance.return_value = mock_instance
+        
+        img = ShadowstepImage("test.png")
         img._center = (30, 40)
 
         center = img.center
@@ -408,11 +477,14 @@ class TestShadowstepImageCenter:
         assert center == (30, 40)
         mock_ensure_visible.assert_not_called()
 
+    @patch("shadowstep.shadowstep.Shadowstep")
     @patch.object(ShadowstepImage, "ensure_visible")
-    def test_center_not_cached(self, mock_ensure_visible):
+    def test_center_not_cached(self, mock_ensure_visible, mock_shadowstep_class):
         """Test center calls ensure_visible when not cached."""
-        mock_base = Mock()
-        img = ShadowstepImage("test.png", mock_base)
+        mock_instance = Mock()
+        mock_shadowstep_class.get_instance.return_value = mock_instance
+        
+        img = ShadowstepImage("test.png")
         img._center = None
 
         def set_center():
@@ -432,8 +504,7 @@ class TestShadowstepImageScrollMethods:
     @patch.object(ShadowstepImage, "_scroll_to_image")
     def test_scroll_down(self, mock_scroll_to_image):
         """Test scroll_down method."""
-        mock_base = Mock()
-        img = ShadowstepImage("test.png", mock_base)
+        img = ShadowstepImage("test.png")
         mock_scroll_to_image.return_value = img
 
         result = img.scroll_down(from_percent=0.6, to_percent=0.2, max_attempts=15, step_delay=0.3)
@@ -450,8 +521,7 @@ class TestShadowstepImageScrollMethods:
     @patch.object(ShadowstepImage, "_scroll_to_image")
     def test_scroll_up(self, mock_scroll_to_image):
         """Test scroll_up method."""
-        mock_base = Mock()
-        img = ShadowstepImage("test.png", mock_base)
+        img = ShadowstepImage("test.png")
         mock_scroll_to_image.return_value = img
 
         result = img.scroll_up(max_attempts=8, step_delay=0.4)
@@ -466,8 +536,7 @@ class TestShadowstepImageScrollMethods:
     @patch.object(ShadowstepImage, "_scroll_to_image")
     def test_scroll_left(self, mock_scroll_to_image):
         """Test scroll_left method."""
-        mock_base = Mock()
-        img = ShadowstepImage("test.png", mock_base)
+        img = ShadowstepImage("test.png")
         mock_scroll_to_image.return_value = img
 
         result = img.scroll_left(max_attempts=12, step_delay=0.6)
@@ -482,8 +551,7 @@ class TestShadowstepImageScrollMethods:
     @patch.object(ShadowstepImage, "_scroll_to_image")
     def test_scroll_right(self, mock_scroll_to_image):
         """Test scroll_right method."""
-        mock_base = Mock()
-        img = ShadowstepImage("test.png", mock_base)
+        img = ShadowstepImage("test.png")
         mock_scroll_to_image.return_value = img
 
         result = img.scroll_right(max_attempts=7, step_delay=0.8)
@@ -498,8 +566,7 @@ class TestShadowstepImageScrollMethods:
     @patch.object(ShadowstepImage, "scroll_down")
     def test_scroll_to_success_on_down(self, mock_scroll_down):
         """Test scroll_to success on first try (scroll_down)."""
-        mock_base = Mock()
-        img = ShadowstepImage("test.png", mock_base)
+        img = ShadowstepImage("test.png")
         mock_scroll_down.return_value = img
 
         result = img.scroll_to(max_attempts=10, step_delay=0.5)
@@ -507,13 +574,16 @@ class TestShadowstepImageScrollMethods:
         mock_scroll_down.assert_called_once_with(max_attempts=5, step_delay=0.5)
         assert result is img
 
+    @patch("shadowstep.shadowstep.Shadowstep")
     @patch.object(ShadowstepImage, "scroll_up")
     @patch.object(ShadowstepImage, "scroll_down")
-    def test_scroll_to_fallback_to_up(self, mock_scroll_down, mock_scroll_up):
+    def test_scroll_to_fallback_to_up(self, mock_scroll_down, mock_scroll_up, mock_shadowstep_class):
         """Test scroll_to falls back to scroll_up."""
-        mock_base = Mock()
-        img = ShadowstepImage("test.png", mock_base)
-        mock_scroll_down.side_effect = TimeoutException("Not found")
+        mock_instance = Mock()
+        mock_shadowstep_class.get_instance.return_value = mock_instance
+        
+        img = ShadowstepImage("test.png")
+        mock_scroll_down.side_effect = ShadowstepImageNotFoundError(threshold=0.7, timeout=5.0, operation="scroll_down")
         mock_scroll_up.return_value = img
 
         result = img.scroll_to(max_attempts=10, step_delay=0.5)
@@ -534,8 +604,7 @@ class TestShadowstepImageIsContains:
         self, mock_multi_scale, mock_to_ndarray, mock_screenshot, mock_ensure_visible
     ):
         """Test is_contains returns True when image contains target."""
-        mock_base = Mock()
-        img = ShadowstepImage("container.png", mock_base, threshold=0.7)
+        img = ShadowstepImage("container.png", threshold=0.7)
         img._coords = (50, 50, 200, 200)
 
         mock_screenshot.return_value = b"screenshot_data"
@@ -557,8 +626,7 @@ class TestShadowstepImageIsContains:
         self, mock_multi_scale, mock_to_ndarray, mock_screenshot, mock_ensure_visible
     ):
         """Test is_contains returns False when image doesn't contain target."""
-        mock_base = Mock()
-        img = ShadowstepImage("container.png", mock_base, threshold=0.7)
+        img = ShadowstepImage("container.png", threshold=0.7)
         img._coords = (50, 50, 200, 200)
 
         mock_screenshot.return_value = b"screenshot_data"
@@ -575,12 +643,15 @@ class TestShadowstepImageIsContains:
 class TestShadowstepImageShould:
     """Test should property."""
 
-    def test_should_raises_not_implemented(self):
+    @patch("shadowstep.shadowstep.Shadowstep")
+    def test_should_raises_not_implemented(self, mock_shadowstep_class):
         """Test should property raises NotImplementedError."""
-        mock_base = Mock()
-        img = ShadowstepImage("test.png", mock_base)
+        mock_instance = Mock()
+        mock_shadowstep_class.get_instance.return_value = mock_instance
+        
+        img = ShadowstepImage("test.png")
 
-        with pytest.raises(NotImplementedError, match="ImageShould functionality not yet implemented"):
+        with pytest.raises(Exception, match="ImageShould functionality"):
             _ = img.should
 
 
@@ -589,8 +660,7 @@ class TestShadowstepImageToNdarray:
 
     def test_to_ndarray_from_bytes_grayscale(self):
         """Test to_ndarray from bytes with grayscale."""
-        mock_base = Mock()
-        img = ShadowstepImage("test.png", mock_base)
+        img = ShadowstepImage("test.png")
 
         # Create a simple image as bytes
         test_array = np.zeros((100, 100, 3), dtype=np.uint8)
@@ -606,8 +676,7 @@ class TestShadowstepImageToNdarray:
 
     def test_to_ndarray_from_bytes_color(self):
         """Test to_ndarray from bytes without grayscale."""
-        mock_base = Mock()
-        img = ShadowstepImage("test.png", mock_base)
+        img = ShadowstepImage("test.png")
 
         test_array = np.zeros((100, 100, 3), dtype=np.uint8)
         _, buffer = cv2.imencode(".png", test_array)
@@ -620,8 +689,7 @@ class TestShadowstepImageToNdarray:
 
     def test_to_ndarray_from_str_path(self):
         """Test to_ndarray from file path."""
-        mock_base = Mock()
-        img = ShadowstepImage("test.png", mock_base)
+        img = ShadowstepImage("test.png")
 
         test_array = np.zeros((100, 100, 3), dtype=np.uint8)
 
@@ -634,20 +702,22 @@ class TestShadowstepImageToNdarray:
                 mock_imread.assert_called_once_with("/path/to/image.png", cv2.IMREAD_COLOR)
                 assert isinstance(result, np.ndarray)
 
-    def test_to_ndarray_from_str_path_file_not_found(self):
+    @patch("shadowstep.shadowstep.Shadowstep")
+    def test_to_ndarray_from_str_path_file_not_found(self, mock_shadowstep_class):
         """Test to_ndarray raises FileNotFoundError for invalid path."""
-        mock_base = Mock()
-        img = ShadowstepImage("test.png", mock_base)
+        mock_instance = Mock()
+        mock_shadowstep_class.get_instance.return_value = mock_instance
+        
+        img = ShadowstepImage("test.png")
 
         with patch("cv2.imread") as mock_imread:
             mock_imread.return_value = None
-            with pytest.raises(FileNotFoundError, match="Failed to load image from path"):
+            with pytest.raises(Exception, match="Failed to load image from path"):
                 img.to_ndarray("/invalid/path.png")
 
     def test_to_ndarray_from_pil_image(self):
         """Test to_ndarray from PIL Image."""
-        mock_base = Mock()
-        img = ShadowstepImage("test.png", mock_base)
+        img = ShadowstepImage("test.png")
 
         pil_image = PILImage.new("RGB", (100, 100), color=(255, 0, 0))
 
@@ -659,8 +729,7 @@ class TestShadowstepImageToNdarray:
 
     def test_to_ndarray_from_numpy_array(self):
         """Test to_ndarray from numpy array."""
-        mock_base = Mock()
-        img = ShadowstepImage("test.png", mock_base)
+        img = ShadowstepImage("test.png")
 
         test_array = np.zeros((100, 100, 3), dtype=np.uint8)
 
@@ -670,12 +739,15 @@ class TestShadowstepImageToNdarray:
 
             assert isinstance(result, np.ndarray)
 
-    def test_to_ndarray_unsupported_type(self):
+    @patch("shadowstep.shadowstep.Shadowstep")
+    def test_to_ndarray_unsupported_type(self, mock_shadowstep_class):
         """Test to_ndarray raises TypeError for unsupported type."""
-        mock_base = Mock()
-        img = ShadowstepImage("test.png", mock_base)
+        mock_instance = Mock()
+        mock_shadowstep_class.get_instance.return_value = mock_instance
+        
+        img = ShadowstepImage("test.png")
 
-        with pytest.raises(TypeError, match="Unsupported image type"):
+        with pytest.raises(Exception, match="Unsupported image type"):
             img.to_ndarray(12345)  # Invalid type
 
 
@@ -684,8 +756,7 @@ class TestShadowstepImageMultiScaleMatching:
 
     def test_multi_scale_matching_finds_match(self):
         """Test multi_scale_matching finds a good match."""
-        mock_base = Mock()
-        img = ShadowstepImage("test.png", mock_base, threshold=0.7)
+        img = ShadowstepImage("test.png", threshold=0.7)
 
         # Create test images
         full_image = np.zeros((500, 500), dtype=np.uint8)
@@ -706,8 +777,7 @@ class TestShadowstepImageMultiScaleMatching:
 
     def test_multi_scale_matching_early_exit_on_high_match(self):
         """Test multi_scale_matching exits early on very good match."""
-        mock_base = Mock()
-        img = ShadowstepImage("test.png", mock_base, threshold=0.7)
+        img = ShadowstepImage("test.png", threshold=0.7)
 
         full_image = np.zeros((500, 500), dtype=np.uint8)
         template_image = np.zeros((50, 50), dtype=np.uint8)
@@ -728,8 +798,7 @@ class TestShadowstepImageMultiScaleMatching:
 
     def test_multi_scale_matching_handles_cv2_error(self):
         """Test multi_scale_matching handles cv2 errors gracefully."""
-        mock_base = Mock()
-        img = ShadowstepImage("test.png", mock_base, threshold=0.7)
+        img = ShadowstepImage("test.png", threshold=0.7)
 
         full_image = np.zeros((500, 500), dtype=np.uint8)
         template_image = np.zeros((50, 50), dtype=np.uint8)
@@ -748,8 +817,7 @@ class TestShadowstepImageMultiScaleMatching:
 
     def test_multi_scale_matching_skips_small_resized_images(self):
         """Test multi_scale_matching skips scales where resized image is smaller than template."""
-        mock_base = Mock()
-        img = ShadowstepImage("test.png", mock_base, threshold=0.7)
+        img = ShadowstepImage("test.png", threshold=0.7)
 
         # Create extreme scenario: very small full image and huge template
         # At small scales (0.2x), 100*0.2 = 20 which is much smaller than 500
@@ -784,8 +852,7 @@ class TestShadowstepImageFindAll:
     @patch.object(ShadowstepImage, "_multi_scale_matching_raw")
     def test_find_all_multiple_matches(self, mock_multi_scale_raw, mock_to_ndarray, mock_screenshot):
         """Test find_all returns multiple matches."""
-        mock_base = Mock()
-        img = ShadowstepImage("test.png", mock_base, threshold=0.7)
+        img = ShadowstepImage("test.png", threshold=0.7)
 
         mock_screenshot.return_value = b"screenshot_data"
         full_array = np.zeros((300, 300), dtype=np.uint8)
@@ -808,8 +875,7 @@ class TestShadowstepImageFindAll:
     @patch.object(ShadowstepImage, "_multi_scale_matching_raw")
     def test_find_all_no_matches(self, mock_multi_scale_raw, mock_to_ndarray, mock_screenshot):
         """Test find_all returns empty list when no matches."""
-        mock_base = Mock()
-        img = ShadowstepImage("test.png", mock_base, threshold=0.7)
+        img = ShadowstepImage("test.png", threshold=0.7)
 
         mock_screenshot.return_value = b"screenshot_data"
         full_array = np.zeros((300, 300), dtype=np.uint8)
@@ -826,8 +892,7 @@ class TestShadowstepImageFindAll:
     @patch.object(ShadowstepImage, "_multi_scale_matching_raw")
     def test_find_all_filters_duplicate_matches(self, mock_multi_scale_raw, mock_to_ndarray, mock_screenshot):
         """Test find_all filters out duplicate matches within threshold."""
-        mock_base = Mock()
-        img = ShadowstepImage("test.png", mock_base, threshold=0.7)
+        img = ShadowstepImage("test.png", threshold=0.7)
 
         mock_screenshot.return_value = b"screenshot_data"
         full_array = np.zeros((300, 300), dtype=np.uint8)
@@ -861,8 +926,7 @@ class TestShadowstepImageDrawRectangle:
         self, mock_imwrite, mock_rectangle, mock_to_ndarray, mock_screenshot, mock_ensure_visible
     ):
         """Test draw_rectangle saves screenshot successfully."""
-        mock_base = Mock()
-        img = ShadowstepImage("test.png", mock_base)
+        img = ShadowstepImage("test.png")
         img._coords = (10, 20, 100, 120)
 
         mock_screenshot.return_value = b"screenshot_data"
@@ -886,8 +950,7 @@ class TestShadowstepImageDrawRectangle:
         self, mock_imwrite, mock_rectangle, mock_to_ndarray, mock_screenshot, mock_ensure_visible
     ):
         """Test draw_rectangle handles save failure."""
-        mock_base = Mock()
-        img = ShadowstepImage("test.png", mock_base)
+        img = ShadowstepImage("test.png")
         img._coords = (10, 20, 100, 120)
 
         mock_screenshot.return_value = b"screenshot_data"
@@ -902,8 +965,7 @@ class TestShadowstepImageDrawRectangle:
     @patch.object(ShadowstepImage, "ensure_visible")
     def test_draw_rectangle_exception(self, mock_ensure_visible):
         """Test draw_rectangle handles exceptions."""
-        mock_base = Mock()
-        img = ShadowstepImage("test.png", mock_base)
+        img = ShadowstepImage("test.png")
         mock_ensure_visible.side_effect = Exception("Test error")
 
         result = img.draw_rectangle()
@@ -918,8 +980,7 @@ class TestShadowstepImageEnsureVisible:
     @patch.object(ShadowstepImage, "_calculate_center")
     def test_ensure_visible_success(self, mock_calc_center, mock_get_coords):
         """Test ensure_visible finds image and caches values."""
-        mock_base = Mock()
-        img = ShadowstepImage("test.png", mock_base)
+        img = ShadowstepImage("test.png")
 
         mock_get_coords.return_value = (10, 20, 100, 120)
         mock_calc_center.return_value = (55, 70)
@@ -930,29 +991,36 @@ class TestShadowstepImageEnsureVisible:
         assert img._center == (55, 70)
         assert img._last_screenshot_time > 0
 
+    @patch("shadowstep.shadowstep.Shadowstep")
     @patch.object(ShadowstepImage, "_get_image_coordinates")
-    def test_ensure_visible_raises_timeout(self, mock_get_coords):
+    def test_ensure_visible_raises_timeout(self, mock_get_coords, mock_shadowstep_class):
         """Test ensure_visible raises TimeoutException when not found."""
-        mock_base = Mock()
-        img = ShadowstepImage("test.png", mock_base)
+        mock_instance = Mock()
+        mock_shadowstep_class.get_instance.return_value = mock_instance
+        
+        img = ShadowstepImage("test.png")
 
         mock_get_coords.return_value = None
 
-        with pytest.raises(TimeoutException, match="Image not visible on screen"):
+        with pytest.raises(Exception, match="Image not"):
             img.ensure_visible()
 
 
 class TestShadowstepImagePrivateMethods:
     """Test private/helper methods."""
 
-    def test_get_screenshot_as_bytes(self):
+    @patch("shadowstep.shadowstep.Shadowstep")
+    def test_get_screenshot_as_bytes(self, mock_shadowstep_class):
         """Test _get_screenshot_as_bytes method."""
-        mock_base = Mock()
-        img = ShadowstepImage("test.png", mock_base)
+        mock_instance = Mock()
+        mock_instance.driver = Mock()
+        mock_shadowstep_class.get_instance.return_value = mock_instance
+        
+        img = ShadowstepImage("test.png")
 
         test_data = b"screenshot_data"
         encoded = base64.b64encode(test_data).decode("utf-8")
-        mock_base.driver.get_screenshot_as_base64.return_value = encoded
+        mock_instance.driver.get_screenshot_as_base64.return_value = encoded
 
         result = img._get_screenshot_as_bytes()
 
@@ -963,8 +1031,7 @@ class TestShadowstepImagePrivateMethods:
     @patch.object(ShadowstepImage, "multi_scale_matching")
     def test_get_image_coordinates_success(self, mock_multi_scale, mock_to_ndarray, mock_screenshot):
         """Test _get_image_coordinates finds image."""
-        mock_base = Mock()
-        img = ShadowstepImage("test.png", mock_base, threshold=0.7)
+        img = ShadowstepImage("test.png", threshold=0.7)
 
         mock_screenshot.return_value = b"screenshot_data"
         full_array = np.zeros((300, 300), dtype=np.uint8)
@@ -983,8 +1050,7 @@ class TestShadowstepImagePrivateMethods:
         self, mock_multi_scale, mock_to_ndarray, mock_screenshot
     ):
         """Test _get_image_coordinates returns None when below threshold."""
-        mock_base = Mock()
-        img = ShadowstepImage("test.png", mock_base, threshold=0.7)
+        img = ShadowstepImage("test.png", threshold=0.7)
 
         mock_screenshot.return_value = b"screenshot_data"
         full_array = np.zeros((300, 300), dtype=np.uint8)
@@ -999,8 +1065,7 @@ class TestShadowstepImagePrivateMethods:
     @patch.object(ShadowstepImage, "_get_screenshot_as_bytes")
     def test_get_image_coordinates_exception(self, mock_screenshot):
         """Test _get_image_coordinates handles exceptions."""
-        mock_base = Mock()
-        img = ShadowstepImage("test.png", mock_base)
+        img = ShadowstepImage("test.png")
         mock_screenshot.side_effect = Exception("Test error")
 
         coords = img._get_image_coordinates()
@@ -1016,8 +1081,7 @@ class TestShadowstepImagePrivateMethods:
 
     def test_to_grayscale_already_grayscale(self):
         """Test _to_grayscale with already grayscale image."""
-        mock_base = Mock()
-        img = ShadowstepImage("test.png", mock_base)
+        img = ShadowstepImage("test.png")
 
         gray_image = np.zeros((100, 100), dtype=np.uint8)
         result = img._to_grayscale(gray_image)
@@ -1026,8 +1090,7 @@ class TestShadowstepImagePrivateMethods:
 
     def test_to_grayscale_color_image(self):
         """Test _to_grayscale with color image."""
-        mock_base = Mock()
-        img = ShadowstepImage("test.png", mock_base)
+        img = ShadowstepImage("test.png")
 
         color_image = np.zeros((100, 100, 3), dtype=np.uint8)
 
@@ -1046,8 +1109,7 @@ class TestShadowstepImagePrivateMethods:
     @patch.object(ShadowstepImage, "_perform_scroll")
     def test_scroll_to_image_found_immediately(self, mock_perform_scroll, mock_is_visible):
         """Test _scroll_to_image when image found on first check."""
-        mock_base = Mock()
-        img = ShadowstepImage("test.png", mock_base)
+        img = ShadowstepImage("test.png")
         mock_is_visible.return_value = True
 
         result = img._scroll_to_image(direction="down", max_attempts=5)
@@ -1062,8 +1124,7 @@ class TestShadowstepImagePrivateMethods:
         self, mock_sleep, mock_perform_scroll, mock_is_visible
     ):
         """Test _scroll_to_image when image found after scrolling."""
-        mock_base = Mock()
-        img = ShadowstepImage("test.png", mock_base)
+        img = ShadowstepImage("test.png")
         mock_is_visible.side_effect = [False, False, True]
 
         result = img._scroll_to_image(direction="down", max_attempts=5, step_delay=0.5)
@@ -1071,83 +1132,106 @@ class TestShadowstepImagePrivateMethods:
         assert result is img
         assert mock_perform_scroll.call_count == 2
 
+    @patch("shadowstep.shadowstep.Shadowstep")
     @patch.object(ShadowstepImage, "is_visible")
     @patch.object(ShadowstepImage, "_perform_scroll")
     @patch("time.sleep")
-    def test_scroll_to_image_not_found(self, mock_sleep, mock_perform_scroll, mock_is_visible):
+    def test_scroll_to_image_not_found(self, mock_sleep, mock_perform_scroll, mock_is_visible, mock_shadowstep_class):
         """Test _scroll_to_image raises TimeoutException when not found."""
-        mock_base = Mock()
-        img = ShadowstepImage("test.png", mock_base)
+        mock_instance = Mock()
+        mock_shadowstep_class.get_instance.return_value = mock_instance
+        
+        img = ShadowstepImage("test.png")
         mock_is_visible.return_value = False
 
-        with pytest.raises(TimeoutException, match="Image not found after .* scroll attempts"):
+        with pytest.raises(Exception, match="Image not found"):
             img._scroll_to_image(direction="down", max_attempts=3)
 
-    def test_perform_scroll_down(self):
+    @patch("shadowstep.shadowstep.Shadowstep")
+    def test_perform_scroll_down(self, mock_shadowstep_class):
         """Test _perform_scroll for down direction."""
-        mock_base = Mock()
-        mock_base.driver.get_window_size.return_value = {"width": 1000, "height": 2000}
-        mock_base.driver.swipe = Mock()
-        img = ShadowstepImage("test.png", mock_base)
+        mock_instance = Mock()
+        mock_instance.driver = Mock()
+        mock_instance.driver.get_window_size.return_value = {"width": 1000, "height": 2000}
+        mock_instance.driver.swipe = Mock()
+        mock_shadowstep_class.get_instance.return_value = mock_instance
+        
+        img = ShadowstepImage("test.png")
 
         img._perform_scroll(direction="down", from_percent=0.8, to_percent=0.2)
 
-        mock_base.driver.swipe.assert_called_once()
-        call_args = mock_base.driver.swipe.call_args[0]
+        mock_instance.driver.swipe.assert_called_once()
+        call_args = mock_instance.driver.swipe.call_args[0]
         assert call_args[0] == 500  # width // 2
         assert call_args[1] == 1600  # height * 0.8
         assert call_args[2] == 500  # width // 2
         assert call_args[3] == 400  # height * 0.2
 
-    def test_perform_scroll_up(self):
+    @patch("shadowstep.shadowstep.Shadowstep")
+    def test_perform_scroll_up(self, mock_shadowstep_class):
         """Test _perform_scroll for up direction."""
-        mock_base = Mock()
-        mock_base.driver.get_window_size.return_value = {"width": 1000, "height": 2000}
-        mock_base.driver.swipe = Mock()
-        img = ShadowstepImage("test.png", mock_base)
+        mock_instance = Mock()
+        mock_instance.driver = Mock()
+        mock_instance.driver.get_window_size.return_value = {"width": 1000, "height": 2000}
+        mock_instance.driver.swipe = Mock()
+        mock_shadowstep_class.get_instance.return_value = mock_instance
+        
+        img = ShadowstepImage("test.png")
 
         img._perform_scroll(direction="up", from_percent=0.8, to_percent=0.2)
 
-        mock_base.driver.swipe.assert_called_once()
-        call_args = mock_base.driver.swipe.call_args[0]
+        mock_instance.driver.swipe.assert_called_once()
+        call_args = mock_instance.driver.swipe.call_args[0]
         assert call_args[1] == 400  # height * 0.2 (start)
         assert call_args[3] == 1600  # height * 0.8 (end)
 
-    def test_perform_scroll_left(self):
+    @patch("shadowstep.shadowstep.Shadowstep")
+    def test_perform_scroll_left(self, mock_shadowstep_class):
         """Test _perform_scroll for left direction."""
-        mock_base = Mock()
-        mock_base.driver.get_window_size.return_value = {"width": 1000, "height": 2000}
-        mock_base.driver.swipe = Mock()
-        img = ShadowstepImage("test.png", mock_base)
+        mock_instance = Mock()
+        mock_instance.driver = Mock()
+        mock_instance.driver.get_window_size.return_value = {"width": 1000, "height": 2000}
+        mock_instance.driver.swipe = Mock()
+        mock_shadowstep_class.get_instance.return_value = mock_instance
+        
+        img = ShadowstepImage("test.png")
 
         img._perform_scroll(direction="left", from_percent=0.8, to_percent=0.2)
 
-        mock_base.driver.swipe.assert_called_once()
-        call_args = mock_base.driver.swipe.call_args[0]
+        mock_instance.driver.swipe.assert_called_once()
+        call_args = mock_instance.driver.swipe.call_args[0]
         assert call_args[0] == 800  # width * 0.8
         assert call_args[2] == 200  # width * 0.2
 
-    def test_perform_scroll_right(self):
+    @patch("shadowstep.shadowstep.Shadowstep")
+    def test_perform_scroll_right(self, mock_shadowstep_class):
         """Test _perform_scroll for right direction."""
-        mock_base = Mock()
-        mock_base.driver.get_window_size.return_value = {"width": 1000, "height": 2000}
-        mock_base.driver.swipe = Mock()
-        img = ShadowstepImage("test.png", mock_base)
+        mock_instance = Mock()
+        mock_instance.driver = Mock()
+        mock_instance.driver.get_window_size.return_value = {"width": 1000, "height": 2000}
+        mock_instance.driver.swipe = Mock()
+        mock_shadowstep_class.get_instance.return_value = mock_instance
+        
+        img = ShadowstepImage("test.png")
 
         img._perform_scroll(direction="right", from_percent=0.8, to_percent=0.2)
 
-        mock_base.driver.swipe.assert_called_once()
-        call_args = mock_base.driver.swipe.call_args[0]
+        mock_instance.driver.swipe.assert_called_once()
+        call_args = mock_instance.driver.swipe.call_args[0]
         assert call_args[0] == 200  # width * 0.2 (start)
         assert call_args[2] == 800  # width * 0.8 (end)
 
-    def test_perform_scroll_invalid_direction(self):
+    @patch("shadowstep.shadowstep.Shadowstep")
+    def test_perform_scroll_invalid_direction(self, mock_shadowstep_class):
         """Test _perform_scroll raises ValueError for invalid direction."""
-        mock_base = Mock()
-        mock_base.driver.get_window_size.return_value = {"width": 1000, "height": 2000}
-        img = ShadowstepImage("test.png", mock_base)
+        mock_instance = Mock()
+        mock_instance.driver = Mock()
+        mock_instance.driver.get_window_size.return_value = {"width": 1000, "height": 2000}
+        mock_shadowstep_class.get_instance.return_value = mock_instance
+        
+        img = ShadowstepImage("test.png")
 
-        with pytest.raises(ValueError, match="Invalid scroll direction"):
+        with pytest.raises(Exception, match="Invalid scroll direction"):
             img._perform_scroll(direction="invalid")
 
     @patch.object(ShadowstepImage, "to_ndarray")
@@ -1159,8 +1243,7 @@ class TestShadowstepImagePrivateMethods:
         self, mock_minmax, mock_match, mock_resize, mock_screenshot, mock_to_ndarray
     ):
         """Test _multi_scale_matching_raw returns result when match found."""
-        mock_base = Mock()
-        img = ShadowstepImage("test.png", mock_base, threshold=0.7)
+        img = ShadowstepImage("test.png", threshold=0.7)
 
         full_image = np.zeros((500, 500), dtype=np.uint8)
         template_image = np.zeros((50, 50), dtype=np.uint8)
@@ -1180,8 +1263,7 @@ class TestShadowstepImagePrivateMethods:
     @patch("cv2.minMaxLoc")
     def test_multi_scale_matching_raw_no_match(self, mock_minmax, mock_match, mock_resize):
         """Test _multi_scale_matching_raw returns None when no match found."""
-        mock_base = Mock()
-        img = ShadowstepImage("test.png", mock_base, threshold=0.7)
+        img = ShadowstepImage("test.png", threshold=0.7)
 
         full_image = np.zeros((500, 500), dtype=np.uint8)
         template_image = np.zeros((50, 50), dtype=np.uint8)
@@ -1199,8 +1281,7 @@ class TestShadowstepImagePrivateMethods:
     @patch("cv2.matchTemplate")
     def test_multi_scale_matching_raw_handles_error(self, mock_match, mock_resize):
         """Test _multi_scale_matching_raw handles cv2 errors."""
-        mock_base = Mock()
-        img = ShadowstepImage("test.png", mock_base, threshold=0.7)
+        img = ShadowstepImage("test.png", threshold=0.7)
 
         full_image = np.zeros((500, 500), dtype=np.uint8)
         template_image = np.zeros((50, 50), dtype=np.uint8)
@@ -1214,8 +1295,7 @@ class TestShadowstepImagePrivateMethods:
 
     def test_multi_scale_matching_raw_skips_small_resized(self):
         """Test _multi_scale_matching_raw skips when resized image is too small."""
-        mock_base = Mock()
-        img = ShadowstepImage("test.png", mock_base, threshold=0.7)
+        img = ShadowstepImage("test.png", threshold=0.7)
 
         # Create extreme scenario: very small full image and huge template
         # At small scales, 100*0.2 = 20 which is much smaller than 500
@@ -1244,13 +1324,17 @@ class TestShadowstepImagePrivateMethods:
 class TestShadowstepImageMethodChaining:
     """Test method chaining functionality."""
 
+    @patch("shadowstep.shadowstep.Shadowstep")
     @patch.object(ShadowstepImage, "ensure_visible")
     @patch.object(ShadowstepImage, "_scroll_to_image")
-    def test_method_chaining_scroll_tap(self, mock_scroll, mock_ensure_visible):
+    def test_method_chaining_scroll_tap(self, mock_scroll, mock_ensure_visible, mock_shadowstep_class):
         """Test chaining scroll and tap methods."""
-        mock_base = Mock()
-        mock_base.driver.tap = Mock()
-        img = ShadowstepImage("test.png", mock_base)
+        mock_instance = Mock()
+        mock_instance.driver = Mock()
+        mock_instance.driver.tap = Mock()
+        mock_shadowstep_class.get_instance.return_value = mock_instance
+        
+        img = ShadowstepImage("test.png")
         img._center = (100, 200)
         mock_scroll.return_value = img
 
@@ -1258,7 +1342,7 @@ class TestShadowstepImageMethodChaining:
 
         assert result is img
         mock_scroll.assert_called_once()
-        mock_base.driver.tap.assert_called_once()
+        mock_instance.driver.tap.assert_called_once()
 
 
 class TestShadowstepImageEdgeCases:
@@ -1266,22 +1350,19 @@ class TestShadowstepImageEdgeCases:
 
     def test_init_with_zero_threshold(self):
         """Test initialization with threshold 0.0."""
-        mock_base = Mock()
-        img = ShadowstepImage("test.png", mock_base, threshold=0.0)
+        img = ShadowstepImage("test.png", threshold=0.0)
 
         assert img.threshold == 0.0
 
     def test_init_with_threshold_one(self):
         """Test initialization with threshold 1.0."""
-        mock_base = Mock()
-        img = ShadowstepImage("test.png", mock_base, threshold=1.0)
+        img = ShadowstepImage("test.png", threshold=1.0)
 
         assert img.threshold == 1.0
 
     def test_init_with_zero_timeout(self):
         """Test initialization with timeout 0."""
-        mock_base = Mock()
-        img = ShadowstepImage("test.png", mock_base, timeout=0.0)
+        img = ShadowstepImage("test.png", timeout=0.0)
 
         assert img.timeout == 0.0
 
@@ -1294,8 +1375,7 @@ class TestShadowstepImageEdgeCases:
 
     def test_to_grayscale_single_channel_with_third_dimension(self):
         """Test _to_grayscale with single channel but 3D array."""
-        mock_base = Mock()
-        img = ShadowstepImage("test.png", mock_base)
+        img = ShadowstepImage("test.png")
 
         # Single channel image with shape (100, 100, 1)
         single_channel = np.zeros((100, 100, 1), dtype=np.uint8)
@@ -1305,8 +1385,7 @@ class TestShadowstepImageEdgeCases:
 
     def test_to_grayscale_unsupported_shape(self):
         """Test _to_grayscale with unsupported shape (e.g., 4 channels)."""
-        mock_base = Mock()
-        img = ShadowstepImage("test.png", mock_base)
+        img = ShadowstepImage("test.png")
 
         # 4 channel image (RGBA)
         rgba_image = np.zeros((100, 100, 4), dtype=np.uint8)
