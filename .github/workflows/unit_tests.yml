@@ -9,9 +9,9 @@ jobs:
     runs-on: [ self-hosted, linux, x64 ]
     strategy:
       matrix:
-        python-version: [ 3.9, 3.11, 3.13 ]
+        python-version: [ 3.9, 3.11, 3.12, 3.13 ]  # skip 3.10 bcs issue with it, don't know how fix
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python-version }}
