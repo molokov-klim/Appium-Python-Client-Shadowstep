@@ -661,6 +661,8 @@ class ShadowstepImage:
         # Handle bytes
         if isinstance(image, bytes):
             result = cv2.imdecode(np.frombuffer(image, np.uint8), cv2.IMREAD_COLOR)  # type: ignore[reportAssignmentType]
+            if result is None:  # type: ignore[reportUnnecessaryComparison]
+                raise ShadowstepImageLoadError(path="<bytes>")
 
         # Handle file path
         elif isinstance(image, str):

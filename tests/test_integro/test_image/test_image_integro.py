@@ -193,7 +193,12 @@ class TestShadowstepImage:
         self, app: Shadowstep, android_settings_open_close: Any
     ):
         img = ShadowstepImage(ELEMENT_1_IMG_PATH)
-        img.is_contains(b"image_bytes")
+        # Load real image bytes for testing
+        with open(ELEMENT_2_IMG_PATH, "rb") as f:
+            image_bytes = f.read()
+        # This should work without errors (even if result is False)
+        result = img.is_contains(image_bytes)
+        assert isinstance(result, bool)  # noqa: S101
 
     def test_should_property(
         self, app: Shadowstep, android_settings_open_close: Any
@@ -212,13 +217,23 @@ class TestShadowstepImage:
         self, app: Shadowstep, android_settings_open_close: Any
     ):
         img = ShadowstepImage(ELEMENT_1_IMG_PATH)
-        img.to_ndarray(b"image_bytes")
+        # Load real image bytes for testing
+        with open(ELEMENT_2_IMG_PATH, "rb") as f:
+            image_bytes = f.read()
+        result = img.to_ndarray(image_bytes)
+        assert result is not None  # noqa: S101
+        assert result.shape is not None  # noqa: S101
 
     def test_multi_scale_matching(
         self, app: Shadowstep, android_settings_open_close: Any
     ):
         img = ShadowstepImage(ELEMENT_1_IMG_PATH)
-        img.multi_scale_matching(None, None)  # type: ignore
+        # Load real images for testing
+        full_image = img.to_ndarray(ELEMENT_1_IMG_PATH)
+        template_image = img.to_ndarray(ELEMENT_2_IMG_PATH)
+        max_val, max_loc = img.multi_scale_matching(full_image, template_image)
+        assert isinstance(max_val, float)  # noqa: S101
+        assert isinstance(max_loc, tuple)  # noqa: S101
 
     def test_logger_is_initialized(self, app: Shadowstep, android_settings_open_close: Any):
         img = ShadowstepImage(ELEMENT_1_IMG_PATH)
