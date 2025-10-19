@@ -63,7 +63,7 @@ class TestShadowstepImage:
         img = ShadowstepImage("/path/to/image.png", app)
 
         # Verify defaults
-        assert img.threshold == 0.5  # noqa: S101
+        assert img.threshold == 0.7  # noqa: S101
         assert img.timeout == 5.0  # noqa: S101
 
     def test_tap_raises_not_implemented_error(self, app: Shadowstep):

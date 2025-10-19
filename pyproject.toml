@@ -76,6 +76,7 @@ ignore = [
     "D211", # conflict in D
     "D212", # conflict in D
     "D213", # conflict in D
+    "D401", # annoying
     "E501", # line too long
     "RUF001", # cyryllic
     "ANN401", # Any
