@@ -239,7 +239,7 @@ class MobileCommands:
             ));
 
         """
-        self.logger.debug("%s", get_current_func_name())
+        self.logger.info("%s", get_current_func_name())
         return self._execute("mobile: flingGesture", params)
 
     def pinch_open_gesture(self, params: dict[str, Any] | list[Any] | None = None) -> Any:
