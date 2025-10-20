@@ -17,7 +17,7 @@ from selenium.webdriver.common.actions import interaction
 from selenium.webdriver.common.actions.action_builder import ActionBuilder
 from selenium.webdriver.common.actions.pointer_input import PointerInput
 
-from shadowstep.decorators.common_decorators import log_debug
+from shadowstep.decorators.decorators import log_debug
 from shadowstep.exceptions.shadowstep_exceptions import ShadowstepElementException
 from shadowstep.ui_automator.mobile_commands import MobileCommands
 from shadowstep.utils.utils import find_coordinates_by_vector

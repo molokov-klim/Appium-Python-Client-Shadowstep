@@ -6,7 +6,7 @@ from unittest.mock import Mock, patch
 
 import pytest
 
-from shadowstep.decorators.common_decorators import (
+from shadowstep.decorators.decorators import (
     DEFAULT_EXCEPTIONS,
     current_page,
     log_debug,

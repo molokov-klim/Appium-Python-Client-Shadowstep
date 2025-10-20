@@ -26,7 +26,7 @@ from selenium.webdriver.common.actions.action_builder import ActionBuilder
 from selenium.webdriver.common.actions.pointer_input import PointerInput
 from selenium.webdriver.support.wait import WebDriverWait
 
-from shadowstep.decorators.common_decorators import log_image
+from shadowstep.decorators.decorators import log_image
 from shadowstep.decorators.image_decorators import fail_safe_image
 from shadowstep.exceptions.shadowstep_exceptions import (
     ShadowstepImageLoadError,

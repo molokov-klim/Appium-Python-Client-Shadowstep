@@ -14,7 +14,7 @@ from typing import TYPE_CHECKING, Any, cast
 
 from selenium.common import NoSuchElementException
 
-from shadowstep.decorators.common_decorators import log_debug
+from shadowstep.decorators.decorators import log_debug
 from shadowstep.exceptions.shadowstep_exceptions import (
     ShadowstepElementException,
     ShadowstepNoSuchElementException,

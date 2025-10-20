@@ -2,7 +2,7 @@
 # pyright: ignore
 import logging
 from typing import Any
-from shadowstep.decorators.common_decorators import current_page, log_info
+from shadowstep.decorators.decorators import current_page, log_info
 from shadowstep.element.element import Element
 from shadowstep.page_base import PageBaseShadowstep
 

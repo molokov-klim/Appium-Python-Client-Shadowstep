@@ -4,7 +4,7 @@ This package provides decorators for method enhancement including retry logic,
 logging, timing, and Allure reporting integration.
 """
 
-from shadowstep.decorators.common_decorators import (
+from shadowstep.decorators.decorators import (
     current_page,
     fail_safe,
     log_info,

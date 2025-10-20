@@ -9,7 +9,7 @@ from __future__ import annotations
 import logging
 from typing import TYPE_CHECKING, Any
 
-from shadowstep.decorators.common_decorators import log_debug
+from shadowstep.decorators.decorators import log_debug
 
 if TYPE_CHECKING:
     from appium.webdriver.webelement import WebElement

@@ -16,7 +16,7 @@ from typing import TYPE_CHECKING, Any, Literal
 
 from typing_extensions import Self
 
-from shadowstep.decorators.common_decorators import log_debug
+from shadowstep.decorators.decorators import log_debug
 from shadowstep.decorators.shadowstep_decorators import fail_safe_shadowstep
 from shadowstep.element.element import Element
 from shadowstep.exceptions.shadowstep_exceptions import ShadowstepException
