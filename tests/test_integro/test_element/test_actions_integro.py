@@ -12,37 +12,66 @@ uv run pytest -svl --log-cli-level INFO --tb=short --setup-show  tests/element/t
 
 class TestElementActions:
 
-    def test_send_keys(self, app: Shadowstep, stability: None):
-        el = app.get_element({"resource-id": "com.android.quicksearchbox:id/search_widget_text"})
-        el.tap()
-        time.sleep(3)
-        el = app.get_element({"resource-id": "com.android.quicksearchbox:id/search_src_text"})
-        el.send_keys("abc")
-        assert "abc" in el.text  # noqa: S101  # noqa: S101
-        el.clear()
-
-    def test_clear(self, app: Shadowstep, stability: None):
-        el = app.get_element({"resource-id": "com.android.quicksearchbox:id/search_widget_text"})
+    def test_send_keys(self, app: Shadowstep, android_settings_open_close: None):
+        el = app.get_element(
+            {
+                "text": "Search settings",
+                "resource-id": "com.android.settings:id/search_action_bar_title",
+                "class": "android.widget.TextView",
+            }
+        )
         el.tap()
         time.sleep(3)
         app.terminal.past_text("some_text")
         time.sleep(3)
-        el = app.get_element({"resource-id": "com.android.quicksearchbox:id/search_src_text"})
+        el = app.get_element(
+            {
+                "resource-id": "android:id/search_src_text",
+            }
+        )
         assert el.text == "some_text"  # noqa: S101  # noqa: S101
         el.clear()
-        assert el.text == ""  # noqa: S101  # noqa: S101
+
+    def test_clear(self, app: Shadowstep, android_settings_open_close: None):
+        el = app.get_element({
+                "text": "Search settings",
+                "resource-id": "com.android.settings:id/search_action_bar_title",
+                "class": "android.widget.TextView",
+            })
+        el.tap()
+        time.sleep(3)
+        app.terminal.past_text("some_text")
+        time.sleep(3)
+        el = app.get_element({
+                "resource-id": "android:id/search_src_text",
+            })
+        assert el.text == "some_text"  # noqa: S101  # noqa: S101
+        el.clear()
+        assert el.text == "Search…"  # noqa: S101  # noqa: S101
 
     @pytest.mark.skip(reason="Method is not implemented in UiAutomator2")
-    def test_submit(self, app: Shadowstep, stability: None):
-        el = app.get_element({"resource-id": "com.android.quicksearchbox:id/search_widget_text"})
+    def test_submit(self, app: Shadowstep, android_settings_open_close: None):
+        el = app.get_element({
+                "text": "Search settings",
+                "resource-id": "com.android.settings:id/search_action_bar_title",
+                "class": "android.widget.TextView",
+            })
         el.submit()  # Not always valid, but sufficient for test call
 
     @pytest.mark.skip(reason="Method is not implemented in UiAutomator2")
-    def test_set_value(self, app: Shadowstep, stability: None):
-        el = app.get_element({"resource-id": "com.android.quicksearchbox:id/search_widget_text"})
+    def test_set_value(self, app: Shadowstep, android_settings_open_close: None):
+        el = app.get_element({
+                "text": "Search settings",
+                "resource-id": "com.android.settings:id/search_action_bar_title",
+                "class": "android.widget.TextView",
+            })
         el.tap()
         time.sleep(3)
-        el = app.get_element({"resource-id": "com.android.quicksearchbox:id/search_src_text"})
+        el = app.get_element({
+                "text": "Search settings",
+                "resource-id": "com.android.settings:id/search_action_bar_title",
+                "class": "android.widget.TextView",
+            })
         el.set_value("test123")
         assert "test123" in el.text  # noqa: S101  # noqa: S101
         el.clear()

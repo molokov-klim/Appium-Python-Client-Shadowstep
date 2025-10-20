@@ -5,6 +5,7 @@ import json
 import logging
 import requests
 from lxml import etree
+from icecream import ic
 
 from shadowstep.element.element import Element
 from shadowstep.page_object.page_object_generator import PageObjectGenerator
@@ -20,6 +21,4 @@ app.connect(server_ip=APPIUM_IP,
             command_executor=APPIUM_COMMAND_EXECUTOR,
             capabilities=CAPABILITIES)
 
-element = app.get_element({"text": "Notifications"})
-element.save_screenshot("element2.png")
-
+ic(app.driver.page_source)
