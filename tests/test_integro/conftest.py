@@ -99,7 +99,7 @@ def press_home(app: Shadowstep):
 
 
 @pytest.fixture
-def android_settings_open_close(app: Shadowstep, handle_not_responding: Any):
+def android_settings_open_close(app: Shadowstep):
     app.terminal.press_back()
     app.terminal.press_back()
     app.terminal.close_app("com.android.settings")
