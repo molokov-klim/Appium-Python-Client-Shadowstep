@@ -10,7 +10,45 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        test_dir: [ tests/test_integro/test_shadowstep_integro.py, tests/test_integro/test_shadowstep_base_integro.py, tests/test_integro/test_page_base_integro.py, tests/test_integro/test_terminal/test_terminal_aapt_integro.py, tests/test_integro/test_terminal/test_terminal_adb_integro.py, tests/test_integro/test_terminal/test_terminal_terminal_integro.py ]
+        test_dir: [
+          tests/test_integro/test_decorators/test_decorators_integro.py,
+          tests/test_integro/test_element/test_actions_integro.py,
+          tests/test_integro/test_element/test_base_integro.py,
+          tests/test_integro/test_element/test_conditions_integro.py,
+          tests/test_integro/test_element/test_coordinates_integro.py,
+          tests/test_integro/test_element/test_dom_integro.py,
+          tests/test_integro/test_element/test_gestures_integro.py,
+          tests/test_integro/test_element/test_properties_integro.py,
+          tests/test_integro/test_element/test_screenshots_integro.py,
+          tests/test_integro/test_element/test_should_integro.py,
+          tests/test_integro/test_element/test_utilities_integro.py,
+          tests/test_integro/test_element/test_waiting_integro.py,
+          #          tests/test_integro/test_image/test_image_integro.py,   # disabled because no screen in CI
+          #          tests/test_integro/test_image/test_image_should_integro.py,   # disabled because no screen in CI
+          tests/test_integro/test_locator/test_dict_converter_integro.py,
+          tests/test_integro/test_locator/test_locator_converter_integro.py,
+          tests/test_integro/test_locator/test_ui_selector_converter_integro.py,
+          tests/test_integro/test_locator/test_ui_selector_integro.py,
+          tests/test_integro/test_locator/test_xpath_converter_integro.py,
+          tests/test_integro/test_logcat/test_logcat_integro.py,
+          tests/test_integro/test_navigator/test_navigator_integro.py,
+          tests/test_integro/test_page_base_integro.py,
+          tests/test_integro/test_page_object/test_page_object_integro.py,
+          tests/test_integro/test_page_object/test_page_object_merger_integro.py,
+          tests/test_integro/test_page_object/test_page_object_parser_integro.py,
+          tests/test_integro/test_page_object/test_page_object_test_generator_integro.py,
+          tests/test_integro/test_scheduled_actions/test_action_history_integro.py,
+          tests/test_integro/test_scheduled_actions/test_action_step_integro.py,
+          tests/test_integro/test_scheduled_actions/test_scheduled_actions_integro.py,
+          tests/test_integro/test_shadowstep_base_integro.py,
+          tests/test_integro/test_shadowstep_integro.py,
+          tests/test_integro/test_terminal/test_terminal_aapt_integro.py,
+          tests/test_integro/test_terminal/test_terminal_adb_integro.py,
+          tests/test_integro/test_terminal/test_terminal_terminal_integro.py,
+          tests/test_integro/test_terminal/test_terminal_transport_integro.py,
+          tests/test_integro/test_ui_automator/test_mobile_commands_integro.py,
+          tests/test_integro/test_web_driver/test_web_driver_integro.py
+        ]
 
     env:
       CI: true
