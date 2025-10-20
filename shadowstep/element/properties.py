@@ -139,10 +139,14 @@ class ElementProperties:
 
         if isinstance(locator, Element):
             locator = locator.locator
-        child_element = self.element._get_web_element(  # type: ignore[reportPrivateUsage]  # noqa: SLF001
-            locator=locator,
-        )
-        return child_element is not None  # type: ignore[reportUnnecessaryComparison]
+        try:
+            child_element = self.element._get_web_element(  # type: ignore[reportPrivateUsage]  # noqa: SLF001
+                locator=locator,
+            )
+        except (NoSuchElementException, ShadowstepNoSuchElementException):
+            return False
+        else:
+            return child_element is not None  # type: ignore[reportUnnecessaryComparison]
 
     @log_debug()
     def tag_name(self) -> str:

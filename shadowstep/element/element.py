@@ -798,7 +798,7 @@ class Element(ElementBase):
         """
         return self.properties.is_enabled()
 
-    @fail_safe_element()
+    @fail_safe_element_check()
     def is_contains(
         self,
         locator: tuple[str, str] | dict[str, Any] | Element | UiSelector,
