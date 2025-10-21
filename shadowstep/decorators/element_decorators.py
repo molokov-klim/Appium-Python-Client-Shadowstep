@@ -61,7 +61,7 @@ def fail_safe_element(
                     ):
                         self.utilities.handle_driver_error(error)
                         continue
-                    msg = f"Failed to execute '{func.__qualname__}' within timeout={self.timeout}"
+                    msg = f"Failed to execute '{func.__qualname__}' within timeout={self.timeout}, locator={self.locator}"
                     raise (raise_exception or ShadowstepElementException)(msg) from error
                 if attempts > 0:
                     msg = f"Failed: '{func.__qualname__}', try again in {attempts} attempts"
@@ -70,7 +70,7 @@ def fail_safe_element(
                     time.sleep(delay)
                 else:
                     break
-            msg = f"Failed to execute '{func.__qualname__}' within timeout={self.timeout}"
+            msg = f"Failed to execute '{func.__qualname__}' within timeout={self.timeout}, locator={self.locator}"
             raise (raise_exception or ShadowstepElementException)(msg)
 
         return cast("F", wrapper)
@@ -109,7 +109,7 @@ def fail_safe_element_check(
                     ):
                         self.utilities.handle_driver_error(error)
                         continue
-                    msg = f"Failed to execute '{func.__qualname__}' within timeout={self.timeout}"
+                    msg = f"Failed to execute '{func.__qualname__}' within timeout={self.timeout}, locator={self.locator}"
                     raise (raise_exception or ShadowstepElementException)(msg) from error
                 if attempts > 0:
                     msg = f"Failed: '{func.__qualname__}', try again in {attempts} attempts"
@@ -118,7 +118,7 @@ def fail_safe_element_check(
                     time.sleep(delay)
                 else:
                     break
-            msg = f"Failed to execute '{func.__qualname__}' within timeout={self.timeout}"
+            msg = f"Failed to execute '{func.__qualname__}' within timeout={self.timeout}, locator={self.locator}"
             raise (raise_exception or ShadowstepElementException)(msg)
 
         return cast("F", wrapper)
