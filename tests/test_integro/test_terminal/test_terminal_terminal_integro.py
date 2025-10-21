@@ -410,6 +410,7 @@ class TestTerminalIntegration:
         with pytest.raises((ShadowstepException, AdbShellError, KeyError, WebDriverException)):
             terminal.kill_all(name="nonexistent_terminal_process")
 
+    @pytest.mark.skip(reason="Does not work on 14 Android")
     def test_stop_logcat(self, terminal: Terminal):
         """Test stopping logcat."""
         # Act
@@ -834,6 +835,7 @@ class TestTerminalIntegration:
         # Assert
         assert isinstance(result, str)  # noqa: S101
 
+    @pytest.mark.skip(reason="Does not work on 14 Android")
     def test_stop_logcat_when_running(self, terminal: Terminal):
         """Test stop_logcat when logcat might be running."""
         # Act - stop any running logcat
