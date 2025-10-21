@@ -27,8 +27,3 @@ RUN echo "no" | avdmanager create avd -n test_avd -k "system-images;android-34;g
 
 RUN $ANDROID_SDK_ROOT/emulator/emulator -avd test_avd -no-window -no-audio -no-boot-anim -gpu swiftshader_indirect -snapshot save & \
     adb wait-for-device
-
-COPY entrypoint.sh /entrypoint.sh
-RUN chmod +x /entrypoint.sh
-
-CMD ["/entrypoint.sh"]

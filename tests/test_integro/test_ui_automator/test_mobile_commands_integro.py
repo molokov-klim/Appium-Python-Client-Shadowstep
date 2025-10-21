@@ -688,10 +688,8 @@ class TestMobileCommands:
         """Test start_media_projection_recording command."""
         result = self.mobile_commands.start_media_projection_recording()
         logger.info(result)
-    
-    @pytest.mark.xfail(
-        reason="EACCES: permission denied, mkdtemp 'recordingR6m2hB'", strict=False
-    )
+
+    @pytest.mark.xfail(reason="EACCES: permission denied, mkdtemp 'recordingR6m2hB'", strict=False)
     def test_stop_media_projection_recording(self):
         """Test stop_media_projection_recording command."""
         result = self.mobile_commands.stop_media_projection_recording()
@@ -763,6 +761,7 @@ class TestMobileCommands:
         result = self.mobile_commands.refresh_gps_cache()
         logger.info(result)
 
+    @pytest.mark.skip(reason="Does not work on emulators")
     def test_reset_geolocation(self):
         """Test reset_geolocation command."""
         result = self.mobile_commands.reset_geolocation()
