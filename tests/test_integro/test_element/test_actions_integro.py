@@ -26,7 +26,7 @@ class TestElementActions:
         time.sleep(3)
         el = app.get_element(
             {
-                "resource-id": "android:id/search_src_text",
+                "class": "android.widget.EditText",
             }
         )
         assert el.text == "some_text"  # noqa: S101  # noqa: S101
@@ -43,7 +43,7 @@ class TestElementActions:
         app.terminal.past_text("some_text")
         time.sleep(3)
         el = app.get_element({
-                "resource-id": "android:id/search_src_text",
+                "class": "android.widget.EditText",
             })
         assert el.text == "some_text"  # noqa: S101  # noqa: S101
         el.clear()

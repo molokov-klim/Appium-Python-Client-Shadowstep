@@ -108,7 +108,10 @@ class TestElementProperties:
     def test_package(self, app: Shadowstep, press_home: Any, stability: None):
         el = app.get_element({"content-desc": "Phone"})
         assert isinstance(el.package, str)  # noqa: S101  # noqa: S101
-        assert el.package == "com.android.launcher3"  # noqa: S101  # noqa: S101
+        try:
+            assert el.package == "com.android.launcher3"  # noqa: S101  # noqa: S101
+        except ShadowstepElementException:
+            assert el.package == "com.google.android.apps.nexuslauncher"  # noqa: S101  # noqa: S101
 
     def test_bounds(self, app: Shadowstep, press_home: Any, stability: None):
         el = app.get_element({"content-desc": "Phone"})

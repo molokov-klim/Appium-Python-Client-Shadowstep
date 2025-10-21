@@ -9,16 +9,12 @@ from selenium.common.exceptions import InvalidSessionIdException, NoSuchDriverEx
 from shadowstep.shadowstep import Shadowstep
 
 # Test capabilities for testing
-CAPABILITIES = {
-    "platformName": "Android",
-    "deviceName": "test_device",
-    "app": "test_app.apk"
-}
+CAPABILITIES = {"platformName": "Android", "deviceName": "test_device", "app": "test_app.apk"}
 
 app = Shadowstep()
 
-class TestShadowstepBaseUnit:
 
+class TestShadowstepBaseUnit:
     def test_get_driver_method(self):
         """Test get_driver method."""
 
@@ -154,26 +150,13 @@ class TestShadowstepBaseUnit:
             with patch("time.time", side_effect=[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10]):
                 with patch("time.sleep"):
                     with patch(
-                            "shadowstep.shadowstep_base.WebDriverSingleton.get_driver",
-                            return_value=mock_driver,
+                        "shadowstep.shadowstep_base.WebDriverSingleton.get_driver",
+                        return_value=mock_driver,
                     ):
                         with pytest.raises(
-                                RuntimeError, match="WebDriver session_id was not assigned in time"
+                            RuntimeError, match="WebDriver session_id was not assigned in time"
                         ):
                             app._wait_for_session_id(timeout=5)
-
-    @pytest.mark.skip(reason="_get_ignored_dirs moved to PageNavigator")
-    def test_get_ignored_dirs(self):
-        """Test _get_ignored_dirs method."""
-        # Method moved to PageNavigator
-        pass
-
-    @pytest.mark.skip(reason="_get_ignored_dirs moved to PageNavigator")
-    @pytest.mark.unit
-    def test_get_ignored_dirs_with_path_resolution_error(self):
-        """Test _get_ignored_dirs when path resolution fails."""
-        # Method moved to PageNavigator
-        pass
 
     def test_connect_with_ssh_credentials(self):
         """Test connect method with SSH credentials."""
@@ -201,7 +184,10 @@ class TestShadowstepBaseUnit:
 
                             # Verify SSH transport was created
                             mock_transport.assert_called_once_with(
-                                server="127.0.0.1", port=22, user="test_user", password="test_password"
+                                server="127.0.0.1",
+                                port=22,
+                                user="test_user",
+                                password="test_password",
                             )
                             mock_terminal.assert_called_once()
                             mock_adb.assert_called_once()
@@ -358,11 +344,10 @@ class TestShadowstepBaseUnit:
         mock_webdriver = MagicMock()
         mock_webdriver.session_id = "test_session"
 
-        with patch("shadowstep.web_driver.web_driver_singleton.WebDriver", return_value=mock_webdriver):
-            result = WebDriverSingleton(
-                command_executor="http://test:4723/wd/hub",
-                options=None
-            )
+        with patch(
+            "shadowstep.web_driver.web_driver_singleton.WebDriver", return_value=mock_webdriver
+        ):
+            result = WebDriverSingleton(command_executor="http://test:4723/wd/hub", options=None)
             assert result == mock_webdriver
             assert WebDriverSingleton._instance is not None
             assert WebDriverSingleton._driver == mock_webdriver
@@ -384,15 +369,15 @@ class TestShadowstepBaseUnit:
         mock_webdriver = MagicMock()
         mock_webdriver.session_id = "test_session"
 
-        with patch("shadowstep.web_driver.web_driver_singleton.WebDriver", return_value=mock_webdriver):
+        with patch(
+            "shadowstep.web_driver.web_driver_singleton.WebDriver", return_value=mock_webdriver
+        ):
             first_result = WebDriverSingleton(
-                command_executor="http://test:4723/wd/hub",
-                options=None
+                command_executor="http://test:4723/wd/hub", options=None
             )
             # Second call should return same instance
             second_result = WebDriverSingleton(
-                command_executor="http://test2:4723/wd/hub",
-                options=None
+                command_executor="http://test2:4723/wd/hub", options=None
             )
             assert first_result == second_result
             assert WebDriverSingleton._driver == mock_webdriver
@@ -420,7 +405,9 @@ class TestShadowstepBaseUnit:
         base.ssh_password = None
 
         with patch.object(base, "disconnect") as mock_disconnect:
-            with patch("shadowstep.shadowstep_base.WebDriverSingleton.clear_instance") as mock_clear:
+            with patch(
+                "shadowstep.shadowstep_base.WebDriverSingleton.clear_instance"
+            ) as mock_clear:
                 with patch.object(base, "connect") as mock_connect:
                     with patch("time.sleep"):
                         base.reconnect()
@@ -450,7 +437,9 @@ class TestShadowstepBaseUnit:
         base.capabilities = None
 
         with patch.object(base, "disconnect") as mock_disconnect:
-            with patch("shadowstep.shadowstep_base.WebDriverSingleton.clear_instance") as mock_clear:
+            with patch(
+                "shadowstep.shadowstep_base.WebDriverSingleton.clear_instance"
+            ) as mock_clear:
                 with patch.object(base, "connect") as mock_connect:
                     with patch("time.sleep"):
                         base.reconnect()
@@ -474,7 +463,9 @@ class TestShadowstepBaseUnit:
         """Test is_connected returns True when session is active on grid."""
         with patch.object(app, "_is_session_active_on_grid", return_value=True):
             with patch.object(app, "_is_session_active_on_standalone", return_value=False):
-                with patch.object(app, "_is_session_active_on_standalone_new_style", return_value=False):
+                with patch.object(
+                    app, "_is_session_active_on_standalone_new_style", return_value=False
+                ):
                     result = app.is_connected()
                     assert result is True
 
@@ -483,7 +474,9 @@ class TestShadowstepBaseUnit:
         """Test is_connected returns True when session is active on standalone server."""
         with patch.object(app, "_is_session_active_on_grid", return_value=False):
             with patch.object(app, "_is_session_active_on_standalone", return_value=True):
-                with patch.object(app, "_is_session_active_on_standalone_new_style", return_value=False):
+                with patch.object(
+                    app, "_is_session_active_on_standalone_new_style", return_value=False
+                ):
                     result = app.is_connected()
                     assert result is True
 
@@ -492,7 +485,9 @@ class TestShadowstepBaseUnit:
         """Test is_connected returns True when session is active on standalone server (new style)."""
         with patch.object(app, "_is_session_active_on_grid", return_value=False):
             with patch.object(app, "_is_session_active_on_standalone", return_value=False):
-                with patch.object(app, "_is_session_active_on_standalone_new_style", return_value=True):
+                with patch.object(
+                    app, "_is_session_active_on_standalone_new_style", return_value=True
+                ):
                     result = app.is_connected()
                     assert result is True
 
@@ -501,7 +496,9 @@ class TestShadowstepBaseUnit:
         """Test is_connected returns False when no session is active."""
         with patch.object(app, "_is_session_active_on_grid", return_value=False):
             with patch.object(app, "_is_session_active_on_standalone", return_value=False):
-                with patch.object(app, "_is_session_active_on_standalone_new_style", return_value=False):
+                with patch.object(
+                    app, "_is_session_active_on_standalone_new_style", return_value=False
+                ):
                     result = app.is_connected()
                     assert result is False
 

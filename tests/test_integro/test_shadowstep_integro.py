@@ -6,6 +6,7 @@ from pathlib import Path
 
 import pytest
 
+from shadowstep import ShadowstepException
 from shadowstep.element.element import Element
 from shadowstep.image.image import ShadowstepImage
 from shadowstep.shadowstep import Shadowstep
@@ -607,8 +608,7 @@ class TestShadowstep:
         try:
             # Use start_activity as alternative which is more reliable
             app.start_activity(
-                intent="android.settings.SETTINGS",
-                component="com.android.settings/.Settings"
+                intent="android.settings.SETTINGS", component="com.android.settings/.Settings"
             )
             time.sleep(1)
             current_package = app.get_current_package()
@@ -1521,6 +1521,7 @@ class TestShadowstep:
         app.refresh_gps_cache(timeout_ms=5000)
         time.sleep(0.3)
 
+    @pytest.mark.skip(reason="Does not work on emulators")
     def test_reset_geolocation(self, app: Shadowstep):
         """Test reset_geolocation() resets device location.
 
@@ -1528,9 +1529,7 @@ class TestShadowstep:
         1. Call reset_geolocation().
         2. Verify method completes without exceptions.
         """
-        # Reset geolocation
         app.reset_geolocation()
-        time.sleep(0.3)
 
     def test_get_geolocation(self, app: Shadowstep):
         """Test get_geolocation() returns device location.

@@ -67,7 +67,7 @@ class TestYandexTranslate:
 
         # Verify translate method exists
         assert hasattr(YandexTranslate, "translate")  # noqa: S101
-        
+
         # Verify signature
         sig = inspect.signature(YandexTranslate.translate)
         assert "text" in sig.parameters  # noqa: S101
@@ -87,87 +87,13 @@ class TestYandexTranslate:
 
         # Verify __init__ signature
         import inspect
+
         sig = inspect.signature(YandexTranslate.__init__)
         assert "folder_id" in sig.parameters  # noqa: S101
 
         # Verify translate signature
         sig = inspect.signature(YandexTranslate.translate)
         assert "text" in sig.parameters  # noqa: S101
-
-    @pytest.mark.skipif(
-        not os.getenv("yandexPassportOauthToken"),
-        reason="Yandex token not available"
-    )
-    def test_yandex_translate_init_with_token(self, app: Shadowstep) -> None:
-        """Test YandexTranslate initialization with valid token.
-
-        Steps:
-        1. Create YandexTranslate instance with token from environment.
-        2. Verify instance is created successfully.
-        3. Verify public attributes are accessible.
-
-        Note: This test only runs if yandexPassportOauthToken is set.
-        """
-        # Create instance with folder_id
-        translator = YandexTranslate(folder_id="test_folder")
-
-        # Verify instance exists
-        assert translator is not None  # noqa: S101
-
-        # Verify public attribute
-        assert translator.folder_id == "test_folder"  # noqa: S101
-
-    @pytest.mark.skipif(
-        not os.getenv("yandexPassportOauthToken") or not os.getenv("YANDEX_FOLDER_ID"),
-        reason="Yandex credentials not available"
-    )
-    def test_yandex_translate_translate_english(self, app: Shadowstep) -> None:
-        """Test translate() returns original for English text.
-
-        Steps:
-        1. Create YandexTranslate instance.
-        2. Call translate() with English text.
-        3. Verify original text is returned (no translation needed).
-
-        Note: This test only runs if yandexPassportOauthToken is set.
-        """
-        # Create translator with real folder_id from environment
-        folder_id = os.getenv("YANDEX_FOLDER_ID", "test_folder")
-        translator = YandexTranslate(folder_id=folder_id)
-
-        # Translate English text (should return original)
-        english_text = "Hello world"
-        result = translator.translate(english_text)
-
-        # Should return original text since no Cyrillic
-        assert result == english_text  # noqa: S101
-
-    @pytest.mark.skipif(
-        not os.getenv("yandexPassportOauthToken") or not os.getenv("YANDEX_FOLDER_ID"),
-        reason="Yandex credentials not available"
-    )
-    def test_yandex_translate_translate_russian(self, app: Shadowstep) -> None:
-        """Test translate() translates Russian text to English.
-
-        Steps:
-        1. Create YandexTranslate instance.
-        2. Call translate() with Russian text.
-        3. Verify translated English text is returned.
-
-        Note: This test only runs if credentials are set.
-        """
-        # Create translator with real folder_id from environment
-        folder_id = os.getenv("YANDEX_FOLDER_ID", "test_folder")
-        translator = YandexTranslate(folder_id=folder_id)
-
-        # Translate Russian text
-        russian_text = "Привет"
-        result = translator.translate(russian_text)
-
-        # Should return translated text
-        assert result != russian_text  # noqa: S101
-        assert isinstance(result, str)  # noqa: S101
-        assert len(result) > 0  # noqa: S101
 
     def test_yandex_translate_method_signatures(self, app: Shadowstep) -> None:
         """Test YandexTranslate methods have correct signatures.

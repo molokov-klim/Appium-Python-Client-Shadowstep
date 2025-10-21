@@ -23,7 +23,7 @@ logging.getLogger("charset_normalizer").setLevel(logging.CRITICAL)
 
 IS_CI = os.getenv("CI", "false").lower() == "true"
 
-UDID = "emulator-5554" if IS_CI else "127.0.0.1:6555"
+UDID = "emulator-5554"
 
 APPIUM_IP = "127.0.0.1"
 APPIUM_PORT = 4723

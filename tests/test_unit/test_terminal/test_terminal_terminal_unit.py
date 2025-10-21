@@ -62,13 +62,15 @@ class TestTerminal:
         self.mock_transport.scp = self.mock_scp
 
         # Patch Shadowstep.get_instance to return our mock
-        self.patcher = patch('shadowstep.shadowstep.Shadowstep.get_instance', return_value=self.mock_shadowstep)
+        self.patcher = patch(
+            "shadowstep.shadowstep.Shadowstep.get_instance", return_value=self.mock_shadowstep
+        )
         self.patcher.start()
         self.terminal = Terminal()
 
     def teardown_method(self):
         """Clean up test fixtures."""
-        if hasattr(self, 'patcher'):
+        if hasattr(self, "patcher"):
             self.patcher.stop()
 
     @pytest.mark.unit
@@ -81,7 +83,7 @@ class TestTerminal:
         mock_shadowstep.driver = mock_driver
 
         # Act
-        with patch('shadowstep.shadowstep.Shadowstep.get_instance', return_value=mock_shadowstep):
+        with patch("shadowstep.shadowstep.Shadowstep.get_instance", return_value=mock_shadowstep):
             terminal = Terminal()
 
             # Assert
@@ -138,7 +140,11 @@ class TestTerminal:
         command = "pm list packages"
         args = ""
 
-        with patch.object(self.terminal.mobile_commands, "shell", side_effect=NoSuchDriverException("Driver not found")):
+        with patch.object(
+            self.terminal.mobile_commands,
+            "shell",
+            side_effect=NoSuchDriverException("Driver not found"),
+        ):
             self.mock_shadowstep.reconnect = Mock()
 
             with pytest.raises(AdbShellError) as exc_info:
@@ -154,7 +160,11 @@ class TestTerminal:
         command = "pm list packages"
         args = ""
 
-        with patch.object(self.terminal.mobile_commands, "shell", side_effect=InvalidSessionIdException("Invalid session")):
+        with patch.object(
+            self.terminal.mobile_commands,
+            "shell",
+            side_effect=InvalidSessionIdException("Invalid session"),
+        ):
             self.mock_shadowstep.reconnect = Mock()
 
             with pytest.raises(AdbShellError) as exc_info:
@@ -169,7 +179,9 @@ class TestTerminal:
         command = "pm list packages"
         args = ""
 
-        with patch.object(self.terminal.mobile_commands, "shell", side_effect=KeyError("Key not found")):
+        with patch.object(
+            self.terminal.mobile_commands, "shell", side_effect=KeyError("Key not found")
+        ):
             self.mock_shadowstep.reconnect = Mock()
 
             with pytest.raises(AdbShellError) as exc_info:
@@ -190,7 +202,7 @@ class TestTerminal:
         with patch.object(
             self.terminal.mobile_commands,
             "shell",
-            side_effect=[NoSuchDriverException("Driver not found"), expected_result]
+            side_effect=[NoSuchDriverException("Driver not found"), expected_result],
         ):
             self.mock_shadowstep.reconnect = Mock()
 
@@ -201,42 +213,6 @@ class TestTerminal:
             assert result == expected_result  # noqa: S101
             assert self.terminal.mobile_commands.shell.call_count == 2  # noqa: S101
             self.mock_shadowstep.reconnect.assert_called_once()
-
-    @pytest.mark.unit
-    @pytest.mark.skip(reason="Terminal.push() removed - no longer uses transport/SSH")
-    def test_push_success(self):
-        """Test successful file push."""
-        pass
-
-    @pytest.mark.unit
-    @pytest.mark.skip(reason="Terminal.push() removed - no longer uses transport/SSH")
-    def test_push_without_credentials(self):
-        """Test file push without transport credentials."""
-        pass
-
-    @pytest.mark.unit
-    @pytest.mark.skip(reason="Terminal.install_app() removed - no longer uses transport/SSH")
-    def test_install_app_success(self):
-        """Test successful app installation."""
-        pass
-
-    @pytest.mark.unit
-    @pytest.mark.skip(reason="Terminal.install_app() removed - no longer uses transport/SSH")
-    def test_install_app_without_credentials(self):
-        """Test app installation without transport credentials."""
-        pass
-
-    @pytest.mark.unit
-    @pytest.mark.skip(reason="Terminal.pull() removed - no longer available")
-    def test_pull_success(self):
-        """Test successful file pull."""
-        pass
-
-    @pytest.mark.unit
-    @pytest.mark.skip(reason="Terminal.pull() removed - no longer available")
-    def test_pull_driver_exception(self):
-        """Test file pull with driver exception."""
-        pass
 
     @pytest.mark.unit
     def test_tap_success(self):
@@ -437,18 +413,6 @@ class TestTerminal:
             self.terminal.get_packages()
 
     @pytest.mark.unit
-    @pytest.mark.skip(reason="Terminal.get_package_path() removed - no longer available")
-    def test_get_package_path_success(self):
-        """Test successful package path retrieval."""
-        pass
-
-    @pytest.mark.unit
-    @pytest.mark.skip(reason="Terminal.get_package_path() removed - no longer available")
-    def test_get_package_path_driver_exception(self):
-        """Test package path retrieval with driver exception."""
-        pass
-
-    @pytest.mark.unit
     def test_record_video_success(self):
         """Test successful video recording start."""
         # Arrange
@@ -592,7 +556,9 @@ class TestTerminal:
     def test_get_current_app_package_success(self):
         """Test successful current app package retrieval."""
         # Arrange
-        dumpsys_output = "mCurrentFocus=Window{1234567890 u0 com.example.app/com.example.app.MainActivity}"
+        dumpsys_output = (
+            "mCurrentFocus=Window{1234567890 u0 com.example.app/com.example.app.MainActivity}"
+        )
 
         with patch.object(self.terminal, "adb_shell", return_value=dumpsys_output):
             # Act
@@ -600,7 +566,9 @@ class TestTerminal:
 
             # Assert
             assert result == "com.example.app"  # noqa: S101
-            self.terminal.adb_shell.assert_called_once_with(command="dumpsys", args="window windows")
+            self.terminal.adb_shell.assert_called_once_with(
+                command="dumpsys", args="window windows"
+            )
 
     @pytest.mark.unit
     def test_get_current_app_package_no_match(self):
@@ -637,7 +605,9 @@ class TestTerminal:
 
             # Assert
             assert result is True  # noqa: S101
-            self.terminal.adb_shell.assert_called_once_with(command="am", args=f"force-stop {package}")
+            self.terminal.adb_shell.assert_called_once_with(
+                command="am", args=f"force-stop {package}"
+            )
 
     @pytest.mark.unit
     def test_close_app_driver_exception(self):
@@ -659,8 +629,10 @@ class TestTerminal:
         package = "com.example.app"
         activity = "com.example.app.MainActivity"
 
-        with patch.object(self.terminal, "close_app", return_value=True), \
-             patch.object(self.terminal, "start_activity", return_value=True):
+        with (
+            patch.object(self.terminal, "close_app", return_value=True),
+            patch.object(self.terminal, "start_activity", return_value=True),
+        ):
             # Act
             result = self.terminal.reboot_app(package, activity)
 
@@ -745,7 +717,11 @@ class TestTerminal:
         # Arrange
         package = "com.example.app"
 
-        with patch.object(self.terminal.driver, "remove_app", side_effect=NoSuchDriverException("Driver not found")):
+        with patch.object(
+            self.terminal.driver,
+            "remove_app",
+            side_effect=NoSuchDriverException("Driver not found"),
+        ):
             self.terminal.shadowstep.reconnect = Mock()
             # Act
             result = self.terminal.uninstall_app(package)
@@ -766,7 +742,9 @@ class TestTerminal:
 
             # Assert
             assert result is True  # noqa: S101
-            self.terminal.adb_shell.assert_called_once_with(command="input", args=f"keyevent KEYCODE_NUMPAD_{num}")
+            self.terminal.adb_shell.assert_called_once_with(
+                command="input", args=f"keyevent KEYCODE_NUMPAD_{num}"
+            )
 
     @pytest.mark.unit
     def test_input_keycode_num_driver_exception(self):
@@ -793,7 +771,9 @@ class TestTerminal:
 
             # Assert
             assert result is True  # noqa: S101
-            self.terminal.adb_shell.assert_called_once_with(command="input", args=f"keyevent {keycode}")
+            self.terminal.adb_shell.assert_called_once_with(
+                command="input", args=f"keyevent {keycode}"
+            )
 
     @pytest.mark.unit
     def test_input_keycode_driver_exception(self):
@@ -814,8 +794,10 @@ class TestTerminal:
         # Arrange
         duration = 500
 
-        with patch.object(self.terminal, "get_screen_resolution", return_value=(1080, 2400)), \
-             patch.object(self.terminal, "swipe", return_value=True) as mock_swipe:
+        with (
+            patch.object(self.terminal, "get_screen_resolution", return_value=(1080, 2400)),
+            patch.object(self.terminal, "swipe", return_value=True) as mock_swipe,
+        ):
             # Act
             result = self.terminal.swipe_right_to_left(duration)
 
@@ -831,8 +813,10 @@ class TestTerminal:
         # Arrange
         duration = 500
 
-        with patch.object(self.terminal, "get_screen_resolution", return_value=(1080, 2400)), \
-             patch.object(self.terminal, "swipe", return_value=True) as mock_swipe:
+        with (
+            patch.object(self.terminal, "get_screen_resolution", return_value=(1080, 2400)),
+            patch.object(self.terminal, "swipe", return_value=True) as mock_swipe,
+        ):
             # Act
             result = self.terminal.swipe_left_to_right(duration)
 
@@ -848,8 +832,10 @@ class TestTerminal:
         # Arrange
         duration = 500
 
-        with patch.object(self.terminal, "get_screen_resolution", return_value=(1080, 2400)), \
-             patch.object(self.terminal, "swipe", return_value=True) as mock_swipe:
+        with (
+            patch.object(self.terminal, "get_screen_resolution", return_value=(1080, 2400)),
+            patch.object(self.terminal, "swipe", return_value=True) as mock_swipe,
+        ):
             # Act
             result = self.terminal.swipe_top_to_bottom(duration)
 
@@ -865,8 +851,10 @@ class TestTerminal:
         # Arrange
         duration = 500
 
-        with patch.object(self.terminal, "get_screen_resolution", return_value=(1080, 2400)), \
-             patch.object(self.terminal, "swipe", return_value=True) as mock_swipe:
+        with (
+            patch.object(self.terminal, "get_screen_resolution", return_value=(1080, 2400)),
+            patch.object(self.terminal, "swipe", return_value=True) as mock_swipe,
+        ):
             # Act
             result = self.terminal.swipe_bottom_to_top(duration)
 
@@ -982,8 +970,10 @@ class TestTerminal:
         args = "-v time"
         process = "logcat"
 
-        with patch.object(self.terminal, "adb_shell", return_value="success"), \
-             patch.object(self.terminal, "is_process_exist", return_value=True):
+        with (
+            patch.object(self.terminal, "adb_shell", return_value="success"),
+            patch.object(self.terminal, "is_process_exist", return_value=True),
+        ):
             # Act
             result = self.terminal.run_background_process(command, args, process)
 
@@ -1062,7 +1052,9 @@ class TestTerminal:
 
             # Assert
             assert result is True  # noqa: S101
-            self.terminal.adb_shell.assert_called_once_with(command="pkill", args=f"-l SIGINT {name}")
+            self.terminal.adb_shell.assert_called_once_with(
+                command="pkill", args=f"-l SIGINT {name}"
+            )
 
     @pytest.mark.unit
     def test_kill_by_name_driver_exception(self):
@@ -1144,7 +1136,9 @@ class TestTerminal:
 
             # Assert
             assert result is True  # noqa: S101
-            self.terminal.adb_shell.assert_called_once_with(command="rm", args=f"-rf /sdcard/test/{filename}")
+            self.terminal.adb_shell.assert_called_once_with(
+                command="rm", args=f"-rf /sdcard/test/{filename}"
+            )
 
     @pytest.mark.unit
     def test_delete_file_from_internal_storage_driver_exception(self):
@@ -1201,8 +1195,10 @@ class TestTerminal:
         # Arrange
         text = "Hello World"
 
-        with patch.object(self.terminal.driver, "set_clipboard_text"), \
-             patch.object(self.terminal, "input_keycode", return_value=True):
+        with (
+            patch.object(self.terminal.driver, "set_clipboard_text"),
+            patch.object(self.terminal, "input_keycode", return_value=True),
+        ):
             # Act
             self.terminal.past_text(text)
 
@@ -1216,7 +1212,11 @@ class TestTerminal:
         # Arrange
         text = "Hello World"
 
-        with patch.object(self.terminal.driver, "set_clipboard_text", side_effect=NoSuchDriverException("Driver not found")):
+        with patch.object(
+            self.terminal.driver,
+            "set_clipboard_text",
+            side_effect=NoSuchDriverException("Driver not found"),
+        ):
             self.terminal.shadowstep.reconnect = Mock()
             # Act
             self.terminal.past_text(text, tries=1)
@@ -1230,7 +1230,9 @@ class TestTerminal:
         # Arrange
         expected_hardware = "qcom"
 
-        with patch.object(self.terminal, "get_prop", return_value={"ro.boot.hardware": expected_hardware}):
+        with patch.object(
+            self.terminal, "get_prop", return_value={"ro.boot.hardware": expected_hardware}
+        ):
             # Act
             result = self.terminal.get_prop_hardware()
 
@@ -1243,7 +1245,9 @@ class TestTerminal:
         # Arrange
         expected_model = "Nexus 6"
 
-        with patch.object(self.terminal, "get_prop", return_value={"ro.product.model": expected_model}):
+        with patch.object(
+            self.terminal, "get_prop", return_value={"ro.product.model": expected_model}
+        ):
             # Act
             result = self.terminal.get_prop_model()
 
@@ -1269,7 +1273,9 @@ class TestTerminal:
         # Arrange
         expected_build = "Nexus 6 Build/QQ3A.200805.001"
 
-        with patch.object(self.terminal, "get_prop", return_value={"ro.build.description": expected_build}):
+        with patch.object(
+            self.terminal, "get_prop", return_value={"ro.build.description": expected_build}
+        ):
             # Act
             result = self.terminal.get_prop_build()
 
@@ -1282,7 +1288,9 @@ class TestTerminal:
         # Arrange
         expected_device = "flame"
 
-        with patch.object(self.terminal, "get_prop", return_value={"ro.product.device": expected_device}):
+        with patch.object(
+            self.terminal, "get_prop", return_value={"ro.product.device": expected_device}
+        ):
             # Act
             result = self.terminal.get_prop_device()
 
@@ -1301,27 +1309,3 @@ class TestTerminal:
 
             # Assert
             assert result == expected_uin  # noqa: S101
-
-    @pytest.mark.unit
-    @pytest.mark.skip(reason="Terminal.pull_package() removed - no longer available")
-    def test_pull_package_success(self):
-        """Test successful package pull."""
-        pass
-
-    @pytest.mark.unit
-    @pytest.mark.skip(reason="Terminal.pull_package() removed - no longer available")
-    def test_pull_package_default_filename(self):
-        """Test package pull with default filename."""
-        pass
-
-    @pytest.mark.unit
-    @pytest.mark.skip(reason="Terminal.get_package_manifest() removed - no longer available")
-    def test_get_package_manifest_success(self):
-        """Test successful package manifest retrieval."""
-        pass
-
-    @pytest.mark.unit
-    @pytest.mark.skip(reason="Terminal.get_package_manifest() removed - no longer available")
-    def test_get_package_manifest_aapt_error(self):
-        """Test package manifest retrieval with aapt error."""
-        pass
