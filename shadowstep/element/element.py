@@ -1193,7 +1193,7 @@ class Element(ElementBase):
 
     # ------------------------------- waiting -------------------------------
 
-    @fail_safe_element()
+    @fail_safe_element_check()
     def wait(
         self,
         timeout: int = 10,
@@ -1213,7 +1213,7 @@ class Element(ElementBase):
         """
         return self.waiting.wait(timeout, poll_frequency=poll_frequency, return_bool=return_bool)
 
-    @fail_safe_element()
+    @fail_safe_element_check()
     def wait_visible(
         self,
         timeout: int = 10,
@@ -1237,7 +1237,7 @@ class Element(ElementBase):
             return_bool=return_bool,
         )
 
-    @fail_safe_element()
+    @fail_safe_element_check()
     def wait_clickable(
         self,
         timeout: int = 10,
@@ -1301,7 +1301,7 @@ class Element(ElementBase):
         """
         return self.waiting.wait_for_not_visible(timeout, poll_frequency, return_bool)
 
-    @fail_safe_element()
+    @fail_safe_element_check()
     def wait_for_not_clickable(
         self,
         timeout: int = 10,
