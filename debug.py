@@ -5,7 +5,6 @@ import json
 import logging
 import requests
 from lxml import etree
-from icecream import ic
 
 from shadowstep.element.element import Element
 from shadowstep.page_object.page_object_generator import PageObjectGenerator
@@ -15,10 +14,12 @@ from shadowstep.shadowstep import Shadowstep
 from shadowstep.utils.translator import YandexTranslate
 from tests.test_integro.conftest import APPIUM_IP, APPIUM_COMMAND_EXECUTOR, CAPABILITIES, APPIUM_PORT
 
+logger = logging.getLogger(__name__)
+
 app = Shadowstep()
 app.connect(server_ip=APPIUM_IP,
             server_port=APPIUM_PORT,
             command_executor=APPIUM_COMMAND_EXECUTOR,
             capabilities=CAPABILITIES)
 
-ic(app.driver.page_source)
+logger.info(app.driver.page_source)

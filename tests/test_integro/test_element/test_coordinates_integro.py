@@ -2,7 +2,6 @@
 # pyright: ignore
 
 import pytest
-from icecream import ic
 
 from shadowstep.shadowstep import Shadowstep
 
@@ -16,7 +15,6 @@ class TestCoordinates:
     def test_get_coordinates(self, app: Shadowstep, android_settings_open_close: None):
         el = app.get_element(LOCATOR)
         coords = el.get_coordinates()
-        ic(coords)
         left, top, right, bottom = map(int, el.bounds.strip("[]").replace("][", ",").split(","))
         assert isinstance(coords, tuple) and len(coords) == 4  # noqa: S101, PT018
         assert coords == (left, top, right, bottom)  # noqa: S101
