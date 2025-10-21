@@ -43,7 +43,7 @@ def fail_safe_shadowstep(
                 try:
                     return func(self, *args, **kwargs)
                 except (NoSuchDriverException, InvalidSessionIdException):
-                    self.shadowstep.reconnect()
+                    self.reconnect()
                     time.sleep(0.3)
                 except WebDriverException as error:
                     err_msg = str(error).lower()
@@ -51,7 +51,7 @@ def fail_safe_shadowstep(
                         "instrumentation process is not running" in err_msg
                         or "socket hang up" in err_msg
                     ):
-                        self.shadowstep.reconnect()
+                        self.reconnect()
                         time.sleep(0.3)
                         continue
                     msg = f"Failed to execute '{func.__qualname__}' within timeout={self.timeout}"
