@@ -59,15 +59,15 @@ class TestElementProperties:
         assert el.is_displayed()  # noqa: S101  # noqa: S101
 
     def test_is_visible(self, app: Shadowstep, android_settings_open_close: Any):
-        phone = app.get_element(locator=LOCATOR_CONNECTED_DEVICES, timeout=5)
-        search = app.get_element(locator=LOCATOR_SEARCH_SETTINGS, timeout=5)
-        phone.wait(timeout=5)
-        assert search.is_visible() is True  # noqa: S101  # noqa: S101
-        assert phone.is_visible() is True  # noqa: S101  # noqa: S101
-        phone.tap()
+        element1 = app.get_element(locator=LOCATOR_CONNECTED_DEVICES, timeout=5)
+        element2 = app.get_element(locator=LOCATOR_SEARCH_SETTINGS, timeout=5)
+        element1.wait(timeout=5)
+        assert element2.is_visible() is True  # noqa: S101  # noqa: S101
+        assert element1.is_visible() is True  # noqa: S101  # noqa: S101
+        element1.tap()
         time.sleep(3)
-        assert not phone.is_visible()  # noqa: S101  # noqa: S101
-        assert not search.is_visible()  # noqa: S101  # noqa: S101
+        assert not element1.is_visible()  # noqa: S101  # noqa: S101
+        assert not element2.is_visible()  # noqa: S101  # noqa: S101
 
     def test_is_selected(self, app: Shadowstep, android_settings_open_close: Any):
         el = app.get_element(LOCATOR_CONNECTED_DEVICES)
