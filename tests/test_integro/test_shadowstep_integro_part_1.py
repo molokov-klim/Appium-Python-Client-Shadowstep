@@ -647,25 +647,32 @@ class TestShadowstepPart1:
 
         Шаги:
             1. Создание временного файла.
-            2. Вызов push() для загрузки файла на устройство.
+            2. Вызов push_file() для загрузки файла на устройство.
             3. Проверка, что операция завершается без ошибок.
         
         Args:
             app: Экземпляр приложения Shadowstep.
         """
-        # Create temporary file
+        import base64
+
+        # Create temporary file with test content
+        test_content = "test content for push_file"
         with tempfile.NamedTemporaryFile(mode="w", delete=False, suffix=".txt") as tmpfile:
-            tmpfile.write("test content")
+            tmpfile.write(test_content)
             tmpfile_path = tmpfile.name
 
         try:
-            # Push file to device
-            result = app.push(
-                source_file_path=tmpfile_path, destination_file_path="/sdcard/test_push_file.txt"
-            )
+            # Encode file content to base64
+            with open(tmpfile_path, "rb") as f:
+                file_bytes = f.read()
+            payload = base64.b64encode(file_bytes).decode("utf-8")
 
-            # Verify push returns self for chaining
-            assert result is app  # noqa: S101
+            # Push file to device
+            remote_path = "/sdcard/test_push_file.txt"
+            result = app.push_file(remote_path=remote_path, payload=payload)
+
+            # Verify push returns None
+            assert result is None  # noqa: S101
         finally:
             # Clean up temporary file
             Path(tmpfile_path).unlink(missing_ok=True)

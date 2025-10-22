@@ -75,7 +75,7 @@ wheels = [
 
 [[package]]
 name = "appium-python-client-shadowstep"
-version = "0.36.0"
+version = "0.36.8"
 source = { editable = "." }
 dependencies = [
     { name = "allure-pytest", marker = "sys_platform == 'linux' or sys_platform == 'win32' or sys_platform == 'windows'" },
