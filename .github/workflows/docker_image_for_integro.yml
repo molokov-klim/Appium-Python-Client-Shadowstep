@@ -1,9 +1,7 @@
 name: Integro Tests Docker Image
 
 on:
-  push:
-    branches:
-      - main
+  workflow_dispatch:  # Only manual
 
 env:
   IMAGE_VERSION: "0.0.1"
