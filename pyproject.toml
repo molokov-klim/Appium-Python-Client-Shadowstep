@@ -76,7 +76,7 @@ ignore = [
     "D211", # conflict in D
     "D212", # conflict in D
     "D213", # conflict in D
-    "D401", # annoying
+    "D401", # annoying - First line should be in imperative mood
     "E501", # line too long
     "ANN401", # Any
     "S101", # assert
