@@ -17,7 +17,7 @@ class TestElementWaiting:
     def test_wait_success(self, app: Shadowstep, stability: None):
         """Test successful element waiting."""
         # Test with a real element that should be present
-        el = app.get_element({"resource-id": "com.android.quicksearchbox:id/search_widget_text"})
+        el = app.get_element({"resource-id": "android:id/search_src_text"})
         result = el.wait(timeout=5, return_bool=True)
         assert result is True
 
@@ -35,13 +35,13 @@ class TestElementWaiting:
 
     def test_wait_return_element(self, app: Shadowstep, stability: None):
         """Test wait method returns Element when return_bool=False."""
-        el = app.get_element({"resource-id": "com.android.quicksearchbox:id/search_widget_text"})
+        el = app.get_element({"resource-id": "android:id/search_src_text"})
         result = el.wait(timeout=5, return_bool=False)
         assert result == el
 
     def test_wait_visible_success(self, app: Shadowstep, stability: None):
         """Test successful wait for visible element."""
-        el = app.get_element({"resource-id": "com.android.quicksearchbox:id/search_widget_text"})
+        el = app.get_element({"resource-id": "android:id/search_src_text"})
         result = el.wait_visible(timeout=5, return_bool=True)
         assert result is True
 
@@ -58,7 +58,7 @@ class TestElementWaiting:
 
     def test_wait_clickable_success(self, app: Shadowstep, stability: None):
         """Test successful wait for clickable element."""
-        el = app.get_element({"resource-id": "com.android.quicksearchbox:id/search_widget_text"})
+        el = app.get_element({"resource-id": "android:id/search_src_text"})
         result = el.wait_clickable(timeout=5, return_bool=True)
         assert result is True
 
@@ -76,26 +76,26 @@ class TestElementWaiting:
     def test_wait_for_not_success(self, app: Shadowstep, stability: None):
         """Test successful wait for element to disappear."""
         # First create an element that exists
-        el = app.get_element({"resource-id": "com.android.quicksearchbox:id/search_widget_text"})
+        el = app.get_element({"resource-id": "android:id/search_src_text"})
         # Then wait for it to not be present (this should timeout since it exists)
         result = el.wait_for_not(timeout=2, return_bool=True)
         assert result is False
 
     def test_wait_for_not_visible_success(self, app: Shadowstep, stability: None):
         """Test successful wait for element to become invisible."""
-        el = app.get_element({"resource-id": "com.android.quicksearchbox:id/search_widget_text"})
+        el = app.get_element({"resource-id": "android:id/search_src_text"})
         result = el.wait_for_not_visible(timeout=2, return_bool=True)
         assert result is False
 
     def test_wait_for_not_clickable_success(self, app: Shadowstep, stability: None):
         """Test successful wait for element to become not clickable."""
-        el = app.get_element({"resource-id": "com.android.quicksearchbox:id/search_widget_text"})
+        el = app.get_element({"resource-id": "android:id/search_src_text"})
         result = el.wait_for_not_clickable(timeout=2, return_bool=True)
         assert result is False
 
     def test_wait_with_custom_timeout_and_poll_frequency(self, app: Shadowstep, stability: None):
         """Test wait method with custom timeout and poll frequency."""
-        el = app.get_element({"resource-id": "com.android.quicksearchbox:id/search_widget_text"})
+        el = app.get_element({"resource-id": "android:id/search_src_text"})
         start_time = time.time()
         result = el.wait(timeout=3, poll_frequency=0.1, return_bool=True)
         end_time = time.time()
@@ -106,31 +106,31 @@ class TestElementWaiting:
 
     def test_wait_visible_with_custom_parameters(self, app: Shadowstep, stability: None):
         """Test wait_visible with custom timeout and poll frequency."""
-        el = app.get_element({"resource-id": "com.android.quicksearchbox:id/search_widget_text"})
+        el = app.get_element({"resource-id": "android:id/search_src_text"})
         result = el.wait_visible(timeout=3, poll_frequency=0.1, return_bool=True)
         assert result is True
 
     def test_wait_clickable_with_custom_parameters(self, app: Shadowstep, stability: None):
         """Test wait_clickable with custom timeout and poll frequency."""
-        el = app.get_element({"resource-id": "com.android.quicksearchbox:id/search_widget_text"})
+        el = app.get_element({"resource-id": "android:id/search_src_text"})
         result = el.wait_clickable(timeout=3, poll_frequency=0.1, return_bool=True)
         assert result is True
 
     def test_wait_for_not_with_custom_parameters(self, app: Shadowstep, stability: None):
         """Test wait_for_not with custom timeout and poll frequency."""
-        el = app.get_element({"resource-id": "com.android.quicksearchbox:id/search_widget_text"})
+        el = app.get_element({"resource-id": "android:id/search_src_text"})
         result = el.wait_for_not(timeout=2, poll_frequency=0.1, return_bool=True)
         assert result is False  # Element exists, so it should return False
 
     def test_wait_for_not_visible_with_custom_parameters(self, app: Shadowstep, stability: None):
         """Test wait_for_not_visible with custom timeout and poll frequency."""
-        el = app.get_element({"resource-id": "com.android.quicksearchbox:id/search_widget_text"})
+        el = app.get_element({"resource-id": "android:id/search_src_text"})
         result = el.wait_for_not_visible(timeout=2, poll_frequency=0.1, return_bool=True)
         assert result is False
 
     def test_wait_for_not_clickable_with_custom_parameters(self, app: Shadowstep, stability: None):
         """Test wait_for_not_clickable with custom timeout and poll frequency."""
-        el = app.get_element({"resource-id": "com.android.quicksearchbox:id/search_widget_text"})
+        el = app.get_element({"resource-id": "android:id/search_src_text"})
         result = el.wait_for_not_clickable(timeout=2, poll_frequency=0.1, return_bool=True)
         assert result is False
 
@@ -174,7 +174,7 @@ class TestElementWaiting:
     def test_wait_timeout_exceeds_element_timeout(self, app: Shadowstep, stability: None):
         """Test that wait respects element's timeout when it's shorter than method timeout."""
         # Create element with very short timeout
-        el = app.get_element({"resource-id": "com.android.quicksearchbox:id/search_widget_text"}, timeout=1)
+        el = app.get_element({"resource-id": "android:id/search_src_text"}, timeout=1)
         start_time = time.time()
         result = el.wait(timeout=10, return_bool=True)  # Method timeout longer than element timeout
         end_time = time.time()
@@ -185,7 +185,7 @@ class TestElementWaiting:
 
     def test_all_wait_methods_return_element_when_return_bool_false(self, app: Shadowstep, stability: None):
         """Test that all wait methods return Element when return_bool=False."""
-        el = app.get_element({"resource-id": "com.android.quicksearchbox:id/search_widget_text"})
+        el = app.get_element({"resource-id": "android:id/search_src_text"})
 
         # Test all wait methods return the element itself
         assert el.wait(return_bool=False) == el
@@ -197,7 +197,7 @@ class TestElementWaiting:
 
     def test_wait_methods_with_zero_timeout(self, app: Shadowstep, stability: None):
         """Test wait methods with zero timeout."""
-        el = app.get_element({"resource-id": "com.android.quicksearchbox:id/search_widget_text"})
+        el = app.get_element({"resource-id": "android:id/search_src_text"})
 
         # With zero timeout, should return quickly
         start_time = time.time()
@@ -209,7 +209,7 @@ class TestElementWaiting:
 
     def test_wait_methods_with_very_small_poll_frequency(self, app: Shadowstep, stability: None):
         """Test wait methods with very small poll frequency."""
-        el = app.get_element({"resource-id": "com.android.quicksearchbox:id/search_widget_text"})
+        el = app.get_element({"resource-id": "android:id/search_src_text"})
 
         # Test with very small poll frequency
         result = el.wait(timeout=2, poll_frequency=0.01, return_bool=True)
@@ -217,7 +217,7 @@ class TestElementWaiting:
 
     def test_wait_methods_with_large_poll_frequency(self, app: Shadowstep, stability: None):
         """Test wait methods with large poll frequency."""
-        el = app.get_element({"resource-id": "com.android.quicksearchbox:id/search_widget_text"})
+        el = app.get_element({"resource-id": "android:id/search_src_text"})
 
         # Test with large poll frequency
         result = el.wait(timeout=2, poll_frequency=2.0, return_bool=True)
@@ -225,7 +225,7 @@ class TestElementWaiting:
 
     def test_wait_consistency_across_multiple_calls(self, app: Shadowstep, stability: None):
         """Test that wait methods are consistent across multiple calls."""
-        el = app.get_element({"resource-id": "com.android.quicksearchbox:id/search_widget_text"})
+        el = app.get_element({"resource-id": "android:id/search_src_text"})
 
         # Multiple calls should return consistent results
         results = []
@@ -240,12 +240,12 @@ class TestElementWaiting:
     def test_wait_with_different_locator_types(self, app: Shadowstep, stability: None):
         """Test wait methods with different locator types."""
         # Test with xpath tuple locator
-        el1 = app.get_element(("xpath", '//*[@resource-id="com.android.quicksearchbox:id/search_widget_text"]'))
+        el1 = app.get_element(("xpath", '//*[@resource-id="android:id/search_src_text"]'))
         result1 = el1.wait(timeout=5, return_bool=True)
         assert result1 is True
 
         # Test with dict locator
-        el2 = app.get_element({"resource-id": "com.android.quicksearchbox:id/search_widget_text"})
+        el2 = app.get_element({"resource-id": "android:id/search_src_text"})
         result2 = el2.wait(timeout=5, return_bool=True)
         assert result2 is True
 
@@ -254,19 +254,19 @@ class TestElementWaiting:
 
     def test_wait_with_negative_timeout(self, app: Shadowstep, stability: None):
         """Test wait method with negative timeout."""
-        el = app.get_element({"resource-id": "com.android.quicksearchbox:id/search_widget_text"})
+        el = app.get_element({"resource-id": "android:id/search_src_text"})
         result = el.wait(timeout=-1, return_bool=True)
         assert result is True  # Should handle negative timeout gracefully
 
     def test_wait_with_negative_poll_frequency(self, app: Shadowstep, stability: None):
         """Test wait method with negative poll frequency."""
-        el = app.get_element({"resource-id": "com.android.quicksearchbox:id/search_widget_text"})
+        el = app.get_element({"resource-id": "android:id/search_src_text"})
         result = el.wait(timeout=2, poll_frequency=-0.1, return_bool=True)
         assert result is True  # Should handle negative poll frequency gracefully
 
     def test_wait_with_very_large_timeout(self, app: Shadowstep, stability: None):
         """Test wait method with very large timeout."""
-        el = app.get_element({"resource-id": "com.android.quicksearchbox:id/search_widget_text"})
+        el = app.get_element({"resource-id": "android:id/search_src_text"})
         start_time = time.time()
         result = el.wait(timeout=1000, return_bool=True)  # Very large timeout
         end_time = time.time()
@@ -277,7 +277,7 @@ class TestElementWaiting:
 
     def test_wait_methods_performance(self, app: Shadowstep, stability: None):
         """Test performance of wait methods with existing elements."""
-        el = app.get_element({"resource-id": "com.android.quicksearchbox:id/search_widget_text"})
+        el = app.get_element({"resource-id": "android:id/search_src_text"})
 
         # Test performance of different wait methods
         methods = [

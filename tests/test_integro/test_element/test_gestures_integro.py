@@ -27,7 +27,7 @@ SEARCH_SETTINGS_EXPECTED_TEXT = "Search settings"
 LOCATOR_SEARCH_EDIT_TEXT = {
     "resource-id": "android:id/search_src_text",
 }
-LOCATOR_PHONE = {"content-desc": "Phone"}
+LOCATOR_PHONE = {"text": "Phone"}
 LOCATOR_BUBBLE = {
     "text": "App info",
     "resource-id": "com.android.launcher3:id/bubble_text",

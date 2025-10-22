@@ -7,7 +7,7 @@ on:
 
 env:
   IMAGE_VERSION: "0.0.1"
-  IMAGE_NAME: "shadowstep-integro-image"
+  IMAGE_NAME: "shadowstep-integro-test"
   IMAGE_USERNAME: "klementus"
 
 jobs:
