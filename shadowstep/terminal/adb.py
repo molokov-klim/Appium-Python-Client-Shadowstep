@@ -280,8 +280,7 @@ class Adb:
         """Retrieve the name of the current activity running on the device.
 
         Returns:
-            Union[str, None]
-                The name of the current activity if found, None otherwise.
+            str: The name of the current activity if found, empty string otherwise.
 
         """
         # Log function start information
@@ -311,12 +310,11 @@ class Adb:
                         logger.info("get_current_activity() > %s", activity_name)
                         return activity_name
 
-            # If activity not found, return None
-            logger.error("get_current_activity() > None")
+            # If activity not found, log error and return empty string
+            logger.error("get_current_activity() > Activity not found")
+            return ""  # noqa: TRY300
         except subprocess.CalledProcessError:
             logger.exception("%s > None", get_current_func_name())
-            return ""
-        else:
             return ""
 
     @staticmethod
@@ -324,8 +322,7 @@ class Adb:
         """Retrieve the name of the current application package running on the device.
 
         Returns:
-            Union[str, None]
-                The name of the current application package if found, None otherwise.
+            str: The name of the current application package if found, empty string otherwise.
 
         """
         # Log function start information
@@ -355,12 +352,11 @@ class Adb:
                         logger.info("get_current_app_package() > %s", package_name)
                         return package_name
 
-            # If package name not found, return None
-            logger.error("get_current_app_package() > None")
+            # If package name not found, log error and return empty string
+            logger.error("get_current_app_package() > Package not found")
+            return ""  # noqa: TRY300
         except subprocess.CalledProcessError:
             logger.exception("%s > None", get_current_func_name())
-            return ""
-        else:
             return ""
 
     @staticmethod
@@ -755,13 +751,13 @@ class Adb:
             if process != "":
                 time.sleep(1)
                 if not Adb.is_process_exist(name=process):
+                    logger.error("run_background_process() > False (process not found)")
                     return False
             logger.info("run_background_process() > True")
+            return True  # noqa: TRY300
         except subprocess.CalledProcessError:
             logger.exception("%s > None", get_current_func_name())
             return False
-        else:
-            return True
 
     @staticmethod
     def reload_adb() -> bool:
@@ -993,7 +989,8 @@ class Adb:
 
     @staticmethod
     def record_video(
-        path: str = "sdcard/Movies/", filename: str = "screenrecord.mp4",
+        path: str = "sdcard/Movies/",
+        filename: str = "screenrecord.mp4",
     ) -> subprocess.Popen[bytes] | None:
         """Start recording a video on the device using ADB.
 
@@ -1023,7 +1020,8 @@ class Adb:
 
     @staticmethod
     def start_record_video(
-        path: str = "sdcard/Movies/", filename: str = "screenrecord.mp4",
+        path: str = "sdcard/Movies/",
+        filename: str = "screenrecord.mp4",
     ) -> bool:
         """Start recording a video on the device using ADB.
 

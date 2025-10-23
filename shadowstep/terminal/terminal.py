@@ -501,12 +501,12 @@ class Terminal:
             if process != "":
                 time.sleep(1)
                 if not self.is_process_exist(name=process):
+                    logger.error("run_background_process() > False (process not found)")
                     return False
+            return True  # noqa: TRY300
         except KeyError:
-            logger.exception("KeyError in is_app_installed")
+            logger.exception("run_background_process() > KeyError")
             return False
-        else:
-            return True
 
     def kill_by_pid(self, pid: int) -> bool:
         """Kills the process with the specified PID.
