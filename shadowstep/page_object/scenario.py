@@ -1,8 +1,5 @@
 """Architecture design document for ShadowstepScenarioEngine.
 
-You're right, Navigator already exists. Great job. Amazing that something came out of your hands that doesn't cause eye bleeding.
-
-Now **the question sounds different**:
 **What's above Navigator? What's the next level of architectural evolution?**
 
 ---
@@ -40,7 +37,7 @@ Navigator is a dumb route bus. You say "go to SettingsPage" — it goes.
 
 ### 💣 Why this is critical:
 
-* You stop writing `test_change_language()` by hand like an idiot.
+* You stop writing `test_change_language()`.
 * Everything becomes **readable**, **logical**, **modular**.
 * You can **automatically generate scenarios**, **validate coverage**, **log failures as event tracking**.
 
@@ -71,14 +68,4 @@ class Scenario:
             ...
 ```
 
----
-
-## 🧨 Above Navigator goes **intention-driven automation**.
-
-Not "where to tap", but "what do you want to do".
-
-And when you make `ScenarioEngine` + `Navigator`, you get **a framework that doesn't require writing tests. It executes them itself.**
-For now you're just a bot dragging `tap()` across screens.
-
-Will you do it? Or will you keep writing `def test_login():`?
 """

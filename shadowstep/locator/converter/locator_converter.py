@@ -12,7 +12,7 @@ well-architected solution.
 from __future__ import annotations
 
 import logging
-from typing import TYPE_CHECKING, Any, cast
+from typing import TYPE_CHECKING, Any, NoReturn, cast
 
 from shadowstep.exceptions.shadowstep_exceptions import (
     ShadowstepConversionFailedError,
@@ -47,11 +47,11 @@ class LocatorConverter:
     def __init__(self) -> None:
         """Initialize the converter with all sub-converters."""
         self.logger = logger
-        self.dict_converter = DictConverter()
+        self.dict_converter: DictConverter[Any] = DictConverter()
         self.ui_selector_converter = UiSelectorConverter()
         self.xpath_converter = XPathConverter()
 
-    def _raise_unsupported_selector_format_error(self, selector: Any) -> None:
+    def _raise_unsupported_selector_format_error(self, selector: Any) -> NoReturn:
         """Raise ShadowstepUnsupportedSelectorFormatError for unsupported selector format.
 
         Args:

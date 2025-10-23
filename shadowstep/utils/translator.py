@@ -57,7 +57,7 @@ class YandexTranslate:
             bool: True if Cyrillic characters are found, otherwise False.
 
         """
-        return bool(re.search(r"[а-яА-Я]", text))
+        return bool(re.search(r"[а-яА-Я]", text))  # noqa: RUF001
 
     def translate(self, text: str) -> str:
         """Translate a single text string from Russian to English if it contains Cyrillic.

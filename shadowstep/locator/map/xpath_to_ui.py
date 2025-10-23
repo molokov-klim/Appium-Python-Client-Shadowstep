@@ -98,7 +98,7 @@ def get_ui_for_method(method: XPathAttribute, value: str | float | bool) -> str:
     if method not in XPATH_TO_UI:
         raise ShadowstepUnsupportedXPathAttributeError(method)
 
-    return XPATH_TO_UI[method](value)
+    return XPATH_TO_UI[method](value)  # type: ignore[arg-type]
 
 
 def is_hierarchical_xpath(method: XPathAttribute) -> bool:

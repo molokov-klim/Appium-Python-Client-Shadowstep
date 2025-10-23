@@ -2,6 +2,8 @@
 
 This module provides various decorators for enhancing method functionality
 including retry logic, logging, timing, and Allure reporting integration.
+The functionality of decorators can be duplicated with other decorators while violating the DRY principle. This was done consciously.
+The current decorators are separated from the others so that the changes only apply to a specific module.
 """
 
 from __future__ import annotations
@@ -26,6 +28,8 @@ from selenium.common import (
 )
 from typing_extensions import Concatenate, ParamSpec
 
+from shadowstep.exceptions.shadowstep_exceptions import ShadowstepException
+
 # Type variables for better type safety
 P = ParamSpec("P")
 T = TypeVar("T")
@@ -41,12 +45,12 @@ DEFAULT_EXCEPTIONS: tuple[type[Exception], ...] = (
 
 
 def fail_safe(  # noqa: C901, PLR0913
-        retries: int = 3,
-        delay: float = 0.5,
-        raise_exception: type[Exception] | None = None,
-        fallback: Any = None,
-        exceptions: tuple[type[Exception], ...] = DEFAULT_EXCEPTIONS,
-        log_args: bool = False,  # noqa: FBT001, FBT002
+    retries: int = 3,
+    delay: float = 0.5,
+    raise_exception: type[Exception] | None = ShadowstepException,
+    fallback: Any = None,
+    exceptions: tuple[type[Exception], ...] = DEFAULT_EXCEPTIONS,
+    log_args: bool = False,  # noqa: FBT001, FBT002
 ) -> Callable[[F], F]:
     """Retry a method call on specified exceptions.
 
@@ -75,13 +79,6 @@ def fail_safe(  # noqa: C901, PLR0913
             last_exc: Exception | None = None
             for attempt in range(1, retries + 1):
                 try:
-                    if not self.is_connected():
-                        self.logger.warning(
-                            "[fail_safe] Not connected before %s(), reconnecting...",
-                            func.__name__,
-                        )
-                        self.logger.warning("last_exc=%s", last_exc)
-                        self.reconnect()
                     return func(self, *args, **kwargs)
                 except exceptions as e:  # noqa: PERF203
                     last_exc = e
@@ -94,13 +91,14 @@ def fail_safe(  # noqa: C901, PLR0913
                         e,
                     )
                     if log_args:
+
                         def format_arg(arg: Any) -> str:
                             if arg is self:
                                 return f"<{self.__class__.__name__} id={id(self)}>"
                             arg_repr = repr(arg)
                             max_repr_length = 200
                             if len(arg_repr) > max_repr_length:
-                                return arg_repr[:max_repr_length-3] + "..."
+                                return arg_repr[: max_repr_length - 3] + "..."
                             return arg_repr
 
                         formatted_args = [format_arg(self)] + [format_arg(a) for a in args]
@@ -131,7 +129,9 @@ def fail_safe(  # noqa: C901, PLR0913
             if last_exc:
                 tb = "".join(
                     traceback.format_exception(
-                        type(last_exc), last_exc, last_exc.__traceback__,
+                        type(last_exc),
+                        last_exc,
+                        last_exc.__traceback__,
                     ),
                 )
                 self.logger.error("[fail_safe] Final exception:\n%s", tb)
@@ -205,11 +205,11 @@ def time_it(func: F) -> F:
 
 
 def step_info(
-        my_str: str,
+    my_str: str,
 ) -> Callable[
     [Callable[Concatenate[SelfT, P], T]],
     Callable[Concatenate[SelfT, P], T],
-   ]:
+]:
     """Log method execution and create Allure reports with screenshot and video capture.
 
     This decorator provides comprehensive logging, screenshot capture, and video
@@ -232,22 +232,25 @@ def step_info(
     """
 
     def func_decorator(
-            func: Callable[Concatenate[SelfT, P], T],
+        func: Callable[Concatenate[SelfT, P], T],
     ) -> Callable[Concatenate[SelfT, P], T]:
         # @allure.step(my_str)
         @wraps(func)
         def wrapper(self: Any, *args: P.args, **kwargs: P.kwargs) -> T:
             method_name = func.__name__
             class_name = self.__class__.__name__
+            from shadowstep.shadowstep import Shadowstep  # noqa: PLC0415
+
+            shadowstep = Shadowstep.get_instance()
 
             self.logger.info("[%s.%s]", class_name, method_name)
             self.logger.info("🔵🔵🔵 -> %s < args=%s, kwargs=%s", my_str, args, kwargs)
-            screenshot = self.shadowstep.get_screenshot()
+            screenshot = shadowstep.get_screenshot()
             timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")  # noqa: DTZ005
             screenshot_name_begin = f"screenshot_begin_{timestamp}.png"
 
             try:
-                self.shadowstep.driver.start_recording_screen()
+                shadowstep.driver.start_recording_screen()
                 self.logger.debug("[%s.%s] Screen recording started", class_name, method_name)
             except Exception as error:  # noqa: BLE001
                 self.logger.error(  # noqa: TRY400
@@ -268,20 +271,24 @@ def step_info(
                     name=screenshot_name_begin,
                     attachment_type=allure.attachment_type.PNG,
                 )
-                text = (f"before {class_name}.{method_name} \n "
-                       f"< args={args}, kwargs={kwargs} \n[{my_str}]")
-                screenshot_end = self.shadowstep.get_screenshot()
+                text = (
+                    f"before {class_name}.{method_name} \n "
+                    f"< args={args}, kwargs={kwargs} \n[{my_str}]"
+                )
+                screenshot_end = shadowstep.get_screenshot()
                 allure.attach(
                     screenshot_end,
                     name=text,
                     attachment_type=allure.attachment_type.PNG,
                 )
-                text = (f"after {class_name}.{method_name} \n "
-                       f"< args={args}, kwargs={kwargs} \n[{my_str}]")
+                text = (
+                    f"after {class_name}.{method_name} \n "
+                    f"< args={args}, kwargs={kwargs} \n[{my_str}]"
+                )
 
                 # Video
                 try:
-                    video_data = self.shadowstep.driver.stop_recording_screen()
+                    video_data = shadowstep.driver.stop_recording_screen()
                     allure.attach(
                         base64.b64decode(video_data),
                         name=text,
@@ -305,7 +312,9 @@ def step_info(
                 self.logger.info("❌❌❌ -> %s > %s", my_str, result)
                 self.logger.error("Error details: %s", error_details)  # noqa: TRY400
                 allure.attach(
-                    error_details, name="Traceback", attachment_type=allure.attachment_type.TEXT,
+                    error_details,
+                    name="Traceback",
+                    attachment_type=allure.attachment_type.TEXT,
                 )
             self.logger.info("[%s.%s]", class_name, method_name)
             if result:
@@ -322,7 +331,7 @@ def step_info(
 def current_page() -> Callable[
     [Callable[Concatenate[SelfT, P], T]],
     Callable[Concatenate[SelfT, P], T],
-   ]:
+]:
     """Add enhanced logging to PageObject is_current_page method.
 
     This decorator provides detailed logging for page verification methods,
@@ -340,7 +349,7 @@ def current_page() -> Callable[
     """
 
     def func_decorator(
-            func: Callable[Concatenate[SelfT, P], T],
+        func: Callable[Concatenate[SelfT, P], T],
     ) -> Callable[Concatenate[SelfT, P], T]:
         @wraps(func)
         def wrapper(self: Any, *args: P.args, **kwargs: P.kwargs) -> T:
@@ -420,3 +429,47 @@ def log_debug() -> Callable[[Callable[P, T]], Callable[P, T]]:
         return wrapper
 
     return decorator
+
+
+def log_image() -> Callable[[Callable[P, T]], Callable[P, T]]:
+    """Log method entry/exit with sanitized arguments."""
+
+    def decorator(func: Callable[P, T]) -> Callable[P, T]:
+        @wraps(func)
+        def wrapper(*args: P.args, **kwargs: P.kwargs) -> T:
+            method_name = func.__name__
+            module = cast("ModuleType", inspect.getmodule(func))
+            logger = logging.getLogger(module.__name__)
+
+            safe_args = tuple(_shorten(a) for a in args)
+            safe_kwargs = {k: _shorten(v) for k, v in kwargs.items()}
+
+            logger.debug("%s() < args=%s, kwargs=%s", method_name, safe_args, safe_kwargs)
+            result: T = func(*args, **kwargs)
+            logger.debug("%s() > %s", method_name, _shorten(result))
+            return result
+
+        return wrapper
+
+    return decorator
+
+
+def _shorten(value: Any, max_len: int = 200) -> str | Any:
+    """Return a shortened, printable representation of a value for logging."""
+    try:
+        if isinstance(value, (bytes, bytearray)):
+            return f"<bytes: {len(value)}>"
+        if isinstance(value, str):
+            return value if len(value) <= max_len else value[:max_len] + "...[truncated]"
+        if isinstance(value, (list, tuple, set)):
+            preview = ", ".join(map(str, list(value)[:5]))  # type: ignore[reportUnknownArgumentType]
+            suffix = ", ..." if len(value) > 5 else ""  # type: ignore[reportUnknownArgumentType]  # noqa: PLR2004
+            return f"{type(value).__name__}({preview}{suffix})"  # type: ignore[reportUnknownArgumentType]
+        if isinstance(value, dict):
+            items = list(value.items())[:5]  # type: ignore[reportUnknownArgumentType]
+            body = ", ".join(f"{k}: {_shorten(v, max_len)}" for k, v in items)  # type: ignore[reportUnknownArgumentType]
+            suffix = ", ..." if len(value) > 5 else ""  # type: ignore[reportUnknownArgumentType]  # noqa: PLR2004
+            return "{" + body + suffix + "}"
+    except Exception:  # noqa: BLE001
+        return "<unprintable>"
+    return value

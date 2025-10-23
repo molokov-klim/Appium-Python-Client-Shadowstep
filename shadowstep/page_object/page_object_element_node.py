@@ -33,9 +33,9 @@ class UiElementNode:
     tag: str
     attrs: dict[str, Any]
     parent: UiElementNode | None
-    children: list[UiElementNode] = field(default_factory=list)
+    children: list[UiElementNode] = field(default_factory=list)  # type: ignore[var-annotated]
     depth: int = 0
-    scrollable_parents: list[str] = field(default_factory=list)
+    scrollable_parents: list[str] = field(default_factory=list)  # type: ignore[var-annotated]
 
     # Fields to identify uniqueness (depth REMOVED)
     _signature_fields: tuple[str, ...] = field(default=("resource-id", "text", "class"), repr=False)
@@ -119,7 +119,7 @@ class PageObjectModel:
     raw_title: str
     title_locator: dict[str, Any]
     recycler_locator: dict[str, Any] | None
-    properties: list[PropertyModel] = field(default_factory=list)
+    properties: list[PropertyModel] = field(default_factory=list)  # type: ignore[var-annotated]
     need_recycler: bool = False
 
 
@@ -132,7 +132,7 @@ class TemplateRenderer(ABC):
     """
 
     @abstractmethod
-    def render(self, model: dict, template_name: str) -> str:
+    def render(self, model: dict[str, Any], template_name: str) -> str:
         """Render a model using the specified template."""
 
     @abstractmethod
@@ -164,7 +164,7 @@ class Jinja2Renderer(TemplateRenderer):
         )
         self.env.filters["pretty_dict"] = self._pretty_dict
 
-    def render(self, model: PageObjectModel, template_name: str) -> str:
+    def render(self, model: PageObjectModel, template_name: str) -> str:  # type: ignore[override]
         """Render page object model using template.
 
         Args:
@@ -239,7 +239,7 @@ class PageObjectRendererFactory:
         """
         if renderer_type.lower() == "jinja2":
             templates_dir = Path(__file__).parent / "templates"
-            return Jinja2Renderer(templates_dir)
+            return Jinja2Renderer(str(templates_dir))
         raise ShadowstepUnsupportedRendererTypeError(renderer_type)
 
 
@@ -325,6 +325,6 @@ class PageObjectRenderer:
         """
         self.logger.debug("%s", get_current_func_name())
         model.properties.sort(key=lambda p: p.name)
-        rendered_content = self.renderer.render(model, template_name)
+        rendered_content = self.renderer.render(model, template_name)  # type: ignore[arg-type]
         self.renderer.save(rendered_content, output_path)
         return output_path

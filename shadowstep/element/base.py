@@ -20,7 +20,7 @@ from selenium.webdriver.support import expected_conditions
 from selenium.webdriver.support.wait import WebDriverWait
 
 from shadowstep.exceptions.shadowstep_exceptions import (
-    ShadowstepNoSuchElementError,
+    ShadowstepNoSuchElementException,
     ShadowstepTimeoutException,
 )
 from shadowstep.locator.converter.locator_converter import LocatorConverter
@@ -87,7 +87,7 @@ class ElementBase:
             The located web element.
 
         Raises:
-            ShadowstepNoSuchElementError: If element is not found.
+            ShadowstepNoSuchElementException: If element is not found.
             ShadowstepTimeoutException: If element is not found within timeout.
 
         """
@@ -101,7 +101,7 @@ class ElementBase:
                              ignored_exceptions=ignored_exceptions)
         locator = self.remove_null_value(locator)
         if not locator:
-            raise ShadowstepNoSuchElementError(msg="Failed to resolve locator", locator=locator)
+            raise ShadowstepNoSuchElementException(msg="Failed to resolve locator", locator=locator)
         try:
             locator = LocatorConverter().to_xpath(locator)
             element = wait.until(expected_conditions.presence_of_element_located(locator))
@@ -109,7 +109,7 @@ class ElementBase:
             return cast("WebElement", element)
         except NoSuchElementException as error:
             self.logger.debug("%s locator=%s %s", get_current_func_name(), locator, error)
-            raise ShadowstepNoSuchElementError(
+            raise ShadowstepNoSuchElementException(
                 msg=error.msg,
                 screen=error.screen,
                 stacktrace=list(error.stacktrace) if error.stacktrace else None,
@@ -120,7 +120,7 @@ class ElementBase:
             if error.stacktrace is not None:
                 for stack in error.stacktrace:
                     if "NoSuchElementError" in stack:
-                        raise ShadowstepNoSuchElementError(
+                        raise ShadowstepNoSuchElementException(
                             msg=error.msg,
                             screen=error.screen,
                             stacktrace=list(error.stacktrace) if error.stacktrace else None,

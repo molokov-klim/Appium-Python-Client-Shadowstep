@@ -1,3 +1,5 @@
+# ruff: noqa
+# pyright: ignore
 import logging
 from typing import Any
 from shadowstep.decorators.decorators import current_page, log_info

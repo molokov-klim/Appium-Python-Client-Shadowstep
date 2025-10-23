@@ -3,112 +3,32 @@
 This module provides the core functionality for connecting to Appium servers,
 managing WebDriver instances, and handling device connections.
 """
+
 from __future__ import annotations
 
-import gc
-import json
 import logging
-import site
-import sys
 import time
-from pathlib import Path
 from typing import TYPE_CHECKING, Any, cast
 
 import requests
 from appium.options.android.uiautomator2.base import UiAutomator2Options
-from appium.webdriver.webdriver import WebDriver
-from selenium.common import WebDriverException
 from selenium.common.exceptions import (
     InvalidSessionIdException,
     NoSuchDriverException,
 )
 
+from shadowstep.logcat.shadowstep_logcat import ShadowstepLogcat
 from shadowstep.terminal.adb import Adb
 from shadowstep.terminal.terminal import Terminal
 from shadowstep.terminal.transport import Transport
 from shadowstep.utils.utils import get_current_func_name
+from shadowstep.web_driver.web_driver_singleton import WebDriverSingleton
 
 if TYPE_CHECKING:
-    from collections.abc import Sequence
-
     from appium.options.common.base import AppiumOptions
+    from appium.webdriver.webdriver import WebDriver
 
 logger = logging.getLogger(__name__)
-
-
-class AppiumDisconnectedError(WebDriverException):
-    """Exception raised when Appium connection is lost."""
-
-    def __init__(
-            self, msg: str | None = None, screen: str | None = None,
-            stacktrace: Sequence[str] | None = None,
-    ) -> None:
-        """Initialize the AppiumDisconnectedError.
-
-        Args:
-            msg: Error message.
-            screen: Screenshot data.
-            stacktrace: Stack trace information.
-
-        """
-        super().__init__(msg, screen, stacktrace)
-
-
-class WebDriverSingleton(WebDriver):
-    """Singleton pattern implementation for WebDriver."""
-
-    _instance = None
-    _driver = None
-    _command_executor = None
-
-    def __new__(cls, *args: Any, **kwargs: Any) -> WebDriver:
-        """Create or return existing WebDriver instance.
-
-        Args:
-            *args: Positional arguments for WebDriver.
-            **kwargs: Keyword arguments for WebDriver.
-
-        Returns:
-            WebDriver: The singleton WebDriver instance.
-
-        """
-        if cls._instance is None:
-            cls._instance = super().__new__(cls)
-            cls._driver = WebDriver(*args, **kwargs)
-            cls._command_executor = kwargs["command_executor"]
-        return cls._driver  # type: ignore[return-value]
-
-    @classmethod
-    def _get_session_id(cls, kwargs: Any) -> str:
-        logger.debug("%s", get_current_func_name())
-        res = requests.get(kwargs["command_executor"] + "/sessions", timeout=30)
-        res_json = json.loads(res.text)
-        sessions = res_json.get("value", [])
-        if sessions:
-            for session in sessions:
-                session_id = session.get("id")
-                if session_id:
-                    return str(session_id)
-        return "unknown_session_id"
-
-    @classmethod
-    def clear_instance(cls) -> None:
-        """Remove current instance and clean up WebDriverSingleton resources."""
-        logger.debug("%s", get_current_func_name())
-        cls._driver = None
-        cls._instance = None  # Remove reference to instance for memory release
-        gc.collect()
-
-    @classmethod
-    def get_driver(cls) -> WebDriver:
-        """Get the WebDriver instance.
-
-        Returns:
-            WebDriver: The current WebDriver instance.
-
-        """
-        logger.debug("%s", get_current_func_name())
-        return cast("WebDriver", cls._driver)
 
 
 class ShadowstepBase:
@@ -117,35 +37,37 @@ class ShadowstepBase:
     def __init__(self) -> None:
         """Initialize the ShadowstepBase instance."""
         self.logger: logging.Logger = logger
-        self.driver: WebDriver | None = None
-        self.server_ip: str | None = None
-        self.server_port: int | None = None
-        self.capabilities: dict[str, Any] | None = None
-        self.options: UiAutomator2Options | None = None
-        self.extensions: list[WebDriver] | None = None
-        self.ssh_password: str | None = None
-        self.ssh_user: str | None = None
+        self.driver: WebDriver = cast("WebDriver", None)
+        self.server_ip: str = cast("str", None)
+        self.server_port: int = cast("int", None)
+        self.capabilities: dict[str, Any] = cast("dict[str, Any]", None)
+        self.options: UiAutomator2Options = cast("UiAutomator2Options", None)
+        self.extensions: list[WebDriver] = cast("list[WebDriver]", None)
+        self.ssh_password: str = cast("str", None)
+        self.ssh_user: str = cast("str", None)
         self.ssh_port: int = 22
-        self.command_executor: str | None = None
-        self.transport: Transport | None = None
-        self.terminal: Terminal | None = None
-        self.adb: Adb | None = None
-        self._ignored_auto_discover_dirs: set[str] = {
-            "__pycache__", ".venv", "venv", "site-packages", "dist-packages", ".git",
-            "build", "dist", ".idea", ".pytest_cache", "results",
-        }
-        self._ignored_base_path_parts: set[str] = self._get_ignored_dirs()
+        self.command_executor: str = cast("str", None)
+        self.transport: Transport = cast("Transport", None)
+        self.terminal: Terminal = cast("Terminal", None)
+        self.adb: Adb = cast("Adb", None)
+        self._logcat: ShadowstepLogcat = ShadowstepLogcat(
+            driver_getter=WebDriverSingleton.get_driver,
+        )
 
-    def connect(self,  # noqa: PLR0913
-                capabilities: dict[str, Any],
-                server_ip: str = "127.0.0.1",
-                server_port: int = 4723,
-                options: (AppiumOptions | list[AppiumOptions]) | None = None,
-                extensions: list[WebDriver] | None = None,
-                ssh_user: str | None = None,
-                ssh_password: str | None = None,
-                command_executor: str | None = None,
-                ) -> None:
+    def connect(  # noqa: PLR0913
+        self,
+        capabilities: dict[str, Any],
+        server_ip: str = "127.0.0.1",
+        server_port: int = 4723,
+        options: AppiumOptions | list[AppiumOptions] | UiAutomator2Options = cast(  # noqa: B008
+            "AppiumOptions | list[AppiumOptions] | UiAutomator2Options",
+            None,
+        ),
+        extensions: list[WebDriver] = cast("list[WebDriver]", None),  # noqa: B008
+        ssh_user: str = cast("str", None),
+        ssh_password: str = cast("str", None),
+        command_executor: str = cast("str", None),
+    ) -> None:
         """Connect to a device using the Appium server and initialize the driver.
 
         Args:
@@ -181,25 +103,29 @@ class ShadowstepBase:
         self.command_executor = command_executor
 
         self._capabilities_to_options()
-        if self.command_executor is None:
+        if self.command_executor is None:  # type: ignore[reportUnnecessaryComparison]
             self.command_executor = f"http://{server_ip}:{server_port!s}/wd/hub"
 
         self.logger.info("Connecting to server: %s", self.command_executor)
         WebDriverSingleton.clear_instance()
-        self.driver = WebDriverSingleton(command_executor=self.command_executor,
-                                         options=self.options,
-                                         extensions=self.extensions)  # type: ignore[assignment]
+        self.driver = WebDriverSingleton(
+            command_executor=self.command_executor,
+            options=self.options,
+            extensions=self.extensions,
+        )  # type: ignore[assignment]
         self._wait_for_session_id()
         self.logger.info("Connection established")
 
         # init here because need server ip, port and credentials, refactor it later
         if self.ssh_user and self.ssh_password:
-            self.transport = Transport(server=self.server_ip,
-                                       port=self.ssh_port,
-                                       user=self.ssh_user,
-                                       password=self.ssh_password)
-        self.terminal = Terminal(base=self)
-        self.adb = Adb(base=self)
+            self.transport = Transport(
+                server=self.server_ip,
+                port=self.ssh_port,
+                user=self.ssh_user,
+                password=self.ssh_password,
+            )
+        self.terminal = Terminal()
+        self.adb = Adb()
 
     def disconnect(self) -> None:
         """Disconnect from the device using the Appium server.
@@ -210,14 +136,14 @@ class ShadowstepBase:
         """
         self.logger.debug("%s", get_current_func_name())
         try:
-            if self.driver is not None:
+            if self.driver is not None:  # type: ignore[reportUnnecessaryComparison]
                 response = requests.delete(
                     f"{self.command_executor}/session/{self.driver.session_id}",
                     timeout=30,
                 )
                 self.logger.info("Response: %s", response)
                 self.driver.quit()
-                self.driver = None
+                self.driver = None  # type: ignore[reportUnnecessaryComparison]
                 WebDriverSingleton.clear_instance()
         except InvalidSessionIdException:
             self.logger.debug("%s InvalidSessionIdException", get_current_func_name())
@@ -234,18 +160,16 @@ class ShadowstepBase:
         self.logger.debug("%s", get_current_func_name())
         self.disconnect()
         WebDriverSingleton.clear_instance()
-        if (self.server_ip is not None and
-            self.server_port is not None and
-            self.capabilities is not None):
-            self.connect(command_executor=self.command_executor,
-                         server_ip=self.server_ip,
-                         server_port=self.server_port,
-                         capabilities=self.capabilities,
-                         options=self.options,
-                         extensions=self.extensions,
-                         ssh_user=self.ssh_user,
-                         ssh_password=self.ssh_password,
-                         )
+        self.connect(
+            command_executor=self.command_executor,
+            server_ip=self.server_ip,
+            server_port=self.server_port,
+            capabilities=self.capabilities,
+            options=self.options,
+            extensions=self.extensions,
+            ssh_user=self.ssh_user,
+            ssh_password=self.ssh_password,
+        )
         time.sleep(3)
 
     def is_connected(self) -> bool:
@@ -256,9 +180,9 @@ class ShadowstepBase:
 
         """
         return bool(
-            self._is_session_active_on_grid() or
-            self._is_session_active_on_standalone() or
-            self._is_session_active_on_standalone_new_style(),
+            self._is_session_active_on_grid()
+            or self._is_session_active_on_standalone()
+            or self._is_session_active_on_standalone_new_style(),
         )
 
     def get_driver(self) -> WebDriver:
@@ -299,7 +223,7 @@ class ShadowstepBase:
                     if not session:
                         continue
                     session_id = session.get("sessionId")
-                    if self.driver is not None and session_id == self.driver.session_id:
+                    if self.driver is not None and session_id == self.driver.session_id:  # type: ignore[reportUnnecessaryComparison]
                         self.logger.debug("Session found in Grid: %s", session_id)
                         return True
 
@@ -326,7 +250,7 @@ class ShadowstepBase:
             for node in nodes:
                 session_id = node.get("id", None)
                 node.get("ready", False)
-                if self.driver is not None and self.driver.session_id == session_id:
+                if self.driver is not None and self.driver.session_id == session_id:   # type: ignore[reportUnnecessaryComparison]
                     self.logger.debug("Found session_id on standalone: %s", session_id)
                     return True
             return False  # noqa: TRY300
@@ -350,7 +274,7 @@ class ShadowstepBase:
             for node in nodes:
                 session_id = node.get("id", None)
                 node.get("ready", False)
-                if self.driver is not None and self.driver.session_id == session_id:
+                if self.driver is not None and self.driver.session_id == session_id:   # type: ignore[reportUnnecessaryComparison]
                     self.logger.debug("Found session_id on standalone: %s", session_id)
                     return True
             return False  # noqa: TRY300
@@ -384,7 +308,7 @@ class ShadowstepBase:
     def _capabilities_to_options(self) -> None:  # noqa: C901, PLR0912, PLR0915
         # if provided caps instead options, redeclare caps to options
         # see https://github.com/appium/appium-uiautomator2-driver
-        if self.capabilities is not None and self.options is None:
+        if self.capabilities is not None and self.options is None:   # type: ignore[reportUnnecessaryComparison]
             self.options = UiAutomator2Options()
 
             # General
@@ -406,7 +330,8 @@ class ShadowstepBase:
                 self.options.full_reset = self.capabilities["appium:fullReset"]
             if "appium:printPageSourceOnFindFailure" in self.capabilities:
                 self.options.print_page_source_on_find_failure = self.capabilities[
-                    "appium:printPageSourceOnFindFailure"]
+                    "appium:printPageSourceOnFindFailure"
+                ]
 
             # Driver/Server
             if "appium:systemPort" in self.capabilities:
@@ -417,13 +342,16 @@ class ShadowstepBase:
                 ]
             if "appium:uiautomator2ServerLaunchTimeout" in self.capabilities:
                 self.options.uiautomator2_server_launch_timeout = self.capabilities[
-                    "appium:uiautomator2ServerLaunchTimeout"]
+                    "appium:uiautomator2ServerLaunchTimeout"
+                ]
             if "appium:uiautomator2ServerInstallTimeout" in self.capabilities:
                 self.options.uiautomator2_server_install_timeout = self.capabilities[
-                    "appium:uiautomator2ServerInstallTimeout"]
+                    "appium:uiautomator2ServerInstallTimeout"
+                ]
             if "appium:uiautomator2ServerReadTimeout" in self.capabilities:
                 self.options.uiautomator2_server_read_timeout = self.capabilities[
-                    "appium:uiautomator2ServerReadTimeout"]
+                    "appium:uiautomator2ServerReadTimeout"
+                ]
             if "appium:disableWindowAnimation" in self.capabilities:
                 self.options.disable_window_animation = self.capabilities[
                     "appium:disableWindowAnimation"
@@ -612,13 +540,16 @@ class ShadowstepBase:
                 ]
             if "appium:chromedriverChromeMappingFile" in self.capabilities:
                 self.options.chromedriver_chrome_mapping_file = self.capabilities[
-                    "appium:chromedriverChromeMappingFile"]
+                    "appium:chromedriverChromeMappingFile"
+                ]
             if "appium:chromedriverUseSystemExecutable" in self.capabilities:
                 self.options.chromedriver_use_system_executable = self.capabilities[
-                    "appium:chromedriverUseSystemExecutable"]
+                    "appium:chromedriverUseSystemExecutable"
+                ]
             if "appium:chromedriverDisableBuildCheck" in self.capabilities:
                 self.options.chromedriver_disable_build_check = self.capabilities[
-                    "appium:chromedriverDisableBuildCheck"]
+                    "appium:chromedriverDisableBuildCheck"
+                ]
             if "appium:recreateChromeDriverSessions" in self.capabilities:
                 self.options.recreate_chrome_driver_sessions = self.capabilities[
                     "appium:recreateChromeDriverSessions"
@@ -627,7 +558,8 @@ class ShadowstepBase:
                 self.options.native_web_screenshot = self.capabilities["appium:nativeWebScreenshot"]
             if "appium:extractChromeAndroidPackageFromContextName" in self.capabilities:
                 self.options.extract_chrome_android_package_from_context_name = self.capabilities[
-                    "appium:extractChromeAndroidPackageFromContextName"]
+                    "appium:extractChromeAndroidPackageFromContextName"
+                ]
             if "appium:showChromedriverLog" in self.capabilities:
                 self.options.show_chromedriver_log = self.capabilities["appium:showChromedriverLog"]
             if "pageLoadStrategy" in self.capabilities:
@@ -642,39 +574,11 @@ class ShadowstepBase:
 
             if "appium:disableSuppressAccessibilityService" in self.capabilities:
                 self.options.disable_suppress_accessibility_service = self.capabilities[
-                    "appium:disableSuppressAccessibilityService"]
+                    "appium:disableSuppressAccessibilityService"
+                ]
             if "appium:userProfile" in self.capabilities:
                 self.options.user_profile = self.capabilities["appium:userProfile"]
             if "appium:newCommandTimeout" in self.capabilities:
                 self.options.new_command_timeout = self.capabilities["appium:newCommandTimeout"]
             if "appium:skipLogcatCapture" in self.capabilities:
                 self.options.skip_logcat_capture = self.capabilities["appium:skipLogcatCapture"]
-
-    def _get_ignored_dirs(self) -> set[str]:
-        self.logger.debug(get_current_func_name())
-
-        # Base paths that we consider "system"
-        system_base = Path(sys.base_prefix).resolve()
-        site_packages = {Path(p).resolve() for p in site.getsitepackages() if Path(p).exists()}
-        stdlib = system_base / "lib"
-
-        def is_system_path(path: Path) -> bool:
-            try:
-                path = path.resolve()
-            except Exception:  # noqa: BLE001
-                return False
-            return (
-                    str(path).startswith(str(system_base))  # inside python installation / venv
-                    or any(str(path).startswith(str(s)) for s in site_packages)  # site-packages
-                    or str(path).startswith(str(stdlib))  # stdlib
-            )
-
-        system_paths = {
-            Path(p).resolve().name
-            for p in sys.path if p and is_system_path(Path(p))
-        }
-        ignored_names = {
-            "venv", ".venv", "env", ".env", "Scripts", "bin", "lib", "include",
-            "__pycache__", ".idea", ".vscode", "build", "dist", "dlls",
-        }
-        return system_paths.union(ignored_names)

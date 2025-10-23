@@ -10,10 +10,10 @@ import keyword
 import logging
 import re
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, cast
+from typing import TYPE_CHECKING, Any
 
+from anyascii import anyascii
 from jinja2 import Environment, FileSystemLoader
-from unidecode import unidecode
 
 from shadowstep.exceptions.shadowstep_exceptions import (
     ShadowstepFailedToNormalizeScreenNameError,
@@ -363,22 +363,22 @@ class PageObjectGenerator:
 
         result: list[UiElementNode] = []
         # First collect all descendants of ancestor
-        all_descendants = []
+        all_descendants: list[UiElementNode] = []
         for child in ancestor.children:
-            all_descendants.extend(child.walk())
+            all_descendants.extend(child.walk())  # type: ignore[arg-type]
 
         # Now filter by depth
         for node in all_descendants:
             if node is target:
                 continue
 
-            if node.depth == target.depth:
+            if node.depth == target.depth:  # type: ignore[attr-defined]
                 self.logger.debug(
-                    "Sibling/cousin candidate: id=%s, class=%s, text=%s, content-desc=%s", node.id, node.tag,
-                    node.attrs.get("text"), node.attrs.get("content-desc"))
-                result.append(cast("UiElementNode", node))
+                    "Sibling/cousin candidate: id=%s, class=%s, text=%s, content-desc=%s", node.id, node.tag,  # type: ignore[attr-defined]
+                    node.attrs.get("text"), node.attrs.get("content-desc"))  # type: ignore[attr-defined]
+                result.append(node)  # type: ignore[arg-type]
             else:
-                self.logger.debug("Rejected (wrong depth): id=%s, depth=%s ≠ %s", node.id, node.depth, target.depth)
+                self.logger.debug("Rejected (wrong depth): id=%s, depth=%s ≠ %s", node.id, node.depth, target.depth)  # type: ignore[attr-defined]
 
         self.logger.debug("Total candidates found: %s", len(result))
         return result
@@ -413,23 +413,23 @@ class PageObjectGenerator:
         self.logger.debug("%s", get_current_func_name())
 
         # Find all elements that have "summary" in attributes
-        summary_elements = []
+        summary_elements: list[UiElementNode] = []
         for element in ui_element_tree.walk():
             if any(re.search(r"\bsummary\b", str(value).lower()) for value in element.attrs.values()):
-                summary_elements.append(element)
-                self.logger.debug("Found summary element: %s, attrs=%s", element.id, element.attrs)
+                summary_elements.append(element)  # type: ignore[arg-type]
+                self.logger.debug("Found summary element: %s, attrs=%s", element.id, element.attrs)  # type: ignore[attr-defined]
 
         # For each summary element find corresponding anchor
         summary_pairs: list[tuple[UiElementNode, UiElementNode]] = []
         for summary in summary_elements:
             # Find closest anchor for summary element
-            anchor = self._find_anchor_for_target(cast("UiElementNode", summary), max_levels=3,
+            anchor = self._find_anchor_for_target(summary, max_levels=3,
                                                   target_anchor=("text", "content-desc"))
             if anchor and not any("summary" in str(value).lower() for value in anchor.attrs.values()):
-                self.logger.debug("Found anchor for summary %s: %s, attrs=%s", summary.id, anchor.id, anchor.attrs)
-                summary_pairs.append((anchor, cast("UiElementNode", summary)))
+                self.logger.debug("Found anchor for summary %s: %s, attrs=%s", summary.id, anchor.id, anchor.attrs)  # type: ignore[attr-defined]
+                summary_pairs.append((anchor, summary))
             else:
-                self.logger.warning("No anchor found for summary element %s", summary.id)
+                self.logger.warning("No anchor found for summary element %s", summary.id)  # type: ignore[attr-defined]
 
         self.logger.debug("Total summary-anchor pairs found: %s", len(summary_pairs))
         return summary_pairs
@@ -552,7 +552,7 @@ class PageObjectGenerator:
         if only_id and node.attrs.get("resource-id"):
             return {"resource-id": node.attrs["resource-id"]}
 
-        locator = {}
+        locator: dict[str, Any] = {}
         for attr in ["text", "content-desc", "resource-id"]:
             if value := node.attrs.get(attr):
                 locator[attr] = value
@@ -811,7 +811,7 @@ class PageObjectGenerator:
 
         """
         self.logger.debug("%s", get_current_func_name())
-        parts = re.split(r"[^\w]+", unidecode(s))
+        parts = re.split(r"[^\w]+", anyascii(s))
         return [p.lower() for p in parts if p]
 
     def _strip_package_prefix(self, resource_id: str) -> str:
@@ -915,15 +915,15 @@ class PageObjectGenerator:
         def is_important(prop: dict[str, Any]) -> bool:
             return prop.get("element_id") in {title_id, recycler_id}
 
-        final = []
+        final: list[dict[str, Any]] = []
         for prop in properties:
             if is_important(prop):
-                final.append(prop)
+                final.append(prop)  # type: ignore[arg-type]
                 continue
             # Other filtering (if you add more steps - insert here)
-            final.append(prop)
+            final.append(prop)  # type: ignore[arg-type]
 
-        self.logger.debug("%s > final=%s", get_current_func_name(), final)
+        self.logger.debug("%s > final=%s", get_current_func_name(), final)  # type: ignore[arg-type]
         return final
 
     def _filter_class_only_properties(self, properties: list[dict[str, Any]]) -> list[dict[str, Any]]:
@@ -938,13 +938,13 @@ class PageObjectGenerator:
         """
         self.logger.debug("%s", get_current_func_name())
 
-        filtered = []
+        filtered: list[dict[str, Any]] = []
         for prop in properties:
             locator = prop.get("locator", {})
             if list(locator.keys()) == ["class"]:
                 self.logger.debug("Removing class-only locator: %s (%s)", prop["name"], locator["class"])
                 continue
-            filtered.append(prop)
+            filtered.append(prop)  # type: ignore[arg-type]
 
         return filtered
 
@@ -960,7 +960,7 @@ class PageObjectGenerator:
         """
         self.logger.debug("%s", get_current_func_name())
 
-        filtered = []
+        filtered: list[dict[str, Any]] = []
         for prop in properties:
             locator = prop.get("locator", {})
             cls = locator.get("class")
@@ -971,7 +971,7 @@ class PageObjectGenerator:
                 self.logger.debug("Removing structural container: %s (%s, %s)", prop["name"], cls, res_id)
                 continue
 
-            filtered.append(prop)
+            filtered.append(prop)  # type: ignore[arg-type]
 
         return filtered
 

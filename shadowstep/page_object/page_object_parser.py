@@ -7,9 +7,9 @@ and build a tree structure of UI elements for Page Object generation.
 from __future__ import annotations
 
 import logging
-from typing import Any, cast
+from typing import Any
 
-from lxml import etree
+from lxml import etree  # type: ignore[import-untyped]
 
 from shadowstep.exceptions.shadowstep_exceptions import ShadowstepRootNodeFilteredOutError
 from shadowstep.page_object.page_object_element_node import UiElementNode
@@ -41,18 +41,32 @@ DEFAULT_BLACK_LIST_CLASSES: tuple[str, ...] = (
 )
 
 DEFAULT_WHITE_LIST_RESOURCE_ID: tuple[str, ...] = (
-    "button", "btn", "edit", "input",
-    "search", "list", "recycler", "nav",
-    "menu", "scrollable", "checkbox", "switch", "toggle",
+    "button",
+    "btn",
+    "edit",
+    "input",
+    "search",
+    "list",
+    "recycler",
+    "nav",
+    "menu",
+    "scrollable",
+    "checkbox",
+    "switch",
+    "toggle",
 )
 
 DEFAULT_BLACK_LIST_RESOURCE_ID: tuple[str, ...] = (
-    "decor", "divider", "wrapper",
+    "decor",
+    "divider",
+    "wrapper",
 )
 
 # Important containers that are allowed even if they contain 'container'
 DEFAULT_CONTAINER_WHITELIST: tuple[str, ...] = (
-    "main", "dialog", "scrollable",
+    "main",
+    "dialog",
+    "scrollable",
 )
 
 
@@ -97,7 +111,7 @@ class PageObjectParser:
         self.BLACK_LIST_RESOURCE_ID: tuple[str, ...] = black_list_resource_id
         self.CONTAINER_WHITELIST: tuple[str, ...] = container_whitelist
 
-        self._tree: etree.Element | None = None
+        self._tree: Any = None
         self.ui_element_tree: UiElementNode | None = None
 
     def parse(self, xml: str) -> UiElementNode:
@@ -116,15 +130,15 @@ class PageObjectParser:
         """
         self.logger.info("%s", get_current_func_name())
         try:
-            self._tree = etree.fromstring(xml.encode("utf-8"))
-            self.ui_element_tree = self._build_tree(self._tree)
-        except etree.XMLSyntaxError:
+            self._tree = etree.fromstring(xml.encode("utf-8"))  # type: ignore[attr-defined]
+            self.ui_element_tree = self._build_tree(self._tree)  # type: ignore[arg-type]
+        except etree.XMLSyntaxError:  # type: ignore[attr-defined]
             self.logger.exception("Failed to parse XML")
             raise
         else:
             return self.ui_element_tree
 
-    def _build_tree(self, root_et: etree._Element) -> UiElementNode:  # noqa: C901
+    def _build_tree(self, root_et: Any) -> UiElementNode:  # noqa: C901
         """Build element tree from XML element.
 
         Args:
@@ -140,7 +154,7 @@ class PageObjectParser:
         id_counter = 0
 
         def _recurse(
-            el: etree._Element,
+            el: Any,  # etree._Element
             parent: UiElementNode | None,
             scroll_stack: ScrollStack,
             depth: int,
@@ -158,7 +172,7 @@ class PageObjectParser:
 
             """
             nonlocal id_counter
-            attrib = dict(cast("Any", el.attrib))
+            attrib = dict(el.attrib)
             el_id = f"el_{id_counter}"
             id_counter += 1
 
@@ -168,14 +182,14 @@ class PageObjectParser:
 
             children_nodes: list[UiElementNode] = []
             for child_et in el:
-                child_node = _recurse(cast("Any", child_et), None, new_scroll_stack, depth + 1)
+                child_node = _recurse(child_et, None, new_scroll_stack, depth + 1)
                 if child_node:
                     children_nodes.append(child_node)
 
             if self._is_element_allowed(attrib):
                 node = UiElementNode(
                     id=el_id,
-                    tag=cast("Any", el.tag),
+                    tag=el.tag,
                     attrs=attrib,
                     parent=parent,
                     depth=depth,
@@ -191,7 +205,7 @@ class PageObjectParser:
                 return None
             virtual = UiElementNode(
                 id=el_id,
-                tag=cast("Any", el.tag),
+                tag=el.tag,
                 attrs=attrib,
                 parent=parent,
                 depth=depth,
@@ -204,9 +218,9 @@ class PageObjectParser:
             return virtual
 
         if root_et.tag == "hierarchy":
-            root_et = next(iter(cast("Any", root_et)))
+            root_et = next(iter(root_et))
 
-        root_node = _recurse(cast("Any", root_et), None, [], 0)
+        root_node = _recurse(root_et, None, [], 0)
         if not root_node:
             raise ShadowstepRootNodeFilteredOutError
         return root_node

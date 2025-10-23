@@ -2,7 +2,7 @@
 
 This module provides the Terminal class for executing ADB commands
 through Appium server, including device management, app operations,
-input simulation, file operations, and system control via SSH transport.
+input simulation, file operations.
 """
 
 from __future__ import annotations
@@ -10,20 +10,20 @@ from __future__ import annotations
 import base64
 import logging
 import re
-import subprocess
 import sys
 import time
 import traceback
-from pathlib import Path
-from typing import TYPE_CHECKING, Any, cast
+from typing import TYPE_CHECKING, cast
 
 from selenium.common import InvalidSessionIdException, NoSuchDriverException
 
+from shadowstep.ui_automator.mobile_commands import MobileCommands
 from shadowstep.utils.utils import get_current_func_name
 
 # Configure the root logger (basic configuration)
 logging.basicConfig(
-    level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+    level=logging.INFO,
+    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
 )
 logger = logging.getLogger(__name__)
 
@@ -31,12 +31,9 @@ logger = logging.getLogger(__name__)
 MIN_PS_COLUMNS_COUNT = 9
 
 if TYPE_CHECKING:
-    from collections.abc import Sequence
-
     from appium.webdriver.webdriver import WebDriver
 
-    from shadowstep.base import ShadowstepBase
-    from shadowstep.terminal import Transport
+    from shadowstep.shadowstep import Shadowstep
 
 
 class NotProvideCredentialsError(Exception):
@@ -71,125 +68,35 @@ class Terminal:
     Required ssh
     """
 
-    base: ShadowstepBase
-    transport: Transport
+    shadowstep: Shadowstep
     driver: WebDriver
 
-    def __init__(self, base: ShadowstepBase) -> None:
-        """Initialize the Terminal.
+    def __init__(self) -> None:
+        """Initialize the Terminal."""
+        from shadowstep.shadowstep import Shadowstep  # noqa: PLC0415
 
-        Args:
-            base: ShadowstepBase instance for automation operations.
-
-        """
-        self.base: ShadowstepBase = base
-        self.transport: Transport = base.transport
-        self.driver: WebDriver = base.driver
-
-    def __del__(self) -> None:
-        """Destructor to ensure SSH connection is closed on object deletion.
-
-        This method ensures that the SSH connection is properly closed
-        when the Terminal object is garbage collected.
-        """
-        if self.transport is not None:  # type: ignore[comparison-overlap]
-            self.transport.ssh.close()
+        self.shadowstep: Shadowstep = Shadowstep.get_instance()
+        self.driver: WebDriver = self.shadowstep.driver
+        self.mobile_commands = MobileCommands()
 
     def adb_shell(self, command: str, args: str = "", tries: int = 3) -> str:
         """Execute commands via ADB on a mobile device."""
         for _ in range(tries):
             try:
-                result = self.driver.execute_script(  #  type: ignore[reportUnknownMemberType]
-                    "mobile: shell",
-                    {"command": command, "args": [args]},
-                )
+                result = self.mobile_commands.shell({"command": command, "args": [args]})
                 return cast("str", result)
             except NoSuchDriverException:  # noqa: PERF203
                 logger.warning("No such driver found")
-                self.base.reconnect()
+                self.shadowstep.reconnect()
             except InvalidSessionIdException:
                 logger.warning("Invalid session id found")
-                self.base.reconnect()
+                self.shadowstep.reconnect()
             except KeyError:
                 logger.exception("KeyError in get_page_source")
                 traceback_info = "".join(traceback.format_tb(sys.exc_info()[2]))
                 logger.exception(traceback_info)
         msg = f"adb_shell failed after {tries} tries: {command} {args}"
         raise AdbShellError(msg)
-
-    def push(
-        self, source_path: str, remote_server_path: str, filename: str, destination: str, udid: str,
-    ) -> bool:
-        """Push files from a local source to a remote destination on a mobile device via ADB.
-
-        :param source_path: The local path of the file to push.
-        :param remote_server_path: The remote path on the server where the file will be pushed.
-        :param filename: The name of the file to push.
-        :param destination: The destination path on the mobile device.
-        :param udid: The unique device identifier of the mobile device.
-        :return: True if the file was successfully pushed, False otherwise.
-        """
-        try:
-            source_file_path = Path(source_path) / filename
-            remote_file_path = Path(remote_server_path) / filename
-            destination_file_path = f"{destination}/{filename}"
-            self.transport.scp.put(files=source_file_path, remote_path=remote_file_path)
-            _, stdout, _ = self.transport.ssh.exec_command(
-                f"adb -s {udid} push {remote_file_path} {destination_file_path}",
-            )
-            stdout_exit_status = stdout.channel.recv_exit_status()
-            lines = stdout.readlines()
-            output = "".join(lines)
-            if stdout_exit_status != 0:
-                logger.error("%s output=%s", get_current_func_name(), output)
-                return False
-            logger.debug("%s output=%s", get_current_func_name(), output)
-        except NoSuchDriverException:
-            self.base.reconnect()
-            return False
-        except InvalidSessionIdException:
-            self.base.reconnect()
-            return False
-        except OSError:
-            logger.exception("push()")
-            return False
-        else:
-            return True
-
-    def pull(self, source: str, destination: str) -> bool:
-        """Pull a file from a mobile device to a local destination.
-
-        :param source: The path of the file on the mobile device to pull.
-        :param destination: The local path where the pulled file will be saved.
-        :return: True if the file was successfully pulled, False otherwise.
-        :raises NoSuchDriverException: If the WebDriver session does not exist.
-        :raises InvalidSessionIdException: If the session ID is not valid.
-        :raises IOError: If an I/O error occurs during file handling.
-        """
-        try:
-            if not destination:
-                # If path not specified, save in current directory
-                destination = Path.cwd() / Path(source).name
-
-            file_contents_base64 = self.driver.assert_extension_exists(
-                "mobile: pullFile",
-            ).execute_script("mobile: pullFile", {"remotePath": source})
-            if not file_contents_base64:
-                return False
-            decoded_contents = base64.b64decode(file_contents_base64)
-            with Path(destination).open("wb") as file:
-                file.write(decoded_contents)
-        except NoSuchDriverException:
-            self.base.reconnect()
-            return False
-        except InvalidSessionIdException:
-            self.base.reconnect()
-            return False
-        except OSError:
-            logger.exception("appium_extended_terminal.pull")
-            return False
-        else:
-            return True
 
     def start_activity(self, package: str, activity: str) -> bool:
         """Start activity on the device.
@@ -218,7 +125,8 @@ class Terminal:
             for line in lines:
                 if "mCurrentFocus" in line or "mFocusedApp" in line:
                     matches = re.search(
-                        r"(([A-Za-z]{1}[A-Za-z\d_]*\.)+([A-Za-z][A-Za-z\d_]*)/)", line,
+                        r"(([A-Za-z]{1}[A-Za-z\d_]*\.)+([A-Za-z][A-Za-z\d_]*)/)",
+                        line,
                     )
                     if matches:
                         return matches.group(1)[:-1]  # removing trailing slash
@@ -254,36 +162,6 @@ class Terminal:
             return False
         return self.start_activity(package=package, activity=activity)
 
-    def install_app(self, source: str, remote_server_path: str, filename: str, udid: str) -> bool:
-        """Installs an application on the specified mobile device.
-
-        :param source: The local path of the application file to install.
-        :param remote_server_path: The remote path on the server where the application file will be stored temporarily.
-        :param filename: The name of the application file.
-        :param udid: The unique device identifier (UDID) of the target mobile device.
-        :return: True if the application was successfully installed, False otherwise.
-        :raises NotProvideCredentialsError: If the transport credentials are not provided.
-        """
-        try:
-            source_filepath = Path(source) / filename
-            destination_filepath = Path(remote_server_path) / filename
-            self.transport.scp.put(files=source_filepath, remote_path=destination_filepath)
-            _, stdout, _ = self.transport.ssh.exec_command(
-                f"adb -s {udid} install -r {destination_filepath}",
-            )
-            stdout_exit_status = stdout.channel.recv_exit_status()
-            lines = stdout.readlines()
-            output = "".join(lines)
-            if stdout_exit_status != 0:
-                logger.error("%s output=%s", get_current_func_name(), output)
-                return False
-            logger.debug("%s output=%s", get_current_func_name(), output)
-        except OSError:
-            logger.exception("appium_extended_terminal.push()")
-            return False
-        else:
-            return True
-
     def is_app_installed(self, package: str) -> bool:
         """Check if the specified application package is installed on the device.
 
@@ -313,10 +191,10 @@ class Terminal:
         try:
             self.driver.remove_app(app_id=package)
         except NoSuchDriverException:
-            self.base.reconnect()
+            self.shadowstep.reconnect()
             return False
         except InvalidSessionIdException:
-            self.base.reconnect()
+            self.shadowstep.reconnect()
             return False
         except KeyError:
             logger.exception("appium_extended_terminal.uninstall_app()")
@@ -462,7 +340,11 @@ class Terminal:
         left = int(width * 0.1)
         right = int(width * 0.9)
         return self.swipe(
-            start_x=right, start_y=height // 2, end_x=left, end_y=height // 2, duration=duration,
+            start_x=right,
+            start_y=height // 2,
+            end_x=left,
+            end_y=height // 2,
+            duration=duration,
         )
 
     def swipe_left_to_right(self, duration: int = 300) -> bool:
@@ -477,7 +359,11 @@ class Terminal:
         left = int(width * 0.1)
         right = int(width * 0.9)
         return self.swipe(
-            start_x=left, start_y=height // 2, end_x=right, end_y=height // 2, duration=duration,
+            start_x=left,
+            start_y=height // 2,
+            end_x=right,
+            end_y=height // 2,
+            duration=duration,
         )
 
     def swipe_top_to_bottom(self, duration: int = 300) -> bool:
@@ -491,7 +377,11 @@ class Terminal:
         top = int(height * 0.1)
         bottom = int(height * 0.9)
         return self.swipe(
-            start_x=top, start_y=height // 2, end_x=bottom, end_y=height // 2, duration=duration,
+            start_x=top,
+            start_y=height // 2,
+            end_x=bottom,
+            end_y=height // 2,
+            duration=duration,
         )
 
     def swipe_bottom_to_top(self, duration: int = 300) -> bool:
@@ -505,7 +395,11 @@ class Terminal:
         top = int(height * 0.1)
         bottom = int(height * 0.9)
         return self.swipe(
-            start_x=bottom, start_y=height // 2, end_x=top, end_y=height // 2, duration=duration,
+            start_x=bottom,
+            start_y=height // 2,
+            end_x=top,
+            end_y=height // 2,
+            duration=duration,
         )
 
     def check_vpn(self, ip_address: str = "") -> bool:
@@ -607,12 +501,12 @@ class Terminal:
             if process != "":
                 time.sleep(1)
                 if not self.is_process_exist(name=process):
+                    logger.error("run_background_process() > False (process not found)")
                     return False
+            return True  # noqa: TRY300
         except KeyError:
-            logger.exception("KeyError in is_app_installed")
+            logger.exception("run_background_process() > KeyError")
             return False
-        else:
-            return True
 
     def kill_by_pid(self, pid: int) -> bool:
         """Kills the process with the specified PID.
@@ -692,9 +586,9 @@ class Terminal:
         try:
             self.driver.start_recording_screen(**options)
         except NoSuchDriverException:
-            self.base.reconnect()
+            self.shadowstep.reconnect()
         except InvalidSessionIdException:
-            self.base.reconnect()
+            self.shadowstep.reconnect()
         except KeyError:
             logger.exception("appium_extended_terminal.record_video")
             return False
@@ -710,9 +604,9 @@ class Terminal:
             str_based64_video = self.driver.stop_recording_screen(**options)
             return base64.b64decode(str_based64_video)
         except NoSuchDriverException:
-            self.base.reconnect()
+            self.shadowstep.reconnect()
         except InvalidSessionIdException:
-            self.base.reconnect()
+            self.shadowstep.reconnect()
         except KeyError:
             logger.exception("appium_extended_terminal.stop_video")
             return None
@@ -751,20 +645,20 @@ class Terminal:
                 self.driver.set_clipboard_text(text=text)
                 self.input_keycode("279")
             except NoSuchDriverException:  # noqa: PERF203
-                self.base.reconnect()
+                self.shadowstep.reconnect()
             except InvalidSessionIdException:
-                self.base.reconnect()
+                self.shadowstep.reconnect()
             else:
                 return
 
-    def get_prop(self) -> dict[str, Any]:
+    def get_prop(self) -> dict[str, str]:
         """Retrieve system properties from the device.
 
         :return: A dictionary containing the system properties as key-value pairs.
         """
         raw_properties = self.adb_shell(command="getprop")
         lines = raw_properties.replace("\r", "").strip().split("\n")
-        result_dict = {}
+        result_dict: dict[str, str] = {}
         for line in lines:
             try:
                 key, value = line.strip().split(":", 1)
@@ -826,69 +720,32 @@ class Terminal:
         lines = output.strip().split("\n")
         return [line.split(":")[-1].replace("\r", "") for line in lines]
 
-    def get_package_path(self, package: str) -> str:
-        """Retrieve the path to the APK file associated with the given package.
+    def get_wifi_ip(self) -> str:
+        """Retrieve Wi-Fi ip address of device.
 
-        :param package: The name of the package.
-        :return: The path to the APK file.
+        :return: ip address str.
         """
-        return (
-            self.adb_shell(command="pm", args=f"path {package}")
-            .replace("package:", "")
-            .replace("\r", "")
-            .replace("\n", "")
-        )
+        output = self.adb_shell(command="ifconfig", args="")
+        if "command not found" in output or "usage" in output.lower():
+            # fallback to ip addr
+            output = self.adb_shell(command="ip addr show wlan0", args="")
+            return self._extract_ip_from_ip_addr(output)
+        return self._extract_ip_from_ifconfig(output)
 
-    def pull_package(self, package: str, path: str = "", filename: str = "temp._apk") -> None:
-        """Pull the APK file of the specified package from the device to the local machine.
+    def _extract_ip_from_ifconfig(self, output: str) -> str:
+        blocks = output.split("\n\n")
+        for block in blocks:
+            if "wlan0" in block and "inet addr" in block:
+                # Find IPv4
+                match = re.search(r"inet addr:([\d.]+)", block)
+                if match:
+                    return match.group(1)
+        msg = "Failed resolve IP address"
+        raise AssertionError(msg)
 
-        :param package: The package name of the app.
-        :param path: The local path where the APK file will be saved. Default is current directory.
-        :param filename: The name of the APK file. If not provided, a default name 'temp._apk' will be used.
-        """
-        package_path = self.get_package_path(package=package)
-        if not filename.endswith("._apk"):
-            filename = f"{filename}._apk"
-        self.pull(source=package_path, destination=str(Path(path) / filename))
-
-    def get_package_manifest(self, package: str) -> dict[str, list[str]]:
-        """Retrieve the manifest of the specified package from the device.
-
-        :param package: The package name of the app.
-        :return: A dictionary representing the package manifest.
-        """
-        test_path = Path("test")
-        if not test_path.exists():
-            test_path.mkdir(parents=True)
-
-        self.pull_package(package=package, path="test", filename="temp._apk")
-
-        command: Sequence[str] = ["aapt", "dump", "badging", str(test_path / "temp._apk")]
-        try:
-            output_bytes = subprocess.check_output(command)  # noqa: S603
-        except subprocess.CalledProcessError:
-            return {}
-
-        output = (
-            output_bytes.decode("utf-8")
-            .strip()
-            .replace("\r\n", " ")
-            .replace('"', "")
-            .replace(":'", ": '")
-        )
-
-        list_of_elements = output.split()
-        result: dict[str, list[str]] = {}
-        current_key: str | None = None
-
-        for element in list_of_elements:
-            if element.endswith(":"):
-                result[element] = []
-                current_key = element
-                continue
-            if current_key:
-                result[current_key].append(element.replace("'", ""))
-
-        (test_path / "temp._apk").unlink()
-
-        return result
+    def _extract_ip_from_ip_addr(self, output: str) -> str:
+        match = re.search(r"inet\s+([\d.]+)/\d+\s+brd.*wlan0", output)
+        if match:
+            return match.group(1)
+        msg = "Failed resolve IP address"
+        raise AssertionError(msg)

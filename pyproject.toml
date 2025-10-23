@@ -1,6 +1,6 @@
 [project]
 name = "appium-python-client-shadowstep"
-version = "0.34.168"
+version = "0.36.9"
 description = "UI Testing Framework powered by Appium Python Client"
 authors = [{ name = "Molokov Klim", email = "ultrakawaii9654449192@gmail.com" }]
 license = "MIT"
@@ -9,7 +9,7 @@ requires-python = ">=3.9"
 
 dependencies = [
     "Appium-Python-Client>=5.2.2", # webdriver
-    "selenium>=4.12", # webdriver
+    "selenium>=4.36", # webdriver
     "websocket-client>=1.8.0", # logcat
     "requests>=2.31.0", # http
     "opencv-python>=4.12.0.88", # image
@@ -22,16 +22,18 @@ dependencies = [
     "networkx>=3.2.1", # navigator
     "lxml>=6.0.2", # page object generator
     "jinja2>=3.1.6", # page object generator
-    "unidecode>=1.4.0", # page object generator
+    "anyascii>=0.3.3", # page object generator
     "eulxml>=1.1.3", # ast parsing xpath
     "setuptools==80.9.0", # nessecary dependency for eulxml
+    "wheel>=0.45.1",
+    "pyright>=1.1.405",
+    "ruff>=0.13.2",
 ]
 
 keywords = ["appium", "testing", "uiautomator2", "android", "automation", "framework"]
 
 classifiers = [
     "Programming Language :: Python :: 3.9",
-    "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
     "Programming Language :: Python :: 3.13"
@@ -74,10 +76,11 @@ ignore = [
     "D211", # conflict in D
     "D212", # conflict in D
     "D213", # conflict in D
+    "D401", # annoying - First line should be in imperative mood
     "E501", # line too long
-    "RUF001", # cyryllic
     "ANN401", # Any
     "S101", # assert
+    "PGH004", # blanket-noqa
 ]
 
 
@@ -118,6 +121,8 @@ exclude = [
     "**/tests/*",
     "**/test*",
     "**/test*/*",
+    "**/test*.py",
+    "**/test*/*.py",
 ]
 
 # ---------- PYRIGHT ----------
@@ -136,6 +141,8 @@ exclude = [
     "**/tests/*",
     "**/test*",
     "**/test*/*",
+    "**/test*.py",
+    "**/test*/*.py",
 ]
 typeCheckingMode = "strict"
 
@@ -157,4 +164,5 @@ build-backend = "setuptools.build_meta"
 include = ["shadowstep*"]
 
 [tool.setuptools.package-data]
+"shadowstep" = ["py.typed"]
 "shadowstep.page_object.templates" = ["*.j2"]

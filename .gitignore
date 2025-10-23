@@ -170,3 +170,7 @@ cython_debug/
 /screenshot.png
 /mergedpages/
 /merged_pages/
+/tests/merged_pages/
+/trello.png
+/.claude/
+/temp/

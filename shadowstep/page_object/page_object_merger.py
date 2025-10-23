@@ -4,6 +4,7 @@ This module provides the PageObjectMerger class for merging
 multiple page object files into a single consolidated file,
 handling imports, class definitions, and method deduplication.
 """
+
 from __future__ import annotations
 
 import logging
@@ -27,7 +28,7 @@ class PageObjectMerger:
         """Initialize the PageObjectMerger."""
         self.logger = logging.getLogger(__name__)
 
-    def merge(self, file1: str, file2: str, output_path: str) -> str:
+    def merge(self, file1: str | Path, file2: str | Path, output_path: str | Path) -> str | Path:
         """Merge pages."""
         self.logger.info("%s", get_current_func_name())
         page1 = self.parse(file1)
@@ -37,10 +38,12 @@ class PageObjectMerger:
         methods1 = self.get_methods(page1)
         methods2 = self.get_methods(page2)
         unique_methods = self.remove_duplicates(methods1, methods2)
-        self.write_to_file(filepath=output_path,
-                           imports=imports,
-                           class_name=class_name,
-                           unique_methods=unique_methods)
+        self.write_to_file(
+            filepath=output_path,
+            imports=imports,
+            class_name=class_name,
+            unique_methods=unique_methods,
+        )
         return output_path
 
     def parse(self, file: str | Path) -> str:
@@ -107,7 +110,7 @@ class PageObjectMerger:
                 return line.rstrip()
         raise ShadowstepNoClassDefinitionFoundError
 
-    def get_methods(self, page: str) -> dict[str, Any]:
+    def get_methods(self, page: str) -> dict[str, str]:
         r"""Extract methods and property blocks via \n\n separation with indentation normalization.
 
         Args:
@@ -119,15 +122,18 @@ class PageObjectMerger:
         """
         self.logger.debug("%s", get_current_func_name())
 
-        methods = {}
+        methods: dict[str, str] = {}
         blocks = page.split("\n\n")
 
         for block in blocks:
             dedent_block = textwrap.dedent(block)
             stripped = dedent_block.strip()
 
-            if not stripped.startswith("def ") and not stripped.startswith("@property") and not stripped.startswith(
-                    "@current_page"):
+            if (
+                not stripped.startswith("def ")
+                and not stripped.startswith("@property")
+                and not stripped.startswith("@current_page")
+            ):
                 continue
 
             lines = dedent_block.splitlines()
@@ -149,7 +155,11 @@ class PageObjectMerger:
 
         return methods
 
-    def remove_duplicates(self, methods1: dict[str, Any], methods2: dict[str, Any]) -> dict[str, Any]:
+    def remove_duplicates(
+        self,
+        methods1: dict[str, str],
+        methods2: dict[str, str],
+    ) -> dict[str, str]:
         """Remove duplicate methods from two method dictionaries.
 
         Args:
@@ -162,7 +172,7 @@ class PageObjectMerger:
         """
         self.logger.debug("%s", get_current_func_name())
 
-        unique_methods = {}
+        unique_methods: dict[str, str] = {}
 
         for name, body in methods1.items():
             unique_methods[name] = body  # noqa: PERF403
@@ -173,17 +183,20 @@ class PageObjectMerger:
             elif unique_methods[name].strip() == body.strip():
                 continue  # duplicate — ignore
             else:
-                self.logger.warning("Method conflict on '%s', skipping version from second file.", name)
+                self.logger.warning(
+                    "Method conflict on '%s', skipping version from second file.",
+                    name,
+                )
 
         return unique_methods
 
     def write_to_file(
-            self,
-            filepath: str,
-            imports: str,
-            class_name: str,
-            unique_methods: dict[str, Any],
-            encoding: str = "utf-8",
+        self,
+        filepath: str | Path,
+        imports: str,
+        class_name: str,
+        unique_methods: dict[str, Any],
+        encoding: str = "utf-8",
     ) -> None:
         """Write merged page object to file.
 

@@ -4,63 +4,73 @@ This module defines custom exception classes that extend standard
 Selenium and Appium exceptions to provide more specific error handling
 and context for the Shadowstep automation framework.
 """
+
 from __future__ import annotations
 
-import datetime
-import traceback
-from typing import TYPE_CHECKING
+from typing import Any
 
-from selenium.common import NoSuchElementException, TimeoutException, WebDriverException
-
-if TYPE_CHECKING:
-    from collections.abc import Sequence
-
-    from appium.webdriver.webdriver import WebDriver
+from selenium.common import WebDriverException
 
 
 class ShadowstepException(WebDriverException):
-    """Raised when driver is not specified and cannot be located."""
+    """Base class for all Shadowstep exceptions."""
 
-    def __init__(
-            self,
-            msg: str | None = None,
-            screen: str | None = None,
-            stacktrace: Sequence[str] | None = None,
-    ) -> None:
-        """Initialize the ShadowstepException.
+    default_message = "ShadowstepException occurred"
 
-        Args:
-            msg: Error message.
-            screen: Screenshot data.
-            stacktrace: Stack trace information.
-
-        """
-        super().__init__(msg, screen, stacktrace)
-
-
-class ShadowstepElementError(ShadowstepException):
-    """Raised when an element operation fails with additional context.
-
-    This exception provides additional context about the original exception
-    that caused the element operation to fail, including the traceback.
-    """
-
-    def __init__(self,
-                 message: str | None = None,
-                 original_exception: Exception | None = None) -> None:
-        """Initialize the ShadowstepElementError.
-
-        Args:
-            message: Error message.
-            original_exception: The original exception that caused this error.
-
-        """
+    def __init__(self, msg: str | None = None, *context_args: Any, **context_kwargs: Any) -> None:
+        """Initialize ShadowstepException."""
+        self.context_args = context_args
+        self.context_kwargs = context_kwargs
+        # Use the provided message or construct one from context
+        if msg:
+            message = msg
+        elif context_kwargs:
+            # Construct message from context kwargs
+            message = self._construct_message_from_context(**context_kwargs)
+        else:
+            # Try to construct message from context even if no kwargs provided
+            message = self._construct_message_from_context()
         super().__init__(message)
+
+    def _construct_message_from_context(self, **context_kwargs: Any) -> str:  # noqa: ARG002
+        """Construct message from context kwargs."""
+        # This method should be overridden by subclasses to provide specific message construction
+        return self.default_message
+
+    def __str__(self) -> str:
+        """Return ShadowstepException string."""
+        base = super().__str__()
+        if self.context_args:
+            base += f" | Context: {self.context_args}"
+        if self.context_kwargs:
+            context = ", ".join(f"{k}={v}" for k, v in self.context_kwargs.items())
+            base += f" [{context}]"
+        return base
+
+    def __repr__(self) -> str:
+        """Return ShadowstepException repr string."""
+        base = super().__str__()
+        if self.context_args:
+            base += f" | Context: {self.context_args}"
+        if self.context_kwargs:
+            context = ", ".join(f"{k}={v}" for k, v in self.context_kwargs.items())
+            base += f" [{context}]"
+        return base
+
+
+class ShadowstepElementException(ShadowstepException):
+    """Base class for all ShadowstepElement exceptions."""
+
+    default_message = "ShadowstepElementException occurred"
+
+    def __init__(self, msg: str | None = None, original_exception: Exception | None = None, *context_args: Any, **context_kwargs: Any) -> None:
+        """Initialize ShadowstepElementException."""
+        super().__init__(msg, *context_args, **context_kwargs)
         self.original_exception = original_exception
-        self.traceback = traceback.format_exc()
+        self.traceback = type(original_exception).__name__ if original_exception else ""
 
 
-class ShadowstepNoSuchElementError(NoSuchElementException):
+class ShadowstepNoSuchElementException(ShadowstepElementException):
     """Raised when an element cannot be found with enhanced locator information.
 
     This exception extends the standard NoSuchElementException to provide
@@ -68,1054 +78,981 @@ class ShadowstepNoSuchElementError(NoSuchElementException):
     information.
     """
 
-    def __init__(self,
-                 msg: str | None = None,
-                 screen: str | None = None,
-                 stacktrace: list[str] | None = None,
-                 locator: str | dict | None = None) -> None:
-        """Initialize the ShadowstepNoSuchElementError.
+    default_message = "ShadowstepNoSuchElementException occurred"
 
-        Args:
-            msg: Error message.
-            screen: Screenshot data.
-            stacktrace: Stack trace information.
-            locator: The locator that was used to find the element.
-
-        """
-        super().__init__(msg, screen, stacktrace)
+    def __init__(self, msg: str | None = None, locator: Any = None, stacktrace: list[str] | None = None, *context_args: Any, **context_kwargs: Any) -> None:
+        """Initialize ShadowstepNoSuchElementException."""
+        super().__init__(msg, *context_args, **context_kwargs)
         self.locator = locator
-        self.msg = msg
-        self.screen = screen
-        self.stacktrace = stacktrace
+        self.stacktrace = stacktrace or []
 
     def __str__(self) -> str:
-        """Return string representation of the exception with locator and context info.
+        """Return ShadowstepNoSuchElementException string."""
+        base = super().__str__()
+        if self.locator:
+            base += f"\nLocator: {self.locator}"
+        if self.stacktrace:
+            base += f"\nStacktrace: {self.stacktrace}"
+        return base
 
-        Returns:
-            str: Formatted string containing locator, message, and stacktrace.
 
-        """
-        return f"ShadowstepNoSuchElementError: Locator: {self.locator} \n Message: {self.msg} \n Stacktrace: {self.stacktrace}"
-
-
-class ShadowstepTimeoutException(TimeoutException):
+class ShadowstepTimeoutException(ShadowstepException):
     """Custom timeout exception with additional context."""
 
-    def __init__(self,
-                 msg: str | None = None,
-                 screen: str | None = None,
-                 stacktrace: list[str] | None = None,
-                 locator: str | dict | None = None,
-                 driver: WebDriver | None = None) -> None:
-        """Initialize the ShadowstepTimeoutException.
+    default_message = "ShadowstepTimeoutException occurred"
 
-        Args:
-            msg: Error message.
-            screen: Screenshot data.
-            stacktrace: Stack trace information.
-            locator: The locator that was used to find the element.
-            driver: The WebDriver instance.
-
-        """
-        super().__init__(msg, screen, stacktrace)
+    def __init__(self, msg: str | None = None, locator: Any = None, driver: Any = None, stacktrace: list[str] | None = None, *context_args: Any, **context_kwargs: Any) -> None:
+        """Initialize ShadowstepTimeoutException."""
+        super().__init__(msg, *context_args, **context_kwargs)
         self.locator = locator
         self.driver = driver
-        self.timestamp = datetime.datetime.now(datetime.timezone.utc).strftime("%Y-%m-%d_%H-%M-%S")
+        self.stacktrace = stacktrace or []
 
     def __str__(self) -> str:
-        """Return string representation of the timeout exception with detailed context.
-
-        Returns:
-            str: Formatted string containing timestamp, message, locator, URL, and stacktrace.
-
-        """
-        return (f"ShadowstepTimeoutException\n"
-                f"Timestamp: {self.timestamp}\n"
-                f"Message: {self.msg}\n"
-                f"Locator: {self.locator}\n"
-                f"Current URL: {self.driver.current_url if self.driver else 'N/A'}\n"
-                f"Stacktrace:\n{''.join(self.stacktrace) if self.stacktrace else 'N/A'}")
+        """Return ShadowstepTimeoutException string."""
+        base = super().__str__()
+        if self.locator:
+            base += f"\nLocator: {self.locator}"
+        if self.driver and hasattr(self.driver, "current_url"):
+            base += f"\nCurrent URL: {self.driver.current_url}"
+        if self.stacktrace and len(self.stacktrace) > 0:
+            base += f"\nStacktrace: {''.join(self.stacktrace)}"
+        return base
 
 
-class ShadowstepElementException(WebDriverException):
-    """Raised when driver is not specified and cannot be located."""
-
-    def __init__(
-            self, msg: str | None = None, screen: str | None = None,
-            stacktrace: Sequence[str] | None = None,
-    ) -> None:
-        """Initialize the ShadowstepElementException.
-
-        Args:
-            msg: Error message.
-            screen: Screenshot data.
-            stacktrace: Stack trace information.
-
-        """
-        super().__init__(msg, screen, stacktrace)
-
-
-class ShadowstepLocatorConverterError(Exception):
+class ShadowstepLocatorConverterError(ShadowstepException):
     """Base exception for locator conversion errors."""
 
+    default_message = "ShadowstepLocatorConverterError occurred"
 
 
-class ShadowstepInvalidUiSelectorError(Exception):
+class ShadowstepResolvingLocatorError(ShadowstepLocatorConverterError):
+    """Raised when locator resolving is failed (used in shadowstep.element.dom)."""
+
+    default_message = "ShadowstepResolvingLocatorError occurred"
+
+
+class ShadowstepInvalidUiSelectorError(ShadowstepLocatorConverterError):
     """Raised when UiSelector string is malformed."""
 
+    default_message = "ShadowstepInvalidUiSelectorError occurred"
 
 
 class ShadowstepConversionError(ShadowstepLocatorConverterError):
     """Raised when conversion between formats fails."""
 
+    default_message = "ShadowstepConversionError occurred"
+
 
 class ShadowstepDictConversionError(ShadowstepConversionError):
     """Raised when dictionary conversion fails."""
 
-    def __init__(self, operation: str, details: str = "") -> None:
-        """Initialize with operation and optional details.
+    default_message = "ShadowstepConversionError occurred"
 
-        Args:
-            operation: The operation that failed
-            details: Additional error details
-
-        """
-        msg = f"Failed to convert dict to {operation}"
-        if details:
-            msg += f": {details}"
-        super().__init__(msg)
+    def _construct_message_from_context(self, **context_kwargs: Any) -> str:
+        """Construct message from context kwargs."""
+        operation = context_kwargs.get("operation", "conversion")
+        details = context_kwargs.get("details", "unknown error")
+        return f"Failed to convert dict to {operation}: {details}"
 
 
-class ShadowstepValidationError(ValueError):
+class ShadowstepValidationError(ShadowstepLocatorConverterError):
     """Raised when validation fails."""
 
-    def __init__(self, message: str) -> None:
-        """Initialize with validation message.
-
-        Args:
-            message: The validation error message
-
-        """
-        super().__init__(message)
+    default_message = "ShadowstepValidationError occurred"
 
 
 class ShadowstepSelectorTypeError(ShadowstepValidationError):
     """Raised when selector is not a dictionary."""
 
-    def __init__(self) -> None:
-        """Initialize with predefined message."""
-        super().__init__("Selector must be a dictionary")
+    default_message = "ShadowstepSelectorTypeError occurred"
+
+    def _construct_message_from_context(self, **context_kwargs: Any) -> str:  # noqa: ARG002
+        """Construct message from context kwargs."""
+        return "Selector must be a dictionary"
 
 
 class ShadowstepEmptySelectorError(ShadowstepValidationError):
     """Raised when selector dictionary is empty."""
 
-    def __init__(self) -> None:
-        """Initialize with predefined message."""
-        super().__init__("Selector dictionary cannot be empty")
+    default_message = "ShadowstepEmptySelectorError occurred"
+
+    def _construct_message_from_context(self, **context_kwargs: Any) -> str:  # noqa: ARG002
+        """Construct message from context kwargs."""
+        return "Selector dictionary cannot be empty"
 
 
 class ShadowstepConflictingTextAttributesError(ShadowstepValidationError):
     """Raised when conflicting text attributes are found."""
 
-    def __init__(self, attributes: list[str]) -> None:
-        """Initialize with conflicting attributes.
+    default_message = "ShadowstepConflictingTextAttributesError occurred"
 
-        Args:
-            attributes: List of conflicting attributes
-
-        """
-        super().__init__(f"Conflicting text attributes: {attributes}")
+    def _construct_message_from_context(self, **context_kwargs: Any) -> str:  # noqa: ARG002
+        """Construct message from context kwargs."""
+        return "Conflicting text attributes"
 
 
 class ShadowstepConflictingDescriptionAttributesError(ShadowstepValidationError):
     """Raised when conflicting description attributes are found."""
 
-    def __init__(self, attributes: list[str]) -> None:
-        """Initialize with conflicting attributes.
+    default_message = "ShadowstepConflictingDescriptionAttributesError occurred"
 
-        Args:
-            attributes: List of conflicting attributes
-
-        """
-        super().__init__(f"Conflicting description attributes: {attributes}")
+    def _construct_message_from_context(self, **context_kwargs: Any) -> str:  # noqa: ARG002
+        """Construct message from context kwargs."""
+        return "Conflicting description attributes"
 
 
 class ShadowstepHierarchicalAttributeError(ShadowstepValidationError):
     """Raised when hierarchical attribute has wrong type."""
 
-    def __init__(self, key: str) -> None:
-        """Initialize with attribute key.
+    default_message = "ShadowstepHierarchicalAttributeError occurred"
 
-        Args:
-            key: The hierarchical attribute key
-
-        """
-        super().__init__(f"Hierarchical attribute {key} must have dict value")
+    def _construct_message_from_context(self, **context_kwargs: Any) -> str:
+        """Construct message from context kwargs."""
+        key = context_kwargs.get("key", "attribute")
+        return f"Hierarchical attribute {key} must have dict value"
 
 
 class ShadowstepUnsupportedSelectorFormatError(ShadowstepConversionError):
     """Raised when selector format is not supported."""
 
-    def __init__(self, selector: str) -> None:
-        """Initialize with unsupported selector.
+    default_message = "ShadowstepUnsupportedSelectorFormatError occurred"
 
-        Args:
-            selector: The unsupported selector
-
-        """
-        super().__init__(f"Unsupported selector format: {selector}")
+    def _construct_message_from_context(self, **context_kwargs: Any) -> str:
+        """Construct message from context kwargs."""
+        selector = context_kwargs.get("selector", "unknown")
+        return f"Unsupported selector format: {selector}"
 
 
 class ShadowstepConversionFailedError(ShadowstepConversionError):
     """Raised when conversion fails with context."""
 
-    def __init__(self, function_name: str, selector: str, details: str) -> None:
-        """Initialize with conversion context.
+    default_message = "ShadowstepConversionFailedError occurred"
 
-        Args:
-            function_name: Name of the function that failed
-            selector: The selector being converted
-            details: Additional error details
-
-        """
-        super().__init__(f"{function_name} failed to convert selector: {selector}. {details}")
+    def _construct_message_from_context(self, **context_kwargs: Any) -> str:
+        """Construct message from context kwargs."""
+        function_name = context_kwargs.get("function_name", "Unknown")
+        selector = context_kwargs.get("selector", "unknown")
+        details = context_kwargs.get("details", "unknown error")
+        return f"{function_name} failed to convert selector: {selector}. {details}"
 
 
 class ShadowstepUnsupportedTupleFormatError(ShadowstepValidationError):
     """Raised when tuple format is not supported."""
 
-    def __init__(self, format_type: str) -> None:
-        """Initialize with unsupported format type.
+    default_message = "ShadowstepUnsupportedTupleFormatError occurred"
 
-        Args:
-            format_type: The unsupported format type
-
-        """
-        super().__init__(f"Unsupported tuple format: {format_type}")
+    def _construct_message_from_context(self, **context_kwargs: Any) -> str:
+        """Construct message from context kwargs."""
+        format_type = context_kwargs.get("format_type", "unknown")
+        return f"Unsupported tuple format: {format_type}"
 
 
 class ShadowstepEmptyXPathError(ShadowstepValidationError):
     """Raised when XPath string is empty."""
 
-    def __init__(self) -> None:
-        """Initialize with predefined message."""
-        super().__init__("XPath string cannot be empty")
+    default_message = "ShadowstepEmptyXPathError occurred"
+
+    def _construct_message_from_context(self, **context_kwargs: Any) -> str:  # noqa: ARG002
+        """Construct message from context kwargs."""
+        return "XPath string cannot be empty"
 
 
 class ShadowstepEmptySelectorStringError(ShadowstepValidationError):
     """Raised when selector string is empty."""
 
-    def __init__(self) -> None:
-        """Initialize with predefined message."""
-        super().__init__("Selector string cannot be empty")
+    default_message = "ShadowstepEmptySelectorStringError occurred"
+
+    def _construct_message_from_context(self, **context_kwargs: Any) -> str:  # noqa: ARG002
+        """Construct message from context kwargs."""
+        return "Selector string cannot be empty"
 
 
 class ShadowstepUnsupportedSelectorTypeError(ShadowstepValidationError):
     """Raised when selector type is not supported."""
 
-    def __init__(self, selector_type: str) -> None:
-        """Initialize with unsupported selector type.
+    default_message = "ShadowstepUnsupportedSelectorTypeError occurred"
 
-        Args:
-            selector_type: The unsupported selector type
-
-        """
-        super().__init__(f"Unsupported selector type: {selector_type}")
+    def _construct_message_from_context(self, **context_kwargs: Any) -> str:
+        """Construct message from context kwargs."""
+        selector_type = context_kwargs.get("selector_type", "unknown")
+        return f"Unsupported selector type: {selector_type}"
 
 
 class ShadowstepUiSelectorConversionError(ShadowstepConversionError):
     """Raised when UiSelector conversion fails."""
 
-    def __init__(self, operation: str, details: str = "") -> None:
-        """Initialize with operation and optional details.
+    default_message = "ShadowstepUiSelectorConversionError occurred"
 
-        Args:
-            operation: The operation that failed
-            details: Additional error details
-
-        """
-        msg = f"Failed to convert UiSelector to {operation}"
-        if details:
-            msg += f": {details}"
-        super().__init__(msg)
+    def _construct_message_from_context(self, **context_kwargs: Any) -> str:
+        """Construct message from context kwargs."""
+        operation = context_kwargs.get("operation", "conversion")
+        details = context_kwargs.get("details", "unknown error")
+        return f"Failed to convert UiSelector to {operation}: {details}"
 
 
 class ShadowstepInvalidUiSelectorStringError(ShadowstepInvalidUiSelectorError):
     """Raised when UiSelector string is invalid."""
 
-    def __init__(self, details: str = "") -> None:
-        """Initialize with error details.
+    default_message = "ShadowstepInvalidUiSelectorStringError occurred"
 
-        Args:
-            details: Additional error details
-
-        """
-        msg = "Invalid UiSelector string"
-        if details:
-            msg += f": {details}"
-        super().__init__(msg)
+    def _construct_message_from_context(self, **context_kwargs: Any) -> str:
+        """Construct message from context kwargs."""
+        details = context_kwargs.get("details", "unknown error")
+        return f"Invalid UiSelector string: {details}"
 
 
 class ShadowstepSelectorToXPathError(ShadowstepConversionError):
     """Raised when selector to XPath conversion fails."""
 
-    def __init__(self, details: str = "") -> None:
-        """Initialize with error details.
+    default_message = "ShadowstepSelectorToXPathError occurred"
 
-        Args:
-            details: Additional error details
-
-        """
-        msg = "Failed to convert selector to XPath"
-        if details:
-            msg += f": {details}"
-        super().__init__(msg)
+    def _construct_message_from_context(self, **context_kwargs: Any) -> str:
+        """Construct message from context kwargs."""
+        details = context_kwargs.get("details", "unknown error")
+        return f"Failed to convert selector to XPath: {details}"
 
 
 class ShadowstepMethodRequiresArgumentError(ShadowstepValidationError):
     """Raised when method requires an argument but none provided."""
 
-    def __init__(self, method_name: str) -> None:
-        """Initialize with method name.
+    default_message = "ShadowstepMethodRequiresArgumentError occurred"
 
-        Args:
-            method_name: The method that requires an argument
-
-        """
-        super().__init__(f"Method '{method_name}' requires an argument")
+    def _construct_message_from_context(self, **context_kwargs: Any) -> str:
+        """Construct message from context kwargs."""
+        method_name = context_kwargs.get("method_name", "method")
+        return f"Method '{method_name}' requires an argument"
 
 
 class ShadowstepConflictingMethodsError(ShadowstepValidationError):
     """Raised when conflicting methods are found."""
 
-    def __init__(self, existing: str, new_method: str, group_name: str) -> None:
-        """Initialize with conflicting methods.
+    default_message = "ShadowstepConflictingMethodsError occurred"
 
-        Args:
-            existing: The existing method
-            new_method: The new method
-            group_name: The group name
-
-        """
-        super().__init__(
-            f"Conflicting methods: '{existing}' and '{new_method}' "
-            f"belong to the same group '{group_name}'. "
-            f"Only one method per group is allowed.",
-        )
+    def _construct_message_from_context(self, **context_kwargs: Any) -> str:  # noqa: ARG002
+        """Construct message from context kwargs."""
+        return "Conflicting methods"
 
 
 class ShadowstepUnsupportedNestedSelectorError(ShadowstepConversionError):
     """Raised when nested selector type is not supported."""
 
-    def __init__(self, selector_type: str) -> None:
-        """Initialize with unsupported selector type.
+    default_message = "ShadowstepUnsupportedNestedSelectorError occurred"
 
-        Args:
-            selector_type: The unsupported selector type
-
-        """
-        super().__init__(f"Unsupported nested selector type: {selector_type}")
+    def _construct_message_from_context(self, **context_kwargs: Any) -> str:
+        """Construct message from context kwargs."""
+        selector_type = context_kwargs.get("selector_type", "unknown")
+        return f"Unsupported nested selector type: {selector_type}"
 
 
 class ShadowstepUiSelectorMethodArgumentError(ShadowstepConversionError):
     """Raised when UiSelector method has wrong number of arguments."""
 
-    def __init__(self, arg_count: int) -> None:
-        """Initialize with argument count.
+    default_message = "ShadowstepUiSelectorMethodArgumentError occurred"
 
-        Args:
-            arg_count: The number of arguments provided
-
-        """
-        super().__init__(f"UiSelector methods typically take 0-1 arguments, got {arg_count}")
+    def _construct_message_from_context(self, **context_kwargs: Any) -> str:
+        """Construct message from context kwargs."""
+        arg_count = context_kwargs.get("arg_count", 0)
+        return f"UiSelector methods typically take 0-1 arguments, got {arg_count}"
 
 
-class ShadowstepLexerError(Exception):
+class ShadowstepLexerError(ShadowstepConversionError):
     """Raised when lexical analysis encounters an error."""
 
-    def __init__(self, message: str) -> None:
-        """Initialize with error message.
+    default_message = "ShadowstepLexerError occurred"
 
-        Args:
-            message: The error message
-
-        """
-        super().__init__(message)
+    def _construct_message_from_context(self, **context_kwargs: Any) -> str:
+        """Construct message from context kwargs."""
+        return context_kwargs.get("message", "lexical error")
 
 
 class ShadowstepUnterminatedStringError(ShadowstepLexerError):
     """Raised when string is not properly terminated."""
 
-    def __init__(self, position: int) -> None:
-        """Initialize with position.
+    default_message = "ShadowstepUnterminatedStringError occurred"
 
-        Args:
-            position: The position where the string started
-
-        """
-        super().__init__(f"Unterminated string at {position}")
+    def _construct_message_from_context(self, **context_kwargs: Any) -> str:
+        """Construct message from context kwargs."""
+        position = context_kwargs.get("position", 0)
+        return f"Unterminated string at {position}"
 
 
 class ShadowstepBadEscapeError(ShadowstepLexerError):
     """Raised when escape sequence is invalid."""
 
-    def __init__(self, position: int) -> None:
-        """Initialize with position.
+    default_message = "ShadowstepBadEscapeError occurred"
 
-        Args:
-            position: The position of the bad escape
-
-        """
-        super().__init__(f"Bad escape at {position}")
+    def _construct_message_from_context(self, **context_kwargs: Any) -> str:
+        """Construct message from context kwargs."""
+        position = context_kwargs.get("position", 0)
+        return f"Bad escape at {position}"
 
 
 class ShadowstepUnexpectedCharError(ShadowstepLexerError):
     """Raised when unexpected character is encountered."""
 
-    def __init__(self, char: str, position: int) -> None:
-        """Initialize with character and position.
+    default_message = "ShadowstepUnexpectedCharError occurred"
 
-        Args:
-            char: The unexpected character
-            position: The position of the character
-
-        """
-        super().__init__(f"Unexpected char {char!r} at {position}")
+    def _construct_message_from_context(self, **context_kwargs: Any) -> str:
+        """Construct message from context kwargs."""
+        char = context_kwargs.get("char", "?")
+        position = context_kwargs.get("position", 0)
+        return f"Unexpected char '{char}' at {position}"
 
 
-class ShadowstepParserError(Exception):
+class ShadowstepParserError(ShadowstepException):
     """Raised when parsing encounters an error."""
 
-    def __init__(self, message: str) -> None:
-        """Initialize with error message.
+    default_message = "ShadowstepParserError occurred"
 
-        Args:
-            message: The error message
-
-        """
-        super().__init__(message)
+    def _construct_message_from_context(self, **context_kwargs: Any) -> str:
+        """Construct message from context kwargs."""
+        return context_kwargs.get("message", "parse error")
 
 
 class ShadowstepExpectedTokenError(ShadowstepParserError):
     """Raised when expected token is not found."""
 
-    def __init__(self, expected: str, got: str, position: int) -> None:
-        """Initialize with expected and got tokens.
+    default_message = "ShadowstepExpectedTokenError occurred"
 
-        Args:
-            expected: The expected token type
-            got: The actual token type
-            position: The position of the token
-
-        """
-        super().__init__(f"Expected {expected}, got {got} at {position}")
+    def _construct_message_from_context(self, **context_kwargs: Any) -> str:
+        """Construct message from context kwargs."""
+        expected = context_kwargs.get("expected", "TOKEN")
+        got = context_kwargs.get("got", "UNKNOWN")
+        position = context_kwargs.get("position", 0)
+        return f"Expected {expected}, got {got} at {position}"
 
 
 class ShadowstepUnexpectedTokenError(ShadowstepParserError):
     """Raised when unexpected token is encountered."""
 
-    def __init__(self, token_type: str, position: int) -> None:
-        """Initialize with token type and position.
+    default_message = "ShadowstepUnexpectedTokenError occurred"
 
-        Args:
-            token_type: The unexpected token type
-            position: The position of the token
-
-        """
-        super().__init__(f"Unexpected token in arg: {token_type} at {position}")
+    def _construct_message_from_context(self, **context_kwargs: Any) -> str:
+        """Construct message from context kwargs."""
+        token_type = context_kwargs.get("token_type", "UNKNOWN")
+        position = context_kwargs.get("position", 0)
+        return f"Unexpected token in arg: {token_type} at {position}"
 
 
 class ShadowstepXPathConversionError(ShadowstepConversionError):
     """Raised when XPath conversion fails."""
 
-    def __init__(self, message: str) -> None:
-        """Initialize with error message.
+    default_message = "ShadowstepXPathConversionError occurred"
 
-        Args:
-            message: The error message
-
-        """
-        super().__init__(message)
+    def _construct_message_from_context(self, **context_kwargs: Any) -> str:
+        """Construct message from context kwargs."""
+        return context_kwargs.get("message", "xpath error")
 
 
 class ShadowstepBooleanLiteralError(ShadowstepXPathConversionError):
     """Raised when boolean literal is invalid."""
 
-    def __init__(self, value: str | float | bool) -> None:  # noqa: FBT001
-        """Initialize with invalid value.
+    default_message = "ShadowstepBooleanLiteralError occurred"
 
-        Args:
-            value: The invalid value
-
-        """
-        super().__init__(f"Expected boolean literal, got: {value!r}")
+    def _construct_message_from_context(self, **context_kwargs: Any) -> str:
+        """Construct message from context kwargs."""
+        value = context_kwargs.get("value", "unknown")
+        return f"Expected boolean literal, got: '{value}'"
 
 
 class ShadowstepNumericLiteralError(ShadowstepXPathConversionError):
     """Raised when numeric literal is invalid."""
 
-    def __init__(self, value: str | float | bool) -> None:  # noqa: FBT001
-        """Initialize with invalid value.
+    default_message = "ShadowstepNumericLiteralError occurred"
 
-        Args:
-            value: The invalid value
-
-        """
-        super().__init__(f"Expected numeric literal, got: {value!r}")
+    def _construct_message_from_context(self, **context_kwargs: Any) -> str:
+        """Construct message from context kwargs."""
+        value = context_kwargs.get("value", "unknown")
+        return f"Expected numeric literal, got: '{value}'"
 
 
 class ShadowstepLogicalOperatorsNotSupportedError(ShadowstepXPathConversionError):
     """Raised when logical operators are not supported."""
 
-    def __init__(self) -> None:
-        """Initialize with predefined message."""
-        super().__init__("Logical operators (and/or) are not supported")
+    default_message = "ShadowstepLogicalOperatorsNotSupportedError occurred"
+
+    def _construct_message_from_context(self, **context_kwargs: Any) -> str:  # noqa: ARG002
+        """Construct message from context kwargs."""
+        return "Logical operators (and/or) are not supported"
 
 
 class ShadowstepInvalidXPathError(ShadowstepXPathConversionError):
     """Raised when XPath is invalid."""
 
-    def __init__(self, details: str = "") -> None:
-        """Initialize with error details.
+    default_message = "ShadowstepInvalidXPathError occurred"
 
-        Args:
-            details: Additional error details
-
-        """
-        msg = "Invalid XPath"
-        if details:
-            msg += f": {details}"
-        super().__init__(msg)
+    def _construct_message_from_context(self, **context_kwargs: Any) -> str:
+        """Construct message from context kwargs."""
+        details = context_kwargs.get("details", "unknown error")
+        return f"Invalid XPath: {details}"
 
 
 class ShadowstepUnsupportedAbbreviatedStepError(ShadowstepXPathConversionError):
     """Raised when abbreviated step is not supported."""
 
-    def __init__(self, step: str) -> None:
-        """Initialize with unsupported step.
+    default_message = "ShadowstepUnsupportedAbbreviatedStepError occurred"
 
-        Args:
-            step: The unsupported step
-
-        """
-        super().__init__(f"Unsupported abbreviated step in UiSelector: {step!r}")
+    def _construct_message_from_context(self, **context_kwargs: Any) -> str:
+        """Construct message from context kwargs."""
+        step = context_kwargs.get("step", "unknown")
+        return f"Unsupported abbreviated step in UiSelector: '{step}'"
 
 
 class ShadowstepUnsupportedASTNodeError(ShadowstepXPathConversionError):
     """Raised when AST node is not supported."""
 
-    def __init__(self, node: object) -> None:
-        """Initialize with unsupported node.
+    default_message = "ShadowstepUnsupportedASTNodeError occurred"
 
-        Args:
-            node: The unsupported node
-
-        """
-        super().__init__(f"Unsupported AST node in UiSelector: {node!r}")
+    def _construct_message_from_context(self, **context_kwargs: Any) -> str:
+        """Construct message from context kwargs."""
+        node = context_kwargs.get("node", {})
+        return f"Unsupported AST node in UiSelector: {node}"
 
 
 class ShadowstepUnsupportedASTNodeBuildError(ShadowstepXPathConversionError):
     """Raised when AST node is not supported in build."""
 
-    def __init__(self, node: object) -> None:
-        """Initialize with unsupported node.
+    default_message = "ShadowstepUnsupportedASTNodeBuildError occurred"
 
-        Args:
-            node: The unsupported node
-
-        """
-        super().__init__(f"Unsupported AST node in build: {node!r}")
+    def _construct_message_from_context(self, **context_kwargs: Any) -> str:
+        """Construct message from context kwargs."""
+        node = context_kwargs.get("node", "unknown")
+        return f"Unsupported AST node in build: '{node}'"
 
 
 class ShadowstepContainsNotSupportedError(ShadowstepXPathConversionError):
     """Raised when contains() is not supported for attribute."""
 
-    def __init__(self, attr: str) -> None:
-        """Initialize with attribute.
+    default_message = "ShadowstepContainsNotSupportedError occurred"
 
-        Args:
-            attr: The attribute name
-
-        """
-        super().__init__(f"contains() is not supported for @{attr}")
+    def _construct_message_from_context(self, **context_kwargs: Any) -> str:
+        """Construct message from context kwargs."""
+        attr = context_kwargs.get("attr", "attribute")
+        return f"contains() is not supported for @{attr}"
 
 
 class ShadowstepStartsWithNotSupportedError(ShadowstepXPathConversionError):
     """Raised when starts-with() is not supported for attribute."""
 
-    def __init__(self, attr: str) -> None:
-        """Initialize with attribute.
+    default_message = "ShadowstepStartsWithNotSupportedError occurred"
 
-        Args:
-            attr: The attribute name
-
-        """
-        super().__init__(f"starts-with() is not supported for @{attr}")
+    def _construct_message_from_context(self, **context_kwargs: Any) -> str:
+        """Construct message from context kwargs."""
+        attr = context_kwargs.get("attr", "attribute")
+        return f"starts-with() is not supported for @{attr}"
 
 
 class ShadowstepMatchesNotSupportedError(ShadowstepXPathConversionError):
     """Raised when matches() is not supported for attribute."""
 
-    def __init__(self, attr: str) -> None:
-        """Initialize with attribute.
+    default_message = "ShadowstepMatchesNotSupportedError occurred"
 
-        Args:
-            attr: The attribute name
-
-        """
-        super().__init__(f"matches() is not supported for @{attr}")
+    def _construct_message_from_context(self, **context_kwargs: Any) -> str:
+        """Construct message from context kwargs."""
+        attr = context_kwargs.get("attr", "attribute")
+        return f"matches() is not supported for @{attr}"
 
 
 class ShadowstepUnsupportedFunctionError(ShadowstepXPathConversionError):
     """Raised when function is not supported."""
 
-    def __init__(self, func_name: str) -> None:
-        """Initialize with function name.
+    default_message = "ShadowstepUnsupportedFunctionError occurred"
 
-        Args:
-            func_name: The function name
-
-        """
-        super().__init__(f"Unsupported function: {func_name}")
+    def _construct_message_from_context(self, **context_kwargs: Any) -> str:
+        """Construct message from context kwargs."""
+        func_name = context_kwargs.get("func_name", "unknown")
+        return f"Unsupported function: {func_name}"
 
 
 class ShadowstepUnsupportedComparisonOperatorError(ShadowstepXPathConversionError):
     """Raised when comparison operator is not supported."""
 
-    def __init__(self, operator: str) -> None:
-        """Initialize with operator.
+    default_message = "ShadowstepUnsupportedComparisonOperatorError occurred"
 
-        Args:
-            operator: The operator
-
-        """
-        super().__init__(f"Unsupported comparison operator: {operator}")
+    def _construct_message_from_context(self, **context_kwargs: Any) -> str:
+        """Construct message from context kwargs."""
+        operator = context_kwargs.get("operator", "unknown")
+        return f"Unsupported comparison operator: {operator}"
 
 
 class ShadowstepUnsupportedAttributeError(ShadowstepXPathConversionError):
     """Raised when attribute is not supported."""
 
-    def __init__(self, attr: str) -> None:
-        """Initialize with attribute.
+    default_message = "ShadowstepUnsupportedAttributeError occurred"
 
-        Args:
-            attr: The attribute name
-
-        """
-        super().__init__(f"Unsupported attribute: @{attr}")
+    def _construct_message_from_context(self, **context_kwargs: Any) -> str:
+        """Construct message from context kwargs."""
+        attr = context_kwargs.get("attr", "unknown")
+        return f"Unsupported attribute: @{attr}"
 
 
 class ShadowstepAttributePresenceNotSupportedError(ShadowstepXPathConversionError):
     """Raised when attribute presence predicate is not supported."""
 
-    def __init__(self, attr: str) -> None:
-        """Initialize with attribute.
+    default_message = "ShadowstepAttributePresenceNotSupportedError occurred"
 
-        Args:
-            attr: The attribute name
-
-        """
-        super().__init__(f"Attribute presence predicate not supported for @{attr}")
+    def _construct_message_from_context(self, **context_kwargs: Any) -> str:
+        """Construct message from context kwargs."""
+        attr = context_kwargs.get("attr", "unknown")
+        return f"Attribute presence predicate not supported for @{attr}"
 
 
 class ShadowstepUnsupportedPredicateError(ShadowstepXPathConversionError):
     """Raised when predicate is not supported."""
 
-    def __init__(self, predicate: object) -> None:
-        """Initialize with predicate.
+    default_message = "ShadowstepUnsupportedPredicateError occurred"
 
-        Args:
-            predicate: The predicate
-
-        """
-        super().__init__(f"Unsupported predicate: {predicate!r}")
+    def _construct_message_from_context(self, **context_kwargs: Any) -> str:
+        """Construct message from context kwargs."""
+        predicate = context_kwargs.get("predicate", "unknown")
+        return f"Unsupported predicate: '{predicate}'"
 
 
 class ShadowstepUnsupportedAttributeExpressionError(ShadowstepXPathConversionError):
     """Raised when attribute expression is not supported."""
 
-    def __init__(self, node: object) -> None:
-        """Initialize with node.
+    default_message = "ShadowstepUnsupportedAttributeExpressionError occurred"
 
-        Args:
-            node: The node
-
-        """
-        super().__init__(f"Unsupported attribute expression: {node!r}")
+    def _construct_message_from_context(self, **context_kwargs: Any) -> str:
+        """Construct message from context kwargs."""
+        node = context_kwargs.get("node", "unknown")
+        return f"Unsupported attribute expression: '{node}'"
 
 
 class ShadowstepUnsupportedLiteralError(ShadowstepXPathConversionError):
     """Raised when literal is not supported."""
 
-    def __init__(self, node: object) -> None:
-        """Initialize with node.
+    default_message = "ShadowstepUnsupportedLiteralError occurred"
 
-        Args:
-            node: The node
-
-        """
-        super().__init__(f"Unsupported literal: {node!r}")
+    def _construct_message_from_context(self, **context_kwargs: Any) -> str:
+        """Construct message from context kwargs."""
+        node = context_kwargs.get("node", "unknown")
+        return f"Unsupported literal: '{node}'"
 
 
 class ShadowstepUnbalancedUiSelectorError(ShadowstepXPathConversionError):
     """Raised when UiSelector string is unbalanced."""
 
-    def __init__(self, selector: str) -> None:
-        """Initialize with selector.
+    default_message = "ShadowstepUnbalancedUiSelectorError occurred"
 
-        Args:
-            selector: The selector string
-
-        """
-        super().__init__(f"Unbalanced UiSelector string: too many '(' in {selector}")
+    def _construct_message_from_context(self, **context_kwargs: Any) -> str:
+        """Construct message from context kwargs."""
+        selector = context_kwargs.get("selector", "unknown")
+        return f"Unbalanced UiSelector string: too many '(' in {selector}"
 
 
 class ShadowstepEqualityComparisonError(ShadowstepXPathConversionError):
     """Raised when equality comparison is invalid."""
 
-    def __init__(self) -> None:
-        """Initialize with predefined message."""
-        super().__init__("Equality must compare @attribute or text() with a literal")
+    default_message = "ShadowstepEqualityComparisonError occurred"
+
+    def _construct_message_from_context(self, **context_kwargs: Any) -> str:  # noqa: ARG002
+        """Construct message from context kwargs."""
+        return "Equality must compare @attribute or text() with a literal"
 
 
 class ShadowstepFunctionArgumentCountError(ShadowstepXPathConversionError):
     """Raised when function has wrong number of arguments."""
 
-    def __init__(self, func_name: str, arg_count: int) -> None:
-        """Initialize with function name and argument count.
+    default_message = "ShadowstepFunctionArgumentCountError occurred"
 
-        Args:
-            func_name: The function name
-            arg_count: The number of arguments
-
-        """
-        super().__init__(f"{func_name}() must have {arg_count} arguments")
+    def _construct_message_from_context(self, **context_kwargs: Any) -> str:
+        """Construct message from context kwargs."""
+        func_name = context_kwargs.get("func_name", "function")
+        arg_count = context_kwargs.get("arg_count", 0)
+        return f"{func_name}() must have {arg_count} arguments"
 
 
 class ShadowstepUnsupportedAttributeForUiSelectorError(ShadowstepValidationError):
     """Raised when attribute is not supported for UiSelector conversion."""
 
-    def __init__(self, attr: str) -> None:
-        """Initialize with attribute.
+    default_message = "ShadowstepUnsupportedAttributeForUiSelectorError occurred"
 
-        Args:
-            attr: The unsupported attribute
-
-        """
-        super().__init__(f"Unsupported attribute for UiSelector conversion: {attr}")
+    def _construct_message_from_context(self, **context_kwargs: Any) -> str:
+        """Construct message from context kwargs."""
+        attr = context_kwargs.get("attr", "unknown")
+        return f"Unsupported attribute for UiSelector conversion: {attr}"
 
 
 class ShadowstepUnsupportedHierarchicalAttributeError(ShadowstepValidationError):
     """Raised when hierarchical attribute is not supported."""
 
-    def __init__(self, attr: str) -> None:
-        """Initialize with attribute.
+    default_message = "ShadowstepUnsupportedHierarchicalAttributeError occurred"
 
-        Args:
-            attr: The unsupported hierarchical attribute
-
-        """
-        super().__init__(f"Unsupported hierarchical attribute: {attr}")
+    def _construct_message_from_context(self, **context_kwargs: Any) -> str:
+        """Construct message from context kwargs."""
+        attr = context_kwargs.get("attr", "unknown")
+        return f"Unsupported hierarchical attribute: {attr}"
 
 
 class ShadowstepUnsupportedAttributeForXPathError(ShadowstepValidationError):
     """Raised when attribute is not supported for XPath conversion."""
 
-    def __init__(self, attr: str) -> None:
-        """Initialize with attribute.
+    default_message = "ShadowstepUnsupportedAttributeForXPathError occurred"
 
-        Args:
-            attr: The unsupported attribute
-
-        """
-        super().__init__(f"Unsupported attribute for XPath conversion: {attr}")
+    def _construct_message_from_context(self, **context_kwargs: Any) -> str:
+        """Construct message from context kwargs."""
+        attr = context_kwargs.get("attr", "unknown")
+        return f"Unsupported attribute for XPath conversion: {attr}"
 
 
 class ShadowstepUnsupportedUiSelectorMethodError(ShadowstepValidationError):
     """Raised when UiSelector method is not supported."""
 
-    def __init__(self, method: str) -> None:
-        """Initialize with method.
+    default_message = "ShadowstepUnsupportedUiSelectorMethodError occurred"
 
-        Args:
-            method: The unsupported method
-
-        """
-        super().__init__(f"Unsupported UiSelector method: {method}")
+    def _construct_message_from_context(self, **context_kwargs: Any) -> str:
+        """Construct message from context kwargs."""
+        method = context_kwargs.get("method", "unknown")
+        return f"Unsupported UiSelector method: {method}"
 
 
 class ShadowstepUnsupportedXPathAttributeError(ShadowstepValidationError):
     """Raised when XPath attribute is not supported."""
 
-    def __init__(self, method: str) -> None:
-        """Initialize with method.
+    default_message = "ShadowstepUnsupportedXPathAttributeError occurred"
 
-        Args:
-            method: The unsupported XPath attribute
-
-        """
-        super().__init__(f"Unsupported XPath attribute: {method}")
+    def _construct_message_from_context(self, **context_kwargs: Any) -> str:
+        """Construct message from context kwargs."""
+        method = context_kwargs.get("method", "unknown")
+        return f"Unsupported XPath attribute: {method}"
 
 
 class ShadowstepInvalidUiSelectorStringFormatError(ShadowstepValidationError):
     """Raised when UiSelector string format is invalid."""
 
-    def __init__(self) -> None:
-        """Initialize with predefined message."""
-        super().__init__("Invalid UiSelector string format")
+    default_message = "ShadowstepInvalidUiSelectorStringFormatError occurred"
+
+    def _construct_message_from_context(self, **context_kwargs: Any) -> str:  # noqa: ARG002
+        """Construct message from context kwargs."""
+        return "Invalid UiSelector string format"
 
 
-class ShadowstepLogcatError(Exception):
+class ShadowstepLogcatError(ShadowstepException):
     """Raised when logcat operation fails."""
 
-    def __init__(self, message: str) -> None:
-        """Initialize with error message.
+    default_message = "ShadowstepLogcatError occurred"
 
-        Args:
-            message: The error message
-
-        """
-        super().__init__(message)
+    def _construct_message_from_context(self, **context_kwargs: Any) -> str:
+        """Construct message from context kwargs."""
+        return context_kwargs.get("message", "logcat error")
 
 
 class ShadowstepPollIntervalError(ShadowstepLogcatError):
     """Raised when poll interval is invalid."""
 
-    def __init__(self) -> None:
-        """Initialize with predefined message."""
-        super().__init__("poll_interval must be non-negative")
+    default_message = "ShadowstepPollIntervalError occurred"
+
+    def _construct_message_from_context(self, **context_kwargs: Any) -> str:  # noqa: ARG002
+        """Construct message from context kwargs."""
+        return "poll_interval must be non-negative"
 
 
 class ShadowstepEmptyFilenameError(ShadowstepLogcatError):
     """Raised when filename is empty."""
 
-    def __init__(self) -> None:
-        """Initialize with predefined message."""
-        super().__init__("filename cannot be empty")
+    default_message = "ShadowstepEmptyFilenameError occurred"
+
+    def _construct_message_from_context(self, **context_kwargs: Any) -> str:  # noqa: ARG002
+        """Construct message from context kwargs."""
+        return "filename cannot be empty"
 
 
 class ShadowstepLogcatConnectionError(ShadowstepLogcatError):
     """Raised when logcat WebSocket connection fails."""
 
-    def __init__(self) -> None:
-        """Initialize with predefined message."""
-        super().__init__("Cannot connect to any logcat WS endpoint")
+    default_message = "ShadowstepLogcatConnectionError occurred"
+
+    def _construct_message_from_context(self, **context_kwargs: Any) -> str:  # noqa: ARG002
+        """Construct message from context kwargs."""
+        return "Cannot connect to any logcat WS endpoint"
 
 
-class ShadowstepNavigatorError(Exception):
+class ShadowstepNavigatorError(ShadowstepException):
     """Raised when navigation operation fails."""
 
-    def __init__(self, message: str) -> None:
-        """Initialize with error message.
+    default_message = "ShadowstepNavigatorError occurred"
 
-        Args:
-            message: The error message
-
-        """
-        super().__init__(message)
+    def _construct_message_from_context(self, **context_kwargs: Any) -> str:
+        """Construct message from context kwargs."""
+        return context_kwargs.get("message", "navigation error")
 
 
 class ShadowstepPageCannotBeNoneError(ShadowstepNavigatorError):
     """Raised when page is None."""
 
-    def __init__(self) -> None:
-        """Initialize with predefined message."""
-        super().__init__("page cannot be None")
+    default_message = "ShadowstepPageCannotBeNoneError occurred"
+
+    def _construct_message_from_context(self, **context_kwargs: Any) -> str:  # noqa: ARG002
+        """Construct message from context kwargs."""
+        return "page cannot be None"
 
 
 class ShadowstepFromPageCannotBeNoneError(ShadowstepNavigatorError):
     """Raised when from_page is None."""
 
-    def __init__(self) -> None:
-        """Initialize with predefined message."""
-        super().__init__("from_page cannot be None")
+    default_message = "ShadowstepFromPageCannotBeNoneError occurred"
+
+    def _construct_message_from_context(self, **context_kwargs: Any) -> str:  # noqa: ARG002
+        """Construct message from context kwargs."""
+        return "from_page cannot be None"
 
 
 class ShadowstepToPageCannotBeNoneError(ShadowstepNavigatorError):
     """Raised when to_page is None."""
 
-    def __init__(self) -> None:
-        """Initialize with predefined message."""
-        super().__init__("to_page cannot be None")
+    default_message = "ShadowstepToPageCannotBeNoneError occurred"
+
+    def _construct_message_from_context(self, **context_kwargs: Any) -> str:  # noqa: ARG002
+        """Construct message from context kwargs."""
+        return "to_page cannot be None"
 
 
 class ShadowstepTimeoutMustBeNonNegativeError(ShadowstepNavigatorError):
     """Raised when timeout is negative."""
 
-    def __init__(self) -> None:
-        """Initialize with predefined message."""
-        super().__init__("timeout must be non-negative")
+    default_message = "ShadowstepTimeoutMustBeNonNegativeError occurred"
+
+    def _construct_message_from_context(self, **context_kwargs: Any) -> str:  # noqa: ARG002
+        """Construct message from context kwargs."""
+        return "timeout must be non-negative"
 
 
 class ShadowstepPathCannotBeEmptyError(ShadowstepNavigatorError):
     """Raised when path is empty."""
 
-    def __init__(self) -> None:
-        """Initialize with predefined message."""
-        super().__init__("path cannot be empty")
+    default_message = "ShadowstepPathCannotBeEmptyError occurred"
+
+    def _construct_message_from_context(self, **context_kwargs: Any) -> str:  # noqa: ARG002
+        """Construct message from context kwargs."""
+        return "path cannot be empty"
 
 
 class ShadowstepPathMustContainAtLeastTwoPagesError(ShadowstepNavigatorError):
     """Raised when path has less than 2 pages."""
 
-    def __init__(self) -> None:
-        """Initialize with predefined message."""
-        super().__init__("path must contain at least 2 pages for dom")
+    default_message = "ShadowstepPathMustContainAtLeastTwoPagesError occurred"
+
+    def _construct_message_from_context(self, **context_kwargs: Any) -> str:  # noqa: ARG002
+        """Construct message from context kwargs."""
+        return "path must contain at least 2 pages for dom"
 
 
 class ShadowstepNavigationFailedError(ShadowstepNavigatorError):
     """Raised when navigation fails."""
 
-    def __init__(self, from_page: str, to_page: str, method: str) -> None:
-        """Initialize with navigation context.
+    default_message = "ShadowstepNavigationFailedError occurred"
 
-        Args:
-            from_page: The source page
-            to_page: The target page
-            method: The transition method
-
-        """
-        super().__init__(
-            f"Navigation error: failed to navigate from {from_page} to {to_page} "
-            f"using method {method}",
-        )
+    def _construct_message_from_context(self, **context_kwargs: Any) -> str:
+        """Construct message from context kwargs."""
+        from_page = context_kwargs.get("from_page", "unknown")
+        to_page = context_kwargs.get("to_page", "unknown")
+        method = context_kwargs.get("method", "unknown")
+        return f"Navigation error: failed to navigate from {from_page} to {to_page} using method {method}"
 
 
-class ShadowstepPageObjectError(Exception):
+class ShadowstepPageObjectError(ShadowstepException):
     """Raised when page object operation fails."""
 
-    def __init__(self, message: str) -> None:
-        """Initialize with error message.
+    default_message = "ShadowstepPageObjectError occurred"
 
-        Args:
-            message: The error message
-
-        """
-        super().__init__(message)
+    def _construct_message_from_context(self, **context_kwargs: Any) -> str:
+        """Construct message from context kwargs."""
+        return context_kwargs.get("message", "page object error")
 
 
 class ShadowstepUnsupportedRendererTypeError(ShadowstepPageObjectError):
     """Raised when renderer type is not supported."""
 
-    def __init__(self, renderer_type: str) -> None:
-        """Initialize with renderer type.
+    default_message = "ShadowstepUnsupportedRendererTypeError occurred"
 
-        Args:
-            renderer_type: The unsupported renderer type
-
-        """
-        super().__init__(f"Unsupported renderer type: {renderer_type}")
+    def _construct_message_from_context(self, **context_kwargs: Any) -> str:
+        """Construct message from context kwargs."""
+        renderer_type = context_kwargs.get("renderer_type", "unknown")
+        return f"Unsupported renderer type: {renderer_type}"
 
 
 class ShadowstepTitleNotFoundError(ShadowstepPageObjectError):
     """Raised when title is not found."""
 
-    def __init__(self) -> None:
-        """Initialize with predefined message."""
-        super().__init__("Can't find title")
+    default_message = "ShadowstepTitleNotFoundError occurred"
+
+    def _construct_message_from_context(self, **context_kwargs: Any) -> str:  # noqa: ARG002
+        """Construct message from context kwargs."""
+        return "Can't find title"
 
 
 class ShadowstepNameCannotBeEmptyError(ShadowstepPageObjectError):
     """Raised when name is empty."""
 
-    def __init__(self) -> None:
-        """Initialize with predefined message."""
-        super().__init__("Name cannot be empty")
+    default_message = "ShadowstepNameCannotBeEmptyError occurred"
+
+    def _construct_message_from_context(self, **context_kwargs: Any) -> str:  # noqa: ARG002
+        """Construct message from context kwargs."""
+        return "Name cannot be empty"
 
 
 class ShadowstepPageClassNameCannotBeEmptyError(ShadowstepPageObjectError):
     """Raised when page class name is empty."""
 
-    def __init__(self) -> None:
-        """Initialize with predefined message."""
-        super().__init__("page_class_name cannot be empty")
+    default_message = "ShadowstepPageClassNameCannotBeEmptyError occurred"
+
+    def _construct_message_from_context(self, **context_kwargs: Any) -> str:  # noqa: ARG002
+        """Construct message from context kwargs."""
+        return "page_class_name cannot be empty"
 
 
 class ShadowstepTitleNodeNoUsableNameError(ShadowstepPageObjectError):
     """Raised when title node has no usable name."""
 
-    def __init__(self) -> None:
-        """Initialize with predefined message."""
-        super().__init__("Title node does not contain usable name")
+    default_message = "ShadowstepTitleNodeNoUsableNameError occurred"
+
+    def _construct_message_from_context(self, **context_kwargs: Any) -> str:  # noqa: ARG002
+        """Construct message from context kwargs."""
+        return "Title node does not contain usable name"
 
 
 class ShadowstepFailedToNormalizeScreenNameError(ShadowstepPageObjectError):
     """Raised when screen name normalization fails."""
 
-    def __init__(self, text: str) -> None:
-        """Initialize with text.
+    default_message = "ShadowstepFailedToNormalizeScreenNameError occurred"
 
-        Args:
-            text: The text that failed to normalize
-
-        """
-        super().__init__(f"Failed to normalize screen name from '{text}'")
+    def _construct_message_from_context(self, **context_kwargs: Any) -> str:
+        """Construct message from context kwargs."""
+        text = context_kwargs.get("text", "unknown")
+        return f"Failed to normalize screen name from '{text}'"
 
 
 class ShadowstepNoClassDefinitionFoundError(ShadowstepPageObjectError):
     """Raised when no class definition is found."""
 
-    def __init__(self) -> None:
-        """Initialize with predefined message."""
-        super().__init__("No class definition found in the given source.")
+    default_message = "ShadowstepNoClassDefinitionFoundError occurred"
+
+    def _construct_message_from_context(self, **context_kwargs: Any) -> str:  # noqa: ARG002
+        """Construct message from context kwargs."""
+        return "No class definition found in the given source."
 
 
 class ShadowstepRootNodeFilteredOutError(ShadowstepPageObjectError):
     """Raised when root node is filtered out."""
 
-    def __init__(self) -> None:
-        """Initialize with predefined message."""
-        super().__init__("Root node was filtered out and has no valid children.")
+    default_message = "ShadowstepRootNodeFilteredOutError occurred"
+
+    def _construct_message_from_context(self, **context_kwargs: Any) -> str:  # noqa: ARG002
+        """Construct message from context kwargs."""
+        return "Root node was filtered out and has no valid children."
 
 
 class ShadowstepTerminalNotInitializedError(ShadowstepPageObjectError):
     """Raised when terminal is not initialized."""
 
-    def __init__(self) -> None:
-        """Initialize with predefined message."""
-        super().__init__("Terminal is not initialized")
+    default_message = "ShadowstepTerminalNotInitializedError occurred"
+
+    def _construct_message_from_context(self, **context_kwargs: Any) -> str:  # noqa: ARG002
+        """Construct message from context kwargs."""
+        return "Terminal is not initialized"
 
 
 class ShadowstepNoClassDefinitionFoundInTreeError(ShadowstepPageObjectError):
     """Raised when no class definition is found in AST tree."""
 
-    def __init__(self) -> None:
-        """Initialize with predefined message."""
-        super().__init__("No class definition found")
+    default_message = "ShadowstepNoClassDefinitionFoundInTreeError occurred"
+
+    def _construct_message_from_context(self, **context_kwargs: Any) -> str:  # noqa: ARG002
+        """Construct message from context kwargs."""
+        return "No class definition found"
 
 
-class ShadowstepTranslatorError(Exception):
+class ShadowstepTranslatorError(ShadowstepException):
     """Raised when translation operation fails."""
 
-    def __init__(self, message: str) -> None:
-        """Initialize with error message.
+    default_message = "ShadowstepTranslatorError occurred"
 
-        Args:
-            message: The error message
-
-        """
-        super().__init__(message)
+    def _construct_message_from_context(self, **context_kwargs: Any) -> str:
+        """Construct message from context kwargs."""
+        return context_kwargs.get("message", "translation error")
 
 
 class ShadowstepMissingYandexTokenError(ShadowstepTranslatorError):
     """Raised when Yandex token is missing."""
 
-    def __init__(self) -> None:
-        """Initialize with predefined message."""
-        super().__init__("Missing yandexPassportOauthToken environment variable")
+    default_message = "ShadowstepMissingYandexTokenError occurred"
+
+    def _construct_message_from_context(self, **context_kwargs: Any) -> str:  # noqa: ARG002
+        """Construct message from context kwargs."""
+        return "Missing yandexPassportOauthToken environment variable"
 
 
 class ShadowstepTranslationFailedError(ShadowstepTranslatorError):
     """Raised when translation fails."""
 
-    def __init__(self) -> None:
-        """Initialize with predefined message."""
-        super().__init__("Translation failed: empty response")
+    default_message = "ShadowstepTranslationFailedError occurred"
+
+    def _construct_message_from_context(self, **context_kwargs: Any) -> str:  # noqa: ARG002
+        """Construct message from context kwargs."""
+        return "Translation failed: empty response"
 
 
+class ShadowstepImageException(ShadowstepException):
+    """Base class for all ShadowstepImage exceptions."""
 
-class ShadowstepResolvingLocatorError(Exception):
-    """Raised when locator resolving is failed (used in shadowstep.element.dom)."""
+    default_message = "ShadowstepImageException occurred"
 
 
+class ShadowstepImageNotFoundError(ShadowstepImageException):
+    """Raised when image is not found on screen."""
+
+    default_message = "ShadowstepImageNotFoundError occurred"
+
+    def _construct_message_from_context(self, **context_kwargs: Any) -> str:
+        """Construct message from context kwargs."""
+        threshold = context_kwargs.get("threshold", "unknown")
+        timeout = context_kwargs.get("timeout", "unknown")
+        operation = context_kwargs.get("operation", "visibility check")
+        return f"Image not found during {operation} (threshold={threshold}, timeout={timeout}s)"
+
+
+class ShadowstepImageLoadError(ShadowstepImageException):
+    """Raised when image fails to load from file."""
+
+    default_message = "ShadowstepImageLoadError occurred"
+
+    def _construct_message_from_context(self, **context_kwargs: Any) -> str:
+        """Construct message from context kwargs."""
+        path = context_kwargs.get("path", "unknown")
+        return f"Failed to load image from path: {path}"
+
+
+class ShadowstepUnsupportedImageTypeError(ShadowstepImageException):
+    """Raised when image type is not supported."""
+
+    default_message = "ShadowstepUnsupportedImageTypeError occurred"
+
+    def _construct_message_from_context(self, **context_kwargs: Any) -> str:
+        """Construct message from context kwargs."""
+        image_type = context_kwargs.get("image_type", "unknown")
+        return f"Unsupported image type: {image_type}"
+
+
+class ShadowstepInvalidScrollDirectionError(ShadowstepImageException):
+    """Raised when scroll direction is invalid."""
+
+    default_message = "ShadowstepInvalidScrollDirectionError occurred"
+
+    def _construct_message_from_context(self, **context_kwargs: Any) -> str:
+        """Construct message from context kwargs."""
+        direction = context_kwargs.get("direction", "unknown")
+        valid_directions = context_kwargs.get("valid_directions", ["up", "down", "left", "right"])
+        return f"Invalid scroll direction: '{direction}'. Valid directions: {', '.join(valid_directions)}"
+
+
+class ShadowstepImageNotImplementedError(ShadowstepImageException):
+    """Raised when functionality is not yet implemented."""
+
+    default_message = "ShadowstepImageNotImplementedError occurred"
+
+    def _construct_message_from_context(self, **context_kwargs: Any) -> str:
+        """Construct message from context kwargs."""
+        feature = context_kwargs.get("feature", "functionality")
+        return f"{feature} is not yet implemented"

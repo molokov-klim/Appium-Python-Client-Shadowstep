@@ -16,12 +16,14 @@ from pathlib import Path
 from typing import TYPE_CHECKING, Any
 
 from selenium.common import WebDriverException
-from websocket import (
+from websocket import (  # type: ignore[import-untyped]
     WebSocket,
     WebSocketConnectionClosedException,
     WebSocketException,
-    create_connection,
+    create_connection,  # type: ignore[reportUnknownVariableType]
 )
+
+from shadowstep.ui_automator.mobile_commands import MobileCommands
 
 if TYPE_CHECKING:
     import types
@@ -78,7 +80,10 @@ class ShadowstepLogcat:
 
         """
         if poll_interval < 0:
-            raise ShadowstepPollIntervalError
+            msg = "poll_interval must be non-negative"
+            raise ShadowstepPollIntervalError(msg)
+
+        self.mobile_commands =MobileCommands()
 
         self._driver_getter = driver_getter
         self._poll_interval = poll_interval
@@ -156,6 +161,7 @@ class ShadowstepLogcat:
             exc_tb: Exception traceback if any.
 
         """
+        logger.debug(exc_type, exc_val, exc_tb)
         self.stop()
 
     def __del__(self) -> None:
@@ -180,7 +186,8 @@ class ShadowstepLogcat:
         """
         self.port = port
         if not filename:
-            raise ShadowstepEmptyFilenameError
+            msg = "filename cannot be empty"
+            raise ShadowstepEmptyFilenameError(msg)
 
         if self._thread and self._thread.is_alive():
             logger.info("Logcat already running")
@@ -215,10 +222,9 @@ class ShadowstepLogcat:
 
         # Send command to stop broadcast
         try:
-            driver = self._driver_getter()
-            if driver is not None:
-                driver.execute_script("mobile: stopLogsBroadcast")
-        except WebDriverException as e:
+            self._driver_getter()
+            self.mobile_commands.stop_logs_broadcast()
+        except (WebDriverException, AttributeError) as e:
             logger.warning("Failed to stop broadcast: %r", e)
 
         # Wait for background thread to complete and file to close
@@ -252,7 +258,7 @@ class ShadowstepLogcat:
                             logger.warning("Driver is None, skipping logcat iteration")
                             time.sleep(self._poll_interval)
                             continue
-                        driver.execute_script("mobile: startLogsBroadcast")
+                        self.mobile_commands.start_logs_broadcast()
 
                         # Build shadowstep WebSocket URL
                         session_id = driver.session_id
@@ -286,6 +292,7 @@ class ShadowstepLogcat:
 
                         # Store ws reference so stop() can close it
                         self._ws = ws
+                        assert ws is not None  # For type checker: ws is guaranteed not to be None here
 
                         # Read until stop event
                         while not self._stop_evt.is_set():
@@ -342,7 +349,7 @@ class ShadowstepLogcat:
         if not http_url:
             http_url = getattr(driver.command_executor, "_client_config", None)
             if http_url:
-                http_url = getattr(driver.command_executor._client_config, "remote_server_addr", "")  # noqa: SLF001
+                http_url = getattr(driver.command_executor._client_config, "remote_server_addr", "")  # noqa: SLF001 # type: ignore[reportPrivateUsage]
             else:
                 http_url = ""
         return http_url

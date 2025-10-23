@@ -1,0 +1,45 @@
+name: License Check
+
+on: [push, pull_request]
+
+jobs:
+  check-licenses:
+    runs-on: [ self-hosted, linux, x64 ]
+    steps:
+      - uses: actions/checkout@v5
+      
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.9'
+      
+      - name: Install uv
+        run: curl -LsSf https://astral.sh/uv/install.sh | sh
+      
+      - name: Install dependencies
+        run: |
+          export PATH="$HOME/.cargo/bin:$PATH"
+          uv sync
+      
+      - name: Install pip-licenses in venv
+        run: |
+          export PATH="$HOME/.cargo/bin:$PATH"
+          uv pip install pip-licenses
+      
+      - name: Check for GPL licenses
+        run: |
+          export PATH="$HOME/.cargo/bin:$PATH"
+          uv run pip-licenses --fail-on="GPL" --fail-on="AGPL"
+          
+      - name: Generate license report
+        if: always()
+        run: |
+          export PATH="$HOME/.cargo/bin:$PATH"
+          uv run pip-licenses --format=markdown > license-report.md
+          cat license-report.md
+      
+      - name: Upload license report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: license-report
+          path: license-report.md

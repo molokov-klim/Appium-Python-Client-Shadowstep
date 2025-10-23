@@ -5,7 +5,7 @@ to XPath expressions with proper attribute mapping and hierarchy handling.
 """
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 if TYPE_CHECKING:
     from collections.abc import Callable
@@ -17,7 +17,7 @@ from shadowstep.exceptions.shadowstep_exceptions import (
 from shadowstep.locator.locator_types.shadowstep_dict import ShadowstepDictAttribute
 
 
-def dict_to_xpath_attribute(attr: ShadowstepDictAttribute, value: str | float | bool | dict) -> str:  # noqa: FBT001
+def dict_to_xpath_attribute(attr: ShadowstepDictAttribute, value: str | float | bool | dict[str, Any]) -> str:  # noqa: FBT001
     """Convert a single dictionary attribute to XPath expression.
 
     Args:
@@ -32,7 +32,7 @@ def dict_to_xpath_attribute(attr: ShadowstepDictAttribute, value: str | float | 
 
     """
     if attr in DICT_TO_XPATH_MAPPING:
-        return DICT_TO_XPATH_MAPPING[attr](value)
+        return DICT_TO_XPATH_MAPPING[attr](value)  # type: ignore[arg-type]
     raise ShadowstepUnsupportedAttributeForXPathError(attr)
 
 

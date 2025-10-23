@@ -9,7 +9,6 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from enum import Enum, auto
-from typing import cast
 
 from shadowstep.exceptions.shadowstep_exceptions import (
     ShadowstepBadEscapeError,
@@ -130,14 +129,14 @@ class Lexer:
                 quote_char = ch
                 start = self.i
                 self._advance()
-                buf = []
+                buf: list[str] = []
                 while True:
                     if self.i >= self.n:
-                        raise ShadowstepUnterminatedStringError(start)
+                        raise ShadowstepUnterminatedStringError(str(start))
                     c = self._advance()
                     if c == "\\":
                         if self.i >= self.n:
-                            raise ShadowstepBadEscapeError(self.i)
+                            raise ShadowstepBadEscapeError(str(self.i))
                         nxt = self._advance()
                         if nxt in (quote_char, "\\"):
                             buf.append(nxt)
@@ -151,7 +150,7 @@ class Lexer:
                     if c == quote_char:
                         break
                     buf.append(c)
-                toks.append(Token(TokenType.STRING, "".join(cast("list[str]", buf)), start))
+                toks.append(Token(TokenType.STRING, "".join(buf), start))
                 continue
 
             if ch.isdigit():
@@ -179,7 +178,7 @@ class Lexer:
                     toks.append(Token(TokenType.IDENT, ident, start))
                 continue
 
-            raise ShadowstepUnexpectedCharError(ch, self.i)
+            raise ShadowstepUnexpectedCharError(ch, str(self.i))
 
         toks.append(Token(TokenType.EOF, None, self.i))
         return toks
