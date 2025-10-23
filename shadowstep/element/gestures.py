@@ -12,6 +12,7 @@ import time
 import traceback
 from typing import TYPE_CHECKING, Any
 
+from selenium.common.exceptions import WebDriverException
 from selenium.webdriver import ActionChains
 from selenium.webdriver.common.actions import interaction
 from selenium.webdriver.common.actions.action_builder import ActionBuilder
@@ -261,7 +262,7 @@ class ElementGestures:
         selector = self.converter.to_uiselector(locator)
         try:
             self._execute_scroll_script(selector, max_swipes)
-        except Exception as error:
+        except WebDriverException:
             self.logger.warning("Failed execute_scroll_script")
         return self.shadowstep.get_element(locator)
 
@@ -379,6 +380,7 @@ class ElementGestures:
 
         """
         from shadowstep.element.element import Element  # noqa: PLC0415
+
         self.element.get_driver()
         if isinstance(locator, Element):
             locator = locator.locator
