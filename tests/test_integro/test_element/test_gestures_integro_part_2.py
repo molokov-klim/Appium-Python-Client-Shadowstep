@@ -90,7 +90,7 @@ class TestElementGesturesPart2:
             app: Экземпляр Shadowstep для взаимодействия с приложением.
             android_settings_open_close: Фикстура для открытия и закрытия настроек Android.
         """
-        container = app.get_element(LOCATOR_RECYCLER)
+        container = app.get_element({"text": "not existing element"})
         with pytest.raises(ShadowstepElementException):
             container.scroll_to_element(locator={"text": "Element That Does Not Exist"})
 
