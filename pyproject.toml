@@ -1,6 +1,6 @@
 [project]
 name = "appium-python-client-shadowstep"
-version = "0.36.9"
+version = "0.36.10"
 description = "UI Testing Framework powered by Appium Python Client"
 authors = [{ name = "Molokov Klim", email = "ultrakawaii9654449192@gmail.com" }]
 license = "MIT"
