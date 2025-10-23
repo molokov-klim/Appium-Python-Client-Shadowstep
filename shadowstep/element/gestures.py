@@ -259,7 +259,10 @@ class ElementGestures:
 
         """
         selector = self.converter.to_uiselector(locator)
-        self._execute_scroll_script(selector, max_swipes)
+        try:
+            self._execute_scroll_script(selector, max_swipes)
+        except Exception as error:
+            self.logger.warning("Failed execute_scroll_script")
         return self.shadowstep.get_element(locator)
 
     @log_debug()
