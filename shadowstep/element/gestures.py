@@ -261,7 +261,14 @@ class ElementGestures:
         return self.element
 
     @log_debug()
-    def scroll(self, direction: str, percent: float, speed: int, return_bool: bool) -> Element:  # noqa: FBT001
+    def scroll(
+        self,
+        direction: str,
+        percent: float,
+        speed: int,
+        return_bool: bool,  # noqa: FBT001
+        strategy: GestureStrategy = GestureStrategy.AUTO,
+    ) -> Element | bool:
         """Perform a scroll gesture on the element.
 
         Args:
@@ -282,15 +289,43 @@ class ElementGestures:
 
         """
         self.element.get_driver()
-        self.element._get_web_element(locator=self.element.locator)  # type: ignore[reportPrivateUsage]  # noqa: SLF001
+        native_element = self.element._get_web_element(locator=self.element.locator)  # type: ignore[reportPrivateUsage]  # noqa: SLF001
+        method_map = {
+            GestureStrategy.W3C_ACTIONS: self._scroll_w3c_actions,
+            GestureStrategy.MOBILE_COMMANDS: self._scroll_mobile_commands,
+            GestureStrategy.AUTO: self._scroll_mobile_commands,
+        }
+        return method_map[strategy](native_element, direction, percent, speed, return_bool)
+
+    def _scroll_mobile_commands(
+        self,
+        element: WebElement,
+        direction: str,
+        percent: float,
+        speed: int,
+        return_bool: bool,  # noqa: FBT001
+    ) -> Element | bool:
         can_scroll = self.mobile_commands.scroll_gesture(
             {
-                "elementId": self.element.id,
+                "elementId": element.id,
                 "percent": percent,
                 "direction": direction,
                 "speed": speed,
             },
         )
+        if return_bool:
+            return can_scroll
+        return self.element
+
+    def _scroll_w3c_actions(
+        self,
+        element: WebElement,
+        direction: str,
+        percent: float,
+        speed: int,
+        return_bool: bool,  # noqa: FBT001
+    ) -> Element | bool:
+        can_scroll = self.w3c_actions.scroll(element, direction, percent, speed)
         if return_bool:
             return can_scroll
         return self.element

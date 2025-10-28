@@ -110,7 +110,11 @@ class TestClick:
         mock_element.shadowstep = mock_shadowstep
         mock_element.locator = ("id", "test")
         mock_element.get_driver = Mock()
-        mock_element._get_web_element = Mock()
+
+        mock_web_element = Mock()
+        mock_web_element.id = "element_123"
+        mock_element._get_web_element = Mock(return_value=mock_web_element)
+
         mock_element.id = "element_123"
         mock_element.converter = Mock()
         mock_element.utilities = Mock()
@@ -136,7 +140,11 @@ class TestClickDouble:
         mock_element = Mock(spec=Element)
         mock_element.shadowstep = mock_shadowstep
         mock_element.get_driver = Mock()
-        mock_element._get_web_element = Mock()
+
+        mock_web_element = Mock()
+        mock_web_element.id = "element_123"
+        mock_element._get_web_element = Mock(return_value=mock_web_element)
+
         mock_element.locator = ("id", "test")
         mock_element.id = "element_123"
         mock_element.converter = Mock()
@@ -162,7 +170,11 @@ class TestDrag:
         mock_element.shadowstep = mock_shadowstep
         mock_element.locator = ("id", "test")
         mock_element.get_driver = Mock()
-        mock_element._get_web_element = Mock()
+
+        mock_web_element = Mock()
+        mock_web_element.id = "element_123"
+        mock_element._get_web_element = Mock(return_value=mock_web_element)
+
         mock_element.id = "element_123"
         mock_element.converter = Mock()
         mock_element.utilities = Mock()
@@ -212,7 +224,11 @@ class TestFling:
         mock_element.shadowstep = mock_shadowstep
         mock_element.locator = ("id", "test")
         mock_element.get_driver = Mock()
-        mock_element._get_web_element = Mock()
+
+        mock_web_element = Mock()
+        mock_web_element.id = "element_123"
+        mock_element._get_web_element = Mock(return_value=mock_web_element)
+
         mock_element.id = "element_123"
         mock_element.converter = Mock()
         mock_element.utilities = Mock()
@@ -429,7 +445,11 @@ class TestZoom:
         mock_element.shadowstep = mock_shadowstep
         mock_element.locator = ("id", "test")
         mock_element.get_driver = Mock()
-        mock_element._get_web_element = Mock()
+
+        mock_web_element = Mock()
+        mock_web_element.id = "element_123"
+        mock_element._get_web_element = Mock(return_value=mock_web_element)
+
         mock_element.id = "element_123"
         mock_element.converter = Mock()
         mock_element.utilities = Mock()
@@ -478,7 +498,11 @@ class TestUnzoom:
         mock_element.shadowstep = mock_shadowstep
         mock_element.locator = ("id", "test")
         mock_element.get_driver = Mock()
-        mock_element._get_web_element = Mock()
+
+        mock_web_element = Mock()
+        mock_web_element.id = "element_123"
+        mock_element._get_web_element = Mock(return_value=mock_web_element)
+
         mock_element.id = "element_123"
         mock_element.converter = Mock()
         mock_element.utilities = Mock()
@@ -506,7 +530,11 @@ class TestSwipe:
         mock_element.shadowstep = mock_shadowstep
         mock_element.locator = ("id", "test")
         mock_element.get_driver = Mock()
-        mock_element._get_web_element = Mock()
+
+        mock_web_element = Mock()
+        mock_web_element.id = "element_123"
+        mock_element._get_web_element = Mock(return_value=mock_web_element)
+
         mock_element.id = "element_123"
         mock_element.converter = Mock()
         mock_element.utilities = Mock()
