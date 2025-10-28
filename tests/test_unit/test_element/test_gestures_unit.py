@@ -145,7 +145,7 @@ class TestClickDouble:
         gestures = ElementGestures(mock_element)
         gestures.mobile_commands.double_click_gesture = Mock()
 
-        result = gestures.click_double()
+        result = gestures.double_click()
 
         mock_element.get_driver.assert_called_once()
         gestures.mobile_commands.double_click_gesture.assert_called_once_with({"elementId": "element_123"})

@@ -95,7 +95,11 @@ class ElementGestures:
         return self.element
 
     @log_debug()
-    def click(self, duration: int | None = None) -> Element:
+    def click(
+        self,
+        duration: int | None = None,
+        strategy: GestureStrategy = GestureStrategy.MOBILE_COMMANDS,
+    ) -> Element:
         """Click the element.
 
         Args:
@@ -106,17 +110,29 @@ class ElementGestures:
 
         """
         self.element.get_driver()
-        self.element._get_web_element(locator=self.element.locator)  # type: ignore[reportPrivateUsage]  # noqa: SLF001
+        native_element = self.element._get_web_element(locator=self.element.locator)  # type: ignore[reportPrivateUsage]  # noqa: SLF001
+        method_map = {
+            GestureStrategy.W3C_ACTIONS: self._click_w3c_commands,
+            GestureStrategy.MOBILE_COMMANDS: self._click_mobile_commands,
+            GestureStrategy.AUTO: self._click_mobile_commands,
+        }
+        return method_map[strategy](native_element, duration)
+
+    def _click_w3c_commands(self, native_element: WebElement, duration: int | None = None):
+        self.w3c_actions.click(native_element, duration=duration)
+        return self.element
+
+    def _click_mobile_commands(self, native_element: WebElement, duration: int | None = None):
         if duration is None:
             self.mobile_commands.click_gesture({"elementId": self.element.id})
         else:
             self.mobile_commands.long_click_gesture(
-                {"elementId": self.element.id, "duration": duration},
+                {"elementId": native_element.id, "duration": duration},
             )
         return self.element
 
     @log_debug()
-    def click_double(self) -> Element:
+    def double_click(self, strategy: GestureStrategy = GestureStrategy.MOBILE_COMMANDS) -> Element:
         """Double-click the element.
 
         Returns:
@@ -124,8 +140,20 @@ class ElementGestures:
 
         """
         self.element.get_driver()
-        self.element._get_web_element(locator=self.element.locator)  # type: ignore[reportPrivateUsage]  # noqa: SLF001
-        self.mobile_commands.double_click_gesture({"elementId": self.element.id})
+        native_element = self.element._get_web_element(locator=self.element.locator)  # type: ignore[reportPrivateUsage]  # noqa: SLF001
+        method_map = {
+            GestureStrategy.W3C_ACTIONS: self._double_click_w3c_commands,
+            GestureStrategy.MOBILE_COMMANDS: self._double_click_mobile_commands,
+            GestureStrategy.AUTO: self._double_click_w3c_commands,
+        }
+        return method_map[strategy](native_element)
+
+    def _double_click_mobile_commands(self, native_element: WebElement) -> Element:
+        self.mobile_commands.double_click_gesture({"elementId": native_element.id})
+        return self.element
+
+    def _double_click_w3c_commands(self, native_element: WebElement) -> Element:
+        self.w3c_actions.double_click(native_element)
         return self.element
 
     @log_debug()
@@ -134,7 +162,7 @@ class ElementGestures:
         end_x: int,
         end_y: int,
         speed: int = 2500,
-        strategy: GestureStrategy = GestureStrategy.AUTO,
+        strategy: GestureStrategy = GestureStrategy.MOBILE_COMMANDS,
     ) -> Element:
         """Drag the element to specified coordinates.
 
@@ -183,7 +211,7 @@ class ElementGestures:
         self,
         speed: int,
         direction: str,
-        strategy: GestureStrategy = GestureStrategy.AUTO,
+        strategy: GestureStrategy = GestureStrategy.MOBILE_COMMANDS,
     ) -> Element:
         """Perform a fling gesture on the element.
 
@@ -333,7 +361,7 @@ class ElementGestures:
         self,
         percent: float = 0.75,
         speed: int = 2500,
-        strategy: GestureStrategy = GestureStrategy.AUTO,
+        strategy: GestureStrategy = GestureStrategy.MOBILE_COMMANDS,
     ) -> Element:
         """Perform a zoom gesture on the element.
 
@@ -383,7 +411,7 @@ class ElementGestures:
         self,
         percent: float = 0.75,
         speed: int = 2500,
-        strategy: GestureStrategy = GestureStrategy.AUTO,
+        strategy: GestureStrategy = GestureStrategy.MOBILE_COMMANDS,
     ) -> Element:
         """Perform an unzoom gesture on the element.
 
@@ -429,7 +457,13 @@ class ElementGestures:
         return self.element
 
     @log_debug()
-    def swipe(self, direction: str, percent: float = 0.75, speed: int = 5000) -> Element:
+    def swipe(
+        self,
+        direction: str,
+        percent: float = 0.75,
+        speed: int = 5000,
+        strategy: GestureStrategy = GestureStrategy.AUTO,
+    ) -> Element:
         """Perform a swipe gesture on the element.
 
         Args:
@@ -442,10 +476,34 @@ class ElementGestures:
 
         """
         self.element.get_driver()
-        self.element._get_web_element(locator=self.element.locator)  # type: ignore[reportPrivateUsage]  # noqa: SLF001
+        native_element = self.element._get_web_element(locator=self.element.locator)  # type: ignore[reportPrivateUsage]  # noqa: SLF001
+        method_map = {
+            GestureStrategy.W3C_ACTIONS: self._swipe_w3c_actions,
+            GestureStrategy.MOBILE_COMMANDS: self._swipe_mobile_commands,
+            GestureStrategy.AUTO: self._swipe_mobile_commands,
+        }
+        return method_map[strategy](native_element, direction, percent, speed)
+
+    def _swipe_w3c_actions(
+        self,
+        native_element: WebElement,
+        direction: str,
+        percent: float = 0.75,
+        speed: int = 5000,
+    ) -> Element:
+        self.w3c_actions.swipe(native_element, direction, percent, speed)
+        return self.element
+
+    def _swipe_mobile_commands(
+        self,
+        native_element: WebElement,
+        direction: str,
+        percent: float = 0.75,
+        speed: int = 5000,
+    ) -> Element:
         self.mobile_commands.swipe_gesture(
             {
-                "elementId": self.element.id,
+                "elementId": native_element.id,
                 "direction": direction.lower(),
                 "percent": percent,
                 "speed": speed,

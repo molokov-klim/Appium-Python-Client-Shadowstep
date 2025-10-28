@@ -289,11 +289,11 @@ class TestElementGestures:
         """Test click_double delegates to gestures.click_double."""
         mock_shadowstep = Mock()
         element = Element(("id", "button"), mock_shadowstep)
-        element.gestures.click_double = Mock(return_value=element)
+        element.gestures.double_click = Mock(return_value=element)
 
-        result = element.click_double()
+        result = element.double_click()
 
-        element.gestures.click_double.assert_called_once()
+        element.gestures.double_click.assert_called_once()
         assert result == element
 
     def test_drag(self):

@@ -380,14 +380,14 @@ class Element(ElementBase):
         return self.gestures.click(duration)
 
     @fail_safe_element()
-    def click_double(self) -> Element:
+    def double_click(self) -> Element:
         """Perform a double click on the element.
 
         Returns:
             Element: Self for method chaining.
 
         """
-        return self.gestures.click_double()
+        return self.gestures.double_click()
 
     @fail_safe_element()
     def drag(self, end_x: int, end_y: int, speed: int = 2500) -> Element:
