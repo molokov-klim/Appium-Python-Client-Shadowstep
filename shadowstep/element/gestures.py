@@ -129,7 +129,13 @@ class ElementGestures:
         return self.element
 
     @log_debug()
-    def drag(self, end_x: int, end_y: int, speed: int = 2500) -> Element:
+    def drag(
+        self,
+        end_x: int,
+        end_y: int,
+        speed: int = 2500,
+        strategy: GestureStrategy = GestureStrategy.AUTO,
+    ) -> Element:
         """Drag the element to specified coordinates.
 
         Args:
@@ -142,14 +148,43 @@ class ElementGestures:
 
         """
         self.element.get_driver()
-        self.element._get_web_element(locator=self.element.locator)  # type: ignore[reportPrivateUsage]  # noqa: SLF001
+        native_element = self.element._get_web_element(locator=self.element.locator)  # type: ignore[reportPrivateUsage]  # noqa: SLF001
+        method_map = {
+            GestureStrategy.W3C_ACTIONS: self._drag_w3c_actions,
+            GestureStrategy.MOBILE_COMMANDS: self._drag_mobile_commands,
+            GestureStrategy.AUTO: self._drag_w3c_actions,
+        }
+        return method_map[strategy](native_element, end_x, end_y, speed)
+
+    def _drag_mobile_commands(
+        self,
+        native_element: WebElement,
+        end_x: int,
+        end_y: int,
+        speed: int = 2500,
+    ) -> Element:
         self.mobile_commands.drag_gesture(
-            {"elementId": self.element.id, "endX": end_x, "endY": end_y, "speed": speed},
+            {"elementId": native_element.id, "endX": end_x, "endY": end_y, "speed": speed},
         )
         return self.element
 
+    def _drag_w3c_actions(
+        self,
+        native_element: WebElement,
+        end_x: int,
+        end_y: int,
+        speed: int = 2500,
+    ) -> Element:
+        self.w3c_actions.drag(element=native_element, end_x=end_x, end_y=end_y, speed=speed)
+        return self.element
+
     @log_debug()
-    def fling(self, speed: int, direction: str) -> Element:
+    def fling(
+        self,
+        speed: int,
+        direction: str,
+        strategy: GestureStrategy = GestureStrategy.AUTO,
+    ) -> Element:
         """Perform a fling gesture on the element.
 
         Args:
@@ -159,6 +194,7 @@ class ElementGestures:
                 The default value is 7500 * displayDensity.
             direction: Direction of the fling. Mandatory value. Acceptable values are:
                 up, down, left and right (case-insensitive).
+            strategy: Gesture strategy.
 
         Returns:
             The element for method chaining.
@@ -168,9 +204,31 @@ class ElementGestures:
 
         """
         self.element.get_driver()
-        self.element._get_web_element(locator=self.element.locator)  # type: ignore[reportPrivateUsage]  # noqa: SLF001
+        native_element = self.element._get_web_element(locator=self.element.locator)  # type: ignore[reportPrivateUsage]  # noqa: SLF001
+        method_map = {
+            GestureStrategy.W3C_ACTIONS: self._fling_w3c_actions,
+            GestureStrategy.MOBILE_COMMANDS: self._fling_mobile_commands,
+            GestureStrategy.AUTO: self._fling_w3c_actions,
+        }
+        return method_map[strategy](native_element, speed, direction)
+
+    def _fling_w3c_actions(
+        self,
+        native_element: WebElement,
+        speed: int,
+        direction: str,
+    ) -> Element:
+        self.w3c_actions.fling(element=native_element, speed=speed, direction=direction)
+        return self.element
+
+    def _fling_mobile_commands(
+        self,
+        native_element: WebElement,
+        speed: int,
+        direction: str,
+    ) -> Element:
         self.mobile_commands.fling_gesture(
-            {"elementId": self.element.id, "direction": direction, "speed": speed},
+            {"elementId": native_element.id, "direction": direction, "speed": speed},
         )
         return self.element
 
@@ -351,10 +409,10 @@ class ElementGestures:
         native_element: WebElement,
         percent: float = 0.75,
         speed: int = 2500,
-    ):
+    ) -> Element:
         self.mobile_commands.pinch_close_gesture(
             {
-                "elementId": self.element.id,
+                "elementId": native_element.id,
                 "percent": percent,
                 "speed": speed,
             },
@@ -366,7 +424,7 @@ class ElementGestures:
         native_element: WebElement,
         percent: float = 0.75,
         speed: int = 2500,
-    ):
+    ) -> Element:
         self.w3c_actions.unzoom(element=native_element, percent=percent, speed=speed)
         return self.element
 
