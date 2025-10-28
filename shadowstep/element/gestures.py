@@ -12,6 +12,7 @@ import time
 import traceback
 from typing import TYPE_CHECKING, Any
 
+from appium.webdriver.webelement import WebElement
 from selenium.common.exceptions import WebDriverException
 from selenium.webdriver import ActionChains
 from selenium.webdriver.common.actions import interaction
@@ -19,9 +20,11 @@ from selenium.webdriver.common.actions.action_builder import ActionBuilder
 from selenium.webdriver.common.actions.pointer_input import PointerInput
 
 from shadowstep.decorators.decorators import log_debug
+from shadowstep.enums import GestureStrategy
 from shadowstep.exceptions.shadowstep_exceptions import ShadowstepElementException
 from shadowstep.ui_automator.mobile_commands import MobileCommands
 from shadowstep.utils.utils import find_coordinates_by_vector
+from shadowstep.w3c_actions.w3c_actions import W3CActions
 
 if TYPE_CHECKING:
     from shadowstep.element.element import Element
@@ -46,6 +49,7 @@ class ElementGestures:
         self.converter: LocatorConverter = element.converter
         self.utilities: ElementUtilities = element.utilities
         self.mobile_commands = MobileCommands()
+        self.w3c_actions = W3CActions()
 
     @log_debug()
     def tap(self, duration: int | None = None) -> Element:
@@ -267,7 +271,12 @@ class ElementGestures:
         return self.shadowstep.get_element(locator)
 
     @log_debug()
-    def zoom(self, percent: float = 0.75, speed: int = 2500) -> Element:
+    def zoom(
+        self,
+        percent: float = 0.75,
+        speed: int = 2500,
+        strategy: GestureStrategy = GestureStrategy.AUTO,
+    ) -> Element:
         """Perform a zoom gesture on the element.
 
         Args:
@@ -279,10 +288,32 @@ class ElementGestures:
 
         """
         self.element.get_driver()
-        self.element._get_web_element(locator=self.element.locator)  # type: ignore[reportPrivateUsage]  # noqa: SLF001
+        native_element = self.element._get_web_element(locator=self.element.locator)  # type: ignore[reportPrivateUsage]  # noqa: SLF001
+        method_map = {
+            GestureStrategy.W3C_ACTIONS: self._zoom_w3c_actions,
+            GestureStrategy.MOBILE_COMMANDS: self._zoom_mobile_commands,
+            GestureStrategy.AUTO: self._zoom_w3c_actions,
+        }
+        return method_map[strategy](native_element, percent, speed)
+
+    def _zoom_w3c_actions(
+        self,
+        native_element: WebElement,
+        percent: float = 0.75,
+        speed: int = 2500,
+    ) -> Element:
+        self.w3c_actions.zoom(element=native_element, percent=percent, speed=speed)
+        return self.element
+
+    def _zoom_mobile_commands(
+        self,
+        native_element: WebElement,
+        percent: float = 0.75,
+        speed: int = 2500,
+    ) -> Element:
         self.mobile_commands.pinch_open_gesture(
             {
-                "elementId": self.element.id,
+                "elementId": native_element.id,
                 "percent": percent,
                 "speed": speed,
             },
@@ -290,7 +321,12 @@ class ElementGestures:
         return self.element
 
     @log_debug()
-    def unzoom(self, percent: float = 0.75, speed: int = 2500) -> Element:
+    def unzoom(
+        self,
+        percent: float = 0.75,
+        speed: int = 2500,
+        strategy: GestureStrategy = GestureStrategy.AUTO,
+    ) -> Element:
         """Perform an unzoom gesture on the element.
 
         Args:
@@ -302,7 +338,20 @@ class ElementGestures:
 
         """
         self.element.get_driver()
-        self.element._get_web_element(locator=self.element.locator)  # type: ignore[reportPrivateUsage]  # noqa: SLF001
+        native_element = self.element._get_web_element(locator=self.element.locator)  # type: ignore[reportPrivateUsage]  # noqa: SLF001
+        method_map = {
+            GestureStrategy.W3C_ACTIONS: self._unzoom_w3c_actions,
+            GestureStrategy.MOBILE_COMMANDS: self._unzoom_mobile_commands_actions,
+            GestureStrategy.AUTO: self._unzoom_w3c_actions,
+        }
+        return method_map[strategy](native_element, percent, speed)
+
+    def _unzoom_mobile_commands_actions(
+        self,
+        native_element: WebElement,
+        percent: float = 0.75,
+        speed: int = 2500,
+    ):
         self.mobile_commands.pinch_close_gesture(
             {
                 "elementId": self.element.id,
@@ -310,6 +359,15 @@ class ElementGestures:
                 "speed": speed,
             },
         )
+        return self.element
+
+    def _unzoom_w3c_actions(
+        self,
+        native_element: WebElement,
+        percent: float = 0.75,
+        speed: int = 2500,
+    ):
+        self.w3c_actions.unzoom(element=native_element, percent=percent, speed=speed)
         return self.element
 
     @log_debug()
