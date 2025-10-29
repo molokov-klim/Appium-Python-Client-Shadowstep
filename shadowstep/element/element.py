@@ -471,7 +471,7 @@ class Element(ElementBase):
         percent: float = 0.7,
         speed: int = 2000,
         return_bool: bool = False,  # noqa: FBT001, FBT002
-    ) -> Element:
+    ) -> Element | bool:
         """Scroll down within the element.
 
         Args:
@@ -480,7 +480,7 @@ class Element(ElementBase):
             return_bool: Whether to return boolean instead of Element (default: False).
 
         Returns:
-            Element: Self for method chaining.
+            Element | bool: Self for method chaining or boolean if return_bool is True.
 
         """
         return self.scroll(direction="down", percent=percent, speed=speed, return_bool=return_bool)
@@ -490,7 +490,7 @@ class Element(ElementBase):
         percent: float = 0.7,
         speed: int = 2000,
         return_bool: bool = False,  # noqa: FBT001, FBT002
-    ) -> Element:
+    ) -> Element | bool:
         """Scroll up within the element.
 
         Args:
@@ -499,7 +499,7 @@ class Element(ElementBase):
             return_bool: Whether to return boolean instead of Element (default: False).
 
         Returns:
-            Element: Self for method chaining.
+            Element | bool: Self for method chaining or boolean if return_bool is True.
 
         """
         return self.scroll(direction="up", percent=percent, speed=speed, return_bool=return_bool)
@@ -509,7 +509,7 @@ class Element(ElementBase):
         percent: float = 0.7,
         speed: int = 2000,
         return_bool: bool = False,  # noqa: FBT001, FBT002
-    ) -> Element:
+    ) -> Element | bool:
         """Scroll left within the element.
 
         Args:
@@ -518,7 +518,7 @@ class Element(ElementBase):
             return_bool: Whether to return boolean instead of Element (default: False).
 
         Returns:
-            Element: Self for method chaining.
+            Element | bool: Self for method chaining or boolean if return_bool is True.
 
         """
         return self.scroll(direction="left", percent=percent, speed=speed, return_bool=return_bool)
@@ -528,7 +528,7 @@ class Element(ElementBase):
         percent: float = 0.7,
         speed: int = 2000,
         return_bool: bool = False,  # noqa: FBT001, FBT002
-    ) -> Element:
+    ) -> Element | bool:
         """Scroll right within the element.
 
         Args:
@@ -537,13 +537,13 @@ class Element(ElementBase):
             return_bool: Whether to return boolean instead of Element (default: False).
 
         Returns:
-            Element: Self for method chaining.
+            Element | bool: Self for method chaining or boolean if return_bool is True.
 
         """
         return self.scroll(direction="right", percent=percent, speed=speed, return_bool=return_bool)
 
     @fail_safe_element()
-    def scroll(self, direction: str, percent: float, speed: int, return_bool: bool) -> Element:  # noqa: FBT001
+    def scroll(self, direction: str, percent: float, speed: int, return_bool: bool) -> Element | bool:  # noqa: FBT001
         """Scroll within the element in specified direction.
 
         Args:
@@ -553,7 +553,7 @@ class Element(ElementBase):
             return_bool: Whether to return boolean instead of Element.
 
         Returns:
-            Element: Self for method chaining.
+            Element | bool: Self for method chaining or boolean if return_bool is True.
 
         """
         return self.gestures.scroll(direction, percent, speed, return_bool)

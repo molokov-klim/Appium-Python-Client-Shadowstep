@@ -12,7 +12,6 @@ import time
 import traceback
 from typing import TYPE_CHECKING, Any
 
-from appium.webdriver.webelement import WebElement
 from selenium.common.exceptions import WebDriverException
 from selenium.webdriver import ActionChains
 from selenium.webdriver.common.actions import interaction
@@ -27,6 +26,8 @@ from shadowstep.utils.utils import find_coordinates_by_vector
 from shadowstep.w3c_actions.w3c_actions import W3CActions
 
 if TYPE_CHECKING:
+    from appium.webdriver.webelement import WebElement
+
     from shadowstep.element.element import Element
     from shadowstep.element.utilities import ElementUtilities
     from shadowstep.locator import LocatorConverter, UiSelector
@@ -104,6 +105,7 @@ class ElementGestures:
 
         Args:
             duration: Duration of the click in milliseconds.
+            strategy: Стратегия выполнения жеста (W3C_ACTIONS, MOBILE_COMMANDS, AUTO).
 
         Returns:
             The element for method chaining.
@@ -118,11 +120,11 @@ class ElementGestures:
         }
         return method_map[strategy](native_element, duration)
 
-    def _click_w3c_commands(self, native_element: WebElement, duration: int | None = None):
+    def _click_w3c_commands(self, native_element: WebElement, duration: int | None = None) -> Element:
         self.w3c_actions.click(native_element, duration=duration)
         return self.element
 
-    def _click_mobile_commands(self, native_element: WebElement, duration: int | None = None):
+    def _click_mobile_commands(self, native_element: WebElement, duration: int | None = None) -> Element:
         if duration is None:
             self.mobile_commands.click_gesture({"elementId": self.element.id})
         else:
@@ -170,6 +172,7 @@ class ElementGestures:
             end_x: Target x coordinate.
             end_y: Target y coordinate.
             speed: Speed of the drag gesture.
+            strategy: Стратегия выполнения жеста (W3C_ACTIONS, MOBILE_COMMANDS, AUTO).
 
         Returns:
             The element for method chaining.
@@ -280,6 +283,7 @@ class ElementGestures:
             speed: The speed at which to perform this gesture in pixels per second.
                 The value must not be negative. The default value is 5000 * displayDensity.
             return_bool: If true return bool else return self.
+            strategy: Стратегия выполнения жеста (W3C_ACTIONS, MOBILE_COMMANDS, AUTO).
 
         Returns:
             The element for method chaining.
@@ -403,6 +407,7 @@ class ElementGestures:
         Args:
             percent: Zoom percentage (default: 0.75).
             speed: Speed of the zoom gesture (default: 2500).
+            strategy: Стратегия выполнения жеста (W3C_ACTIONS, MOBILE_COMMANDS, AUTO).
 
         Returns:
             The element for method chaining.
@@ -453,6 +458,7 @@ class ElementGestures:
         Args:
             percent: Unzoom percentage (default: 0.75).
             speed: Speed of the unzoom gesture (default: 2500).
+            strategy: Стратегия выполнения жеста (W3C_ACTIONS, MOBILE_COMMANDS, AUTO).
 
         Returns:
             The element for method chaining.
@@ -505,6 +511,7 @@ class ElementGestures:
             direction: Swipe direction (up, down, left, right).
             percent: Swipe percentage (default: 0.75).
             speed: Speed of the swipe gesture (default: 5000).
+            strategy: Стратегия выполнения жеста (W3C_ACTIONS, MOBILE_COMMANDS, AUTO).
 
         Returns:
             The element for method chaining.

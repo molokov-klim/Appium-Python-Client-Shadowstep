@@ -7,7 +7,7 @@ using the W3C WebDriver Actions API instead of Appium-specific mobile: commands.
 from __future__ import annotations
 
 import logging
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, NoReturn
 
 from selenium.webdriver.common.action_chains import ActionChains
 from selenium.webdriver.common.actions import interaction
@@ -60,11 +60,11 @@ class W3CActions:
         """
         try:
             # Get element bounds
-            rect = element.rect
-            width = rect["width"]
-            height = rect["height"]
-            center_x = rect["x"] + width // 2
-            center_y = rect["y"] + height // 2
+            rect = element.rect  # type: ignore[reportUnknownVariableType, reportUnknownMemberType]
+            width: int = int(rect["width"])  # type: ignore[reportUnknownArgumentType]
+            height: int = int(rect["height"])  # type: ignore[reportUnknownArgumentType]
+            center_x: int = int(rect["x"]) + width // 2  # type: ignore[reportUnknownArgumentType]
+            center_y: int = int(rect["y"]) + height // 2  # type: ignore[reportUnknownArgumentType]
 
             # Calculate scroll distance
             direction_lower = direction.lower()
@@ -74,6 +74,10 @@ class W3CActions:
                 distance = int(width * percent)
 
             # Calculate start and end points
+            start_x: int
+            start_y: int
+            end_x: int
+            end_y: int
             if direction_lower == "down":
                 start_x, start_y = center_x, center_y - distance // 2
                 end_x, end_y = center_x, center_y + distance // 2
@@ -87,8 +91,7 @@ class W3CActions:
                 start_x, start_y = center_x + distance // 2, center_y
                 end_x, end_y = center_x - distance // 2, center_y
             else:
-                msg = f"Invalid direction: {direction}. Use up/down/left/right."
-                raise ValueError(msg)
+                self._raise_invalid_direction_error(direction)
 
             # Calculate duration from speed (pixels/second -> milliseconds)
             duration_ms = int((distance / speed) * 1000) if speed > 0 else 0
@@ -96,11 +99,11 @@ class W3CActions:
             # Execute scroll using W3C Actions
             self._swipe_with_duration(start_x, start_y, end_x, end_y, duration_ms)
 
-            return True
-
         except Exception:
             self.logger.exception("W3C scroll failed")
             return False
+        else:
+            return True
 
     def swipe(
         self,
@@ -129,9 +132,9 @@ class W3CActions:
             duration: Optional duration for long press in milliseconds.
 
         """
-        rect = element.rect
-        x = rect["x"] + rect["width"] // 2
-        y = rect["y"] + rect["height"] // 2
+        rect = element.rect  # type: ignore[reportUnknownVariableType, reportUnknownMemberType]
+        x: int = int(rect["x"]) + int(rect["width"]) // 2  # type: ignore[reportUnknownArgumentType]
+        y: int = int(rect["y"]) + int(rect["height"]) // 2  # type: ignore[reportUnknownArgumentType]
 
         actions = ActionChains(self._driver)
         actions.w3c_actions = ActionBuilder(
@@ -155,9 +158,9 @@ class W3CActions:
             element: WebElement to double-click.
 
         """
-        rect = element.rect
-        x = rect["x"] + rect["width"] // 2
-        y = rect["y"] + rect["height"] // 2
+        rect = element.rect  # type: ignore[reportUnknownVariableType, reportUnknownMemberType]
+        x: int = int(rect["x"]) + int(rect["width"]) // 2  # type: ignore[reportUnknownArgumentType]
+        y: int = int(rect["y"]) + int(rect["height"]) // 2  # type: ignore[reportUnknownArgumentType]
 
         actions = ActionChains(self._driver)
         actions.w3c_actions = ActionBuilder(
@@ -189,12 +192,12 @@ class W3CActions:
             speed: Drag speed in pixels per second.
 
         """
-        rect = element.rect
-        start_x = rect["x"] + rect["width"] // 2
-        start_y = rect["y"] + rect["height"] // 2
+        rect = element.rect  # type: ignore[reportUnknownVariableType, reportUnknownMemberType]
+        start_x: int = int(rect["x"]) + int(rect["width"]) // 2  # type: ignore[reportUnknownArgumentType]
+        start_y: int = int(rect["y"]) + int(rect["height"]) // 2  # type: ignore[reportUnknownArgumentType]
 
         # Calculate distance and duration
-        distance = int(((end_x - start_x) ** 2 + (end_y - start_y) ** 2) ** 0.5)
+        distance: int = int(((end_x - start_x) ** 2 + (end_y - start_y) ** 2) ** 0.5)
         duration_ms = int((distance / speed) * 1000) if speed > 0 else 0
 
         self._swipe_with_duration(start_x, start_y, end_x, end_y, duration_ms)
@@ -221,24 +224,24 @@ class W3CActions:
             speed: Zoom speed in pixels per second.
 
         """
-        rect = element.rect
-        center_x = rect["x"] + rect["width"] // 2
-        center_y = rect["y"] + rect["height"] // 2
+        rect = element.rect  # type: ignore[reportUnknownVariableType, reportUnknownMemberType]
+        center_x: int = int(rect["x"]) + int(rect["width"]) // 2  # type: ignore[reportUnknownArgumentType]
+        center_y: int = int(rect["y"]) + int(rect["height"]) // 2  # type: ignore[reportUnknownArgumentType]
 
         # Calculate pinch distance
-        distance = int(min(rect["width"], rect["height"]) * percent / 2)
+        distance: int = int(min(int(rect["width"]), int(rect["height"])) * percent / 2)  # type: ignore[reportUnknownArgumentType]
         duration_ms = int((distance / speed) * 1000) if speed > 0 else 0
 
         # Two fingers moving apart from center
-        finger1_start_x = center_x
-        finger1_start_y = center_y
-        finger1_end_x = center_x
-        finger1_end_y = center_y - distance
+        finger1_start_x: int = center_x
+        finger1_start_y: int = center_y
+        finger1_end_x: int = center_x
+        finger1_end_y: int = center_y - distance
 
-        finger2_start_x = center_x
-        finger2_start_y = center_y
-        finger2_end_x = center_x
-        finger2_end_y = center_y + distance
+        finger2_start_x: int = center_x
+        finger2_start_y: int = center_y
+        finger2_end_x: int = center_x
+        finger2_end_y: int = center_y + distance
 
         self._multi_touch_gesture(
             [(finger1_start_x, finger1_start_y), (finger2_start_x, finger2_start_y)],
@@ -255,24 +258,24 @@ class W3CActions:
             speed: Unzoom speed in pixels per second.
 
         """
-        rect = element.rect
-        center_x = rect["x"] + rect["width"] // 2
-        center_y = rect["y"] + rect["height"] // 2
+        rect = element.rect  # type: ignore[reportUnknownVariableType, reportUnknownMemberType]
+        center_x: int = int(rect["x"]) + int(rect["width"]) // 2  # type: ignore[reportUnknownArgumentType]
+        center_y: int = int(rect["y"]) + int(rect["height"]) // 2  # type: ignore[reportUnknownArgumentType]
 
         # Calculate pinch distance
-        distance = int(min(rect["width"], rect["height"]) * percent / 2)
+        distance: int = int(min(int(rect["width"]), int(rect["height"])) * percent / 2)  # type: ignore[reportUnknownArgumentType]
         duration_ms = int((distance / speed) * 1000) if speed > 0 else 0
 
         # Two fingers moving toward center
-        finger1_start_x = center_x
-        finger1_start_y = center_y - distance
-        finger1_end_x = center_x
-        finger1_end_y = center_y
+        finger1_start_x: int = center_x
+        finger1_start_y: int = center_y - distance
+        finger1_end_x: int = center_x
+        finger1_end_y: int = center_y
 
-        finger2_start_x = center_x
-        finger2_start_y = center_y + distance
-        finger2_end_x = center_x
-        finger2_end_y = center_y
+        finger2_start_x: int = center_x
+        finger2_start_y: int = center_y + distance
+        finger2_end_x: int = center_x
+        finger2_end_y: int = center_y
 
         self._multi_touch_gesture(
             [(finger1_start_x, finger1_start_y), (finger2_start_x, finger2_start_y)],
@@ -337,29 +340,42 @@ class W3CActions:
         actions = ActionChains(self._driver)
         actions.w3c_actions.devices = []
 
-        for i, (start_pos, end_pos) in enumerate(zip(start_positions, end_positions, strict=False)):
+        for i, (start_pos, end_pos) in enumerate(zip(start_positions, end_positions, strict=False)):  # type: ignore[reportUnknownArgumentType]
             finger_input = actions.w3c_actions.add_pointer_input(
                 interaction.POINTER_TOUCH,
                 f"finger{i + 1}",
             )
 
             # Move to start position
-            finger_input.create_pointer_move(x=start_pos[0], y=start_pos[1])
-            finger_input.create_pointer_down()
+            finger_input.create_pointer_move(x=start_pos[0], y=start_pos[1])  # type: ignore[reportUnknownMemberType]
+            finger_input.create_pointer_down()  # type: ignore[reportUnknownMemberType]
 
             # Pause for duration (optional)
             if duration_ms > 0:
                 finger_input.create_pause(duration_ms / 1000)
 
             # Move to end position
-            finger_input.create_pointer_move(
-                x=end_pos[0],
-                y=end_pos[1],
-                duration=duration_ms / 1000 if duration_ms > 0 else 0,
+            finger_input.create_pointer_move(  # type: ignore[reportUnknownMemberType]
+                x=end_pos[0],  # type: ignore[reportUnknownArgumentType]
+                y=end_pos[1],  # type: ignore[reportUnknownArgumentType]
+                duration=int(duration_ms / 1000) if duration_ms > 0 else 0,
             )
-            finger_input.create_pointer_up()
+            finger_input.create_pointer_up(interaction.POINTER_TOUCH)  # type: ignore[reportUnknownMemberType]
 
         actions.perform()
+
+    def _raise_invalid_direction_error(self, direction: str) -> NoReturn:
+        """Raise ValueError for invalid direction.
+
+        Args:
+            direction: Направление, которое было передано.
+
+        Raises:
+            ValueError: Всегда вызывает исключение для неверного направления.
+
+        """
+        msg = f"Invalid direction: {direction}. Use up/down/left/right."
+        raise ValueError(msg)
 
     @property
     def _driver(self) -> WebDriver:
