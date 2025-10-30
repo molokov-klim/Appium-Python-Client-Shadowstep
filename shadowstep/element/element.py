@@ -19,6 +19,7 @@ from shadowstep.element.properties import ElementProperties
 from shadowstep.element.screenshots import ElementScreenshots
 from shadowstep.element.utilities import ElementUtilities
 from shadowstep.element.waiting import ElementWaiting
+from shadowstep.enums import GestureStrategy
 from shadowstep.locator import UiSelector
 from shadowstep.utils.utils import get_current_func_name
 
@@ -29,7 +30,6 @@ if TYPE_CHECKING:
 
     from shadowstep.element.should import Should
     from shadowstep.shadowstep import Shadowstep
-
 
 # Configure the root logger (basic configuration)
 logging.basicConfig(
@@ -43,13 +43,13 @@ class Element(ElementBase):
     """Public API for Element."""
 
     def __init__(  # noqa: PLR0913
-        self,
-        locator: tuple[str, str] | dict[str, Any] | Element | UiSelector,
-        shadowstep: Shadowstep,
-        timeout: float = 30,
-        poll_frequency: float = 0.5,
-        ignored_exceptions: WaitExcTypes | None = None,
-        native: WebElement | None = None,
+            self,
+            locator: tuple[str, str] | dict[str, Any] | Element | UiSelector,
+            shadowstep: Shadowstep,
+            timeout: float = 30,
+            poll_frequency: float = 0.5,
+            ignored_exceptions: WaitExcTypes | None = None,
+            native: WebElement | None = None,
     ) -> None:
         """Initialize Element with locator and configuration.
 
@@ -90,11 +90,11 @@ class Element(ElementBase):
     # ------------------------ dom ------------------------
 
     def get_element(
-        self,
-        locator: tuple[str, str] | dict[str, Any] | Element | UiSelector,
-        timeout: int = 30,
-        poll_frequency: float = 0.5,
-        ignored_exceptions: WaitExcTypes | None = None,
+            self,
+            locator: tuple[str, str] | dict[str, Any] | Element | UiSelector,
+            timeout: int = 30,
+            poll_frequency: float = 0.5,
+            ignored_exceptions: WaitExcTypes | None = None,
     ) -> Element:
         """Return a single Element, lazy.
 
@@ -112,11 +112,11 @@ class Element(ElementBase):
 
     @fail_safe_element()
     def get_elements(
-        self,
-        locator: tuple[str, str] | dict[str, Any] | Element | UiSelector,
-        timeout: float = 30,
-        poll_frequency: float = 0.5,
-        ignored_exceptions: WaitExcTypes | None = None,
+            self,
+            locator: tuple[str, str] | dict[str, Any] | Element | UiSelector,
+            timeout: float = 30,
+            poll_frequency: float = 0.5,
+            ignored_exceptions: WaitExcTypes | None = None,
     ) -> list[Element]:
         """Find multiple Elements within this element's context. Greedy.
 
@@ -133,10 +133,10 @@ class Element(ElementBase):
         return self.dom.get_elements(locator, timeout, poll_frequency, ignored_exceptions)
 
     def get_parent(
-        self,
-        timeout: float = 30,
-        poll_frequency: float = 0.5,
-        ignored_exceptions: WaitExcTypes | None = None,
+            self,
+            timeout: float = 30,
+            poll_frequency: float = 0.5,
+            ignored_exceptions: WaitExcTypes | None = None,
     ) -> Element:
         """Get the parent element of this element. Lazy.
 
@@ -153,10 +153,10 @@ class Element(ElementBase):
 
     @fail_safe_element()
     def get_parents(
-        self,
-        timeout: float = 30,
-        poll_frequency: float = 0.5,
-        ignored_exceptions: WaitExcTypes | None = None,
+            self,
+            timeout: float = 30,
+            poll_frequency: float = 0.5,
+            ignored_exceptions: WaitExcTypes | None = None,
     ) -> list[Element]:
         """Get all parent elements of this element. Greedy.
 
@@ -172,11 +172,11 @@ class Element(ElementBase):
         return self.dom.get_parents(timeout, poll_frequency, ignored_exceptions)
 
     def get_sibling(
-        self,
-        locator: tuple[str, str] | dict[str, Any] | Element | UiSelector,
-        timeout: float = 30,
-        poll_frequency: float = 0.5,
-        ignored_exceptions: WaitExcTypes | None = None,
+            self,
+            locator: tuple[str, str] | dict[str, Any] | Element | UiSelector,
+            timeout: float = 30,
+            poll_frequency: float = 0.5,
+            ignored_exceptions: WaitExcTypes | None = None,
     ) -> Element:
         """Get a sibling element of this element. Lazy.
 
@@ -194,11 +194,11 @@ class Element(ElementBase):
 
     @fail_safe_element()
     def get_siblings(
-        self,
-        locator: tuple[str, str] | dict[str, Any] | Element | UiSelector,
-        timeout: float = 30.0,
-        poll_frequency: float = 0.5,
-        ignored_exceptions: WaitExcTypes | None = None,
+            self,
+            locator: tuple[str, str] | dict[str, Any] | Element | UiSelector,
+            timeout: float = 30.0,
+            poll_frequency: float = 0.5,
+            ignored_exceptions: WaitExcTypes | None = None,
     ) -> list[Element]:
         """Get all sibling elements of this element. Greedy.
 
@@ -215,12 +215,12 @@ class Element(ElementBase):
         return self.dom.get_siblings(locator, timeout, poll_frequency, ignored_exceptions)
 
     def get_cousin(
-        self,
-        cousin_locator: tuple[str, str] | dict[str, Any] | Element | UiSelector,
-        depth_to_parent: int = 1,
-        timeout: float = 30.0,
-        poll_frequency: float = 0.5,
-        ignored_exceptions: WaitExcTypes | None = None,
+            self,
+            cousin_locator: tuple[str, str] | dict[str, Any] | Element | UiSelector,
+            depth_to_parent: int = 1,
+            timeout: float = 30.0,
+            poll_frequency: float = 0.5,
+            ignored_exceptions: WaitExcTypes | None = None,
     ) -> Element:
         """Get a cousin element (sibling of parent) of this element. Lazy.
 
@@ -245,12 +245,12 @@ class Element(ElementBase):
 
     @fail_safe_element()
     def get_cousins(
-        self,
-        cousin_locator: tuple[str, str] | dict[str, Any] | Element | UiSelector,
-        depth_to_parent: int = 1,
-        timeout: float = 30.0,
-        poll_frequency: float = 0.5,
-        ignored_exceptions: WaitExcTypes | None = None,
+            self,
+            cousin_locator: tuple[str, str] | dict[str, Any] | Element | UiSelector,
+            depth_to_parent: int = 1,
+            timeout: float = 30.0,
+            poll_frequency: float = 0.5,
+            ignored_exceptions: WaitExcTypes | None = None,
     ) -> list[Element]:
         """Get all cousin elements (siblings of parent) of this element. Greedy.
 
@@ -344,12 +344,12 @@ class Element(ElementBase):
 
     @fail_safe_element()
     def tap_and_move(
-        self,
-        locator: tuple[str, str] | dict[str, Any] | Element | UiSelector | None = None,
-        x: int | None = None,
-        y: int | None = None,
-        direction: int | None = None,
-        distance: int | None = None,
+            self,
+            locator: tuple[str, str] | dict[str, Any] | Element | UiSelector | None = None,
+            x: int | None = None,
+            y: int | None = None,
+            direction: int | None = None,
+            distance: int | None = None,
     ) -> Element:
         """Tap and move to another element or coordinates.
 
@@ -367,7 +367,11 @@ class Element(ElementBase):
         return self.gestures.tap_and_move(locator, x, y, direction, distance)
 
     @fail_safe_element()
-    def click(self, duration: int | None = None) -> Element:
+    def click(
+            self,
+            duration: int | None = None,
+            strategy: GestureStrategy = GestureStrategy.MOBILE_COMMANDS,
+    ) -> Element:
         """Click the element.
 
         Args:
@@ -377,20 +381,29 @@ class Element(ElementBase):
             Element: Self for method chaining.
 
         """
-        return self.gestures.click(duration)
+        return self.gestures.click(duration, strategy)
 
     @fail_safe_element()
-    def double_click(self) -> Element:
+    def double_click(
+            self,
+            strategy: GestureStrategy = GestureStrategy.MOBILE_COMMANDS,
+    ) -> Element:
         """Perform a double click on the element.
 
         Returns:
             Element: Self for method chaining.
 
         """
-        return self.gestures.double_click()
+        return self.gestures.double_click(strategy)
 
     @fail_safe_element()
-    def drag(self, end_x: int, end_y: int, speed: int = 2500) -> Element:
+    def drag(
+            self,
+            end_x: int,
+            end_y: int,
+            speed: int = 2500,
+            strategy: GestureStrategy = GestureStrategy.MOBILE_COMMANDS,
+    ) -> Element:
         """Drag the element to target coordinates.
 
         Args:
@@ -402,9 +415,13 @@ class Element(ElementBase):
             Element: Self for method chaining.
 
         """
-        return self.gestures.drag(end_x, end_y, speed)
+        return self.gestures.drag(end_x, end_y, speed, strategy)
 
-    def fling_up(self, speed: int = 2500) -> Element:
+    def fling_up(
+            self,
+            speed: int = 2500,
+            strategy: GestureStrategy = GestureStrategy.AUTO,
+    ) -> Element:
         """Perform a fling gesture upward on the element.
 
         Args:
@@ -414,9 +431,13 @@ class Element(ElementBase):
             Element: Self for method chaining.
 
         """
-        return self.fling(speed=speed, direction="up")
+        return self.fling(speed=speed, direction="up", strategy=strategy)
 
-    def fling_down(self, speed: int = 2500) -> Element:
+    def fling_down(
+            self,
+            speed: int = 2500,
+            strategy: GestureStrategy = GestureStrategy.AUTO,
+    ) -> Element:
         """Perform a fling gesture downward on the element.
 
         Args:
@@ -426,9 +447,13 @@ class Element(ElementBase):
             Element: Self for method chaining.
 
         """
-        return self.fling(speed=speed, direction="down")
+        return self.fling(speed=speed, direction="down", strategy=strategy)
 
-    def fling_left(self, speed: int = 2500) -> Element:
+    def fling_left(
+            self,
+            speed: int = 2500,
+            strategy: GestureStrategy = GestureStrategy.AUTO,
+    ) -> Element:
         """Perform a fling gesture leftward on the element.
 
         Args:
@@ -438,9 +463,13 @@ class Element(ElementBase):
             Element: Self for method chaining.
 
         """
-        return self.fling(speed=speed, direction="left")
+        return self.fling(speed=speed, direction="left", strategy=strategy)
 
-    def fling_right(self, speed: int = 2500) -> Element:
+    def fling_right(
+            self,
+            speed: int = 2500,
+            strategy: GestureStrategy = GestureStrategy.AUTO,
+    ) -> Element:
         """Perform a fling gesture rightward on the element.
 
         Args:
@@ -450,10 +479,15 @@ class Element(ElementBase):
             Element: Self for method chaining.
 
         """
-        return self.fling(speed=speed, direction="right")
+        return self.fling(speed=speed, direction="right", strategy=strategy)
 
     @fail_safe_element()
-    def fling(self, speed: int, direction: str) -> Element:
+    def fling(
+            self,
+            speed: int,
+            direction: str,
+            strategy: GestureStrategy = GestureStrategy.MOBILE_COMMANDS,
+    ) -> Element:
         """Perform a fling gesture on the element.
 
         Args:
@@ -464,13 +498,14 @@ class Element(ElementBase):
             Element: Self for method chaining.
 
         """
-        return self.gestures.fling(speed, direction)
+        return self.gestures.fling(speed, direction, strategy)
 
     def scroll_down(
-        self,
-        percent: float = 0.7,
-        speed: int = 2000,
-        return_bool: bool = False,  # noqa: FBT001, FBT002
+            self,
+            percent: float = 0.7,
+            speed: int = 2000,
+            return_bool: bool = False,  # noqa: FBT001, FBT002
+            strategy: GestureStrategy = GestureStrategy.AUTO,
     ) -> Element | bool:
         """Scroll down within the element.
 
@@ -483,13 +518,14 @@ class Element(ElementBase):
             Element | bool: Self for method chaining or boolean if return_bool is True.
 
         """
-        return self.scroll(direction="down", percent=percent, speed=speed, return_bool=return_bool)
+        return self.scroll(direction="down", percent=percent, speed=speed, return_bool=return_bool, strategy=strategy)
 
     def scroll_up(
-        self,
-        percent: float = 0.7,
-        speed: int = 2000,
-        return_bool: bool = False,  # noqa: FBT001, FBT002
+            self,
+            percent: float = 0.7,
+            speed: int = 2000,
+            return_bool: bool = False,  # noqa: FBT001, FBT002
+            strategy: GestureStrategy = GestureStrategy.AUTO,
     ) -> Element | bool:
         """Scroll up within the element.
 
@@ -502,13 +538,14 @@ class Element(ElementBase):
             Element | bool: Self for method chaining or boolean if return_bool is True.
 
         """
-        return self.scroll(direction="up", percent=percent, speed=speed, return_bool=return_bool)
+        return self.scroll(direction="up", percent=percent, speed=speed, return_bool=return_bool, strategy=strategy)
 
     def scroll_left(
-        self,
-        percent: float = 0.7,
-        speed: int = 2000,
-        return_bool: bool = False,  # noqa: FBT001, FBT002
+            self,
+            percent: float = 0.7,
+            speed: int = 2000,
+            return_bool: bool = False,  # noqa: FBT001, FBT002
+            strategy: GestureStrategy = GestureStrategy.AUTO,
     ) -> Element | bool:
         """Scroll left within the element.
 
@@ -521,13 +558,14 @@ class Element(ElementBase):
             Element | bool: Self for method chaining or boolean if return_bool is True.
 
         """
-        return self.scroll(direction="left", percent=percent, speed=speed, return_bool=return_bool)
+        return self.scroll(direction="left", percent=percent, speed=speed, return_bool=return_bool, strategy=strategy)
 
     def scroll_right(
-        self,
-        percent: float = 0.7,
-        speed: int = 2000,
-        return_bool: bool = False,  # noqa: FBT001, FBT002
+            self,
+            percent: float = 0.7,
+            speed: int = 2000,
+            return_bool: bool = False,  # noqa: FBT001, FBT002
+            strategy: GestureStrategy = GestureStrategy.AUTO,
     ) -> Element | bool:
         """Scroll right within the element.
 
@@ -540,10 +578,17 @@ class Element(ElementBase):
             Element | bool: Self for method chaining or boolean if return_bool is True.
 
         """
-        return self.scroll(direction="right", percent=percent, speed=speed, return_bool=return_bool)
+        return self.scroll(direction="right", percent=percent, speed=speed, return_bool=return_bool, strategy=strategy)
 
     @fail_safe_element()
-    def scroll(self, direction: str, percent: float, speed: int, return_bool: bool) -> Element | bool:  # noqa: FBT001
+    def scroll(
+            self,
+            direction: str,
+            percent: float,
+            speed: int,
+            return_bool: bool,  # noqa: FBT001
+            strategy: GestureStrategy = GestureStrategy.AUTO,
+    ) -> Element | bool:
         """Scroll within the element in specified direction.
 
         Args:
@@ -556,10 +601,15 @@ class Element(ElementBase):
             Element | bool: Self for method chaining or boolean if return_bool is True.
 
         """
-        return self.gestures.scroll(direction, percent, speed, return_bool)
+        return self.gestures.scroll(direction, percent, speed, return_bool, strategy)
 
     @fail_safe_element()
-    def scroll_to_bottom(self, percent: float = 0.7, speed: int = 8000) -> Element:
+    def scroll_to_bottom(
+            self,
+            percent: float = 0.7,
+            speed: int = 8000,
+            strategy: GestureStrategy = GestureStrategy.AUTO,
+    ) -> Element:
         """Scroll to the bottom of the element.
 
         Args:
@@ -570,10 +620,15 @@ class Element(ElementBase):
             Element: Self for method chaining.
 
         """
-        return self.gestures.scroll_to_bottom(percent, speed)
+        return self.gestures.scroll_to_bottom(percent, speed, strategy)
 
     @fail_safe_element()
-    def scroll_to_top(self, percent: float = 0.7, speed: int = 8000) -> Element:
+    def scroll_to_top(
+            self,
+            percent: float = 0.7,
+            speed: int = 8000,
+            strategy: GestureStrategy = GestureStrategy.AUTO,
+    ) -> Element:
         """Scroll to the top of the element.
 
         Args:
@@ -584,13 +639,14 @@ class Element(ElementBase):
             Element: Self for method chaining.
 
         """
-        return self.gestures.scroll_to_top(percent, speed)
+        return self.gestures.scroll_to_top(percent, speed, strategy)
 
     @fail_safe_element()
     def scroll_to_element(
-        self,
-        locator: tuple[str, str] | dict[str, Any] | Element | UiSelector,
-        max_swipes: int = 30,
+            self,
+            locator: tuple[str, str] | dict[str, Any] | Element | UiSelector,
+            max_swipes: int = 30,
+            strategy: GestureStrategy = GestureStrategy.AUTO,
     ) -> Element:
         """Scroll to find and return a specific element.
 
@@ -602,10 +658,15 @@ class Element(ElementBase):
             Element: Found element instance.
 
         """
-        return self.gestures.scroll_to_element(locator, max_swipes)
+        return self.gestures.scroll_to_element(locator, max_swipes, strategy)
 
     @fail_safe_element()
-    def zoom(self, percent: float = 0.75, speed: int = 2500) -> Element:
+    def zoom(
+            self,
+            percent: float = 0.75,
+            speed: int = 2500,
+            strategy: GestureStrategy = GestureStrategy.MOBILE_COMMANDS,
+    ) -> Element:
         """Perform a zoom gesture on the element.
 
         Args:
@@ -616,10 +677,15 @@ class Element(ElementBase):
             Element: Self for method chaining.
 
         """
-        return self.gestures.zoom(percent, speed)
+        return self.gestures.zoom(percent, speed, strategy)
 
     @fail_safe_element()
-    def unzoom(self, percent: float = 0.75, speed: int = 2500) -> Element:
+    def unzoom(
+            self,
+            percent: float = 0.75,
+            speed: int = 2500,
+            strategy: GestureStrategy = GestureStrategy.MOBILE_COMMANDS,
+    ) -> Element:
         """Perform an unzoom gesture on the element.
 
         Args:
@@ -630,9 +696,14 @@ class Element(ElementBase):
             Element: Self for method chaining.
 
         """
-        return self.gestures.unzoom(percent, speed)
+        return self.gestures.unzoom(percent, speed, strategy)
 
-    def swipe_up(self, percent: float = 0.75, speed: int = 5000) -> Element:
+    def swipe_up(
+            self,
+            percent: float = 0.75,
+            speed: int = 5000,
+            strategy: GestureStrategy = GestureStrategy.AUTO,
+    ) -> Element:
         """Perform a swipe up gesture on the element.
 
         Args:
@@ -643,9 +714,14 @@ class Element(ElementBase):
             Element: Self for method chaining.
 
         """
-        return self.swipe(direction="up", percent=percent, speed=speed)
+        return self.swipe(direction="up", percent=percent, speed=speed, strategy=strategy)
 
-    def swipe_down(self, percent: float = 0.75, speed: int = 5000) -> Element:
+    def swipe_down(
+            self,
+            percent: float = 0.75,
+            speed: int = 5000,
+            strategy: GestureStrategy = GestureStrategy.AUTO,
+    ) -> Element:
         """Perform a swipe down gesture on the element.
 
         Args:
@@ -656,9 +732,14 @@ class Element(ElementBase):
             Element: Self for method chaining.
 
         """
-        return self.swipe(direction="down", percent=percent, speed=speed)
+        return self.swipe(direction="down", percent=percent, speed=speed, strategy=strategy)
 
-    def swipe_left(self, percent: float = 0.75, speed: int = 5000) -> Element:
+    def swipe_left(
+            self,
+            percent: float = 0.75,
+            speed: int = 5000,
+            strategy: GestureStrategy = GestureStrategy.AUTO,
+    ) -> Element:
         """Perform a swipe left gesture on the element.
 
         Args:
@@ -669,9 +750,14 @@ class Element(ElementBase):
             Element: Self for method chaining.
 
         """
-        return self.swipe(direction="left", percent=percent, speed=speed)
+        return self.swipe(direction="left", percent=percent, speed=speed, strategy=strategy)
 
-    def swipe_right(self, percent: float = 0.75, speed: int = 5000) -> Element:
+    def swipe_right(
+            self,
+            percent: float = 0.75,
+            speed: int = 5000,
+            strategy: GestureStrategy = GestureStrategy.AUTO,
+    ) -> Element:
         """Perform a swipe right gesture on the element.
 
         Args:
@@ -682,10 +768,16 @@ class Element(ElementBase):
             Element: Self for method chaining.
 
         """
-        return self.swipe(direction="right", percent=percent, speed=speed)
+        return self.swipe(direction="right", percent=percent, speed=speed, strategy=strategy)
 
     @fail_safe_element()
-    def swipe(self, direction: str, percent: float = 0.75, speed: int = 5000) -> Element:
+    def swipe(
+            self,
+            direction: str,
+            percent: float = 0.75,
+            speed: int = 5000,
+            strategy: GestureStrategy = GestureStrategy.AUTO,
+    ) -> Element:
         """Perform a swipe gesture on the element.
 
         Args:
@@ -697,7 +789,7 @@ class Element(ElementBase):
             Element: Self for method chaining.
 
         """
-        return self.gestures.swipe(direction, percent, speed)
+        return self.gestures.swipe(direction, percent, speed, strategy)
 
     # ------------------------ properties ------------------------
 
@@ -800,8 +892,8 @@ class Element(ElementBase):
 
     @fail_safe_element_check()
     def is_contains(
-        self,
-        locator: tuple[str, str] | dict[str, Any] | Element | UiSelector,
+            self,
+            locator: tuple[str, str] | dict[str, Any] | Element | UiSelector,
     ) -> bool:
         """Check if the element contains another element.
 
@@ -1195,10 +1287,10 @@ class Element(ElementBase):
 
     @fail_safe_element_check()
     def wait(
-        self,
-        timeout: int = 10,
-        poll_frequency: float = 0.5,
-        return_bool: bool = False,  # noqa: FBT001, FBT002
+            self,
+            timeout: int = 10,
+            poll_frequency: float = 0.5,
+            return_bool: bool = False,  # noqa: FBT001, FBT002
     ) -> Element | bool:
         """Wait for the element to appear (present in DOM).
 
@@ -1215,10 +1307,10 @@ class Element(ElementBase):
 
     @fail_safe_element_check()
     def wait_visible(
-        self,
-        timeout: int = 10,
-        poll_frequency: float = 0.5,
-        return_bool: bool = False,  # noqa: FBT001, FBT002
+            self,
+            timeout: int = 10,
+            poll_frequency: float = 0.5,
+            return_bool: bool = False,  # noqa: FBT001, FBT002
     ) -> Element | bool:
         """Wait until the element is visible.
 
@@ -1239,10 +1331,10 @@ class Element(ElementBase):
 
     @fail_safe_element_check()
     def wait_clickable(
-        self,
-        timeout: int = 10,
-        poll_frequency: float = 0.5,
-        return_bool: bool = False,  # noqa: FBT001, FBT002
+            self,
+            timeout: int = 10,
+            poll_frequency: float = 0.5,
+            return_bool: bool = False,  # noqa: FBT001, FBT002
     ) -> Element | bool:
         """Wait until the element is clickable.
 
@@ -1259,10 +1351,10 @@ class Element(ElementBase):
 
     @fail_safe_element_check()
     def wait_for_not(
-        self,
-        timeout: int = 10,
-        poll_frequency: float = 0.5,
-        return_bool: bool = False,  # noqa: FBT001, FBT002
+            self,
+            timeout: int = 10,
+            poll_frequency: float = 0.5,
+            return_bool: bool = False,  # noqa: FBT001, FBT002
     ) -> Element | bool:
         """Wait until the element is no longer present in the DOM.
 
@@ -1283,10 +1375,10 @@ class Element(ElementBase):
 
     @fail_safe_element_check()
     def wait_for_not_visible(
-        self,
-        timeout: int = 10,
-        poll_frequency: float = 0.5,
-        return_bool: bool = False,  # noqa: FBT001, FBT002
+            self,
+            timeout: int = 10,
+            poll_frequency: float = 0.5,
+            return_bool: bool = False,  # noqa: FBT001, FBT002
     ) -> Element | bool:
         """Wait until the element becomes invisible.
 
@@ -1303,10 +1395,10 @@ class Element(ElementBase):
 
     @fail_safe_element_check()
     def wait_for_not_clickable(
-        self,
-        timeout: int = 10,
-        poll_frequency: float = 0.5,
-        return_bool: bool = False,  # noqa: FBT001, FBT002
+            self,
+            timeout: int = 10,
+            poll_frequency: float = 0.5,
+            return_bool: bool = False,  # noqa: FBT001, FBT002
     ) -> Element | bool:
         """Wait until the element becomes not clickable.
 
