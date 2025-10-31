@@ -10,7 +10,7 @@ import inspect
 import logging
 import time
 import traceback
-from typing import TYPE_CHECKING, Any, cast
+from typing import TYPE_CHECKING, Any
 
 from selenium.common.exceptions import WebDriverException
 from selenium.webdriver import ActionChains
@@ -52,18 +52,76 @@ class ElementGestures:
         self.mobile_commands = MobileCommands()
         self.w3c_actions = W3CActions()
 
+    def _execute_gesture_with_auto_fallback(
+            self,
+            w3c_method: Any,
+            mobile_method: Any,
+            *args: Any,
+            **kwargs: Any,
+    ) -> Any:
+        """Execute gesture with automatic fallback from W3C Actions to mobile commands.
+
+        Args:
+            w3c_method: W3C Actions implementation method.
+            mobile_method: Mobile commands implementation method.
+            *args: Positional arguments to pass to methods.
+            **kwargs: Keyword arguments to pass to methods.
+
+        Returns:
+            Result from either W3C or mobile commands method.
+
+        """
+        try:
+            return w3c_method(*args, **kwargs)
+        except Exception as e:
+            self.logger.warning(
+                "W3C Actions failed: %s. Falling back to mobile commands.",
+                e,
+                exc_info=False,
+            )
+            return mobile_method(*args, **kwargs)
+
     @log_debug()
-    def tap(self, duration: int | None = None) -> Element:
+    def tap(
+            self,
+            duration: int | None = None,
+            strategy: GestureStrategy = GestureStrategy.AUTO,
+    ) -> Element:
         """Tap the element.
 
         Args:
             duration: Duration of the tap in milliseconds.
+            strategy: Gesture strategy (W3C_ACTIONS, MOBILE_COMMANDS, AUTO).
 
         Returns:
             The element for method chaining.
 
         """
         self.element.get_driver()
+        native_element = self.element._get_web_element(  # type: ignore[reportPrivateUsage]
+            locator=self.element.locator)  # type: ignore[reportPrivateUsage]
+
+        if strategy == GestureStrategy.AUTO:
+            return self._execute_gesture_with_auto_fallback(
+                self._tap_w3c_actions,
+                self._tap_mobile_commands,
+                native_element,
+                duration,
+            )
+
+        method_map = {
+            GestureStrategy.W3C_ACTIONS: self._tap_w3c_actions,
+            GestureStrategy.MOBILE_COMMANDS: self._tap_mobile_commands,
+        }
+        return method_map[strategy](native_element, duration)
+
+    def _tap_w3c_actions(self, native_element: WebElement, duration: int | None = None) -> Element:
+        """Tap using W3C Actions (implemented via click)."""
+        self.w3c_actions.click(native_element, duration=duration)
+        return self.element
+
+    def _tap_mobile_commands(self, native_element: WebElement, duration: int | None = None) -> Element:
+        """Tap using mobile commands (legacy driver.tap method)."""
         x, y = self.element.get_center()
         self.element.driver.tap(positions=[(x, y)], duration=duration)
         return self.element
@@ -99,7 +157,7 @@ class ElementGestures:
     def click(
             self,
             duration: int | None = None,
-            strategy: GestureStrategy = GestureStrategy.MOBILE_COMMANDS,
+            strategy: GestureStrategy = GestureStrategy.AUTO,
     ) -> Element:
         """Click the element.
 
@@ -114,10 +172,18 @@ class ElementGestures:
         self.element.get_driver()
         native_element = self.element._get_web_element(  # type: ignore[reportPrivateUsage]
             locator=self.element.locator)  # type: ignore[reportPrivateUsage]
+
+        if strategy == GestureStrategy.AUTO:
+            return self._execute_gesture_with_auto_fallback(
+                self._click_w3c_commands,
+                self._click_mobile_commands,
+                native_element,
+                duration,
+            )
+
         method_map = {
             GestureStrategy.W3C_ACTIONS: self._click_w3c_commands,
             GestureStrategy.MOBILE_COMMANDS: self._click_mobile_commands,
-            GestureStrategy.AUTO: self._click_mobile_commands,
         }
         return method_map[strategy](native_element, duration)
 
@@ -135,7 +201,7 @@ class ElementGestures:
         return self.element
 
     @log_debug()
-    def double_click(self, strategy: GestureStrategy = GestureStrategy.MOBILE_COMMANDS) -> Element:
+    def double_click(self, strategy: GestureStrategy = GestureStrategy.AUTO) -> Element:
         """Double-click the element.
 
         Returns:
@@ -145,10 +211,17 @@ class ElementGestures:
         self.element.get_driver()
         native_element = self.element._get_web_element(  # type: ignore[reportPrivateUsage]
             locator=self.element.locator)  # type: ignore[reportPrivateUsage]
+
+        if strategy == GestureStrategy.AUTO:
+            return self._execute_gesture_with_auto_fallback(
+                self._double_click_w3c_commands,
+                self._double_click_mobile_commands,
+                native_element,
+            )
+
         method_map = {
             GestureStrategy.W3C_ACTIONS: self._double_click_w3c_commands,
             GestureStrategy.MOBILE_COMMANDS: self._double_click_mobile_commands,
-            GestureStrategy.AUTO: self._double_click_w3c_commands,
         }
         return method_map[strategy](native_element)
 
@@ -166,7 +239,7 @@ class ElementGestures:
             end_x: int,
             end_y: int,
             speed: int = 2500,
-            strategy: GestureStrategy = GestureStrategy.MOBILE_COMMANDS,
+            strategy: GestureStrategy = GestureStrategy.AUTO,
     ) -> Element:
         """Drag the element to specified coordinates.
 
@@ -183,10 +256,20 @@ class ElementGestures:
         self.element.get_driver()
         native_element = self.element._get_web_element(  # type: ignore[reportPrivateUsage]
             locator=self.element.locator)  # type: ignore[reportPrivateUsage]
+
+        if strategy == GestureStrategy.AUTO:
+            return self._execute_gesture_with_auto_fallback(
+                self._drag_w3c_actions,
+                self._drag_mobile_commands,
+                native_element,
+                end_x,
+                end_y,
+                speed,
+            )
+
         method_map = {
             GestureStrategy.W3C_ACTIONS: self._drag_w3c_actions,
             GestureStrategy.MOBILE_COMMANDS: self._drag_mobile_commands,
-            GestureStrategy.AUTO: self._drag_w3c_actions,
         }
         return method_map[strategy](native_element, end_x, end_y, speed)
 
@@ -217,7 +300,7 @@ class ElementGestures:
             self,
             speed: int,
             direction: str,
-            strategy: GestureStrategy = GestureStrategy.MOBILE_COMMANDS,
+            strategy: GestureStrategy = GestureStrategy.AUTO,
     ) -> Element:
         """Perform a fling gesture on the element.
 
@@ -240,10 +323,19 @@ class ElementGestures:
         self.element.get_driver()
         native_element = self.element._get_web_element(  # type: ignore[reportPrivateUsage]
             locator=self.element.locator)  # type: ignore[reportPrivateUsage]
+
+        if strategy == GestureStrategy.AUTO:
+            return self._execute_gesture_with_auto_fallback(
+                self._fling_w3c_actions,
+                self._fling_mobile_commands,
+                native_element,
+                speed,
+                direction,
+            )
+
         method_map = {
             GestureStrategy.W3C_ACTIONS: self._fling_w3c_actions,
             GestureStrategy.MOBILE_COMMANDS: self._fling_mobile_commands,
-            GestureStrategy.AUTO: self._fling_w3c_actions,
         }
         return method_map[strategy](native_element, speed, direction)
 
@@ -299,10 +391,21 @@ class ElementGestures:
         self.element.get_driver()
         native_element = self.element._get_web_element(  # type: ignore[reportPrivateUsage]
             locator=self.element.locator)  # type: ignore[reportPrivateUsage]
+
+        if strategy == GestureStrategy.AUTO:
+            return self._execute_gesture_with_auto_fallback(
+                self._scroll_w3c_actions,
+                self._scroll_mobile_commands,
+                native_element,
+                direction,
+                percent,
+                speed,
+                return_bool,
+            )
+
         method_map = {
             GestureStrategy.W3C_ACTIONS: self._scroll_w3c_actions,
             GestureStrategy.MOBILE_COMMANDS: self._scroll_mobile_commands,
-            GestureStrategy.AUTO: self._scroll_mobile_commands,
         }
         return method_map[strategy](native_element, direction, percent, speed, return_bool)
 
@@ -356,27 +459,33 @@ class ElementGestures:
             The element for method chaining.
 
         """
+        if strategy == GestureStrategy.AUTO:
+            return self._execute_gesture_with_auto_fallback(
+                self._scroll_to_bottom_w3c_actions,
+                self._scroll_to_bottom_mobile_commands,
+                percent,
+                speed,
+            )
+
         method_map = {
             GestureStrategy.W3C_ACTIONS: self._scroll_to_bottom_w3c_actions,
             GestureStrategy.MOBILE_COMMANDS: self._scroll_to_bottom_mobile_commands,
-            GestureStrategy.AUTO: self._scroll_to_bottom_mobile_commands,
         }
         return method_map[strategy](percent, speed)
 
     def _scroll_to_bottom_w3c_actions(self,
                                       percent: float = 0.7,
                                       speed: int = 8000) -> Element:
-        last_hash = cast("int", None)
         start_time = time.time()
         while time.time() - start_time < self.element.timeout:
-            page_hash = hash(self.shadowstep.driver.page_source)
-            if page_hash == last_hash:
-                return self.element
-            last_hash = page_hash
-            self.element.scroll_down(percent=percent,
-                                     speed=speed,
-                                     return_bool=True,
-                                     strategy=GestureStrategy.W3C_ACTIONS)
+            can_scroll = self.element.scroll_down(
+                percent=percent,
+                speed=speed,
+                return_bool=True,
+                strategy=GestureStrategy.W3C_ACTIONS,
+            )
+            if not can_scroll:
+                break
         return self.element
 
     def _scroll_to_bottom_mobile_commands(self,
@@ -408,27 +517,33 @@ class ElementGestures:
             The element for method chaining.
 
         """
+        if strategy == GestureStrategy.AUTO:
+            return self._execute_gesture_with_auto_fallback(
+                self._scroll_to_top_w3c_actions,
+                self._scroll_to_top_mobile_commands,
+                percent,
+                speed,
+            )
+
         method_map = {
             GestureStrategy.W3C_ACTIONS: self._scroll_to_top_w3c_actions,
             GestureStrategy.MOBILE_COMMANDS: self._scroll_to_top_mobile_commands,
-            GestureStrategy.AUTO: self._scroll_to_top_mobile_commands,
         }
         return method_map[strategy](percent, speed)
 
     def _scroll_to_top_w3c_actions(self,
                                    percent: float = 0.7,
                                    speed: int = 8000) -> Element:
-        last_hash = cast("int", None)
         start_time = time.time()
         while time.time() - start_time < self.element.timeout:
-            page_hash = hash(self.shadowstep.driver.page_source)
-            if page_hash == last_hash:
-                return self.element
-            last_hash = page_hash
-            self.element.scroll_up(percent=percent,
-                                   speed=speed,
-                                   return_bool=True,
-                                   strategy=GestureStrategy.W3C_ACTIONS)
+            can_scroll = self.element.scroll_up(
+                percent=percent,
+                speed=speed,
+                return_bool=True,
+                strategy=GestureStrategy.W3C_ACTIONS,
+            )
+            if not can_scroll:
+                break
         return self.element
 
     def _scroll_to_top_mobile_commands(self,
@@ -462,10 +577,19 @@ class ElementGestures:
             The element for method chaining.
 
         """
+        if strategy == GestureStrategy.AUTO:
+            return self._execute_gesture_with_auto_fallback(
+                self._scroll_to_element_w3c_actions,
+                self._scroll_to_element_mobile_commands,
+                locator,
+                max_swipes,
+                percent,
+                speed,
+            )
+
         method_map = {
             GestureStrategy.W3C_ACTIONS: self._scroll_to_element_w3c_actions,
             GestureStrategy.MOBILE_COMMANDS: self._scroll_to_element_mobile_commands,
-            GestureStrategy.AUTO: self._scroll_to_element_mobile_commands,
         }
         return method_map[strategy](locator, max_swipes, percent, speed)
 
@@ -481,13 +605,19 @@ class ElementGestures:
         while time.time() - start_time < self.element.timeout:
             if target_element.is_displayed():
                 return target_element
-            self.element.scroll_down(percent=percent,
-                                     speed=speed)
+            self.element.scroll_down(
+                percent=percent,
+                speed=speed,
+                strategy=GestureStrategy.W3C_ACTIONS,
+            )
         while time.time() - start_time < self.element.timeout:
             if target_element.is_displayed():
                 return target_element
-            self.element.scroll_up(percent=percent,
-                                   speed=speed)
+            self.element.scroll_up(
+                percent=percent,
+                speed=speed,
+                strategy=GestureStrategy.W3C_ACTIONS,
+            )
         return self.shadowstep.get_element(locator)
 
     def _scroll_to_element_mobile_commands(
@@ -509,7 +639,7 @@ class ElementGestures:
             self,
             percent: float = 0.75,
             speed: int = 2500,
-            strategy: GestureStrategy = GestureStrategy.MOBILE_COMMANDS,
+            strategy: GestureStrategy = GestureStrategy.AUTO,
     ) -> Element:
         """Perform a zoom gesture on the element.
 
@@ -525,10 +655,19 @@ class ElementGestures:
         self.element.get_driver()
         native_element = self.element._get_web_element(  # type: ignore[reportPrivateUsage]
             locator=self.element.locator)
+
+        if strategy == GestureStrategy.AUTO:
+            return self._execute_gesture_with_auto_fallback(
+                self._zoom_w3c_actions,
+                self._zoom_mobile_commands,
+                native_element,
+                percent,
+                speed,
+            )
+
         method_map = {
             GestureStrategy.W3C_ACTIONS: self._zoom_w3c_actions,
             GestureStrategy.MOBILE_COMMANDS: self._zoom_mobile_commands,
-            GestureStrategy.AUTO: self._zoom_w3c_actions,
         }
         return method_map[strategy](native_element, percent, speed)
 
@@ -561,7 +700,7 @@ class ElementGestures:
             self,
             percent: float = 0.75,
             speed: int = 2500,
-            strategy: GestureStrategy = GestureStrategy.MOBILE_COMMANDS,
+            strategy: GestureStrategy = GestureStrategy.AUTO,
     ) -> Element:
         """Perform an unzoom gesture on the element.
 
@@ -577,10 +716,19 @@ class ElementGestures:
         self.element.get_driver()
         native_element = self.element._get_web_element(  # type: ignore[reportPrivateUsage]
             locator=self.element.locator)
+
+        if strategy == GestureStrategy.AUTO:
+            return self._execute_gesture_with_auto_fallback(
+                self._unzoom_w3c_actions,
+                self._unzoom_mobile_commands_actions,
+                native_element,
+                percent,
+                speed,
+            )
+
         method_map = {
             GestureStrategy.W3C_ACTIONS: self._unzoom_w3c_actions,
             GestureStrategy.MOBILE_COMMANDS: self._unzoom_mobile_commands_actions,
-            GestureStrategy.AUTO: self._unzoom_w3c_actions,
         }
         return method_map[strategy](native_element, percent, speed)
 
@@ -631,10 +779,20 @@ class ElementGestures:
         self.element.get_driver()
         native_element = self.element._get_web_element(  # type: ignore[reportPrivateUsage]
             locator=self.element.locator)  # type: ignore[reportPrivateUsage]
+
+        if strategy == GestureStrategy.AUTO:
+            return self._execute_gesture_with_auto_fallback(
+                self._swipe_w3c_actions,
+                self._swipe_mobile_commands,
+                native_element,
+                direction,
+                percent,
+                speed,
+            )
+
         method_map = {
             GestureStrategy.W3C_ACTIONS: self._swipe_w3c_actions,
             GestureStrategy.MOBILE_COMMANDS: self._swipe_mobile_commands,
-            GestureStrategy.AUTO: self._swipe_mobile_commands,
         }
         return method_map[strategy](native_element, direction, percent, speed)
 

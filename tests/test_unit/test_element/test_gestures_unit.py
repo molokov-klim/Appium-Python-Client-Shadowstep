@@ -7,6 +7,7 @@ import pytest
 
 from shadowstep.element.element import Element
 from shadowstep.element.gestures import ElementGestures
+from shadowstep.enums import GestureStrategy
 
 
 class TestElementGesturesInit:
@@ -38,12 +39,16 @@ class TestTap:
         mock_shadowstep = Mock()
         mock_driver = Mock()
         mock_driver.tap = Mock()
-        
+        mock_native_element = Mock()
+        mock_native_element.id = "element_123"
+
         mock_element = Mock(spec=Element)
         mock_element.shadowstep = mock_shadowstep
         mock_element.driver = mock_driver
+        mock_element.locator = ("xpath", "//test")
         mock_element.get_driver = Mock()
         mock_element.get_center = Mock(return_value=(100, 200))
+        mock_element._get_web_element = Mock(return_value=mock_native_element)
         mock_element.converter = Mock()
         mock_element.utilities = Mock()
 
@@ -52,6 +57,7 @@ class TestTap:
         result = gestures.tap()
 
         mock_element.get_driver.assert_called_once()
+        mock_element._get_web_element.assert_called_once()
         mock_element.get_center.assert_called_once()
         mock_driver.tap.assert_called_once_with(positions=[(100, 200)], duration=None)
         assert result == mock_element
@@ -61,12 +67,16 @@ class TestTap:
         mock_shadowstep = Mock()
         mock_driver = Mock()
         mock_driver.tap = Mock()
-        
+        mock_native_element = Mock()
+        mock_native_element.id = "element_456"
+
         mock_element = Mock(spec=Element)
         mock_element.shadowstep = mock_shadowstep
         mock_element.driver = mock_driver
+        mock_element.locator = ("xpath", "//test")
         mock_element.get_driver = Mock()
         mock_element.get_center = Mock(return_value=(150, 250))
+        mock_element._get_web_element = Mock(return_value=mock_native_element)
         mock_element.converter = Mock()
         mock_element.utilities = Mock()
 
@@ -272,12 +282,14 @@ class TestScroll:
     def test_scroll_calls_scroll_gesture(self):
         """Test scroll calls scroll_gesture with correct parameters."""
         mock_shadowstep = Mock()
+        mock_native_element = Mock()
+        mock_native_element.id = "element_123"
+
         mock_element = Mock(spec=Element)
         mock_element.shadowstep = mock_shadowstep
         mock_element.locator = ("id", "test")
         mock_element.get_driver = Mock()
-        mock_element._get_web_element = Mock()
-        mock_element.id = "element_123"
+        mock_element._get_web_element = Mock(return_value=mock_native_element)
         mock_element.converter = Mock()
         mock_element.utilities = Mock()
 
@@ -332,7 +344,9 @@ class TestScrollToBottom:
         result = gestures.scroll_to_bottom(percent=0.8, speed=9000)
 
         # Should call scroll_down with specified parameters
-        mock_element.scroll_down.assert_called_with(percent=0.8, speed=9000, return_bool=True)
+        mock_element.scroll_down.assert_called_with(
+            percent=0.8, speed=9000, return_bool=True, strategy=GestureStrategy.MOBILE_COMMANDS
+        )
         assert result == mock_element
 
     def test_scroll_to_bottom_with_defaults(self):
@@ -350,7 +364,9 @@ class TestScrollToBottom:
         result = gestures.scroll_to_bottom()
 
         # Should use default parameters
-        mock_element.scroll_down.assert_called_with(percent=0.7, speed=8000, return_bool=True)
+        mock_element.scroll_down.assert_called_with(
+            percent=0.7, speed=8000, return_bool=True, strategy=GestureStrategy.MOBILE_COMMANDS
+        )
         assert result == mock_element
 
 

@@ -8,6 +8,7 @@ import pytest
 from appium.webdriver.webelement import WebElement
 
 from shadowstep.element.element import Element
+from shadowstep.enums import GestureStrategy
 from shadowstep.locator import UiSelector
 
 
@@ -260,7 +261,7 @@ class TestElementGestures:
 
         result = element.tap(duration=100)
 
-        element.gestures.tap.assert_called_once_with(100)
+        element.gestures.tap.assert_called_once_with(100, GestureStrategy.MOBILE_COMMANDS)
         assert result == element
 
     def test_tap_and_move(self):
@@ -282,7 +283,7 @@ class TestElementGestures:
 
         result = element.click(duration=50)
 
-        element.gestures.click.assert_called_once_with(50)
+        element.gestures.click.assert_called_once_with(50, GestureStrategy.MOBILE_COMMANDS)
         assert result == element
 
     def test_click_double(self):
@@ -304,7 +305,7 @@ class TestElementGestures:
 
         result = element.drag(100, 200, speed=3000)
 
-        element.gestures.drag.assert_called_once_with(100, 200, 3000)
+        element.gestures.drag.assert_called_once_with(100, 200, 3000, GestureStrategy.MOBILE_COMMANDS)
         assert result == element
 
     def test_fling_up(self):
@@ -315,7 +316,7 @@ class TestElementGestures:
 
         result = element.fling_up(speed=3000)
 
-        element.gestures.fling.assert_called_once_with(3000, "up")
+        element.gestures.fling.assert_called_once_with(3000, "up", GestureStrategy.MOBILE_COMMANDS)
         assert result == element
 
     def test_fling_down(self):
@@ -326,7 +327,7 @@ class TestElementGestures:
 
         result = element.fling_down(speed=3000)
 
-        element.gestures.fling.assert_called_once_with(3000, "down")
+        element.gestures.fling.assert_called_once_with(3000, "down", GestureStrategy.MOBILE_COMMANDS)
         assert result == element
 
     def test_fling_left(self):
@@ -337,7 +338,7 @@ class TestElementGestures:
 
         result = element.fling_left(speed=3000)
 
-        element.gestures.fling.assert_called_once_with(3000, "left")
+        element.gestures.fling.assert_called_once_with(3000, "left", GestureStrategy.MOBILE_COMMANDS)
         assert result == element
 
     def test_fling_right(self):
@@ -348,7 +349,7 @@ class TestElementGestures:
 
         result = element.fling_right(speed=3000)
 
-        element.gestures.fling.assert_called_once_with(3000, "right")
+        element.gestures.fling.assert_called_once_with(3000, "right", GestureStrategy.MOBILE_COMMANDS)
         assert result == element
 
     def test_fling(self):
@@ -359,7 +360,7 @@ class TestElementGestures:
 
         result = element.fling(speed=2500, direction="up")
 
-        element.gestures.fling.assert_called_once_with(2500, "up")
+        element.gestures.fling.assert_called_once_with(2500, "up", GestureStrategy.MOBILE_COMMANDS)
         assert result == element
 
     def test_scroll_down(self):
@@ -370,7 +371,7 @@ class TestElementGestures:
 
         result = element.scroll_down(percent=0.8, speed=2500)
 
-        element.gestures.scroll.assert_called_once_with("down", 0.8, 2500, False)
+        element.gestures.scroll.assert_called_once_with("down", 0.8, 2500, False, GestureStrategy.MOBILE_COMMANDS)
         assert result == element
 
     def test_scroll_up(self):
@@ -381,7 +382,7 @@ class TestElementGestures:
 
         result = element.scroll_up(percent=0.7, speed=2000)
 
-        element.gestures.scroll.assert_called_once_with("up", 0.7, 2000, False)
+        element.gestures.scroll.assert_called_once_with("up", 0.7, 2000, False, GestureStrategy.MOBILE_COMMANDS)
         assert result == element
 
     def test_scroll_left(self):
@@ -392,7 +393,7 @@ class TestElementGestures:
 
         result = element.scroll_left(percent=0.6, speed=1500)
 
-        element.gestures.scroll.assert_called_once_with("left", 0.6, 1500, False)
+        element.gestures.scroll.assert_called_once_with("left", 0.6, 1500, False, GestureStrategy.MOBILE_COMMANDS)
         assert result == element
 
     def test_scroll_right(self):
@@ -403,7 +404,7 @@ class TestElementGestures:
 
         result = element.scroll_right(percent=0.5, speed=1000)
 
-        element.gestures.scroll.assert_called_once_with("right", 0.5, 1000, False)
+        element.gestures.scroll.assert_called_once_with("right", 0.5, 1000, False, GestureStrategy.MOBILE_COMMANDS)
         assert result == element
 
     def test_scroll(self):
@@ -414,7 +415,7 @@ class TestElementGestures:
 
         result = element.scroll(direction="down", percent=0.7, speed=2000, return_bool=False)
 
-        element.gestures.scroll.assert_called_once_with("down", 0.7, 2000, False)
+        element.gestures.scroll.assert_called_once_with("down", 0.7, 2000, False, GestureStrategy.MOBILE_COMMANDS)
         assert result == element
 
     def test_scroll_to_bottom(self):
@@ -425,7 +426,7 @@ class TestElementGestures:
 
         result = element.scroll_to_bottom(percent=0.8, speed=9000)
 
-        element.gestures.scroll_to_bottom.assert_called_once_with(0.8, 9000)
+        element.gestures.scroll_to_bottom.assert_called_once_with(0.8, 9000, GestureStrategy.MOBILE_COMMANDS)
         assert result == element
 
     def test_scroll_to_top(self):
@@ -436,7 +437,7 @@ class TestElementGestures:
 
         result = element.scroll_to_top(percent=0.7, speed=8000)
 
-        element.gestures.scroll_to_top.assert_called_once_with(0.7, 8000)
+        element.gestures.scroll_to_top.assert_called_once_with(0.7, 8000, GestureStrategy.MOBILE_COMMANDS)
         assert result == element
 
     def test_scroll_to_element(self):
@@ -449,7 +450,7 @@ class TestElementGestures:
         target_locator = ("id", "target")
         result = element.scroll_to_element(target_locator, max_swipes=20)
 
-        element.gestures.scroll_to_element.assert_called_once_with(target_locator, 20)
+        element.gestures.scroll_to_element.assert_called_once_with(target_locator, 20, GestureStrategy.MOBILE_COMMANDS)
         assert result == target_element
 
     def test_zoom(self):
@@ -460,7 +461,7 @@ class TestElementGestures:
 
         result = element.zoom(percent=0.8, speed=3000)
 
-        element.gestures.zoom.assert_called_once_with(0.8, 3000)
+        element.gestures.zoom.assert_called_once_with(0.8, 3000, GestureStrategy.MOBILE_COMMANDS)
         assert result == element
 
     def test_unzoom(self):
@@ -471,7 +472,7 @@ class TestElementGestures:
 
         result = element.unzoom(percent=0.75, speed=2500)
 
-        element.gestures.unzoom.assert_called_once_with(0.75, 2500)
+        element.gestures.unzoom.assert_called_once_with(0.75, 2500, GestureStrategy.MOBILE_COMMANDS)
         assert result == element
 
     def test_swipe_up(self):
@@ -482,7 +483,7 @@ class TestElementGestures:
 
         result = element.swipe_up(percent=0.8, speed=6000)
 
-        element.gestures.swipe.assert_called_once_with("up", 0.8, 6000)
+        element.gestures.swipe.assert_called_once_with("up", 0.8, 6000, GestureStrategy.MOBILE_COMMANDS)
         assert result == element
 
     def test_swipe_down(self):
@@ -493,7 +494,7 @@ class TestElementGestures:
 
         result = element.swipe_down(percent=0.75, speed=5000)
 
-        element.gestures.swipe.assert_called_once_with("down", 0.75, 5000)
+        element.gestures.swipe.assert_called_once_with("down", 0.75, 5000, GestureStrategy.MOBILE_COMMANDS)
         assert result == element
 
     def test_swipe_left(self):
@@ -504,7 +505,7 @@ class TestElementGestures:
 
         result = element.swipe_left(percent=0.7, speed=4000)
 
-        element.gestures.swipe.assert_called_once_with("left", 0.7, 4000)
+        element.gestures.swipe.assert_called_once_with("left", 0.7, 4000, GestureStrategy.MOBILE_COMMANDS)
         assert result == element
 
     def test_swipe_right(self):
@@ -515,7 +516,7 @@ class TestElementGestures:
 
         result = element.swipe_right(percent=0.65, speed=3500)
 
-        element.gestures.swipe.assert_called_once_with("right", 0.65, 3500)
+        element.gestures.swipe.assert_called_once_with("right", 0.65, 3500, GestureStrategy.MOBILE_COMMANDS)
         assert result == element
 
     def test_swipe(self):
@@ -526,7 +527,7 @@ class TestElementGestures:
 
         result = element.swipe(direction="up", percent=0.75, speed=5000)
 
-        element.gestures.swipe.assert_called_once_with("up", 0.75, 5000)
+        element.gestures.swipe.assert_called_once_with("up", 0.75, 5000, GestureStrategy.MOBILE_COMMANDS)
         assert result == element
 
 
