@@ -58,52 +58,47 @@ class W3CActions:
             True if scroll was performed, False if element cannot scroll further.
 
         """
-        try:
-            # Get element bounds
-            rect = element.rect  # type: ignore[reportUnknownVariableType, reportUnknownMemberType]
-            width: int = int(rect["width"])  # type: ignore[reportUnknownArgumentType]
-            height: int = int(rect["height"])  # type: ignore[reportUnknownArgumentType]
-            center_x: int = int(rect["x"]) + width // 2  # type: ignore[reportUnknownArgumentType]
-            center_y: int = int(rect["y"]) + height // 2  # type: ignore[reportUnknownArgumentType]
+        # Get element bounds
+        rect = element.rect  # type: ignore[reportUnknownVariableType, reportUnknownMemberType]
+        width: int = int(rect["width"])  # type: ignore[reportUnknownArgumentType]
+        height: int = int(rect["height"])  # type: ignore[reportUnknownArgumentType]
+        center_x: int = int(rect["x"]) + width // 2  # type: ignore[reportUnknownArgumentType]
+        center_y: int = int(rect["y"]) + height // 2  # type: ignore[reportUnknownArgumentType]
 
-            # Calculate scroll distance
-            direction_lower = direction.lower()
-            if direction_lower in ("up", "down"):
-                distance = int(height * percent)
-            else:  # left, right
-                distance = int(width * percent)
+        # Calculate scroll distance
+        direction_lower = direction.lower()
+        if direction_lower in ("up", "down"):
+            distance = int(height * percent)
+        else:  # left, right
+            distance = int(width * percent)
 
-            # Calculate start and end points
-            start_x: int
-            start_y: int
-            end_x: int
-            end_y: int
-            if direction_lower == "down":
-                start_x, start_y = center_x, center_y - distance // 2
-                end_x, end_y = center_x, center_y + distance // 2
-            elif direction_lower == "up":
-                start_x, start_y = center_x, center_y + distance // 2
-                end_x, end_y = center_x, center_y - distance // 2
-            elif direction_lower == "right":
-                start_x, start_y = center_x - distance // 2, center_y
-                end_x, end_y = center_x + distance // 2, center_y
-            elif direction_lower == "left":
-                start_x, start_y = center_x + distance // 2, center_y
-                end_x, end_y = center_x - distance // 2, center_y
-            else:
-                self._raise_invalid_direction_error(direction)
-
-            # Calculate duration from speed (pixels/second -> milliseconds)
-            duration_ms = int((distance / speed) * 1000) if speed > 0 else 0
-
-            # Execute scroll using W3C Actions
-            self._swipe_with_duration(start_x, start_y, end_x, end_y, duration_ms)
-
-        except Exception:
-            self.logger.exception("W3C scroll failed")
-            return False
+        # Calculate start and end points
+        start_x: int
+        start_y: int
+        end_x: int
+        end_y: int
+        if direction_lower == "down":
+            start_x, start_y = center_x, center_y - distance // 2
+            end_x, end_y = center_x, center_y + distance // 2
+        elif direction_lower == "up":
+            start_x, start_y = center_x, center_y + distance // 2
+            end_x, end_y = center_x, center_y - distance // 2
+        elif direction_lower == "right":
+            start_x, start_y = center_x - distance // 2, center_y
+            end_x, end_y = center_x + distance // 2, center_y
+        elif direction_lower == "left":
+            start_x, start_y = center_x + distance // 2, center_y
+            end_x, end_y = center_x - distance // 2, center_y
         else:
-            return True
+            self._raise_invalid_direction_error(direction)
+
+        # Calculate duration from speed (pixels/second -> milliseconds)
+        duration_ms = int((distance / speed) * 1000) if speed > 0 else 0
+
+        # Execute scroll using W3C Actions
+        page_source = hash(self._driver.page_source)
+        self._swipe_with_duration(start_x, start_y, end_x, end_y, duration_ms)
+        return hash(self._driver.page_source) != page_source
 
     def swipe(
         self,
