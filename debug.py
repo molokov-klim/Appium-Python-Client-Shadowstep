@@ -28,4 +28,4 @@ LOCATOR_CONNECTED_DEVICES = {"text": "Connected devices"}
 LOCATOR_SCROLL_VIEW = {"resource-id": "com.android.settings:id/main_content_scrollable_container"}
 element = app.get_element(locator=LOCATOR_CONNECTED_DEVICES)
 
-element.click(strategy=GestureStrategy.W3C_ACTIONS)
+element.double_click(strategy=GestureStrategy.W3C_ACTIONS)
