@@ -274,8 +274,8 @@ class TestTransport:
         # Arrange
         server = "test.server.com"
         port = 22
-        user = "тест_пользователь"
-        password = "пароль123"  # noqa: S105
+        user = "test_user"
+        password = "password123"  # noqa: S105
 
         mock_client = Mock()
 

@@ -20,21 +20,21 @@ logger = logging.getLogger(__name__)
 
 
 class TestElementGesturesPart2:
-    """Тесты продвинутых жестов взаимодействия с элементами.
+    """Tests for advanced element interaction gestures.
 
-    Данный класс содержит тесты для продвинутых жестов взаимодействия с элементами,
-    включая drag, fling и scroll операции с различными параметрами.
+    This class contains tests for advanced element interaction gestures,
+    including drag, fling and scroll operations with various parameters.
     """
 
     def test_drag(self, app: Shadowstep, android_settings_open_close: None):
-        """Тест перетаскивания элемента.
+        """Test element dragging.
 
-        Проверяет корректность выполнения операции перетаскивания элемента
-        "Connected devices" на новые координаты.
+        Verifies correct execution of drag operation for
+        "Connected devices" element to new coordinates.
 
         Args:
-            app: Экземпляр Shadowstep для взаимодействия с приложением.
-            android_settings_open_close: Фикстура для открытия и закрытия настроек Android.
+            app: Shadowstep instance for application interaction.
+            android_settings_open_close: Fixture for opening and closing Android settings.
         """
         gallery = app.get_element(locator=LOCATOR_CONNECTED_DEVICES)
         center_x1, center_y1 = gallery.get_center()
@@ -42,14 +42,14 @@ class TestElementGesturesPart2:
         assert gallery.get_center() != center_x1, center_y1
 
     def test_fling(self, app: Shadowstep, android_settings_open_close: None):
-        """Тест быстрого свайпа (fling) вниз.
+        """Test fast swipe (fling) downward.
 
-        Проверяет корректность выполнения быстрого свайпа вниз
-        по элементу "Connected devices" с изменением границ элемента.
+        Verifies correct execution of fast swipe downward
+        on "Connected devices" element with element bounds changing.
 
         Args:
-            app: Экземпляр Shadowstep для взаимодействия с приложением.
-            android_settings_open_close: Фикстура для открытия и закрытия настроек Android.
+            app: Shadowstep instance for application interaction.
+            android_settings_open_close: Fixture for opening and closing Android settings.
         """
         element = app.get_element(locator=LOCATOR_CONNECTED_DEVICES)
         bounds_1 = element.bounds
@@ -58,14 +58,14 @@ class TestElementGesturesPart2:
         assert bounds_1 != bounds_2
 
     def test_scroll(self, app: Shadowstep, android_settings_open_close: None):
-        """Тест прокрутки контейнера вниз.
+        """Test scrolling container downward.
 
-        Проверяет корректность выполнения прокрутки контейнера настроек
-        вниз до появления элемента "About".
+        Verifies correct execution of scrolling settings container
+        downward until "About" element appears.
 
         Args:
-            app: Экземпляр Shadowstep для взаимодействия с приложением.
-            android_settings_open_close: Фикстура для открытия и закрытия настроек Android.
+            app: Shadowstep instance for application interaction.
+            android_settings_open_close: Fixture for opening and closing Android settings.
         """
         settings_recycler = app.get_element(locator=LOCATOR_RECYCLER)
         settings_about_phone = app.get_element(locator=LOCATOR_BOTTOM_ELEMENT)
@@ -81,14 +81,14 @@ class TestElementGesturesPart2:
         assert "About" in settings_about_phone.get_attribute("text")  # noqa: S101
 
     def test_scroll_to_element_not_found(self, app: Shadowstep, android_settings_open_close: None):
-        """Тест прокрутки к несуществующему элементу.
+        """Test scrolling to non-existent element.
 
-        Проверяет корректность обработки исключения при попытке
-        прокрутки к несуществующему элементу.
+        Verifies correct exception handling when attempting
+        to scroll to non-existent element.
 
         Args:
-            app: Экземпляр Shadowstep для взаимодействия с приложением.
-            android_settings_open_close: Фикстура для открытия и закрытия настроек Android.
+            app: Shadowstep instance for application interaction.
+            android_settings_open_close: Fixture for opening and closing Android settings.
         """
         container = app.get_element({"text": "not existing element"})
         with pytest.raises(ShadowstepElementException):
@@ -99,14 +99,14 @@ class TestElementGesturesPart2:
         app: Shadowstep,
         android_settings_open_close: None,
     ):
-        """Тест прокрутки до нижней части контейнера.
+        """Test scrolling to bottom of container.
 
-        Проверяет корректность выполнения прокрутки до нижней части
-        контейнера настроек и появления элемента "About".
+        Verifies correct execution of scrolling to bottom of
+        settings container and appearance of "About" element.
 
         Args:
-            app: Экземпляр Shadowstep для взаимодействия с приложением.
-            android_settings_open_close: Фикстура для открытия и закрытия настроек Android.
+            app: Shadowstep instance for application interaction.
+            android_settings_open_close: Fixture for opening and closing Android settings.
         """
         settings_recycler = app.get_element(locator=LOCATOR_RECYCLER)
         settings_about_phone = app.get_element(locator=LOCATOR_BOTTOM_ELEMENT)
@@ -118,14 +118,14 @@ class TestElementGesturesPart2:
         app: Shadowstep,
         android_settings_open_close: None,
     ):
-        """Тест прокрутки до верхней части контейнера.
+        """Test scrolling to top of container.
 
-        Проверяет корректность выполнения прокрутки до верхней части
-        контейнера настроек после прокрутки вниз.
+        Verifies correct execution of scrolling to top of
+        settings container after scrolling down.
 
         Args:
-            app: Экземпляр Shadowstep для взаимодействия с приложением.
-            android_settings_open_close: Фикстура для открытия и закрытия настроек Android.
+            app: Shadowstep instance for application interaction.
+            android_settings_open_close: Fixture for opening and closing Android settings.
         """
         settings_recycler = app.get_element(locator=LOCATOR_RECYCLER)
         settings_network = app.get_element(
@@ -144,14 +144,14 @@ class TestElementGesturesPart2:
         app: Shadowstep,
         android_settings_open_close: None,
     ):
-        """Тест прокрутки к конкретному элементу.
+        """Test scrolling to specific element.
 
-        Проверяет корректность выполнения прокрутки к конкретному элементу
-        в контейнере настроек.
+        Verifies correct execution of scrolling to specific element
+        in settings container.
 
         Args:
-            app: Экземпляр Shadowstep для взаимодействия с приложением.
-            android_settings_open_close: Фикстура для открытия и закрытия настроек Android.
+            app: Shadowstep instance for application interaction.
+            android_settings_open_close: Fixture for opening and closing Android settings.
         """
         settings_recycler = app.get_element(
             locator={"resource-id": "com.android.settings:id/settings_homepage_container"}

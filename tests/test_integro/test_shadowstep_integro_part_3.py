@@ -13,21 +13,21 @@ uv run pytest -svl --log-cli-level INFO --tb=short --setup-show  tests/test_inte
 
 
 class TestShadowstepPart3:
-    """Тестирование файловых операций и системных функций.
+    """Test file operations and system functions.
     
-    Группа тестов проверяет операции с файлами, SMS, уведомлениями,
-    сенсорами, GPS, эмулятором и различными системными командами.
+    Test group verifies file operations, SMS, notifications,
+    sensors, GPS, emulator and various system commands.
     """
 
     def test_list_sms(self, app: Shadowstep):
-        """Тестирование получения списка SMS сообщений.
+        """Test getting SMS messages list.
 
-        Шаги:
-            1. Вызов list_sms().
-            2. Проверка, что метод возвращает словарь с элементами.
+        Steps:
+            1. Call list_sms().
+            2. Verify method returns dictionary with items.
         
         Args:
-            app: Экземпляр приложения Shadowstep.
+            app: Shadowstep application instance.
         """
         # List SMS messages
         sms_data = app.list_sms(max_number=10)
@@ -39,17 +39,17 @@ class TestShadowstepPart3:
         assert "items" in sms_data or "total" in sms_data  # noqa: S101
 
     def test_exec_emu_console_command(self, app: Shadowstep):
-        """Тестирование выполнения команды консоли эмулятора.
+        """Test executing emulator console command.
 
-        Шаги:
-            1. Вызов exec_emu_console_command() с командой.
-            2. Проверка, что метод завершается без исключений.
+        Steps:
+            1. Call exec_emu_console_command() with command.
+            2. Verify method completes without exceptions.
 
-        Примечание:
-            Эта команда работает только на эмуляторах.
+        Note:
+            This command only works on emulators.
         
         Args:
-            app: Экземпляр приложения Shadowstep.
+            app: Shadowstep application instance.
         """
         from shadowstep.exceptions.shadowstep_exceptions import ShadowstepException
 
@@ -66,14 +66,14 @@ class TestShadowstepPart3:
                 raise
 
     def test_pull_folder(self, app: Shadowstep):
-        """Тестирование получения папки с устройства.
+        """Test pulling folder from device.
 
-        Шаги:
-            1. Вызов pull_folder() с путем к системной папке.
-            2. Проверка, что метод возвращает данные.
+        Steps:
+            1. Call pull_folder() with system folder path.
+            2. Verify method returns data.
         
         Args:
-            app: Экземпляр приложения Shadowstep.
+            app: Shadowstep application instance.
         """
         # Pull a small system folder
         folder_data = app.pull_folder(remote_path="/sdcard/Android")
@@ -82,31 +82,31 @@ class TestShadowstepPart3:
         assert folder_data is not None  # noqa: S101
 
     def test_type(self, app: Shadowstep, android_settings_open_close: None):
-        """Тестирование отправки текстового ввода.
+        """Test sending text input.
 
-        Шаги:
-            1. Вызов type() со строкой текста.
-            2. Проверка, что метод завершается без исключений.
+        Steps:
+            1. Call type() with text string.
+            2. Verify method completes without exceptions.
         
         Args:
-            app: Экземпляр приложения Shadowstep.
-            android_settings_open_close: Фикстура для управления настройками Android.
+            app: Shadowstep application instance.
+            android_settings_open_close: Fixture for managing Android settings.
         """
         # Type text
         app.type(text="test")
         time.sleep(0.3)
 
     def test_replace_element_value(self, app: Shadowstep, android_settings_open_close: None):
-        """Тестирование замены текста элемента.
+        """Test replacing element text.
 
-        Шаги:
-            1. Поиск элемента.
-            2. Вызов replace_element_value() для замены текста.
-            3. Проверка, что метод завершается без исключений.
+        Steps:
+            1. Find element.
+            2. Call replace_element_value() to replace text.
+            3. Verify method completes without exceptions.
         
         Args:
-            app: Экземпляр приложения Shadowstep.
-            android_settings_open_close: Фикстура для управления настройками Android.
+            app: Shadowstep application instance.
+            android_settings_open_close: Fixture for managing Android settings.
         """
         # Find element (search field if available)
         try:
@@ -119,14 +119,14 @@ class TestShadowstepPart3:
             pass
 
     def test_get_notifications(self, app: Shadowstep):
-        """Тестирование получения уведомлений.
+        """Test getting notifications.
 
-        Шаги:
-            1. Вызов get_notifications().
-            2. Проверка, что метод возвращает данные.
+        Steps:
+            1. Call get_notifications().
+            2. Verify method returns data.
         
         Args:
-            app: Экземпляр приложения Shadowstep.
+            app: Shadowstep application instance.
         """
         # Get notifications
         notifications = app.get_notifications()
@@ -135,31 +135,31 @@ class TestShadowstepPart3:
         assert notifications is not None  # noqa: S101
 
     def test_perform_editor_action(self, app: Shadowstep):
-        """Тестирование выполнения действия редактора.
+        """Test performing editor action.
 
-        Шаги:
-            1. Вызов perform_editor_action() с действием.
-            2. Проверка, что метод завершается без исключений.
+        Steps:
+            1. Call perform_editor_action() with action.
+            2. Verify method completes without exceptions.
         
         Args:
-            app: Экземпляр приложения Shadowstep.
+            app: Shadowstep application instance.
         """
         # Perform editor action (search)
         app.perform_editor_action(action="search")
         time.sleep(0.3)
 
     def test_sensor_set(self, app: Shadowstep):
-        """Тестирование установки значения сенсора.
+        """Test setting sensor value.
 
-        Шаги:
-            1. Вызов sensor_set() с типом сенсора и значением.
-            2. Проверка, что метод завершается без исключений.
+        Steps:
+            1. Call sensor_set() with sensor type and value.
+            2. Verify method completes without exceptions.
 
-        Примечание:
-            Эта команда работает только на эмуляторах.
+        Note:
+            This command only works on emulators.
         
         Args:
-            app: Экземпляр приложения Shadowstep.
+            app: Shadowstep application instance.
         """
         from shadowstep.exceptions.shadowstep_exceptions import ShadowstepException
 
@@ -176,17 +176,17 @@ class TestShadowstepPart3:
                 raise
 
     def test_inject_emulator_camera_image(self, app: Shadowstep):
-        """Тестирование внедрения изображения в камеру эмулятора.
+        """Test injecting image into emulator camera.
 
-        Шаги:
-            1. Вызов inject_emulator_camera_image() с base64 payload.
-            2. Проверка, что метод завершается без исключений.
+        Steps:
+            1. Call inject_emulator_camera_image() with base64 payload.
+            2. Verify method completes without exceptions.
 
-        Примечание:
-            Эта команда работает только на эмуляторах.
+        Note:
+            This command only works on emulators.
         
         Args:
-            app: Экземпляр приложения Shadowstep.
+            app: Shadowstep application instance.
         """
         from shadowstep.exceptions.shadowstep_exceptions import ShadowstepException
 
@@ -210,14 +210,14 @@ class TestShadowstepPart3:
                 raise
 
     def test_refresh_gps_cache(self, app: Shadowstep):
-        """Тестирование обновления кэша GPS.
+        """Test refreshing GPS cache.
 
-        Шаги:
-            1. Вызов refresh_gps_cache().
-            2. Проверка, что метод завершается без исключений.
+        Steps:
+            1. Call refresh_gps_cache().
+            2. Verify method completes without exceptions.
         
         Args:
-            app: Экземпляр приложения Shadowstep.
+            app: Shadowstep application instance.
         """
         # Refresh GPS cache
         app.refresh_gps_cache(timeout_ms=5000)
@@ -225,27 +225,27 @@ class TestShadowstepPart3:
 
     @pytest.mark.skip(reason="Does not work on emulators")
     def test_reset_geolocation(self, app: Shadowstep):
-        """Тестирование сброса местоположения устройства.
+        """Test resetting device location.
 
-        Шаги:
-            1. Вызов reset_geolocation().
-            2. Проверка, что метод завершается без исключений.
+        Steps:
+            1. Call reset_geolocation().
+            2. Verify method completes without exceptions.
         
         Args:
-            app: Экземпляр приложения Shadowstep.
+            app: Shadowstep application instance.
         """
         app.reset_geolocation()
 
     def test_get_geolocation(self, app: Shadowstep):
-        """Тестирование получения местоположения устройства.
+        """Test getting device location.
 
-        Шаги:
-            1. Установка тестового местоположения.
-            2. Вызов get_geolocation() с координатами.
-            3. Проверка, что метод возвращает данные о местоположении.
+        Steps:
+            1. Set test location.
+            2. Call get_geolocation() with coordinates.
+            3. Verify method returns location data.
         
         Args:
-            app: Экземпляр приложения Shadowstep.
+            app: Shadowstep application instance.
         """
         # Set location first
         app.set_geolocation(latitude=37.7749, longitude=-122.4194, altitude=10.0)
@@ -258,14 +258,14 @@ class TestShadowstepPart3:
         assert location is not None  # noqa: S101
 
     def test_broadcast(self, app: Shadowstep):
-        """Тестирование отправки broadcast intent.
+        """Test sending broadcast intent.
 
-        Шаги:
-            1. Вызов broadcast() с intent и action.
-            2. Проверка, что метод завершается без исключений.
+        Steps:
+            1. Call broadcast() with intent and action.
+            2. Verify method completes without exceptions.
         
         Args:
-            app: Экземпляр приложения Shadowstep.
+            app: Shadowstep application instance.
         """
         # Send broadcast
         app.broadcast(
@@ -275,14 +275,14 @@ class TestShadowstepPart3:
         time.sleep(0.3)
 
     def test_deviceidle(self, app: Shadowstep):
-        """Тестирование управления режимом простоя устройства.
+        """Test managing device idle mode.
 
-        Шаги:
-            1. Вызов deviceidle() с действием и пакетом.
-            2. Проверка, что метод завершается без исключений или обрабатывает ошибки разрешений.
+        Steps:
+            1. Call deviceidle() with action and package.
+            2. Verify method completes without exceptions or handles permission errors.
         
         Args:
-            app: Экземпляр приложения Shadowstep.
+            app: Shadowstep application instance.
         """
         from shadowstep.exceptions.shadowstep_exceptions import ShadowstepException
 
@@ -295,14 +295,14 @@ class TestShadowstepPart3:
             pass
 
     def test_change_permissions(self, app: Shadowstep):
-        """Тестирование изменения разрешений приложения.
+        """Test changing application permissions.
 
-        Шаги:
-            1. Вызов change_permissions() с разрешением и приложением.
-            2. Проверка, что метод завершается без исключений.
+        Steps:
+            1. Call change_permissions() with permission and app.
+            2. Verify method completes without exceptions.
         
         Args:
-            app: Экземпляр приложения Shadowstep.
+            app: Shadowstep application instance.
         """
         # Grant camera permission to Settings
         app.change_permissions(
@@ -313,14 +313,14 @@ class TestShadowstepPart3:
         time.sleep(0.3)
 
     def test_get_permissions(self, app: Shadowstep):
-        """Тестирование получения разрешений приложения.
+        """Test getting application permissions.
 
-        Шаги:
-            1. Вызов get_permissions() для приложения.
-            2. Проверка, что метод возвращает данные о разрешениях.
+        Steps:
+            1. Call get_permissions() for app.
+            2. Verify method returns permissions data.
         
         Args:
-            app: Экземпляр приложения Shadowstep.
+            app: Shadowstep application instance.
         """
         # Get permissions for Settings app
         permissions = app.get_permissions(
@@ -331,14 +331,14 @@ class TestShadowstepPart3:
         assert permissions is not None  # noqa: S101
 
     def test_get_app_strings(self, app: Shadowstep):
-        """Тестирование получения строк приложения.
+        """Test getting application strings.
 
-        Шаги:
-            1. Вызов get_app_strings().
-            2. Проверка, что метод возвращает данные строк или корректно обрабатывает ошибки.
+        Steps:
+            1. Call get_app_strings().
+            2. Verify method returns string data or handles errors correctly.
         
         Args:
-            app: Экземпляр приложения Shadowstep.
+            app: Shadowstep application instance.
         """
         # Get app strings - may not work on all app configurations
         try:
@@ -350,14 +350,14 @@ class TestShadowstepPart3:
             pass
 
     def test_send_trim_memory(self, app: Shadowstep):
-        """Тестирование отправки сигнала очистки памяти.
+        """Test sending memory trim signal.
 
-        Шаги:
-            1. Вызов send_trim_memory() с пакетом и уровнем.
-            2. Проверка, что метод завершается без исключений или обрабатывает ошибки разрешений.
+        Steps:
+            1. Call send_trim_memory() with package and level.
+            2. Verify method completes without exceptions or handles permission errors.
         
         Args:
-            app: Экземпляр приложения Shadowstep.
+            app: Shadowstep application instance.
         """
         from shadowstep.exceptions.shadowstep_exceptions import ShadowstepException
 
@@ -370,14 +370,14 @@ class TestShadowstepPart3:
             pass
 
     def test_start_service(self, app: Shadowstep):
-        """Тестирование запуска сервиса Android.
+        """Test starting Android service.
 
-        Шаги:
-            1. Вызов start_service() с intent.
-            2. Проверка, что метод завершается без исключений или обрабатывает несуществующие сервисы.
+        Steps:
+            1. Call start_service() with intent.
+            2. Verify method completes without exceptions or handles non-existent services.
         
         Args:
-            app: Экземпляр приложения Shadowstep.
+            app: Shadowstep application instance.
         """
         from shadowstep.exceptions.shadowstep_exceptions import ShadowstepException
 
@@ -394,14 +394,14 @@ class TestShadowstepPart3:
             pass
 
     def test_stop_service(self, app: Shadowstep):
-        """Тестирование остановки сервиса Android.
+        """Test stopping Android service.
 
-        Шаги:
-            1. Вызов stop_service() с intent.
-            2. Проверка, что метод завершается без исключений или обрабатывает несуществующие сервисы.
+        Steps:
+            1. Call stop_service() with intent.
+            2. Verify method completes without exceptions or handles non-existent services.
         
         Args:
-            app: Экземпляр приложения Shadowstep.
+            app: Shadowstep application instance.
         """
         from shadowstep.exceptions.shadowstep_exceptions import ShadowstepException
 
@@ -414,14 +414,14 @@ class TestShadowstepPart3:
             pass
 
     def test_push_file(self, app: Shadowstep):
-        """Тестирование загрузки файла на устройство.
+        """Test uploading file to device.
 
-        Шаги:
-            1. Вызов push_file() с удаленным путем и base64 payload.
-            2. Проверка, что метод завершается без исключений.
+        Steps:
+            1. Call push_file() with remote path and base64 payload.
+            2. Verify method completes without exceptions.
         
         Args:
-            app: Экземпляр приложения Shadowstep.
+            app: Shadowstep application instance.
         """
         # Create base64 encoded content
         content = base64.b64encode(b"test file content").decode()
@@ -431,15 +431,15 @@ class TestShadowstepPart3:
         time.sleep(0.3)
 
     def test_pull_file(self, app: Shadowstep):
-        """Тестирование получения файла с устройства.
+        """Test pulling file from device.
 
-        Шаги:
-            1. Загрузка файла сначала.
-            2. Вызов pull_file() для получения его.
-            3. Проверка, что метод возвращает содержимое файла.
+        Steps:
+            1. Push file first.
+            2. Call pull_file() to retrieve it.
+            3. Verify method returns file contents.
         
         Args:
-            app: Экземпляр приложения Shadowstep.
+            app: Shadowstep application instance.
         """
         # Push a file first
         content = base64.b64encode(b"test pull content").decode()
@@ -454,15 +454,15 @@ class TestShadowstepPart3:
         assert len(pulled_content) > 0  # noqa: S101
 
     def test_delete_file(self, app: Shadowstep):
-        """Тестирование удаления файла с устройства.
+        """Test deleting file from device.
 
-        Шаги:
-            1. Загрузка файла сначала.
-            2. Вызов delete_file() для его удаления.
-            3. Проверка, что метод завершается без исключений.
+        Steps:
+            1. Push file first.
+            2. Call delete_file() to delete it.
+            3. Verify method completes without exceptions.
         
         Args:
-            app: Экземпляр приложения Shadowstep.
+            app: Shadowstep application instance.
         """
         # Push a file first
         content = base64.b64encode(b"test delete content").decode()
@@ -474,42 +474,42 @@ class TestShadowstepPart3:
         time.sleep(0.3)
 
     def test_unlock(self, app: Shadowstep):
-        """Тестирование разблокировки устройства.
+        """Test unlocking device.
 
-        Шаги:
-            1. Вызов unlock() с ключом и типом разблокировки.
-            2. Проверка, что метод завершается без исключений.
+        Steps:
+            1. Call unlock() with key and unlock type.
+            2. Verify method completes without exceptions.
         
         Args:
-            app: Экземпляр приложения Shadowstep.
+            app: Shadowstep application instance.
         """
         # Unlock device
         app.unlock(key="1234", unlock_type="pin")
         time.sleep(0.3)
 
     def test_update_settings(self, app: Shadowstep):
-        """Тестирование обновления настроек устройства.
+        """Test updating device settings.
 
-        Шаги:
-            1. Вызов update_settings().
-            2. Проверка, что метод завершается без исключений.
+        Steps:
+            1. Call update_settings().
+            2. Verify method completes without exceptions.
         
         Args:
-            app: Экземпляр приложения Shadowstep.
+            app: Shadowstep application instance.
         """
         # Update settings
         app.update_settings()
         time.sleep(0.3)
 
     def test_get_action_history(self, app: Shadowstep):
-        """Тестирование сигнатуры метода get_action_history().
+        """Test get_action_history() method signature.
 
-        Шаги:
-            1. Вызов get_action_history() с именем действия.
-            2. Проверка, что метод вызываемый (может вызвать NotImplementedError).
+        Steps:
+            1. Call get_action_history() with action name.
+            2. Verify method is callable (may raise NotImplementedError).
         
         Args:
-            app: Экземпляр приложения Shadowstep.
+            app: Shadowstep application instance.
         """
         # Get action history - method may not be implemented yet
         try:
@@ -521,15 +521,15 @@ class TestShadowstepPart3:
             pass
 
     def test_schedule_action(self, app: Shadowstep):
-        """Тестирование планирования действия.
+        """Test scheduling action.
 
-        Шаги:
-            1. Определение шагов действия.
-            2. Вызов schedule_action() с шагами.
-            3. Проверка, что метод возвращает Shadowstep для цепочки вызовов.
+        Steps:
+            1. Define action steps.
+            2. Call schedule_action() with steps.
+            3. Verify method returns Shadowstep for chaining.
         
         Args:
-            app: Экземпляр приложения Shadowstep.
+            app: Shadowstep application instance.
         """
         from shadowstep.scheduled_actions.action_step import ActionStep
 
@@ -547,14 +547,14 @@ class TestShadowstepPart3:
             pass
 
     def test_unschedule_action(self, app: Shadowstep):
-        """Тестирование отмены запланированного действия.
+        """Test canceling scheduled action.
 
-        Шаги:
-            1. Вызов unschedule_action() для удаления действия.
-            2. Проверка, что метод возвращает ActionHistory.
+        Steps:
+            1. Call unschedule_action() to remove action.
+            2. Verify method returns ActionHistory.
         
         Args:
-            app: Экземпляр приложения Shadowstep.
+            app: Shadowstep application instance.
         """
         from shadowstep.scheduled_actions.action_history import ActionHistory
 
@@ -568,29 +568,29 @@ class TestShadowstepPart3:
             pass
 
     def test_start_screen_streaming(self, app: Shadowstep):
-        """Тестирование запуска потоковой передачи экрана.
+        """Test starting screen streaming.
 
-        Шаги:
-            1. Вызов start_screen_streaming().
-            2. Проверка, что метод завершается без исключений.
+        Steps:
+            1. Call start_screen_streaming().
+            2. Verify method completes without exceptions.
         
         Args:
-            app: Экземпляр приложения Shadowstep.
+            app: Shadowstep application instance.
         """
         # Start screen streaming
         app.start_screen_streaming()
         time.sleep(0.3)
 
     def test_stop_screen_streaming(self, app: Shadowstep):
-        """Тестирование остановки потоковой передачи экрана.
+        """Test stopping screen streaming.
 
-        Шаги:
-            1. Запуск потоковой передачи сначала.
-            2. Вызов stop_screen_streaming().
-            3. Проверка, что метод завершается без исключений.
+        Steps:
+            1. Start screen streaming first.
+            2. Call stop_screen_streaming().
+            3. Verify method completes without exceptions.
         
         Args:
-            app: Экземпляр приложения Shadowstep.
+            app: Shadowstep application instance.
         """
         # Start then stop screen streaming
         app.start_screen_streaming()
@@ -599,28 +599,28 @@ class TestShadowstepPart3:
         time.sleep(0.3)
 
     def test_start_media_projection_recording(self, app: Shadowstep):
-        """Тестирование запуска записи через media projection.
+        """Test starting media projection recording.
 
-        Шаги:
-            1. Вызов start_media_projection_recording().
-            2. Проверка, что метод завершается без исключений.
+        Steps:
+            1. Call start_media_projection_recording().
+            2. Verify method completes without exceptions.
         
         Args:
-            app: Экземпляр приложения Shadowstep.
+            app: Shadowstep application instance.
         """
         # Start media projection recording
         app.start_media_projection_recording()
         time.sleep(0.5)
 
     def test_is_media_projection_recording_running(self, app: Shadowstep):
-        """Тестирование проверки состояния записи.
+        """Test checking recording status.
 
-        Шаги:
-            1. Вызов is_media_projection_recording_running().
-            2. Проверка, что метод возвращает булево значение.
+        Steps:
+            1. Call is_media_projection_recording_running().
+            2. Verify method returns boolean value.
         
         Args:
-            app: Экземпляр приложения Shadowstep.
+            app: Shadowstep application instance.
         """
         # Check if recording is running
         is_running = app.is_media_projection_recording_running()
@@ -629,14 +629,14 @@ class TestShadowstepPart3:
         assert isinstance(is_running, bool)  # noqa: S101
 
     def test_stop_media_projection_recording(self, app: Shadowstep):
-        """Тестирование остановки записи через media projection.
+        """Test stopping media projection recording.
 
-        Шаги:
-            1. Вызов stop_media_projection_recording().
-            2. Проверка, что метод завершается без исключений или обрабатывает отсутствие активной записи.
+        Steps:
+            1. Call stop_media_projection_recording().
+            2. Verify method completes without exceptions or handles no active recording.
         
         Args:
-            app: Экземпляр приложения Shadowstep.
+            app: Shadowstep application instance.
         """
         from shadowstep.exceptions.shadowstep_exceptions import ShadowstepException
 
@@ -649,14 +649,14 @@ class TestShadowstepPart3:
             pass
 
     def test_accept_alert(self, app: Shadowstep):
-        """Тестирование принятия диалогового окна alert.
+        """Test accepting alert dialog.
 
-        Шаги:
-            1. Вызов accept_alert() с меткой кнопки.
-            2. Проверка, что метод завершается без исключений.
+        Steps:
+            1. Call accept_alert() with button label.
+            2. Verify method completes without exceptions.
         
         Args:
-            app: Экземпляр приложения Shadowstep.
+            app: Shadowstep application instance.
         """
         # Accept alert (if no alert present, method should handle gracefully)
         try:
@@ -667,14 +667,14 @@ class TestShadowstepPart3:
             pass
 
     def test_dismiss_alert(self, app: Shadowstep):
-        """Тестирование отклонения диалогового окна alert.
+        """Test dismissing alert dialog.
 
-        Шаги:
-            1. Вызов dismiss_alert() с меткой кнопки.
-            2. Проверка, что метод завершается без исключений.
+        Steps:
+            1. Call dismiss_alert() with button label.
+            2. Verify method completes without exceptions.
         
         Args:
-            app: Экземпляр приложения Shadowstep.
+            app: Shadowstep application instance.
         """
         # Dismiss alert (if no alert present, method should handle gracefully)
         try:
@@ -683,4 +683,3 @@ class TestShadowstepPart3:
         except Exception:
             # If no alert present, that's expected - method signature is correct
             pass
-

@@ -36,23 +36,23 @@ from shadowstep.exceptions.shadowstep_exceptions import (
 class TestShadowstepLogcat:
 
     def test_start_logcat_is_non_blocking(self, app: Shadowstep, cleanup_log: None):
-        # подготавливаем файл
+        # Prepare file
         log_file = Path("logcat_test.log")
         if log_file.exists():
             log_file.unlink()
 
-        # замер времени вызова start_logcat
+        # Measure start_logcat call time
         t0 = time.perf_counter()
         app.start_logcat(str(log_file))
         delta = time.perf_counter() - t0
 
-        # допускаем, что старт может занять до 100 мс,
-        # но явно не больше секунды
-        assert delta < 0.1, f"start_logcat слишком долго блокирует main thread: {delta:.3f}s"
+        # Allow start to take up to 100 ms,
+        # but definitely not more than a second
+        assert delta < 0.1, f"start_logcat blocks main thread too long: {delta:.3f}s"
 
-        # а теперь проверим, что логи действительно пишутся в фоне,
-        # не дожидаясь возвращения из start_logcat
-        # для этого заодно пойдёт наш основной цикл навигации
+        # Now verify that logs are actually being written in background,
+        # not waiting for start_logcat to return
+        # Our main navigation loop will also work for this
         for _ in range(5):
             app.terminal.start_activity(
                 package="com.android.settings",
@@ -61,7 +61,7 @@ class TestShadowstepLogcat:
             time.sleep(0.5)
             app.terminal.press_back()
 
-        # останавливаем приём в фоне
+        # Stop background reception
         app.stop_logcat()
 
     def test_shadowstep_logcat_records_and_stops(self, app: Shadowstep, cleanup_log: None):
@@ -79,32 +79,32 @@ class TestShadowstepLogcat:
             app.terminal.press_back()
         app.stop_logcat()
 
-        assert log_file.exists(), "Logcat file was not создан"
+        assert log_file.exists(), "Logcat file was not created"
         content = log_file.read_text(encoding="utf-8")
         assert (
                 "ActivityManager" in content
                 or "Displayed" in content
                 or len(content.strip()) > 0
-        ), "Logcat file пустой"
+        ), "Logcat file is empty"
 
     def test_start_logcat_is_non_blocking_and_writes_logs(self, app: Shadowstep, cleanup_log: None):
         log_file = Path("logcat_test.log")
         if log_file.exists():
             log_file.unlink()
 
-        # 1) старт логкат — должен быть почти мгновенным
+        # 1) Start logcat - should be almost instant
         t0 = time.perf_counter()
         app.start_logcat(str(log_file))
         delta = time.perf_counter() - t0
-        assert delta < 1.0, f"start_logcat блокирует основной поток слишком долго: {delta:.3f}s"
+        assert delta < 1.0, f"start_logcat blocks main thread too long: {delta:.3f}s"
 
-        # 2) среди живых потоков должен быть ShadowstepLogcat
+        # 2) ShadowstepLogcat thread should be among live threads
         names = [t.name for t in threading.enumerate()]
-        assert any("ShadowstepLogcat" in n for n in names), f"Не найден поток логката: {names}"
+        assert any("ShadowstepLogcat" in n for n in names), f"Logcat thread not found: {names}"
 
-        # 3) проверяем, что действия в терминале не блокируются логкатом
+        # 3) Verify that terminal actions are not blocked by logcat
         action_durations: list[float] = []
-        for _ in range(3):  # меньше итераций для стабильности
+        for _ in range(3):  # Fewer iterations for stability
             start = time.perf_counter()
             app.terminal.start_activity(
                 package="com.android.settings",
@@ -114,25 +114,25 @@ class TestShadowstepLogcat:
             action_durations.append(time.perf_counter() - start)
 
         for i, d in enumerate(action_durations, 1):
-            # увеличиваем лимит до реалистичного (например, 10 с)
-            assert d < 10.0, f"Итерация #{i} заняла {d:.3f}s — блокировка!"
+            # Increase limit to realistic (e.g. 10 s)
+            assert d < 10.0, f"Iteration #{i} took {d:.3f}s - blocking!"
 
-        # 4) дождаться первых байт в файле (≤10 s)
+        # 4) Wait for first bytes in file (≤10 s)
         deadline = time.time() + 10
         while time.time() < deadline:
             if log_file.exists() and log_file.stat().st_size > 0:
                 break
             time.sleep(0.5)
         else:
-            pytest.fail("Лог-файл пустой — фон не пишет данные")
+            pytest.fail("Log file is empty - background not writing data")
 
-        # 5) остановка приёма
+        # 5) Stop reception
         app.stop_logcat()
 
-        # 6) дать потоку пару секунд на завершение
+        # 6) Give thread a couple seconds to finish
         time.sleep(2.0)
         names_after = [t.name for t in threading.enumerate()]
-        assert not any("ShadowstepLogcat" in n for n in names_after), f"Поток не остановлен: {names_after}"
+        assert not any("ShadowstepLogcat" in n for n in names_after), f"Thread not stopped: {names_after}"
 
     def test_logcat_init_with_negative_poll_interval(self, app: Shadowstep):
         """Test that __init__ raises exception with negative poll_interval."""
@@ -528,4 +528,3 @@ class TestShadowstepLogcat:
                     "Filtered log should NOT contain ActivityManager entries (filter excludes them)"
         
         # Test passed - filtering mechanism works (file created, filtering applied if applicable)
-

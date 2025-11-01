@@ -10,10 +10,10 @@ uv run pytest -svl --log-cli-level INFO --tb=short --setup-show  tests/element/t
 
 
 class TestElementGesturesPart4:
-    """Тесты специальных жестов взаимодействия с элементами.
+    """Tests for special element interaction gestures.
 
-    Данный класс содержит тесты для специальных жестов взаимодействия с элементами,
-    включая zoom и unzoom операции.
+    This class contains tests for special element interaction gestures,
+    including zoom and unzoom operations.
     """
 
     def test_zoom(
@@ -21,14 +21,14 @@ class TestElementGesturesPart4:
         app: Shadowstep,
         android_settings_open_close: None,
     ):
-        """Тест увеличения масштаба элемента.
+        """Test element zoom in.
 
-        Проверяет корректность выполнения операции увеличения масштаба
-        элемента "Network & internet".
+        Verifies correct execution of zoom in operation
+        on "Network & internet" element.
 
         Args:
-            app: Экземпляр Shadowstep для взаимодействия с приложением.
-            android_settings_open_close: Фикстура для открытия и закрытия настроек Android.
+            app: Shadowstep instance for application interaction.
+            android_settings_open_close: Fixture for opening and closing Android settings.
         """
         settings_network = app.get_element(
             locator={"text": "Network & internet", "resource-id": "android:id/title"}
@@ -41,14 +41,14 @@ class TestElementGesturesPart4:
         app: Shadowstep,
         android_settings_open_close: None,
     ):
-        """Тест уменьшения масштаба элемента.
+        """Test element zoom out.
 
-        Проверяет корректность выполнения операции уменьшения масштаба
-        элемента "Network & internet".
+        Verifies correct execution of zoom out operation
+        on "Network & internet" element.
 
         Args:
-            app: Экземпляр Shadowstep для взаимодействия с приложением.
-            android_settings_open_close: Фикстура для открытия и закрытия настроек Android.
+            app: Shadowstep instance for application interaction.
+            android_settings_open_close: Fixture for opening and closing Android settings.
         """
         settings_network = app.get_element(
             locator={"text": "Network & internet", "resource-id": "android:id/title"}

@@ -1,10 +1,9 @@
 # ruff: noqa
 # pyright: ignore
-"""
-Интеграционные тесты для модуля mobile_commands.py - Часть 3.
+"""Integration tests for mobile_commands.py module - Part 3.
 
-Группа тестов управления приложениями: установка, активация, завершение,
-разрешения, уведомления, GPS, connectivity, UI mode.
+Application management test group: installation, activation, termination,
+permissions, notifications, GPS, connectivity, UI mode.
 
 uv run pytest -svl --log-cli-level INFO --tb=short --setup-show tests/test_integro/test_ui_automator/test_mobile_commands_integro_part_3.py
 """
@@ -22,18 +21,18 @@ logger = logging.getLogger(__name__)
 
 
 class TestMobileCommandsPart3:
-    """Интеграционные тесты для класса MobileCommands - Часть 3.
+    """Integration tests for MobileCommands class - Part 3.
     
-    Тестирование команд управления приложениями, разрешений, уведомлений,
-    GPS, connectivity и других системных функций.
+    Testing application management commands, permissions, notifications,
+    GPS, connectivity and other system functions.
     """
 
     @pytest.fixture(autouse=True)
     def setup_mobile_commands(self, app: Shadowstep):
-        """Настройка экземпляра MobileCommands с фикстурой app.
+        """Setup MobileCommands instance with app fixture.
         
         Args:
-            app: Экземпляр приложения Shadowstep для тестирования.
+            app: Shadowstep application instance for testing.
         """
         self.mobile_commands = MobileCommands()
         self.app = app
@@ -42,13 +41,13 @@ class TestMobileCommandsPart3:
         yield
 
     def test_is_app_installed(self, android_settings_open_close: Any):
-        """Тестирование команды is_app_installed.
+        """Test is_app_installed command.
         
-        Проверяет:
-            - Приложение Settings установлено (результат True)
+        Verifies:
+            - Settings app is installed (result True).
         
         Args:
-            android_settings_open_close: Фикстура для управления настройками Android.
+            android_settings_open_close: Fixture for managing Android settings.
         """
         # Check if Settings app is installed
         result = self.mobile_commands.is_app_installed({"appId": "com.android.settings"})
@@ -56,27 +55,27 @@ class TestMobileCommandsPart3:
         assert result is True  # noqa: S101
 
     def test_is_app_not_installed(self):
-        """Тестирование команды is_app_installed с несуществующим приложением.
+        """Test is_app_installed command with non-existent application.
         
-        Проверяет:
-            - Несуществующее приложение не установлено (результат False)
+        Verifies:
+            - Non-existent application is not installed (result False).
         """
         result = self.mobile_commands.is_app_installed({"appId": "com.nonexistent.app.xyz"})
 
         assert result is False  # noqa: S101
 
     def test_query_app_state(self, android_settings_open_close: Any):
-        """Тестирование команды query_app_state.
+        """Test query_app_state command.
         
-        Шаги:
-            1. Запрос состояния приложения Settings
+        Steps:
+            1. Query Settings app state.
         
-        Проверяет:
-            - Результат не None
-            - Результат равен 4 (running in foreground)
+        Verifies:
+            - Result is not None.
+            - Result equals 4 (running in foreground).
         
         Args:
-            android_settings_open_close: Фикстура для управления настройками Android.
+            android_settings_open_close: Fixture for managing Android settings.
         """
         # Query state of Settings app while it's open
         result = self.mobile_commands.query_app_state({"appId": "com.android.settings"})
@@ -86,15 +85,15 @@ class TestMobileCommandsPart3:
         assert result == 4  # noqa: S101
 
     def test_activate_app(self, android_settings_open_close: Any):
-        """Тестирование команды activate_app.
+        """Test activate_app command.
         
-        Шаги:
-            1. Закрытие приложения Settings
-            2. Активация приложения Settings
-            3. Проверка, что приложение на переднем плане
+        Steps:
+            1. Close Settings app.
+            2. Activate Settings app.
+            3. Verify app is in foreground.
         
         Args:
-            android_settings_open_close: Фикстура для управления настройками Android.
+            android_settings_open_close: Fixture for managing Android settings.
         """
         # Close settings first
         self.app.terminal.close_app("com.android.settings")
@@ -112,15 +111,15 @@ class TestMobileCommandsPart3:
         assert state == 4  # noqa: S101
 
     def test_terminate_app(self, android_settings_open_close: Any):
-        """Тестирование команды terminate_app.
+        """Test terminate_app command.
         
-        Шаги:
-            1. Активация приложения Settings
-            2. Завершение приложения
-            3. Проверка, что приложение не на переднем плане
+        Steps:
+            1. Activate Settings app.
+            2. Terminate the app.
+            3. Verify app is not in foreground.
         
         Args:
-            android_settings_open_close: Фикстура для управления настройками Android.
+            android_settings_open_close: Fixture for managing Android settings.
         """
         # Ensure app is running
         self.mobile_commands.activate_app({"appId": "com.android.settings"})
@@ -138,14 +137,14 @@ class TestMobileCommandsPart3:
         assert state != 4  # noqa: S101
 
     def test_background_app(self, android_settings_open_close: Any):
-        """Тестирование команды background_app.
+        """Test background_app command.
         
-        Шаги:
-            1. Отправка приложения в фон на 1 секунду
-            2. Ожидание возврата приложения
+        Steps:
+            1. Put app in background for 1 second.
+            2. Wait for app to return.
         
         Args:
-            android_settings_open_close: Фикстура для управления настройками Android.
+            android_settings_open_close: Fixture for managing Android settings.
         """
         # Put app in background for 1 second
         result = self.mobile_commands.background_app({"seconds": 1})
@@ -155,12 +154,12 @@ class TestMobileCommandsPart3:
         assert result is None or result is not None  # noqa: S101
 
     def test_start_activity(self):
-        """Тестирование команды start_activity.
+        """Test start_activity command.
         
-        Шаги:
-            1. Запуск активности Settings
-            2. Ожидание
-            3. Закрытие приложения
+        Steps:
+            1. Start Settings activity.
+            2. Wait.
+            3. Close the app.
         """
         result = self.mobile_commands.start_activity({"intent": "android.settings.SETTINGS"})
         time.sleep(1)
@@ -172,13 +171,13 @@ class TestMobileCommandsPart3:
         self.app.terminal.close_app("com.android.settings")
 
     def test_clear_app(self):
-        """Тестирование команды clear_app.
+        """Test clear_app command.
         
-        Шаги:
-            1. Очистка данных приложения Settings
+        Steps:
+            1. Clear Settings app data.
         
-        Проверяет:
-            - Команда выполняется без исключений
+        Verifies:
+            - Command executes without exceptions.
         """
         result = self.mobile_commands.clear_app({"appId": "com.android.settings"})
 
@@ -186,14 +185,14 @@ class TestMobileCommandsPart3:
         assert result is None or result is not None  # noqa: S101
 
     def test_get_permissions(self, android_settings_open_close: Any):
-        """Тестирование команды get_permissions.
+        """Test get_permissions command.
         
-        Проверяет:
-            - Результат не None
-            - Результат является списком
+        Verifies:
+            - Result is not None.
+            - Result is a list.
         
         Args:
-            android_settings_open_close: Фикстура для управления настройками Android.
+            android_settings_open_close: Fixture for managing Android settings.
         """
         result = self.mobile_commands.get_permissions(
             {"type": "requested", "appId": "com.android.settings"}
@@ -203,10 +202,10 @@ class TestMobileCommandsPart3:
         assert isinstance(result, list)  # noqa: S101
 
     def test_change_permissions(self):
-        """Тестирование команды change_permissions.
+        """Test change_permissions command.
         
-        Шаги:
-            1. Выдача разрешения READ_CONTACTS приложению Settings
+        Steps:
+            1. Grant READ_CONTACTS permission to Settings app.
         """
         result = self.mobile_commands.change_permissions(
             {
@@ -219,14 +218,14 @@ class TestMobileCommandsPart3:
 
     @pytest.mark.xfail(reason="May not be supported on all devices/emulators", strict=False)
     def test_get_notifications(self):
-        """Тестирование команды get_notifications.
+        """Test get_notifications command.
         
-        Проверяет:
-            - Результат не None
-            - Результат является списком
+        Verifies:
+            - Result is not None.
+            - Result is a list.
         
-        Примечание:
-            Может не поддерживаться на всех устройствах/эмуляторах.
+        Note:
+            May not be supported on all devices/emulators.
         """
         result = self.mobile_commands.get_notifications()
 
@@ -234,12 +233,12 @@ class TestMobileCommandsPart3:
         assert isinstance(result, list)  # noqa: S101
 
     def test_start_stop_logs_broadcast(self):
-        """Тестирование команд start_logs_broadcast и stop_logs_broadcast.
+        """Test start_logs_broadcast and stop_logs_broadcast commands.
         
-        Шаги:
-            1. Запуск трансляции логов
-            2. Ожидание
-            3. Остановка трансляции логов
+        Steps:
+            1. Start logs broadcast.
+            2. Wait.
+            3. Stop logs broadcast.
         """
         # Start logs broadcast
         result = self.mobile_commands.start_logs_broadcast()
@@ -256,28 +255,28 @@ class TestMobileCommandsPart3:
 
     @pytest.mark.xfail(reason="May not be supported on all devices/emulators", strict=False)
     def test_get_ui_mode(self):
-        """Тестирование команды get_ui_mode.
+        """Test get_ui_mode command.
         
-        Проверяет:
-            - Результат не None
+        Verifies:
+            - Result is not None.
         
-        Примечание:
-            Может не поддерживаться на всех устройствах/эмуляторах.
+        Note:
+            May not be supported on all devices/emulators.
         """
         result = self.mobile_commands.get_ui_mode()
         assert result is not None  # noqa: S101
 
     @pytest.mark.xfail(reason="May not be supported on all devices/emulators", strict=False)
     def test_set_ui_mode(self):
-        """Тестирование команды set_ui_mode.
+        """Test set_ui_mode command.
         
-        Шаги:
-            1. Получение текущего режима UI
-            2. Установка режима (night)
-            3. Восстановление исходного режима
+        Steps:
+            1. Get current UI mode.
+            2. Set mode (night).
+            3. Restore original mode.
         
-        Примечание:
-            Может не поддерживаться на всех устройствах/эмуляторах.
+        Note:
+            May not be supported on all devices/emulators.
         """
         # Get current mode
         current_mode = self.mobile_commands.get_ui_mode()
@@ -291,13 +290,13 @@ class TestMobileCommandsPart3:
 
     @pytest.mark.xfail(reason="May not be supported on all devices/emulators", strict=False)
     def test_broadcast(self):
-        """Тестирование команды broadcast.
+        """Test broadcast command.
         
-        Шаги:
-            1. Отправка broadcast сообщения BOOT_COMPLETED
+        Steps:
+            1. Send BOOT_COMPLETED broadcast message.
         
-        Примечание:
-            Может не поддерживаться на всех устройствах/эмуляторах.
+        Note:
+            May not be supported on all devices/emulators.
         """
         # Send a simple broadcast
         result = self.mobile_commands.broadcast({"action": "android.intent.action.BOOT_COMPLETED"})
@@ -306,13 +305,13 @@ class TestMobileCommandsPart3:
 
     @pytest.mark.xfail(reason="Geolocation may not be supported on all emulators", strict=False)
     def test_get_geolocation(self):
-        """Тестирование команды get_geolocation.
+        """Test get_geolocation command.
         
-        Проверяет:
-            - Если результат не None, то это словарь
+        Verifies:
+            - If result is not None, it's a dictionary.
         
-        Примечание:
-            Geolocation может не поддерживаться на всех эмуляторах.
+        Note:
+            Geolocation may not be supported on all emulators.
         """
         result = self.mobile_commands.get_geolocation()
 
@@ -320,11 +319,11 @@ class TestMobileCommandsPart3:
             assert isinstance(result, dict)  # noqa: S101
 
     def test_set_geolocation(self):
-        """Тестирование команды set_geolocation.
+        """Test set_geolocation command.
         
-        Шаги:
-            1. Установка координат (Москва: 55.7558, 37.6173)
-            2. Ожидание
+        Steps:
+            1. Set coordinates (Moscow: 55.7558, 37.6173).
+            2. Wait.
         """
         result = self.mobile_commands.set_geolocation({"latitude": 55.7558, "longitude": 37.6173})
         time.sleep(0.5)
@@ -332,39 +331,39 @@ class TestMobileCommandsPart3:
         logger.info(result)
 
     def test_is_gps_enabled(self):
-        """Тестирование команды is_gps_enabled.
+        """Test is_gps_enabled command.
         
-        Проверяет:
-            - Результат является булевым значением
+        Verifies:
+            - Result is a boolean value.
         """
         result = self.mobile_commands.is_gps_enabled()
         assert isinstance(result, bool)  # noqa: S101
 
     def test_toggle_gps(self):
-        """Тестирование команды toggle_gps.
+        """Test toggle_gps command.
         
-        Шаги:
-            1. Переключение состояния GPS
+        Steps:
+            1. Toggle GPS state.
         """
         result = self.mobile_commands.toggle_gps()
         logger.info(result)
 
     @pytest.mark.xfail(reason="GPS cache refresh may not be supported on all devices", strict=False)
     def test_refresh_gps_cache(self):
-        """Тестирование команды refresh_gps_cache.
+        """Test refresh_gps_cache command.
         
-        Примечание:
-            Обновление кэша GPS может не поддерживаться на всех устройствах.
+        Note:
+            GPS cache refresh may not be supported on all devices.
         """
         result = self.mobile_commands.refresh_gps_cache()
         logger.info(result)
 
     @pytest.mark.skip(reason="Does not work on emulators")
     def test_reset_geolocation(self):
-        """Тестирование команды reset_geolocation.
+        """Test reset_geolocation command.
         
-        Примечание:
-            Не работает на эмуляторах.
+        Note:
+            Does not work on emulators.
         """
         result = self.mobile_commands.reset_geolocation()
         logger.info(result)
@@ -373,10 +372,10 @@ class TestMobileCommandsPart3:
         reason="Status bar command may not be supported on all devices", strict=False
     )
     def test_status_bar(self):
-        """Тестирование команды status_bar.
+        """Test status_bar command.
         
-        Примечание:
-            Команда status_bar может не поддерживаться на всех устройствах.
+        Note:
+            status_bar command may not be supported on all devices.
         """
         result = self.mobile_commands.status_bar(
             {
@@ -388,33 +387,33 @@ class TestMobileCommandsPart3:
         logger.info(result)
 
     def test_get_connectivity(self):
-        """Тестирование команды get_connectivity.
+        """Test get_connectivity command.
         
-        Проверяет:
-            - Результат является словарем
+        Verifies:
+            - Result is a dictionary.
         """
         result = self.mobile_commands.get_connectivity()
         assert isinstance(result, dict)  # noqa: S101
         logger.info(result)  # type: ignore
 
     def test_set_connectivity(self):
-        """Тестирование команды set_connectivity.
+        """Test set_connectivity command.
         
-        Шаги:
-            1. Включение WiFi и мобильных данных
+        Steps:
+            1. Enable WiFi and mobile data.
         """
         result = self.mobile_commands.set_connectivity({"wifi": True, "data": True})
         logger.info(result)
 
     @pytest.mark.xfail(reason="Bluetooth may not be supported on all emulators", strict=False)
     def test_bluetooth(self):
-        """Тестирование команды bluetooth.
+        """Test bluetooth command.
         
-        Шаги:
-            1. Получение состояния Bluetooth
+        Steps:
+            1. Get Bluetooth state.
         
-        Примечание:
-            Bluetooth может не поддерживаться на всех эмуляторах.
+        Note:
+            Bluetooth may not be supported on all emulators.
         """
         # Try to get bluetooth state
         result = self.mobile_commands.bluetooth({"action": "getState"})
@@ -422,23 +421,23 @@ class TestMobileCommandsPart3:
 
     @pytest.mark.xfail(reason="NFC may not be supported on all devices/emulators", strict=False)
     def test_nfc(self):
-        """Тестирование команды nfc.
+        """Test nfc command.
         
-        Шаги:
-            1. Получение состояния NFC
+        Steps:
+            1. Get NFC state.
         
-        Примечание:
-            NFC может не поддерживаться на всех устройствах/эмуляторах.
+        Note:
+            NFC may not be supported on all devices/emulators.
         """
         result = self.mobile_commands.nfc({"action": "getState"})
         logger.info(result)
 
     def test_perform_editor_action(self):
-        """Тестирование команды perform_editor_action.
+        """Test perform_editor_action command.
         
-        Примечание:
-            Требует активного текстового поля.
-            Просто проверяется, что команда не вызывает ошибку.
+        Note:
+            Requires active text field.
+            Just verify command doesn't crash.
         """
         # This requires an active text field
         # Just test that command doesn't crash
@@ -446,14 +445,14 @@ class TestMobileCommandsPart3:
         logger.info(result)
 
     def test_deviceidle(self):
-        """Тестирование команды deviceidle для управления белым списком приложений.
+        """Test deviceidle command for managing app whitelist.
         
-        Шаги:
-            1. Добавление приложения в белый список
-            2. Удаление приложения из белого списка
+        Steps:
+            1. Add app to whitelist.
+            2. Remove app from whitelist.
         
-        Примечание:
-            Требуется API 23+
+        Note:
+            Requires API 23+.
         """
         # This requires API 23+
         result = self.mobile_commands.deviceidle(
@@ -470,33 +469,33 @@ class TestMobileCommandsPart3:
 
     @pytest.mark.xfail(reason="Requires alert to be present on screen", strict=False)
     def test_accept_alert(self):
-        """Тестирование команды accept_alert.
+        """Test accept_alert command.
         
-        Примечание:
-            Требует наличия alert на экране.
+        Note:
+            Requires alert to be present on screen.
         """
         result = self.mobile_commands.accept_alert()
         logger.info(result)
 
     @pytest.mark.xfail(reason="Requires alert to be present on screen", strict=False)
     def test_dismiss_alert(self):
-        """Тестирование команды dismiss_alert.
+        """Test dismiss_alert command.
         
-        Примечание:
-            Требует наличия alert на экране.
+        Note:
+            Requires alert to be present on screen.
         """
         result = self.mobile_commands.dismiss_alert()
         logger.info(result)
 
     @pytest.mark.xfail(reason="Deep link requires browser app to be installed", strict=False)
     def test_deep_link(self):
-        """Тестирование команды deep_link.
+        """Test deep_link command.
         
-        Шаги:
-            1. Открытие deep link через Chrome
+        Steps:
+            1. Open deep link via Chrome.
         
-        Примечание:
-            Требует установленное приложение браузера.
+        Note:
+            Requires browser app to be installed.
         """
         result = self.mobile_commands.deep_link(
             {"url": "https://www.example.com", "package": "com.android.chrome"}
@@ -506,13 +505,13 @@ class TestMobileCommandsPart3:
 
     @pytest.mark.xfail(reason="May not be supported on all UiAutomator2 versions", strict=False)
     def test_get_action_history(self):
-        """Тестирование команды get_action_history.
+        """Test get_action_history command.
         
-        Проверяет:
-            - Результат является списком
+        Verifies:
+            - Result is a list.
         
-        Примечание:
-            Может не поддерживаться на всех версиях UiAutomator2.
+        Note:
+            May not be supported on all UiAutomator2 versions.
         """
         result = self.mobile_commands.get_action_history()
         assert isinstance(result, list)  # noqa: S101
@@ -520,13 +519,13 @@ class TestMobileCommandsPart3:
 
     @pytest.mark.xfail(reason="May not be supported on all UiAutomator2 versions", strict=False)
     def test_get_app_strings(self):
-        """Тестирование команды get_app_strings.
+        """Test get_app_strings command.
         
-        Проверяет:
-            - Результат является словарем
+        Verifies:
+            - Result is a dictionary.
         
-        Примечание:
-            Может не поддерживаться на всех версиях UiAutomator2.
+        Note:
+            May not be supported on all UiAutomator2 versions.
         """
         result = self.mobile_commands.get_app_strings()
         assert isinstance(result, dict)  # noqa: S101
@@ -534,31 +533,30 @@ class TestMobileCommandsPart3:
 
     @pytest.mark.xfail(reason="Action scheduling may not be supported", strict=False)
     def test_schedule_action(self):
-        """Тестирование команды schedule_action.
+        """Test schedule_action command.
         
-        Примечание:
-            Планирование действий может не поддерживаться.
+        Note:
+            Action scheduling may not be supported.
         """
         result = self.mobile_commands.schedule_action({"action": "test_action", "delayMs": 1000})
         logger.info(result)
 
     @pytest.mark.xfail(reason="Action scheduling may not be supported", strict=False)
     def test_unschedule_action(self):
-        """Тестирование команды unschedule_action.
+        """Test unschedule_action command.
         
-        Примечание:
-            Планирование действий может не поддерживаться.
+        Note:
+            Action scheduling may not be supported.
         """
         result = self.mobile_commands.unschedule_action({"action": "test_action"})
         logger.info(result)
 
     @pytest.mark.xfail(reason="Trim memory may not be supported on all devices", strict=False)
     def test_send_trim_memory(self):
-        """Тестирование команды send_trim_memory.
+        """Test send_trim_memory command.
         
-        Примечание:
-            Trim memory может не поддерживаться на всех устройствах.
+        Note:
+            Trim memory may not be supported on all devices.
         """
         result = self.mobile_commands.send_trim_memory({"level": 80})
         logger.info(result)
-

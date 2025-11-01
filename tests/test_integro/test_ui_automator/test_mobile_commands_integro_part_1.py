@@ -1,10 +1,9 @@
 # ruff: noqa
 # pyright: ignore
-"""
-Интеграционные тесты для модуля mobile_commands.py - Часть 1.
+"""Integration tests for mobile_commands.py module - Part 1.
 
-Группа базовых тестов: singleton, информация об устройстве, батарея, дисплей,
-клавиатура, буфер обмена, контексты.
+Basic tests group: singleton, device info, battery, display,
+keyboard, clipboard, contexts.
 
 uv run pytest -svl --log-cli-level INFO --tb=short --setup-show tests/test_integro/test_ui_automator/test_mobile_commands_integro_part_1.py
 """
@@ -22,18 +21,18 @@ logger = logging.getLogger(__name__)
 
 
 class TestMobileCommandsPart1:
-    """Интеграционные тесты для класса MobileCommands - Часть 1.
+    """Integration tests for MobileCommands class - Part 1.
     
-    Тестирование базовых функций: singleton pattern, информация об устройстве,
-    батарея, дисплей, системные панели, клавиатура, буфер обмена, контексты.
+    Testing basic functions: singleton pattern, device info,
+    battery, display, system bars, keyboard, clipboard, contexts.
     """
 
     @pytest.fixture(autouse=True)
     def setup_mobile_commands(self, app: Shadowstep):
-        """Настройка экземпляра MobileCommands с фикстурой app.
+        """Setup MobileCommands instance with app fixture.
         
         Args:
-            app: Экземпляр приложения Shadowstep для тестирования.
+            app: Shadowstep application instance for testing.
         """
         self.mobile_commands = MobileCommands()
         self.app = app
@@ -42,22 +41,22 @@ class TestMobileCommandsPart1:
         yield
 
     def test_singleton_pattern(self):
-        """Тестирование паттерна singleton для MobileCommands.
+        """Test singleton pattern for MobileCommands.
         
-        Проверяет, что MobileCommands следует паттерну singleton
-        и возвращает один и тот же экземпляр при повторных вызовах.
+        Verifies that MobileCommands follows singleton pattern
+        and returns the same instance on repeated calls.
         """
         instance1 = MobileCommands()
         instance2 = MobileCommands()
         assert instance1 is instance2  # noqa: S101
 
     def test_battery_info(self):
-        """Тестирование команды battery_info для получения информации о батарее.
+        """Test battery_info command to get battery information.
         
-        Проверяет:
-            - Результат не None
-            - Результат является словарем
-            - Присутствуют ключи level и state
+        Verifies:
+            - Result is not None.
+            - Result is a dictionary.
+            - Keys level and state are present.
         """
         result = self.mobile_commands.battery_info()
 
@@ -67,12 +66,12 @@ class TestMobileCommandsPart1:
         assert "state" in result  # noqa: S101
 
     def test_device_info(self):
-        """Тестирование команды device_info для получения информации об устройстве.
+        """Test device_info command to get device information.
         
-        Проверяет:
-            - Результат не None
-            - Результат является словарем
-            - Присутствует ключ androidId
+        Verifies:
+            - Result is not None.
+            - Result is a dictionary.
+            - Key androidId is present.
         """
         result = self.mobile_commands.device_info()
 
@@ -81,11 +80,11 @@ class TestMobileCommandsPart1:
         assert "androidId" in result  # noqa: S101
 
     def test_get_device_time(self):
-        """Тестирование команды get_device_time для получения времени устройства.
+        """Test get_device_time command to get device time.
         
-        Проверяет:
-            - Результат не None
-            - Результат является строкой
+        Verifies:
+            - Result is not None.
+            - Result is a string.
         """
         result = self.mobile_commands.get_device_time()
 
@@ -93,11 +92,11 @@ class TestMobileCommandsPart1:
         assert isinstance(result, str)  # noqa: S101
 
     def test_is_keyboard_shown(self):
-        """Тестирование команды is_keyboard_shown.
+        """Test is_keyboard_shown command.
         
-        Проверяет:
-            - Результат не None
-            - Результат является булевым значением
+        Verifies:
+            - Result is not None.
+            - Result is a boolean value.
         """
         result = self.mobile_commands.is_keyboard_shown()
 
@@ -105,11 +104,11 @@ class TestMobileCommandsPart1:
         assert isinstance(result, bool)  # noqa: S101
 
     def test_get_current_package(self):
-        """Тестирование команды get_current_package.
+        """Test get_current_package command.
         
-        Проверяет:
-            - Результат не None
-            - Результат является строкой
+        Verifies:
+            - Result is not None.
+            - Result is a string.
         """
         result = self.mobile_commands.get_current_package()
 
@@ -117,11 +116,11 @@ class TestMobileCommandsPart1:
         assert isinstance(result, str)  # noqa: S101
 
     def test_get_current_activity(self):
-        """Тестирование команды get_current_activity.
+        """Test get_current_activity command.
         
-        Проверяет:
-            - Результат не None
-            - Результат является строкой
+        Verifies:
+            - Result is not None.
+            - Result is a string.
         """
         result = self.mobile_commands.get_current_activity()
 
@@ -129,12 +128,12 @@ class TestMobileCommandsPart1:
         assert isinstance(result, str)  # noqa: S101
 
     def test_get_display_density(self):
-        """Тестирование команды get_display_density.
+        """Test get_display_density command.
         
-        Проверяет:
-            - Результат не None
-            - Результат является целым числом
-            - Результат больше 0
+        Verifies:
+            - Result is not None.
+            - Result is an integer.
+            - Result is greater than 0.
         """
         result = self.mobile_commands.get_display_density()
 
@@ -143,12 +142,12 @@ class TestMobileCommandsPart1:
         assert result > 0  # noqa: S101
 
     def test_get_system_bars(self):
-        """Тестирование команды get_system_bars.
+        """Test get_system_bars command.
         
-        Проверяет:
-            - Результат не None
-            - Результат является словарем
-            - Присутствует ключ statusBar
+        Verifies:
+            - Result is not None.
+            - Result is a dictionary.
+            - Key statusBar is present.
         """
         result = self.mobile_commands.get_system_bars()
 
@@ -157,11 +156,11 @@ class TestMobileCommandsPart1:
         assert "statusBar" in result  # noqa: S101
 
     def test_is_locked(self):
-        """Тестирование команды is_locked.
+        """Test is_locked command.
         
-        Проверяет:
-            - Результат не None
-            - Результат является булевым значением
+        Verifies:
+            - Result is not None.
+            - Result is a boolean value.
         """
         result = self.mobile_commands.is_locked()
 
@@ -169,17 +168,17 @@ class TestMobileCommandsPart1:
         assert isinstance(result, bool)  # noqa: S101
 
     def test_lock_unlock(self):
-        """Тестирование команд lock и unlock.
+        """Test lock and unlock commands.
         
-        Шаги:
-            1. Блокировка устройства
-            2. Проверка состояния блокировки
-            3. Разблокировка устройства
-            4. Проверка состояния разблокировки
+        Steps:
+            1. Lock the device.
+            2. Check lock status.
+            3. Unlock the device.
+            4. Check unlock status.
         
-        Примечание:
-            Некоторые эмуляторы не поддерживают блокировку,
-            поэтому проверяется только выполнение команды.
+        Note:
+            Some emulators don't support lock,
+            so only command execution is verified.
         """
         # Lock the device
         self.mobile_commands.lock()
@@ -199,15 +198,15 @@ class TestMobileCommandsPart1:
         assert isinstance(is_locked, bool)  # noqa: S101
 
     def test_get_clipboard(self):
-        """Тестирование команды get_clipboard.
+        """Test get_clipboard command.
         
-        Проверяет:
-            - Результат не None
-            - Результат является строкой (base64 encoded)
+        Verifies:
+            - Result is not None.
+            - Result is a string (base64 encoded).
         
-        Примечание:
-            Содержимое буфера обмена может содержать предыдущие данные,
-            поэтому проверяется только тип возвращаемого значения.
+        Note:
+            Clipboard content may contain previous data,
+            so only return type is verified.
         """
         # Get clipboard content (returns base64 encoded string)
         result = self.mobile_commands.get_clipboard()
@@ -218,10 +217,10 @@ class TestMobileCommandsPart1:
         # Content verification is difficult as clipboard may contain previous data
 
     def test_set_clipboard(self):
-        """Тестирование команды set_clipboard.
+        """Test set_clipboard command.
         
-        Проверяет:
-            - Команда выполняется без исключений
+        Verifies:
+            - Command executes without exceptions.
         """
         test_text = "integration_test_text"
         result = self.mobile_commands.set_clipboard(
@@ -232,14 +231,14 @@ class TestMobileCommandsPart1:
         assert result is None or result is not None  # noqa: S101
 
     def test_get_contexts(self):
-        """Тестирование команды get_contexts.
+        """Test get_contexts command.
         
-        Проверяет:
-            - Результат не None
-            - Результат является списком
+        Verifies:
+            - Result is not None.
+            - Result is a list.
         
-        Примечание:
-            Список контекстов может быть пустым на некоторых устройствах/конфигурациях.
+        Note:
+            Context list may be empty on some devices/configurations.
         """
         result = self.mobile_commands.get_contexts()
 
@@ -248,11 +247,11 @@ class TestMobileCommandsPart1:
         # Context list may be empty on some devices/configurations
 
     def test_shell_command(self):
-        """Тестирование выполнения команды shell.
+        """Test shell command execution.
         
-        Проверяет:
-            - Результат не None
-            - Результат содержит ожидаемый вывод команды
+        Verifies:
+            - Result is not None.
+            - Result contains expected command output.
         """
         # Execute simple shell command
         result = self.mobile_commands.shell({"command": "echo", "args": ["test"]})
@@ -261,12 +260,12 @@ class TestMobileCommandsPart1:
         assert "test" in result  # noqa: S101
 
     def test_shell_command_getprop(self):
-        """Тестирование команды shell с getprop.
+        """Test shell command with getprop.
         
-        Проверяет:
-            - Результат не None
-            - Результат является строкой
-            - Результат содержит цифровое значение (версия SDK)
+        Verifies:
+            - Result is not None.
+            - Result is a string.
+            - Result contains numeric value (SDK version).
         """
         result = self.mobile_commands.shell(
             {"command": "getprop", "args": ["ro.build.version.sdk"]}
@@ -277,15 +276,15 @@ class TestMobileCommandsPart1:
         assert result.strip().isdigit()  # noqa: S101
 
     def test_open_notifications(self):
-        """Тестирование команды open_notifications.
+        """Test open_notifications command.
         
-        Шаги:
-            1. Открытие панели уведомлений
-            2. Ожидание
-            3. Закрытие панели кнопкой Back
+        Steps:
+            1. Open notifications panel.
+            2. Wait.
+            3. Close panel with Back button.
         
-        Проверяет:
-            - Команда выполняется без исключений
+        Verifies:
+            - Command executes without exceptions.
         """
         result = self.mobile_commands.open_notifications()
         time.sleep(1)
@@ -298,11 +297,11 @@ class TestMobileCommandsPart1:
 
     @pytest.mark.xfail(reason="Requires keyboard to be shown", strict=False)
     def test_hide_keyboard(self):
-        """Тестирование команды hide_keyboard.
+        """Test hide_keyboard command.
         
-        Примечание:
-            Команда может не выполнить действия, если клавиатура не отображается.
-            Тест отмечен как xfail, так как требуется активная клавиатура.
+        Note:
+            Command may not perform actions if keyboard is not shown.
+            Test is marked as xfail since active keyboard is required.
         """
         # This may not do anything if keyboard is not shown
         result = self.mobile_commands.hide_keyboard()
@@ -310,14 +309,14 @@ class TestMobileCommandsPart1:
         logger.info(result)
 
     def test_press_key(self):
-        """Тестирование команды press_key.
+        """Test press_key command.
         
-        Шаги:
-            1. Нажатие клавиши HOME (keycode 3)
-            2. Ожидание
+        Steps:
+            1. Press HOME key (keycode 3).
+            2. Wait.
         
-        Проверяет:
-            - Команда выполняется без исключений
+        Verifies:
+            - Command executes without exceptions.
         """
         # Press home key
         result = self.mobile_commands.press_key({"keycode": 3})
@@ -327,12 +326,12 @@ class TestMobileCommandsPart1:
         assert result is None or result is not None  # noqa: S101
 
     def test_get_performance_data_types(self):
-        """Тестирование команды get_performance_data_types.
+        """Test get_performance_data_types command.
         
-        Проверяет:
-            - Результат не None
-            - Результат является списком
-            - Список не пуст
+        Verifies:
+            - Result is not None.
+            - Result is a list.
+            - List is not empty.
         """
         result = self.mobile_commands.get_performance_data_types()
 
@@ -344,22 +343,22 @@ class TestMobileCommandsPart1:
         reason="Performance data parsing may fail on some devices/emulators", strict=False
     )
     def test_get_performance_data(self, android_settings_open_close: Any):
-        """Тестирование команды get_performance_data.
+        """Test get_performance_data command.
         
-        Шаги:
-            1. Получение доступных типов данных о производительности
-            2. Получение данных о производительности для первого типа
+        Steps:
+            1. Get available performance data types.
+            2. Get performance data for first type.
         
-        Проверяет:
-            - Результат не None
-            - Результат является списком
+        Verifies:
+            - Result is not None.
+            - Result is a list.
         
         Args:
-            android_settings_open_close: Фикстура для управления настройками Android.
+            android_settings_open_close: Fixture for managing Android settings.
         
-        Примечание:
-            Парсинг данных о производительности может не работать на некоторых
-            устройствах/эмуляторах, поэтому тест отмечен как xfail.
+        Note:
+            Performance data parsing may not work on some devices/emulators,
+            so test is marked as xfail.
         """
         # Get available performance data types first
         data_types = self.mobile_commands.get_performance_data_types()
@@ -377,17 +376,17 @@ class TestMobileCommandsPart1:
             assert isinstance(result, list)  # noqa: S101
 
     def test_type_text(self, android_settings_open_close: Any):
-        """Тестирование команды type для ввода текста.
+        """Test type command for text input.
         
-        Проверяет:
-            - Команда выполняется без исключений
+        Verifies:
+            - Command executes without exceptions.
         
         Args:
-            android_settings_open_close: Фикстура для управления настройками Android.
+            android_settings_open_close: Fixture for managing Android settings.
         
-        Примечание:
-            Идеально было бы сначала кликнуть на поле ввода,
-            но для теста достаточно проверить выполнение команды.
+        Note:
+            Ideally would click on input field first,
+            but for test it's enough to verify command execution.
         """
         # Click on search or any input field first would be ideal
         # For now just test the command executes
@@ -397,11 +396,11 @@ class TestMobileCommandsPart1:
         assert result is None or result is not None  # noqa: S101
 
     def test_screenshots_command(self):
-        """Тестирование команды screenshots.
+        """Test screenshots command.
         
-        Проверяет:
-            - Результат не None
-            - Результат является словарем
+        Verifies:
+            - Result is not None.
+            - Result is a dictionary.
         """
         result = self.mobile_commands.screenshots()
 

@@ -1,7 +1,6 @@
 # ruff: noqa
 # pyright: ignore
-"""
-Модуль тестирования функциональности ожидания элементов с общими локаторами и таймаутами.
+"""Module for testing element waiting functionality with generic locators and timeouts.
 
 uv run pytest -svl --log-cli-level INFO --tb=short --setup-show tests/test_integro/test_element/test_waiting_integro_part_3.py
 """
@@ -34,12 +33,12 @@ LOCATOR_BUBBLE = {
 
 # ruff: noqa: S101
 class TestElementWaitingPart3:
-    """Набор тестов для функциональности ожидания элементов с общими локаторами и таймаутами."""
+    """Test suite for element waiting functionality with generic locators and timeouts."""
 
     def test_wait_clickable_with_none_locator(
         self, app: Shadowstep, android_settings_open_close: Any
     ):
-        """Тест поведения метода wait_clickable с общим локатором."""
+        """Test wait_clickable method behavior with generic locator."""
 
         el = app.get_element(("xpath", "//*"), timeout=5)  # Find any element
         result = el.wait_clickable(timeout=5, return_bool=True)
@@ -48,7 +47,7 @@ class TestElementWaitingPart3:
     def test_wait_for_not_with_none_locator(
         self, app: Shadowstep, android_settings_open_close: Any
     ):
-        """Тест поведения метода wait_for_not с общим локатором."""
+        """Test wait_for_not method behavior with generic locator."""
 
         el = app.get_element(("xpath", "//*"), timeout=5)  # Find any element
         result = el.wait_for_not(timeout=2, return_bool=True)
@@ -57,7 +56,7 @@ class TestElementWaitingPart3:
     def test_wait_for_not_visible_with_none_locator(
         self, app: Shadowstep, android_settings_open_close: Any
     ):
-        """Тест поведения метода wait_for_not_visible с общим локатором."""
+        """Test wait_for_not_visible method behavior with generic locator."""
 
         el = app.get_element(("xpath", "//*"), timeout=5)  # Find any element
         result = el.wait_for_not_visible(timeout=2, return_bool=True)
@@ -66,7 +65,7 @@ class TestElementWaitingPart3:
     def test_wait_for_not_clickable_with_none_locator(
         self, app: Shadowstep, android_settings_open_close: Any
     ):
-        """Тест поведения метода wait_for_not_clickable с общим локатором."""
+        """Test wait_for_not_clickable method behavior with generic locator."""
 
         el = app.get_element(("xpath", "//*"), timeout=5)  # Find any element
         result = el.wait_for_not_clickable(timeout=2, return_bool=True)
@@ -75,7 +74,7 @@ class TestElementWaitingPart3:
     def test_wait_timeout_exceeds_element_timeout(
         self, app: Shadowstep, android_settings_open_close: Any
     ):
-        """Тест, что wait учитывает таймаут элемента, когда он короче таймаута метода."""
+        """Test that wait respects element timeout when it's shorter than method timeout."""
 
         # Create element with very short timeout
         el = app.get_element(LOCATOR_SEARCH_SETTINGS, timeout=1)
@@ -90,7 +89,7 @@ class TestElementWaitingPart3:
     def test_all_wait_methods_return_element_when_return_bool_false(
         self, app: Shadowstep, android_settings_open_close: Any
     ):
-        """Тест, что все методы wait возвращают Element при return_bool=False."""
+        """Test that all wait methods return Element when return_bool=False."""
         el = app.get_element(LOCATOR_SEARCH_SETTINGS)
 
         # Test all wait methods return the element itself
@@ -104,7 +103,7 @@ class TestElementWaitingPart3:
     def test_wait_methods_with_zero_timeout(
         self, app: Shadowstep, android_settings_open_close: Any
     ):
-        """Тест методов wait с нулевым таймаутом."""
+        """Test wait methods with zero timeout."""
         el = app.get_element(LOCATOR_SEARCH_SETTINGS)
 
         # With zero timeout, should return quickly
@@ -118,7 +117,7 @@ class TestElementWaitingPart3:
     def test_wait_methods_with_very_small_poll_frequency(
         self, app: Shadowstep, android_settings_open_close: Any
     ):
-        """Тест методов wait с очень маленькой частотой опроса."""
+        """Test wait methods with very small poll frequency."""
         el = app.get_element(LOCATOR_SEARCH_SETTINGS)
 
         # Test with very small poll frequency
@@ -128,10 +127,9 @@ class TestElementWaitingPart3:
     def test_wait_methods_with_large_poll_frequency(
         self, app: Shadowstep, android_settings_open_close: Any
     ):
-        """Тест методов wait с большой частотой опроса."""
+        """Test wait methods with large poll frequency."""
         el = app.get_element(LOCATOR_SEARCH_SETTINGS)
 
         # Test with large poll frequency
         result = el.wait(timeout=2, poll_frequency=2.0, return_bool=True)
         assert result is True
-

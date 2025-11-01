@@ -33,21 +33,21 @@ logger = logging.getLogger(__name__)
 
 
 class TestElementGesturesPart1:
-    """Тесты базовых жестов взаимодействия с элементами.
+    """Tests for basic element interaction gestures.
 
-    Данный класс содержит тесты для базовых жестов взаимодействия с элементами,
-    включая tap и click операции с различными параметрами и обработкой исключений.
+    This class contains tests for basic element interaction gestures,
+    including tap and click operations with various parameters and exception handling.
     """
 
     def test_tap(self, app: Shadowstep, android_settings_open_close: None):
-        """Тест базового тапа по элементу.
+        """Test basic element tap.
 
-        Проверяет корректность выполнения тапа по элементу "Connected devices"
-        и ожидаемое появление элемента "Connection preferences".
+        Verifies correct execution of tap on "Connected devices" element
+        and expected appearance of "Connection preferences" element.
 
         Args:
-            app: Экземпляр Shadowstep для взаимодействия с приложением.
-            android_settings_open_close: Фикстура для открытия и закрытия настроек Android.
+            app: Shadowstep instance for application interaction.
+            android_settings_open_close: Fixture for opening and closing Android settings.
         """
         element = app.get_element(locator=LOCATOR_CONNECTED_DEVICES)
         element.tap()
@@ -56,15 +56,15 @@ class TestElementGesturesPart1:
         assert expect_element.is_visible()  # noqa: S101
 
     def test_tap_duration(self, app: Shadowstep, press_home: None, stability: None):
-        """Тест тапа с заданной продолжительностью.
+        """Test tap with specified duration.
 
-        Проверяет корректность выполнения тапа с длительностью 3000мс
-        по элементу "Phone" и ожидаемое появление элемента "App info".
+        Verifies correct execution of tap with 3000ms duration
+        on "Phone" element and expected appearance of "App info" element.
 
         Args:
-            app: Экземпляр Shadowstep для взаимодействия с приложением.
-            press_home: Фикстура для нажатия кнопки Home.
-            stability: Фикстура для обеспечения стабильности теста.
+            app: Shadowstep instance for application interaction.
+            press_home: Fixture for pressing Home button.
+            stability: Fixture for ensuring test stability.
         """
         phone = app.get_element(locator=LOCATOR_PHONE)
         phone.tap(duration=3000)
@@ -73,14 +73,14 @@ class TestElementGesturesPart1:
         assert bubble.is_visible()
 
     def test_tap_no_such_driver_exception(self, app: Shadowstep, android_settings_open_close: None):
-        """Тест обработки исключения при отсутствии драйвера.
+        """Test handling exception when driver is not present.
 
-        Проверяет корректность обработки исключения NoSuchDriverException
-        при выполнении тапа после отключения от драйвера.
+        Verifies correct handling of NoSuchDriverException
+        when performing tap after disconnecting from driver.
 
         Args:
-            app: Экземпляр Shadowstep для взаимодействия с приложением.
-            android_settings_open_close: Фикстура для открытия и закрытия настроек Android.
+            app: Shadowstep instance for application interaction.
+            android_settings_open_close: Fixture for opening and closing Android settings.
         """
         app.disconnect()
         assert not app.is_connected()  # noqa: S101
@@ -91,14 +91,14 @@ class TestElementGesturesPart1:
     def test_tap_invalid_session_id_exception(
         self, app: Shadowstep, android_settings_open_close: None
     ):
-        """Тест обработки исключения при неверном ID сессии.
+        """Test handling exception when session ID is invalid.
 
-        Проверяет корректность обработки исключения InvalidSessionIdException
-        при выполнении тапа с неверным ID сессии.
+        Verifies correct handling of InvalidSessionIdException
+        when performing tap with invalid session ID.
 
         Args:
-            app: Экземпляр Shadowstep для взаимодействия с приложением.
-            android_settings_open_close: Фикстура для открытия и закрытия настроек Android.
+            app: Shadowstep instance for application interaction.
+            android_settings_open_close: Fixture for opening and closing Android settings.
         """
         app.driver.session_id = "12345"
         element = app.get_element(locator=LOCATOR_CONNECTED_DEVICES)
@@ -111,14 +111,14 @@ class TestElementGesturesPart1:
     def test_tap_no_such_element_exception(
         self, app: Shadowstep, android_settings_open_close: None
     ):
-        """Тест обработки исключения при отсутствии элемента.
+        """Test handling exception when element is not present.
 
-        Проверяет корректность обработки исключения NoSuchElementException
-        при попытке выполнить тап по несуществующему элементу.
+        Verifies correct handling of NoSuchElementException
+        when attempting to tap non-existent element.
 
         Args:
-            app: Экземпляр Shadowstep для взаимодействия с приложением.
-            android_settings_open_close: Фикстура для открытия и закрытия настроек Android.
+            app: Shadowstep instance for application interaction.
+            android_settings_open_close: Fixture for opening and closing Android settings.
         """
         try:
             element = app.get_element(locator={"content-desc": "no_such_element"})
@@ -137,15 +137,15 @@ class TestElementGesturesPart1:
         ],
     )
     def test_tap_and_move(self, app: Shadowstep, android_settings_open_close: None, params: Any):
-        """Тест тапа с перемещением в различных направлениях.
+        """Test tap with movement in various directions.
 
-        Проверяет корректность выполнения тапа с последующим перемещением
-        с использованием различных параметров (координаты, локатор, направление).
+        Verifies correct execution of tap with subsequent movement
+        using various parameters (coordinates, locator, direction).
 
         Args:
-            app: Экземпляр Shadowstep для взаимодействия с приложением.
-            android_settings_open_close: Фикстура для открытия и закрытия настроек Android.
-            params: Параметры для выполнения тапа с перемещением.
+            app: Shadowstep instance for application interaction.
+            android_settings_open_close: Fixture for opening and closing Android settings.
+            params: Parameters for tap and move execution.
         """
         element = app.get_element(locator=LOCATOR_CONNECTED_DEVICES)
         target_element = app.get_element(locator=LOCATOR_SEARCH_SETTINGS)
@@ -155,14 +155,14 @@ class TestElementGesturesPart1:
         assert isinstance(element, Element)  # noqa: S101
 
     def test_click(self, app: Shadowstep, android_settings_open_close: None):
-        """Тест базового клика по элементу.
+        """Test basic element click.
 
-        Проверяет корректность выполнения клика по элементу "Connected devices"
-        и ожидаемое появление элемента "Connection preferences".
+        Verifies correct execution of click on "Connected devices" element
+        and expected appearance of "Connection preferences" element.
 
         Args:
-            app: Экземпляр Shadowstep для взаимодействия с приложением.
-            android_settings_open_close: Фикстура для открытия и закрытия настроек Android.
+            app: Shadowstep instance for application interaction.
+            android_settings_open_close: Fixture for opening and closing Android settings.
         """
         element = app.get_element(locator=LOCATOR_CONNECTED_DEVICES)
         element.click()
@@ -171,14 +171,14 @@ class TestElementGesturesPart1:
         assert expect_element.is_visible()  # noqa: S101
 
     def test_click_duration(self, app: Shadowstep, press_home: None):
-        """Тест клика с заданной продолжительностью.
+        """Test click with specified duration.
 
-        Проверяет корректность выполнения клика с длительностью 3000мс
-        по элементу "Phone" и ожидаемое появление элемента "App info".
+        Verifies correct execution of click with 3000ms duration
+        on "Phone" element and expected appearance of "App info" element.
 
         Args:
-            app: Экземпляр Shadowstep для взаимодействия с приложением.
-            press_home: Фикстура для нажатия кнопки Home.
+            app: Shadowstep instance for application interaction.
+            press_home: Fixture for pressing Home button.
         """
         phone = app.get_element(locator=LOCATOR_PHONE)
         phone.click(duration=3000)
@@ -186,14 +186,14 @@ class TestElementGesturesPart1:
         assert bubble.is_visible()
 
     def test_click_double(self, app: Shadowstep, android_settings_open_close: None):
-        """Тест двойного клика по элементу.
+        """Test double click on element.
 
-        Проверяет корректность выполнения двойного клика по элементу
-        "Search settings" и ожидаемое появление поля ввода поиска.
+        Verifies correct execution of double click on
+        "Search settings" element and expected appearance of search input field.
 
         Args:
-            app: Экземпляр Shadowstep для взаимодействия с приложением.
-            android_settings_open_close: Фикстура для открытия и закрытия настроек Android.
+            app: Shadowstep instance for application interaction.
+            android_settings_open_close: Fixture for opening and closing Android settings.
         """
         search = app.get_element(locator=LOCATOR_SEARCH_SETTINGS)
         search.double_click()

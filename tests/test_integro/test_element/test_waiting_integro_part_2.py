@@ -1,7 +1,6 @@
 # ruff: noqa
 # pyright: ignore
-"""
-Модуль тестирования функциональности ожидания элементов с кастомными параметрами.
+"""Module for testing element waiting functionality with custom parameters.
 
 uv run pytest -svl --log-cli-level INFO --tb=short --setup-show tests/test_integro/test_element/test_waiting_integro_part_2.py
 """
@@ -34,12 +33,12 @@ LOCATOR_BUBBLE = {
 
 # ruff: noqa: S101
 class TestElementWaitingPart2:
-    """Набор тестов для функциональности ожидания элементов с кастомными параметрами."""
+    """Test suite for element waiting functionality with custom parameters."""
 
     def test_wait_for_not_clickable_success(
         self, app: Shadowstep, android_settings_open_close: Any
     ):
-        """Тест успешного ожидания, что элемент станет некликабельным."""
+        """Test successful waiting for element to become non-clickable."""
 
         el = app.get_element(LOCATOR_SEARCH_SETTINGS)
         result = el.wait_for_not_clickable(timeout=2, return_bool=True)
@@ -48,7 +47,7 @@ class TestElementWaitingPart2:
     def test_wait_with_custom_timeout_and_poll_frequency(
         self, app: Shadowstep, android_settings_open_close: Any
     ):
-        """Тест метода wait с кастомными таймаутом и частотой опроса."""
+        """Test wait method with custom timeout and poll frequency."""
 
         el = app.get_element(LOCATOR_SEARCH_SETTINGS)
         start_time = time.time()
@@ -62,7 +61,7 @@ class TestElementWaitingPart2:
     def test_wait_visible_with_custom_parameters(
         self, app: Shadowstep, android_settings_open_close: Any
     ):
-        """Тест wait_visible с кастомными таймаутом и частотой опроса."""
+        """Test wait_visible with custom timeout and poll frequency."""
 
         el = app.get_element(LOCATOR_SEARCH_SETTINGS)
         result = el.wait_visible(timeout=3, poll_frequency=0.1, return_bool=True)
@@ -71,7 +70,7 @@ class TestElementWaitingPart2:
     def test_wait_clickable_with_custom_parameters(
         self, app: Shadowstep, android_settings_open_close: Any
     ):
-        """Тест wait_clickable с кастомными таймаутом и частотой опроса."""
+        """Test wait_clickable with custom timeout and poll frequency."""
 
         el = app.get_element(LOCATOR_SEARCH_SETTINGS)
         result = el.wait_clickable(timeout=3, poll_frequency=0.1, return_bool=True)
@@ -80,7 +79,7 @@ class TestElementWaitingPart2:
     def test_wait_for_not_with_custom_parameters(
         self, app: Shadowstep, android_settings_open_close: Any
     ):
-        """Тест wait_for_not с кастомными таймаутом и частотой опроса."""
+        """Test wait_for_not with custom timeout and poll frequency."""
 
         el = app.get_element(LOCATOR_SEARCH_SETTINGS)
         result = el.wait_for_not(timeout=2, poll_frequency=0.1, return_bool=True)
@@ -89,7 +88,7 @@ class TestElementWaitingPart2:
     def test_wait_for_not_visible_with_custom_parameters(
         self, app: Shadowstep, android_settings_open_close: Any
     ):
-        """Тест wait_for_not_visible с кастомными таймаутом и частотой опроса."""
+        """Test wait_for_not_visible with custom timeout and poll frequency."""
 
         el = app.get_element(LOCATOR_SEARCH_SETTINGS)
         result = el.wait_for_not_visible(timeout=2, poll_frequency=0.1, return_bool=True)
@@ -98,14 +97,14 @@ class TestElementWaitingPart2:
     def test_wait_for_not_clickable_with_custom_parameters(
         self, app: Shadowstep, android_settings_open_close: Any
     ):
-        """Тест wait_for_not_clickable с кастомными таймаутом и частотой опроса."""
+        """Test wait_for_not_clickable with custom timeout and poll frequency."""
 
         el = app.get_element(LOCATOR_SEARCH_SETTINGS)
         result = el.wait_for_not_clickable(timeout=2, poll_frequency=0.1, return_bool=True)
         assert result is False
 
     def test_wait_with_none_locator(self, app: Shadowstep, android_settings_open_close: Any):
-        """Тест поведения метода wait с общим локатором."""
+        """Test wait method behavior with generic locator."""
 
         # Create element with generic xpath locator
         el = app.get_element(("xpath", "//*"), timeout=5)  # Find any element
@@ -115,9 +114,8 @@ class TestElementWaitingPart2:
     def test_wait_visible_with_none_locator(
         self, app: Shadowstep, android_settings_open_close: Any
     ):
-        """Тест поведения метода wait_visible с общим локатором."""
+        """Test wait_visible method behavior with generic locator."""
 
         el = app.get_element(("xpath", "//*"), timeout=5)  # Find any element
         result = el.wait_visible(timeout=5, return_bool=True)
         assert result is True  # Generic xpath "//*" finds elements
-
