@@ -30,7 +30,7 @@ element = app.get_element(locator=LOCATOR_SCROLL_VIEW)
 
 for _ in range(9):
     result = element.scroll(
-        direction="up",
+        direction="down",
         percent=0.7,
         speed=8000,
         return_bool=True,

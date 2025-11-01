@@ -77,16 +77,16 @@ class W3CActions:
         start_y: int
         end_x: int
         end_y: int
-        if direction_lower == "down":
+        if direction_lower == "up":
             start_x, start_y = center_x, center_y - distance // 2
             end_x, end_y = center_x, center_y + distance // 2
-        elif direction_lower == "up":
+        elif direction_lower == "down":
             start_x, start_y = center_x, center_y + distance // 2
             end_x, end_y = center_x, center_y - distance // 2
-        elif direction_lower == "right":
+        elif direction_lower == "left":
             start_x, start_y = center_x - distance // 2, center_y
             end_x, end_y = center_x + distance // 2, center_y
-        elif direction_lower == "left":
+        elif direction_lower == "right":
             start_x, start_y = center_x + distance // 2, center_y
             end_x, end_y = center_x - distance // 2, center_y
         else:
