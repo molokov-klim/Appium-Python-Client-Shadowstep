@@ -209,6 +209,7 @@ class TestShadowstepPart3:
             else:
                 raise
 
+    @pytest.mark.skip(reason="not working on emulators")
     def test_refresh_gps_cache(self, app: Shadowstep):
         """Test refreshing GPS cache.
 
@@ -236,6 +237,7 @@ class TestShadowstepPart3:
         """
         app.reset_geolocation()
 
+    @pytest.mark.skip(reason="not working on emulators")
     def test_get_geolocation(self, app: Shadowstep):
         """Test getting device location.
 

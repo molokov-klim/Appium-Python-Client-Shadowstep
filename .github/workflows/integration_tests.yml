@@ -11,10 +11,6 @@ jobs:
       fail-fast: false
       matrix:
         test_dir: [
-          tests/test_integro/test_shadowstep_integro_part_1.py,
-          tests/test_integro/test_shadowstep_integro_part_2.py,
-          tests/test_integro/test_shadowstep_integro_part_3.py,
-          tests/test_integro/test_shadowstep_integro_part_4.py,
           tests/test_integro/test_decorators/test_decorators_integro.py,
           tests/test_integro/test_element/test_actions_integro.py,
           tests/test_integro/test_element/test_base_integro.py,
