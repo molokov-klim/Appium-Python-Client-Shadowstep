@@ -106,7 +106,7 @@ class W3CActions:
         direction: str,
         percent: float,
         speed: int,
-    ) -> None:
+    ) -> bool:
         """Perform swipe gesture on element using W3C Actions.
 
         Args:
@@ -117,7 +117,7 @@ class W3CActions:
 
         """
         # Swipe is essentially the same as scroll
-        self.scroll(element, direction, percent, speed)
+        return self.scroll(element, direction, percent, speed)
 
     def click(self, element: WebElement, duration: int | None = None) -> None:
         """Perform click gesture on element using W3C Actions.
@@ -144,7 +144,7 @@ class W3CActions:
             actions.w3c_actions.pointer_action.pause(duration / 1000)  # type: ignore[reportUnknownMemberType]
 
         actions.w3c_actions.pointer_action.pointer_up()  # type: ignore[reportUnknownMemberType]
-        actions.perform()
+        return actions.perform()
 
     def double_click(self, element: WebElement) -> None:
         """Perform double-click gesture on element using W3C Actions.
@@ -175,7 +175,7 @@ class W3CActions:
         actions.w3c_actions.pointer_action.pointer_down()  # type: ignore[reportUnknownMemberType]
         actions.w3c_actions.pointer_action.pointer_up()  # type: ignore[reportUnknownMemberType]
 
-        actions.perform()
+        return actions.perform()
 
     def drag(self, element: WebElement, end_x: int, end_y: int, speed: int) -> None:
         """Perform drag gesture from element to coordinates using W3C Actions.
@@ -195,9 +195,9 @@ class W3CActions:
         distance: int = int(((end_x - start_x) ** 2 + (end_y - start_y) ** 2) ** 0.5)
         duration_ms = int((distance / speed) * 1000) if speed > 0 else 0
 
-        self._swipe_with_duration(start_x, start_y, end_x, end_y, duration_ms)
+        return self._swipe_with_duration(start_x, start_y, end_x, end_y, duration_ms)
 
-    def fling(self, element: WebElement, direction: str, speed: int) -> None:
+    def fling(self, element: WebElement, direction: str, speed: int) -> bool:
         """Perform fling gesture on element using W3C Actions.
 
         Args:
@@ -208,7 +208,7 @@ class W3CActions:
         """
         # Fling is a fast swipe across the element
         # Use a large percent (0.8) to cover most of the element
-        self.scroll(element, direction, percent=0.8, speed=speed)
+        return self.scroll(element, direction, percent=0.8, speed=speed)
 
     def zoom(self, element: WebElement, percent: float, speed: int) -> None:
         """Perform pinch-open (zoom) gesture on element using W3C Actions.
@@ -238,7 +238,7 @@ class W3CActions:
         finger2_end_x: int = center_x
         finger2_end_y: int = center_y + distance
 
-        self._multi_touch_gesture(
+        return self._multi_touch_gesture(
             [(finger1_start_x, finger1_start_y), (finger2_start_x, finger2_start_y)],
             [(finger1_end_x, finger1_end_y), (finger2_end_x, finger2_end_y)],
             duration_ms,
@@ -272,7 +272,7 @@ class W3CActions:
         finger2_end_x: int = center_x
         finger2_end_y: int = center_y
 
-        self._multi_touch_gesture(
+        return self._multi_touch_gesture(
             [(finger1_start_x, finger1_start_y), (finger2_start_x, finger2_start_y)],
             [(finger1_end_x, finger1_end_y), (finger2_end_x, finger2_end_y)],
             duration_ms,
@@ -316,7 +316,7 @@ class W3CActions:
         actions.w3c_actions.pointer_action.move_to_location(end_x, end_y)  # type: ignore[reportUnknownMemberType]
         actions.w3c_actions.pointer_action.release()  # type: ignore[reportUnknownMemberType]
 
-        actions.perform()
+        return actions.perform()
 
     def _multi_touch_gesture(
         self,
@@ -357,7 +357,7 @@ class W3CActions:
             )
             finger_input.create_pointer_up(interaction.POINTER_TOUCH)  # type: ignore[reportUnknownMemberType]
 
-        actions.perform()
+        return actions.perform()
 
     def _raise_invalid_direction_error(self, direction: str) -> NoReturn:
         """Raise ValueError for invalid direction.
