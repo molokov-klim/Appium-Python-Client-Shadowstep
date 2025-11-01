@@ -163,7 +163,7 @@ class ElementGestures:
 
         Args:
             duration: Duration of the click in milliseconds.
-            strategy: Стратегия выполнения жеста (W3C_ACTIONS, MOBILE_COMMANDS, AUTO).
+            strategy: Gesture execution strategy (W3C_ACTIONS, MOBILE_COMMANDS, AUTO).
 
         Returns:
             The element for method chaining.
@@ -175,19 +175,19 @@ class ElementGestures:
 
         if strategy == GestureStrategy.AUTO:
             return self._execute_gesture_with_auto_fallback(
-                self._click_w3c_commands,
+                self._click_w3c_actions,
                 self._click_mobile_commands,
                 native_element,
                 duration,
             )
 
         method_map = {
-            GestureStrategy.W3C_ACTIONS: self._click_w3c_commands,
+            GestureStrategy.W3C_ACTIONS: self._click_w3c_actions,
             GestureStrategy.MOBILE_COMMANDS: self._click_mobile_commands,
         }
         return method_map[strategy](native_element, duration)
 
-    def _click_w3c_commands(self, native_element: WebElement, duration: int | None = None) -> Element:
+    def _click_w3c_actions(self, native_element: WebElement, duration: int | None = None) -> Element:
         self.w3c_actions.click(native_element, duration=duration)
         return self.element
 
@@ -214,13 +214,13 @@ class ElementGestures:
 
         if strategy == GestureStrategy.AUTO:
             return self._execute_gesture_with_auto_fallback(
-                self._double_click_w3c_commands,
+                self._double_click_w3c_actions,
                 self._double_click_mobile_commands,
                 native_element,
             )
 
         method_map = {
-            GestureStrategy.W3C_ACTIONS: self._double_click_w3c_commands,
+            GestureStrategy.W3C_ACTIONS: self._double_click_w3c_actions,
             GestureStrategy.MOBILE_COMMANDS: self._double_click_mobile_commands,
         }
         return method_map[strategy](native_element)
@@ -229,7 +229,7 @@ class ElementGestures:
         self.mobile_commands.double_click_gesture({"elementId": native_element.id})
         return self.element
 
-    def _double_click_w3c_commands(self, native_element: WebElement) -> Element:
+    def _double_click_w3c_actions(self, native_element: WebElement) -> Element:
         self.w3c_actions.double_click(native_element)
         return self.element
 
@@ -247,7 +247,7 @@ class ElementGestures:
             end_x: Target x coordinate.
             end_y: Target y coordinate.
             speed: Speed of the drag gesture.
-            strategy: Стратегия выполнения жеста (W3C_ACTIONS, MOBILE_COMMANDS, AUTO).
+            strategy: Gesture execution strategy (W3C_ACTIONS, MOBILE_COMMANDS, AUTO).
 
         Returns:
             The element for method chaining.
@@ -379,7 +379,7 @@ class ElementGestures:
             speed: The speed at which to perform this gesture in pixels per second.
                 The value must not be negative. The default value is 5000 * displayDensity.
             return_bool: If true return bool else return self.
-            strategy: Стратегия выполнения жеста (W3C_ACTIONS, MOBILE_COMMANDS, AUTO).
+            strategy: Gesture execution strategy (W3C_ACTIONS, MOBILE_COMMANDS, AUTO).
 
         Returns:
             The element for method chaining.
@@ -646,7 +646,7 @@ class ElementGestures:
         Args:
             percent: Zoom percentage (default: 0.75).
             speed: Speed of the zoom gesture (default: 2500).
-            strategy: Стратегия выполнения жеста (W3C_ACTIONS, MOBILE_COMMANDS, AUTO).
+            strategy: Gesture execution strategy (W3C_ACTIONS, MOBILE_COMMANDS, AUTO).
 
         Returns:
             The element for method chaining.
@@ -707,7 +707,7 @@ class ElementGestures:
         Args:
             percent: Unzoom percentage (default: 0.75).
             speed: Speed of the unzoom gesture (default: 2500).
-            strategy: Стратегия выполнения жеста (W3C_ACTIONS, MOBILE_COMMANDS, AUTO).
+            strategy: Gesture execution strategy (W3C_ACTIONS, MOBILE_COMMANDS, AUTO).
 
         Returns:
             The element for method chaining.
@@ -770,7 +770,7 @@ class ElementGestures:
             direction: Swipe direction (up, down, left, right).
             percent: Swipe percentage (default: 0.75).
             speed: Speed of the swipe gesture (default: 5000).
-            strategy: Стратегия выполнения жеста (W3C_ACTIONS, MOBILE_COMMANDS, AUTO).
+            strategy: Gesture execution strategy (W3C_ACTIONS, MOBILE_COMMANDS, AUTO).
 
         Returns:
             The element for method chaining.
