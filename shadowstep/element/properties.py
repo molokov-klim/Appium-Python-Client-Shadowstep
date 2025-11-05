@@ -91,8 +91,22 @@ class ElementProperties:
     def is_displayed(self) -> bool:
         """Check if element is displayed."""
         self.element.get_driver()
-        element = self.element.get_native()
-        return element.is_displayed()
+        try:
+            element = self.element.get_native()
+            result = element.is_displayed()
+        except NoSuchElementException:
+            return False
+        except ShadowstepNoSuchElementException:
+            return False
+        except ShadowstepElementException:
+            return False
+        if result:
+            return result
+        time.sleep(0.1)
+        raise ShadowstepElementException(
+            msg=f"Failed to {inspect.currentframe() if inspect.currentframe() else 'unknown'} within {self.element.timeout=}",
+            stacktrace=traceback.format_stack(),
+        )
 
     #################################################################################3
 
