@@ -370,7 +370,7 @@ class Element(ElementBase):
     def click(
         self,
         duration: int | None = None,
-        strategy: GestureStrategy = GestureStrategy.MOBILE_COMMANDS,
+        strategy: GestureStrategy = GestureStrategy.AUTO,
     ) -> Element:
         """Click the element.
 
@@ -386,7 +386,7 @@ class Element(ElementBase):
     @fail_safe_element()
     def double_click(
         self,
-        strategy: GestureStrategy = GestureStrategy.MOBILE_COMMANDS,
+        strategy: GestureStrategy = GestureStrategy.AUTO,
     ) -> Element:
         """Perform a double click on the element.
 
@@ -402,7 +402,7 @@ class Element(ElementBase):
         end_x: int,
         end_y: int,
         speed: int = 2500,
-        strategy: GestureStrategy = GestureStrategy.MOBILE_COMMANDS,
+        strategy: GestureStrategy = GestureStrategy.AUTO,
     ) -> Element:
         """Drag the element to target coordinates.
 
@@ -486,7 +486,7 @@ class Element(ElementBase):
         self,
         speed: int,
         direction: str,
-        strategy: GestureStrategy = GestureStrategy.MOBILE_COMMANDS,
+        strategy: GestureStrategy = GestureStrategy.AUTO,
     ) -> Element:
         """Perform a fling gesture on the element.
 
@@ -691,7 +691,7 @@ class Element(ElementBase):
         self,
         percent: float = 0.75,
         speed: int = 2500,
-        strategy: GestureStrategy = GestureStrategy.MOBILE_COMMANDS,
+        strategy: GestureStrategy = GestureStrategy.AUTO,
     ) -> Element:
         """Perform a zoom gesture on the element.
 
@@ -710,7 +710,7 @@ class Element(ElementBase):
         self,
         percent: float = 0.75,
         speed: int = 2500,
-        strategy: GestureStrategy = GestureStrategy.MOBILE_COMMANDS,
+        strategy: GestureStrategy = GestureStrategy.AUTO,
     ) -> Element:
         """Perform an unzoom gesture on the element.
 
