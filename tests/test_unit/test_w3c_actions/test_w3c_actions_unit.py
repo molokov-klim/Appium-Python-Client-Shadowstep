@@ -33,7 +33,11 @@ class TestScroll:
             "height": 400
         }
 
-        with patch.object(w3c_actions, '_swipe_with_duration') as mock_swipe:
+        mock_driver = Mock()
+        type(mock_driver).page_source = PropertyMock(side_effect=["<page1/>", "<page2/>"])
+
+        with patch.object(w3c_actions, '_swipe_with_duration') as mock_swipe, \
+             patch.object(type(w3c_actions), '_driver', PropertyMock(return_value=mock_driver)):
             result = w3c_actions.scroll(
                 element=mock_element,
                 direction="down",
@@ -47,7 +51,7 @@ class TestScroll:
             # Check coordinates (center_x, start_y, center_x, end_y)
             assert call_args[0] == 250  # center_x = 100 + 300//2
             assert call_args[2] == 250  # center_x
-            assert call_args[1] < call_args[3]  # start_y < end_y for down
+            assert call_args[1] > call_args[3]  # start_y > end_y for down (swipe from bottom to top)
 
             assert result is True
 
@@ -63,7 +67,11 @@ class TestScroll:
             "height": 300
         }
 
-        with patch.object(w3c_actions, '_swipe_with_duration') as mock_swipe:
+        mock_driver = Mock()
+        type(mock_driver).page_source = PropertyMock(side_effect=["<page1/>", "<page2/>"])
+
+        with patch.object(w3c_actions, '_swipe_with_duration') as mock_swipe, \
+             patch.object(type(w3c_actions), '_driver', PropertyMock(return_value=mock_driver)):
             result = w3c_actions.scroll(
                 element=mock_element,
                 direction="up",
@@ -74,8 +82,8 @@ class TestScroll:
             mock_swipe.assert_called_once()
             call_args = mock_swipe.call_args[0]
 
-            # Check coordinates - for up direction start_y > end_y
-            assert call_args[1] > call_args[3]
+            # Check coordinates - for up direction start_y < end_y (swipe from top to bottom)
+            assert call_args[1] < call_args[3]
             assert result is True
 
     def test_scroll_left_success(self):
@@ -90,7 +98,11 @@ class TestScroll:
             "height": 300
         }
 
-        with patch.object(w3c_actions, '_swipe_with_duration') as mock_swipe:
+        mock_driver = Mock()
+        type(mock_driver).page_source = PropertyMock(side_effect=["<page1/>", "<page2/>"])
+
+        with patch.object(w3c_actions, '_swipe_with_duration') as mock_swipe, \
+             patch.object(type(w3c_actions), '_driver', PropertyMock(return_value=mock_driver)):
             result = w3c_actions.scroll(
                 element=mock_element,
                 direction="left",
@@ -101,8 +113,8 @@ class TestScroll:
             mock_swipe.assert_called_once()
             call_args = mock_swipe.call_args[0]
 
-            # Check coordinates - for left direction start_x > end_x
-            assert call_args[0] > call_args[2]
+            # Check coordinates - for left direction start_x < end_x (swipe from left to right)
+            assert call_args[0] < call_args[2]
             assert result is True
 
     def test_scroll_right_success(self):
@@ -117,7 +129,11 @@ class TestScroll:
             "height": 300
         }
 
-        with patch.object(w3c_actions, '_swipe_with_duration') as mock_swipe:
+        mock_driver = Mock()
+        type(mock_driver).page_source = PropertyMock(side_effect=["<page1/>", "<page2/>"])
+
+        with patch.object(w3c_actions, '_swipe_with_duration') as mock_swipe, \
+             patch.object(type(w3c_actions), '_driver', PropertyMock(return_value=mock_driver)):
             result = w3c_actions.scroll(
                 element=mock_element,
                 direction="right",
@@ -128,8 +144,8 @@ class TestScroll:
             mock_swipe.assert_called_once()
             call_args = mock_swipe.call_args[0]
 
-            # Check coordinates - for right direction start_x < end_x
-            assert call_args[0] < call_args[2]
+            # Check coordinates - for right direction start_x > end_x (swipe from right to left)
+            assert call_args[0] > call_args[2]
             assert result is True
 
     def test_scroll_calculates_duration_correctly(self):
@@ -144,7 +160,11 @@ class TestScroll:
             "height": 1000
         }
 
-        with patch.object(w3c_actions, '_swipe_with_duration') as mock_swipe:
+        mock_driver = Mock()
+        mock_driver.page_source = "<page1/>"
+
+        with patch.object(w3c_actions, '_swipe_with_duration') as mock_swipe, \
+             patch.object(type(w3c_actions), '_driver', PropertyMock(return_value=mock_driver)):
             # With 1000 pixels distance and 1000 px/s speed, duration should be 1000ms
             w3c_actions.scroll(
                 element=mock_element,
@@ -168,7 +188,11 @@ class TestScroll:
             "height": 100
         }
 
-        with patch.object(w3c_actions, '_swipe_with_duration') as mock_swipe:
+        mock_driver = Mock()
+        mock_driver.page_source = "<page1/>"
+
+        with patch.object(w3c_actions, '_swipe_with_duration') as mock_swipe, \
+             patch.object(type(w3c_actions), '_driver', PropertyMock(return_value=mock_driver)):
             w3c_actions.scroll(
                 element=mock_element,
                 direction="down",
@@ -180,7 +204,7 @@ class TestScroll:
             assert duration_ms == 0
 
     def test_scroll_invalid_direction_returns_false(self):
-        """Test scroll with invalid direction returns False."""
+        """Test scroll with invalid direction raises ValueError."""
         w3c_actions = W3CActions()
 
         mock_element = Mock()
@@ -191,31 +215,33 @@ class TestScroll:
             "height": 100
         }
 
-        result = w3c_actions.scroll(
-            element=mock_element,
-            direction="invalid",
-            percent=0.5,
-            speed=1000
-        )
+        with pytest.raises(ValueError, match="Invalid direction: invalid"):
+            w3c_actions.scroll(
+                element=mock_element,
+                direction="invalid",
+                percent=0.5,
+                speed=1000
+            )
 
-        assert result is False
-
-    def test_scroll_exception_returns_false(self):
-        """Test scroll returns False when exception occurs."""
+    def test_scroll_exception_propagates(self):
+        """Test scroll propagates exception when it occurs."""
         w3c_actions = W3CActions()
 
         mock_element = Mock()
         mock_element.rect = {"x": 0, "y": 0, "width": 100, "height": 100}
 
-        with patch.object(w3c_actions, '_swipe_with_duration', side_effect=Exception("Test error")):
-            result = w3c_actions.scroll(
-                element=mock_element,
-                direction="down",
-                percent=0.5,
-                speed=1000
-            )
+        mock_driver = Mock()
+        mock_driver.page_source = "<page1/>"
 
-            assert result is False
+        with patch.object(w3c_actions, '_swipe_with_duration', side_effect=Exception("Test error")), \
+             patch.object(type(w3c_actions), '_driver', PropertyMock(return_value=mock_driver)):
+            with pytest.raises(Exception, match="Test error"):
+                w3c_actions.scroll(
+                    element=mock_element,
+                    direction="down",
+                    percent=0.5,
+                    speed=1000
+                )
 
 
 class TestSwipe:
