@@ -18,7 +18,7 @@ from selenium.webdriver.common.actions import interaction
 from selenium.webdriver.common.actions.action_builder import ActionBuilder
 from selenium.webdriver.common.actions.pointer_input import PointerInput
 
-from shadowstep.decorators.decorators import log_debug
+from shadowstep.decorators.decorators import log_info
 from shadowstep.enums import GestureStrategy
 from shadowstep.exceptions.shadowstep_exceptions import ShadowstepElementException
 from shadowstep.ui_automator.mobile_commands import MobileCommands
@@ -52,7 +52,7 @@ class ElementGestures:
         self.mobile_commands = MobileCommands()
         self.w3c_actions = W3CActions()
 
-    @log_debug()
+    @log_info()
     def tap(self, duration: int | None = None) -> Element:
         """Tap the element.
 
@@ -68,7 +68,7 @@ class ElementGestures:
         self.element.driver.tap(positions=[(x, y)], duration=duration)
         return self.element
 
-    @log_debug()
+    @log_info()
     def tap_and_move(
         self,
         locator: tuple[str, str] | dict[str, Any] | Element | UiSelector | None = None,
@@ -95,7 +95,7 @@ class ElementGestures:
             return result
         return self.element
 
-    @log_debug()
+    @log_info()
     def click(
         self,
         duration: int | None = None,
@@ -122,6 +122,7 @@ class ElementGestures:
         }
         return method_map[strategy](native_element, duration)
 
+    @log_info()
     def _click_w3c_commands(
         self,
         native_element: WebElement,
@@ -130,6 +131,7 @@ class ElementGestures:
         self.w3c_actions.click(native_element, duration=duration)
         return self.element
 
+    @log_info()
     def _click_mobile_commands(
         self,
         native_element: WebElement,
@@ -143,7 +145,7 @@ class ElementGestures:
             )
         return self.element
 
-    @log_debug()
+    @log_info()
     def double_click(self, strategy: GestureStrategy = GestureStrategy.AUTO) -> Element:
         """Double-click the element.
 
@@ -162,15 +164,17 @@ class ElementGestures:
         }
         return method_map[strategy](native_element)
 
+    @log_info()
     def _double_click_mobile_commands(self, native_element: WebElement) -> Element:
         self.mobile_commands.double_click_gesture({"elementId": native_element.id})
         return self.element
 
+    @log_info()
     def _double_click_w3c_commands(self, native_element: WebElement) -> Element:
         self.w3c_actions.double_click(native_element)
         return self.element
 
-    @log_debug()
+    @log_info()
     def drag(
         self,
         end_x: int,
@@ -201,6 +205,7 @@ class ElementGestures:
         }
         return method_map[strategy](native_element, end_x, end_y, speed)
 
+    @log_info()
     def _drag_mobile_commands(
         self,
         native_element: WebElement,
@@ -213,6 +218,7 @@ class ElementGestures:
         )
         return self.element
 
+    @log_info()
     def _drag_w3c_actions(
         self,
         native_element: WebElement,
@@ -223,7 +229,7 @@ class ElementGestures:
         self.w3c_actions.drag(element=native_element, end_x=end_x, end_y=end_y, speed=speed)
         return self.element
 
-    @log_debug()
+    @log_info()
     def fling(
         self,
         speed: int,
@@ -259,6 +265,7 @@ class ElementGestures:
         }
         return method_map[strategy](native_element, speed, direction)
 
+    @log_info()
     def _fling_w3c_actions(
         self,
         native_element: WebElement,
@@ -268,6 +275,7 @@ class ElementGestures:
         self.w3c_actions.fling(element=native_element, speed=speed, direction=direction)
         return self.element
 
+    @log_info()
     def _fling_mobile_commands(
         self,
         native_element: WebElement,
@@ -279,7 +287,7 @@ class ElementGestures:
         )
         return self.element
 
-    @log_debug()
+    @log_info()
     def scroll(
         self,
         direction: str,
@@ -319,6 +327,7 @@ class ElementGestures:
         }
         return method_map[strategy](native_element, direction, percent, speed, return_bool)
 
+    @log_info()
     def _scroll_mobile_commands(
         self,
         element: WebElement,
@@ -339,6 +348,7 @@ class ElementGestures:
             return can_scroll
         return self.element
 
+    @log_info()
     def _scroll_w3c_actions(
         self,
         element: WebElement,
@@ -352,7 +362,7 @@ class ElementGestures:
             return can_scroll
         return self.element
 
-    @log_debug()
+    @log_info()
     def scroll_to_bottom(
         self,
         percent: float = 0.7,
@@ -376,6 +386,7 @@ class ElementGestures:
         }
         return method_map[strategy](percent, speed)
 
+    @log_info()
     def _scroll_to_bottom_w3c_actions(self, percent: float = 0.7, speed: int = 8000) -> Element:
         last_hash = cast("int", None)
         start_time = time.time()
@@ -392,6 +403,7 @@ class ElementGestures:
             )
         return self.element
 
+    @log_info()
     def _scroll_to_bottom_mobile_commands(self, percent: float = 0.7, speed: int = 8000) -> Element:
         start_time = time.time()
         while time.time() - start_time < self.element.timeout:
@@ -404,7 +416,7 @@ class ElementGestures:
                 break
         return self.element
 
-    @log_debug()
+    @log_info()
     def scroll_to_top(
         self,
         percent: float = 0.7,
@@ -428,6 +440,7 @@ class ElementGestures:
         }
         return method_map[strategy](percent, speed)
 
+    @log_info()
     def _scroll_to_top_w3c_actions(self, percent: float = 0.7, speed: int = 8000) -> Element:
         last_hash = cast("int", None)
         start_time = time.time()
@@ -444,6 +457,7 @@ class ElementGestures:
             )
         return self.element
 
+    @log_info()
     def _scroll_to_top_mobile_commands(self, percent: float = 0.7, speed: int = 8000) -> Element:
         start_time = time.time()
         while time.time() - start_time < self.element.timeout:
@@ -456,7 +470,7 @@ class ElementGestures:
                 break
         return self.element
 
-    @log_debug()
+    @log_info()
     def scroll_to_element(
         self,
         locator: tuple[str, str] | dict[str, Any] | Element | UiSelector,
@@ -482,6 +496,7 @@ class ElementGestures:
         }
         return method_map[strategy](locator, max_swipes, percent, speed)
 
+    @log_info()
     def _scroll_to_element_w3c_actions(
         self,
         locator: tuple[str, str] | dict[str, Any] | Element | UiSelector,
@@ -489,18 +504,30 @@ class ElementGestures:
         percent: float = 0.7,
         speed: int = 5000,
     ) -> Element:
+        self.logger.info("1")
         target_element = self.shadowstep.get_element(locator)
+        target_element.timeout = 1.5
         start_time = time.time()
+        self.logger.info("2")
         while time.time() - start_time < self.element.timeout:
+            self.logger.info("3")
             if target_element.is_displayed():
+                self.logger.info("4")
                 return target_element
+            self.logger.info("5")
             self.element.scroll_down(percent=percent, speed=speed)
+        self.logger.info("6")
         while time.time() - start_time < self.element.timeout:
+            self.logger.info("7")
             if target_element.is_displayed():
+                self.logger.info("8")
                 return target_element
+            self.logger.info("9")
             self.element.scroll_up(percent=percent, speed=speed)
+        self.logger.info("10")
         return self.shadowstep.get_element(locator)
 
+    @log_info()
     def _scroll_to_element_mobile_commands(
         self,
         locator: tuple[str, str] | dict[str, Any] | Element | UiSelector,
@@ -515,7 +542,7 @@ class ElementGestures:
             self.logger.warning("Failed execute_scroll_script")
         return self.shadowstep.get_element(locator)
 
-    @log_debug()
+    @log_info()
     def zoom(
         self,
         percent: float = 0.75,
@@ -544,6 +571,7 @@ class ElementGestures:
         }
         return method_map[strategy](native_element, percent, speed)
 
+    @log_info()
     def _zoom_w3c_actions(
         self,
         native_element: WebElement,
@@ -553,6 +581,7 @@ class ElementGestures:
         self.w3c_actions.zoom(element=native_element, percent=percent, speed=speed)
         return self.element
 
+    @log_info()
     def _zoom_mobile_commands(
         self,
         native_element: WebElement,
@@ -568,7 +597,7 @@ class ElementGestures:
         )
         return self.element
 
-    @log_debug()
+    @log_info()
     def unzoom(
         self,
         percent: float = 0.75,
@@ -597,6 +626,7 @@ class ElementGestures:
         }
         return method_map[strategy](native_element, percent, speed)
 
+    @log_info()
     def _unzoom_mobile_commands_actions(
         self,
         native_element: WebElement,
@@ -612,6 +642,7 @@ class ElementGestures:
         )
         return self.element
 
+    @log_info()
     def _unzoom_w3c_actions(
         self,
         native_element: WebElement,
@@ -621,7 +652,7 @@ class ElementGestures:
         self.w3c_actions.unzoom(element=native_element, percent=percent, speed=speed)
         return self.element
 
-    @log_debug()
+    @log_info()
     def swipe(
         self,
         direction: str,
@@ -652,6 +683,7 @@ class ElementGestures:
         }
         return method_map[strategy](native_element, direction, percent, speed)
 
+    @log_info()
     def _swipe_w3c_actions(
         self,
         native_element: WebElement,
@@ -662,6 +694,7 @@ class ElementGestures:
         self.w3c_actions.swipe(native_element, direction, percent, speed)
         return self.element
 
+    @log_info()
     def _swipe_mobile_commands(
         self,
         native_element: WebElement,
@@ -679,7 +712,7 @@ class ElementGestures:
         )
         return self.element
 
-    @log_debug()
+    @log_info()
     def _execute_scroll_script(self, selector: str, max_swipes: int) -> None:
         """Execute mobile scroll script.
 
@@ -699,7 +732,7 @@ class ElementGestures:
             },
         )
 
-    @log_debug()
+    @log_info()
     def _perform_tap_and_move_action(
         self,
         locator: tuple[str, str] | dict[str, Any] | Element | UiSelector | None = None,
@@ -753,7 +786,7 @@ class ElementGestures:
             stacktrace=traceback.format_stack(),
         )
 
-    @log_debug()
+    @log_info()
     def _create_touch_actions(self, x1: int, y1: int) -> ActionChains:
         """Create touch action chain starting at given coordinates.
 
@@ -774,7 +807,7 @@ class ElementGestures:
         actions.w3c_actions.pointer_action.pointer_down()  # type: ignore[reportUnknownMemberType]
         return actions
 
-    @log_debug()
+    @log_info()
     def _execute_tap_and_move_to_coordinates(
         self,
         actions: ActionChains,
@@ -797,7 +830,7 @@ class ElementGestures:
         actions.perform()
         return self.element
 
-    @log_debug()
+    @log_info()
     def _execute_tap_and_move_to_element(
         self,
         actions: ActionChains,
@@ -821,7 +854,7 @@ class ElementGestures:
         )  # type: ignore[reportPrivateUsage]
         return self._execute_tap_and_move_to_coordinates(actions, x, y)
 
-    @log_debug()
+    @log_info()
     def _execute_tap_and_move_by_direction(
         self,
         actions: ActionChains,
