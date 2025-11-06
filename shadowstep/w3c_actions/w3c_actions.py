@@ -20,7 +20,6 @@ if TYPE_CHECKING:
     from appium.webdriver.webdriver import WebDriver
     from appium.webdriver.webelement import WebElement
 
-
 logger = logging.getLogger(__name__)
 
 
@@ -40,11 +39,11 @@ class W3CActions:
         self.logger = logging.getLogger(__name__)
 
     def scroll(
-        self,
-        element: WebElement,
-        direction: str,
-        percent: float,
-        speed: int,
+            self,
+            element: WebElement,
+            direction: str,
+            percent: float,
+            speed: int,
     ) -> bool:
         """Perform scroll gesture on element using W3C Actions.
 
@@ -101,11 +100,11 @@ class W3CActions:
         return hash(self._driver.page_source) != page_source
 
     def swipe(
-        self,
-        element: WebElement,
-        direction: str,
-        percent: float,
-        speed: int,
+            self,
+            element: WebElement,
+            direction: str,
+            percent: float,
+            speed: int,
     ) -> bool:
         """Perform swipe gesture on element using W3C Actions.
 
@@ -224,7 +223,8 @@ class W3CActions:
         center_y: int = int(rect["y"]) + int(rect["height"]) // 2  # type: ignore[reportUnknownArgumentType]
 
         # Calculate pinch distance
-        distance: int = int(min(int(rect["width"]), int(rect["height"])) * percent / 2)  # type: ignore[reportUnknownArgumentType]
+        distance: int = int(
+            min(int(rect["width"]), int(rect["height"])) * percent / 2)  # type: ignore[reportUnknownArgumentType]
         duration_ms = int((distance / speed) * 1000) if speed > 0 else 0
 
         # Two fingers moving apart from center
@@ -258,7 +258,8 @@ class W3CActions:
         center_y: int = int(rect["y"]) + int(rect["height"]) // 2  # type: ignore[reportUnknownArgumentType]
 
         # Calculate pinch distance
-        distance: int = int(min(int(rect["width"]), int(rect["height"])) * percent / 2)  # type: ignore[reportUnknownArgumentType]
+        distance: int = int(
+            min(int(rect["width"]), int(rect["height"])) * percent / 2)  # type: ignore[reportUnknownArgumentType]
         duration_ms = int((distance / speed) * 1000) if speed > 0 else 0
 
         # Two fingers moving toward center
@@ -279,12 +280,12 @@ class W3CActions:
         )
 
     def _swipe_with_duration(
-        self,
-        start_x: int,
-        start_y: int,
-        end_x: int,
-        end_y: int,
-        duration_ms: int,
+            self,
+            start_x: int,
+            start_y: int,
+            end_x: int,
+            end_y: int,
+            duration_ms: int,
     ) -> None:
         """Execute swipe gesture with specified duration.
 
@@ -319,10 +320,10 @@ class W3CActions:
         return actions.perform()
 
     def _multi_touch_gesture(
-        self,
-        start_positions: list[tuple[int, int]],
-        end_positions: list[tuple[int, int]],
-        duration_ms: int,
+            self,
+            start_positions: list[tuple[int, int]],
+            end_positions: list[tuple[int, int]],
+            duration_ms: int,
     ) -> None:
         """Execute multi-touch gesture (e.g., pinch).
 
@@ -335,7 +336,8 @@ class W3CActions:
         actions = ActionChains(self._driver)
         actions.w3c_actions.devices = []
 
-        for i, (start_pos, end_pos) in enumerate(zip(start_positions, end_positions, strict=False)):  # type: ignore[reportUnknownArgumentType]
+        for i, (start_pos, end_pos) in enumerate(
+                zip(start_positions, end_positions)):  # type: ignore[reportUnknownArgumentType]
             finger_input = actions.w3c_actions.add_pointer_input(
                 interaction.POINTER_TOUCH,
                 f"finger{i + 1}",
