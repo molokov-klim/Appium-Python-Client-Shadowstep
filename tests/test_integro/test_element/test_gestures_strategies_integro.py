@@ -393,7 +393,7 @@ class TestGestureStrategies:
             direction: Направление свайпа (up, down, left, right).
             android_settings_open_close: Фикстура для открытия и закрытия настроек Android.
         """
-        element = app.get_element(locator=LOCATOR_CONNECTED_DEVICES)
+        element = app.get_element(locator=LOCATOR_RECYCLER)
         element.swipe(
             direction=direction, percent=0.5, speed=3000, strategy=GestureStrategy.W3C_ACTIONS
         )
@@ -414,7 +414,7 @@ class TestGestureStrategies:
             direction: Направление свайпа (up, down, left, right).
             android_settings_open_close: Фикстура для открытия и закрытия настроек Android.
         """
-        element = app.get_element(locator=LOCATOR_CONNECTED_DEVICES)
+        element = app.get_element(locator=LOCATOR_RECYCLER)
         element.swipe(
             direction=direction,
             percent=0.5,
