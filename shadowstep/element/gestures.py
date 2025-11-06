@@ -374,6 +374,7 @@ class ElementGestures:
         Args:
             percent: Scroll percentage (default: 0.7).
             speed: Speed of the scroll gesture (default: 8000).
+            strategy: Стратегия выполнения жеста (W3C_ACTIONS, MOBILE_COMMANDS, AUTO).
 
         Returns:
             The element for method chaining.
@@ -428,6 +429,7 @@ class ElementGestures:
         Args:
             percent: Scroll percentage (default: 0.7).
             speed: Speed of the scroll gesture (default: 8000).
+            strategy: Стратегия выполнения жеста (W3C_ACTIONS, MOBILE_COMMANDS, AUTO).
 
         Returns:
             The element for method chaining.
@@ -484,6 +486,9 @@ class ElementGestures:
         Args:
             locator: Element locator to scroll to.
             max_swipes: Maximum number of swipes to perform (default: 30).
+            percent: Scroll distance as percentage of element size (default: 0.7).
+            speed: Scroll speed in pixels per second (default: 5000).
+            strategy: Стратегия выполнения жеста (W3C_ACTIONS, MOBILE_COMMANDS, AUTO).
 
         Returns:
             The element for method chaining.
