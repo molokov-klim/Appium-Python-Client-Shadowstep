@@ -51,7 +51,7 @@ class TestElementGesturesPart2:
             app: Экземпляр Shadowstep для взаимодействия с приложением.
             android_settings_open_close: Фикстура для открытия и закрытия настроек Android.
         """
-        element = app.get_element(locator=LOCATOR_CONNECTED_DEVICES)
+        element = app.get_element(locator=LOCATOR_RECYCLER)
         bounds_1 = element.bounds
         element.fling_down(speed=3000)
         bounds_2 = element.bounds
@@ -69,12 +69,6 @@ class TestElementGesturesPart2:
         """
         settings_recycler = app.get_element(locator=LOCATOR_RECYCLER)
         settings_about_phone = app.get_element(locator=LOCATOR_BOTTOM_ELEMENT)
-        logger.info(app.driver.page_source)
-        logger.info("+++++++++++++++++++")
-        logger.info("+++++++++++++++++++")
-        logger.info("+++++++++++++++++++")
-        logger.info("+++++++++++++++++++")
-
         while settings_recycler.scroll_down(percent=10, speed=2000, return_bool=True):
             time.sleep(1)
         logger.info(app.driver.page_source)
