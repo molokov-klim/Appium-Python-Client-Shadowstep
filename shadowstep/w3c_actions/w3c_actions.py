@@ -357,7 +357,7 @@ class W3CActions:
                 y=end_pos[1],  # type: ignore[reportUnknownArgumentType]
                 duration=int(duration_ms / 1000) if duration_ms > 0 else 0,
             )
-            finger_input.create_pointer_up(interaction.POINTER_TOUCH)  # type: ignore[reportUnknownMemberType]
+            finger_input.create_pointer_up(0)  # type: ignore[reportUnknownMemberType]
 
         return actions.perform()
 
