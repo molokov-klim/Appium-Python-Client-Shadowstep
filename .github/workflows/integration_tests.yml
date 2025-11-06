@@ -21,6 +21,7 @@ jobs:
           tests/test_integro/test_element/test_gestures_integro_part_2.py,
           tests/test_integro/test_element/test_gestures_integro_part_3.py,
           tests/test_integro/test_element/test_gestures_integro_part_4.py,
+          tests/test_integro/test_element/test_gestures_strategies_integro.py,
           tests/test_integro/test_element/test_properties_integro.py,
           tests/test_integro/test_element/test_screenshots_integro.py,
           tests/test_integro/test_element/test_should_integro.py,
