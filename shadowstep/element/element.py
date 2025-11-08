@@ -117,6 +117,7 @@ class Element(ElementBase):
         timeout: float = 30,
         poll_frequency: float = 0.5,
         ignored_exceptions: WaitExcTypes | None = None,
+        exclude_attributes: tuple[str, ...] = (),
     ) -> list[Element]:
         """Find multiple Elements within this element's context. Greedy.
 
@@ -125,12 +126,13 @@ class Element(ElementBase):
             timeout: Maximum time to wait for elements (default: 30).
             poll_frequency: Polling frequency in seconds (default: 0.5).
             ignored_exceptions: Exceptions to ignore during waiting.
+            exclude_attributes: Attributes to exclude from xpath when finding elements.
 
         Returns:
             list[Element]: List of found element instances.
 
         """
-        return self.dom.get_elements(locator, timeout, poll_frequency, ignored_exceptions)
+        return self.dom.get_elements(locator, timeout, poll_frequency, ignored_exceptions, exclude_attributes)
 
     def get_parent(
         self,

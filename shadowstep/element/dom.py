@@ -122,6 +122,7 @@ class ElementDOM:
         timeout: float = 30,
         poll_frequency: float = 0.5,
         ignored_exceptions: WaitExcTypes | None = None,
+        exclude_attributes: tuple[str, ...] = (),
     ) -> list[Element]:
         """Get multiple child elements relative to the current element.
 
@@ -130,6 +131,7 @@ class ElementDOM:
             timeout: Maximum time to wait for elements.
             poll_frequency: How often to check for elements.
             ignored_exceptions: Exceptions to ignore during wait.
+            exclude_attributes: Attributes to exclude from xpath when finding elements.
 
         Returns:
             List of found child elements.
@@ -165,8 +167,12 @@ class ElementDOM:
         )
         elements: list[Element] = []
         for attributes in attributes_list:
+            cleared_attributes = attributes.copy()
+            for exclude_attribute in exclude_attributes:
+                if exclude_attribute in attributes:
+                    cleared_attributes.pop(exclude_attribute)
             element = Element(  # type: ignore[return-value]
-                locator=attributes,
+                locator=cleared_attributes,
                 shadowstep=self.shadowstep,
                 timeout=timeout,
                 poll_frequency=poll_frequency,
