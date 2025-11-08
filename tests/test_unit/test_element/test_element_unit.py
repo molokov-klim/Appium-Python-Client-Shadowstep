@@ -160,7 +160,7 @@ class TestElementDOM:
         sibling_locator = ("id", "elem2")
         result = element.get_sibling(sibling_locator, timeout=5)
 
-        element.dom.get_sibling.assert_called_once_with(sibling_locator, 5, 0.5, None)
+        element.dom.get_sibling.assert_called_once_with(sibling_locator, 5, 0.5, None, "following")
         assert result is not None
 
     def test_get_siblings(self):
@@ -173,8 +173,34 @@ class TestElementDOM:
         sibling_locator = ("class", "sibling_class")
         result = element.get_siblings(sibling_locator, timeout=5)
 
-        element.dom.get_siblings.assert_called_once_with(sibling_locator, 5, 0.5, None)
+        element.dom.get_siblings.assert_called_once_with(sibling_locator, 5, 0.5, None, "following")
         assert len(result) == 2
+
+    def test_get_sibling_preceding(self):
+        """Test get_sibling supports preceding strategy."""
+        mock_shadowstep = Mock()
+        element = Element(("id", "elem1"), mock_shadowstep)
+        mocked_sibling = Mock(spec=Element)
+        element.dom.get_sibling = Mock(return_value=mocked_sibling)
+
+        sibling_locator = ("id", "elem0")
+        result = element.get_sibling(sibling_locator, timeout=5, strategy="preceding")
+
+        element.dom.get_sibling.assert_called_once_with(sibling_locator, 5, 0.5, None, "preceding")
+        assert result is mocked_sibling
+
+    def test_get_siblings_preceding(self):
+        """Test get_siblings supports preceding strategy."""
+        mock_shadowstep = Mock()
+        element = Element(("id", "elem1"), mock_shadowstep)
+        mock_siblings = [Mock(spec=Element), Mock(spec=Element)]
+        element.dom.get_siblings = Mock(return_value=mock_siblings)
+
+        sibling_locator = ("class", "preceding_sibling")
+        result = element.get_siblings(sibling_locator, timeout=5, strategy="preceding")
+
+        element.dom.get_siblings.assert_called_once_with(sibling_locator, 5, 0.5, None, "preceding")
+        assert result is mock_siblings
 
     def test_get_cousin(self):
         """Test get_cousin delegates to dom.get_cousin."""
