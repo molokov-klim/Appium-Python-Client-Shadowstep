@@ -7,7 +7,7 @@ for interacting with mobile elements in the Shadowstep framework.
 from __future__ import annotations
 
 import logging
-from typing import TYPE_CHECKING, Any, cast
+from typing import TYPE_CHECKING, Any, Literal, cast
 
 from shadowstep.decorators.element_decorators import fail_safe_element, fail_safe_element_check
 from shadowstep.element import ElementDOM
@@ -177,6 +177,7 @@ class Element(ElementBase):
         timeout: float = 30,
         poll_frequency: float = 0.5,
         ignored_exceptions: WaitExcTypes | None = None,
+        strategy: Literal["following", "preceding"] = "following",
     ) -> Element:
         """Get a sibling element of this element. Lazy.
 
@@ -185,12 +186,13 @@ class Element(ElementBase):
             timeout: Maximum time to wait for sibling element (default: 30).
             poll_frequency: Polling frequency in seconds (default: 0.5).
             ignored_exceptions: Exceptions to ignore during waiting.
+            strategy: Strategy to search for. Following - after, preceding - before current element.
 
         Returns:
             Element: Sibling element instance.
 
         """
-        return self.dom.get_sibling(locator, timeout, poll_frequency, ignored_exceptions)
+        return self.dom.get_sibling(locator, timeout, poll_frequency, ignored_exceptions, strategy)
 
     @fail_safe_element()
     def get_siblings(
@@ -199,6 +201,7 @@ class Element(ElementBase):
         timeout: float = 30.0,
         poll_frequency: float = 0.5,
         ignored_exceptions: WaitExcTypes | None = None,
+        strategy: Literal["following", "preceding"] = "following",
     ) -> list[Element]:
         """Get all sibling elements of this element. Greedy.
 
@@ -207,12 +210,13 @@ class Element(ElementBase):
             timeout: Maximum time to wait for sibling elements (default: 30.0).
             poll_frequency: Polling frequency in seconds (default: 0.5).
             ignored_exceptions: Exceptions to ignore during waiting.
+            strategy: Strategy to search for. Following - after, preceding - before current element.
 
         Returns:
             list[Element]: List of sibling element instances.
 
         """
-        return self.dom.get_siblings(locator, timeout, poll_frequency, ignored_exceptions)
+        return self.dom.get_siblings(locator, timeout, poll_frequency, ignored_exceptions, strategy)
 
     def get_cousin(
         self,
@@ -236,11 +240,7 @@ class Element(ElementBase):
 
         """
         return self.dom.get_cousin(
-            cousin_locator,
-            depth_to_parent,
-            timeout,
-            poll_frequency,
-            ignored_exceptions,
+            cousin_locator, depth_to_parent, timeout, poll_frequency, ignored_exceptions,
         )
 
     @fail_safe_element()
@@ -266,11 +266,7 @@ class Element(ElementBase):
 
         """
         return self.dom.get_cousins(
-            cousin_locator,
-            depth_to_parent,
-            timeout,
-            poll_frequency,
-            ignored_exceptions,
+            cousin_locator, depth_to_parent, timeout, poll_frequency, ignored_exceptions,
         )
 
     # ----------------------- actions -----------------------

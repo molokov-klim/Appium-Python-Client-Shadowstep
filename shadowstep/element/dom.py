@@ -7,7 +7,7 @@ including getting child elements, parents, siblings, and cousins.
 from __future__ import annotations
 
 import logging
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, Literal
 
 from selenium.webdriver.support import expected_conditions
 from selenium.webdriver.support.wait import WebDriverWait
@@ -239,6 +239,7 @@ class ElementDOM:
         timeout: float = 30.0,
         poll_frequency: float = 0.5,
         ignored_exceptions: WaitExcTypes | None = None,
+        strategy: Literal["following", "preceding"] = "following",
     ) -> Element:
         """Get a sibling element of the current element.
 
@@ -247,6 +248,7 @@ class ElementDOM:
             timeout: Maximum time to wait for element.
             poll_frequency: How often to check for element.
             ignored_exceptions: Exceptions to ignore during wait.
+            strategy: Strategy to search for. Following - after, preceding - before current element.
 
         Returns:
             The found sibling element.
@@ -259,7 +261,7 @@ class ElementDOM:
         sibling_locator = self.utilities.remove_null_value(locator)
         sibling_xpath = self.converter.to_xpath(sibling_locator)
         sibling_path = sibling_xpath[1].lstrip("/")
-        xpath = f"{base_xpath}/following-sibling::{sibling_path}[1]"
+        xpath = f"{base_xpath}/{strategy}-sibling::{sibling_path}[1]"
         return Element(  # type: ignore[return-value]
             locator=("xpath", xpath),
             shadowstep=self.shadowstep,
@@ -275,6 +277,7 @@ class ElementDOM:
         timeout: float = 30.0,
         poll_frequency: float = 0.5,
         ignored_exceptions: WaitExcTypes | None = None,
+        strategy: Literal["following", "preceding"] = "following",
     ) -> list[Element]:
         """Get all sibling elements of the current element.
 
@@ -283,6 +286,7 @@ class ElementDOM:
             timeout: Maximum time to wait for elements.
             poll_frequency: How often to check for elements.
             ignored_exceptions: Exceptions to ignore during wait.
+            strategy: Strategy to search for. Following - after, preceding - before current element.
 
         Returns:
             List of found sibling elements.
@@ -293,7 +297,7 @@ class ElementDOM:
         sibling_locator = self.utilities.remove_null_value(locator)
         sibling_xpath = self.converter.to_xpath(sibling_locator)
         sibling_path = sibling_xpath[1].lstrip("/")
-        xpath = f"{base_xpath}/following-sibling::{sibling_path}"
+        xpath = f"{base_xpath}/{strategy}-sibling::{sibling_path}"
         return self.get_elements(("xpath", xpath), timeout, poll_frequency, ignored_exceptions)
 
     @log_debug()
