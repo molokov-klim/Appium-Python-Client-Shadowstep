@@ -39,8 +39,9 @@ class WebDriverSingleton(WebDriver):
     @classmethod
     def _get_session_id(cls, kwargs: Any) -> str:
         logger.debug("%s", get_current_func_name())
-        res = requests.get(kwargs["command_executor"] + "/sessions", timeout=30)
-        res_json = json.loads(res.text)
+        with requests.Session() as session:
+            res = session.get(kwargs["command_executor"] + "/sessions", timeout=30)
+            res_json = json.loads(res.text)
         sessions = res_json.get("value", [])
         if sessions:
             for session in sessions:

@@ -43,7 +43,8 @@ class YandexTranslate:
             raise ShadowstepMissingYandexTokenError
 
         url = "https://iam.api.cloud.yandex.net/iam/v1/tokens"
-        response = requests.post(url, json={"yandexPassportOauthToken": oauth_token}, timeout=30)
+        with requests.Session() as session:
+            response = session.post(url, json={"yandexPassportOauthToken": oauth_token}, timeout=30, verify=False)
         response.raise_for_status()
         return response.json()["iamToken"]
 
@@ -85,8 +86,8 @@ class YandexTranslate:
             "sourceLanguageCode": "ru",
             "targetLanguageCode": "en",
         }
-
-        response = requests.post(url, headers=headers, json=body, timeout=30)
+        with requests.Session() as session:
+            response = session.post(url, headers=headers, json=body, timeout=30, verify=False)
         self.logger.debug("response.text=%s", response.text)
         response.raise_for_status()
         translations = response.json().get("translations", [])

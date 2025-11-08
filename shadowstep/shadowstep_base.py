@@ -6,6 +6,7 @@ managing WebDriver instances, and handling device connections.
 
 from __future__ import annotations
 
+import contextlib
 import logging
 import time
 from typing import TYPE_CHECKING, Any, cast
@@ -55,18 +56,18 @@ class ShadowstepBase:
         )
 
     def connect(  # noqa: PLR0913
-        self,
-        capabilities: dict[str, Any],
-        server_ip: str = "127.0.0.1",
-        server_port: int = 4723,
-        options: AppiumOptions | list[AppiumOptions] | UiAutomator2Options = cast(  # noqa: B008
-            "AppiumOptions | list[AppiumOptions] | UiAutomator2Options",
-            None,
-        ),
-        extensions: list[WebDriver] = cast("list[WebDriver]", None),  # noqa: B008
-        ssh_user: str = cast("str", None),
-        ssh_password: str = cast("str", None),
-        command_executor: str = cast("str", None),
+            self,
+            capabilities: dict[str, Any],
+            server_ip: str = "127.0.0.1",
+            server_port: int = 4723,
+            options: AppiumOptions | list[AppiumOptions] | UiAutomator2Options = cast(  # noqa: B008
+                "AppiumOptions | list[AppiumOptions] | UiAutomator2Options",
+                None,
+            ),
+            extensions: list[WebDriver] = cast("list[WebDriver]", None),  # noqa: B008
+            ssh_user: str = cast("str", None),
+            ssh_password: str = cast("str", None),
+            command_executor: str = cast("str", None),
     ) -> None:
         """Connect to a device using the Appium server and initialize the driver.
 
@@ -116,8 +117,11 @@ class ShadowstepBase:
         self._wait_for_session_id()
         self.logger.info("Connection established")
 
-        # init here because need server ip, port and credentials, refactor it later
         if self.ssh_user and self.ssh_password:
+            if self.transport:
+                with contextlib.suppress(Exception):
+                    self.transport.close()
+                self.transport = None  # pyright: ignore [reportAttributeAccessIssue]
             self.transport = Transport(
                 server=self.server_ip,
                 port=self.ssh_port,
@@ -137,9 +141,11 @@ class ShadowstepBase:
         self.logger.debug("%s", get_current_func_name())
         if hasattr(self, "transport") and self.transport is not None:  # type: ignore[reportUnnecessaryComparison]
             try:
-                if hasattr(self.transport, "scp") and self.transport.scp is not None:  # type: ignore[reportUnnecessaryComparison]
+                if hasattr(self.transport,
+                           "scp") and self.transport.scp is not None:  # type: ignore[reportUnnecessaryComparison]
                     self.transport.scp.close()
-                if hasattr(self.transport, "ssh") and self.transport.ssh is not None:  # type: ignore[reportUnnecessaryComparison]
+                if hasattr(self.transport,
+                           "ssh") and self.transport.ssh is not None:  # type: ignore[reportUnnecessaryComparison]
                     self.transport.ssh.close()
                 self.logger.info("SSH Transport closed")
             except Exception as e:  # noqa: BLE001
@@ -148,10 +154,11 @@ class ShadowstepBase:
                 self.transport = None  # type: ignore[reportUnnecessaryComparison]
         try:
             if self.driver is not None:  # type: ignore[reportUnnecessaryComparison]
-                response = requests.delete(
-                    f"{self.command_executor}/session/{self.driver.session_id}",
-                    timeout=30,
-                )
+                with requests.Session() as session:
+                    response = session.delete(
+                        f"{self.command_executor}/session/{self.driver.session_id}",
+                        timeout=30,
+                    )
                 self.logger.info("Response: %s", response)
                 self.driver.quit()
                 self.driver = None  # type: ignore[reportUnnecessaryComparison]
@@ -220,7 +227,8 @@ class ShadowstepBase:
             self.logger.debug("[%s] started", step)
 
             url = f"{self.command_executor}/status"
-            response = requests.get(url, timeout=5, verify=False)  # noqa: S501
+            with requests.Session() as session:
+                response = session.get(url, timeout=5, verify=False)
             response.raise_for_status()
 
             grid = response.json()
@@ -254,7 +262,9 @@ class ShadowstepBase:
         """
         self.logger.debug("%s", get_current_func_name())
         try:
-            response = requests.get(f"{self.command_executor}/sessions", timeout=30)
+            url = f"{self.command_executor}/sessions"
+            with requests.Session() as session:
+                response = session.get(url, timeout=30, verify=False)
             response_json = response.json().get("value", {})
             response.raise_for_status()
             nodes = response_json
@@ -278,7 +288,9 @@ class ShadowstepBase:
         """
         self.logger.debug("%s", get_current_func_name())
         try:
-            response = requests.get(f"{self.command_executor}/appium/sessions", timeout=30)
+            url = f"{self.command_executor}/appium/sessions"
+            with requests.Session() as session:
+                response = session.get(url, timeout=30, verify=False)
             response_json = response.json().get("value", {})
             response.raise_for_status()
             nodes = response_json
