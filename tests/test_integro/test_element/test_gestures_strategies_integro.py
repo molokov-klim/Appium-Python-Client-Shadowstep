@@ -1,9 +1,9 @@
 # ruff: noqa
 # pyright: ignore
-"""Интеграционные тесты для проверки различных стратегий выполнения жестов.
+"""Integration tests covering different gesture execution strategies.
 
-Этот модуль содержит тесты для проверки работы жестов с явным указанием
-стратегии выполнения (W3C_ACTIONS, MOBILE_COMMANDS).
+This module verifies gesture behavior when the strategy is explicitly set
+to ``W3C_ACTIONS`` or ``MOBILE_COMMANDS``.
 """
 import logging
 import time
@@ -28,24 +28,24 @@ logger = logging.getLogger(__name__)
 
 
 class TestGestureStrategies:
-    """Тесты для проверки различных стратегий выполнения жестов.
-    
-    Проверяет корректность работы жестов при явном указании стратегии:
-    - W3C_ACTIONS: использует W3C WebDriver Actions API
-    - MOBILE_COMMANDS: использует Appium mobile commands (UiAutomator2)
+    """Test various gesture execution strategies.
+
+    Verifies correctness when the strategy is explicitly set to:
+    - ``W3C_ACTIONS``: uses the W3C WebDriver Actions API
+    - ``MOBILE_COMMANDS``: uses Appium mobile commands (UiAutomator2)
     """
 
     def test_click_w3c_actions_strategy(
         self, app: Shadowstep, android_settings_open_close: None
     ):
-        """Тест клика с использованием стратегии W3C_ACTIONS.
+        """Test a click using the ``W3C_ACTIONS`` strategy.
 
-        Проверяет корректность выполнения клика по элементу
-        с явным указанием стратегии W3C_ACTIONS.
+        Verifies that clicking an element succeeds when the strategy is
+        explicitly set to ``W3C_ACTIONS``.
 
         Args:
-            app: Экземпляр Shadowstep для взаимодействия с приложением.
-            android_settings_open_close: Фикстура для открытия и закрытия настроек Android.
+            app: Shadowstep instance for interacting with the app.
+            android_settings_open_close: Fixture that opens and closes Android settings.
         """
         element = app.get_element(locator=LOCATOR_CONNECTED_DEVICES)
         element.click(strategy=GestureStrategy.W3C_ACTIONS)
@@ -56,14 +56,14 @@ class TestGestureStrategies:
     def test_click_mobile_commands_strategy(
         self, app: Shadowstep, android_settings_open_close: None
     ):
-        """Тест клика с использованием стратегии MOBILE_COMMANDS.
+        """Test a click using the ``MOBILE_COMMANDS`` strategy.
 
-        Проверяет корректность выполнения клика по элементу
-        с явным указанием стратегии MOBILE_COMMANDS.
+        Verifies that clicking an element succeeds when the strategy is
+        explicitly set to ``MOBILE_COMMANDS``.
 
         Args:
-            app: Экземпляр Shadowstep для взаимодействия с приложением.
-            android_settings_open_close: Фикстура для открытия и закрытия настроек Android.
+            app: Shadowstep instance for interacting with the app.
+            android_settings_open_close: Fixture that opens and closes Android settings.
         """
         element = app.get_element(locator=LOCATOR_CONNECTED_DEVICES)
         element.click(strategy=GestureStrategy.MOBILE_COMMANDS)
@@ -74,14 +74,14 @@ class TestGestureStrategies:
     def test_click_auto_strategy(
         self, app: Shadowstep, android_settings_open_close: None
     ):
-        """Тест клика с использованием стратегии AUTO (по умолчанию).
+        """Test a click with the default ``AUTO`` strategy.
 
-        Проверяет корректность выполнения клика по элементу
-        с использованием автоматического выбора стратегии.
+        Verifies that clicking an element succeeds when the strategy is
+        selected automatically.
 
         Args:
-            app: Экземпляр Shadowstep для взаимодействия с приложением.
-            android_settings_open_close: Фикстура для открытия и закрытия настроек Android.
+            app: Shadowstep instance for interacting with the app.
+            android_settings_open_close: Fixture that opens and closes Android settings.
         """
         element = app.get_element(locator=LOCATOR_CONNECTED_DEVICES)
         element.click(strategy=GestureStrategy.AUTO)
@@ -92,14 +92,14 @@ class TestGestureStrategies:
     def test_double_click_w3c_actions_strategy(
         self, app: Shadowstep, android_settings_open_close: None
     ):
-        """Тест двойного клика с использованием стратегии W3C_ACTIONS.
+        """Test a double click using the ``W3C_ACTIONS`` strategy.
 
-        Проверяет корректность выполнения двойного клика
-        с явным указанием стратегии W3C_ACTIONS.
+        Verifies that double clicking succeeds when the strategy is
+        explicitly set to ``W3C_ACTIONS``.
 
         Args:
-            app: Экземпляр Shadowstep для взаимодействия с приложением.
-            android_settings_open_close: Фикстура для открытия и закрытия настроек Android.
+            app: Shadowstep instance for interacting with the app.
+            android_settings_open_close: Fixture that opens and closes Android settings.
         """
         search = app.get_element(
             locator={
@@ -114,14 +114,14 @@ class TestGestureStrategies:
     def test_double_click_mobile_commands_strategy(
         self, app: Shadowstep, android_settings_open_close: None
     ):
-        """Тест двойного клика с использованием стратегии MOBILE_COMMANDS.
+        """Test a double click using the ``MOBILE_COMMANDS`` strategy.
 
-        Проверяет корректность выполнения двойного клика
-        с явным указанием стратегии MOBILE_COMMANDS.
+        Verifies that double clicking succeeds when the strategy is
+        explicitly set to ``MOBILE_COMMANDS``.
 
         Args:
-            app: Экземпляр Shadowstep для взаимодействия с приложением.
-            android_settings_open_close: Фикстура для открытия и закрытия настроек Android.
+            app: Shadowstep instance for interacting with the app.
+            android_settings_open_close: Fixture that opens and closes Android settings.
         """
         search = app.get_element(
             locator={
@@ -136,14 +136,14 @@ class TestGestureStrategies:
     def test_drag_w3c_actions_strategy(
         self, app: Shadowstep, android_settings_open_close: None
     ):
-        """Тест перетаскивания с использованием стратегии W3C_ACTIONS.
+        """Test dragging with the ``W3C_ACTIONS`` strategy.
 
-        Проверяет корректность выполнения операции перетаскивания
-        с явным указанием стратегии W3C_ACTIONS.
+        Verifies that the drag operation succeeds when the strategy is
+        explicitly set to ``W3C_ACTIONS``.
 
         Args:
-            app: Экземпляр Shadowstep для взаимодействия с приложением.
-            android_settings_open_close: Фикстура для открытия и закрытия настроек Android.
+            app: Shadowstep instance for interacting with the app.
+            android_settings_open_close: Fixture that opens and closes Android settings.
         """
         element = app.get_element(locator=LOCATOR_CONNECTED_DEVICES)
         center_x1, center_y1 = element.get_center()
@@ -156,14 +156,14 @@ class TestGestureStrategies:
     def test_drag_mobile_commands_strategy(
         self, app: Shadowstep, android_settings_open_close: None
     ):
-        """Тест перетаскивания с использованием стратегии MOBILE_COMMANDS.
+        """Test dragging with the ``MOBILE_COMMANDS`` strategy.
 
-        Проверяет корректность выполнения операции перетаскивания
-        с явным указанием стратегии MOBILE_COMMANDS.
+        Verifies that the drag operation succeeds when the strategy is
+        explicitly set to ``MOBILE_COMMANDS``.
 
         Args:
-            app: Экземпляр Shadowstep для взаимодействия с приложением.
-            android_settings_open_close: Фикстура для открытия и закрытия настроек Android.
+            app: Shadowstep instance for interacting with the app.
+            android_settings_open_close: Fixture that opens and closes Android settings.
         """
         element = app.get_element(locator=LOCATOR_CONNECTED_DEVICES)
         center_x1, center_y1 = element.get_center()
@@ -178,14 +178,14 @@ class TestGestureStrategies:
     def test_fling_w3c_actions_strategy(
         self, app: Shadowstep, android_settings_open_close: None
     ):
-        """Тест быстрого свайпа с использованием стратегии W3C_ACTIONS.
+        """Test a fling with the ``W3C_ACTIONS`` strategy.
 
-        Проверяет корректность выполнения быстрого свайпа
-        с явным указанием стратегии W3C_ACTIONS.
+        Verifies that a fast swipe succeeds when the strategy is
+        explicitly set to ``W3C_ACTIONS``.
 
         Args:
-            app: Экземпляр Shadowstep для взаимодействия с приложением.
-            android_settings_open_close: Фикстура для открытия и закрытия настроек Android.
+            app: Shadowstep instance for interacting with the app.
+            android_settings_open_close: Fixture that opens and closes Android settings.
         """
         element = app.get_element(locator=LOCATOR_RECYCLER)
         bounds_1 = element.bounds
@@ -197,14 +197,14 @@ class TestGestureStrategies:
     def test_fling_mobile_commands_strategy(
         self, app: Shadowstep, android_settings_open_close: None
     ):
-        """Тест быстрого свайпа с использованием стратегии MOBILE_COMMANDS.
+        """Test a fling with the ``MOBILE_COMMANDS`` strategy.
 
-        Проверяет корректность выполнения быстрого свайпа
-        с явным указанием стратегии MOBILE_COMMANDS.
+        Verifies that a fast swipe succeeds when the strategy is
+        explicitly set to ``MOBILE_COMMANDS``.
 
         Args:
-            app: Экземпляр Shadowstep для взаимодействия с приложением.
-            android_settings_open_close: Фикстура для открытия и закрытия настроек Android.
+            app: Shadowstep instance for interacting with the app.
+            android_settings_open_close: Fixture that opens and closes Android settings.
         """
         element = app.get_element(locator=LOCATOR_RECYCLER)
         bounds_1 = element.bounds
@@ -216,14 +216,14 @@ class TestGestureStrategies:
     def test_scroll_w3c_actions_strategy(
         self, app: Shadowstep, android_settings_open_close: None
     ):
-        """Тест прокрутки с использованием стратегии W3C_ACTIONS.
+        """Test scrolling with the ``W3C_ACTIONS`` strategy.
 
-        Проверяет корректность выполнения прокрутки
-        с явным указанием стратегии W3C_ACTIONS.
+        Verifies that scrolling succeeds when the strategy is
+        explicitly set to ``W3C_ACTIONS``.
 
         Args:
-            app: Экземпляр Shadowstep для взаимодействия с приложением.
-            android_settings_open_close: Фикстура для открытия и закрытия настроек Android.
+            app: Shadowstep instance for interacting with the app.
+            android_settings_open_close: Fixture that opens and closes Android settings.
         """
         settings_recycler = app.get_element(locator=LOCATOR_RECYCLER)
         result = settings_recycler.scroll_down(
@@ -235,14 +235,14 @@ class TestGestureStrategies:
     def test_scroll_mobile_commands_strategy(
         self, app: Shadowstep, android_settings_open_close: None
     ):
-        """Тест прокрутки с использованием стратегии MOBILE_COMMANDS.
+        """Test scrolling with the ``MOBILE_COMMANDS`` strategy.
 
-        Проверяет корректность выполнения прокрутки
-        с явным указанием стратегии MOBILE_COMMANDS.
+        Verifies that scrolling succeeds when the strategy is
+        explicitly set to ``MOBILE_COMMANDS``.
 
         Args:
-            app: Экземпляр Shadowstep для взаимодействия с приложением.
-            android_settings_open_close: Фикстура для открытия и закрытия настроек Android.
+            app: Shadowstep instance for interacting with the app.
+            android_settings_open_close: Fixture that opens and closes Android settings.
         """
         settings_recycler = app.get_element(locator=LOCATOR_RECYCLER)
         result = settings_recycler.scroll_down(
@@ -254,14 +254,14 @@ class TestGestureStrategies:
     def test_scroll_to_bottom_w3c_actions_strategy(
         self, app: Shadowstep, android_settings_open_close: None
     ):
-        """Тест прокрутки до конца с использованием стратегии W3C_ACTIONS.
+        """Test scrolling to the bottom with the ``W3C_ACTIONS`` strategy.
 
-        Проверяет корректность выполнения прокрутки до конца контейнера
-        с явным указанием стратегии W3C_ACTIONS.
+        Verifies that scrolling to the end of a container succeeds when the
+        strategy is explicitly set to ``W3C_ACTIONS``.
 
         Args:
-            app: Экземпляр Shadowstep для взаимодействия с приложением.
-            android_settings_open_close: Фикстура для открытия и закрытия настроек Android.
+            app: Shadowstep instance for interacting with the app.
+            android_settings_open_close: Fixture that opens and closes Android settings.
         """
         settings_recycler = app.get_element(locator=LOCATOR_RECYCLER)
         settings_about_phone = app.get_element(locator=LOCATOR_BOTTOM_ELEMENT)
@@ -272,14 +272,14 @@ class TestGestureStrategies:
     def test_scroll_to_bottom_mobile_commands_strategy(
         self, app: Shadowstep, android_settings_open_close: None
     ):
-        """Тест прокрутки до конца с использованием стратегии MOBILE_COMMANDS.
+        """Test scrolling to the bottom with the ``MOBILE_COMMANDS`` strategy.
 
-        Проверяет корректность выполнения прокрутки до конца контейнера
-        с явным указанием стратегии MOBILE_COMMANDS.
+        Verifies that scrolling to the end of a container succeeds when the
+        strategy is explicitly set to ``MOBILE_COMMANDS``.
 
         Args:
-            app: Экземпляр Shadowstep для взаимодействия с приложением.
-            android_settings_open_close: Фикстура для открытия и закрытия настроек Android.
+            app: Shadowstep instance for interacting with the app.
+            android_settings_open_close: Fixture that opens and closes Android settings.
         """
         settings_recycler = app.get_element(locator=LOCATOR_RECYCLER)
         settings_about_phone = app.get_element(locator=LOCATOR_BOTTOM_ELEMENT)
@@ -290,14 +290,14 @@ class TestGestureStrategies:
     def test_scroll_to_top_w3c_actions_strategy(
         self, app: Shadowstep, android_settings_open_close: None
     ):
-        """Тест прокрутки вверх с использованием стратегии W3C_ACTIONS.
+        """Test scrolling to the top with the ``W3C_ACTIONS`` strategy.
 
-        Проверяет корректность выполнения прокрутки вверх
-        с явным указанием стратегии W3C_ACTIONS.
+        Verifies that scrolling upward succeeds when the strategy is
+        explicitly set to ``W3C_ACTIONS``.
 
         Args:
-            app: Экземпляр Shadowstep для взаимодействия с приложением.
-            android_settings_open_close: Фикстура для открытия и закрытия настроек Android.
+            app: Shadowstep instance for interacting with the app.
+            android_settings_open_close: Fixture that opens and closes Android settings.
         """
         settings_recycler = app.get_element(locator=LOCATOR_RECYCLER)
         settings_network = app.get_element(locator=LOCATOR_NETWORK)
@@ -314,14 +314,14 @@ class TestGestureStrategies:
     def test_scroll_to_top_mobile_commands_strategy(
         self, app: Shadowstep, android_settings_open_close: None
     ):
-        """Тест прокрутки вверх с использованием стратегии MOBILE_COMMANDS.
+        """Test scrolling to the top with the ``MOBILE_COMMANDS`` strategy.
 
-        Проверяет корректность выполнения прокрутки вверх
-        с явным указанием стратегии MOBILE_COMMANDS.
+        Verifies that scrolling upward succeeds when the strategy is
+        explicitly set to ``MOBILE_COMMANDS``.
 
         Args:
-            app: Экземпляр Shadowstep для взаимодействия с приложением.
-            android_settings_open_close: Фикстура для открытия и закрытия настроек Android.
+            app: Shadowstep instance for interacting with the app.
+            android_settings_open_close: Fixture that opens and closes Android settings.
         """
         settings_recycler = app.get_element(locator=LOCATOR_RECYCLER)
         settings_network = app.get_element(locator=LOCATOR_NETWORK)
@@ -338,14 +338,14 @@ class TestGestureStrategies:
     def test_scroll_to_element_w3c_actions_strategy(
         self, app: Shadowstep, android_settings_open_close: None
     ):
-        """Тест прокрутки к элементу с использованием стратегии W3C_ACTIONS.
+        """Test scrolling to an element with the ``W3C_ACTIONS`` strategy.
 
-        Проверяет корректность выполнения прокрутки к конкретному элементу
-        с явным указанием стратегии W3C_ACTIONS.
+        Verifies that scrolling to a specific element succeeds when the
+        strategy is explicitly set to ``W3C_ACTIONS``.
 
         Args:
-            app: Экземпляр Shadowstep для взаимодействия с приложением.
-            android_settings_open_close: Фикстура для открытия и закрытия настроек Android.
+            app: Shadowstep instance for interacting with the app.
+            android_settings_open_close: Fixture that opens and closes Android settings.
         """
         settings_recycler = app.get_element(
             locator={"resource-id": "com.android.settings:id/settings_homepage_container"}
@@ -360,14 +360,14 @@ class TestGestureStrategies:
     def test_scroll_to_element_mobile_commands_strategy(
         self, app: Shadowstep, android_settings_open_close: None
     ):
-        """Тест прокрутки к элементу с использованием стратегии MOBILE_COMMANDS.
+        """Test scrolling to an element with the ``MOBILE_COMMANDS`` strategy.
 
-        Проверяет корректность выполнения прокрутки к конкретному элементу
-        с явным указанием стратегии MOBILE_COMMANDS.
+        Verifies that scrolling to a specific element succeeds when the
+        strategy is explicitly set to ``MOBILE_COMMANDS``.
 
         Args:
-            app: Экземпляр Shadowstep для взаимодействия с приложением.
-            android_settings_open_close: Фикстура для открытия и закрытия настроек Android.
+            app: Shadowstep instance for interacting with the app.
+            android_settings_open_close: Fixture that opens and closes Android settings.
         """
         settings_recycler = app.get_element(
             locator={"resource-id": "com.android.settings:id/settings_homepage_container"}
@@ -383,15 +383,15 @@ class TestGestureStrategies:
     def test_swipe_w3c_actions_strategy(
         self, app: Shadowstep, direction: str, android_settings_open_close: None
     ):
-        """Тест свайпа с использованием стратегии W3C_ACTIONS.
+        """Test swiping with the ``W3C_ACTIONS`` strategy.
 
-        Проверяет корректность выполнения свайпа в заданном направлении
-        с явным указанием стратегии W3C_ACTIONS.
+        Verifies that swiping in a specified direction succeeds when the
+        strategy is explicitly set to ``W3C_ACTIONS``.
 
         Args:
-            app: Экземпляр Shadowstep для взаимодействия с приложением.
-            direction: Направление свайпа (up, down, left, right).
-            android_settings_open_close: Фикстура для открытия и закрытия настроек Android.
+            app: Shadowstep instance for interacting with the app.
+            direction: Swipe direction (``up``, ``down``, ``left``, ``right``).
+            android_settings_open_close: Fixture that opens and closes Android settings.
         """
         element = app.get_element(locator=LOCATOR_RECYCLER)
         element.swipe(
@@ -404,15 +404,15 @@ class TestGestureStrategies:
     def test_swipe_mobile_commands_strategy(
         self, app: Shadowstep, direction: str, android_settings_open_close: None
     ):
-        """Тест свайпа с использованием стратегии MOBILE_COMMANDS.
+        """Test swiping with the ``MOBILE_COMMANDS`` strategy.
 
-        Проверяет корректность выполнения свайпа в заданном направлении
-        с явным указанием стратегии MOBILE_COMMANDS.
+        Verifies that swiping in a specified direction succeeds when the
+        strategy is explicitly set to ``MOBILE_COMMANDS``.
 
         Args:
-            app: Экземпляр Shadowstep для взаимодействия с приложением.
-            direction: Направление свайпа (up, down, left, right).
-            android_settings_open_close: Фикстура для открытия и закрытия настроек Android.
+            app: Shadowstep instance for interacting with the app.
+            direction: Swipe direction (``up``, ``down``, ``left``, ``right``).
+            android_settings_open_close: Fixture that opens and closes Android settings.
         """
         element = app.get_element(locator=LOCATOR_RECYCLER)
         element.swipe(
@@ -427,14 +427,14 @@ class TestGestureStrategies:
     def test_zoom_w3c_actions_strategy(
         self, app: Shadowstep, android_settings_open_close: None
     ):
-        """Тест увеличения масштаба с использованием стратегии W3C_ACTIONS.
+        """Test zooming with the ``W3C_ACTIONS`` strategy.
 
-        Проверяет корректность выполнения операции увеличения масштаба
-        с явным указанием стратегии W3C_ACTIONS.
+        Verifies that the zoom gesture succeeds when the strategy is
+        explicitly set to ``W3C_ACTIONS``.
 
         Args:
-            app: Экземпляр Shadowstep для взаимодействия с приложением.
-            android_settings_open_close: Фикстура для открытия и закрытия настроек Android.
+            app: Shadowstep instance for interacting with the app.
+            android_settings_open_close: Fixture that opens and closes Android settings.
         """
         settings_network = app.get_element(locator=LOCATOR_NETWORK)
         settings_network.zoom(strategy=GestureStrategy.W3C_ACTIONS)
@@ -444,14 +444,14 @@ class TestGestureStrategies:
     def test_zoom_mobile_commands_strategy(
         self, app: Shadowstep, android_settings_open_close: None
     ):
-        """Тест увеличения масштаба с использованием стратегии MOBILE_COMMANDS.
+        """Test zooming with the ``MOBILE_COMMANDS`` strategy.
 
-        Проверяет корректность выполнения операции увеличения масштаба
-        с явным указанием стратегии MOBILE_COMMANDS.
+        Verifies that the zoom gesture succeeds when the strategy is
+        explicitly set to ``MOBILE_COMMANDS``.
 
         Args:
-            app: Экземпляр Shadowstep для взаимодействия с приложением.
-            android_settings_open_close: Фикстура для открытия и закрытия настроек Android.
+            app: Shadowstep instance for interacting with the app.
+            android_settings_open_close: Fixture that opens and closes Android settings.
         """
         settings_network = app.get_element(locator=LOCATOR_NETWORK)
         settings_network.zoom(strategy=GestureStrategy.MOBILE_COMMANDS)
@@ -461,14 +461,14 @@ class TestGestureStrategies:
     def test_unzoom_w3c_actions_strategy(
         self, app: Shadowstep, android_settings_open_close: None
     ):
-        """Тест уменьшения масштаба с использованием стратегии W3C_ACTIONS.
+        """Test unzooming with the ``W3C_ACTIONS`` strategy.
 
-        Проверяет корректность выполнения операции уменьшения масштаба
-        с явным указанием стратегии W3C_ACTIONS.
+        Verifies that the unzoom gesture succeeds when the strategy is
+        explicitly set to ``W3C_ACTIONS``.
 
         Args:
-            app: Экземпляр Shadowstep для взаимодействия с приложением.
-            android_settings_open_close: Фикстура для открытия и закрытия настроек Android.
+            app: Shadowstep instance for interacting with the app.
+            android_settings_open_close: Fixture that opens and closes Android settings.
         """
         settings_network = app.get_element(locator=LOCATOR_NETWORK)
         settings_network.unzoom(strategy=GestureStrategy.W3C_ACTIONS)
@@ -478,14 +478,14 @@ class TestGestureStrategies:
     def test_unzoom_mobile_commands_strategy(
         self, app: Shadowstep, android_settings_open_close: None
     ):
-        """Тест уменьшения масштаба с использованием стратегии MOBILE_COMMANDS.
+        """Test unzooming with the ``MOBILE_COMMANDS`` strategy.
 
-        Проверяет корректность выполнения операции уменьшения масштаба
-        с явным указанием стратегии MOBILE_COMMANDS.
+        Verifies that the unzoom gesture succeeds when the strategy is
+        explicitly set to ``MOBILE_COMMANDS``.
 
         Args:
-            app: Экземпляр Shadowstep для взаимодействия с приложением.
-            android_settings_open_close: Фикстура для открытия и закрытия настроек Android.
+            app: Shadowstep instance for interacting with the app.
+            android_settings_open_close: Fixture that opens and closes Android settings.
         """
         settings_network = app.get_element(locator=LOCATOR_NETWORK)
         settings_network.unzoom(strategy=GestureStrategy.MOBILE_COMMANDS)
