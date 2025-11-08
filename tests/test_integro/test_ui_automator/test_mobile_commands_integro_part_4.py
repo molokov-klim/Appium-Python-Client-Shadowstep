@@ -1,10 +1,10 @@
 # ruff: noqa
 # pyright: ignore
-"""
-Интеграционные тесты для модуля mobile_commands.py - Часть 4.
+"""Integration tests for ``mobile_commands.py`` — Part 4.
 
-Группа тестов эмулятора и файловых операций: GSM команды, power control,
-SMS, сенсоры, установка APK, файловые операции, media projection, screen streaming.
+This suite covers emulator and file operations: GSM commands, power control,
+SMS, sensors, APK installation, file operations, media projection, and
+screen streaming.
 
 uv run pytest -svl --log-cli-level INFO --tb=short --setup-show tests/test_integro/test_ui_automator/test_mobile_commands_integro_part_4.py
 """
@@ -21,18 +21,18 @@ logger = logging.getLogger(__name__)
 
 
 class TestMobileCommandsPart4:
-    """Интеграционные тесты для класса MobileCommands - Часть 4.
-    
-    Тестирование команд эмулятора, файловых операций, установки APK,
-    GSM, power control, SMS, сенсоров и медиа проекции.
+    """Integration tests for ``MobileCommands`` — Part 4.
+
+    Exercises emulator commands, file operations, APK installation, GSM,
+    power control, SMS, sensors, and media projection flows.
     """
 
     @pytest.fixture(autouse=True)
     def setup_mobile_commands(self, app: Shadowstep):
-        """Настройка экземпляра MobileCommands с фикстурой app.
-        
+        """Configure a ``MobileCommands`` instance using the ``app`` fixture.
+
         Args:
-            app: Экземпляр приложения Shadowstep для тестирования.
+            app: Shadowstep application instance for testing.
         """
         self.mobile_commands = MobileCommands()
         self.app = app
@@ -44,13 +44,13 @@ class TestMobileCommandsPart4:
         reason="GSM commands only work on emulators with telephony support", strict=False
     )
     def test_gsm_call(self):
-        """Тестирование команды gsm_call.
-        
-        Шаги:
-            1. Симуляция входящего звонка
-        
-        Примечание:
-            GSM команды работают только на эмуляторах с поддержкой телефонии.
+        """Exercise the ``gsm_call`` command.
+
+        Steps:
+            1. Simulate an incoming call.
+
+        Note:
+            GSM commands work only on emulators with telephony support.
         """
         result = self.mobile_commands.gsm_call({"phoneNumber": "5551234567", "action": "call"})
         logger.info(result)
@@ -59,13 +59,13 @@ class TestMobileCommandsPart4:
         reason="GSM commands only work on emulators with telephony support", strict=False
     )
     def test_gsm_signal(self):
-        """Тестирование команды gsm_signal.
-        
-        Шаги:
-            1. Установка уровня сигнала GSM
-        
-        Примечание:
-            GSM команды работают только на эмуляторах с поддержкой телефонии.
+        """Exercise the ``gsm_signal`` command.
+
+        Steps:
+            1. Set the GSM signal strength.
+
+        Note:
+            GSM commands work only on emulators with telephony support.
         """
         result = self.mobile_commands.gsm_signal({"signalStrength": 4})
         logger.info(result)
@@ -74,46 +74,46 @@ class TestMobileCommandsPart4:
         reason="GSM commands only work on emulators with telephony support", strict=False
     )
     def test_gsm_voice(self):
-        """Тестирование команды gsm_voice.
-        
-        Шаги:
-            1. Установка состояния голосовой связи GSM
-        
-        Примечание:
-            GSM команды работают только на эмуляторах с поддержкой телефонии.
+        """Exercise the ``gsm_voice`` command.
+
+        Steps:
+            1. Configure the GSM voice connection state.
+
+        Note:
+            GSM commands work only on emulators with telephony support.
         """
         result = self.mobile_commands.gsm_voice({"state": "on"})
         logger.info(result)
 
     @pytest.mark.xfail(reason="Emulator camera injection only works on emulators", strict=False)
     def test_inject_emulator_camera_image(self):
-        """Тестирование команды inject_emulator_camera_image.
-        
-        Шаги:
-            1. Внедрение изображения в камеру эмулятора
-        
-        Примечание:
-            Работает только на эмуляторах.
+        """Exercise the ``inject_emulator_camera_image`` command.
+
+        Steps:
+            1. Inject an image into the emulator camera.
+
+        Note:
+            This works only on emulators.
         """
         result = self.mobile_commands.inject_emulator_camera_image({"image": "base64encodedimage"})
         logger.info(result)
 
     @pytest.mark.xfail(reason="Requires valid APK file path", strict=False)
     def test_install_app(self):
-        """Тестирование команды install_app.
-        
-        Примечание:
-            Требуется корректный путь к APK файлу.
+        """Exercise the ``install_app`` command.
+
+        Note:
+            Requires a valid APK file path.
         """
         result = self.mobile_commands.install_app({"appPath": "/path/to/app.apk"})
         logger.info(result)
 
     @pytest.mark.xfail(reason="Requires valid APK file paths", strict=False)
     def test_install_multiple_apks(self):
-        """Тестирование команды install_multiple_apks.
-        
-        Примечание:
-            Требуются корректные пути к APK файлам.
+        """Exercise the ``install_multiple_apks`` command.
+
+        Note:
+            Requires valid APK file paths.
         """
         result = self.mobile_commands.install_multiple_apks(
             {"apks": ["/path/to/app1.apk", "/path/to/app2.apk"]}
@@ -121,29 +121,29 @@ class TestMobileCommandsPart4:
         logger.info(result)
 
     def test_is_media_projection_recording_running(self):
-        """Тестирование команды is_media_projection_recording_running.
-        
-        Проверяет:
-            - Результат является булевым значением
+        """Exercise ``is_media_projection_recording_running``.
+
+        Verifies:
+            - The result is a boolean value.
         """
         result = self.mobile_commands.is_media_projection_recording_running()
         assert isinstance(result, bool)  # noqa: S101
 
     def test_start_media_projection_recording(self):
-        """Тестирование команды start_media_projection_recording.
-        
-        Шаги:
-            1. Запуск записи через media projection
+        """Exercise ``start_media_projection_recording``.
+
+        Steps:
+            1. Start media projection recording.
         """
         result = self.mobile_commands.start_media_projection_recording()
         logger.info(result)
 
     @pytest.mark.xfail(reason="EACCES: permission denied, mkdtemp 'recordingR6m2hB'", strict=False)
     def test_stop_media_projection_recording(self):
-        """Тестирование команды stop_media_projection_recording.
-        
-        Примечание:
-            Может возникнуть ошибка доступа при создании временной директории.
+        """Exercise ``stop_media_projection_recording``.
+
+        Note:
+            Access errors may occur when creating a temporary directory.
         """
         result = self.mobile_commands.stop_media_projection_recording()
         logger.info(result)
@@ -152,13 +152,13 @@ class TestMobileCommandsPart4:
         reason="SMS commands only work on emulators with telephony support", strict=False
     )
     def test_list_sms(self):
-        """Тестирование команды list_sms.
-        
-        Проверяет:
-            - Результат является списком
-        
-        Примечание:
-            SMS команды работают только на эмуляторах с поддержкой телефонии.
+        """Exercise the ``list_sms`` command.
+
+        Verifies:
+            - The result is a list.
+
+        Note:
+            SMS commands work only on emulators with telephony support.
         """
         result = self.mobile_commands.list_sms()
         assert isinstance(result, list)  # noqa: S101
@@ -167,13 +167,13 @@ class TestMobileCommandsPart4:
         reason="SMS commands only work on emulators with telephony support", strict=False
     )
     def test_send_sms(self):
-        """Тестирование команды send_sms.
-        
-        Шаги:
-            1. Отправка SMS сообщения
-        
-        Примечание:
-            SMS команды работают только на эмуляторах с поддержкой телефонии.
+        """Exercise the ``send_sms`` command.
+
+        Steps:
+            1. Send an SMS message.
+
+        Note:
+            SMS commands work only on emulators with telephony support.
         """
         result = self.mobile_commands.send_sms(
             {"phoneNumber": "5551234567", "message": "Test message"}
@@ -182,67 +182,67 @@ class TestMobileCommandsPart4:
 
     @pytest.mark.xfail(reason="Network speed control only works on emulators", strict=False)
     def test_network_speed(self):
-        """Тестирование команды network_speed.
-        
-        Шаги:
-            1. Установка скорости сети на "full"
-        
-        Примечание:
-            Управление скоростью сети работает только на эмуляторах.
+        """Exercise the ``network_speed`` command.
+
+        Steps:
+            1. Set the network speed to ``full``.
+
+        Note:
+            Network speed control works only on emulators.
         """
         result = self.mobile_commands.network_speed({"speed": "full"})
         logger.info(result)
 
     @pytest.mark.xfail(reason="Power commands only work on emulators", strict=False)
     def test_power_ac(self):
-        """Тестирование команды power_ac.
-        
-        Шаги:
-            1. Включение питания от сети
-        
-        Примечание:
-            Power команды работают только на эмуляторах.
+        """Exercise the ``power_ac`` command.
+
+        Steps:
+            1. Enable AC power.
+
+        Note:
+            Power commands work only on emulators.
         """
         result = self.mobile_commands.power_ac({"state": "on"})
         logger.info(result)
 
     @pytest.mark.xfail(reason="Power commands only work on emulators", strict=False)
     def test_power_capacity(self):
-        """Тестирование команды power_capacity.
-        
-        Шаги:
-            1. Установка уровня заряда батареи на 100%
-        
-        Примечание:
-            Power команды работают только на эмуляторах.
+        """Exercise the ``power_capacity`` command.
+
+        Steps:
+            1. Set the battery level to 100%.
+
+        Note:
+            Power commands work only on emulators.
         """
         result = self.mobile_commands.power_capacity({"percent": 100})
         logger.info(result)
 
     @pytest.mark.xfail(reason="Requires file to exist on device", strict=False)
     def test_pull_file(self):
-        """Тестирование команды pull_file.
-        
-        Примечание:
-            Требуется существующий файл на устройстве.
+        """Exercise the ``pull_file`` command.
+
+        Note:
+            Requires a file that already exists on the device.
         """
         result = self.mobile_commands.pull_file({"remotePath": "/sdcard/test_file.txt"})
         logger.info(result)
 
     def test_pull_folder(self):
-        """Тестирование команды pull_folder.
-        
-        Шаги:
-            1. Получение папки /sdcard/ с устройства
+        """Exercise the ``pull_folder`` command.
+
+        Steps:
+            1. Retrieve the ``/sdcard/`` folder from the device.
         """
         result = self.mobile_commands.pull_folder({"remotePath": "/sdcard/"})
         logger.info(result)
 
     def test_push_file(self):
-        """Тестирование команды push_file.
-        
-        Шаги:
-            1. Загрузка файла на устройство с base64 содержимым
+        """Exercise the ``push_file`` command.
+
+        Steps:
+            1. Upload a file to the device using base64 content.
         """
         result = self.mobile_commands.push_file(
             {"remotePath": "/sdcard/test.txt", "payload": "dGVzdCBjb250ZW50"}
@@ -250,11 +250,11 @@ class TestMobileCommandsPart4:
         logger.info(result)
 
     def test_delete_file(self):
-        """Тестирование команды delete_file.
-        
-        Шаги:
-            1. Создание тестового файла через shell
-            2. Удаление файла
+        """Exercise the ``delete_file`` command.
+
+        Steps:
+            1. Create a test file via ``shell``.
+            2. Delete the file.
         """
         # Create a test file first via shell
         self.mobile_commands.shell({"command": "touch", "args": ["/sdcard/test_delete_file.txt"]})
@@ -268,57 +268,57 @@ class TestMobileCommandsPart4:
 
     @pytest.mark.xfail(reason="Sensor control only works on emulators", strict=False)
     def test_sensor_set(self):
-        """Тестирование команды sensor_set.
-        
-        Шаги:
-            1. Установка значения сенсора света
-        
-        Примечание:
-            Управление сенсорами работает только на эмуляторах.
+        """Exercise the ``sensor_set`` command.
+
+        Steps:
+            1. Set the light sensor value.
+
+        Note:
+            Sensor control works only on emulators.
         """
         result = self.mobile_commands.sensor_set({"sensorType": "light", "value": 50})
         logger.info(result)
 
     def test_start_screen_streaming(self):
-        """Тестирование команды start_screen_streaming.
-        
-        Шаги:
-            1. Запуск потоковой передачи экрана
+        """Exercise the ``start_screen_streaming`` command.
+
+        Steps:
+            1. Start screen streaming.
         """
         result = self.mobile_commands.start_screen_streaming()
         logger.info(result)
 
     def test_stop_screen_streaming(self):
-        """Тестирование команды stop_screen_streaming.
-        
-        Шаги:
-            1. Остановка потоковой передачи экрана
+        """Exercise the ``stop_screen_streaming`` command.
+
+        Steps:
+            1. Stop screen streaming.
         """
         result = self.mobile_commands.stop_screen_streaming()
         logger.info(result)
 
     @pytest.mark.xfail(reason="Service commands may not work with all intents", strict=False)
     def test_start_service(self):
-        """Тестирование команды start_service.
-        
-        Шаги:
-            1. Запуск сервиса Settings
-        
-        Примечание:
-            Команды сервисов могут не работать со всеми intents.
+        """Exercise the ``start_service`` command.
+
+        Steps:
+            1. Launch the Settings service.
+
+        Note:
+            Service commands may fail depending on the intent.
         """
         result = self.mobile_commands.start_service({"intent": "com.android.settings/.Settings"})
         logger.info(result)
 
     @pytest.mark.xfail(reason="Service commands may not work with all intents", strict=False)
     def test_stop_service(self):
-        """Тестирование команды stop_service.
-        
-        Шаги:
-            1. Остановка сервиса Settings
-        
-        Примечание:
-            Команды сервисов могут не работать со всеми intents.
+        """Exercise the ``stop_service`` command.
+
+        Steps:
+            1. Stop the Settings service.
+
+        Note:
+            Service commands may fail depending on the intent.
         """
         result = self.mobile_commands.stop_service({"intent": "com.android.settings/.Settings"})
         logger.info(result)
@@ -327,13 +327,13 @@ class TestMobileCommandsPart4:
         reason="Emulator console command only works on emulators with console access", strict=False
     )
     def test_exec_emu_console_command(self):
-        """Тестирование команды exec_emu_console_command.
-        
-        Шаги:
-            1. Выполнение команды help в консоли эмулятора
-        
-        Примечание:
-            Работает только на эмуляторах с доступом к консоли.
+        """Exercise the ``exec_emu_console_command`` command.
+
+        Steps:
+            1. Run the ``help`` command in the emulator console.
+
+        Note:
+            Works only on emulators with console access.
         """
         result = self.mobile_commands.exec_emu_console_command({"command": "help"})
         logger.info(result)
@@ -342,13 +342,13 @@ class TestMobileCommandsPart4:
         reason="Fingerprint requires emulator with fingerprint support", strict=False
     )
     def test_fingerprint(self):
-        """Тестирование команды fingerprint.
-        
-        Шаги:
-            1. Симуляция отпечатка пальца с ID 1
-        
-        Примечание:
-            Требуется эмулятор с поддержкой отпечатков пальцев.
+        """Exercise the ``fingerprint`` command.
+
+        Steps:
+            1. Simulate fingerprint ID ``1``.
+
+        Note:
+            Requires an emulator with fingerprint support.
         """
         result = self.mobile_commands.fingerprint({"fingerprintId": 1})
         logger.info(result)
