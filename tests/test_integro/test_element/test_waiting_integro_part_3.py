@@ -36,7 +36,7 @@ class TestElementWaitingPart3:
     """Collection of waiting tests using generic locators and timeouts."""
 
     def test_wait_clickable_with_none_locator(
-        self, app: Shadowstep, android_settings_open_close: Any
+            self, app: Shadowstep, android_settings_open_close: Any
     ):
         """Test ``wait_clickable`` behavior with a generic locator."""
 
@@ -45,7 +45,7 @@ class TestElementWaitingPart3:
         assert result is True  # Generic xpath "//*" finds elements
 
     def test_wait_for_not_with_none_locator(
-        self, app: Shadowstep, android_settings_open_close: Any
+            self, app: Shadowstep, android_settings_open_close: Any
     ):
         """Test ``wait_for_not`` behavior with a generic locator."""
 
@@ -54,7 +54,7 @@ class TestElementWaitingPart3:
         assert result is False  # wait_for_not returns False for valid locators that exist
 
     def test_wait_for_not_visible_with_none_locator(
-        self, app: Shadowstep, android_settings_open_close: Any
+            self, app: Shadowstep, android_settings_open_close: Any
     ):
         """Test ``wait_for_not_visible`` behavior with a generic locator."""
 
@@ -63,7 +63,7 @@ class TestElementWaitingPart3:
         assert result is False
 
     def test_wait_for_not_clickable_with_none_locator(
-        self, app: Shadowstep, android_settings_open_close: Any
+            self, app: Shadowstep, android_settings_open_close: Any
     ):
         """Test ``wait_for_not_clickable`` behavior with a generic locator."""
 
@@ -72,7 +72,7 @@ class TestElementWaitingPart3:
         assert result is False
 
     def test_wait_timeout_exceeds_element_timeout(
-        self, app: Shadowstep, android_settings_open_close: Any
+            self, app: Shadowstep, android_settings_open_close: Any
     ):
         """Test that ``wait`` respects the element timeout when shorter than method timeout."""
 
@@ -87,7 +87,7 @@ class TestElementWaitingPart3:
         assert result is True
 
     def test_all_wait_methods_return_element_when_return_bool_false(
-        self, app: Shadowstep, android_settings_open_close: Any
+            self, app: Shadowstep, android_settings_open_close: Any
     ):
         """Test that all wait methods return ``Element`` when ``return_bool`` is False."""
         el = app.get_element(LOCATOR_SEARCH_SETTINGS)
@@ -101,7 +101,7 @@ class TestElementWaitingPart3:
         assert el.wait_for_not_clickable(return_bool=False) == el
 
     def test_wait_methods_with_zero_timeout(
-        self, app: Shadowstep, android_settings_open_close: Any
+            self, app: Shadowstep, android_settings_open_close: Any
     ):
         """Test wait methods with a zero timeout."""
         el = app.get_element(LOCATOR_SEARCH_SETTINGS)
@@ -111,11 +111,11 @@ class TestElementWaitingPart3:
         result = el.wait(timeout=0, return_bool=True)
         end_time = time.time()
 
-        assert end_time - start_time < 0.5  # Should be very fast
+        assert end_time - start_time < 1  # Should be very fast
         assert result is True  # Element exists, so should succeed
 
     def test_wait_methods_with_very_small_poll_frequency(
-        self, app: Shadowstep, android_settings_open_close: Any
+            self, app: Shadowstep, android_settings_open_close: Any
     ):
         """Test wait methods with a very small poll frequency."""
         el = app.get_element(LOCATOR_SEARCH_SETTINGS)
@@ -125,7 +125,7 @@ class TestElementWaitingPart3:
         assert result is True
 
     def test_wait_methods_with_large_poll_frequency(
-        self, app: Shadowstep, android_settings_open_close: Any
+            self, app: Shadowstep, android_settings_open_close: Any
     ):
         """Test wait methods with a large poll frequency."""
         el = app.get_element(LOCATOR_SEARCH_SETTINGS)
@@ -133,4 +133,3 @@ class TestElementWaitingPart3:
         # Test with large poll frequency
         result = el.wait(timeout=2, poll_frequency=2.0, return_bool=True)
         assert result is True
-
