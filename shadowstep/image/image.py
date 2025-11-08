@@ -1005,20 +1005,20 @@ class ShadowstepImage:
         max_attempts: int = 10,
         step_delay: float = 0.5,
     ) -> ShadowstepImage:
-        """Internal method to scroll in a direction until image is found.
+        """Прокручивает экран в заданном направлении до обнаружения изображения.
 
         Args:
-            direction: "up", "down", "left", or "right".
-            from_percent: Starting position (for down/right).
-            to_percent: Ending position (for down/right).
-            max_attempts: Maximum scroll attempts.
-            step_delay: Delay between attempts.
+            direction: Направление прокрутки: "up", "down", "left" или "right".
+            from_percent: Начальная позиция (для down/right).
+            to_percent: Конечная позиция (для down/right).
+            max_attempts: Максимальное количество попыток прокрутки.
+            step_delay: Задержка между попытками в секундах.
 
         Returns:
-            ShadowstepImage: Self for method chaining.
+            ShadowstepImage: Экземпляр для цепочки вызовов.
 
         Raises:
-            ShadowstepImageNotFoundError: If image not found after max_attempts.
+            ShadowstepImageNotFoundError: Если изображение не найдено после max_attempts.
 
         """
         for attempt in range(max_attempts):

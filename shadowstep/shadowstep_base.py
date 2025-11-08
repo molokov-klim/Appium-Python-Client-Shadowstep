@@ -135,6 +135,17 @@ class ShadowstepBase:
 
         """
         self.logger.debug("%s", get_current_func_name())
+        if hasattr(self, "transport") and self.transport is not None:  # type: ignore[reportUnnecessaryComparison]
+            try:
+                if hasattr(self.transport, "scp") and self.transport.scp is not None:  # type: ignore[reportUnnecessaryComparison]
+                    self.transport.scp.close()
+                if hasattr(self.transport, "ssh") and self.transport.ssh is not None:  # type: ignore[reportUnnecessaryComparison]
+                    self.transport.ssh.close()
+                self.logger.info("SSH Transport closed")
+            except Exception as e:  # noqa: BLE001
+                self.logger.warning(f"Error closing transport: {e}")  # noqa: G004
+            finally:
+                self.transport = None  # type: ignore[reportUnnecessaryComparison]
         try:
             if self.driver is not None:  # type: ignore[reportUnnecessaryComparison]
                 response = requests.delete(
@@ -250,7 +261,7 @@ class ShadowstepBase:
             for node in nodes:
                 session_id = node.get("id", None)
                 node.get("ready", False)
-                if self.driver is not None and self.driver.session_id == session_id:   # type: ignore[reportUnnecessaryComparison]
+                if self.driver is not None and self.driver.session_id == session_id:  # type: ignore[reportUnnecessaryComparison]
                     self.logger.debug("Found session_id on standalone: %s", session_id)
                     return True
             return False  # noqa: TRY300
@@ -274,7 +285,7 @@ class ShadowstepBase:
             for node in nodes:
                 session_id = node.get("id", None)
                 node.get("ready", False)
-                if self.driver is not None and self.driver.session_id == session_id:   # type: ignore[reportUnnecessaryComparison]
+                if self.driver is not None and self.driver.session_id == session_id:  # type: ignore[reportUnnecessaryComparison]
                     self.logger.debug("Found session_id on standalone: %s", session_id)
                     return True
             return False  # noqa: TRY300
@@ -308,7 +319,7 @@ class ShadowstepBase:
     def _capabilities_to_options(self) -> None:  # noqa: C901, PLR0912, PLR0915
         # if provided caps instead options, redeclare caps to options
         # see https://github.com/appium/appium-uiautomator2-driver
-        if self.capabilities is not None and self.options is None:   # type: ignore[reportUnnecessaryComparison]
+        if self.capabilities is not None and self.options is None:  # type: ignore[reportUnnecessaryComparison]
             self.options = UiAutomator2Options()
 
             # General
