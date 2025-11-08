@@ -748,7 +748,7 @@ element.tap_and_move(direction=0, distance=1000)  # up
 # Click
 element.click()
 element.click(duration=3000)
-element.click_double()
+element.double_click()
 
 # Drag
 element.drag(end_x=500, end_y=1000, speed=2500)

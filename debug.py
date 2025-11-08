@@ -1,25 +1,34 @@
 # debug.py
 # type: ignore
 # noqa
-import json
 import logging
-import requests
-from lxml import etree
 
-from shadowstep.element.element import Element
-from shadowstep.page_object.page_object_generator import PageObjectGenerator
-from shadowstep.page_object.page_object_parser import PageObjectParser
-from shadowstep.page_object.page_object_recycler_explorer import PageObjectRecyclerExplorer
+from shadowstep.enums import GestureStrategy
 from shadowstep.shadowstep import Shadowstep
-from shadowstep.utils.translator import YandexTranslate
-from tests.test_integro.conftest import APPIUM_IP, APPIUM_COMMAND_EXECUTOR, CAPABILITIES, APPIUM_PORT
+from tests.test_integro.conftest import (
+    APPIUM_COMMAND_EXECUTOR,
+    APPIUM_IP,
+    APPIUM_PORT,
+    CAPABILITIES,
+)
 
 logger = logging.getLogger(__name__)
 
 app = Shadowstep()
-app.connect(server_ip=APPIUM_IP,
-            server_port=APPIUM_PORT,
-            command_executor=APPIUM_COMMAND_EXECUTOR,
-            capabilities=CAPABILITIES)
+app.connect(
+    server_ip=APPIUM_IP,
+    server_port=APPIUM_PORT,
+    command_executor=APPIUM_COMMAND_EXECUTOR,
+    capabilities=CAPABILITIES,
+)
 
 logger.info(app.driver.page_source)
+
+LOCATOR_CONNECTED_DEVICES = {"text": "Connected devices"}
+LOCATOR_SCROLL_VIEW = {"resource-id": "com.android.settings:id/main_content_scrollable_container"}
+element = app.get_element(locator=LOCATOR_SCROLL_VIEW)
+
+element.scroll_to_bottom(strategy=GestureStrategy.W3C_ACTIONS)
+element.scroll_to_top(strategy=GestureStrategy.W3C_ACTIONS)
+element.scroll_to_element(locator={"text": "System"}, strategy=GestureStrategy.W3C_ACTIONS)
+assert element.is_displayed(), "JOPA BLYA"

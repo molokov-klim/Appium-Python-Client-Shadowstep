@@ -10,7 +10,7 @@ import inspect
 import logging
 import time
 import traceback
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, cast
 
 from selenium.common.exceptions import WebDriverException
 from selenium.webdriver import ActionChains
@@ -18,12 +18,16 @@ from selenium.webdriver.common.actions import interaction
 from selenium.webdriver.common.actions.action_builder import ActionBuilder
 from selenium.webdriver.common.actions.pointer_input import PointerInput
 
-from shadowstep.decorators.decorators import log_debug
+from shadowstep.decorators.decorators import log_info
+from shadowstep.enums import GestureStrategy
 from shadowstep.exceptions.shadowstep_exceptions import ShadowstepElementException
 from shadowstep.ui_automator.mobile_commands import MobileCommands
 from shadowstep.utils.utils import find_coordinates_by_vector
+from shadowstep.w3c_actions.w3c_actions import W3CActions
 
 if TYPE_CHECKING:
+    from appium.webdriver.webelement import WebElement
+
     from shadowstep.element.element import Element
     from shadowstep.element.utilities import ElementUtilities
     from shadowstep.locator import LocatorConverter, UiSelector
@@ -46,8 +50,9 @@ class ElementGestures:
         self.converter: LocatorConverter = element.converter
         self.utilities: ElementUtilities = element.utilities
         self.mobile_commands = MobileCommands()
+        self.w3c_actions = W3CActions()
 
-    @log_debug()
+    @log_info()
     def tap(self, duration: int | None = None) -> Element:
         """Tap the element.
 
@@ -63,7 +68,7 @@ class ElementGestures:
         self.element.driver.tap(positions=[(x, y)], duration=duration)
         return self.element
 
-    @log_debug()
+    @log_info()
     def tap_and_move(
         self,
         locator: tuple[str, str] | dict[str, Any] | Element | UiSelector | None = None,
@@ -90,29 +95,58 @@ class ElementGestures:
             return result
         return self.element
 
-    @log_debug()
-    def click(self, duration: int | None = None) -> Element:
+    @log_info()
+    def click(
+        self,
+        duration: int | None = None,
+        strategy: GestureStrategy = GestureStrategy.AUTO,
+    ) -> Element:
         """Click the element.
 
         Args:
             duration: Duration of the click in milliseconds.
+            strategy: Стратегия выполнения жеста (W3C_ACTIONS, MOBILE_COMMANDS, AUTO).
 
         Returns:
             The element for method chaining.
 
         """
         self.element.get_driver()
-        self.element._get_web_element(locator=self.element.locator)  # type: ignore[reportPrivateUsage]  # noqa: SLF001
+        native_element = self.element._get_web_element(  # type: ignore[reportPrivateUsage]  # noqa: SLF001
+            locator=self.element.locator,
+        )  # type: ignore[reportPrivateUsage]
+        method_map = {
+            GestureStrategy.W3C_ACTIONS: self._click_w3c_commands,
+            GestureStrategy.MOBILE_COMMANDS: self._click_mobile_commands,
+            GestureStrategy.AUTO: self._click_mobile_commands,
+        }
+        return method_map[strategy](native_element, duration)
+
+    @log_info()
+    def _click_w3c_commands(
+        self,
+        native_element: WebElement,
+        duration: int | None = None,
+    ) -> Element:
+        self.w3c_actions.click(native_element, duration=duration)
+        return self.element
+
+    @log_info()
+    def _click_mobile_commands(
+        self,
+        native_element: WebElement,
+        duration: int | None = None,
+    ) -> Element:
         if duration is None:
             self.mobile_commands.click_gesture({"elementId": self.element.id})
         else:
             self.mobile_commands.long_click_gesture(
-                {"elementId": self.element.id, "duration": duration},
+                {"elementId": native_element.id, "duration": duration},
             )
         return self.element
 
-    @log_debug()
-    def click_double(self) -> Element:
+    @log_info()
+    def double_click(self, strategy: GestureStrategy = GestureStrategy.AUTO) -> Element:
         """Double-click the element.
 
         Returns:
@@ -120,32 +154,88 @@ class ElementGestures:
 
         """
         self.element.get_driver()
-        self.element._get_web_element(locator=self.element.locator)  # type: ignore[reportPrivateUsage]  # noqa: SLF001
-        self.mobile_commands.double_click_gesture({"elementId": self.element.id})
+        native_element = self.element._get_web_element(  # type: ignore[reportPrivateUsage]  # noqa: SLF001
+            locator=self.element.locator,
+        )  # type: ignore[reportPrivateUsage]
+        method_map = {
+            GestureStrategy.W3C_ACTIONS: self._double_click_w3c_commands,
+            GestureStrategy.MOBILE_COMMANDS: self._double_click_mobile_commands,
+            GestureStrategy.AUTO: self._double_click_w3c_commands,
+        }
+        return method_map[strategy](native_element)
+
+    @log_info()
+    def _double_click_mobile_commands(self, native_element: WebElement) -> Element:
+        self.mobile_commands.double_click_gesture({"elementId": native_element.id})
         return self.element
 
-    @log_debug()
-    def drag(self, end_x: int, end_y: int, speed: int = 2500) -> Element:
+    @log_info()
+    def _double_click_w3c_commands(self, native_element: WebElement) -> Element:
+        self.w3c_actions.double_click(native_element)
+        return self.element
+
+    @log_info()
+    def drag(
+        self,
+        end_x: int,
+        end_y: int,
+        speed: int = 2500,
+        strategy: GestureStrategy = GestureStrategy.AUTO,
+    ) -> Element:
         """Drag the element to specified coordinates.
 
         Args:
             end_x: Target x coordinate.
             end_y: Target y coordinate.
             speed: Speed of the drag gesture.
+            strategy: Стратегия выполнения жеста (W3C_ACTIONS, MOBILE_COMMANDS, AUTO).
 
         Returns:
             The element for method chaining.
 
         """
         self.element.get_driver()
-        self.element._get_web_element(locator=self.element.locator)  # type: ignore[reportPrivateUsage]  # noqa: SLF001
+        native_element = self.element._get_web_element(  # type: ignore[reportPrivateUsage]  # noqa: SLF001
+            locator=self.element.locator,
+        )  # type: ignore[reportPrivateUsage]
+        method_map = {
+            GestureStrategy.W3C_ACTIONS: self._drag_w3c_actions,
+            GestureStrategy.MOBILE_COMMANDS: self._drag_mobile_commands,
+            GestureStrategy.AUTO: self._drag_w3c_actions,
+        }
+        return method_map[strategy](native_element, end_x, end_y, speed)
+
+    @log_info()
+    def _drag_mobile_commands(
+        self,
+        native_element: WebElement,
+        end_x: int,
+        end_y: int,
+        speed: int = 2500,
+    ) -> Element:
         self.mobile_commands.drag_gesture(
-            {"elementId": self.element.id, "endX": end_x, "endY": end_y, "speed": speed},
+            {"elementId": native_element.id, "endX": end_x, "endY": end_y, "speed": speed},
         )
         return self.element
 
-    @log_debug()
-    def fling(self, speed: int, direction: str) -> Element:
+    @log_info()
+    def _drag_w3c_actions(
+        self,
+        native_element: WebElement,
+        end_x: int,
+        end_y: int,
+        speed: int = 2500,
+    ) -> Element:
+        self.w3c_actions.drag(element=native_element, end_x=end_x, end_y=end_y, speed=speed)
+        return self.element
+
+    @log_info()
+    def fling(
+        self,
+        speed: int,
+        direction: str,
+        strategy: GestureStrategy = GestureStrategy.AUTO,
+    ) -> Element:
         """Perform a fling gesture on the element.
 
         Args:
@@ -155,6 +245,7 @@ class ElementGestures:
                 The default value is 7500 * displayDensity.
             direction: Direction of the fling. Mandatory value. Acceptable values are:
                 up, down, left and right (case-insensitive).
+            strategy: Gesture strategy.
 
         Returns:
             The element for method chaining.
@@ -164,14 +255,47 @@ class ElementGestures:
 
         """
         self.element.get_driver()
-        self.element._get_web_element(locator=self.element.locator)  # type: ignore[reportPrivateUsage]  # noqa: SLF001
+        native_element = self.element._get_web_element(  # type: ignore[reportPrivateUsage]  # noqa: SLF001
+            locator=self.element.locator,
+        )  # type: ignore[reportPrivateUsage]
+        method_map = {
+            GestureStrategy.W3C_ACTIONS: self._fling_w3c_actions,
+            GestureStrategy.MOBILE_COMMANDS: self._fling_mobile_commands,
+            GestureStrategy.AUTO: self._fling_w3c_actions,
+        }
+        return method_map[strategy](native_element, speed, direction)
+
+    @log_info()
+    def _fling_w3c_actions(
+        self,
+        native_element: WebElement,
+        speed: int,
+        direction: str,
+    ) -> Element:
+        self.w3c_actions.fling(element=native_element, speed=speed, direction=direction)
+        return self.element
+
+    @log_info()
+    def _fling_mobile_commands(
+        self,
+        native_element: WebElement,
+        speed: int,
+        direction: str,
+    ) -> Element:
         self.mobile_commands.fling_gesture(
-            {"elementId": self.element.id, "direction": direction, "speed": speed},
+            {"elementId": native_element.id, "direction": direction, "speed": speed},
         )
         return self.element
 
-    @log_debug()
-    def scroll(self, direction: str, percent: float, speed: int, return_bool: bool) -> Element:  # noqa: FBT001
+    @log_info()
+    def scroll(
+        self,
+        direction: str,
+        percent: float,
+        speed: int,
+        return_bool: bool,  # noqa: FBT001
+        strategy: GestureStrategy = GestureStrategy.AUTO,
+    ) -> Element | bool:
         """Perform a scroll gesture on the element.
 
         Args:
@@ -183,6 +307,7 @@ class ElementGestures:
             speed: The speed at which to perform this gesture in pixels per second.
                 The value must not be negative. The default value is 5000 * displayDensity.
             return_bool: If true return bool else return self.
+            strategy: Стратегия выполнения жеста (W3C_ACTIONS, MOBILE_COMMANDS, AUTO).
 
         Returns:
             The element for method chaining.
@@ -192,10 +317,28 @@ class ElementGestures:
 
         """
         self.element.get_driver()
-        self.element._get_web_element(locator=self.element.locator)  # type: ignore[reportPrivateUsage]  # noqa: SLF001
+        native_element = self.element._get_web_element(  # type: ignore[reportPrivateUsage]  # noqa: SLF001
+            locator=self.element.locator,
+        )  # type: ignore[reportPrivateUsage]
+        method_map = {
+            GestureStrategy.W3C_ACTIONS: self._scroll_w3c_actions,
+            GestureStrategy.MOBILE_COMMANDS: self._scroll_mobile_commands,
+            GestureStrategy.AUTO: self._scroll_mobile_commands,
+        }
+        return method_map[strategy](native_element, direction, percent, speed, return_bool)
+
+    @log_info()
+    def _scroll_mobile_commands(
+        self,
+        element: WebElement,
+        direction: str,
+        percent: float,
+        speed: int,
+        return_bool: bool,  # noqa: FBT001
+    ) -> Element | bool:
         can_scroll = self.mobile_commands.scroll_gesture(
             {
-                "elementId": self.element.id,
+                "elementId": element.id,
                 "percent": percent,
                 "direction": direction,
                 "speed": speed,
@@ -205,60 +348,198 @@ class ElementGestures:
             return can_scroll
         return self.element
 
-    @log_debug()
-    def scroll_to_bottom(self, percent: float = 0.7, speed: int = 8000) -> Element:
+    @log_info()
+    def _scroll_w3c_actions(
+        self,
+        element: WebElement,
+        direction: str,
+        percent: float,
+        speed: int,
+        return_bool: bool,  # noqa: FBT001
+    ) -> Element | bool:
+        can_scroll = self.w3c_actions.scroll(element, direction, percent, speed)
+        if return_bool:
+            return can_scroll
+        return self.element
+
+    @log_info()
+    def scroll_to_bottom(
+        self,
+        percent: float = 0.7,
+        speed: int = 8000,
+        strategy: GestureStrategy = GestureStrategy.AUTO,
+    ) -> Element:
         """Scroll to the bottom of the element.
 
         Args:
             percent: Scroll percentage (default: 0.7).
             speed: Speed of the scroll gesture (default: 8000).
+            strategy: Стратегия выполнения жеста (W3C_ACTIONS, MOBILE_COMMANDS, AUTO).
 
         Returns:
             The element for method chaining.
 
         """
+        method_map = {
+            GestureStrategy.W3C_ACTIONS: self._scroll_to_bottom_w3c_actions,
+            GestureStrategy.MOBILE_COMMANDS: self._scroll_to_bottom_mobile_commands,
+            GestureStrategy.AUTO: self._scroll_to_bottom_mobile_commands,
+        }
+        return method_map[strategy](percent, speed)
+
+    @log_info()
+    def _scroll_to_bottom_w3c_actions(self, percent: float = 0.7, speed: int = 8000) -> Element:
+        last_hash = cast("int", None)
         start_time = time.time()
         while time.time() - start_time < self.element.timeout:
-            if not self.element.scroll_down(percent=percent, speed=speed, return_bool=True):
+            page_hash = hash(self.shadowstep.driver.page_source)
+            if page_hash == last_hash:
                 return self.element
-            self.element.scroll_down(percent=percent, speed=speed, return_bool=True)
+            last_hash = page_hash
+            self.element.scroll_down(
+                percent=percent,
+                speed=speed,
+                return_bool=True,
+                strategy=GestureStrategy.W3C_ACTIONS,
+            )
         return self.element
 
-    @log_debug()
-    def scroll_to_top(self, percent: float = 0.7, speed: int = 8000) -> Element:
+    @log_info()
+    def _scroll_to_bottom_mobile_commands(self, percent: float = 0.7, speed: int = 8000) -> Element:
+        start_time = time.time()
+        while time.time() - start_time < self.element.timeout:
+            if not self.element.scroll_down(
+                percent=percent,
+                speed=speed,
+                return_bool=True,
+                strategy=GestureStrategy.MOBILE_COMMANDS,
+            ):
+                break
+        return self.element
+
+    @log_info()
+    def scroll_to_top(
+        self,
+        percent: float = 0.7,
+        speed: int = 8000,
+        strategy: GestureStrategy = GestureStrategy.AUTO,
+    ) -> Element:
         """Scroll to the top of the element.
 
         Args:
             percent: Scroll percentage (default: 0.7).
             speed: Speed of the scroll gesture (default: 8000).
+            strategy: Стратегия выполнения жеста (W3C_ACTIONS, MOBILE_COMMANDS, AUTO).
 
         Returns:
             The element for method chaining.
 
         """
+        method_map = {
+            GestureStrategy.W3C_ACTIONS: self._scroll_to_top_w3c_actions,
+            GestureStrategy.MOBILE_COMMANDS: self._scroll_to_top_mobile_commands,
+            GestureStrategy.AUTO: self._scroll_to_top_mobile_commands,
+        }
+        return method_map[strategy](percent, speed)
+
+    @log_info()
+    def _scroll_to_top_w3c_actions(self, percent: float = 0.7, speed: int = 8000) -> Element:
+        last_hash = cast("int", None)
         start_time = time.time()
         while time.time() - start_time < self.element.timeout:
-            if not self.element.scroll_up(percent, speed, return_bool=True):
+            page_hash = hash(self.shadowstep.driver.page_source)
+            if page_hash == last_hash:
                 return self.element
-            self.element.scroll_up(percent=percent, speed=speed, return_bool=True)
+            last_hash = page_hash
+            self.element.scroll_up(
+                percent=percent,
+                speed=speed,
+                return_bool=True,
+                strategy=GestureStrategy.W3C_ACTIONS,
+            )
         return self.element
 
-    @log_debug()
+    @log_info()
+    def _scroll_to_top_mobile_commands(self, percent: float = 0.7, speed: int = 8000) -> Element:
+        start_time = time.time()
+        while time.time() - start_time < self.element.timeout:
+            if not self.element.scroll_up(
+                percent=percent,
+                speed=speed,
+                return_bool=True,
+                strategy=GestureStrategy.MOBILE_COMMANDS,
+            ):
+                break
+        return self.element
+
+    @log_info()
     def scroll_to_element(
         self,
         locator: tuple[str, str] | dict[str, Any] | Element | UiSelector,
         max_swipes: int = 30,
+        percent: float = 0.7,
+        speed: int = 5000,
+        strategy: GestureStrategy = GestureStrategy.AUTO,
     ) -> Element:
         """Scroll to find a specific element.
 
         Args:
             locator: Element locator to scroll to.
             max_swipes: Maximum number of swipes to perform (default: 30).
+            percent: Scroll distance as percentage of element size (default: 0.7).
+            speed: Scroll speed in pixels per second (default: 5000).
+            strategy: Стратегия выполнения жеста (W3C_ACTIONS, MOBILE_COMMANDS, AUTO).
 
         Returns:
             The element for method chaining.
 
         """
+        method_map = {
+            GestureStrategy.W3C_ACTIONS: self._scroll_to_element_w3c_actions,
+            GestureStrategy.MOBILE_COMMANDS: self._scroll_to_element_mobile_commands,
+            GestureStrategy.AUTO: self._scroll_to_element_mobile_commands,
+        }
+        return method_map[strategy](locator, max_swipes, percent, speed)
+
+    @log_info()
+    def _scroll_to_element_w3c_actions(
+        self,
+        locator: tuple[str, str] | dict[str, Any] | Element | UiSelector,
+        max_swipes: int = 30,  # noqa: ARG002
+        percent: float = 0.7,
+        speed: int = 5000,
+    ) -> Element:
+        self.logger.info("1")
+        target_element = self.shadowstep.get_element(locator)
+        target_element.timeout = 1.5
+        start_time = time.time()
+        self.logger.info("2")
+        while time.time() - start_time < self.element.timeout:
+            self.logger.info("3")
+            if target_element.is_displayed():
+                self.logger.info("4")
+                return target_element
+            self.logger.info("5")
+            self.element.scroll_down(percent=percent, speed=speed)
+        self.logger.info("6")
+        while time.time() - start_time < self.element.timeout:
+            self.logger.info("7")
+            if target_element.is_displayed():
+                self.logger.info("8")
+                return target_element
+            self.logger.info("9")
+            self.element.scroll_up(percent=percent, speed=speed)
+        self.logger.info("10")
+        return self.shadowstep.get_element(locator)
+
+    @log_info()
+    def _scroll_to_element_mobile_commands(
+        self,
+        locator: tuple[str, str] | dict[str, Any] | Element | UiSelector,
+        max_swipes: int = 30,
+        percent: float = 0.7,  # noqa: ARG002
+        speed: int = 5000,  # noqa: ARG002
+    ) -> Element:
         selector = self.converter.to_uiselector(locator)
         try:
             self._execute_scroll_script(selector, max_swipes)
@@ -266,70 +547,169 @@ class ElementGestures:
             self.logger.warning("Failed execute_scroll_script")
         return self.shadowstep.get_element(locator)
 
-    @log_debug()
-    def zoom(self, percent: float = 0.75, speed: int = 2500) -> Element:
+    @log_info()
+    def zoom(
+        self,
+        percent: float = 0.75,
+        speed: int = 2500,
+        strategy: GestureStrategy = GestureStrategy.AUTO,
+    ) -> Element:
         """Perform a zoom gesture on the element.
 
         Args:
             percent: Zoom percentage (default: 0.75).
             speed: Speed of the zoom gesture (default: 2500).
+            strategy: Стратегия выполнения жеста (W3C_ACTIONS, MOBILE_COMMANDS, AUTO).
 
         Returns:
             The element for method chaining.
 
         """
         self.element.get_driver()
-        self.element._get_web_element(locator=self.element.locator)  # type: ignore[reportPrivateUsage]  # noqa: SLF001
+        native_element = self.element._get_web_element(  # type: ignore[reportPrivateUsage]  # noqa: SLF001
+            locator=self.element.locator,
+        )
+        method_map = {
+            GestureStrategy.W3C_ACTIONS: self._zoom_w3c_actions,
+            GestureStrategy.MOBILE_COMMANDS: self._zoom_mobile_commands,
+            GestureStrategy.AUTO: self._zoom_w3c_actions,
+        }
+        return method_map[strategy](native_element, percent, speed)
+
+    @log_info()
+    def _zoom_w3c_actions(
+        self,
+        native_element: WebElement,
+        percent: float = 0.75,
+        speed: int = 2500,
+    ) -> Element:
+        self.w3c_actions.zoom(element=native_element, percent=percent, speed=speed)
+        return self.element
+
+    @log_info()
+    def _zoom_mobile_commands(
+        self,
+        native_element: WebElement,
+        percent: float = 0.75,
+        speed: int = 2500,
+    ) -> Element:
         self.mobile_commands.pinch_open_gesture(
             {
-                "elementId": self.element.id,
+                "elementId": native_element.id,
                 "percent": percent,
                 "speed": speed,
             },
         )
         return self.element
 
-    @log_debug()
-    def unzoom(self, percent: float = 0.75, speed: int = 2500) -> Element:
+    @log_info()
+    def unzoom(
+        self,
+        percent: float = 0.75,
+        speed: int = 2500,
+        strategy: GestureStrategy = GestureStrategy.AUTO,
+    ) -> Element:
         """Perform an unzoom gesture on the element.
 
         Args:
             percent: Unzoom percentage (default: 0.75).
             speed: Speed of the unzoom gesture (default: 2500).
+            strategy: Стратегия выполнения жеста (W3C_ACTIONS, MOBILE_COMMANDS, AUTO).
 
         Returns:
             The element for method chaining.
 
         """
         self.element.get_driver()
-        self.element._get_web_element(locator=self.element.locator)  # type: ignore[reportPrivateUsage]  # noqa: SLF001
+        native_element = self.element._get_web_element(  # type: ignore[reportPrivateUsage]  # noqa: SLF001
+            locator=self.element.locator,
+        )
+        method_map = {
+            GestureStrategy.W3C_ACTIONS: self._unzoom_w3c_actions,
+            GestureStrategy.MOBILE_COMMANDS: self._unzoom_mobile_commands_actions,
+            GestureStrategy.AUTO: self._unzoom_w3c_actions,
+        }
+        return method_map[strategy](native_element, percent, speed)
+
+    @log_info()
+    def _unzoom_mobile_commands_actions(
+        self,
+        native_element: WebElement,
+        percent: float = 0.75,
+        speed: int = 2500,
+    ) -> Element:
         self.mobile_commands.pinch_close_gesture(
             {
-                "elementId": self.element.id,
+                "elementId": native_element.id,
                 "percent": percent,
                 "speed": speed,
             },
         )
         return self.element
 
-    @log_debug()
-    def swipe(self, direction: str, percent: float = 0.75, speed: int = 5000) -> Element:
+    @log_info()
+    def _unzoom_w3c_actions(
+        self,
+        native_element: WebElement,
+        percent: float = 0.75,
+        speed: int = 2500,
+    ) -> Element:
+        self.w3c_actions.unzoom(element=native_element, percent=percent, speed=speed)
+        return self.element
+
+    @log_info()
+    def swipe(
+        self,
+        direction: str,
+        percent: float = 0.75,
+        speed: int = 5000,
+        strategy: GestureStrategy = GestureStrategy.AUTO,
+    ) -> Element:
         """Perform a swipe gesture on the element.
 
         Args:
             direction: Swipe direction (up, down, left, right).
             percent: Swipe percentage (default: 0.75).
             speed: Speed of the swipe gesture (default: 5000).
+            strategy: Стратегия выполнения жеста (W3C_ACTIONS, MOBILE_COMMANDS, AUTO).
 
         Returns:
             The element for method chaining.
 
         """
         self.element.get_driver()
-        self.element._get_web_element(locator=self.element.locator)  # type: ignore[reportPrivateUsage]  # noqa: SLF001
+        native_element = self.element._get_web_element(  # type: ignore[reportPrivateUsage]  # noqa: SLF001
+            locator=self.element.locator,
+        )  # type: ignore[reportPrivateUsage]
+        method_map = {
+            GestureStrategy.W3C_ACTIONS: self._swipe_w3c_actions,
+            GestureStrategy.MOBILE_COMMANDS: self._swipe_mobile_commands,
+            GestureStrategy.AUTO: self._swipe_mobile_commands,
+        }
+        return method_map[strategy](native_element, direction, percent, speed)
+
+    @log_info()
+    def _swipe_w3c_actions(
+        self,
+        native_element: WebElement,
+        direction: str,
+        percent: float = 0.75,
+        speed: int = 5000,
+    ) -> Element:
+        self.w3c_actions.swipe(native_element, direction, percent, speed)
+        return self.element
+
+    @log_info()
+    def _swipe_mobile_commands(
+        self,
+        native_element: WebElement,
+        direction: str,
+        percent: float = 0.75,
+        speed: int = 5000,
+    ) -> Element:
         self.mobile_commands.swipe_gesture(
             {
-                "elementId": self.element.id,
+                "elementId": native_element.id,
                 "direction": direction.lower(),
                 "percent": percent,
                 "speed": speed,
@@ -337,7 +717,7 @@ class ElementGestures:
         )
         return self.element
 
-    @log_debug()
+    @log_info()
     def _execute_scroll_script(self, selector: str, max_swipes: int) -> None:
         """Execute mobile scroll script.
 
@@ -357,7 +737,7 @@ class ElementGestures:
             },
         )
 
-    @log_debug()
+    @log_info()
     def _perform_tap_and_move_action(
         self,
         locator: tuple[str, str] | dict[str, Any] | Element | UiSelector | None = None,
@@ -411,7 +791,7 @@ class ElementGestures:
             stacktrace=traceback.format_stack(),
         )
 
-    @log_debug()
+    @log_info()
     def _create_touch_actions(self, x1: int, y1: int) -> ActionChains:
         """Create touch action chain starting at given coordinates.
 
@@ -432,7 +812,7 @@ class ElementGestures:
         actions.w3c_actions.pointer_action.pointer_down()  # type: ignore[reportUnknownMemberType]
         return actions
 
-    @log_debug()
+    @log_info()
     def _execute_tap_and_move_to_coordinates(
         self,
         actions: ActionChains,
@@ -455,7 +835,7 @@ class ElementGestures:
         actions.perform()
         return self.element
 
-    @log_debug()
+    @log_info()
     def _execute_tap_and_move_to_element(
         self,
         actions: ActionChains,
@@ -471,11 +851,15 @@ class ElementGestures:
             The element for method chaining.
 
         """
-        target_element = self.element._get_web_element(locator=locator)  # type: ignore[reportPrivateUsage]  # noqa: SLF001
-        x, y = self.element.coordinates._get_center_from_native(target_element)  # type: ignore[reportPrivateUsage]  # noqa: SLF001
+        target_element = self.element._get_web_element(  # type: ignore[reportPrivateUsage]  # noqa: SLF001
+            locator=locator,
+        )  # type: ignore[reportPrivateUsage]
+        x, y = self.element.coordinates._get_center_from_native(  # type: ignore[reportPrivateUsage]  # noqa: SLF001
+            target_element,
+        )  # type: ignore[reportPrivateUsage]
         return self._execute_tap_and_move_to_coordinates(actions, x, y)
 
-    @log_debug()
+    @log_info()
     def _execute_tap_and_move_by_direction(
         self,
         actions: ActionChains,

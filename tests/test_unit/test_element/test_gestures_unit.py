@@ -7,6 +7,7 @@ import pytest
 
 from shadowstep.element.element import Element
 from shadowstep.element.gestures import ElementGestures
+from shadowstep.enums import GestureStrategy
 
 
 class TestElementGesturesInit:
@@ -110,7 +111,11 @@ class TestClick:
         mock_element.shadowstep = mock_shadowstep
         mock_element.locator = ("id", "test")
         mock_element.get_driver = Mock()
-        mock_element._get_web_element = Mock()
+
+        mock_web_element = Mock()
+        mock_web_element.id = "element_123"
+        mock_element._get_web_element = Mock(return_value=mock_web_element)
+
         mock_element.id = "element_123"
         mock_element.converter = Mock()
         mock_element.utilities = Mock()
@@ -136,7 +141,11 @@ class TestClickDouble:
         mock_element = Mock(spec=Element)
         mock_element.shadowstep = mock_shadowstep
         mock_element.get_driver = Mock()
-        mock_element._get_web_element = Mock()
+
+        mock_web_element = Mock()
+        mock_web_element.id = "element_123"
+        mock_element._get_web_element = Mock(return_value=mock_web_element)
+
         mock_element.locator = ("id", "test")
         mock_element.id = "element_123"
         mock_element.converter = Mock()
@@ -145,7 +154,7 @@ class TestClickDouble:
         gestures = ElementGestures(mock_element)
         gestures.mobile_commands.double_click_gesture = Mock()
 
-        result = gestures.click_double()
+        result = gestures.double_click(strategy=GestureStrategy.MOBILE_COMMANDS)
 
         mock_element.get_driver.assert_called_once()
         gestures.mobile_commands.double_click_gesture.assert_called_once_with({"elementId": "element_123"})
@@ -162,7 +171,11 @@ class TestDrag:
         mock_element.shadowstep = mock_shadowstep
         mock_element.locator = ("id", "test")
         mock_element.get_driver = Mock()
-        mock_element._get_web_element = Mock()
+
+        mock_web_element = Mock()
+        mock_web_element.id = "element_123"
+        mock_element._get_web_element = Mock(return_value=mock_web_element)
+
         mock_element.id = "element_123"
         mock_element.converter = Mock()
         mock_element.utilities = Mock()
@@ -170,7 +183,7 @@ class TestDrag:
         gestures = ElementGestures(mock_element)
         gestures.mobile_commands.drag_gesture = Mock()
 
-        result = gestures.drag(end_x=300, end_y=400, speed=3000)
+        result = gestures.drag(end_x=300, end_y=400, speed=3000, strategy=GestureStrategy.MOBILE_COMMANDS)
 
         gestures.mobile_commands.drag_gesture.assert_called_once_with({
             "elementId": "element_123",
@@ -195,7 +208,7 @@ class TestDrag:
         gestures = ElementGestures(mock_element)
         gestures.mobile_commands.drag_gesture = Mock()
 
-        result = gestures.drag(end_x=100, end_y=200)
+        result = gestures.drag(end_x=100, end_y=200, strategy=GestureStrategy.MOBILE_COMMANDS)
 
         gestures.mobile_commands.drag_gesture.assert_called_once()
         call_args = gestures.mobile_commands.drag_gesture.call_args[0][0]
@@ -212,7 +225,11 @@ class TestFling:
         mock_element.shadowstep = mock_shadowstep
         mock_element.locator = ("id", "test")
         mock_element.get_driver = Mock()
-        mock_element._get_web_element = Mock()
+
+        mock_web_element = Mock()
+        mock_web_element.id = "element_123"
+        mock_element._get_web_element = Mock(return_value=mock_web_element)
+
         mock_element.id = "element_123"
         mock_element.converter = Mock()
         mock_element.utilities = Mock()
@@ -220,7 +237,7 @@ class TestFling:
         gestures = ElementGestures(mock_element)
         gestures.mobile_commands.fling_gesture = Mock()
 
-        result = gestures.fling(speed=5000, direction="up")
+        result = gestures.fling(speed=5000, direction="up", strategy=GestureStrategy.MOBILE_COMMANDS)
 
         gestures.mobile_commands.fling_gesture.assert_called_once_with({
             "elementId": "element_123",
@@ -245,7 +262,7 @@ class TestFling:
         gestures.mobile_commands.fling_gesture = Mock()
 
         for direction in ["up", "down", "left", "right"]:
-            gestures.fling(speed=3000, direction=direction)
+            gestures.fling(speed=3000, direction=direction, strategy=GestureStrategy.MOBILE_COMMANDS)
 
         assert gestures.mobile_commands.fling_gesture.call_count == 4
 
@@ -260,7 +277,11 @@ class TestScroll:
         mock_element.shadowstep = mock_shadowstep
         mock_element.locator = ("id", "test")
         mock_element.get_driver = Mock()
-        mock_element._get_web_element = Mock()
+        
+        mock_web_element = Mock()
+        mock_web_element.id = "element_123"
+        mock_element._get_web_element = Mock(return_value=mock_web_element)
+        
         mock_element.id = "element_123"
         mock_element.converter = Mock()
         mock_element.utilities = Mock()
@@ -268,7 +289,7 @@ class TestScroll:
         gestures = ElementGestures(mock_element)
         gestures.mobile_commands.scroll_gesture = Mock(return_value=True)
 
-        result = gestures.scroll(direction="down", percent=0.8, speed=6000, return_bool=False)
+        result = gestures.scroll(direction="down", percent=0.8, speed=6000, return_bool=False, strategy=GestureStrategy.MOBILE_COMMANDS)
 
         gestures.mobile_commands.scroll_gesture.assert_called_once()
         call_args = gestures.mobile_commands.scroll_gesture.call_args[0][0]
@@ -316,7 +337,7 @@ class TestScrollToBottom:
         result = gestures.scroll_to_bottom(percent=0.8, speed=9000)
 
         # Should call scroll_down with specified parameters
-        mock_element.scroll_down.assert_called_with(percent=0.8, speed=9000, return_bool=True)
+        mock_element.scroll_down.assert_called_with(percent=0.8, speed=9000, return_bool=True, strategy=GestureStrategy.MOBILE_COMMANDS)
         assert result == mock_element
 
     def test_scroll_to_bottom_with_defaults(self):
@@ -334,7 +355,7 @@ class TestScrollToBottom:
         result = gestures.scroll_to_bottom()
 
         # Should use default parameters
-        mock_element.scroll_down.assert_called_with(percent=0.7, speed=8000, return_bool=True)
+        mock_element.scroll_down.assert_called_with(percent=0.7, speed=8000, return_bool=True, strategy=GestureStrategy.MOBILE_COMMANDS)
         assert result == mock_element
 
 
@@ -429,7 +450,11 @@ class TestZoom:
         mock_element.shadowstep = mock_shadowstep
         mock_element.locator = ("id", "test")
         mock_element.get_driver = Mock()
-        mock_element._get_web_element = Mock()
+
+        mock_web_element = Mock()
+        mock_web_element.id = "element_123"
+        mock_element._get_web_element = Mock(return_value=mock_web_element)
+
         mock_element.id = "element_123"
         mock_element.converter = Mock()
         mock_element.utilities = Mock()
@@ -437,7 +462,7 @@ class TestZoom:
         gestures = ElementGestures(mock_element)
         gestures.mobile_commands.pinch_open_gesture = Mock()
 
-        result = gestures.zoom(percent=0.8, speed=3000)
+        result = gestures.zoom(percent=0.8, speed=3000, strategy=GestureStrategy.MOBILE_COMMANDS)
 
         gestures.mobile_commands.pinch_open_gesture.assert_called_once_with({
             "elementId": "element_123",
@@ -461,7 +486,7 @@ class TestZoom:
         gestures = ElementGestures(mock_element)
         gestures.mobile_commands.pinch_open_gesture = Mock()
 
-        result = gestures.zoom()
+        result = gestures.zoom(strategy=GestureStrategy.MOBILE_COMMANDS)
 
         call_args = gestures.mobile_commands.pinch_open_gesture.call_args[0][0]
         assert call_args["percent"] == 0.75
@@ -478,7 +503,11 @@ class TestUnzoom:
         mock_element.shadowstep = mock_shadowstep
         mock_element.locator = ("id", "test")
         mock_element.get_driver = Mock()
-        mock_element._get_web_element = Mock()
+
+        mock_web_element = Mock()
+        mock_web_element.id = "element_123"
+        mock_element._get_web_element = Mock(return_value=mock_web_element)
+
         mock_element.id = "element_123"
         mock_element.converter = Mock()
         mock_element.utilities = Mock()
@@ -486,7 +515,7 @@ class TestUnzoom:
         gestures = ElementGestures(mock_element)
         gestures.mobile_commands.pinch_close_gesture = Mock()
 
-        result = gestures.unzoom(percent=0.6, speed=2000)
+        result = gestures.unzoom(percent=0.6, speed=2000, strategy=GestureStrategy.MOBILE_COMMANDS)
 
         gestures.mobile_commands.pinch_close_gesture.assert_called_once_with({
             "elementId": "element_123",
@@ -506,7 +535,11 @@ class TestSwipe:
         mock_element.shadowstep = mock_shadowstep
         mock_element.locator = ("id", "test")
         mock_element.get_driver = Mock()
-        mock_element._get_web_element = Mock()
+
+        mock_web_element = Mock()
+        mock_web_element.id = "element_123"
+        mock_element._get_web_element = Mock(return_value=mock_web_element)
+
         mock_element.id = "element_123"
         mock_element.converter = Mock()
         mock_element.utilities = Mock()

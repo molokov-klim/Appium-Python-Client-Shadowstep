@@ -196,7 +196,7 @@ class TestElementGesturesPart1:
             android_settings_open_close: Фикстура для открытия и закрытия настроек Android.
         """
         search = app.get_element(locator=LOCATOR_SEARCH_SETTINGS)
-        search.click_double()
+        search.double_click()
         time.sleep(5)
         logger.info(app.driver.page_source)
         assert app.get_element(locator=LOCATOR_SEARCH_EDIT_TEXT).is_visible()

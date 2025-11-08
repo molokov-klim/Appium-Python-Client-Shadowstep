@@ -1,8 +1,6 @@
 name: Pyright Type Check
 
-on:
-  push:
-    branches: [ main, develop ]
+on: [ push, pull_request ]
 
 jobs:
   type-check:

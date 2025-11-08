@@ -8,6 +8,7 @@ import pytest
 from appium.webdriver.webelement import WebElement
 
 from shadowstep.element.element import Element
+from shadowstep.enums import GestureStrategy
 from shadowstep.locator import UiSelector
 
 
@@ -256,278 +257,304 @@ class TestElementGestures:
         """Test tap delegates to gestures.tap."""
         mock_shadowstep = Mock()
         element = Element(("id", "button"), mock_shadowstep)
-        element.gestures.tap = Mock(return_value=element)
+        
+        with patch.object(element.gestures, 'tap', wraps=element.gestures.tap) as mock_tap:
+            mock_tap.return_value = element
+            result = element.tap(duration=100)
 
-        result = element.tap(duration=100)
-
-        element.gestures.tap.assert_called_once_with(100)
-        assert result == element
+            mock_tap.assert_called_once_with(100)
+            assert result == element
 
     def test_tap_and_move(self):
         """Test tap_and_move delegates to gestures.tap_and_move."""
         mock_shadowstep = Mock()
         element = Element(("id", "elem"), mock_shadowstep)
-        element.gestures.tap_and_move = Mock(return_value=element)
+        
+        with patch.object(element.gestures, 'tap_and_move', wraps=element.gestures.tap_and_move) as mock_tap:
+            mock_tap.return_value = element
+            result = element.tap_and_move(x=100, y=200)
 
-        result = element.tap_and_move(x=100, y=200)
-
-        element.gestures.tap_and_move.assert_called_once_with(None, 100, 200, None, None)
-        assert result == element
+            mock_tap.assert_called_once_with(None, 100, 200, None, None)
+            assert result == element
 
     def test_click(self):
         """Test click delegates to gestures.click."""
         mock_shadowstep = Mock()
         element = Element(("id", "button"), mock_shadowstep)
-        element.gestures.click = Mock(return_value=element)
+        
+        # Используем patch.object с wraps чтобы проверить реальное делегирование
+        with patch.object(element.gestures, 'click', wraps=element.gestures.click) as mock_click:
+            mock_click.return_value = element
+            result = element.click(duration=50)
 
-        result = element.click(duration=50)
-
-        element.gestures.click.assert_called_once_with(50)
-        assert result == element
+            mock_click.assert_called_once_with(50, GestureStrategy.AUTO)
+            assert result == element
 
     def test_click_double(self):
         """Test click_double delegates to gestures.click_double."""
         mock_shadowstep = Mock()
         element = Element(("id", "button"), mock_shadowstep)
-        element.gestures.click_double = Mock(return_value=element)
+        
+        with patch.object(element.gestures, 'double_click', wraps=element.gestures.double_click) as mock_dbl:
+            mock_dbl.return_value = element
+            result = element.double_click()
 
-        result = element.click_double()
-
-        element.gestures.click_double.assert_called_once()
-        assert result == element
+            mock_dbl.assert_called_once()
+            assert result == element
 
     def test_drag(self):
         """Test drag delegates to gestures.drag."""
         mock_shadowstep = Mock()
         element = Element(("id", "draggable"), mock_shadowstep)
-        element.gestures.drag = Mock(return_value=element)
+        
+        with patch.object(element.gestures, 'drag', wraps=element.gestures.drag) as mock_drag:
+            mock_drag.return_value = element
+            result = element.drag(100, 200, speed=3000)
 
-        result = element.drag(100, 200, speed=3000)
-
-        element.gestures.drag.assert_called_once_with(100, 200, 3000)
-        assert result == element
+            mock_drag.assert_called_once_with(100, 200, 3000, GestureStrategy.AUTO)
+            assert result == element
 
     def test_fling_up(self):
         """Test fling_up calls fling with up direction."""
         mock_shadowstep = Mock()
         element = Element(("id", "scrollable"), mock_shadowstep)
-        element.gestures.fling = Mock(return_value=element)
+        
+        with patch.object(element.gestures, 'fling', wraps=element.gestures.fling) as mock_fling:
+            mock_fling.return_value = element
+            result = element.fling_up(speed=3000)
 
-        result = element.fling_up(speed=3000)
-
-        element.gestures.fling.assert_called_once_with(3000, "up")
-        assert result == element
+            mock_fling.assert_called_once_with(3000, "up", GestureStrategy.AUTO)
+            assert result == element
 
     def test_fling_down(self):
         """Test fling_down calls fling with down direction."""
         mock_shadowstep = Mock()
         element = Element(("id", "scrollable"), mock_shadowstep)
-        element.gestures.fling = Mock(return_value=element)
+        
+        with patch.object(element.gestures, 'fling', wraps=element.gestures.fling) as mock_fling:
+            mock_fling.return_value = element
+            result = element.fling_down(speed=3000)
 
-        result = element.fling_down(speed=3000)
-
-        element.gestures.fling.assert_called_once_with(3000, "down")
-        assert result == element
+            mock_fling.assert_called_once_with(3000, "down", GestureStrategy.AUTO)
+            assert result == element
 
     def test_fling_left(self):
         """Test fling_left calls fling with left direction."""
         mock_shadowstep = Mock()
         element = Element(("id", "scrollable"), mock_shadowstep)
-        element.gestures.fling = Mock(return_value=element)
+        
+        with patch.object(element.gestures, 'fling', wraps=element.gestures.fling) as mock_fling:
+            mock_fling.return_value = element
+            result = element.fling_left(speed=3000)
 
-        result = element.fling_left(speed=3000)
-
-        element.gestures.fling.assert_called_once_with(3000, "left")
-        assert result == element
+            mock_fling.assert_called_once_with(3000, "left", GestureStrategy.AUTO)
+            assert result == element
 
     def test_fling_right(self):
         """Test fling_right calls fling with right direction."""
         mock_shadowstep = Mock()
         element = Element(("id", "scrollable"), mock_shadowstep)
-        element.gestures.fling = Mock(return_value=element)
+        
+        with patch.object(element.gestures, 'fling', wraps=element.gestures.fling) as mock_fling:
+            mock_fling.return_value = element
+            result = element.fling_right(speed=3000)
 
-        result = element.fling_right(speed=3000)
-
-        element.gestures.fling.assert_called_once_with(3000, "right")
-        assert result == element
+            mock_fling.assert_called_once_with(3000, "right", GestureStrategy.AUTO)
+            assert result == element
 
     def test_fling(self):
         """Test fling delegates to gestures.fling."""
         mock_shadowstep = Mock()
         element = Element(("id", "scrollable"), mock_shadowstep)
-        element.gestures.fling = Mock(return_value=element)
+        
+        with patch.object(element.gestures, 'fling', wraps=element.gestures.fling) as mock_fling:
+            mock_fling.return_value = element
+            result = element.fling(speed=2500, direction="up")
 
-        result = element.fling(speed=2500, direction="up")
-
-        element.gestures.fling.assert_called_once_with(2500, "up")
-        assert result == element
+            mock_fling.assert_called_once_with(2500, "up", GestureStrategy.AUTO)
+            assert result == element
 
     def test_scroll_down(self):
         """Test scroll_down calls scroll with down direction."""
         mock_shadowstep = Mock()
         element = Element(("id", "scrollable"), mock_shadowstep)
-        element.gestures.scroll = Mock(return_value=element)
+        
+        with patch.object(element.gestures, 'scroll', wraps=element.gestures.scroll) as mock_scroll:
+            mock_scroll.return_value = element
+            result = element.scroll_down(percent=0.8, speed=2500)
 
-        result = element.scroll_down(percent=0.8, speed=2500)
-
-        element.gestures.scroll.assert_called_once_with("down", 0.8, 2500, False)
-        assert result == element
+            mock_scroll.assert_called_once_with("down", 0.8, 2500, False, GestureStrategy.AUTO)
+            assert result == element
 
     def test_scroll_up(self):
         """Test scroll_up calls scroll with up direction."""
         mock_shadowstep = Mock()
         element = Element(("id", "scrollable"), mock_shadowstep)
-        element.gestures.scroll = Mock(return_value=element)
+        
+        with patch.object(element.gestures, 'scroll', wraps=element.gestures.scroll) as mock_scroll:
+            mock_scroll.return_value = element
+            result = element.scroll_up(percent=0.7, speed=2000)
 
-        result = element.scroll_up(percent=0.7, speed=2000)
-
-        element.gestures.scroll.assert_called_once_with("up", 0.7, 2000, False)
-        assert result == element
+            mock_scroll.assert_called_once_with("up", 0.7, 2000, False, GestureStrategy.AUTO)
+            assert result == element
 
     def test_scroll_left(self):
         """Test scroll_left calls scroll with left direction."""
         mock_shadowstep = Mock()
         element = Element(("id", "scrollable"), mock_shadowstep)
-        element.gestures.scroll = Mock(return_value=element)
+        
+        with patch.object(element.gestures, 'scroll', wraps=element.gestures.scroll) as mock_scroll:
+            mock_scroll.return_value = element
+            result = element.scroll_left(percent=0.6, speed=1500)
 
-        result = element.scroll_left(percent=0.6, speed=1500)
-
-        element.gestures.scroll.assert_called_once_with("left", 0.6, 1500, False)
-        assert result == element
+            mock_scroll.assert_called_once_with("left", 0.6, 1500, False, GestureStrategy.AUTO)
+            assert result == element
 
     def test_scroll_right(self):
         """Test scroll_right calls scroll with right direction."""
         mock_shadowstep = Mock()
         element = Element(("id", "scrollable"), mock_shadowstep)
-        element.gestures.scroll = Mock(return_value=element)
+        
+        with patch.object(element.gestures, 'scroll', wraps=element.gestures.scroll) as mock_scroll:
+            mock_scroll.return_value = element
+            result = element.scroll_right(percent=0.5, speed=1000)
 
-        result = element.scroll_right(percent=0.5, speed=1000)
-
-        element.gestures.scroll.assert_called_once_with("right", 0.5, 1000, False)
-        assert result == element
+            mock_scroll.assert_called_once_with("right", 0.5, 1000, False, GestureStrategy.AUTO)
+            assert result == element
 
     def test_scroll(self):
         """Test scroll delegates to gestures.scroll."""
         mock_shadowstep = Mock()
         element = Element(("id", "scrollable"), mock_shadowstep)
-        element.gestures.scroll = Mock(return_value=element)
+        
+        with patch.object(element.gestures, 'scroll', wraps=element.gestures.scroll) as mock_scroll:
+            mock_scroll.return_value = element
+            result = element.scroll(direction="down", percent=0.7, speed=2000, return_bool=False)
 
-        result = element.scroll(direction="down", percent=0.7, speed=2000, return_bool=False)
-
-        element.gestures.scroll.assert_called_once_with("down", 0.7, 2000, False)
-        assert result == element
+            mock_scroll.assert_called_once_with("down", 0.7, 2000, False, GestureStrategy.AUTO)
+            assert result == element
 
     def test_scroll_to_bottom(self):
         """Test scroll_to_bottom delegates to gestures.scroll_to_bottom."""
         mock_shadowstep = Mock()
         element = Element(("id", "scrollable"), mock_shadowstep)
-        element.gestures.scroll_to_bottom = Mock(return_value=element)
+        
+        with patch.object(element.gestures, 'scroll_to_bottom', wraps=element.gestures.scroll_to_bottom) as mock_stb:
+            mock_stb.return_value = element
+            result = element.scroll_to_bottom(percent=0.8, speed=9000)
 
-        result = element.scroll_to_bottom(percent=0.8, speed=9000)
-
-        element.gestures.scroll_to_bottom.assert_called_once_with(0.8, 9000)
-        assert result == element
+            mock_stb.assert_called_once_with(0.8, 9000, GestureStrategy.AUTO)
+            assert result == element
 
     def test_scroll_to_top(self):
         """Test scroll_to_top delegates to gestures.scroll_to_top."""
         mock_shadowstep = Mock()
         element = Element(("id", "scrollable"), mock_shadowstep)
-        element.gestures.scroll_to_top = Mock(return_value=element)
+        
+        with patch.object(element.gestures, 'scroll_to_top', wraps=element.gestures.scroll_to_top) as mock_stt:
+            mock_stt.return_value = element
+            result = element.scroll_to_top(percent=0.7, speed=8000)
 
-        result = element.scroll_to_top(percent=0.7, speed=8000)
-
-        element.gestures.scroll_to_top.assert_called_once_with(0.7, 8000)
-        assert result == element
+            mock_stt.assert_called_once_with(0.7, 8000, GestureStrategy.AUTO)
+            assert result == element
 
     def test_scroll_to_element(self):
         """Test scroll_to_element delegates to gestures.scroll_to_element."""
         mock_shadowstep = Mock()
         element = Element(("id", "scrollable"), mock_shadowstep)
         target_element = Mock(spec=Element)
-        element.gestures.scroll_to_element = Mock(return_value=target_element)
+        
+        with patch.object(element.gestures, 'scroll_to_element', wraps=element.gestures.scroll_to_element) as mock_ste:
+            mock_ste.return_value = target_element
+            target_locator = ("id", "target")
+            result = element.scroll_to_element(target_locator, max_swipes=20)
 
-        target_locator = ("id", "target")
-        result = element.scroll_to_element(target_locator, max_swipes=20)
-
-        element.gestures.scroll_to_element.assert_called_once_with(target_locator, 20)
-        assert result == target_element
+            mock_ste.assert_called_once_with(target_locator, 20, 0.7, 5000, GestureStrategy.AUTO)
+            assert result == target_element
 
     def test_zoom(self):
         """Test zoom delegates to gestures.zoom."""
         mock_shadowstep = Mock()
         element = Element(("id", "image"), mock_shadowstep)
-        element.gestures.zoom = Mock(return_value=element)
+        
+        with patch.object(element.gestures, 'zoom', wraps=element.gestures.zoom) as mock_zoom:
+            mock_zoom.return_value = element
+            result = element.zoom(percent=0.8, speed=3000)
 
-        result = element.zoom(percent=0.8, speed=3000)
-
-        element.gestures.zoom.assert_called_once_with(0.8, 3000)
-        assert result == element
+            mock_zoom.assert_called_once_with(0.8, 3000, GestureStrategy.AUTO)
+            assert result == element
 
     def test_unzoom(self):
         """Test unzoom delegates to gestures.unzoom."""
         mock_shadowstep = Mock()
         element = Element(("id", "image"), mock_shadowstep)
-        element.gestures.unzoom = Mock(return_value=element)
+        
+        with patch.object(element.gestures, 'unzoom', wraps=element.gestures.unzoom) as mock_unzoom:
+            mock_unzoom.return_value = element
+            result = element.unzoom(percent=0.75, speed=2500)
 
-        result = element.unzoom(percent=0.75, speed=2500)
-
-        element.gestures.unzoom.assert_called_once_with(0.75, 2500)
-        assert result == element
+            mock_unzoom.assert_called_once_with(0.75, 2500, GestureStrategy.AUTO)
+            assert result == element
 
     def test_swipe_up(self):
         """Test swipe_up calls swipe with up direction."""
         mock_shadowstep = Mock()
         element = Element(("id", "scrollable"), mock_shadowstep)
-        element.gestures.swipe = Mock(return_value=element)
+        
+        with patch.object(element.gestures, 'swipe', wraps=element.gestures.swipe) as mock_swipe:
+            mock_swipe.return_value = element
+            result = element.swipe_up(percent=0.8, speed=6000)
 
-        result = element.swipe_up(percent=0.8, speed=6000)
-
-        element.gestures.swipe.assert_called_once_with("up", 0.8, 6000)
-        assert result == element
+            mock_swipe.assert_called_once_with("up", 0.8, 6000, GestureStrategy.AUTO)
+            assert result == element
 
     def test_swipe_down(self):
         """Test swipe_down calls swipe with down direction."""
         mock_shadowstep = Mock()
         element = Element(("id", "scrollable"), mock_shadowstep)
-        element.gestures.swipe = Mock(return_value=element)
+        
+        with patch.object(element.gestures, 'swipe', wraps=element.gestures.swipe) as mock_swipe:
+            mock_swipe.return_value = element
+            result = element.swipe_down(percent=0.75, speed=5000)
 
-        result = element.swipe_down(percent=0.75, speed=5000)
-
-        element.gestures.swipe.assert_called_once_with("down", 0.75, 5000)
-        assert result == element
+            mock_swipe.assert_called_once_with("down", 0.75, 5000, GestureStrategy.AUTO)
+            assert result == element
 
     def test_swipe_left(self):
         """Test swipe_left calls swipe with left direction."""
         mock_shadowstep = Mock()
         element = Element(("id", "scrollable"), mock_shadowstep)
-        element.gestures.swipe = Mock(return_value=element)
+        
+        with patch.object(element.gestures, 'swipe', wraps=element.gestures.swipe) as mock_swipe:
+            mock_swipe.return_value = element
+            result = element.swipe_left(percent=0.7, speed=4000)
 
-        result = element.swipe_left(percent=0.7, speed=4000)
-
-        element.gestures.swipe.assert_called_once_with("left", 0.7, 4000)
-        assert result == element
+            mock_swipe.assert_called_once_with("left", 0.7, 4000, GestureStrategy.AUTO)
+            assert result == element
 
     def test_swipe_right(self):
         """Test swipe_right calls swipe with right direction."""
         mock_shadowstep = Mock()
         element = Element(("id", "scrollable"), mock_shadowstep)
-        element.gestures.swipe = Mock(return_value=element)
+        
+        with patch.object(element.gestures, 'swipe', wraps=element.gestures.swipe) as mock_swipe:
+            mock_swipe.return_value = element
+            result = element.swipe_right(percent=0.65, speed=3500)
 
-        result = element.swipe_right(percent=0.65, speed=3500)
-
-        element.gestures.swipe.assert_called_once_with("right", 0.65, 3500)
-        assert result == element
+            mock_swipe.assert_called_once_with("right", 0.65, 3500, GestureStrategy.AUTO)
+            assert result == element
 
     def test_swipe(self):
         """Test swipe delegates to gestures.swipe."""
         mock_shadowstep = Mock()
         element = Element(("id", "scrollable"), mock_shadowstep)
-        element.gestures.swipe = Mock(return_value=element)
+        
+        with patch.object(element.gestures, 'swipe', wraps=element.gestures.swipe) as mock_swipe:
+            mock_swipe.return_value = element
+            result = element.swipe(direction="up", percent=0.75, speed=5000)
 
-        result = element.swipe(direction="up", percent=0.75, speed=5000)
-
-        element.gestures.swipe.assert_called_once_with("up", 0.75, 5000)
-        assert result == element
+            mock_swipe.assert_called_once_with("up", 0.75, 5000, GestureStrategy.AUTO)
+            assert result == element
 
 
 class TestElementProperties:
