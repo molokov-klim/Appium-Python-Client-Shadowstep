@@ -13,27 +13,27 @@ uv run pytest -svl --log-cli-level INFO --tb=short --setup-show  tests/test_inte
 
 
 class TestShadowstepPart2:
-    """Тестирование операций управления приложениями и устройствами.
-    
-    Группа тестов проверяет функции управления жизненным циклом приложений,
-    информацию об устройстве, дисплее, системных панелях и активностях.
+    """Validate application and device management operations.
+
+    This suite covers lifecycle control, device information, display metrics,
+    system bars, and activity management.
     """
 
     def test_background_app_and_activate_app(
         self, app: Shadowstep, android_settings_open_close: None
     ):
-        """Тестирование управления жизненным циклом приложения.
+        """Exercise application lifecycle management.
 
-        Шаги:
-            1. Запуск приложения настроек.
-            2. Вызов background_app() для отправки приложения в фон на 2 секунды.
-            3. Проверка, что приложение автоматически возвращается на передний план.
-            4. Вызов activate_app() для явной активации настроек.
-            5. Проверка, что настройки находятся на переднем плане.
-        
+        Steps:
+            1. Ensure the Settings app is running.
+            2. Call ``background_app()`` to send it to the background for two seconds.
+            3. Confirm it returns to the foreground automatically.
+            4. Call ``activate_app()`` to bring it forward explicitly.
+            5. Verify the Settings app remains in the foreground.
+
         Args:
-            app: Экземпляр приложения Shadowstep.
-            android_settings_open_close: Фикстура для управления настройками Android.
+            app: Shadowstep application instance.
+            android_settings_open_close: Fixture managing the Android Settings screen.
         """
         # Get Settings package
         settings_package = "com.android.settings"
@@ -61,16 +61,16 @@ class TestShadowstepPart2:
         assert "settings" in package_activated.lower()  # noqa: S101
 
     def test_get_display_density(self, app: Shadowstep, android_settings_open_close: None):
-        """Тестирование получения плотности дисплея устройства.
+        """Verify retrieval of the device display density.
 
-        Шаги:
-            1. Вызов get_display_density().
-            2. Проверка, что возвращается целое число.
-            3. Проверка, что значение находится в разумном диапазоне (120-640 dpi).
-        
+        Steps:
+            1. Call ``get_display_density()``.
+            2. Confirm the return value is an integer.
+            3. Ensure the value falls within the expected range (120-640 dpi).
+
         Args:
-            app: Экземпляр приложения Shadowstep.
-            android_settings_open_close: Фикстура для управления настройками Android.
+            app: Shadowstep application instance.
+            android_settings_open_close: Fixture managing the Android Settings screen.
         """
         # Get display density
         density = app.get_display_density()
@@ -82,16 +82,16 @@ class TestShadowstepPart2:
         assert 120 <= density <= 640  # noqa: S101
 
     def test_get_system_bars(self, app: Shadowstep, android_settings_open_close: None):
-        """Тестирование получения информации о системных панелях.
+        """Verify retrieval of system bar information.
 
-        Шаги:
-            1. Вызов get_system_bars().
-            2. Проверка, что возвращается словарь.
-            3. Проверка, что словарь содержит ожидаемые ключи (statusBar, navigationBar).
-        
+        Steps:
+            1. Call ``get_system_bars()``.
+            2. Confirm a dictionary is returned.
+            3. Check for expected keys such as ``statusBar`` and ``navigationBar``.
+
         Args:
-            app: Экземпляр приложения Shadowstep.
-            android_settings_open_close: Фикстура для управления настройками Android.
+            app: Shadowstep application instance.
+            android_settings_open_close: Fixture managing the Android Settings screen.
         """
         # Get system bars info
         system_bars = app.get_system_bars()
@@ -103,15 +103,15 @@ class TestShadowstepPart2:
         assert "statusBar" in system_bars or "navigationBar" in system_bars  # noqa: S101
 
     def test_start_activity(self, app: Shadowstep):
-        """Тестирование запуска указанной активности с использованием intent.
+        """Verify launching a specific activity via intent.
 
-        Шаги:
-            1. Вызов start_activity() с intent активности настроек.
-            2. Проверка, что активность запускается успешно.
-            3. Проверка, что текущий пакет - настройки.
-        
+        Steps:
+            1. Call ``start_activity()`` with the Settings intent.
+            2. Confirm the activity launches successfully.
+            3. Ensure the current package belongs to Settings.
+
         Args:
-            app: Экземпляр приложения Shadowstep.
+            app: Shadowstep application instance.
         """
         # Start Settings activity using component parameter
         app.start_activity(
@@ -126,16 +126,16 @@ class TestShadowstepPart2:
         assert "settings" in current_package.lower()  # noqa: S101
 
     def test_press_key(self, app: Shadowstep, android_settings_open_close: None):
-        """Тестирование отправки кода клавиши на устройство.
+        """Verify sending a keycode to the device.
 
-        Шаги:
-            1. Вызов press_key() с кодом клавиши HOME.
-            2. Проверка, что нажатие клавиши выполняется без ошибок.
-            3. Проверка, что отображается главный экран (пакет лаунчера).
-        
+        Steps:
+            1. Call ``press_key()`` with the HOME keycode.
+            2. Ensure the key press completes without errors.
+            3. Confirm the launcher (home screen) becomes visible.
+
         Args:
-            app: Экземпляр приложения Shadowstep.
-            android_settings_open_close: Фикстура для управления настройками Android.
+            app: Shadowstep application instance.
+            android_settings_open_close: Fixture managing the Android Settings screen.
         """
         # Press HOME key (keycode 3)
         app.press_key(keycode=3)
@@ -150,16 +150,16 @@ class TestShadowstepPart2:
         assert len(current_package) > 0  # noqa: S101
 
     def test_open_notifications(self, app: Shadowstep, android_settings_open_close: None):
-        """Тестирование открытия панели уведомлений.
+        """Exercise opening the notification shade.
 
-        Шаги:
-            1. Вызов open_notifications().
-            2. Проверка, что метод завершается без ошибок.
-            3. Нажатие кнопки назад для закрытия уведомлений.
-        
+        Steps:
+            1. Call ``open_notifications()``.
+            2. Ensure the command completes without errors.
+            3. Press Back to close the panel.
+
         Args:
-            app: Экземпляр приложения Shadowstep.
-            android_settings_open_close: Фикстура для управления настройками Android.
+            app: Shadowstep application instance.
+            android_settings_open_close: Fixture managing the Android Settings screen.
         """
         # Open notifications
         app.open_notifications()
@@ -174,15 +174,15 @@ class TestShadowstepPart2:
         time.sleep(0.5)
 
     def test_is_locked_status(self, app: Shadowstep):
-        """Тестирование получения состояния блокировки устройства.
+        """Verify reading the device lock state.
 
-        Шаги:
-            1. Вызов is_locked() для проверки текущего состояния блокировки.
-            2. Проверка, что метод возвращает булево значение.
-            3. Проверка, что метод завершается без ошибок.
-        
+        Steps:
+            1. Call ``is_locked()`` to inspect the current lock state.
+            2. Confirm the method returns a boolean.
+            3. Ensure the method completes without errors.
+
         Args:
-            app: Экземпляр приложения Shadowstep.
+            app: Shadowstep application instance.
         """
         # Get lock state
         is_locked = app.is_locked()
@@ -191,14 +191,14 @@ class TestShadowstepPart2:
         assert isinstance(is_locked, bool)  # noqa: S101
 
     def test_lock_command(self, app: Shadowstep):
-        """Тестирование выполнения метода lock() без ошибок.
+        """Verify execution of ``lock()`` without errors.
 
-        Шаги:
-            1. Вызов lock() для блокировки устройства.
-            2. Проверка, что команда завершается без исключений.
-        
+        Steps:
+            1. Call ``lock()`` to lock the device.
+            2. Confirm the command completes without exceptions.
+
         Args:
-            app: Экземпляр приложения Shadowstep.
+            app: Shadowstep application instance.
         """
         # Lock the device
         app.lock()
@@ -207,15 +207,15 @@ class TestShadowstepPart2:
         # If we reach here without exceptions, test passes
 
     def test_is_app_installed(self, app: Shadowstep):
-        """Тестирование проверки установки приложения.
+        """Verify checking whether an application is installed.
 
-        Шаги:
-            1. Проверка установки приложения настроек с помощью is_app_installed().
-            2. Проверка, что метод возвращает булево значение.
-            3. Проверка, что настройки установлены (должно быть всегда true).
-        
+        Steps:
+            1. Use ``is_app_installed()`` for the Settings app.
+            2. Confirm the method returns a boolean.
+            3. Ensure the result is ``True`` (Settings should always exist).
+
         Args:
-            app: Экземпляр приложения Shadowstep.
+            app: Shadowstep application instance.
         """
         # Check if Settings app is installed
         is_installed = app.is_app_installed(app_id="com.android.settings")
@@ -227,16 +227,16 @@ class TestShadowstepPart2:
         assert is_installed is True  # noqa: S101
 
     def test_query_app_state(self, app: Shadowstep, android_settings_open_close: None):
-        """Тестирование получения состояния приложения.
+        """Verify retrieving the state of an application.
 
-        Шаги:
-            1. Вызов query_app_state() для приложения настроек.
-            2. Проверка, что метод возвращает целое число состояния.
-            3. Проверка, что состояние указывает на работающее приложение (state >= 3).
-        
+        Steps:
+            1. Call ``query_app_state()`` for the Settings app.
+            2. Confirm the method returns an integer.
+            3. Ensure the state reflects a running application (``state >= 3``).
+
         Args:
-            app: Экземпляр приложения Shadowstep.
-            android_settings_open_close: Фикстура для управления настройками Android.
+            app: Shadowstep application instance.
+            android_settings_open_close: Fixture managing the Android Settings screen.
         """
         # Query Settings app state
         state = app.query_app_state(app_id="com.android.settings")
@@ -248,15 +248,15 @@ class TestShadowstepPart2:
         assert 0 <= state <= 4  # noqa: S101
 
     def test_get_device_time(self, app: Shadowstep):
-        """Тестирование получения времени устройства.
+        """Verify retrieving the device timestamp.
 
-        Шаги:
-            1. Вызов get_device_time().
-            2. Проверка, что метод возвращает строку с временной меткой.
-            3. Проверка, что временная метка не пуста.
-        
+        Steps:
+            1. Call ``get_device_time()``.
+            2. Confirm the method returns a timestamp string.
+            3. Ensure the string is non-empty.
+
         Args:
-            app: Экземпляр приложения Shadowstep.
+            app: Shadowstep application instance.
         """
         # Get device time
         device_time = app.get_device_time()
@@ -266,15 +266,15 @@ class TestShadowstepPart2:
         assert len(device_time) > 0  # noqa: S101
 
     def test_get_performance_data_types(self, app: Shadowstep):
-        """Тестирование получения доступных типов данных о производительности.
+        """Verify fetching available performance data types.
 
-        Шаги:
-            1. Вызов get_performance_data_types().
-            2. Проверка, что метод возвращает список.
-            3. Проверка, что список содержит ожидаемые типы производительности.
-        
+        Steps:
+            1. Call ``get_performance_data_types()``.
+            2. Confirm the method returns a list.
+            3. Ensure the list includes expected performance categories.
+
         Args:
-            app: Экземпляр приложения Shadowstep.
+            app: Shadowstep application instance.
         """
         # Get performance data types
         data_types = app.get_performance_data_types()
@@ -284,14 +284,14 @@ class TestShadowstepPart2:
         assert len(data_types) > 0  # noqa: S101
 
     def test_set_geolocation(self, app: Shadowstep):
-        """Тестирование установки местоположения устройства.
+        """Verify setting the device geolocation.
 
-        Шаги:
-            1. Установка тестового местоположения с помощью set_geolocation().
-            2. Проверка, что метод завершается без исключений.
-        
+        Steps:
+            1. Call ``set_geolocation()`` with test coordinates.
+            2. Ensure the method completes without exceptions.
+
         Args:
-            app: Экземпляр приложения Shadowstep.
+            app: Shadowstep application instance.
         """
         # Set test location (San Francisco)
         test_lat = 37.7749
@@ -308,15 +308,15 @@ class TestShadowstepPart2:
     def test_hide_keyboard_and_is_keyboard_shown(
         self, app: Shadowstep, android_settings_open_close: None
     ):
-        """Тестирование управления состоянием клавиатуры.
+        """Verify keyboard state management.
 
-        Шаги:
-            1. Проверка отображения клавиатуры с помощью is_keyboard_shown().
-            2. Проверка, что метод возвращает булево значение.
-        
+        Steps:
+            1. Inspect keyboard visibility via ``is_keyboard_shown()``.
+            2. Confirm the method returns a boolean value.
+
         Args:
-            app: Экземпляр приложения Shadowstep.
-            android_settings_open_close: Фикстура для управления настройками Android.
+            app: Shadowstep application instance.
+            android_settings_open_close: Fixture managing the Android Settings screen.
         """
         # Check keyboard state
         is_shown = app.is_keyboard_shown()
@@ -331,15 +331,15 @@ class TestShadowstepPart2:
         time.sleep(0.3)
 
     def test_get_contexts(self, app: Shadowstep, android_settings_open_close: None):
-        """Тестирование получения доступных контекстов.
+        """Verify retrieving available contexts.
 
-        Шаги:
-            1. Вызов get_contexts().
-            2. Проверка, что метод возвращает список.
-        
+        Steps:
+            1. Call ``get_contexts()``.
+            2. Confirm the method returns a list.
+
         Args:
-            app: Экземпляр приложения Shadowstep.
-            android_settings_open_close: Фикстура для управления настройками Android.
+            app: Shadowstep application instance.
+            android_settings_open_close: Fixture managing the Android Settings screen.
         """
         # Get contexts
         contexts = app.get_contexts()
@@ -348,15 +348,15 @@ class TestShadowstepPart2:
         assert isinstance(contexts, list)  # noqa: S101
 
     def test_terminate_app(self, app: Shadowstep):
-        """Тестирование завершения указанного приложения.
+        """Verify terminating a specific application.
 
-        Шаги:
-            1. Запуск приложения настроек.
-            2. Завершение приложения настроек с помощью terminate_app().
-            3. Проверка, что приложение больше не находится на переднем плане.
-        
+        Steps:
+            1. Launch the Settings app.
+            2. Call ``terminate_app()`` for Settings.
+            3. Confirm the app is no longer in the foreground.
+
         Args:
-            app: Экземпляр приложения Shadowstep.
+            app: Shadowstep application instance.
         """
         # Launch Settings
         app.start_activity(
@@ -375,15 +375,15 @@ class TestShadowstepPart2:
         assert "settings" not in current_package.lower()  # noqa: S101
 
     def test_scroll_to_element(self, app: Shadowstep, android_settings_open_close: None):
-        """Тестирование прокрутки для поиска элемента.
+        """Verify scrolling to locate an element.
 
-        Шаги:
-            1. Вызов scroll_to_element() с локатором.
-            2. Проверка, что метод возвращает экземпляр Element.
-        
+        Steps:
+            1. Call ``scroll_to_element()`` with a locator.
+            2. Confirm the method returns an ``Element`` instance.
+
         Args:
-            app: Экземпляр приложения Shadowstep.
-            android_settings_open_close: Фикстура для управления настройками Android.
+            app: Shadowstep application instance.
+            android_settings_open_close: Fixture managing the Android Settings screen.
         """
         # Scroll to element with text (may or may not be visible initially)
         element = app.scroll_to_element(locator={"text": "Settings"})
@@ -392,15 +392,15 @@ class TestShadowstepPart2:
         assert isinstance(element, Element)  # noqa: S101
 
     def test_status_bar(self, app: Shadowstep, android_settings_open_close: None):
-        """Тестирование выполнения команд строки состояния.
+        """Verify executing status bar commands.
 
-        Шаги:
-            1. Вызов status_bar() с командами развертывания и свертывания.
-            2. Проверка, что метод завершается без исключений.
-        
+        Steps:
+            1. Call ``status_bar()`` to expand and collapse.
+            2. Ensure the method completes without exceptions.
+
         Args:
-            app: Экземпляр приложения Shadowstep.
-            android_settings_open_close: Фикстура для управления настройками Android.
+            app: Shadowstep application instance.
+            android_settings_open_close: Fixture managing the Android Settings screen.
         """
         # Expand notifications
         app.status_bar(command="expandNotifications", component="expandNotifications")
@@ -411,15 +411,15 @@ class TestShadowstepPart2:
         time.sleep(0.5)
 
     def test_get_connectivity(self, app: Shadowstep):
-        """Тестирование получения состояния сетевого подключения.
+        """Verify retrieving the current connectivity state.
 
-        Шаги:
-            1. Вызов get_connectivity() с конкретными сервисами.
-            2. Проверка, что метод возвращает словарь.
-            3. Проверка, что словарь содержит информацию о подключении.
-        
+        Steps:
+            1. Call ``get_connectivity()`` for specific services.
+            2. Confirm the method returns a dictionary.
+            3. Ensure the dictionary contains connectivity information.
+
         Args:
-            app: Экземпляр приложения Shadowstep.
+            app: Shadowstep application instance.
         """
         # Get connectivity state for wifi
         connectivity = app.get_connectivity(services=["wifi", "data"])
@@ -428,35 +428,35 @@ class TestShadowstepPart2:
         assert isinstance(connectivity, dict)  # noqa: S101
 
     def test_set_connectivity(self, app: Shadowstep):
-        """Тестирование изменения сетевого подключения.
+        """Verify modifying the network connectivity state.
 
-        Шаги:
-            1. Получение текущего состояния подключения.
-            2. Вызов set_connectivity() для переключения wifi.
-            3. Проверка, что метод завершается без исключений.
-        
+        Steps:
+            1. Capture the current connectivity state.
+            2. Call ``set_connectivity()`` to enable Wi-Fi.
+            3. Confirm the method completes without exceptions.
+
         Args:
-            app: Экземпляр приложения Shadowstep.
+            app: Shadowstep application instance.
         """
-        expected_result = "Wi-Fi включен"
+        expected_result = "Wi-Fi enabled"
         app.set_connectivity(wifi=True)
         current_connectivity = app.get_connectivity(services=["wifi"])
         actual_result = current_connectivity.get("wifi", False)
         app.logger.info(f"[expected_result]: {expected_result=} {actual_result=}")
-        assert actual_result, "Wi-Fi не был включен"
+        assert actual_result, "Wi-Fi was not enabled"
 
     def test_network_speed(self, app: Shadowstep):
-        """Тестирование установки скорости сети.
+        """Verify setting the network speed.
 
-        Шаги:
-            1. Вызов network_speed() с типом скорости.
-            2. Проверка, что метод завершается без исключений.
+        Steps:
+            1. Call ``network_speed()`` with a speed profile.
+            2. Ensure the command completes without exceptions.
 
-        Примечание:
-            Эта команда работает только на эмуляторах.
-        
+        Note:
+            Available only on emulators.
+
         Args:
-            app: Экземпляр приложения Shadowstep.
+            app: Shadowstep application instance.
         """
         from shadowstep.exceptions.shadowstep_exceptions import ShadowstepException
 
@@ -473,17 +473,17 @@ class TestShadowstepPart2:
                 raise
 
     def test_gsm_call(self, app: Shadowstep):
-        """Тестирование симуляции GSM звонка.
+        """Verify simulating a GSM call.
 
-        Шаги:
-            1. Вызов gsm_call() с номером телефона и действием.
-            2. Проверка, что метод завершается без исключений.
+        Steps:
+            1. Call ``gsm_call()`` with a phone number and action.
+            2. Ensure the method completes without exceptions.
 
-        Примечание:
-            Эта команда работает только на эмуляторах.
-        
+        Note:
+            Available only on emulators.
+
         Args:
-            app: Экземпляр приложения Shadowstep.
+            app: Shadowstep application instance.
         """
         from shadowstep.exceptions.shadowstep_exceptions import ShadowstepException
 
@@ -504,17 +504,17 @@ class TestShadowstepPart2:
                 raise
 
     def test_gsm_signal(self, app: Shadowstep):
-        """Тестирование установки уровня сигнала GSM.
+        """Verify adjusting GSM signal strength.
 
-        Шаги:
-            1. Вызов gsm_signal() со значением силы сигнала.
-            2. Проверка, что метод завершается без исключений.
+        Steps:
+            1. Call ``gsm_signal()`` with a strength value.
+            2. Ensure the method completes without exceptions.
 
-        Примечание:
-            Эта команда работает только на эмуляторах.
-        
+        Note:
+            Available only on emulators.
+
         Args:
-            app: Экземпляр приложения Shadowstep.
+            app: Shadowstep application instance.
         """
         from shadowstep.exceptions.shadowstep_exceptions import ShadowstepException
 
@@ -531,17 +531,17 @@ class TestShadowstepPart2:
                 raise
 
     def test_gsm_voice(self, app: Shadowstep):
-        """Тестирование установки состояния голосовой связи GSM.
+        """Verify configuring the GSM voice state.
 
-        Шаги:
-            1. Вызов gsm_voice() с состоянием.
-            2. Проверка, что метод завершается без исключений.
+        Steps:
+            1. Call ``gsm_voice()`` with a target state.
+            2. Ensure the method completes without exceptions.
 
-        Примечание:
-            Эта команда работает только на эмуляторах.
-        
+        Note:
+            Available only on emulators.
+
         Args:
-            app: Экземпляр приложения Shadowstep.
+            app: Shadowstep application instance.
         """
         from shadowstep.exceptions.shadowstep_exceptions import ShadowstepException
 
@@ -558,17 +558,17 @@ class TestShadowstepPart2:
                 raise
 
     def test_power_capacity(self, app: Shadowstep):
-        """Тестирование установки емкости батареи.
+        """Verify setting the battery charge level.
 
-        Шаги:
-            1. Вызов power_capacity() с процентом.
-            2. Проверка, что метод завершается без исключений.
+        Steps:
+            1. Call ``power_capacity()`` with a percentage.
+            2. Ensure the method completes without exceptions.
 
-        Примечание:
-            Эта команда работает только на эмуляторах.
-        
+        Note:
+            Available only on emulators.
+
         Args:
-            app: Экземпляр приложения Shadowstep.
+            app: Shadowstep application instance.
         """
         from shadowstep.exceptions.shadowstep_exceptions import ShadowstepException
 
@@ -585,17 +585,17 @@ class TestShadowstepPart2:
                 raise
 
     def test_power_ac(self, app: Shadowstep):
-        """Тестирование установки состояния питания от сети.
+        """Verify configuring AC power state.
 
-        Шаги:
-            1. Вызов power_ac() с состоянием.
-            2. Проверка, что метод завершается без исключений.
+        Steps:
+            1. Call ``power_ac()`` with a desired state.
+            2. Ensure the method completes without exceptions.
 
-        Примечание:
-            Эта команда работает только на эмуляторах.
-        
+        Note:
+            Available only on emulators.
+
         Args:
-            app: Экземпляр приложения Shadowstep.
+            app: Shadowstep application instance.
         """
         from shadowstep.exceptions.shadowstep_exceptions import ShadowstepException
 
@@ -612,15 +612,15 @@ class TestShadowstepPart2:
                 raise
 
     def test_battery_info(self, app: Shadowstep):
-        """Тестирование получения информации о батарее.
+        """Verify retrieving battery information.
 
-        Шаги:
-            1. Вызов battery_info().
-            2. Проверка, что метод возвращает словарь.
-            3. Проверка, что словарь содержит информацию о батарее.
-        
+        Steps:
+            1. Call ``battery_info()``.
+            2. Confirm a dictionary is returned.
+            3. Ensure the dictionary contains battery details.
+
         Args:
-            app: Экземпляр приложения Shadowstep.
+            app: Shadowstep application instance.
         """
         # Get battery info
         battery = app.battery_info()
@@ -629,14 +629,14 @@ class TestShadowstepPart2:
         assert isinstance(battery, dict)  # noqa: S101
 
     def test_device_info(self, app: Shadowstep):
-        """Тестирование получения информации об устройстве.
+        """Verify retrieving device information.
 
-        Шаги:
-            1. Вызов device_info().
-            2. Проверка, что метод возвращает словарь.
-        
+        Steps:
+            1. Call ``device_info()``.
+            2. Confirm the method returns a dictionary.
+
         Args:
-            app: Экземпляр приложения Shadowstep.
+            app: Shadowstep application instance.
         """
         # Get device info
         device = app.device_info()
@@ -645,15 +645,15 @@ class TestShadowstepPart2:
         assert isinstance(device, dict)  # noqa: S101
 
     def test_get_performance_data(self, app: Shadowstep):
-        """Тестирование получения метрик производительности.
+        """Verify retrieving performance metrics.
 
-        Шаги:
-            1. Получение доступных типов данных о производительности.
-            2. Вызов get_performance_data() для первого доступного типа.
-            3. Проверка, что метод возвращает данные или корректно обрабатывает ошибки.
-        
+        Steps:
+            1. Obtain the available performance data types.
+            2. Call ``get_performance_data()`` for the first available type.
+            3. Confirm data is returned or errors are handled gracefully.
+
         Args:
-            app: Экземпляр приложения Shadowstep.
+            app: Shadowstep application instance.
         """
         try:
             # Get performance data types
@@ -672,29 +672,29 @@ class TestShadowstepPart2:
             pass
 
     def test_screenshots(self, app: Shadowstep, android_settings_open_close: None):
-        """Тестирование запуска мониторинга скриншотов.
+        """Verify starting screenshot monitoring.
 
-        Шаги:
-            1. Вызов screenshots() для запуска мониторинга.
-            2. Проверка, что метод завершается без исключений.
-        
+        Steps:
+            1. Call ``screenshots()`` to begin monitoring.
+            2. Ensure the method completes without exceptions.
+
         Args:
-            app: Экземпляр приложения Shadowstep.
-            android_settings_open_close: Фикстура для управления настройками Android.
+            app: Shadowstep application instance.
+            android_settings_open_close: Fixture managing the Android Settings screen.
         """
         # Start screenshot monitoring
         app.screenshots()
         time.sleep(0.5)
 
     def test_get_ui_mode(self, app: Shadowstep):
-        """Тестирование получения режима пользовательского интерфейса.
+        """Verify retrieving the user interface mode.
 
-        Шаги:
-            1. Вызов get_ui_mode() для ночного режима.
-            2. Проверка, что метод возвращает строку.
-        
+        Steps:
+            1. Call ``get_ui_mode()`` with ``night``.
+            2. Confirm the method returns a string.
+
         Args:
-            app: Экземпляр приложения Shadowstep.
+            app: Shadowstep application instance.
         """
         # Get UI mode for night
         ui_mode = app.get_ui_mode(mode="night")
@@ -703,28 +703,28 @@ class TestShadowstepPart2:
         assert isinstance(ui_mode, str)  # noqa: S101
 
     def test_set_ui_mode(self, app: Shadowstep):
-        """Тестирование установки режима пользовательского интерфейса.
+        """Verify setting the user interface mode.
 
-        Шаги:
-            1. Вызов set_ui_mode() для установки ночного режима.
-            2. Проверка, что метод завершается без исключений.
-        
+        Steps:
+            1. Call ``set_ui_mode()`` to configure night mode.
+            2. Ensure the method completes without exceptions.
+
         Args:
-            app: Экземпляр приложения Shadowstep.
+            app: Shadowstep application instance.
         """
         # Set night mode to no
         app.set_ui_mode(mode="night", value="no")
         time.sleep(0.5)
 
     def test_bluetooth(self, app: Shadowstep):
-        """Тестирование управления состоянием Bluetooth.
+        """Verify controlling the Bluetooth state.
 
-        Шаги:
-            1. Вызов bluetooth() с действием.
-            2. Проверка, что метод завершается без исключений.
-        
+        Steps:
+            1. Call ``bluetooth()`` with an action.
+            2. Ensure the method completes without exceptions.
+
         Args:
-            app: Экземпляр приложения Shadowstep.
+            app: Shadowstep application instance.
         """
         # Turn bluetooth off (safe operation)
         app.bluetooth(action="disable")
@@ -735,14 +735,14 @@ class TestShadowstepPart2:
         time.sleep(0.5)
 
     def test_nfc(self, app: Shadowstep):
-        """Тестирование управления состоянием NFC.
+        """Verify controlling the NFC state.
 
-        Шаги:
-            1. Вызов nfc() с действием.
-            2. Проверка, что метод завершается без исключений или обрабатывает неподдерживаемые устройства.
-        
+        Steps:
+            1. Call ``nfc()`` with an action.
+            2. Ensure the method completes without exceptions or handles unsupported devices gracefully.
+
         Args:
-            app: Экземпляр приложения Shadowstep.
+            app: Shadowstep application instance.
         """
         from shadowstep.exceptions.shadowstep_exceptions import ShadowstepException
 
@@ -755,14 +755,14 @@ class TestShadowstepPart2:
             pass
 
     def test_toggle_gps(self, app: Shadowstep):
-        """Тестирование переключения состояния GPS.
+        """Verify toggling the GPS state.
 
-        Шаги:
-            1. Вызов toggle_gps().
-            2. Проверка, что метод завершается без исключений.
-        
+        Steps:
+            1. Call ``toggle_gps()``.
+            2. Ensure the method completes without exceptions.
+
         Args:
-            app: Экземпляр приложения Shadowstep.
+            app: Shadowstep application instance.
         """
         # Toggle GPS
         app.toggle_gps()
@@ -773,14 +773,14 @@ class TestShadowstepPart2:
         time.sleep(0.5)
 
     def test_is_gps_enabled(self, app: Shadowstep):
-        """Тестирование получения состояния GPS.
+        """Verify reading the GPS state.
 
-        Шаги:
-            1. Вызов is_gps_enabled().
-            2. Проверка, что метод возвращает булево значение.
-        
+        Steps:
+            1. Call ``is_gps_enabled()``.
+            2. Confirm the method returns a boolean value.
+
         Args:
-            app: Экземпляр приложения Shadowstep.
+            app: Shadowstep application instance.
         """
         # Check GPS state
         is_enabled = app.is_gps_enabled()
@@ -789,17 +789,17 @@ class TestShadowstepPart2:
         assert isinstance(is_enabled, bool)  # noqa: S101
 
     def test_fingerprint(self, app: Shadowstep):
-        """Тестирование симуляции отпечатка пальца.
+        """Verify simulating a fingerprint scan.
 
-        Шаги:
-            1. Вызов fingerprint() с ID отпечатка пальца.
-            2. Проверка, что метод завершается без исключений.
+        Steps:
+            1. Call ``fingerprint()`` with a fingerprint ID.
+            2. Ensure the method completes without exceptions.
 
-        Примечание:
-            Эта команда работает только на эмуляторах.
-        
+        Note:
+            Available only on emulators.
+
         Args:
-            app: Экземпляр приложения Shadowstep.
+            app: Shadowstep application instance.
         """
         from shadowstep.exceptions.shadowstep_exceptions import ShadowstepException
 
