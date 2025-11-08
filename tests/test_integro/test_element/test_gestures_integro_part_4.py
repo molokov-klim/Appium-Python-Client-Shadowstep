@@ -10,10 +10,9 @@ uv run pytest -svl --log-cli-level INFO --tb=short --setup-show  tests/element/t
 
 
 class TestElementGesturesPart4:
-    """Тесты специальных жестов взаимодействия с элементами.
+    """Special gesture interaction tests.
 
-    Данный класс содержит тесты для специальных жестов взаимодействия с элементами,
-    включая zoom и unzoom операции.
+    This class covers zoom and unzoom gestures for specific elements.
     """
 
     def test_zoom(
@@ -21,14 +20,13 @@ class TestElementGesturesPart4:
         app: Shadowstep,
         android_settings_open_close: None,
     ):
-        """Тест увеличения масштаба элемента.
+        """Test zooming in on an element.
 
-        Проверяет корректность выполнения операции увеличения масштаба
-        элемента "Network & internet".
+        Ensures the zoom operation works on ``Network & internet`` element.
 
         Args:
-            app: Экземпляр Shadowstep для взаимодействия с приложением.
-            android_settings_open_close: Фикстура для открытия и закрытия настроек Android.
+            app: Shadowstep instance used for interaction.
+            android_settings_open_close: Fixture that opens and closes Android settings.
         """
         settings_network = app.get_element(
             locator={"text": "Network & internet", "resource-id": "android:id/title"}
@@ -41,14 +39,13 @@ class TestElementGesturesPart4:
         app: Shadowstep,
         android_settings_open_close: None,
     ):
-        """Тест уменьшения масштаба элемента.
+        """Test zooming out from an element.
 
-        Проверяет корректность выполнения операции уменьшения масштаба
-        элемента "Network & internet".
+        Ensures the unzoom operation works on ``Network & internet`` element.
 
         Args:
-            app: Экземпляр Shadowstep для взаимодействия с приложением.
-            android_settings_open_close: Фикстура для открытия и закрытия настроек Android.
+            app: Shadowstep instance used for interaction.
+            android_settings_open_close: Fixture that opens and closes Android settings.
         """
         settings_network = app.get_element(
             locator={"text": "Network & internet", "resource-id": "android:id/title"}

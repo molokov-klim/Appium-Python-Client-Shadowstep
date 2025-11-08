@@ -17,25 +17,25 @@ logger = logging.getLogger(__name__)
 
 
 class TestElementGesturesPart3:
-    """Тесты свайп жестов взаимодействия с элементами.
+    """Swipe gesture interaction tests.
 
-    Данный класс содержит тесты для свайп жестов взаимодействия с элементами,
-    включая swipe операции в различных направлениях и с различными параметрами.
+    This class exercises swipe gestures in various directions and with
+    different configurations.
     """
 
     @pytest.mark.parametrize("direction", ["up", "down", "left", "right"])
     def test_swipe_directions(
         self, app: Shadowstep, direction: str, android_settings_open_close: None
     ):
-        """Тест свайпа в различных направлениях.
+        """Test swiping in various directions.
 
-        Проверяет корректность выполнения свайпа в заданном направлении
-        по элементу "Connected devices" с параметрами процента и скорости.
+        Ensures the swipe runs correctly on ``Connected devices`` with the
+        desired percent and speed settings.
 
         Args:
-            app: Экземпляр Shadowstep для взаимодействия с приложением.
-            direction: Направление свайпа (up, down, left, right).
-            android_settings_open_close: Фикстура для открытия и закрытия настроек Android.
+            app: Shadowstep instance used for interaction.
+            direction: Swipe direction (``up``, ``down``, ``left``, ``right``).
+            android_settings_open_close: Fixture that opens and closes Android settings.
         """
         element = app.get_element(locator=LOCATOR_CONNECTED_DEVICES)
         element.swipe(direction=direction, percent=0.5, speed=3000)
@@ -47,14 +47,14 @@ class TestElementGesturesPart3:
         app: Shadowstep,
         android_settings_open_close: None,
     ):
-        """Тест свайпа вверх.
+        """Test swiping upward.
 
-        Проверяет корректность выполнения свайпа вверх
-        по элементу "Network & internet" с заданными параметрами.
+        Verifies the upward swipe on ``Network & internet`` with given
+        parameters behaves correctly.
 
         Args:
-            app: Экземпляр Shadowstep для взаимодействия с приложением.
-            android_settings_open_close: Фикстура для открытия и закрытия настроек Android.
+            app: Shadowstep instance used for interaction.
+            android_settings_open_close: Fixture that opens and closes Android settings.
         """
         element = app.get_element(locator={"text": "Network & internet"})
         element.swipe_up(percent=0.6, speed=2500)
@@ -66,14 +66,14 @@ class TestElementGesturesPart3:
         app: Shadowstep,
         android_settings_open_close: None,
     ):
-        """Тест свайпа вниз.
+        """Test swiping downward.
 
-        Проверяет корректность выполнения свайпа вниз
-        по элементу "Network & internet" с заданными параметрами.
+        Verifies the downward swipe on ``Network & internet`` with specified
+        parameters behaves correctly.
 
         Args:
-            app: Экземпляр Shadowstep для взаимодействия с приложением.
-            android_settings_open_close: Фикстура для открытия и закрытия настроек Android.
+            app: Shadowstep instance used for interaction.
+            android_settings_open_close: Fixture that opens and closes Android settings.
         """
         element = app.get_element(locator={"text": "Network & internet"})
         element.swipe_down(percent=0.6, speed=2500)
@@ -85,14 +85,14 @@ class TestElementGesturesPart3:
         app: Shadowstep,
         android_settings_open_close: None,
     ):
-        """Тест свайпа влево.
+        """Test swiping left.
 
-        Проверяет корректность выполнения свайпа влево
-        по элементу "Network & internet" с заданными параметрами.
+        Verifies the leftward swipe on ``Network & internet`` with specified
+        parameters behaves correctly.
 
         Args:
-            app: Экземпляр Shadowstep для взаимодействия с приложением.
-            android_settings_open_close: Фикстура для открытия и закрытия настроек Android.
+            app: Shadowstep instance used for interaction.
+            android_settings_open_close: Fixture that opens and closes Android settings.
         """
         element = app.get_element(locator={"text": "Network & internet"})
         element.swipe_left(percent=0.6, speed=2500)
@@ -104,14 +104,14 @@ class TestElementGesturesPart3:
         app: Shadowstep,
         android_settings_open_close: None,
     ):
-        """Тест свайпа вправо.
+        """Test swiping right.
 
-        Проверяет корректность выполнения свайпа вправо
-        по элементу "Network & internet" с заданными параметрами.
+        Verifies the rightward swipe on ``Network & internet`` with specified
+        parameters behaves correctly.
 
         Args:
-            app: Экземпляр Shadowstep для взаимодействия с приложением.
-            android_settings_open_close: Фикстура для открытия и закрытия настроек Android.
+            app: Shadowstep instance used for interaction.
+            android_settings_open_close: Fixture that opens and closes Android settings.
         """
         element = app.get_element(locator={"text": "Network & internet"})
         element.swipe_right(percent=0.6, speed=2500)
@@ -122,15 +122,15 @@ class TestElementGesturesPart3:
     def test_fling_directions(
         self, app: Shadowstep, direction: str, android_settings_open_close: None
     ):
-        """Тест быстрого свайпа (fling) в различных направлениях.
+        """Test fling gestures in multiple directions.
 
-        Проверяет корректность выполнения быстрого свайпа в заданном направлении
-        по элементу "Connected devices" с заданной скоростью.
+        Ensures the fling executes correctly on ``Connected devices`` with the
+        requested direction and speed.
 
         Args:
-            app: Экземпляр Shadowstep для взаимодействия с приложением.
-            direction: Направление быстрого свайпа (up, down, left, right).
-            android_settings_open_close: Фикстура для открытия и закрытия настроек Android.
+            app: Shadowstep instance used for interaction.
+            direction: Fling direction (``up``, ``down``, ``left``, ``right``).
+            android_settings_open_close: Fixture that opens and closes Android settings.
         """
         element = app.get_element(locator=LOCATOR_CONNECTED_DEVICES)
         element.fling(speed=3000, direction=direction)

@@ -1,10 +1,6 @@
 # ruff: noqa
 # pyright: ignore
-"""
-Модуль тестирования производительности и граничных случаев ожидания элементов.
-
-uv run pytest -svl --log-cli-level INFO --tb=short --setup-show tests/test_integro/test_element/test_waiting_integro_part_4.py
-"""
+"""Test module for performance and edge cases of element waiting."""
 
 import logging
 import time
@@ -34,12 +30,12 @@ LOCATOR_BUBBLE = {
 
 # ruff: noqa: S101
 class TestElementWaitingPart4:
-    """Набор тестов для производительности и граничных случаев ожидания элементов."""
+    """Collection of performance and edge-case waiting tests."""
 
     def test_wait_consistency_across_multiple_calls(
         self, app: Shadowstep, android_settings_open_close: Any
     ):
-        """Тест, что методы wait консистентны при множественных вызовах."""
+        """Test that wait methods are consistent across repeated calls."""
         el = app.get_element(LOCATOR_SEARCH_SETTINGS)
 
         # Multiple calls should return consistent results
@@ -55,7 +51,7 @@ class TestElementWaitingPart4:
     def test_wait_with_different_locator_types(
         self, app: Shadowstep, android_settings_open_close: Any
     ):
-        """Тест методов wait с различными типами локаторов."""
+        """Test wait methods with different locator types."""
         # Test with xpath tuple locator
         el1 = app.get_element(
             (
@@ -75,7 +71,7 @@ class TestElementWaitingPart4:
         assert result1 == result2
 
     def test_wait_with_negative_timeout(self, app: Shadowstep, android_settings_open_close: Any):
-        """Тест метода wait с отрицательным таймаутом."""
+        """Test ``wait`` with a negative timeout."""
         el = app.get_element(LOCATOR_SEARCH_SETTINGS)
         result = el.wait(timeout=-1, return_bool=True)
         assert result is True  # Should handle negative timeout gracefully
@@ -83,13 +79,13 @@ class TestElementWaitingPart4:
     def test_wait_with_negative_poll_frequency(
         self, app: Shadowstep, android_settings_open_close: Any
     ):
-        """Тест метода wait с отрицательной частотой опроса."""
+        """Test ``wait`` with a negative poll frequency."""
         el = app.get_element(LOCATOR_SEARCH_SETTINGS)
         result = el.wait(timeout=2, poll_frequency=-0.1, return_bool=True)
         assert result is True  # Should handle negative poll frequency gracefully
 
     def test_wait_methods_performance(self, app: Shadowstep, android_settings_open_close: Any):
-        """Тест производительности методов wait с существующими элементами."""
+        """Test performance of wait methods with existing elements."""
         el = app.get_element(LOCATOR_SEARCH_SETTINGS)
 
         # Test performance of different wait methods

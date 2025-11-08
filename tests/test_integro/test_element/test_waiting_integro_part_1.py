@@ -1,7 +1,6 @@
 # ruff: noqa
 # pyright: ignore
-"""
-Модуль тестирования базовой функциональности ожидания элементов.
+"""Test module for basic element waiting functionality.
 
 uv run pytest -svl --log-cli-level INFO --tb=short --setup-show tests/test_integro/test_element/test_waiting_integro_part_1.py
 """
@@ -33,10 +32,10 @@ LOCATOR_BUBBLE = {
 
 # ruff: noqa: S101
 class TestElementWaitingPart1:
-    """Набор тестов для базовой функциональности ожидания элементов."""
+    """Collection of tests for basic element waiting behavior."""
 
     def test_wait_success(self, app: Shadowstep, android_settings_open_close: Any):
-        """Тест успешного ожидания элемента."""
+        """Test successful waiting for an element to appear."""
         # Test with a real element that should be present
 
         el = app.get_element(LOCATOR_SEARCH_SETTINGS)
@@ -44,7 +43,7 @@ class TestElementWaitingPart1:
         assert result is True
 
     def test_wait_timeout(self, app: Shadowstep, android_settings_open_close: Any):
-        """Тест таймаута ожидания для несуществующего элемента."""
+        """Test wait timeout for a nonexistent element."""
         # Test with a locator that doesn't exist - expect exception due to element timeout
 
         el = app.get_element({"resource-id": "non.existent.element"}, timeout=2)
@@ -52,49 +51,49 @@ class TestElementWaitingPart1:
         assert result is False
 
     def test_wait_return_element(self, app: Shadowstep, android_settings_open_close: Any):
-        """Тест возврата элемента методом wait при return_bool=False."""
+        """Test that ``wait`` returns the element when ``return_bool`` is False."""
 
         el = app.get_element(LOCATOR_SEARCH_SETTINGS)
         result = el.wait(timeout=5, return_bool=False)
         assert result == el
 
     def test_wait_visible_success(self, app: Shadowstep, android_settings_open_close: Any):
-        """Тест успешного ожидания видимого элемента."""
+        """Test successful wait for an element to become visible."""
 
         el = app.get_element(LOCATOR_SEARCH_SETTINGS)
         result = el.wait_visible(timeout=5, return_bool=True)
         assert result is True
 
     def test_wait_visible_timeout(self, app: Shadowstep, android_settings_open_close: Any):
-        """Тест таймаута wait_visible для невидимого элемента."""
+        """Test ``wait_visible`` timeout for an invisible element."""
 
         el = app.get_element({"resource-id": "non.existent.element"}, timeout=2)
         result = el.wait_visible(timeout=2, return_bool=True)
         assert result is False
 
     def test_wait_clickable_success(self, app: Shadowstep, android_settings_open_close: Any):
-        """Тест успешного ожидания кликабельного элемента."""
+        """Test successful wait for an element to become clickable."""
 
         el = app.get_element(LOCATOR_SEARCH_SETTINGS)
         result = el.wait_clickable(timeout=5, return_bool=True)
         assert result is True
 
     def test_wait_clickable_timeout(self, app: Shadowstep, android_settings_open_close: Any):
-        """Тест таймаута wait_clickable для некликабельного элемента."""
+        """Test ``wait_clickable`` timeout for a non-clickable element."""
 
         el = app.get_element({"resource-id": "non.existent.element"}, timeout=2)
         result = el.wait_clickable(timeout=2, return_bool=True)
         assert result is False
 
     def test_wait_for_not_success(self, app: Shadowstep, android_settings_open_close: Any):
-        """Тест успешного ожидания исчезновения элемента."""
+        """Test successful waiting for an element to disappear."""
 
         el = app.get_element(LOCATOR_SEARCH_SETTINGS)
         result = el.wait_for_not(timeout=2, return_bool=True)
         assert result is False
 
     def test_wait_for_not_visible_success(self, app: Shadowstep, android_settings_open_close: Any):
-        """Тест успешного ожидания, что элемент станет невидимым."""
+        """Test successful wait for an element to become invisible."""
 
         el = app.get_element(LOCATOR_SEARCH_SETTINGS)
         result = el.wait_for_not_visible(timeout=2, return_bool=True)
