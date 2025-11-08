@@ -395,4 +395,8 @@ class TestMobileCommandsPart1:
         Verifies:
             - The result is not None.
             - The result is a dictionary.
+        """
+        result = self.mobile_commands.screenshots()
 
+        assert result is not None  # noqa: S101
+        assert isinstance(result, dict)  # noqa: S101
