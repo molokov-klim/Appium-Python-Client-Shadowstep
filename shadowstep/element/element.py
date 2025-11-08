@@ -376,7 +376,7 @@ class Element(ElementBase):
 
         Args:
             duration: Duration of the click in milliseconds.
-            strategy: Стратегия выполнения жеста (W3C_ACTIONS, MOBILE_COMMANDS, AUTO).
+            strategy: Gesture execution strategy (W3C_ACTIONS, MOBILE_COMMANDS, AUTO).
 
         Returns:
             Element: Self for method chaining.
@@ -411,7 +411,7 @@ class Element(ElementBase):
             end_x: Target X coordinate.
             end_y: Target Y coordinate.
             speed: Drag speed in pixels per second (default: 2500).
-            strategy: Стратегия выполнения жеста (W3C_ACTIONS, MOBILE_COMMANDS, AUTO).
+            strategy: Gesture execution strategy (W3C_ACTIONS, MOBILE_COMMANDS, AUTO).
 
         Returns:
             Element: Self for method chaining.
@@ -428,7 +428,7 @@ class Element(ElementBase):
 
         Args:
             speed: Fling speed in pixels per second (default: 2500).
-            strategy: Стратегия выполнения жеста (W3C_ACTIONS, MOBILE_COMMANDS, AUTO).
+            strategy: Gesture execution strategy (W3C_ACTIONS, MOBILE_COMMANDS, AUTO).
 
         Returns:
             Element: Self for method chaining.
@@ -445,7 +445,7 @@ class Element(ElementBase):
 
         Args:
             speed: Fling speed in pixels per second (default: 2500).
-            strategy: Стратегия выполнения жеста (W3C_ACTIONS, MOBILE_COMMANDS, AUTO).
+            strategy: Gesture execution strategy (W3C_ACTIONS, MOBILE_COMMANDS, AUTO).
 
         Returns:
             Element: Self for method chaining.
@@ -462,7 +462,7 @@ class Element(ElementBase):
 
         Args:
             speed: Fling speed in pixels per second (default: 2500).
-            strategy: Стратегия выполнения жеста (W3C_ACTIONS, MOBILE_COMMANDS, AUTO).
+            strategy: Gesture execution strategy (W3C_ACTIONS, MOBILE_COMMANDS, AUTO).
 
         Returns:
             Element: Self for method chaining.
@@ -479,7 +479,7 @@ class Element(ElementBase):
 
         Args:
             speed: Fling speed in pixels per second (default: 2500).
-            strategy: Стратегия выполнения жеста (W3C_ACTIONS, MOBILE_COMMANDS, AUTO).
+            strategy: Gesture execution strategy (W3C_ACTIONS, MOBILE_COMMANDS, AUTO).
 
         Returns:
             Element: Self for method chaining.
@@ -499,7 +499,7 @@ class Element(ElementBase):
         Args:
             speed: Fling speed in pixels per second.
             direction: Direction of fling ("up", "down", "left", "right").
-            strategy: Стратегия выполнения жеста (W3C_ACTIONS, MOBILE_COMMANDS, AUTO).
+            strategy: Gesture execution strategy (W3C_ACTIONS, MOBILE_COMMANDS, AUTO).
 
         Returns:
             Element: Self for method chaining.
@@ -520,7 +520,7 @@ class Element(ElementBase):
             percent: Scroll distance as percentage of element height (default: 0.7).
             speed: Scroll speed in pixels per second (default: 2000).
             return_bool: Whether to return boolean instead of Element (default: False).
-            strategy: Стратегия выполнения жеста (W3C_ACTIONS, MOBILE_COMMANDS, AUTO).
+            strategy: Gesture execution strategy (W3C_ACTIONS, MOBILE_COMMANDS, AUTO).
 
         Returns:
             Element | bool: Self for method chaining or boolean if return_bool is True.
@@ -547,7 +547,7 @@ class Element(ElementBase):
             percent: Scroll distance as percentage of element height (default: 0.7).
             speed: Scroll speed in pixels per second (default: 2000).
             return_bool: Whether to return boolean instead of Element (default: False).
-            strategy: Стратегия выполнения жеста (W3C_ACTIONS, MOBILE_COMMANDS, AUTO).
+            strategy: Gesture execution strategy (W3C_ACTIONS, MOBILE_COMMANDS, AUTO).
 
         Returns:
             Element | bool: Self for method chaining or boolean if return_bool is True.
@@ -574,7 +574,7 @@ class Element(ElementBase):
             percent: Scroll distance as percentage of element width (default: 0.7).
             speed: Scroll speed in pixels per second (default: 2000).
             return_bool: Whether to return boolean instead of Element (default: False).
-            strategy: Стратегия выполнения жеста (W3C_ACTIONS, MOBILE_COMMANDS, AUTO).
+            strategy: Gesture execution strategy (W3C_ACTIONS, MOBILE_COMMANDS, AUTO).
 
         Returns:
             Element | bool: Self for method chaining or boolean if return_bool is True.
@@ -601,7 +601,7 @@ class Element(ElementBase):
             percent: Scroll distance as percentage of element width (default: 0.7).
             speed: Scroll speed in pixels per second (default: 2000).
             return_bool: Whether to return boolean instead of Element (default: False).
-            strategy: Стратегия выполнения жеста (W3C_ACTIONS, MOBILE_COMMANDS, AUTO).
+            strategy: Gesture execution strategy (W3C_ACTIONS, MOBILE_COMMANDS, AUTO).
 
         Returns:
             Element | bool: Self for method chaining or boolean if return_bool is True.
@@ -631,7 +631,7 @@ class Element(ElementBase):
             percent: Scroll distance as percentage of element size.
             speed: Scroll speed in pixels per second.
             return_bool: Whether to return boolean instead of Element.
-            strategy: Стратегия выполнения жеста (W3C_ACTIONS, MOBILE_COMMANDS, AUTO).
+            strategy: Gesture execution strategy (W3C_ACTIONS, MOBILE_COMMANDS, AUTO).
 
         Returns:
             Element | bool: Self for method chaining or boolean if return_bool is True.
@@ -651,7 +651,7 @@ class Element(ElementBase):
         Args:
             percent: Scroll distance as percentage of element height (default: 0.7).
             speed: Scroll speed in pixels per second (default: 8000).
-            strategy: Стратегия выполнения жеста (W3C_ACTIONS, MOBILE_COMMANDS, AUTO).
+            strategy: Gesture execution strategy (W3C_ACTIONS, MOBILE_COMMANDS, AUTO).
 
         Returns:
             Element: Self for method chaining.
@@ -671,7 +671,7 @@ class Element(ElementBase):
         Args:
             percent: Scroll distance as percentage of element height (default: 0.7).
             speed: Scroll speed in pixels per second (default: 8000).
-            strategy: Стратегия выполнения жеста (W3C_ACTIONS, MOBILE_COMMANDS, AUTO).
+            strategy: Gesture execution strategy (W3C_ACTIONS, MOBILE_COMMANDS, AUTO).
 
         Returns:
             Element: Self for method chaining.
@@ -695,7 +695,7 @@ class Element(ElementBase):
             max_swipes: Maximum number of swipe attempts (default: 30).
             percent: Scroll distance as percentage of element size (default: 0.7).
             speed: Scroll speed in pixels per second (default: 5000).
-            strategy: Стратегия выполнения жеста (W3C_ACTIONS, MOBILE_COMMANDS, AUTO).
+            strategy: Gesture execution strategy (W3C_ACTIONS, MOBILE_COMMANDS, AUTO).
 
         Returns:
             Element: Found element instance.
@@ -715,7 +715,7 @@ class Element(ElementBase):
         Args:
             percent: Zoom scale as percentage (default: 0.75).
             speed: Zoom speed in pixels per second (default: 2500).
-            strategy: Стратегия выполнения жеста (W3C_ACTIONS, MOBILE_COMMANDS, AUTO).
+            strategy: Gesture execution strategy (W3C_ACTIONS, MOBILE_COMMANDS, AUTO).
 
         Returns:
             Element: Self for method chaining.
@@ -735,7 +735,7 @@ class Element(ElementBase):
         Args:
             percent: Unzoom scale as percentage (default: 0.75).
             speed: Unzoom speed in pixels per second (default: 2500).
-            strategy: Стратегия выполнения жеста (W3C_ACTIONS, MOBILE_COMMANDS, AUTO).
+            strategy: Gesture execution strategy (W3C_ACTIONS, MOBILE_COMMANDS, AUTO).
 
         Returns:
             Element: Self for method chaining.
@@ -754,7 +754,7 @@ class Element(ElementBase):
         Args:
             percent: Swipe distance as percentage of element height (default: 0.75).
             speed: Swipe speed in pixels per second (default: 5000).
-            strategy: Стратегия выполнения жеста (W3C_ACTIONS, MOBILE_COMMANDS, AUTO).
+            strategy: Gesture execution strategy (W3C_ACTIONS, MOBILE_COMMANDS, AUTO).
 
         Returns:
             Element: Self for method chaining.
@@ -773,7 +773,7 @@ class Element(ElementBase):
         Args:
             percent: Swipe distance as percentage of element height (default: 0.75).
             speed: Swipe speed in pixels per second (default: 5000).
-            strategy: Стратегия выполнения жеста (W3C_ACTIONS, MOBILE_COMMANDS, AUTO).
+            strategy: Gesture execution strategy (W3C_ACTIONS, MOBILE_COMMANDS, AUTO).
 
         Returns:
             Element: Self for method chaining.
@@ -792,7 +792,7 @@ class Element(ElementBase):
         Args:
             percent: Swipe distance as percentage of element width (default: 0.75).
             speed: Swipe speed in pixels per second (default: 5000).
-            strategy: Стратегия выполнения жеста (W3C_ACTIONS, MOBILE_COMMANDS, AUTO).
+            strategy: Gesture execution strategy (W3C_ACTIONS, MOBILE_COMMANDS, AUTO).
 
         Returns:
             Element: Self for method chaining.
@@ -811,7 +811,7 @@ class Element(ElementBase):
         Args:
             percent: Swipe distance as percentage of element width (default: 0.75).
             speed: Swipe speed in pixels per second (default: 5000).
-            strategy: Стратегия выполнения жеста (W3C_ACTIONS, MOBILE_COMMANDS, AUTO).
+            strategy: Gesture execution strategy (W3C_ACTIONS, MOBILE_COMMANDS, AUTO).
 
         Returns:
             Element: Self for method chaining.
@@ -833,7 +833,7 @@ class Element(ElementBase):
             direction: Swipe direction ("up", "down", "left", "right").
             percent: Swipe distance as percentage of element size (default: 0.75).
             speed: Swipe speed in pixels per second (default: 5000).
-            strategy: Стратегия выполнения жеста (W3C_ACTIONS, MOBILE_COMMANDS, AUTO).
+            strategy: Gesture execution strategy (W3C_ACTIONS, MOBILE_COMMANDS, AUTO).
 
         Returns:
             Element: Self for method chaining.

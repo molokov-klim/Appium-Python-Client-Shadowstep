@@ -282,7 +282,7 @@ class TestElementGestures:
         mock_shadowstep = Mock()
         element = Element(("id", "button"), mock_shadowstep)
         
-        # Используем patch.object с wraps чтобы проверить реальное делегирование
+        # Use patch.object with wraps to verify actual delegation
         with patch.object(element.gestures, 'click', wraps=element.gestures.click) as mock_click:
             mock_click.return_value = element
             result = element.click(duration=50)

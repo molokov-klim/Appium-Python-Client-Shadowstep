@@ -13,21 +13,21 @@ uv run pytest -svl --log-cli-level INFO --tb=short --setup-show  tests/test_inte
 
 
 class TestShadowstepPart3:
-    """Тестирование файловых операций и системных функций.
-    
-    Группа тестов проверяет операции с файлами, SMS, уведомлениями,
-    сенсорами, GPS, эмулятором и различными системными командами.
+    """Test file operations and system functionality.
+
+    This collection verifies file handling, SMS, notifications, sensors,
+    GPS, emulator features, and various system commands.
     """
 
     def test_list_sms(self, app: Shadowstep):
-        """Тестирование получения списка SMS сообщений.
+        """Verify that SMS messages can be listed.
 
-        Шаги:
-            1. Вызов list_sms().
-            2. Проверка, что метод возвращает словарь с элементами.
-        
+        Steps:
+            1. Call ``list_sms()``.
+            2. Check that the method returns a dictionary with items.
+
         Args:
-            app: Экземпляр приложения Shadowstep.
+            app: Shadowstep application instance.
         """
         # List SMS messages
         sms_data = app.list_sms(max_number=10)
@@ -39,17 +39,17 @@ class TestShadowstepPart3:
         assert "items" in sms_data or "total" in sms_data  # noqa: S101
 
     def test_exec_emu_console_command(self, app: Shadowstep):
-        """Тестирование выполнения команды консоли эмулятора.
+        """Verify execution of an emulator console command.
 
-        Шаги:
-            1. Вызов exec_emu_console_command() с командой.
-            2. Проверка, что метод завершается без исключений.
+        Steps:
+            1. Call ``exec_emu_console_command()`` with a command.
+            2. Confirm the method completes without exceptions.
 
-        Примечание:
-            Эта команда работает только на эмуляторах.
-        
+        Note:
+            This command is available only on emulators.
+
         Args:
-            app: Экземпляр приложения Shadowstep.
+            app: Shadowstep application instance.
         """
         from shadowstep.exceptions.shadowstep_exceptions import ShadowstepException
 
@@ -66,14 +66,14 @@ class TestShadowstepPart3:
                 raise
 
     def test_pull_folder(self, app: Shadowstep):
-        """Тестирование получения папки с устройства.
+        """Verify pulling a folder from the device.
 
-        Шаги:
-            1. Вызов pull_folder() с путем к системной папке.
-            2. Проверка, что метод возвращает данные.
-        
+        Steps:
+            1. Call ``pull_folder()`` with a system path.
+            2. Check that the method returns data.
+
         Args:
-            app: Экземпляр приложения Shadowstep.
+            app: Shadowstep application instance.
         """
         # Pull a small system folder
         folder_data = app.pull_folder(remote_path="/sdcard/Android")
@@ -82,31 +82,31 @@ class TestShadowstepPart3:
         assert folder_data is not None  # noqa: S101
 
     def test_type(self, app: Shadowstep, android_settings_open_close: None):
-        """Тестирование отправки текстового ввода.
+        """Verify sending text input.
 
-        Шаги:
-            1. Вызов type() со строкой текста.
-            2. Проверка, что метод завершается без исключений.
-        
+        Steps:
+            1. Call ``type()`` with a text string.
+            2. Ensure the method finishes without exceptions.
+
         Args:
-            app: Экземпляр приложения Shadowstep.
-            android_settings_open_close: Фикстура для управления настройками Android.
+            app: Shadowstep application instance.
+            android_settings_open_close: Fixture that controls Android settings.
         """
         # Type text
         app.type(text="test")
         time.sleep(0.3)
 
     def test_replace_element_value(self, app: Shadowstep, android_settings_open_close: None):
-        """Тестирование замены текста элемента.
+        """Verify replacing the text of an element.
 
-        Шаги:
-            1. Поиск элемента.
-            2. Вызов replace_element_value() для замены текста.
-            3. Проверка, что метод завершается без исключений.
-        
+        Steps:
+            1. Locate an element.
+            2. Call ``replace_element_value()`` to change the text.
+            3. Confirm the method completes without exceptions.
+
         Args:
-            app: Экземпляр приложения Shadowstep.
-            android_settings_open_close: Фикстура для управления настройками Android.
+            app: Shadowstep application instance.
+            android_settings_open_close: Fixture that controls Android settings.
         """
         # Find element (search field if available)
         try:

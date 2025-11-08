@@ -64,7 +64,7 @@ dev = [
 
 # ---------- RUFF ----------
 [tool.ruff]
-# Общие настройки
+# General settings
 target-version = "py39"
 line-length = 100
 

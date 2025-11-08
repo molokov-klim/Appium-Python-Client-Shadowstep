@@ -365,10 +365,10 @@ class W3CActions:
         """Raise ValueError for invalid direction.
 
         Args:
-            direction: Направление, которое было передано.
+            direction: The direction that was provided.
 
         Raises:
-            ValueError: Всегда вызывает исключение для неверного направления.
+            ValueError: Always raised for an invalid direction.
 
         """
         msg = f"Invalid direction: {direction}. Use up/down/left/right."
