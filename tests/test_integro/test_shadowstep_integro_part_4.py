@@ -10,26 +10,24 @@ uv run pytest -svl --log-cli-level INFO --tb=short --setup-show  tests/test_inte
 
 
 class TestShadowstepPart4:
-    """Тестирование операций установки приложений и управления драйвером.
-    
-    Группа тестов проверяет функции установки/удаления приложений,
-    отправки SMS, управления драйвером и подключением к устройству.
+    """Verify application installation operations and driver management.
+
+    This suite covers application install/remove flows, SMS commands,
+    driver access, and reconnection logic.
     """
 
     def test_install_app(self, app: Shadowstep):
-        """Тестирование установки приложения.
+        """Exercise application installation.
 
-        Шаги:
-            1. Вызов install_app() с путем к APK.
-            2. Проверка, что метод завершается без исключений.
+        Steps:
+            1. Call ``install_app()`` with an APK path.
+            2. Confirm the method completes without exceptions.
 
-        Примечание:
-            Этот тест проверяет сигнатуру метода.
-            Фактическая установка требует корректного APK файла.
-            Тест проходит, если метод вызываем с корректными параметрами.
-        
+        Note:
+            This test verifies the method signature. Real installation requires a valid APK.
+
         Args:
-            app: Экземпляр приложения Shadowstep.
+            app: Shadowstep application instance.
         """
         # Note: This test verifies method signature
         # Actual installation requires valid APK file
@@ -43,18 +41,17 @@ class TestShadowstepPart4:
             pass
 
     def test_install_multiple_apks(self, app: Shadowstep):
-        """Тестирование установки нескольких APK.
+        """Exercise installing multiple APKs.
 
-        Шаги:
-            1. Вызов install_multiple_apks() с путями к APK.
-            2. Проверка, что метод завершается без исключений.
+        Steps:
+            1. Call ``install_multiple_apks()`` with APK paths.
+            2. Confirm the method completes without exceptions.
 
-        Примечание:
-            Этот тест проверяет сигнатуру метода.
-            Фактическая установка требует корректных APK файлов.
-        
+        Note:
+            This test only verifies the signature; real installation needs valid APK files.
+
         Args:
-            app: Экземпляр приложения Shadowstep.
+            app: Shadowstep application instance.
         """
         # Note: This test verifies method signature
         # Actual installation requires valid APK files
@@ -67,18 +64,17 @@ class TestShadowstepPart4:
             pass
 
     def test_remove_app(self, app: Shadowstep):
-        """Тестирование удаления приложения.
+        """Exercise removing an application.
 
-        Шаги:
-            1. Вызов remove_app() с пакетом приложения.
-            2. Проверка, что метод завершается без исключений.
+        Steps:
+            1. Call ``remove_app()`` with a package id.
+            2. Confirm the method completes without exceptions.
 
-        Примечание:
-            Этот тест проверяет сигнатуру метода.
-            Реальное приложение не будет удалено.
-        
+        Note:
+            This test validates the signature only; no real app is removed.
+
         Args:
-            app: Экземпляр приложения Shadowstep.
+            app: Shadowstep application instance.
         """
         # Note: This test verifies method signature
         # We won't actually remove a real app
@@ -91,18 +87,17 @@ class TestShadowstepPart4:
             pass
 
     def test_clear_app(self, app: Shadowstep):
-        """Тестирование очистки данных приложения.
+        """Exercise clearing application data.
 
-        Шаги:
-            1. Вызов clear_app() с пакетом приложения.
-            2. Проверка, что метод завершается без исключений.
+        Steps:
+            1. Call ``clear_app()`` with a package id.
+            2. Confirm the method completes without exceptions.
 
-        Примечание:
-            Этот тест проверяет сигнатуру метода.
-            Попытка выполнится с системным приложением, которое должно корректно обработать очистку.
-        
+        Note:
+            Signature verification only; the call targets a system app expected to handle the request.
+
         Args:
-            app: Экземпляр приложения Shadowstep.
+            app: Shadowstep application instance.
         """
         # Note: This test verifies method signature
         # We'll try with a system app that should handle clear gracefully
@@ -115,17 +110,17 @@ class TestShadowstepPart4:
             pass
 
     def test_send_sms(self, app: Shadowstep):
-        """Тестирование отправки SMS (только для эмулятора).
+        """Exercise sending SMS (emulator only).
 
-        Шаги:
-            1. Вызов send_sms() с номером телефона и сообщением.
-            2. Проверка, что метод завершается без исключений.
+        Steps:
+            1. Call ``send_sms()`` with a phone number and message.
+            2. Confirm the method completes without exceptions.
 
-        Примечание:
-            send_sms работает только на эмуляторах.
-        
+        Note:
+            ``send_sms`` works only on emulators.
+
         Args:
-            app: Экземпляр приложения Shadowstep.
+            app: Shadowstep application instance.
         """
         # Note: send_sms only works on emulators
         try:
@@ -137,15 +132,15 @@ class TestShadowstepPart4:
             pass
 
     def test_get_driver(self, app: Shadowstep):
-        """Тестирование получения экземпляра WebDriver.
+        """Verify retrieving the WebDriver instance.
 
-        Шаги:
-            1. Вызов get_driver() для получения экземпляра WebDriver.
-            2. Проверка, что возвращается экземпляр WebDriver.
-            3. Проверка, что session_id не равен None.
-        
+        Steps:
+            1. Call ``get_driver()``.
+            2. Confirm a WebDriver instance is returned.
+            3. Ensure ``session_id`` is populated.
+
         Args:
-            app: Экземпляр приложения Shadowstep.
+            app: Shadowstep application instance.
         """
         # Get WebDriver instance
         driver = app.get_driver()
@@ -161,16 +156,16 @@ class TestShadowstepPart4:
         assert driver is app.driver  # noqa: S101
 
     def test_reconnect(self, app: Shadowstep):
-        """Тестирование повторного подключения к устройству.
+        """Exercise reconnecting to the device.
 
-        Шаги:
-            1. Получение начального session_id.
-            2. Вызов reconnect() для повторного подключения к устройству.
-            3. Проверка, что установлена новая сессия.
-            4. Проверка, что приложение подключено.
-        
+        Steps:
+            1. Capture the initial ``session_id``.
+            2. Call ``reconnect()`` to establish a new session.
+            3. Confirm a new session is active.
+            4. Verify the app remains connected.
+
         Args:
-            app: Экземпляр приложения Shadowstep.
+            app: Shadowstep application instance.
         """
         # Get initial session_id
         initial_session_id = app.driver.session_id

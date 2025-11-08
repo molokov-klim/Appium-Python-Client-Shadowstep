@@ -16,21 +16,21 @@ uv run pytest -svl --log-cli-level INFO --tb=short --setup-show  tests/test_inte
 
 
 class TestShadowstepPart1:
-    """Тестирование базовых операций Shadowstep.
-    
-    Группа тестов проверяет основные операции с элементами, жесты тапа,
-    скриншоты и другие базовые функции.
+    """Verify Shadowstep core operations.
+
+    This suite covers element interactions, tap gestures, screenshots,
+    and other fundamental behaviors.
     """
 
     def test_get_element(self, app: Shadowstep, stability: None) -> None:
-        """Тестирование получения элемента из приложения Shadowstep.
+        """Verify fetching an element from Shadowstep.
 
         Args:
-            app: Экземпляр приложения Shadowstep для тестирования.
-            stability: Фикстура для обеспечения стабильности.
+            app: Shadowstep application instance under test.
+            stability: Fixture providing test stability.
 
-        Проверки:
-            Проверяет, что локатор полученного элемента соответствует ожидаемому.
+        Assertions:
+            Confirms the element locator matches the expected value.
         """
         element = app.get_element(
             locator={"class": "android.widget.FrameLayout"},
@@ -49,14 +49,14 @@ class TestShadowstepPart1:
         assert element.driver is not None  # noqa: S101
 
     def test_get_page_not_found(self, app: Shadowstep):
-        """Тестирование вызова ValueError при отсутствии страницы.
+        """Ensure ``get_page()`` raises ``ValueError`` for missing pages.
 
-        Шаги:
-            1. Вызов get_page() с несуществующим именем страницы.
-            2. Проверка, что возникает ValueError с соответствующим сообщением.
-        
+        Steps:
+            1. Call ``get_page()`` with a nonexistent page name.
+            2. Confirm a ``ValueError`` is raised with the expected message.
+
         Args:
-            app: Экземпляр приложения Shadowstep.
+            app: Shadowstep application instance.
         """
         # Call get_page() with non-existent page name
         with pytest.raises(ValueError) as exc_info:
@@ -68,14 +68,14 @@ class TestShadowstepPart1:
         assert "not found" in error_message  # noqa: S101
 
     def test_resolve_page_not_found(self, app: Shadowstep):
-        """Тестирование вызова ValueError при разрешении несуществующей страницы.
+        """Ensure ``resolve_page()`` raises ``ValueError`` for missing pages.
 
-        Шаги:
-            1. Вызов resolve_page() с несуществующим именем страницы.
-            2. Проверка, что возникает ValueError с соответствующим сообщением.
-        
+        Steps:
+            1. Call ``resolve_page()`` with a nonexistent page name.
+            2. Confirm a ``ValueError`` is raised with the expected message.
+
         Args:
-            app: Экземпляр приложения Shadowstep.
+            app: Shadowstep application instance.
         """
         # Call resolve_page() with non-existent page name
         with pytest.raises(ValueError) as exc_info:
@@ -89,17 +89,17 @@ class TestShadowstepPart1:
     def test_get_elements_multiple_elements(
         self, app: Shadowstep, android_settings_open_close: None
     ):
-        """Тестирование получения нескольких элементов, соответствующих локатору.
+        """Verify fetching multiple elements for a given locator.
 
-        Шаги:
-            1. Вызов get_elements() с локатором, соответствующим нескольким элементам.
-            2. Проверка, что возвращается список экземпляров Element.
-            3. Проверка корректной инициализации всех элементов со ссылкой на shadowstep.
-            4. Проверка корректной установки timeout и poll_frequency.
-        
+        Steps:
+            1. Call ``get_elements()`` with a locator that matches several elements.
+            2. Confirm a list of ``Element`` instances is returned.
+            3. Ensure each element is initialized with the correct Shadowstep reference.
+            4. Validate ``timeout`` and ``poll_frequency`` values.
+
         Args:
-            app: Экземпляр приложения Shadowstep.
-            android_settings_open_close: Фикстура для управления настройками Android.
+            app: Shadowstep application instance.
+            android_settings_open_close: Fixture managing the Android Settings screen.
         """
         # Step 1: Call get_elements() with a locator that matches multiple elements
         locator = ("xpath", "//android.widget.TextView")
@@ -120,17 +120,17 @@ class TestShadowstepPart1:
             assert element.poll_frequency == poll_frequency  # noqa: S101
 
     def test_tap_coordinates(self, app: Shadowstep, android_settings_open_close: None):
-        """Тестирование выполнения жеста тапа по указанным координатам.
+        """Verify performing a tap gesture at specific coordinates.
 
-        Шаги:
-            1. Поиск элемента на экране настроек.
-            2. Получение его координат.
-            3. Вызов tap() по этим координатам.
-            4. Проверка, что действие тапа выполняется без ошибок.
-        
+        Steps:
+            1. Locate an element on the Settings screen.
+            2. Retrieve its coordinates.
+            3. Call ``tap()`` at those coordinates.
+            4. Confirm the tap completes without errors.
+
         Args:
-            app: Экземпляр приложения Shadowstep.
-            android_settings_open_close: Фикстура для управления настройками Android.
+            app: Shadowstep application instance.
+            android_settings_open_close: Fixture managing the Android Settings screen.
         """
         # Find a visible element
         element = app.get_element({"text": "Settings"})
@@ -147,17 +147,17 @@ class TestShadowstepPart1:
         assert result is app  # noqa: S101
 
     def test_click_coordinates(self, app: Shadowstep, android_settings_open_close: None):
-        """Тестирование выполнения жеста клика по указанным координатам.
+        """Verify performing a click gesture at specific coordinates.
 
-        Шаги:
-            1. Поиск элемента на экране настроек.
-            2. Получение его координат.
-            3. Вызов click() по этим координатам.
-            4. Проверка, что действие клика выполняется без ошибок.
-        
+        Steps:
+            1. Locate an element on the Settings screen.
+            2. Retrieve its coordinates.
+            3. Call ``click()`` at those coordinates.
+            4. Confirm the click completes without errors.
+
         Args:
-            app: Экземпляр приложения Shadowstep.
-            android_settings_open_close: Фикстура для управления настройками Android.
+            app: Shadowstep application instance.
+            android_settings_open_close: Fixture managing the Android Settings screen.
         """
         # Find a visible element
         element = app.get_element({"text": "Settings"})
@@ -174,17 +174,17 @@ class TestShadowstepPart1:
         assert result is app  # noqa: S101
 
     def test_double_click_coordinates(self, app: Shadowstep, android_settings_open_close: None):
-        """Тестирование выполнения двойного клика по указанным координатам.
+        """Verify performing a double-click gesture at specific coordinates.
 
-        Шаги:
-            1. Поиск элемента на экране настроек.
-            2. Получение его координат.
-            3. Вызов double_click() по этим координатам.
-            4. Проверка, что действие двойного клика выполняется без ошибок.
-        
+        Steps:
+            1. Locate an element on the Settings screen.
+            2. Retrieve its coordinates.
+            3. Call ``double_click()`` at those coordinates.
+            4. Confirm the double-click completes without errors.
+
         Args:
-            app: Экземпляр приложения Shadowstep.
-            android_settings_open_close: Фикстура для управления настройками Android.
+            app: Shadowstep application instance.
+            android_settings_open_close: Fixture managing the Android Settings screen.
         """
         # Find a visible element
         element = app.get_element({"text": "Settings"})
@@ -201,17 +201,17 @@ class TestShadowstepPart1:
         assert result is app  # noqa: S101
 
     def test_long_click_coordinates(self, app: Shadowstep, android_settings_open_close: None):
-        """Тестирование выполнения длительного клика по указанным координатам.
+        """Verify performing a long-click gesture at specific coordinates.
 
-        Шаги:
-            1. Поиск элемента на экране настроек.
-            2. Получение его координат.
-            3. Вызов long_click() по этим координатам с длительностью.
-            4. Проверка, что действие длительного клика выполняется без ошибок.
-        
+        Steps:
+            1. Locate an element on the Settings screen.
+            2. Retrieve its coordinates.
+            3. Call ``long_click()`` at those coordinates with a duration.
+            4. Confirm the long-click completes without errors.
+
         Args:
-            app: Экземпляр приложения Shadowstep.
-            android_settings_open_close: Фикстура для управления настройками Android.
+            app: Shadowstep application instance.
+            android_settings_open_close: Fixture managing the Android Settings screen.
         """
         # Find a visible element
         element = app.get_element({"text": "Settings"})
@@ -227,17 +227,17 @@ class TestShadowstepPart1:
         # Verify long_click returns self for chaining
         assert result is app  # noqa: S101
 
-    def test_swipe_gesture(self, app: Shadowstep, android_settings_open_close: None):
-        """Тестирование выполнения жеста свайпа в указанной области.
+    def test_swipe_area(self, app: Shadowstep, android_settings_open_close: None):
+        """Verify performing a swipe gesture in a specified area.
 
-        Шаги:
-            1. Получение размеров экрана.
-            2. Вызов swipe() с корректными параметрами.
-            3. Проверка, что действие свайпа выполняется без ошибок.
-        
+        Steps:
+            1. Retrieve screen dimensions.
+            2. Call ``swipe()`` with valid parameters.
+            3. Confirm the swipe completes without errors.
+
         Args:
-            app: Экземпляр приложения Shadowstep.
-            android_settings_open_close: Фикстура для управления настройками Android.
+            app: Shadowstep application instance.
+            android_settings_open_close: Fixture managing the Android Settings screen.
         """
         # Get window size
         driver = app.driver
@@ -260,15 +260,15 @@ class TestShadowstepPart1:
         assert result is app  # noqa: S101
 
     def test_swipe_right_to_left(self, app: Shadowstep, android_settings_open_close: None):
-        """Тестирование горизонтального свайпа справа налево.
+        """Verify horizontal swipe from right to left.
 
-        Шаги:
-            1. Вызов swipe_right_to_left().
-            2. Проверка, что действие свайпа выполняется без ошибок.
-        
+        Steps:
+            1. Call ``swipe_right_to_left()``.
+            2. Confirm the swipe completes without errors.
+
         Args:
-            app: Экземпляр приложения Shadowstep.
-            android_settings_open_close: Фикстура для управления настройками Android.
+            app: Shadowstep application instance.
+            android_settings_open_close: Fixture managing the Android Settings screen.
         """
         # Perform swipe gesture
         result = app.swipe_right_to_left()
@@ -277,15 +277,15 @@ class TestShadowstepPart1:
         assert result is app  # noqa: S101
 
     def test_swipe_left_to_right(self, app: Shadowstep, android_settings_open_close: None):
-        """Тестирование горизонтального свайпа слева направо.
+        """Verify horizontal swipe from left to right.
 
-        Шаги:
-            1. Вызов swipe_left_to_right().
-            2. Проверка, что действие свайпа выполняется без ошибок.
-        
+        Steps:
+            1. Call ``swipe_left_to_right()``.
+            2. Confirm the swipe completes without errors.
+
         Args:
-            app: Экземпляр приложения Shadowstep.
-            android_settings_open_close: Фикстура для управления настройками Android.
+            app: Shadowstep application instance.
+            android_settings_open_close: Fixture managing the Android Settings screen.
         """
         # Perform swipe gesture
         result = app.swipe_left_to_right()
@@ -294,15 +294,15 @@ class TestShadowstepPart1:
         assert result is app  # noqa: S101
 
     def test_swipe_top_to_bottom(self, app: Shadowstep, android_settings_open_close: None):
-        """Тестирование вертикального свайпа сверху вниз.
+        """Verify vertical swipe from top to bottom.
 
-        Шаги:
-            1. Вызов swipe_top_to_bottom().
-            2. Проверка, что действие свайпа выполняется без ошибок.
-        
+        Steps:
+            1. Call ``swipe_top_to_bottom()``.
+            2. Confirm the swipe completes without errors.
+
         Args:
-            app: Экземпляр приложения Shadowstep.
-            android_settings_open_close: Фикстура для управления настройками Android.
+            app: Shadowstep application instance.
+            android_settings_open_close: Fixture managing the Android Settings screen.
         """
         # Perform swipe gesture
         result = app.swipe_top_to_bottom(percent=0.5, speed=5000)
@@ -311,15 +311,15 @@ class TestShadowstepPart1:
         assert result is app  # noqa: S101
 
     def test_swipe_bottom_to_top(self, app: Shadowstep, android_settings_open_close: None):
-        """Тестирование вертикального свайпа снизу вверх.
+        """Verify vertical swipe from bottom to top.
 
-        Шаги:
-            1. Вызов swipe_bottom_to_top().
-            2. Проверка, что действие свайпа выполняется без ошибок.
-        
+        Steps:
+            1. Call ``swipe_bottom_to_top()``.
+            2. Confirm the swipe completes without errors.
+
         Args:
-            app: Экземпляр приложения Shadowstep.
-            android_settings_open_close: Фикстура для управления настройками Android.
+            app: Shadowstep application instance.
+            android_settings_open_close: Fixture managing the Android Settings screen.
         """
         # Perform swipe gesture
         result = app.swipe_bottom_to_top(percent=0.5, speed=5000)
@@ -327,17 +327,17 @@ class TestShadowstepPart1:
         # Verify swipe_bottom_to_top returns self for chaining
         assert result is app  # noqa: S101
 
-    def test_scroll_gesture(self, app: Shadowstep, android_settings_open_close: None):
-        """Тестирование выполнения жеста прокрутки в указанной области.
+    def test_scroll_area(self, app: Shadowstep, android_settings_open_close: None):
+        """Verify performing a scroll gesture in a specified area.
 
-        Шаги:
-            1. Получение размеров экрана.
-            2. Вызов scroll() с корректными параметрами.
-            3. Проверка, что действие прокрутки выполняется без ошибок.
-        
+        Steps:
+            1. Retrieve screen dimensions.
+            2. Call ``scroll()`` with appropriate parameters.
+            3. Confirm the scroll completes without errors.
+
         Args:
-            app: Экземпляр приложения Shadowstep.
-            android_settings_open_close: Фикстура для управления настройками Android.
+            app: Shadowstep application instance.
+            android_settings_open_close: Fixture managing the Android Settings screen.
         """
         # Get window size
         driver = app.driver
@@ -359,17 +359,17 @@ class TestShadowstepPart1:
         # Verify scroll returns self for chaining
         assert result is app  # noqa: S101
 
-    def test_drag_gesture(self, app: Shadowstep, android_settings_open_close: None):
-        """Тестирование выполнения жеста перетаскивания из одной точки в другую.
+    def test_drag_area(self, app: Shadowstep, android_settings_open_close: None):
+        """Verify performing a drag gesture between coordinates.
 
-        Шаги:
-            1. Получение размеров экрана.
-            2. Вызов drag() с начальными и конечными координатами.
-            3. Проверка, что действие перетаскивания выполняется без ошибок.
-        
+        Steps:
+            1. Retrieve screen dimensions.
+            2. Call ``drag()`` with start and end coordinates.
+            3. Confirm the drag completes without errors.
+
         Args:
-            app: Экземпляр приложения Shadowstep.
-            android_settings_open_close: Фикстура для управления настройками Android.
+            app: Shadowstep application instance.
+            android_settings_open_close: Fixture managing the Android Settings screen.
         """
         # Get window size
         driver = app.driver
@@ -389,17 +389,17 @@ class TestShadowstepPart1:
         # Verify drag returns self for chaining
         assert result is app  # noqa: S101
 
-    def test_fling_gesture(self, app: Shadowstep, android_settings_open_close: None):
-        """Тестирование выполнения жеста быстрого свайпа в указанной области.
+    def test_fling_area(self, app: Shadowstep, android_settings_open_close: None):
+        """Verify performing a fling gesture in a specified area.
 
-        Шаги:
-            1. Получение размеров экрана.
-            2. Вызов fling() с корректными параметрами.
-            3. Проверка, что действие быстрого свайпа выполняется без ошибок.
-        
+        Steps:
+            1. Retrieve screen dimensions.
+            2. Call ``fling()`` with valid parameters.
+            3. Confirm the fling completes without errors.
+
         Args:
-            app: Экземпляр приложения Shadowstep.
-            android_settings_open_close: Фикстура для управления настройками Android.
+            app: Shadowstep application instance.
+            android_settings_open_close: Fixture managing the Android Settings screen.
         """
         # Get window size
         driver = app.driver
@@ -420,17 +420,17 @@ class TestShadowstepPart1:
         # Verify fling returns self for chaining
         assert result is app  # noqa: S101
 
-    def test_pinch_open_gesture(self, app: Shadowstep, android_settings_open_close: None):
-        """Тестирование выполнения жеста масштабирования (увеличения) в указанной области.
+    def test_pinch_open_area(self, app: Shadowstep, android_settings_open_close: None):
+        """Verify performing a pinch-open (zoom in) gesture.
 
-        Шаги:
-            1. Получение размеров экрана.
-            2. Вызов pinch_open() с корректными параметрами.
-            3. Проверка, что действие масштабирования выполняется без ошибок.
-        
+        Steps:
+            1. Retrieve screen dimensions.
+            2. Call ``pinch_open()`` with valid parameters.
+            3. Confirm the gesture completes without errors.
+
         Args:
-            app: Экземпляр приложения Shadowstep.
-            android_settings_open_close: Фикстура для управления настройками Android.
+            app: Shadowstep application instance.
+            android_settings_open_close: Fixture managing the Android Settings screen.
         """
         # Get window size
         driver = app.driver
@@ -451,17 +451,17 @@ class TestShadowstepPart1:
         # Verify pinch_open returns self for chaining
         assert result is app  # noqa: S101
 
-    def test_pinch_close_gesture(self, app: Shadowstep, android_settings_open_close: None):
-        """Тестирование выполнения жеста масштабирования (уменьшения) в указанной области.
+    def test_pinch_close_area(self, app: Shadowstep, android_settings_open_close: None):
+        """Verify performing a pinch-close (zoom out) gesture.
 
-        Шаги:
-            1. Получение размеров экрана.
-            2. Вызов pinch_close() с корректными параметрами.
-            3. Проверка, что действие масштабирования выполняется без ошибок.
-        
+        Steps:
+            1. Retrieve screen dimensions.
+            2. Call ``pinch_close()`` with valid parameters.
+            3. Confirm the gesture completes without errors.
+
         Args:
-            app: Экземпляр приложения Shadowstep.
-            android_settings_open_close: Фикстура для управления настройками Android.
+            app: Shadowstep application instance.
+            android_settings_open_close: Fixture managing the Android Settings screen.
         """
         # Get window size
         driver = app.driver
@@ -482,17 +482,19 @@ class TestShadowstepPart1:
         # Verify pinch_close returns self for chaining
         assert result is app  # noqa: S101
 
-    def test_get_screenshot(self, app: Shadowstep, android_settings_open_close: None):
-        """Тестирование получения скриншота в виде байтов.
+    def test_get_screenshot_bytes(
+        self, app: Shadowstep, android_settings_open_close: None
+    ) -> None:
+        """Verify retrieving a screenshot as bytes.
 
-        Шаги:
-            1. Вызов get_screenshot().
-            2. Проверка, что возвращаются байты.
-            3. Проверка, что данные не пусты.
-        
+        Steps:
+            1. Call ``get_screenshot()``.
+            2. Ensure the return value is bytes.
+            3. Confirm the data is non-empty.
+
         Args:
-            app: Экземпляр приложения Shadowstep.
-            android_settings_open_close: Фикстура для управления настройками Android.
+            app: Shadowstep application instance.
+            android_settings_open_close: Fixture managing the Android Settings screen.
         """
         # Get screenshot
         screenshot = app.get_screenshot()
@@ -502,16 +504,14 @@ class TestShadowstepPart1:
         assert len(screenshot) > 0  # noqa: S101
 
     def test_save_screenshot(self, app: Shadowstep, android_settings_open_close: None):
-        """Тестирование сохранения скриншота в файл.
+        """Verify saving a Shadowstep screenshot.
 
-        Шаги:
-            1. Вызов save_screenshot() с путем и именем файла.
-            2. Проверка, что файл создан.
-            3. Очистка файла.
-        
         Args:
-            app: Экземпляр приложения Shadowstep.
-            android_settings_open_close: Фикстура для управления настройками Android.
+            app: Shadowstep application instance under test.
+            android_settings_open_close: Fixture managing the Android Settings screen.
+
+        Assertions:
+            Confirms the screenshot file exists in the target directory.
         """
         # Create temporary directory
         with tempfile.TemporaryDirectory() as tmpdir:
@@ -529,16 +529,14 @@ class TestShadowstepPart1:
             assert file_path.stat().st_size > 0  # noqa: S101
 
     def test_save_source(self, app: Shadowstep, android_settings_open_close: None):
-        """Тестирование сохранения исходного кода страницы в файл.
+        """Verify saving the XML source tree.
 
-        Шаги:
-            1. Вызов save_source() с путем и именем файла.
-            2. Проверка, что файл создан.
-            3. Очистка файла.
-        
         Args:
-            app: Экземпляр приложения Shadowstep.
-            android_settings_open_close: Фикстура для управления настройками Android.
+            app: Shadowstep application instance under test.
+            android_settings_open_close: Fixture managing the Android Settings screen.
+
+        Assertions:
+            Confirms ``save_source()`` writes the XML file and returns its path.
         """
         # Create temporary directory
         with tempfile.TemporaryDirectory() as tmpdir:
@@ -555,15 +553,15 @@ class TestShadowstepPart1:
             assert file_path.exists()  # noqa: S101
             assert file_path.stat().st_size > 0  # noqa: S101
 
-    def test_get_instance(self, app: Shadowstep):
-        """Тестирование получения экземпляра singleton.
+    def test_singleton_instance(self, app: Shadowstep) -> None:
+        """Verify retrieving the singleton instance.
 
-        Шаги:
-            1. Вызов get_instance().
-            2. Проверка, что возвращается тот же экземпляр, что и app.
-        
+        Steps:
+            1. Call ``get_instance()``.
+            2. Confirm the returned instance matches ``app``.
+
         Args:
-            app: Экземпляр приложения Shadowstep.
+            app: Shadowstep application instance.
         """
         # Get instance
         instance = Shadowstep.get_instance()
@@ -571,17 +569,19 @@ class TestShadowstepPart1:
         # Verify it's the same instance
         assert instance is app  # noqa: S101
 
-    def test_start_stop_logcat(self, app: Shadowstep, cleanup_log: None):
-        """Тестирование управления записью logcat.
+    def test_logcat_context_manager(
+        self, app: Shadowstep, cleanup_log: None, tmp_path: Path
+    ) -> None:
+        """Verify controlling logcat recording via context manager.
 
-        Шаги:
-            1. Вызов start_logcat() с именем файла.
-            2. Вызов stop_logcat().
-            3. Проверка, что исключения не возникают.
-        
+        Steps:
+            1. Call ``start_logcat()`` with a filename.
+            2. Call ``stop_logcat()``.
+            3. Confirm no exceptions occur.
+
         Args:
-            app: Экземпляр приложения Shadowstep.
-            cleanup_log: Фикстура для очистки логов.
+            app: Shadowstep application instance.
+            cleanup_log: Fixture for log cleanup.
         """
         # Start logcat
         app.start_logcat(filename="logcat_test.log")
@@ -594,17 +594,19 @@ class TestShadowstepPart1:
 
         # No exception means success
 
-    def test_get_image(self, app: Shadowstep, connected_devices_image_path: str):
-        """Тестирование получения обертки ShadowstepImage.
+    def test_get_image_wrapper(
+        self, app: Shadowstep, connected_devices_image_path: Path
+    ) -> None:
+        """Verify obtaining a ``ShadowstepImage`` wrapper.
 
-        Шаги:
-            1. Вызов get_image() с путем к изображению.
-            2. Проверка, что возвращается экземпляр ShadowstepImage.
-            3. Проверка, что экземпляр может использоваться для операций с изображениями.
-        
+        Steps:
+            1. Call ``get_image()`` with an image path.
+            2. Confirm a ``ShadowstepImage`` instance is returned.
+            3. Ensure the instance can be used for image operations.
+
         Args:
-            app: Экземпляр приложения Shadowstep.
-            connected_devices_image_path: Путь к изображению тестового устройства.
+            app: Shadowstep application instance.
+            connected_devices_image_path: Path to the test device image.
         """
         # Get image
         image = app.get_image(image=connected_devices_image_path, threshold=0.5, timeout=5.0)
@@ -616,17 +618,19 @@ class TestShadowstepPart1:
         assert hasattr(image, "wait")  # noqa: S101
         assert hasattr(image, "is_visible")  # noqa: S101
 
-    def test_get_images(self, app: Shadowstep, connected_devices_image_path: str):
-        """Тестирование получения списка оберток ShadowstepImage.
+    def test_get_images_list(
+        self, app: Shadowstep, connected_devices_image_path: Path
+    ) -> None:
+        """Verify retrieving a list of ``ShadowstepImage`` wrappers.
 
-        Шаги:
-            1. Вызов get_images() с путем к изображению.
-            2. Проверка, что возвращается список.
-            3. Проверка, что список содержит экземпляры ShadowstepImage.
-        
+        Steps:
+            1. Call ``get_images()`` with an image path.
+            2. Confirm a list is returned.
+            3. Ensure each item is a ``ShadowstepImage`` instance.
+
         Args:
-            app: Экземпляр приложения Shadowstep.
-            connected_devices_image_path: Путь к изображению тестового устройства.
+            app: Shadowstep application instance.
+            connected_devices_image_path: Path to the test device image.
         """
         # Get images
         images = app.get_images(image=connected_devices_image_path, threshold=0.5, timeout=5.0)
@@ -642,16 +646,16 @@ class TestShadowstepPart1:
             assert hasattr(image, "wait")  # noqa: S101
             assert hasattr(image, "is_visible")  # noqa: S101
 
-    def test_push_file(self, app: Shadowstep):
-        """Тестирование загрузки файла на устройство.
+    def test_push_file(self, app: Shadowstep, tmp_path: Path) -> None:
+        """Verify uploading a file to the device.
 
-        Шаги:
-            1. Создание временного файла.
-            2. Вызов push_file() для загрузки файла на устройство.
-            3. Проверка, что операция завершается без ошибок.
-        
+        Steps:
+            1. Create a temporary file.
+            2. Call ``push_file()`` to upload the file to the device.
+            3. Confirm the operation completes without errors.
+
         Args:
-            app: Экземпляр приложения Shadowstep.
+            app: Shadowstep application instance.
         """
         import base64
 
@@ -677,18 +681,18 @@ class TestShadowstepPart1:
             # Clean up temporary file
             Path(tmpfile_path).unlink(missing_ok=True)
 
-    def test_start_stop_recording_screen(self, app: Shadowstep, android_settings_open_close: None):
-        """Тестирование управления записью экрана.
+    def test_screen_recording(self, app: Shadowstep, android_settings_open_close: None) -> None:
+        """Verify controlling screen recording.
 
-        Шаги:
-            1. Вызов start_recording_screen().
-            2. Ожидание короткого периода времени.
-            3. Вызов stop_recording_screen().
-            4. Проверка, что возвращаются байты видео.
-        
+        Steps:
+            1. Call ``start_recording_screen()``.
+            2. Wait briefly.
+            3. Call ``stop_recording_screen()``.
+            4. Ensure video bytes are returned.
+
         Args:
-            app: Экземпляр приложения Shadowstep.
-            android_settings_open_close: Фикстура для управления настройками Android.
+            app: Shadowstep application instance.
+            android_settings_open_close: Fixture managing the Android Settings screen.
         """
         # Start recording
         app.start_recording_screen()
@@ -703,15 +707,15 @@ class TestShadowstepPart1:
         assert isinstance(video, bytes)  # noqa: S101
         assert len(video) > 0  # noqa: S101
 
-    def test_deep_link(self, app: Shadowstep):
-        """Тестирование открытия URI и запуска соответствующей активности.
+    def test_deep_link_open(self, app: Shadowstep) -> None:
+        """Verify launching a deep link and associated activity.
 
-        Шаги:
-            1. Вызов deep_link() с корректным URI (настройки Android).
-            2. Проверка, что метод завершается без исключений или корректно обрабатывает неподдерживаемые URI.
-        
+        Steps:
+            1. Call ``deep_link()`` with a valid URI (Android Settings).
+            2. Confirm the method completes without exceptions or handles unsupported URIs gracefully.
+
         Args:
-            app: Экземпляр приложения Shadowstep.
+            app: Shadowstep application instance.
         """
         from shadowstep.exceptions.shadowstep_exceptions import ShadowstepException
 
@@ -728,20 +732,20 @@ class TestShadowstepPart1:
             # Deep link may not be supported on all devices, test method signature
             pass
 
-    def test_get_current_package_and_activity(
+    def test_get_current_app_info(
         self, app: Shadowstep, android_settings_open_close: None
-    ):
-        """Тестирование получения информации о текущем приложении.
+    ) -> None:
+        """Verify retrieving current application details.
 
-        Шаги:
-            1. Вызов get_current_package() для получения имени пакета.
-            2. Вызов get_current_activity() для получения имени активности.
-            3. Проверка, что оба возвращают непустые строки.
-            4. Проверка, что пакет содержит ожидаемый пакет настроек.
-        
+        Steps:
+            1. Call ``get_current_package()`` to fetch the package name.
+            2. Call ``get_current_activity()`` to fetch the activity name.
+            3. Confirm both return non-empty strings.
+            4. Ensure the package name contains the Settings identifier.
+
         Args:
-            app: Экземпляр приложения Shadowstep.
-            android_settings_open_close: Фикстура для управления настройками Android.
+            app: Shadowstep application instance.
+            android_settings_open_close: Fixture managing the Android Settings screen.
         """
         # Get current package
         package = app.get_current_package()
@@ -758,16 +762,16 @@ class TestShadowstepPart1:
         assert isinstance(activity, str)  # noqa: S101
         assert len(activity) > 0  # noqa: S101
 
-    def test_shell_command(self, app: Shadowstep):
-        """Тестирование выполнения команды shell и возврата вывода.
+    def test_shell_command_output(self, app: Shadowstep) -> None:
+        """Verify executing a shell command and returning output.
 
-        Шаги:
-            1. Вызов shell() с простой командой (echo).
-            2. Проверка, что вывод команды возвращается в виде строки.
-            3. Проверка, что вывод соответствует ожидаемому значению.
-        
+        Steps:
+            1. Call ``shell()`` with a simple command (``echo``).
+            2. Ensure the output is returned as a string.
+            3. Confirm the output matches the expected value.
+
         Args:
-            app: Экземпляр приложения Shadowstep.
+            app: Shadowstep application instance.
         """
         # Execute shell command
         result = app.shell("echo test")
@@ -776,16 +780,16 @@ class TestShadowstepPart1:
         assert isinstance(result, str)  # noqa: S101
         assert "test" in result  # noqa: S101
 
-    def test_get_clipboard_and_set_clipboard(self, app: Shadowstep):
-        """Тестирование манипуляции буфером обмена устройства.
+    def test_clipboard_operations(self, app: Shadowstep) -> None:
+        """Verify clipboard manipulation on the device.
 
-        Шаги:
-            1. Вызов set_clipboard() с тестовым содержимым (в кодировке base64).
-            2. Вызов get_clipboard() для получения содержимого.
-            3. Проверка, что полученное содержимое соответствует установленному.
-        
+        Steps:
+            1. Call ``set_clipboard()`` with base64-encoded test content.
+            2. Call ``get_clipboard()`` to retrieve the value.
+            3. Confirm the retrieved content matches what was set.
+
         Args:
-            app: Экземпляр приложения Shadowstep.
+            app: Shadowstep application instance.
         """
         import base64
 
