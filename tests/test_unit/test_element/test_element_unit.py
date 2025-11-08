@@ -125,7 +125,7 @@ class TestElementDOM:
         child_locator = ("id", "child")
         result = element.get_elements(child_locator, timeout=10)
 
-        element.dom.get_elements.assert_called_once_with(child_locator, 10, 0.5, None)
+        element.dom.get_elements.assert_called_once_with(child_locator, 10, 0.5, None, ())
         assert len(result) == 2
 
     def test_get_parent(self):
