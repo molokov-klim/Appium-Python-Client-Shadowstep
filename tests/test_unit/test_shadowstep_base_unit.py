@@ -37,7 +37,9 @@ class TestShadowstepBaseUnit:
         }
         mock_response.raise_for_status.return_value = None
 
-        with patch("requests.get", return_value=mock_response):
+        with patch("requests.Session") as mock_session:
+            session_mock = mock_session.return_value.__enter__.return_value
+            session_mock.get.return_value = mock_response
             result = app._is_session_active_on_grid()
             assert result is True
 
@@ -50,14 +52,18 @@ class TestShadowstepBaseUnit:
         }
         mock_response.raise_for_status.return_value = None
 
-        with patch("requests.get", return_value=mock_response):
+        with patch("requests.Session") as mock_session:
+            session_mock = mock_session.return_value.__enter__.return_value
+            session_mock.get.return_value = mock_response
             result = app._is_session_active_on_grid()
             assert result is False
 
     def test_is_session_active_on_grid_exception(self):
         """Test _is_session_active_on_grid with exception."""
 
-        with patch("requests.get", side_effect=Exception("Network error")):
+        with patch("requests.Session") as mock_session:
+            session_mock = mock_session.return_value.__enter__.return_value
+            session_mock.get.side_effect = Exception("Network error")
             result = app._is_session_active_on_grid()
             assert result is False
 
@@ -72,7 +78,9 @@ class TestShadowstepBaseUnit:
         mock_response.json.return_value = {"value": [{"id": "test_session_id", "ready": True}]}
         mock_response.raise_for_status.return_value = None
 
-        with patch("requests.get", return_value=mock_response):
+        with patch("requests.Session") as mock_session:
+            session_mock = mock_session.return_value.__enter__.return_value
+            session_mock.get.return_value = mock_response
             result = app._is_session_active_on_standalone()
             assert result is True
 
@@ -83,14 +91,18 @@ class TestShadowstepBaseUnit:
         mock_response.json.return_value = {"value": [{"id": "different_session_id", "ready": True}]}
         mock_response.raise_for_status.return_value = None
 
-        with patch("requests.get", return_value=mock_response):
+        with patch("requests.Session") as mock_session:
+            session_mock = mock_session.return_value.__enter__.return_value
+            session_mock.get.return_value = mock_response
             result = app._is_session_active_on_standalone()
             assert result is False
 
     def test_is_session_active_on_standalone_exception(self):
         """Test _is_session_active_on_standalone with exception."""
 
-        with patch("requests.get", side_effect=Exception("Network error")):
+        with patch("requests.Session") as mock_session:
+            session_mock = mock_session.return_value.__enter__.return_value
+            session_mock.get.side_effect = Exception("Network error")
             result = app._is_session_active_on_standalone()
             assert result is False
 
@@ -105,7 +117,9 @@ class TestShadowstepBaseUnit:
         mock_response.json.return_value = {"value": [{"id": "test_session_id", "ready": True}]}
         mock_response.raise_for_status.return_value = None
 
-        with patch("requests.get", return_value=mock_response):
+        with patch("requests.Session") as mock_session:
+            session_mock = mock_session.return_value.__enter__.return_value
+            session_mock.get.return_value = mock_response
             result = app._is_session_active_on_standalone_new_style()
             assert result is True
 
@@ -116,14 +130,18 @@ class TestShadowstepBaseUnit:
         mock_response.json.return_value = {"value": [{"id": "different_session_id", "ready": True}]}
         mock_response.raise_for_status.return_value = None
 
-        with patch("requests.get", return_value=mock_response):
+        with patch("requests.Session") as mock_session:
+            session_mock = mock_session.return_value.__enter__.return_value
+            session_mock.get.return_value = mock_response
             result = app._is_session_active_on_standalone_new_style()
             assert result is False
 
     def test_is_session_active_on_standalone_new_style_exception(self):
         """Test _is_session_active_on_standalone_new_style with exception."""
 
-        with patch("requests.get", side_effect=Exception("Network error")):
+        with patch("requests.Session") as mock_session:
+            session_mock = mock_session.return_value.__enter__.return_value
+            session_mock.get.side_effect = Exception("Network error")
             result = app._is_session_active_on_standalone_new_style()
             assert result is False
 
@@ -166,9 +184,12 @@ class TestShadowstepBaseUnit:
             with patch("shadowstep.shadowstep_base.Transport") as mock_transport:
                 with patch("shadowstep.shadowstep_base.Terminal") as mock_terminal:
                     with patch("shadowstep.shadowstep_base.Adb") as mock_adb:
-                        with patch("requests.delete"):  # Mock disconnect call
+                        with patch("requests.Session") as mock_session:
+                            session_mock = mock_session.return_value.__enter__.return_value
+                            session_mock.delete.return_value = Mock()
                             # Disconnect first
                             app.disconnect()
+                            session_mock.delete.reset_mock()
 
                             mock_driver = MagicMock()
                             mock_driver.session_id = "test_session_id"
@@ -195,24 +216,28 @@ class TestShadowstepBaseUnit:
     def test_disconnect_with_invalid_session_exception(self):
         """Test disconnect method with InvalidSessionIdException."""
 
-        # Mock driver and requests.delete to raise InvalidSessionIdException
+        # Mock driver and requests.Session.delete to raise InvalidSessionIdException
         mock_driver = MagicMock()
         mock_driver.session_id = "test_session_id"
         app.driver = mock_driver
 
-        with patch("requests.delete", side_effect=InvalidSessionIdException("Invalid session")):
+        with patch("requests.Session") as mock_session:
+            session_mock = mock_session.return_value.__enter__.return_value
+            session_mock.delete.side_effect = InvalidSessionIdException("Invalid session")
             app.disconnect()
             # Should not raise exception, just log debug message
 
     def test_disconnect_with_no_such_driver_exception(self):
         """Test disconnect method with NoSuchDriverException."""
 
-        # Mock driver and requests.delete to raise NoSuchDriverException
+        # Mock driver and requests.Session.delete to raise NoSuchDriverException
         mock_driver = MagicMock()
         mock_driver.session_id = "test_session_id"
         app.driver = mock_driver
 
-        with patch("requests.delete", side_effect=NoSuchDriverException("No such driver")):
+        with patch("requests.Session") as mock_session:
+            session_mock = mock_session.return_value.__enter__.return_value
+            session_mock.delete.side_effect = NoSuchDriverException("No such driver")
             app.disconnect()
             # Should not raise exception, just log debug message
 
@@ -223,7 +248,9 @@ class TestShadowstepBaseUnit:
         mock_response.json.return_value = {"value": {"nodes": [{"slots": []}]}}
         mock_response.raise_for_status.return_value = None
 
-        with patch("requests.get", return_value=mock_response):
+        with patch("requests.Session") as mock_session:
+            session_mock = mock_session.return_value.__enter__.return_value
+            session_mock.get.return_value = mock_response
             result = app._is_session_active_on_grid()
             assert result is False
 
@@ -234,7 +261,9 @@ class TestShadowstepBaseUnit:
         mock_response.json.return_value = {"value": {"nodes": [{"slots": [{"session": None}]}]}}
         mock_response.raise_for_status.return_value = None
 
-        with patch("requests.get", return_value=mock_response):
+        with patch("requests.Session") as mock_session:
+            session_mock = mock_session.return_value.__enter__.return_value
+            session_mock.get.return_value = mock_response
             result = app._is_session_active_on_grid()
             assert result is False
 
@@ -247,7 +276,9 @@ class TestShadowstepBaseUnit:
         mock_response = Mock()
         mock_response.text = '{"value": [{"id": "session123"}]}'
 
-        with patch("requests.get", return_value=mock_response):
+        with patch("requests.Session") as mock_session:
+            session_mock = mock_session.return_value.__enter__.return_value
+            session_mock.get.return_value = mock_response
             result = WebDriverSingleton._get_session_id({"command_executor": "http://test"})
             assert result == "session123"
 
@@ -260,7 +291,9 @@ class TestShadowstepBaseUnit:
         mock_response = Mock()
         mock_response.text = '{"value": []}'
 
-        with patch("requests.get", return_value=mock_response):
+        with patch("requests.Session") as mock_session:
+            session_mock = mock_session.return_value.__enter__.return_value
+            session_mock.get.return_value = mock_response
             result = WebDriverSingleton._get_session_id({"command_executor": "http://test"})
             assert result == "unknown_session_id"
 
@@ -273,7 +306,9 @@ class TestShadowstepBaseUnit:
         mock_response = Mock()
         mock_response.text = '{"other": []}'
 
-        with patch("requests.get", return_value=mock_response):
+        with patch("requests.Session") as mock_session:
+            session_mock = mock_session.return_value.__enter__.return_value
+            session_mock.get.return_value = mock_response
             result = WebDriverSingleton._get_session_id({"command_executor": "http://test"})
             assert result == "unknown_session_id"
 

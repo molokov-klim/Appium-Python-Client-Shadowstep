@@ -30,21 +30,23 @@ class TestYandexTranslate:
             assert translator._iam_token == "test_token"  # noqa: S101
 
     @patch.dict(os.environ, {"yandexPassportOauthToken": "test_oauth_token"})
-    @patch("requests.post")
+    @patch("requests.Session")
     @pytest.mark.unit
-    def test_get_iam_token_success(self, mock_post: Mock) -> None:
+    def test_get_iam_token_success(self, mock_session: Mock) -> None:
         """Test successful IAM token retrieval."""
         mock_response = Mock()
         mock_response.json.return_value = {"iamToken": "test_iam_token"}
         mock_response.raise_for_status.return_value = None
-        mock_post.return_value = mock_response
+        session_mock = mock_session.return_value.__enter__.return_value
+        session_mock.post.return_value = mock_response
 
         translator = YandexTranslate("test_folder_id")
         assert translator._iam_token == "test_iam_token"  # noqa: S101
-        mock_post.assert_called_once_with(
+        session_mock.post.assert_called_once_with(
             "https://iam.api.cloud.yandex.net/iam/v1/tokens",
             json={"yandexPassportOauthToken": "test_oauth_token"},
             timeout=30,
+            verify=False,
         )
 
     @patch.dict(os.environ, {}, clear=True)
@@ -55,13 +57,14 @@ class TestYandexTranslate:
             YandexTranslate("test_folder_id")
 
     @patch.dict(os.environ, {"yandexPassportOauthToken": "test_oauth_token"})
-    @patch("requests.post")
+    @patch("requests.Session")
     @pytest.mark.unit
-    def test_get_iam_token_http_error(self, mock_post: Mock) -> None:
+    def test_get_iam_token_http_error(self, mock_session: Mock) -> None:
         """Test IAM token retrieval with HTTP error."""
         mock_response = Mock()
         mock_response.raise_for_status.side_effect = requests.HTTPError("HTTP Error")
-        mock_post.return_value = mock_response
+        session_mock = mock_session.return_value.__enter__.return_value
+        session_mock.post.return_value = mock_response
 
         with pytest.raises(requests.HTTPError):
             YandexTranslate("test_folder_id")
@@ -94,9 +97,9 @@ class TestYandexTranslate:
         assert result == "Hello world"  # noqa: S101
 
     @patch.object(YandexTranslate, "_get_iam_token", return_value="test_token")
-    @patch("requests.post")
+    @patch("requests.Session")
     @pytest.mark.unit
-    def test_translate_success(self, mock_post: Mock, mock_get_token: Mock) -> None:
+    def test_translate_success(self, mock_session: Mock, mock_get_token: Mock) -> None:
         """Test successful translation."""
         mock_response = Mock()
         mock_response.json.return_value = {
@@ -104,13 +107,14 @@ class TestYandexTranslate:
         }
         mock_response.raise_for_status.return_value = None
         mock_response.text = '{"translations": [{"text": "Hello world"}]}'
-        mock_post.return_value = mock_response
+        session_mock = mock_session.return_value.__enter__.return_value
+        session_mock.post.return_value = mock_response
 
         translator = YandexTranslate("test_folder_id")
         result = translator.translate("Привет мир")
 
         assert result == "Hello world"  # noqa: S101
-        mock_post.assert_called_once_with(
+        session_mock.post.assert_called_once_with(
             "https://translate.api.cloud.yandex.net/translate/v2/translate",
             headers={
                 "Content-Type": "application/json",
@@ -123,16 +127,18 @@ class TestYandexTranslate:
                 "targetLanguageCode": "en",
             },
             timeout=30,
+            verify=False,
         )
 
     @patch.object(YandexTranslate, "_get_iam_token", return_value="test_token")
-    @patch("requests.post")
+    @patch("requests.Session")
     @pytest.mark.unit
-    def test_translate_http_error(self, mock_post: Mock, mock_get_token: Mock) -> None:
+    def test_translate_http_error(self, mock_session: Mock, mock_get_token: Mock) -> None:
         """Test translation with HTTP error."""
         mock_response = Mock()
         mock_response.raise_for_status.side_effect = requests.HTTPError("HTTP Error")
-        mock_post.return_value = mock_response
+        session_mock = mock_session.return_value.__enter__.return_value
+        session_mock.post.return_value = mock_response
 
         translator = YandexTranslate("test_folder_id")
 
@@ -140,15 +146,16 @@ class TestYandexTranslate:
             translator.translate("Привет мир")
 
     @patch.object(YandexTranslate, "_get_iam_token", return_value="test_token")
-    @patch("requests.post")
+    @patch("requests.Session")
     @pytest.mark.unit
-    def test_translate_no_translations(self, mock_post: Mock, mock_get_token: Mock) -> None:
+    def test_translate_no_translations(self, mock_session: Mock, mock_get_token: Mock) -> None:
         """Test translation with empty translations response."""
         mock_response = Mock()
         mock_response.json.return_value = {"translations": []}
         mock_response.raise_for_status.return_value = None
         mock_response.text = '{"translations": []}'
-        mock_post.return_value = mock_response
+        session_mock = mock_session.return_value.__enter__.return_value
+        session_mock.post.return_value = mock_response
 
         translator = YandexTranslate("test_folder_id")
 
@@ -156,15 +163,16 @@ class TestYandexTranslate:
             translator.translate("Привет мир")
 
     @patch.object(YandexTranslate, "_get_iam_token", return_value="test_token")
-    @patch("requests.post")
+    @patch("requests.Session")
     @pytest.mark.unit
-    def test_translate_missing_translations_key(self, mock_post: Mock, mock_get_token: Mock) -> None:
+    def test_translate_missing_translations_key(self, mock_session: Mock, mock_get_token: Mock) -> None:
         """Test translation with missing translations key in response."""
         mock_response = Mock()
         mock_response.json.return_value = {}
         mock_response.raise_for_status.return_value = None
         mock_response.text = '{}'
-        mock_post.return_value = mock_response
+        session_mock = mock_session.return_value.__enter__.return_value
+        session_mock.post.return_value = mock_response
 
         translator = YandexTranslate("test_folder_id")
 
@@ -172,9 +180,9 @@ class TestYandexTranslate:
             translator.translate("Привет мир")
 
     @patch.object(YandexTranslate, "_get_iam_token", return_value="test_token")
-    @patch("requests.post")
+    @patch("requests.Session")
     @pytest.mark.unit
-    def test_translate_with_logging(self, mock_post: Mock, mock_get_token: Mock) -> None:
+    def test_translate_with_logging(self, mock_session: Mock, mock_get_token: Mock) -> None:
         """Test translation with logging calls."""
         mock_response = Mock()
         mock_response.json.return_value = {
@@ -182,7 +190,8 @@ class TestYandexTranslate:
         }
         mock_response.raise_for_status.return_value = None
         mock_response.text = '{"translations": [{"text": "Hello world"}]}'
-        mock_post.return_value = mock_response
+        session_mock = mock_session.return_value.__enter__.return_value
+        session_mock.post.return_value = mock_response
 
         translator = YandexTranslate("test_folder_id")
         translator.logger = Mock()
@@ -202,9 +211,9 @@ class TestYandexTranslate:
         assert result == ""  # noqa: S101
 
     @patch.object(YandexTranslate, "_get_iam_token", return_value="test_token")
-    @patch("requests.post")
+    @patch("requests.Session")
     @pytest.mark.unit
-    def test_translate_mixed_content(self, mock_post: Mock, mock_get_token: Mock) -> None:
+    def test_translate_mixed_content(self, mock_session: Mock, mock_get_token: Mock) -> None:
         """Test translation with mixed Cyrillic and Latin content."""
         mock_response = Mock()
         mock_response.json.return_value = {
@@ -212,7 +221,8 @@ class TestYandexTranslate:
         }
         mock_response.raise_for_status.return_value = None
         mock_response.text = '{"translations": [{"text": "Hello Hello world"}]}'
-        mock_post.return_value = mock_response
+        session_mock = mock_session.return_value.__enter__.return_value
+        session_mock.post.return_value = mock_response
 
         translator = YandexTranslate("test_folder_id")
         result = translator.translate("Hello Привет world")
