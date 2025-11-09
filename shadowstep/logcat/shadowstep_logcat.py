@@ -65,9 +65,9 @@ class ShadowstepLogcat:
     """
 
     def __init__(
-            self,
-            driver_getter: Callable[[], WebDriver | None],
-            poll_interval: float = DEFAULT_POLL_INTERVAL,
+        self,
+        driver_getter: Callable[[], WebDriver | None],
+        poll_interval: float = DEFAULT_POLL_INTERVAL,
     ) -> None:
         """Initialize ShadowstepLogcat.
 
@@ -83,7 +83,7 @@ class ShadowstepLogcat:
             msg = "poll_interval must be non-negative"
             raise ShadowstepPollIntervalError(msg)
 
-        self.mobile_commands =MobileCommands()
+        self.mobile_commands = MobileCommands()
 
         self._driver_getter = driver_getter
         self._poll_interval = poll_interval
@@ -152,7 +152,12 @@ class ShadowstepLogcat:
 
         return True
 
-    def __exit__(self, exc_type: type[BaseException] | None, exc_val: BaseException | None, exc_tb: types.TracebackType | None) -> None:
+    def __exit__(
+        self,
+        exc_type: type[BaseException] | None,
+        exc_val: BaseException | None,
+        exc_tb: types.TracebackType | None,
+    ) -> None:
         """Context manager exit method to stop logcat capture.
 
         Args:
@@ -282,7 +287,9 @@ class ShadowstepLogcat:
                         ws = None
                         for url in endpoints:
                             try:
-                                ws = create_connection(url, timeout=WEBSOCKET_TIMEOUT)
+                                ws = create_connection(
+                                    url, timeout=WEBSOCKET_TIMEOUT, enable_multithread=True,
+                                )
                                 logger.info("Logcat WebSocket connected: %s", url)
                                 break
                             except (OSError, WebSocketException) as ex:
@@ -292,7 +299,9 @@ class ShadowstepLogcat:
 
                         # Store ws reference so stop() can close it
                         self._ws = ws
-                        assert ws is not None  # For type checker: ws is guaranteed not to be None here
+                        assert (
+                            ws is not None
+                        )  # For type checker: ws is guaranteed not to be None here
 
                         # Read until stop event
                         while not self._stop_evt.is_set():
@@ -311,6 +320,9 @@ class ShadowstepLogcat:
                                 logger.debug("Connection issue: %r", ex)
                                 time.sleep(self._poll_interval)
                                 continue
+                            except OSError:
+                                logger.warning("OSError occured in logcat")
+                                break
                             except Exception:
                                 logger.exception("Unexpected error during logcat streaming")
                                 time.sleep(self._poll_interval)
