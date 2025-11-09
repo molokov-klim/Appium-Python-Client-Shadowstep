@@ -1,0 +1,19 @@
+name: TruffleHog
+
+on: [push, pull_request]
+
+jobs:
+  trufflehog:
+    runs-on: [ self-hosted, linux, x64 ]
+    timeout-minutes: 15
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Scan for secrets
+        uses: trufflesecurity/trufflehog@v3
+        with:
+          extra_args: --only-verified
+

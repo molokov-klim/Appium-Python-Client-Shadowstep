@@ -1,0 +1,15 @@
+name: Typos
+
+on: [push, pull_request]
+
+jobs:
+  typos:
+    runs-on: [ self-hosted, linux, x64 ]
+    timeout-minutes: 15
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Run typos
+        uses: crate-ci/typos@v1.38.1
+
