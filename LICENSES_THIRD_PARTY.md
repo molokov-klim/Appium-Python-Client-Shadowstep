@@ -1,3 +1,7 @@
+# Third-Party Licenses
+
+Generated via `pip-licenses`.
+
 | Name                            | Version     | License                                             |
 |---------------------------------|-------------|-----------------------------------------------------|
 | Appium-Python-Client            | 5.2.4       | UNKNOWN                                             |

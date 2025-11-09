@@ -46,6 +46,7 @@ All dependencies use licenses compatible with MIT:
 | ruff | 0.14.1 | MIT | ✅ Compatible |
 
 \* Notes:
+
 - **Appium-Python-Client**: Shows as UNKNOWN in metadata, but is Apache 2.0 (verified on GitHub)
 - **Pillow**: HPND (Historical Permission Notice and Disclaimer) - very permissive, MIT-compatible
 - **paramiko/scp**: LGPL is compatible when used as library (dynamic linking), which is how Python imports work
@@ -67,8 +68,8 @@ GPL:               0 packages  ✅
 
 ## Development Dependencies
 
-Development dependencies (pytest, ruff, pyright, pre-commit, etc.) are only used 
-during development and are not distributed with the package. Their licenses do not 
+Development dependencies (pytest, ruff, pyright, pre-commit, etc.) are only used
+during development and are not distributed with the package. Their licenses do not
 affect the licensing of Shadowstep itself.
 
 ## Verification
@@ -84,8 +85,8 @@ Last updated: 2025-10-18
 
 ## For Users
 
-If you use Shadowstep in your project, you are only required to include 
-Shadowstep's MIT license. You do not need to include licenses of Shadowstep's 
+If you use Shadowstep in your project, you are only required to include
+Shadowstep's MIT license. You do not need to include licenses of Shadowstep's
 dependencies unless you redistribute them separately.
 
 ## For Contributors

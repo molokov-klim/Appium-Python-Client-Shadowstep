@@ -29,38 +29,38 @@ ___
 
 ___
 
-## 📋 Table of Contents
+## Table of Contents
 
 - [Key Features](#key-features)
 - [Installation](#installation)
 - [Quick Start](#quick-start)
 - [Architecture](#architecture)
 - [Core API](#core-api)
-    - [Shadowstep (Facade)](#shadowstep-facade)
-    - [Element (Facade)](#element-facade)
-    - [PageBase](#pagebase)
+  - [Shadowstep (Facade)](#shadowstep-facade)
+  - [Element (Facade)](#element-facade)
+  - [PageBase](#pagebase)
 - [Additional Modules](#additional-modules)
-    - [Navigator](#navigator)
-    - [Locator System](#locator-system)
-    - [Terminal](#terminal)
-    - [Logcat](#logcat)
-    - [Image Recognition](#image-recognition)
-    - [Page Object Generator](#page-object-generator)
+  - [Navigator](#navigator)
+  - [Locator System](#locator-system)
+  - [Terminal](#terminal)
+  - [Logcat](#logcat)
+  - [Image Recognition](#image-recognition)
+  - [Page Object Generator](#page-object-generator)
 - [Usage Examples](#usage-examples)
 - [Quality Tools](#quality-tools)
 
----
+___
 
-## 🚀 Key Features
+## Key Features
 
-### 🎯 Architectural Patterns
+### Architectural Patterns
 
 - **Facade Pattern** — simplified interface for Appium interactions
 - **Page Object Pattern** — structured UI representation
 - **Singleton Pattern** — single point of access to driver
 - **Navigator Pattern** — graph-based page navigation
 
-### 🔧 Functionality
+### Functionality
 
 - **Flexible locator system** — dict, xpath, UiSelector with auto-conversion
 - **Rich DOM navigation** — parent, sibling, cousin relationships
@@ -73,9 +73,9 @@ ___
 - **Page Object Generator** — auto-generate page objects from XML
 - **SSH/ADB Support** — remote command execution
 
----
+___
 
-## 📦 Installation
+## Installation
 
 ### Requirements
 
@@ -122,9 +122,9 @@ Additional:
 - `jinja2 >= 3.1.6` — template engine
 - `pytesseract >= 0.3.10` — OCR
 
----
+___
 
-## ⚡ Quick Start
+## Quick Start
 
 ### 1. Start Appium Server
 
@@ -213,9 +213,9 @@ assert page.is_current_page()
 page.to_network_internet()
 ```
 
----
+___
 
-## 🏗️ Architecture
+## Architecture
 
 ### Facade Pattern
 
@@ -317,9 +317,9 @@ class Element(ElementBase):
 └────────────────────┘
 ```
 
----
+___
 
-## 📚 Core API
+## Core API
 
 ### Shadowstep (Facade)
 
@@ -650,7 +650,7 @@ network_page = settings_page.to_network_internet()
 page = app.resolve_page("PageNetworkInternet")
 ```
 
----
+___
 
 ### Element (Facade)
 
@@ -941,7 +941,7 @@ native = element.get_native()
 native.click()
 ```
 
----
+___
 
 ### PageBase
 
@@ -1070,9 +1070,9 @@ success = app.navigator.navigate(
 )
 ```
 
----
+___
 
-## 🧩 Additional Modules
+## Additional Modules
 
 ### Navigator
 
@@ -1114,7 +1114,7 @@ success = navigator.navigate(
 )
 ```
 
----
+___
 
 ### Locator System
 
@@ -1252,7 +1252,7 @@ dict_loc = converter.xpath_to_dict(xpath)
 ui_selector = converter.xpath_to_ui_selector(xpath)
 ```
 
----
+___
 
 ### Terminal
 
@@ -1444,7 +1444,7 @@ packages = adb.get_packages_list()
 output = adb.execute(command="shell getprop ro.build.version.release")
 ```
 
----
+___
 
 ### Logcat
 
@@ -1481,7 +1481,7 @@ logcat.filters = ["MyApp", "Firebase"]  # filter by tags
 - Tag filtering with regex
 - Graceful shutdown with proper file closing
 
----
+___
 
 ### Image Recognition
 
@@ -1526,7 +1526,7 @@ screenshot = app.get_screenshot()  # bytes
 # image.match(screenshot) - internal method
 ```
 
----
+___
 
 ### Page Object Generator
 
@@ -1613,9 +1613,9 @@ test_path = test_generator.generate(
 )
 ```
 
----
+___
 
-## 💡 Usage Examples
+## Usage Examples
 
 ### Basic Testing
 
@@ -1709,7 +1709,7 @@ def test_scroll_to_element():
     about_phone.tap()
 ```
 
-### DOM Navigation
+### DOM Navigation Example
 
 ```python
 def test_dom_navigation():
@@ -1935,9 +1935,9 @@ def test_ssh_commands():
     app.transport.scp.get("/tmp/remote.txt", local_path="downloaded.txt")
 ```
 
----
+___
 
-## 🛠️ Quality Tools
+## Quality Tools
 
 The project uses modern tools to ensure code quality:
 
@@ -1989,9 +1989,9 @@ Tool settings are in `pyproject.toml`:
 - **Pyright:** `typeCheckingMode = "strict"` for maximum type safety
 - **Pytest:** logging, short traceback, setup show
 
----
+___
 
-## 📖 Additional Information
+## Additional Information
 
 ### Supported Python Versions
 
@@ -2011,9 +2011,9 @@ Tool settings are in `pyproject.toml`:
 
 MIT License
 
----
+___
 
-## 🤝 Contributing
+## Contributing
 
 The project follows:
 
@@ -2032,7 +2032,7 @@ When developing, use:
 - Pyright strict mode
 - Ruff for linting
 
----
+___
 
 **Author:** Molokov Klim  
 **Email:** ultrakawaii9654449192@gmail.com

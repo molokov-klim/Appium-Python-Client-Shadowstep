@@ -1,15 +1,15 @@
-# 📋 SHADOWSTEP TESTING MANIFEST
+# SHADOWSTEP TESTING MANIFEST
 
 > **Principle:** Test BEHAVIOR, not implementation. Test CONTRACTS, not details.
 
----
+___
 
-## 🎯 TESTING PYRAMID
+## TESTING PYRAMID
 
 ```
                 E2E / Smoke
                ╱────────────╲      5-10%
-              ╱   Critical   ╲     
+              ╱   Critical   ╲
              ╱    flows with   ╲   • Complete user scenarios
             ╱   real Appium    ╲  • Regression suite
            ╱──────────────────────╲ • Slow (minutes)
@@ -19,7 +19,7 @@
        ╱       Integration Tests      ╲   20-25%
       ╱    Real Appium (mock driver)   ╲
      ╱      Module boundary checks      ╲  • Element + Appium
-    ╱────────────────────────────────────╲ • Terminal + ADB  
+    ╱────────────────────────────────────╲ • Terminal + ADB
    ╱                                      ╲ • Medium speed
   ╱────────────────────────────────────────╲
  ╱                                          ╲
@@ -42,9 +42,9 @@
 
 **Target distribution:** 75% unit / 20% integration / 5% e2e
 
----
+___
 
-## 📊 TARGET METRICS
+## TARGET METRICS
 
 ```
 ╔═══════════════════════════════════════════════════════════╗
@@ -93,9 +93,9 @@ BASIC (70-80%):
 └─ logcat/                                     70%
 ```
 
----
+___
 
-## 🏗️ TEST STRUCTURE
+## TEST STRUCTURE
 
 ### **Mandatory organization:**
 
@@ -122,9 +122,9 @@ tests/
    └─ test_critical_flows.py   # Complete user scenarios
 ```
 
----
+___
 
-## 📜 TEST WRITING RULES
+## TEST WRITING RULES
 
 ### **RULE 1: Unit tests**
 
@@ -150,6 +150,7 @@ MANDATORY:
 
 EXAMPLE:
 ```python
+
 @pytest.mark.parametrize("locator,expected", [
     ({"text": "foo"}, ("//*[@text='foo']", "xpath")),
     (("id", "bar"), ("//*[@resource-id='bar']", "xpath")),
@@ -158,6 +159,7 @@ def test_to_xpath_all_formats(locator, expected):
     converter = LocatorConverter()
     result = converter.to_xpath(locator)
     assert result == expected
+
 ```
 ```
 
@@ -193,6 +195,7 @@ MANDATORY:
 
 EXAMPLE:
 ```python
+
 @pytest.mark.parametrize("gesture", ["swipe_up", "swipe_down", "scroll_left"])
 def test_element_gestures_work_on_real_device(self, app, gesture):
     """Smoke: gestures work on real device"""
@@ -200,6 +203,7 @@ def test_element_gestures_work_on_real_device(self, app, gesture):
     method = getattr(element, gesture)
     result = method()  # Execute on real device
     assert result is element  # Chainable
+
 ```
 ```
 
@@ -223,43 +227,45 @@ CHARACTERISTICS:
 
 EXAMPLE:
 ```python
+
 def test_full_page_object_workflow_e2e(app):
     """E2E: complete workflow with Page Objects"""
     # 1. Navigate
     app.navigator.navigate(PageA(), PageB())
-    
+
     # 2. Interact
     PageB().button.click()
-    
+
     # 3. Verify
     assert PageC().title.is_visible()
+
 ```
 ```
 
----
+___
 
-## 🚫 ANTI-PATTERNS (what NOT to do)
+## ANTI-PATTERNS (what NOT to do)
 
-### **❌ Anti-pattern 1: Testing implementation details**
+### Anti-pattern 1: Testing implementation details
 
 ```python
-# ❌ BAD:
+# BAD:
 def test_element_has_actions_attribute():
     element = Element(...)
     assert hasattr(element, 'actions')  # Testing structure!
     assert isinstance(element.actions, ElementActions)
 
-# ✅ GOOD:
+# GOOD:
 def test_element_provides_action_methods():
     element = Element(...)
     result = element.click()  # Testing behavior!
     assert result is element
 ```
 
-### **❌ Anti-pattern 2: Duplicating unit and integration**
+### Anti-pattern 2: Duplicating unit and integration
 
 ```python
-# ❌ BAD:
+# BAD:
 # unit test:
 def test_converter_to_dict():
     assert converter.to_dict({"text": "foo"}) == {"text": "foo"}
@@ -269,7 +275,7 @@ def test_converter_to_dict_integro(app):
     assert converter.to_dict({"text": "foo"}) == {"text": "foo"}
     element = app.get_element(...)  # Unnecessary check
 
-# ✅ GOOD:
+# GOOD:
 # unit test (detailed):
 @pytest.mark.parametrize("input,expected", [...])  # 20 cases
 def test_converter_all_cases(input, expected):
@@ -281,15 +287,15 @@ def test_converted_locators_work_with_app(app):
         assert app.get_element(converter.to_dict(loc)) is not None
 ```
 
-### **❌ Anti-pattern 3: Mocking internal methods**
+### Anti-pattern 3: Mocking internal methods
 
 ```python
-# ❌ BAD:
+# BAD:
 def test_element_click():
     with patch.object(element, '_internal_method'):  # Internal method!
         element.click()
 
-# ✅ GOOD:
+# GOOD:
 def test_element_click():
     mock_native = Mock(spec=WebElement)  # System boundary!
     element = Element(..., native=mock_native)
@@ -297,23 +303,23 @@ def test_element_click():
     mock_native.click.assert_called_once()
 ```
 
-### **❌ Anti-pattern 4: Integration for pure logic**
+### Anti-pattern 4: Integration for pure logic
 
 ```python
-# ❌ BAD:
+# BAD:
 def test_parser_integro(app):  # Parser DOESN'T NEED app!
     result = Parser(Lexer("text('foo')").tokens()).parse()
     assert result.methods[0].name == "text"
 
-# ✅ GOOD:
+# GOOD:
 def test_parser_unit():  # Pure logic in unit!
     result = Parser(Lexer("text('foo')").tokens()).parse()
     assert result.methods[0].name == "text"
 ```
 
----
+___
 
-## 📊 MODULE REQUIREMENTS
+## MODULE REQUIREMENTS
 
 ### **Tier 1: CRITICAL (100% coverage mandatory)**
 
@@ -385,9 +391,9 @@ Tests:
 └─ Don't chase 100%
 ```
 
----
+___
 
-## 🎯 TEST DISTRIBUTION RULES
+## TEST DISTRIBUTION RULES
 
 ### **UNIT tests should include:**
 
@@ -440,9 +446,9 @@ Tests:
    └─ Converters/parsers work with Appium
 ```
 
----
+___
 
-## 🛠️ TEST CODE STANDARDS
+## TEST CODE STANDARDS
 
 ### **Naming:**
 
@@ -481,10 +487,10 @@ def test_feature_integro(self, app: Shadowstep, stability: None):
     """Integration: [what is checked] on real device"""
     # Arrange (minimal setup)
     element = app.get_element({"text": "foo"})
-    
+
     # Act (real action)
     result = element.click()
-    
+
     # Assert (basic check)
     assert result is element
 ```
@@ -504,9 +510,9 @@ def stability() -> None:
     time.sleep(1)
 ```
 
----
+___
 
-## 🎯 TEST QUALITY CRITERIA
+## TEST QUALITY CRITERIA
 
 ### **Good unit test:**
 
@@ -536,9 +542,9 @@ def stability() -> None:
 ✅ Minimum asserts (check flow, not details)
 ```
 
----
+___
 
-## 🔍 PROCESS: Code Review checklist
+## PROCESS: Code Review checklist
 
 ### **Before merging a new test:**
 
@@ -555,9 +561,9 @@ def stability() -> None:
 □ Coverage hasn't dropped?
 ```
 
----
+___
 
-## 📈 MONITORING AND METRICS
+## MONITORING AND METRICS
 
 ### **Commands for checking:**
 
@@ -595,9 +601,9 @@ Release:
 └─ Full suite + coverage report
 ```
 
----
+___
 
-## 🏆 CURRENT STATE
+## CURRENT STATE
 
 ### **Actual metrics (updated 2025-10-18):**
 
@@ -619,9 +625,9 @@ EXECUTION TIME:
 └─ Needs measurement
 ```
 
----
+___
 
-## ✅ MANIFEST COMPLIANCE
+## MANIFEST COMPLIANCE
 
 ### **Unit tests (VERIFIED):**
 
@@ -667,9 +673,9 @@ EXECUTION TIME:
 ✅ logcat/ - WebSocket to Appium
 ```
 
----
+___
 
-## ✅ ARCHITECTURE: Three-tier system (ADVANCED)
+## ARCHITECTURE: Three-tier system (ADVANCED)
 
 ### **IMPORTANT: test_element_unit.py - these are NOT DUPLICATES!**
 
@@ -679,7 +685,7 @@ ARCHITECTURE:
 test_element_unit.py:
 └─ Checks DELEGATION
    Example: Element.click() → correctly calls gestures.click()
-   
+
 test_actions_unit.py, test_gestures_unit.py, etc:
 └─ Check component LOGIC
    Example: ElementActions.send_keys() → works correctly
@@ -716,9 +722,9 @@ ADVANTAGES:
 ✅ Complete coverage (test ENTIRE chain)
 ```
 
----
+___
 
-## 🎯 IMPROVEMENT RECOMMENDATIONS
+## IMPROVEMENT RECOMMENDATIONS
 
 ### **Recommendation 1: Add Contract Tests (optional)**
 
@@ -735,9 +741,10 @@ Content:
 
 Example:
 ```python
+
 class TestElementPublicAPIContract:
     """Contract tests: public API should not change without major version"""
-    
+
     def test_element_has_all_required_methods(self):
         """Element has all required public methods"""
         required_methods = [
@@ -747,13 +754,13 @@ class TestElementPublicAPIContract:
             'wait', 'wait_visible', 'wait_clickable',
             # ... complete list
         ]
-        
+
         element = Element({"text": "test"}, Mock())
-        
+
         for method_name in required_methods:
             assert hasattr(element, method_name), f"Missing method: {method_name}"
             assert callable(getattr(element, method_name))
-    
+
     @pytest.mark.parametrize("method_name", [
         "click", "tap", "clear", "swipe_up", "scroll_down", ...
     ])
@@ -761,17 +768,18 @@ class TestElementPublicAPIContract:
         """All action methods return self for chaining"""
         element = Element({"text": "test"}, Mock())
         method = getattr(element, method_name)
-        
+
         with patch.object(element, 'get_native'):
             result = method() if method_name != "send_keys" else method("text")
-        
+
         assert result is element
+
 ```
 ```
 
----
+___
 
-## 📋 RECOMMENDED IMPROVEMENTS
+## RECOMMENDED IMPROVEMENTS
 
 ### **Improvement 1: Add comments for clarity**
 
@@ -785,7 +793,7 @@ ACTION:
 □ Can rename classes for clarity:
   class TestElementActions → class TestElementActionsDelegation
   class TestElementGestures → class TestElementGesturesDelegation
-  
+
 To make it clear these are delegation tests, not logic!
 
 GOAL: Clarity for contributors
@@ -807,9 +815,9 @@ pytest -m integration       # Integration only
 pytest -m "not slow"        # Exclude slow
 ```
 
----
+___
 
-## 📊 REPORTING
+## REPORTING
 
 ### **After each change:**
 
@@ -833,9 +841,9 @@ COVERAGE:
 - Change: +/-Z%
 ```
 
----
+___
 
-## 🚀 QUICK START
+## QUICK START
 
 ### **Manifest compliance check:**
 
@@ -862,28 +870,30 @@ grep "def test_send_keys\|def test_clear\|def test_click" tests/test_unit/test_e
 # 1. Open both files
 # 2. Compare tests
 # 3. If detailed test in specialized file:
-#    → Remove basic from test_element_unit.py
+# Remove basic from test_element_unit.py
 # 4. Run both files
 # 5. Check coverage
 ```
 
----
+___
 
-## 📚 LINKS AND RESOURCES
+## LINKS AND RESOURCES
 
 **Best Practices:**
+
 - [Testing Pyramid](https://martinfowler.com/articles/practical-test-pyramid.html)
 - [Pytest Best Practices](https://docs.pytest.org/en/stable/goodpractices.html)
 - [Test Doubles](https://martinfowler.com/bliki/TestDouble.html)
 
 **Quality test examples:**
+
 - [requests tests](https://github.com/psf/requests/tree/main/tests)
 - [flask tests](https://github.com/pallets/flask/tree/main/tests)
 - [pytest tests](https://github.com/pytest-dev/pytest/tree/main/testing)
 
----
+___
 
-## 🎯 GOALS FOR NEXT RELEASE
+## GOALS FOR NEXT RELEASE
 
 ```
 v0.36.0: Test Quality Milestone
@@ -896,13 +906,13 @@ v0.36.0: Test Quality Milestone
 □ CI/CD optimized (< 7 minutes)
 ```
 
----
+___
 
 *This manifest is a living document. Update metrics and statuses as the project evolves.*
 
----
+___
 
-## 📞 CONTACTS
+## CONTACTS
 
 Testing questions: GitHub Discussions
 Test bugs: GitHub Issues (label: tests)
