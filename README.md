@@ -1,33 +1,61 @@
 # Shadowstep
 
-**Shadowstep** — a modern Python framework for Android test automation powered by Appium.  
+**Shadowstep** — a modern Python framework for Android test automation. Powered
+by Appium.  
 _Write tests, not boilerplate._
 
 ___
 
-[![License](https://img.shields.io/badge/license-MIT-blue)](LICENSE)
-[![License Check](https://github.com/molokov-klim/Appium-Python-Client-Shadowstep/actions/workflows/license-check.yml/badge.svg)](https://github.com/molokov-klim/Appium-Python-Client-Shadowstep/actions/workflows/license-check.yml)
+<!-- markdownlint-disable MD013 -->
+[![License][badge-license]][link-license]
+[![License Check][badge-license-check]][workflow-license-check]
 
 ___
 
-[![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/molokov-klim/Appium-Python-Client-Shadowstep)
-[![Watch in Action](https://img.shields.io/badge/YouTube-red?logo=youtube)](https://www.youtube.com/playlist?list=PLGFbKpf3cI31d1TLlQXCszl88dutdruKx)
+[![Ask DeepWiki][badge-deepwiki]][link-deepwiki]
+[![Watch in Action][badge-youtube]][link-youtube]
 
 ___
 
-[![PyPI version](https://badge.fury.io/py/appium-python-client-shadowstep.svg)](https://badge.fury.io/py/appium-python-client-shadowstep)
-[![Downloads](https://pepy.tech/badge/appium-python-client-shadowstep)](https://pepy.tech/project/appium-python-client-shadowstep)
-[![Python](https://img.shields.io/badge/python-3.9%2B-blue)](https://www.python.org)
-[![Appium](https://img.shields.io/badge/appium-5.2.2%2B-blue)](https://appium.io)
+[![PyPI version][badge-pypi]][link-pypi]
+[![Downloads][badge-downloads]][link-downloads]
+[![Python][badge-python]][link-python]
+[![Appium][badge-appium]][link-appium]
 
 ___
 
-[![Pyright Type Check](https://github.com/molokov-klim/Appium-Python-Client-Shadowstep/actions/workflows/pyright.yml/badge.svg)](https://github.com/molokov-klim/Appium-Python-Client-Shadowstep/actions/workflows/pyright.yml)
-[![Ruff Lint](https://github.com/molokov-klim/Appium-Python-Client-Shadowstep/actions/workflows/ruff.yml/badge.svg)](https://github.com/molokov-klim/Appium-Python-Client-Shadowstep/actions/workflows/ruff.yml)
-[![Unit Tests](https://github.com/molokov-klim/Appium-Python-Client-Shadowstep/actions/workflows/unit_tests.yml/badge.svg)](https://github.com/molokov-klim/Appium-Python-Client-Shadowstep/actions/workflows/unit_tests.yml)
-[![Integration Tests](https://github.com/molokov-klim/Appium-Python-Client-Shadowstep/actions/workflows/integration_tests.yml/badge.svg)](https://github.com/molokov-klim/Appium-Python-Client-Shadowstep/actions/workflows/integration_tests.yml)
+[![Pyright Type Check][badge-pyright]][workflow-pyright]
+[![Ruff Lint][badge-ruff]][workflow-ruff]
+[![Unit Tests][badge-unit-tests]][workflow-unit-tests]
+[![Integration Tests][badge-integration]][workflow-integration]
 
 ___
+
+[badge-license]: https://img.shields.io/badge/license-MIT-blue
+[link-license]: LICENSE
+[badge-license-check]: https://github.com/molokov-klim/Appium-Python-Client-Shadowstep/actions/workflows/license-check.yml/badge.svg
+[workflow-license-check]: https://github.com/molokov-klim/Appium-Python-Client-Shadowstep/actions/workflows/license-check.yml
+[badge-deepwiki]: https://deepwiki.com/badge.svg
+[link-deepwiki]: https://deepwiki.com/molokov-klim/Appium-Python-Client-Shadowstep
+[badge-youtube]: https://img.shields.io/badge/YouTube-red?logo=youtube
+[link-youtube]: https://www.youtube.com/playlist?list=PLGFbKpf3cI31d1TLlQXCszl88dutdruKx
+[badge-pypi]: https://badge.fury.io/py/appium-python-client-shadowstep.svg
+[link-pypi]: https://badge.fury.io/py/appium-python-client-shadowstep
+[badge-downloads]: https://pepy.tech/badge/appium-python-client-shadowstep
+[link-downloads]: https://pepy.tech/project/appium-python-client-shadowstep
+[badge-python]: https://img.shields.io/badge/python-3.9%2B-blue
+[link-python]: https://www.python.org
+[badge-appium]: https://img.shields.io/badge/appium-5.2.2%2B-blue
+[link-appium]: https://appium.io
+[badge-pyright]: https://github.com/molokov-klim/Appium-Python-Client-Shadowstep/actions/workflows/pyright.yml/badge.svg
+[workflow-pyright]: https://github.com/molokov-klim/Appium-Python-Client-Shadowstep/actions/workflows/pyright.yml
+[badge-ruff]: https://github.com/molokov-klim/Appium-Python-Client-Shadowstep/actions/workflows/ruff.yml/badge.svg
+[workflow-ruff]: https://github.com/molokov-klim/Appium-Python-Client-Shadowstep/actions/workflows/ruff.yml
+[badge-unit-tests]: https://github.com/molokov-klim/Appium-Python-Client-Shadowstep/actions/workflows/unit_tests.yml/badge.svg
+[workflow-unit-tests]: https://github.com/molokov-klim/Appium-Python-Client-Shadowstep/actions/workflows/unit_tests.yml
+[badge-integration]: https://github.com/molokov-klim/Appium-Python-Client-Shadowstep/actions/workflows/integration_tests.yml/badge.svg
+[workflow-integration]: https://github.com/molokov-klim/Appium-Python-Client-Shadowstep/actions/workflows/integration_tests.yml
+<!-- markdownlint-enable MD013 -->
 
 ## Table of Contents
 
@@ -223,7 +251,8 @@ The project implements **Facade Pattern** at two levels:
 
 #### 1. Shadowstep (Main Facade)
 
-`Shadowstep` — the main facade that hides the complexity of Appium WebDriver interactions and provides a simple API.
+`Shadowstep` — the main facade that hides the complexity of Appium WebDriver
+interactions and provides a simple API.
 
 ```python
 class Shadowstep(ShadowstepBase):
@@ -247,7 +276,8 @@ class Shadowstep(ShadowstepBase):
 
 #### 2. Element (Element Facade)
 
-`Element` — facade for working with mobile elements, combining multiple specialized classes.
+`Element` — facade for working with mobile elements, combining multiple
+specialized classes.
 
 ```python
 class Element(ElementBase):
@@ -278,18 +308,18 @@ class Element(ElementBase):
 
 ### Architecture Diagram
 
-```
-┌─────────────────────────────────────────────────────────────┐
-│                     User/Test Code                          │
-└──────────────────────┬──────────────────────────────────────┘
+```text
+ ┌─────────────────────────────────────────────────────────────┐
+ │                     User/Test Code                          │
+ └──────────────────────┬──────────────────────────────────────┘
                        │
          ┌─────────────┴─────────────┐
          │                           │
          ▼                           ▼
-┌────────────────────┐      ┌──────────────────┐
-│  Shadowstep        │◄─────┤  PageBase        │
-│  (Main Facade)     │      │  (Page Objects)  │
-└────────┬───────────┘      └──────────────────┘
+ ┌────────────────────┐      ┌──────────────────┐
+ │  Shadowstep        │◄─────┤  PageBase        │
+ │  (Main Facade)     │      │  (Page Objects)  │
+ └────────┬───────────┘      └──────────────────┘
          │
          ├─► Navigator (Page Graph)
          ├─► LocatorConverter
@@ -298,9 +328,9 @@ class Element(ElementBase):
          └─► ShadowstepLogcat
          │
          ▼
-┌────────────────────┐
-│  Element (Facade)  │
-└────────┬───────────┘
+ ┌────────────────────┐
+ │  Element (Facade)  │
+ └────────┬───────────┘
          │
          ├─► ElementDOM
          ├─► ElementActions
@@ -311,10 +341,10 @@ class Element(ElementBase):
          └─► ElementWaiting
          │
          ▼
-┌────────────────────┐
-│  Appium/Selenium   │
-│  (WebDriver)       │
-└────────────────────┘
+ ┌────────────────────┐
+ │  Appium/Selenium   │
+ │  (WebDriver)       │
+ └────────────────────┘
 ```
 
 ___
@@ -2035,4 +2065,4 @@ When developing, use:
 ___
 
 **Author:** Molokov Klim  
-**Email:** ultrakawaii9654449192@gmail.com
+**Email:** [ultrakawaii9654449192@gmail.com](mailto:ultrakawaii9654449192@gmail.com)

@@ -14,7 +14,8 @@ All dependencies use licenses compatible with MIT:
 - ✅ **ISC** - Equivalent to MIT, fully compatible
 - ✅ **PSF** (Python Software Foundation) - Compatible
 - ✅ **MPL 2.0** (Mozilla Public License) - Compatible when used as library
-- ✅ **LGPL** (GNU Lesser GPL) - Compatible when used as library (dynamic linking in Python)
+- ✅ **LGPL** (GNU Lesser GPL) — compatible when used as a library (dynamic
+  linking in Python)
 - ✅ **Unlicense** - Public domain, compatible with everything
 
 **No GPL dependencies** - verified! ✅
@@ -47,9 +48,12 @@ All dependencies use licenses compatible with MIT:
 
 \* Notes:
 
-- **Appium-Python-Client**: Shows as UNKNOWN in metadata, but is Apache 2.0 (verified on GitHub)
-- **Pillow**: HPND (Historical Permission Notice and Disclaimer) - very permissive, MIT-compatible
-- **paramiko/scp**: LGPL is compatible when used as library (dynamic linking), which is how Python imports work
+- **Appium-Python-Client**: metadata shows UNKNOWN, but the codebase uses
+  Apache 2.0 (verified on GitHub).
+- **Pillow**: HPND (Historical Permission Notice and Disclaimer), very
+  permissive and MIT-compatible.
+- **paramiko/scp**: LGPL is compatible when used as a library (dynamic linking),
+  which matches Python import semantics.
 
 ## License Categories Summary
 
@@ -68,9 +72,9 @@ GPL:               0 packages  ✅
 
 ## Development Dependencies
 
-Development dependencies (pytest, ruff, pyright, pre-commit, etc.) are only used
-during development and are not distributed with the package. Their licenses do not
-affect the licensing of Shadowstep itself.
+Development dependencies (pytest, ruff, pyright, pre-commit and other tools) are
+only used during development and are not distributed with the package. Their
+licenses do not affect the licensing of Shadowstep itself.
 
 ## Verification
 
