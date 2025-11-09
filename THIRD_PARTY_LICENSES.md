@@ -22,29 +22,29 @@ All dependencies use licenses compatible with MIT:
 
 ## Dependencies
 
-| Name | Version | License | Status |
-|------|---------|---------|--------|
-| Appium-Python-Client | 5.2.4 | Apache 2.0* | ✅ Compatible |
-| selenium | 4.36.0 | Apache 2.0 | ✅ Compatible |
-| websocket-client | 1.9.0 | Apache 2.0 | ✅ Compatible |
-| requests | 2.32.5 | Apache 2.0 | ✅ Compatible |
-| opencv-python | 4.12.0.88 | Apache 2.0 | ✅ Compatible |
-| numpy | 2.0.2 | BSD | ✅ Compatible |
-| Pillow | 11.3.0 | HPND* | ✅ Compatible |
-| pytesseract | 0.3.13 | Apache 2.0 | ✅ Compatible |
-| allure-pytest | 2.15.0 | Apache 2.0 | ✅ Compatible |
-| paramiko | 4.0.0 | LGPL* | ✅ Compatible (dynamic) |
-| scp | 0.15.0 | LGPL | ✅ Compatible (dynamic) |
-| networkx | 3.2.1 | BSD | ✅ Compatible |
-| lxml | 6.0.2 | BSD-3-Clause | ✅ Compatible |
-| jinja2 | 3.1.6 | BSD | ✅ Compatible |
-| anyascii | 0.3.3 | ISC | ✅ Compatible |
-| eulxml | 1.1.3 | Apache 2.0 | ✅ Compatible |
-| pytest | 8.4.2 | MIT | ✅ Compatible |
-| pytest-cov | 7.0.0 | MIT | ✅ Compatible |
-| pytest-rerunfailures | 16.0.1 | MPL 2.0 | ✅ Compatible |
-| pyright | 1.1.406 | MIT | ✅ Compatible |
-| ruff | 0.14.1 | MIT | ✅ Compatible |
+| Name                 | Version   | License      | Status                 |
+|----------------------|-----------|--------------|------------------------|
+| Appium-Python-Client | 5.2.4     | Apache 2.0*  | ✅ Compatible           |
+| selenium             | 4.36.0    | Apache 2.0   | ✅ Compatible           |
+| websocket-client     | 1.9.0     | Apache 2.0   | ✅ Compatible           |
+| requests             | 2.32.5    | Apache 2.0   | ✅ Compatible           |
+| opencv-python        | 4.12.0.88 | Apache 2.0   | ✅ Compatible           |
+| numpy                | 2.0.2     | BSD          | ✅ Compatible           |
+| Pillow               | 11.3.0    | HPND*        | ✅ Compatible           |
+| pytesseract          | 0.3.13    | Apache 2.0   | ✅ Compatible           |
+| allure-pytest        | 2.15.0    | Apache 2.0   | ✅ Compatible           |
+| paramiko             | 4.0.0     | LGPL*        | ✅ Compatible (dynamic) |
+| scp                  | 0.15.0    | LGPL         | ✅ Compatible (dynamic) |
+| networkx             | 3.2.1     | BSD          | ✅ Compatible           |
+| lxml                 | 6.0.2     | BSD-3-Clause | ✅ Compatible           |
+| jinja2               | 3.1.6     | BSD          | ✅ Compatible           |
+| anyascii             | 0.3.3     | ISC          | ✅ Compatible           |
+| eulxml               | 1.1.3     | Apache 2.0   | ✅ Compatible           |
+| pytest               | 8.4.2     | MIT          | ✅ Compatible           |
+| pytest-cov           | 7.0.0     | MIT          | ✅ Compatible           |
+| pytest-rerunfailures | 16.0.1    | MPL 2.0      | ✅ Compatible           |
+| pyright              | 1.1.406   | MIT          | ✅ Compatible           |
+| ruff                 | 0.14.1    | MIT          | ✅ Compatible           |
 
 \* Notes:
 
@@ -57,17 +57,17 @@ All dependencies use licenses compatible with MIT:
 
 ## License Categories Summary
 
-```
-Apache 2.0:       ~18 packages  ✅
-BSD/BSD-3:        ~12 packages  ✅
-MIT:              ~15 packages  ✅
-LGPL:              2 packages  ✅ (dynamic linking)
-MPL 2.0:           2 packages  ✅
-ISC:               1 package   ✅
-PSF:               1 package   ✅
-Unlicense:         1 package   ✅
+```yaml
+Apache 2.0: ~18 packages  ✅
+BSD/BSD-3: ~12 packages  ✅
+MIT: ~15 packages  ✅
+LGPL: 2 packages  ✅ (dynamic linking)
+MPL 2.0: 2 packages  ✅
+ISC: 1 package   ✅
+PSF: 1 package   ✅
+Unlicense: 1 package   ✅
 
-GPL:               0 packages  ✅
+GPL: 0 packages  ✅
 ```
 
 ## Development Dependencies
