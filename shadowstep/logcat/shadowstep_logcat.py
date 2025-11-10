@@ -263,6 +263,7 @@ class ShadowstepLogcat:
                             logger.warning("Driver is None, skipping logcat iteration")
                             time.sleep(self._poll_interval)
                             continue
+                        self.mobile_commands.stop_logs_broadcast()  # kill descriptor
                         self.mobile_commands.start_logs_broadcast()
 
                         # Build shadowstep WebSocket URL
@@ -288,7 +289,9 @@ class ShadowstepLogcat:
                         for url in endpoints:
                             try:
                                 ws = create_connection(
-                                    url, timeout=WEBSOCKET_TIMEOUT, enable_multithread=True,
+                                    url,
+                                    timeout=WEBSOCKET_TIMEOUT,
+                                    enable_multithread=True,
                                 )
                                 logger.info("Logcat WebSocket connected: %s", url)
                                 break
@@ -315,16 +318,22 @@ class ShadowstepLogcat:
 
                                 f.write(line + "\n")
                             except WebSocketConnectionClosedException:
+                                self.mobile_commands.stop_logs_broadcast()  # kill descriptor
+                                time.sleep(self._poll_interval)
                                 break  # reconnect
                             except (TimeoutError, ConnectionError) as ex:
                                 logger.debug("Connection issue: %r", ex)
+                                self.mobile_commands.stop_logs_broadcast()  # kill descriptor
                                 time.sleep(self._poll_interval)
                                 continue
                             except OSError:
                                 logger.warning("OSError occured in logcat")
+                                self.mobile_commands.stop_logs_broadcast()  # kill descriptor
+                                time.sleep(self._poll_interval)
                                 break
                             except Exception:
                                 logger.exception("Unexpected error during logcat streaming")
+                                self.mobile_commands.stop_logs_broadcast()  # kill descriptor
                                 time.sleep(self._poll_interval)
 
                         # Clear reference and close socket
@@ -334,6 +343,8 @@ class ShadowstepLogcat:
                             logger.debug("Error closing WebSocket: %r", ex)
                         finally:
                             self._ws = None
+                            self.mobile_commands.stop_logs_broadcast()  # kill descriptor
+                            time.sleep(self._poll_interval)
 
                         # Pause before reconnection
                         time.sleep(self._poll_interval)

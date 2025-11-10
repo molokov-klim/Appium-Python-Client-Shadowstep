@@ -21,12 +21,14 @@ Requirements:
 
 import threading
 import time
+from collections import deque
 from pathlib import Path
 
 import pytest
+from websocket import WebSocketConnectionClosedException
 
-from shadowstep.shadowstep import Shadowstep
 from shadowstep.logcat.shadowstep_logcat import ShadowstepLogcat
+from shadowstep.shadowstep import Shadowstep
 from shadowstep.exceptions.shadowstep_exceptions import (
     ShadowstepPollIntervalError,
     ShadowstepEmptyFilenameError,
@@ -459,6 +461,80 @@ class TestShadowstepLogcat:
         thread_names_after = [t.name for t in threading.enumerate()]
         assert not any("ShadowstepLogcat" in name for name in thread_names_after), \
             "Logcat thread should be stopped after stop()"
+
+    def test_logcat_reconnect_stops_previous_broadcast(  # noqa: PLR0915
+        self,
+        app: Shadowstep,
+        cleanup_log: None,
+        monkeypatch: pytest.MonkeyPatch,
+    ) -> None:
+        """Ensure reconnection stops the previous broadcast before restarting."""
+        log_file = Path("logcat_reconnect_test.log")
+        if log_file.exists():
+            log_file.unlink()
+
+        logcat = app._logcat
+        events: list[str] = []
+
+        class DummyMobileCommands:
+            def start_logs_broadcast(self) -> None:
+                events.append("start")
+
+            def stop_logs_broadcast(self) -> None:
+                events.append("stop")
+
+        dummy_mobile = DummyMobileCommands()
+        monkeypatch.setattr(logcat, "mobile_commands", dummy_mobile, raising=False)
+        stop_evt = logcat._stop_evt
+
+        class DummyWebSocket:
+            def __init__(self, identifier: str) -> None:
+                self.identifier = identifier
+                self._first_call = True
+
+            def recv(self) -> str:
+                if self.identifier == "first":
+                    if self._first_call:
+                        self._first_call = False
+                        return "first socket line"
+                    raise WebSocketConnectionClosedException("forced reconnect")
+                if stop_evt.is_set():
+                    raise WebSocketConnectionClosedException("stop requested")
+                time.sleep(0.05)
+                return "second socket line"
+
+            def close(self) -> None:
+                pass
+
+        sockets = deque([DummyWebSocket("first"), DummyWebSocket("second")])
+
+        def fake_create_connection(*args: object, **kwargs: object) -> DummyWebSocket:
+            if sockets:
+                return sockets.popleft()
+            return DummyWebSocket("second")
+
+        monkeypatch.setattr(
+            "shadowstep.logcat.shadowstep_logcat.create_connection",
+            fake_create_connection,
+        )
+
+        app.start_logcat(str(log_file))
+
+        deadline = time.time() + 5.0
+        while events.count("start") < 2 and time.time() < deadline:
+            time.sleep(0.1)
+
+        app.stop_logcat()
+        time.sleep(0.5)
+
+        start_indices = [idx for idx, event in enumerate(events) if event == "start"]
+        assert len(start_indices) >= 2, f"Expected at least two start attempts, got events: {events}"
+
+        for previous, current in zip(start_indices, start_indices[1:]):
+            slice_events = events[previous + 1: current + 1]
+            assert "stop" in slice_events, f"Missing stop between start attempts: {events}"
+
+        assert log_file.exists(), "Log file should exist after reconnect scenario"
 
     def test_logcat_filter_verification(self, app: Shadowstep, cleanup_log: None):
         """Test that filters work correctly by excluding specified tags."""
