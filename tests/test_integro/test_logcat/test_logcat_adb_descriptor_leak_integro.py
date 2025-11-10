@@ -22,14 +22,13 @@ Requirements:
 import subprocess
 import time
 from pathlib import Path
-from typing import Optional
 
 import pytest
 
 from shadowstep.shadowstep import Shadowstep
 
 
-def get_adb_pid() -> Optional[int]:
+def get_adb_pid() -> int | None:
     """Get PID of the adb process.
     
     Returns:
@@ -52,7 +51,7 @@ def get_adb_pid() -> Optional[int]:
     return None
 
 
-def count_file_descriptors(pid: int) -> Optional[int]:
+def count_file_descriptors(pid: int) -> int | None:
     """Count number of open file descriptors for given process.
     
     Args:
