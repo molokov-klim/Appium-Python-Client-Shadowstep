@@ -31,7 +31,7 @@ jobs:
 # - Install reuse:
 #   pip install reuse (or uv pip install reuse)
 # - Run reuse lint:
-#   reuse lint
+#   reuse lint (or uv run reuse lint)
 # - Download licenses:
 #   reuse download --all
 # - Add license header to file:
