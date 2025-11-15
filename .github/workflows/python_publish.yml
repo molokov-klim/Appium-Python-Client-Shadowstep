@@ -8,6 +8,10 @@ permissions:
   contents: read
 
 jobs:
+  # Purpose: Builds and publishes the package to PyPI for distribution
+  # What it does: Builds wheel and source distributions, uploads to PyPI using twine with API token authentication
+  # Problems it solves: Automates package release process, ensures consistent builds, makes package available
+  #                     for pip installation by end users
   deploy:
     runs-on: [ self-hosted, linux, x64 ]
 

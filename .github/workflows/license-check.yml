@@ -3,6 +3,10 @@ name: License Check
 on: [push, pull_request]
 
 jobs:
+  # Purpose: Ensures all dependencies have compatible licenses and prevents GPL/AGPL contamination
+  # What it does: Scans all pip dependencies, fails on GPL/AGPL licenses, generates markdown license report
+  # Problems it solves: Prevents legal issues from incompatible open-source licenses, maintains license compliance,
+  #                     provides transparency about third-party dependencies
   check-licenses:
     runs-on: [ self-hosted, linux, x64 ]
     steps:

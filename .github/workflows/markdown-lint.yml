@@ -3,6 +3,10 @@ name: Markdown Lint
 on: [push, pull_request]
 
 jobs:
+  # Purpose: Enforces consistent markdown formatting and style across documentation
+  # What it does: Runs markdownlint-cli2 to check all markdown files against style rules
+  # Problems it solves: Maintains documentation quality, catches formatting errors, ensures consistency
+  #                     across README and other markdown files
   markdown-lint:
     runs-on: [ self-hosted, linux, x64 ]
     timeout-minutes: 15

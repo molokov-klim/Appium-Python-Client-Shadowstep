@@ -1,3 +1,7 @@
+# Dependabot Configuration
+# Purpose: Automatically keeps Python dependencies up-to-date
+# What it does: Scans pip dependencies daily at 11:00 and creates pull requests for updates
+# Problems it solves: Prevents outdated dependencies, security vulnerabilities, and reduces manual maintenance
 version: 2
 updates:
   - package-ecosystem: pip

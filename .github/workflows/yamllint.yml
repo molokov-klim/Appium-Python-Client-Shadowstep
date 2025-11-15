@@ -3,6 +3,10 @@ name: Yamllint
 on: [push, pull_request]
 
 jobs:
+  # Purpose: Validates YAML syntax and formatting across all configuration files
+  # What it does: Runs yamllint to check YAML files for syntax errors, indentation, and style issues
+  # Problems it solves: Prevents broken workflow files, catches YAML parsing errors early,
+  #                     ensures consistent formatting in CI/CD configurations
   yamllint:
     runs-on: [ self-hosted, linux, x64 ]
     timeout-minutes: 15

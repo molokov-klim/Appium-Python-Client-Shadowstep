@@ -11,6 +11,10 @@ permissions:
   pull-requests: write
 
 jobs:
+  # Purpose: Automatically updates uv.lock file when Dependabot modifies pyproject.toml
+  # What it does: Runs uv lock command and commits the updated lock file to Dependabot's PR
+  # Problems it solves: Keeps dependency lock file in sync with pyproject.toml changes,
+  #                     prevents merge conflicts and manual lock file updates
   uv-lock-update:
     if: github.actor == 'dependabot[bot]'
     runs-on: [ self-hosted, linux, x64 ]
