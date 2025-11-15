@@ -21,6 +21,7 @@ from typing import TYPE_CHECKING, cast
 
 from selenium.common import InvalidSessionIdException, NoSuchDriverException
 
+from shadowstep.terminal.keyevent import KeyEvent
 from shadowstep.ui_automator.mobile_commands import MobileCommands
 from shadowstep.utils.utils import get_current_func_name
 
@@ -82,6 +83,7 @@ class Terminal:
         self.shadowstep: Shadowstep = Shadowstep.get_instance()
         self.driver: WebDriver = self.shadowstep.driver
         self.mobile_commands = MobileCommands()
+        self.keyevent = KeyEvent(self)
 
     def adb_shell(self, command: str, args: str = "", tries: int = 3) -> str:
         """Execute commands via ADB on a mobile device."""
@@ -113,7 +115,7 @@ class Terminal:
         try:
             self.adb_shell(command="am", args=f"start -n {package}/{activity}")
         except KeyError:
-            logger.exception("appium_extended_terminal.start_activity()")
+            logger.exception("shadowstep_terminal.start_activity()")
             return False
         else:
             return True
@@ -135,7 +137,7 @@ class Terminal:
                     if matches:
                         return matches.group(1)[:-1]  # removing trailing slash
         except KeyError:
-            logger.exception("appium_extended_terminal.get_current_app_package()")
+            logger.exception("shadowstep_terminal.get_current_app_package()")
             return ""
         else:
             return ""
@@ -150,7 +152,7 @@ class Terminal:
         try:
             self.adb_shell(command="am", args=f"force-stop {package}")
         except KeyError:
-            logger.exception("appium_extended_terminal.close_app()")
+            logger.exception("shadowstep_terminal.close_app()")
             return False
         else:
             return True
@@ -181,7 +183,7 @@ class Terminal:
                 return True
             logger.debug("is_app_installed() > False")
         except KeyError:
-            logger.exception("appium_extended_terminal.is_app_installed() > False")
+            logger.exception("shadowstep_terminal.is_app_installed() > False")
             return False
         else:
             return False
@@ -201,7 +203,7 @@ class Terminal:
             self.shadowstep.reconnect()
             return False
         except KeyError:
-            logger.exception("appium_extended_terminal.uninstall_app()")
+            logger.exception("shadowstep_terminal.uninstall_app()")
             return False
         else:
             return True
@@ -211,13 +213,7 @@ class Terminal:
 
         :return: True if the home button press was successfully simulated, False otherwise.
         """
-        try:
-            self.input_keycode(keycode="KEYCODE_HOME")
-        except KeyError:
-            logger.exception("appium_extended_terminal.press_home()")
-            return False
-        else:
-            return True
+        return self.keyevent.press_home()
 
     def press_back(self) -> bool:
         """Simulate pressing the back button on the device.
@@ -227,7 +223,7 @@ class Terminal:
         try:
             self.input_keycode(keycode="KEYCODE_BACK")
         except KeyError:
-            logger.exception("appium_extended_terminal.press_back()")
+            logger.exception("shadowstep_terminal.press_back()")
             return False
         else:
             return True
@@ -240,7 +236,7 @@ class Terminal:
         try:
             self.input_keycode(keycode="KEYCODE_MENU")
         except KeyError:
-            logger.exception("appium_extended_terminal.press_menu()")
+            logger.exception("shadowstep_terminal.press_menu()")
             return False
         else:
             return True
@@ -256,7 +252,7 @@ class Terminal:
         try:
             self.adb_shell(command="input", args=f"keyevent KEYCODE_NUMPAD_{num}")
         except KeyError:
-            logger.exception("appium_extended_terminal.input_keycode_num_()")
+            logger.exception("shadowstep_terminal.input_keycode_num_()")
             return False
         else:
             return True
@@ -270,7 +266,7 @@ class Terminal:
         try:
             self.adb_shell(command="input", args=f"keyevent {keycode}")
         except KeyError:
-            logger.exception("appium_extended_terminal.input_keycode()")
+            logger.exception("shadowstep_terminal.input_keycode()")
             return False
         else:
             return True
@@ -284,7 +280,7 @@ class Terminal:
         try:
             self.adb_shell(command="input", args=f"text {text}")
         except KeyError:
-            logger.exception("appium_extended_terminal.input_text()")
+            logger.exception("shadowstep_terminal.input_text()")
             return False
         else:
             return True
@@ -299,7 +295,7 @@ class Terminal:
         try:
             self.adb_shell(command="input", args=f"tap {x!s} {y!s}")
         except KeyError:
-            logger.exception("appium_extended_terminal.tap()")
+            logger.exception("shadowstep_terminal.tap()")
             return False
         else:
             return True
@@ -327,7 +323,7 @@ class Terminal:
                 args=f"swipe {start_x!s} {start_y!s} {end_x!s} {end_y!s} {duration!s}",
             )
         except KeyError:
-            logger.exception("appium_extended_terminal.swipe()")
+            logger.exception("shadowstep_terminal.swipe()")
             return False
         else:
             return True
@@ -421,7 +417,7 @@ class Terminal:
                     return True
             logger.debug("check_VPN() False")
         except KeyError:
-            logger.exception("appium_extended_terminal.check_VPN")
+            logger.exception("shadowstep_terminal.check_VPN")
             return False
         else:
             return False
@@ -434,7 +430,7 @@ class Terminal:
         try:
             process_list = self.adb_shell(command="ps", args="")
         except KeyError:
-            logger.exception("appium_extended_terminal.stop_logcat")
+            logger.exception("shadowstep_terminal.stop_logcat")
             return False
         for process in process_list.splitlines():
             if "logcat" in process:
@@ -442,7 +438,7 @@ class Terminal:
                 try:
                     self.adb_shell(command="kill", args=f"-SIGINT {pid!s}")
                 except KeyError:
-                    logger.exception("appium_extended_terminal.stop_logcat")
+                    logger.exception("shadowstep_terminal.stop_logcat")
                     traceback_info = "".join(traceback.format_tb(sys.exc_info()[2]))
                     logger.exception(traceback_info)
                     return False
@@ -549,7 +545,7 @@ class Terminal:
         try:
             self.adb_shell(command="pkill", args=f"-f {name!s}")
         except KeyError:
-            logger.exception("appium_extended_terminal.kill_all")
+            logger.exception("shadowstep_terminal.kill_all")
             return False
         return True
 
@@ -562,7 +558,7 @@ class Terminal:
         try:
             self.adb_shell(command="rm", args=f"-rf {path}*")
         except KeyError:
-            logger.exception("appium_extended_terminal.delete_files_from_internal_storage")
+            logger.exception("shadowstep_terminal.delete_files_from_internal_storage")
             return False
         return True
 
@@ -577,7 +573,7 @@ class Terminal:
             path = path.removesuffix("/")
             self.adb_shell(command="rm", args=f"-rf {path}/{filename}")
         except KeyError:
-            logger.exception("appium_extended_terminal.delete_file_from_internal_storage")
+            logger.exception("shadowstep_terminal.delete_file_from_internal_storage")
             return False
         return True
 
@@ -594,7 +590,7 @@ class Terminal:
         except InvalidSessionIdException:
             self.shadowstep.reconnect()
         except KeyError:
-            logger.exception("appium_extended_terminal.record_video")
+            logger.exception("shadowstep_terminal.record_video")
             return False
         return True
 
@@ -612,7 +608,7 @@ class Terminal:
         except InvalidSessionIdException:
             self.shadowstep.reconnect()
         except KeyError:
-            logger.exception("appium_extended_terminal.stop_video")
+            logger.exception("shadowstep_terminal.stop_video")
             return None
 
     def reboot(self) -> bool:
