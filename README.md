@@ -38,7 +38,7 @@ ___
 ___
 
 [badge-license]: https://img.shields.io/badge/license-MIT-blue
-[link-license]: LICENSE
+[link-license]: LICENSES/MIT.txt
 [badge-license-check]: https://github.com/molokov-klim/Appium-Python-Client-Shadowstep/actions/workflows/license-check.yml/badge.svg
 [workflow-license-check]: https://github.com/molokov-klim/Appium-Python-Client-Shadowstep/actions/workflows/license-check.yml
 [badge-deepwiki]: https://deepwiki.com/badge.svg
