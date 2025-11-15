@@ -28,6 +28,7 @@ dependencies = [
     "wheel>=0.45.1",
     "pyright>=1.1.405",
     "ruff>=0.13.2",
+    "yamllint>=1.37.1",
 ]
 
 keywords = ["appium", "testing", "uiautomator2", "android", "automation", "framework"]
@@ -58,7 +59,8 @@ dev = [
     "ruff",
     "pytest",
     "pytest-cov",
-    "pytest-rerunfailures"
+    "pytest-rerunfailures",
+    "yamllint"
 ]
 
 

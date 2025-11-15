@@ -20,3 +20,13 @@ jobs:
           pip install ruff
       - name: Run Ruff
         run: ruff check .
+
+# Local run:
+# - Install Ruff:
+#   pip install ruff (or uv pip install ruff)
+# - Run Ruff linter:
+#   ruff check .
+# - Auto-fix issues:
+#   ruff check --fix .
+# - Check specific file:
+#   ruff check path/to/file.py

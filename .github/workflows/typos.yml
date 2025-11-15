@@ -17,3 +17,13 @@ jobs:
       - name: Run typos
         uses: crate-ci/typos@v1.38.1
 
+# Local run:
+# - Install typos:
+#   cargo install typos-cli (requires Rust)
+#   Or download binary from: https://github.com/crate-ci/typos/releases
+# - Run typos checker:
+#   typos
+# - Auto-fix typos:
+#   typos --write-changes
+# - Check specific path:
+#   typos path/to/directory

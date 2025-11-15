@@ -1,6 +1,6 @@
 name: Yamllint
 
-on: [push, pull_request]
+on: [ push, pull_request ]
 
 jobs:
   # Purpose: Validates YAML syntax and formatting across all configuration files
@@ -22,3 +22,8 @@ jobs:
       - name: Run yamllint
         uses: ibiqlik/action-yamllint@v3
 
+# Local run:
+# - install uv pip install yamllint
+# - add yamllint to pyproject.toml [dependency-groups] dev
+# - uv lock upgrade && uv sync
+# - uv run yamllint .

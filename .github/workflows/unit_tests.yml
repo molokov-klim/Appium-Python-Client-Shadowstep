@@ -26,3 +26,14 @@ jobs:
       - name: Run unit tests
         run: PYTHONPATH=$PWD uv run pytest tests/test_unit -svl --log-cli-level INFO --tb=short --setup-show
 
+# Local run:
+# - Install uv:
+#   pip install uv
+# - Install dependencies:
+#   uv sync --dev
+# - Run all unit tests:
+#   PYTHONPATH=$PWD uv run pytest tests/test_unit -svl
+# - Run specific test file:
+#   PYTHONPATH=$PWD uv run pytest tests/test_unit/test_specific.py -svl
+# - Run with coverage:
+#   PYTHONPATH=$PWD uv run pytest tests/test_unit --cov=shadowstep

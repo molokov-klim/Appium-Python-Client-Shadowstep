@@ -10,3 +10,10 @@ updates:
       interval: daily
       time: "11:00"
     open-pull-requests-limit: 10
+
+# Local run:
+# - Dependabot runs automatically on GitHub, no local execution available
+# - To manually check for outdated dependencies:
+#   uv pip list --outdated
+# - To update a specific package:
+#   uv pip install --upgrade <package-name>

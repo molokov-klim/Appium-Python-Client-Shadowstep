@@ -39,3 +39,16 @@ jobs:
         env:
           TWINE_USERNAME: __token__
           TWINE_PASSWORD: ${{ secrets.PYPI_API_TOKEN }}
+
+# Local run:
+# - Install build tools:
+#   pip install build twine
+# - Build package:
+#   python -m build
+# - Check distribution:
+#   twine check dist/*
+# - Test upload to TestPyPI (requires account):
+#   twine upload --repository testpypi dist/*
+# - Upload to PyPI (requires API token):
+#   twine upload dist/*
+

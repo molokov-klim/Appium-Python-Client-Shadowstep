@@ -17,3 +17,11 @@ jobs:
       - name: Run shellcheck
         uses: ludeeus/action-shellcheck@master
 
+# Local run:
+# - Install shellcheck:
+#   sudo apt install shellcheck (Ubuntu/Debian)
+#   brew install shellcheck (macOS)
+# - Run shellcheck on all shell scripts:
+#   find . -name "*.sh" -exec shellcheck {} +
+# - Check specific script:
+#   shellcheck path/to/script.sh

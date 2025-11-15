@@ -20,3 +20,14 @@ jobs:
         run: uv sync --dev
       - name: Run Pyright
         run: uv run pyright
+
+# Local run:
+# - Install uv:
+#   pip install uv
+# - Install dependencies:
+#   uv sync --dev
+# - Run Pyright type checker:
+#   uv run pyright
+# - Check specific file:
+#   uv run pyright path/to/file.py
+

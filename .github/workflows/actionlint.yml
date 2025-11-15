@@ -22,3 +22,10 @@ jobs:
         run: ${{ steps.get_actionlint.outputs.executable }} -color
         shell: bash
 
+# Local run:
+# - Download actionlint:
+#   bash <(curl https://raw.githubusercontent.com/rhysd/actionlint/main/scripts/download-actionlint.bash)
+# - Run actionlint:
+#   ./actionlint -color
+# - Or install via package manager and run:
+#   actionlint -color

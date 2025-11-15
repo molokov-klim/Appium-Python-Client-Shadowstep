@@ -17,3 +17,10 @@ jobs:
       - name: Run markdownlint
         uses: DavidAnson/markdownlint-cli2-action@v20.0.0
 
+# Local run:
+# - Install markdownlint-cli2:
+#   npm install -g markdownlint-cli2
+# - Run markdownlint:
+#   markdownlint-cli2 "**/*.md"
+# - Or fix automatically:
+#   markdownlint-cli2 --fix "**/*.md"

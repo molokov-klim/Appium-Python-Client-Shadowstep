@@ -17,3 +17,12 @@ jobs:
       - name: Run reuse lint
         uses: fsfe/reuse-action@v3
 
+# Local run:
+# - Install reuse:
+#   pip install reuse (or uv pip install reuse)
+# - Run reuse lint:
+#   reuse lint
+# - Download licenses:
+#   reuse download --all
+# - Add license header to file:
+#   reuse addheader --copyright="Your Name" --license="Apache-2.0" file.py

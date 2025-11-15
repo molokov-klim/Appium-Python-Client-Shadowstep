@@ -181,3 +181,15 @@ jobs:
             kill $APPIUM_PID || true
             
             echo "✅ Android environment test completed"
+
+# Local run:
+# - Install prerequisites: Java 17, Node.js LTS, Android SDK, GStreamer
+# - Install Appium:
+#   npm install -g appium@latest && appium driver install uiautomator2
+# - Setup Android emulator via Android Studio or command line
+# - Start Appium server:
+#   appium server -p 4723 -a 0.0.0.0 -pa /wd/hub --relaxed-security
+# - In another terminal, run tests:
+#   uv sync --dev
+#   PYTHONPATH=$PWD uv run pytest tests/test_integro/<test-file>.py -svl
+

@@ -47,3 +47,13 @@ jobs:
         with:
           name: license-report
           path: license-report.md
+
+# Local run:
+# - Install pip-licenses:
+#   uv pip install pip-licenses
+# - Check for GPL/AGPL licenses:
+#   uv run pip-licenses --fail-on="GPL" --fail-on="AGPL"
+# - Generate license report:
+#   uv run pip-licenses --format=markdown > license-report.md
+#   cat license-report.md
+

@@ -33,3 +33,14 @@ jobs:
       - uses: stefanzweifel/git-auto-commit-action@v5
         with:
           commit_message: "chore: Refresh uv.lock"
+
+# Local run:
+# - Install uv:
+#   make install-uv (or curl -LsSf https://astral.sh/uv/install.sh | sh)
+# - Update lock file:
+#   uv lock
+# - Upgrade dependencies:
+#   uv lock --upgrade
+# - Commit changes:
+#   git add uv.lock && git commit -m "chore: Refresh uv.lock"
+
