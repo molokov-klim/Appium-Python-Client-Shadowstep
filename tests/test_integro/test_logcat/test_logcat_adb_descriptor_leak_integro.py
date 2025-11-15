@@ -152,6 +152,8 @@ class TestLogcatAdbDescriptorLeak:
         
         print(f"\nTest passed: FD growth={fd_growth} (within limit of {max_allowed_growth})")
         print(f"FD count history: {fd_counts}")
+        if log_file.exists():
+            log_file.unlink()
 
     def test_logcat_descriptor_cleanup_after_long_session(
         self,
@@ -233,6 +235,9 @@ class TestLogcatAdbDescriptorLeak:
             )
             
             print(f"\nTest passed: FD variance during operation={variance}, final growth={fd_growth}")
+        if log_file.exists():
+            log_file.unlink()
+
 
     def test_logcat_descriptor_count_with_reconnect_simulation(
         self,
@@ -299,4 +304,5 @@ class TestLogcatAdbDescriptorLeak:
         
         print(f"\nTest passed: After {num_rapid_cycles} rapid cycles, FD growth={final_growth}")
         print(f"FD samples: {fd_samples}")
-
+        if log_file.exists():
+            log_file.unlink()
