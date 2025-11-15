@@ -1,0 +1,13 @@
+# ignore words
+[default.extend-words]
+udid = "udid"
+UDID = "UDID"
+
+# ignore files
+[files]
+extend-exclude = ["*.bin"]
+
+# check files
+[type.py]
+extend-glob = ["*.py"]
+check-file = true

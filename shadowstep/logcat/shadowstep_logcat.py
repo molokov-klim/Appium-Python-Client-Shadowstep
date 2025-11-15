@@ -327,7 +327,7 @@ class ShadowstepLogcat:
                                 time.sleep(self._poll_interval)
                                 continue
                             except OSError:
-                                logger.warning("OSError occured in logcat")
+                                logger.warning("OSError occurred in logcat")
                                 self.mobile_commands.stop_logs_broadcast()  # kill descriptor
                                 time.sleep(self._poll_interval)
                                 break

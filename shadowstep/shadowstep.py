@@ -2543,7 +2543,7 @@ class Shadowstep(ShadowstepBase):
             Sends a text to the specified element by replacing its previous content. If the text ends with "\\n" (backslash must be escaped, so it is not translated into 0x0A), the Enter key press will be emulated after typing. Available since driver version 2.22.
 
         Args:
-            locator (tuple[str, str] | dict[str, Any] | Element | UiSelector): locator of element to retreive
+            locator (tuple[str, str] | dict[str, Any] | Element | UiSelector): locator of element to retrieve
             text (str): The text to enter. Can include Unicode characters. If ending with "\\n", the Enter key is emulated after typing (the "\\n" substring itself is removed). Required. Example: "yolo"
 
         Returns:

@@ -106,7 +106,7 @@ class PageObjectMerger:
             stripped = line.strip()
             self.logger.info("stripped=%s", stripped)
             if stripped.startswith("class "):
-                self.logger.info("finded class stripped=%s", stripped)
+                self.logger.info("found class stripped=%s", stripped)
                 return line.rstrip()
         raise ShadowstepNoClassDefinitionFoundError
 
