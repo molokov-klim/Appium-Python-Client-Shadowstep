@@ -1,8 +1,9 @@
+---
 name: Update uv.lock
 
-on:
+on:  # yamllint disable-line rule:truthy
   pull_request:
-    types: [ opened, synchronize ]
+    types: [opened, synchronize]
     paths:
       - 'pyproject.toml'
 
@@ -11,13 +12,16 @@ permissions:
   pull-requests: write
 
 jobs:
-  # Purpose: Automatically updates uv.lock file when Dependabot modifies pyproject.toml
-  # What it does: Runs uv lock command and commits the updated lock file to Dependabot's PR
-  # Problems it solves: Keeps dependency lock file in sync with pyproject.toml changes,
-  #                     prevents merge conflicts and manual lock file updates
+  # Purpose: Automatically updates uv.lock file when Dependabot modifies
+  #          pyproject.toml
+  # What it does: Runs uv lock command and commits the updated lock file to
+  #               Dependabot's PR
+  # Problems it solves: Keeps dependency lock file in sync with pyproject.toml
+  #                     changes, prevents merge conflicts and manual lock file
+  #                     updates
   uv-lock-update:
     if: github.actor == 'dependabot[bot]'
-    runs-on: [ self-hosted, linux, x64 ]
+    runs-on: [self-hosted, linux, x64]
     steps:
       - uses: actions/checkout@v5
         with:
@@ -43,4 +47,3 @@ jobs:
 #   uv lock --upgrade
 # - Commit changes:
 #   git add uv.lock && git commit -m "chore: Refresh uv.lock"
-

@@ -1,14 +1,19 @@
+---
 name: Ruff Lint
 
-on: [ push, pull_request ]
+on:  # yamllint disable-line rule:truthy
+  push: {}
+  pull_request: {}
 
 jobs:
   # Purpose: Performs fast Python linting to enforce code quality standards
-  # What it does: Runs Ruff linter to check Python code for style violations, bugs, and anti-patterns
-  # Problems it solves: Catches common Python errors, enforces PEP 8 style guide, improves code readability,
-  #                     finds potential bugs before they reach production
+  # What it does: Runs Ruff linter to check Python code for style violations,
+  #               bugs, and anti-patterns
+  # Problems it solves: Catches common Python errors, enforces PEP 8 style
+  #                     guide, improves code readability, finds potential bugs
+  #                     before they reach production
   lint:
-    runs-on: [ self-hosted, linux, x64 ]
+    runs-on: [self-hosted, linux, x64]
     steps:
       - uses: actions/checkout@v5
       - uses: actions/setup-python@v5

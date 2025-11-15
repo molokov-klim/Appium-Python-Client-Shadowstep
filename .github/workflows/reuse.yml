@@ -1,14 +1,20 @@
+---
 name: REUSE Compliance
 
-on: [push, pull_request]
+on:  # yamllint disable-line rule:truthy
+  push: {}
+  pull_request: {}
 
 jobs:
-  # Purpose: Ensures compliance with REUSE specification for license and copyright information
-  # What it does: Runs REUSE linter to verify all files have proper license and copyright headers
-  # Problems it solves: Maintains legal compliance, ensures all files have proper licensing information,
-  #                     simplifies license auditing and third-party usage
+  # Purpose: Ensures compliance with REUSE specification for license and
+  #          copyright information
+  # What it does: Runs REUSE linter to verify all files have proper license
+  #               and copyright headers
+  # Problems it solves: Maintains legal compliance, ensures all files have
+  #                     proper licensing information, simplifies license
+  #                     auditing and third-party usage
   reuse:
-    runs-on: [ self-hosted, linux, x64 ]
+    runs-on: [self-hosted, linux, x64]
     timeout-minutes: 15
     steps:
       - name: Checkout repository

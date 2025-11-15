@@ -1,14 +1,19 @@
+---
 name: Pyright Type Check
 
-on: [ push, pull_request ]
+on:  # yamllint disable-line rule:truthy
+  push: {}
+  pull_request: {}
 
 jobs:
   # Purpose: Validates Python type annotations and catches type-related bugs
-  # What it does: Runs Pyright static type checker on entire codebase with strict type checking
-  # Problems it solves: Detects type errors before runtime, enforces type safety, improves code quality,
-  #                     helps maintain proper type annotations throughout the project
+  # What it does: Runs Pyright static type checker on entire codebase with
+  #               strict type checking
+  # Problems it solves: Detects type errors before runtime, enforces type
+  #                     safety, improves code quality, helps maintain proper
+  #                     type annotations throughout the project
   type-check:
-    runs-on: [ self-hosted, linux, x64 ]
+    runs-on: [self-hosted, linux, x64]
     steps:
       - uses: actions/checkout@v5
       - uses: actions/setup-python@v5
@@ -30,4 +35,3 @@ jobs:
 #   uv run pyright
 # - Check specific file:
 #   uv run pyright path/to/file.py
-

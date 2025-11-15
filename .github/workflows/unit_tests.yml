@@ -1,17 +1,25 @@
+---
 name: Unit Tests
 
-on: [ push, pull_request ]
+on:  # yamllint disable-line rule:truthy
+  push: {}
+  pull_request: {}
 
 jobs:
-  # Purpose: Executes fast unit tests across multiple Python versions to ensure compatibility
-  # What it does: Runs pytest unit test suite in matrix strategy for Python 3.9, 3.11, 3.12, 3.13
-  # Problems it solves: Validates code functionality without external dependencies, ensures cross-version compatibility,
-  #                     provides quick feedback on code changes, catches regressions early in development
+  # Purpose: Executes fast unit tests across multiple Python versions to
+  #          ensure compatibility
+  # What it does: Runs pytest unit test suite in matrix strategy for Python
+  #               3.9, 3.11, 3.12, 3.13
+  # Problems it solves: Validates code functionality without external
+  #                     dependencies, ensures cross-version compatibility,
+  #                     provides quick feedback on code changes, catches
+  #                     regressions early in development
   unit-tests:
-    runs-on: [ self-hosted, linux, x64 ]
+    runs-on: [self-hosted, linux, x64]
     strategy:
       matrix:
-        python-version: [ 3.9, 3.11, 3.12, 3.13 ]  # skip 3.10 bcs issue with it, don't know how fix
+        # skip 3.10 bcs issue with it, don't know how fix
+        python-version: [3.9, 3.11, 3.12, 3.13]
     steps:
       - uses: actions/checkout@v5
       - uses: actions/setup-python@v5
@@ -24,7 +32,9 @@ jobs:
       - name: Install dependencies
         run: uv sync --dev
       - name: Run unit tests
-        run: PYTHONPATH=$PWD uv run pytest tests/test_unit -svl --log-cli-level INFO --tb=short --setup-show
+        run: |
+          PYTHONPATH=$PWD uv run pytest tests/test_unit -svl \
+            --log-cli-level INFO --tb=short --setup-show
 
 # Local run:
 # - Install uv:

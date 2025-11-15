@@ -1,19 +1,22 @@
+---
 name: Publish Python Package
 
-on:
-  workflow_dispatch:
-  release:
+on:  # yamllint disable-line rule:truthy
+  workflow_dispatch: {}
+  release: {}
 
 permissions:
   contents: read
 
 jobs:
   # Purpose: Builds and publishes the package to PyPI for distribution
-  # What it does: Builds wheel and source distributions, uploads to PyPI using twine with API token authentication
-  # Problems it solves: Automates package release process, ensures consistent builds, makes package available
-  #                     for pip installation by end users
+  # What it does: Builds wheel and source distributions, uploads to PyPI
+  #               using twine with API token authentication
+  # Problems it solves: Automates package release process, ensures
+  #                     consistent builds, makes package available for pip
+  #                     installation by end users
   deploy:
-    runs-on: [ self-hosted, linux, x64 ]
+    runs-on: [self-hosted, linux, x64]
 
     steps:
       - uses: actions/checkout@v5
@@ -51,4 +54,3 @@ jobs:
 #   twine upload --repository testpypi dist/*
 # - Upload to PyPI (requires API token):
 #   twine upload dist/*
-

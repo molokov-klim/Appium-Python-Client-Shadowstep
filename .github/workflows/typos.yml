@@ -1,14 +1,19 @@
+---
 name: Typos
 
-on: [push, pull_request]
+on:  # yamllint disable-line rule:truthy
+  push: {}
+  pull_request: {}
 
 jobs:
   # Purpose: Detects and prevents spelling errors across the entire codebase
-  # What it does: Runs typos spell checker on all files including code, comments, and documentation
-  # Problems it solves: Maintains professional code quality, catches typos in variable names, comments,
-  #                     and documentation that could confuse users or cause bugs
+  # What it does: Runs typos spell checker on all files including code,
+  #               comments, and documentation
+  # Problems it solves: Maintains professional code quality, catches typos in
+  #                     variable names, comments, and documentation that could
+  #                     confuse users or cause bugs
   typos:
-    runs-on: [ self-hosted, linux, x64 ]
+    runs-on: [self-hosted, linux, x64]
     timeout-minutes: 15
     steps:
       - name: Checkout repository

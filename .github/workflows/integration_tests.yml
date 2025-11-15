@@ -1,14 +1,18 @@
+---
 name: Integration Tests
 
-on:
-  workflow_dispatch:
+on:  # yamllint disable-line rule:truthy
+  workflow_dispatch: {}
 
 jobs:
-
-  # Purpose: Executes comprehensive integration tests on Android emulator environment
-  # What it does: Sets up Android emulator with Appium server and runs all integration test suites in parallel matrix
-  # Problems it solves: Verifies end-to-end functionality with real Android environment, catches integration issues,
-  #                     validates UI interactions, element operations, gestures, and all library features before release
+  # Purpose: Executes comprehensive integration tests on Android emulator
+  #          environment
+  # What it does: Sets up Android emulator with Appium server and runs all
+  #               integration test suites in parallel matrix
+  # Problems it solves: Verifies end-to-end functionality with real Android
+  #                     environment, catches integration issues, validates UI
+  #                     interactions, element operations, gestures, and all
+  #                     library features before release
   android_test:
     runs-on: ubuntu-latest
     strategy:
@@ -101,14 +105,19 @@ jobs:
       - name: Install GStreamer
         run: |
           sudo apt update
-          sudo apt install -y gstreamer1.0-tools gstreamer1.0-plugins-base \
-                              gstreamer1.0-plugins-good gstreamer1.0-plugins-bad \
-                              gstreamer1.0-plugins-ugly gstreamer1.0-libav
+          sudo apt install -y gstreamer1.0-tools \
+            gstreamer1.0-plugins-base \
+            gstreamer1.0-plugins-good \
+            gstreamer1.0-plugins-bad \
+            gstreamer1.0-plugins-ugly \
+            gstreamer1.0-libav
           gst-launch-1.0 --version
 
       - name: Enable KVM group perms
         run: |
-          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", \
+            OPTIONS+="static_node=kvm"' | \
+            sudo tee /etc/udev/rules.d/99-kvm4all.rules
           sudo udevadm control --reload-rules
           sudo udevadm trigger --name-match=kvm
 
@@ -129,7 +138,9 @@ jobs:
           arch: ${{ env.ARCH }}
           target: google_apis
           force-avd-creation: false
-          emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
+          emulator-options: >-
+            -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim
+            -camera-back none
           disable-animations: false
           script: echo "Generated AVD snapshot for caching."
 
@@ -142,44 +153,55 @@ jobs:
           profile: Nexus 6
           disable-spellchecker: true
           disable-animations: true
-          emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
+          emulator-options: >-
+            -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio
+            -no-boot-anim -camera-back none
           script: |
             # Debug info
             echo "=== Environment Info ==="
             echo "Android SDK: $ANDROID_SDK_ROOT"
             adb devices
             echo "========================"
-            
+
             echo "Waiting for Android emulator to fully boot..."
             adb wait-for-device
-            adb shell 'while [[ -z $(getprop sys.boot_completed) ]]; do sleep 1; done;'
+            adb shell 'while [[ -z $(getprop sys.boot_completed) ]]; \
+              do sleep 1; done;'
             echo "✅ Emulator boot completed"
-            
+
             # Install dependencies first
             uv sync --dev
-            
+
             # Test basic imports
             echo "Testing basic imports..."
-            uv run python -c "import shadowstep; print('✅ Shadowstep imports successfully')"
-            
+            uv run python -c "import shadowstep; \
+              print('✅ Shadowstep imports successfully')"
+
             # Start Appium server
             echo "Starting Appium server..."
-            appium server -p 4723 -a 0.0.0.0 -pa /wd/hub --relaxed-security > appium.log 2>&1 &
+            appium server -p 4723 -a 0.0.0.0 -pa /wd/hub --relaxed-security \
+              > appium.log 2>&1 &
             APPIUM_PID=$!
-            
+
             # Wait a bit for server to start
             sleep 10
-            
+
             # Check if server is running
-            if curl -s http://127.0.0.1:4723/wd/hub/status > /dev/null; then echo "✅ Appium server is running"; else echo "❌ Appium server failed to start"; cat appium.log; fi
-            
+            if curl -s http://127.0.0.1:4723/wd/hub/status > /dev/null; then
+              echo "✅ Appium server is running"
+            else
+              echo "❌ Appium server failed to start"
+              cat appium.log
+            fi
+
             # Run tests if Appium server is working
             echo "Running tests for ${{ matrix.test_dir }}..."
-            PYTHONPATH=$PWD uv run pytest ${{ matrix.test_dir }} -svl --log-cli-level INFO --tb=short --setup-show --reruns 2
-            
+            PYTHONPATH=$PWD uv run pytest ${{ matrix.test_dir }} -svl \
+              --log-cli-level INFO --tb=short --setup-show --reruns 2
+
             # Kill Appium server
             kill $APPIUM_PID || true
-            
+
             echo "✅ Android environment test completed"
 
 # Local run:
@@ -192,4 +214,3 @@ jobs:
 # - In another terminal, run tests:
 #   uv sync --dev
 #   PYTHONPATH=$PWD uv run pytest tests/test_integro/<test-file>.py -svl
-

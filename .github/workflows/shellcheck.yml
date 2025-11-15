@@ -1,14 +1,19 @@
+---
 name: Shellcheck
 
-on: [push, pull_request]
+on:  # yamllint disable-line rule:truthy
+  push: {}
+  pull_request: {}
 
 jobs:
   # Purpose: Validates shell scripts for common errors and best practices
-  # What it does: Runs ShellCheck to analyze bash/sh scripts for syntax errors, bugs, and anti-patterns
-  # Problems it solves: Catches shell script errors before execution, ensures portability,
-  #                     prevents common scripting mistakes that could break builds or deployments
+  # What it does: Runs ShellCheck to analyze bash/sh scripts for syntax
+  #               errors, bugs, and anti-patterns
+  # Problems it solves: Catches shell script errors before execution,
+  #                     ensures portability, prevents common scripting mistakes
+  #                     that could break builds or deployments
   shellcheck:
-    runs-on: [ self-hosted, linux, x64 ]
+    runs-on: [self-hosted, linux, x64]
     timeout-minutes: 15
     steps:
       - name: Checkout repository

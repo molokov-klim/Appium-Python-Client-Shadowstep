@@ -1,13 +1,18 @@
+---
 name: Actionlint
 
-on: [push, pull_request]
+on:  # yamllint disable-line rule:truthy
+  push: {}
+  pull_request: {}
 
 jobs:
   # Purpose: Validates GitHub Actions workflow syntax and best practices
-  # What it does: Downloads and runs actionlint to check all workflow files for errors and anti-patterns
-  # Problems it solves: Catches workflow configuration errors before they cause CI/CD failures
+  # What it does: Downloads and runs actionlint to check all workflow files
+  #               for errors and anti-patterns
+  # Problems it solves: Catches workflow configuration errors before they
+  #                     cause CI/CD failures
   actionlint:
-    runs-on: [ self-hosted, linux, x64 ]
+    runs-on: [self-hosted, linux, x64]
     timeout-minutes: 15
     steps:
       - name: Checkout repository
@@ -15,7 +20,9 @@ jobs:
 
       - name: Download actionlint
         id: get_actionlint
-        run: bash <(curl https://raw.githubusercontent.com/rhysd/actionlint/main/scripts/download-actionlint.bash)
+        run: |
+          bash <(curl \
+            https://raw.githubusercontent.com/rhysd/actionlint/main/scripts/download-actionlint.bash)
         shell: bash
 
       - name: Run actionlint
@@ -24,7 +31,9 @@ jobs:
 
 # Local run:
 # - Download actionlint:
-#   bash <(curl https://raw.githubusercontent.com/rhysd/actionlint/main/scripts/download-actionlint.bash)
+#   bash <(curl \
+#     https://raw.githubusercontent.com/rhysd/actionlint/main/scripts/\
+#     download-actionlint.bash)
 # - Run actionlint:
 #   ./actionlint -color
 # - Or install via package manager and run:
