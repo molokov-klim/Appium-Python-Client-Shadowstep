@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2023 Molokov Klim
+#
+# SPDX-License-Identifier: MIT
+
 """Decorators package for Shadowstep framework.
 
 This package provides decorators for method enhancement including retry logic,

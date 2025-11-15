@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2023 Molokov Klim
+#
+# SPDX-License-Identifier: MIT
+
 """Logcat module for capturing Android device logs via WebSocket.
 
 This module provides functionality for streaming Android device logs through

@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2023 Molokov Klim
+#
+# SPDX-License-Identifier: MIT
+
 # debug.py
 # type: ignore
 # noqa

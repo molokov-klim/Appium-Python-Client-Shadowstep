@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2023 Molokov Klim
+#
+# SPDX-License-Identifier: MIT
+
 """Main Shadowstep framework module.
 
 This module provides the core Shadowstep class for mobile automation testing

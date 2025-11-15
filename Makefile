@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2023 Molokov Klim
+#
+# SPDX-License-Identifier: MIT
+
 .PHONY: install-uv
 install-uv:
 	curl -LsSf https://astral.sh/uv/install.sh | sh

@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2023 Molokov Klim
+#
+# SPDX-License-Identifier: MIT
+
 # ruff: noqa
 # pyright: ignore
 """Smoke integration tests for shadowstep.page_object modules.

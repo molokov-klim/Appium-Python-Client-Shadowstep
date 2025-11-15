@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2023 Molokov Klim
+#
+# SPDX-License-Identifier: MIT
+
 """LegacyAdb.
 
 This module is deprecated and kept for backward compatibility with external systems.

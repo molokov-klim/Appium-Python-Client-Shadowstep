@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2023 Molokov Klim
+#
+# SPDX-License-Identifier: MIT
+
 """ADB (Android Debug Bridge) integration for Shadowstep framework.
 
 This module provides the Adb class for interacting with Android devices

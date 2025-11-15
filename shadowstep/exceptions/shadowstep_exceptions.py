@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2023 Molokov Klim
+#
+# SPDX-License-Identifier: MIT
+
 """Custom exceptions for the Shadowstep framework.
 
 This module defines custom exception classes that extend standard

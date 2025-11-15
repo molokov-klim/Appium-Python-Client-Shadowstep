@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2023 Molokov Klim
+#
+# SPDX-License-Identifier: MIT
+
 [project]
 name = "appium-python-client-shadowstep"
 version = "0.36.16"
@@ -29,6 +33,7 @@ dependencies = [
     "pyright>=1.1.405",
     "ruff>=0.13.2",
     "yamllint>=1.37.1",
+    "reuse>=5.1.1",
 ]
 
 keywords = ["appium", "testing", "uiautomator2", "android", "automation", "framework"]
@@ -60,7 +65,8 @@ dev = [
     "pytest",
     "pytest-cov",
     "pytest-rerunfailures",
-    "yamllint"
+    "yamllint",
+    "reuse"
 ]
 
 

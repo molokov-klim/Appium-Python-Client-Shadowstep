@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2023 Molokov Klim
+#
+# SPDX-License-Identifier: MIT
+
 """Text translation utilities for Shadowstep framework.
 
 This module provides the YandexTranslate class for translating text

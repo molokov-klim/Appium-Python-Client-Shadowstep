@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2023 Molokov Klim
+#
+# SPDX-License-Identifier: MIT
+
 """Mobile commands for Appium automation.
 
 This module provides a comprehensive set of mobile commands for Appium automation,

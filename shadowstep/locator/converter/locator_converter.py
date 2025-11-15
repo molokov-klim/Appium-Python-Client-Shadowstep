@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2023 Molokov Klim
+#
+# SPDX-License-Identifier: MIT
+
 """Unified LocatorConverter for converting between different locator formats.
 
 This module provides a unified interface for converting between:

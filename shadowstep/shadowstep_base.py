@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2023 Molokov Klim
+#
+# SPDX-License-Identifier: MIT
+
 """Base classes and utilities for Shadowstep framework.
 
 This module provides the core functionality for connecting to Appium servers,

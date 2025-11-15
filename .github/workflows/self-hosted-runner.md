@@ -1,3 +1,9 @@
+<!--
+SPDX-FileCopyrightText: 2023 Molokov Klim
+
+SPDX-License-Identifier: MIT
+-->
+
 # Self-hosted Runner Setup
 
 1. Open `GitHub Actions → Runners → Self-hosted runners → New runner` and follow the instructions in the UI.

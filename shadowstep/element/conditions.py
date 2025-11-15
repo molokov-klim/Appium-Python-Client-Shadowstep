@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2023 Molokov Klim
+#
+# SPDX-License-Identifier: MIT
+
 """Element conditions module for Shadowstep framework.
 
 This module provides condition functions for element waiting and validation.

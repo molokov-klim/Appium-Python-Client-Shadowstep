@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2023 Molokov Klim
+#
+# SPDX-License-Identifier: MIT
+
 """DictConverter for converting Shadowstep dictionary locators to other formats.
 
 This module provides the main DictConverter class that handles conversion

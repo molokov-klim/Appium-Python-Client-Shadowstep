@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2023 Molokov Klim
+#
+# SPDX-License-Identifier: MIT
+
 """Action step definitions for scheduled actions.
 
 This module provides the ActionStep class for defining

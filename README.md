@@ -1,3 +1,9 @@
+<!--
+SPDX-FileCopyrightText: 2023 Molokov Klim
+
+SPDX-License-Identifier: MIT
+-->
+
 # Shadowstep
 
 **Shadowstep** — a modern Python framework for Android test automation. Powered

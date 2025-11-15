@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2023 Molokov Klim
+#
+# SPDX-License-Identifier: MIT
+
 """Decorators module for Shadowstep framework.
 
 This module provides various decorators for enhancing method functionality

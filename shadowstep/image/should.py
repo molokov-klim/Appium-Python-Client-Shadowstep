@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2023 Molokov Klim
+#
+# SPDX-License-Identifier: MIT
+
 """Image assertions module for Shadowstep framework.
 
 This module provides DSL-style assertions for images using 'should.be' syntax.

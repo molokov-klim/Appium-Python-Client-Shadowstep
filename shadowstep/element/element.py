@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2023 Molokov Klim
+#
+# SPDX-License-Identifier: MIT
+
 """Element module for Shadowstep framework.
 
 This module provides the main Element class which serves as the public API

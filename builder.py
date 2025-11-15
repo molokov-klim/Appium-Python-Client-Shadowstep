@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2023 Molokov Klim
+#
+# SPDX-License-Identifier: MIT
+
 """Builder module for Appium Python Client Shadowstep.
 
 This module provides a builder script for testing and demonstrating

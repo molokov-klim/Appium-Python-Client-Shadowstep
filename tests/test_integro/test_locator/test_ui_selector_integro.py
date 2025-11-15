@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2023 Molokov Klim
+#
+# SPDX-License-Identifier: MIT
+
 """Smoke integration tests for UiSelector DSL.
 
 This module contains minimal smoke tests that verify UiSelector DSL works

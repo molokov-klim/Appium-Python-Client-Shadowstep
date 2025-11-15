@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2023 Molokov Klim
+#
+# SPDX-License-Identifier: MIT
+
 """Type definitions for locators in the Shadowstep framework.
 
 This module contains type definitions and data structures used for representing

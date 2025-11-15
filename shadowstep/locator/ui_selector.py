@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2023 Molokov Klim
+#
+# SPDX-License-Identifier: MIT
+
 """UiSelector DSL for fluent API locator building.
 
 This module provides a fluent DSL for building UiSelector locators in a more

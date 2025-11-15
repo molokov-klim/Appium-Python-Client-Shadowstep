@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2023 Molokov Klim
+#
+# SPDX-License-Identifier: MIT
+
 """Shadowstep - Appium Python Client with enhanced features.
 
 This package provides a comprehensive Appium Python client with additional

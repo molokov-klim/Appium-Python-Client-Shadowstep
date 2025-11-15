@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2023 Molokov Klim
+#
+# SPDX-License-Identifier: MIT
+
 """Element actions module for Shadowstep framework.
 
 This module provides action methods for interacting with UI elements,

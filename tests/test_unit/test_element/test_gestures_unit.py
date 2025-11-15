@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2023 Molokov Klim
+#
+# SPDX-License-Identifier: MIT
+
 # ruff: noqa
 # pyright: ignore
 """Unit tests for ElementGestures class using mocks."""

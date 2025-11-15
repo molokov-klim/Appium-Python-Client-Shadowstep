@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2023 Molokov Klim
+#
+# SPDX-License-Identifier: MIT
+
 """Element DOM module for Shadowstep framework.
 
 This module provides DOM-related functionality for elements,

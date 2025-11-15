@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2023 Molokov Klim
+#
+# SPDX-License-Identifier: MIT
+
 """Shadowstep dictionary attribute types.
 
 This module defines the ShadowstepDictAttribute enum that represents

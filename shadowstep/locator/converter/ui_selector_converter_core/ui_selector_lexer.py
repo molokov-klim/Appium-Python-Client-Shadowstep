@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2023 Molokov Klim
+#
+# SPDX-License-Identifier: MIT
+
 """Lexical analyzer for UiSelector expressions.
 
 This module provides the Lexer class for tokenizing UiSelector

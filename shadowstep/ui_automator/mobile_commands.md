@@ -1,3 +1,9 @@
+<!--
+SPDX-FileCopyrightText: 2023 Molokov Klim
+
+SPDX-License-Identifier: MIT
+-->
+
 # Mobile Commands Reference
 
 Shadowstep delegates mobile-specific commands to the Appium UIAutomator2 driver. Use the following official resources to explore the full API surface:

@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2023 Molokov Klim
+#
+# SPDX-License-Identifier: MIT
+
 """Terminal and command execution utilities for the Shadowstep framework.
 
 This module provides functionality for executing terminal commands, managing

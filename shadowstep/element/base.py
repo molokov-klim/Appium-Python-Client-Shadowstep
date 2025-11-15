@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2023 Molokov Klim
+#
+# SPDX-License-Identifier: MIT
+
 """Element base module for Shadowstep framework.
 
 This module provides the base functionality for element interactions,

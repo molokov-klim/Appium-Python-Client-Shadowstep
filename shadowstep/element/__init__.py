@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2023 Molokov Klim
+#
+# SPDX-License-Identifier: MIT
+
 """Element package for Shadowstep framework.
 
 This package provides comprehensive element interaction capabilities for mobile UI automation.

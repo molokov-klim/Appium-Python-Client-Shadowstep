@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2023 Molokov Klim
+#
+# SPDX-License-Identifier: MIT
+
 # ruff: noqa
 # pyright: ignore
 """Test module for performance and edge cases of element waiting."""

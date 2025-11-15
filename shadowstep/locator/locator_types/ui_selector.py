@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2023 Molokov Klim
+#
+# SPDX-License-Identifier: MIT
+
 """UiSelector attribute types.
 
 This module defines the UiAttribute enum that represents

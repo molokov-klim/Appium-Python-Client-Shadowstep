@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2023 Molokov Klim
+#
+# SPDX-License-Identifier: MIT
+
 """Element screenshots module for Shadowstep framework.
 
 This module provides screenshot functionality for elements,

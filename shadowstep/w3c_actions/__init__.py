@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2023 Molokov Klim
+#
+# SPDX-License-Identifier: MIT
+
 """W3C Actions module for performing gestures using W3C Actions API.
 
 0==K9 <>4C;L ?@54>AB02;O5B @50;870F8N 65AB>2 G5@57 W3C Actions API,

@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2023 Molokov Klim
+#
+# SPDX-License-Identifier: MIT
+
 """XPath converter module for Shadowstep framework.
 
 This module provides the XPathConverter class for converting

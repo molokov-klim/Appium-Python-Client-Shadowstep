@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2023 Molokov Klim
+#
+# SPDX-License-Identifier: MIT
+
 """UiSelector converter module for Shadowstep framework.
 
 This module provides the UiSelectorConverter class for converting

@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2023 Molokov Klim
+#
+# SPDX-License-Identifier: MIT
+
 """SSH transport module for Shadowstep framework.
 
 This module provides the Transport class for establishing SSH connections

@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2023 Molokov Klim
+#
+# SPDX-License-Identifier: MIT
+
 """Action history tracking for scheduled actions.
 
 This module provides the ActionHistory class for tracking

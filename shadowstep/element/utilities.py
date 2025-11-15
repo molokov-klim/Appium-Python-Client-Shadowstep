@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2023 Molokov Klim
+#
+# SPDX-License-Identifier: MIT
+
 """Element utilities module for Shadowstep framework.
 
 This module provides utility functions for element operations,

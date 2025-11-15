@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2023 Molokov Klim
+#
+# SPDX-License-Identifier: MIT
+
 """Logcat utilities for the Shadowstep framework.
 
 This module provides functionality for working with Android logcat output,

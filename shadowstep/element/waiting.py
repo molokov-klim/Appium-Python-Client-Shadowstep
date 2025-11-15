@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2023 Molokov Klim
+#
+# SPDX-License-Identifier: MIT
+
 """Element waiting module for Shadowstep framework.
 
 This module provides waiting functionality for elements,

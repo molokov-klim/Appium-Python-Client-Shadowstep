@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2023 Molokov Klim
+#
+# SPDX-License-Identifier: MIT
+
 """Decorators for image.py module only.
 
 The functionality of decorators can be duplicated with other decorators while violating the DRY principle. This was done consciously.

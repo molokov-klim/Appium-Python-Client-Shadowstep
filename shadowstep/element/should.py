@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2023 Molokov Klim
+#
+# SPDX-License-Identifier: MIT
+
 """Element assertions module for Shadowstep framework.
 
 This module provides DSL-style assertions for elements using 'should.have' and 'should.be' syntax.

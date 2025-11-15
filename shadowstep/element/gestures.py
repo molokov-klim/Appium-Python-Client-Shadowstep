@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2023 Molokov Klim
+#
+# SPDX-License-Identifier: MIT
+
 """Element gestures module for Shadowstep framework.
 
 This module provides gesture functionality for elements,

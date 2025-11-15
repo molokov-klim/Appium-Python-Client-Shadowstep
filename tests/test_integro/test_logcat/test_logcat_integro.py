@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2023 Molokov Klim
+#
+# SPDX-License-Identifier: MIT
+
 # ruff: noqa
 # pyright: ignore
 """Integration tests for shadowstep.logcat.shadowstep_logcat module.

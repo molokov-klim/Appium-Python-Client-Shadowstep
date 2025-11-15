@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2023 Molokov Klim
+#
+# SPDX-License-Identifier: MIT
+
 """Base page class for Shadowstep framework.
 
 This module provides the abstract base class for all page objects in the

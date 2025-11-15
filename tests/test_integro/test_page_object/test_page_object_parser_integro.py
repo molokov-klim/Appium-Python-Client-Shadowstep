@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2023 Molokov Klim
+#
+# SPDX-License-Identifier: MIT
+
 """Smoke integration tests for PageObjectParser class.
 
 This module contains minimal smoke tests that verify PageObjectParser works

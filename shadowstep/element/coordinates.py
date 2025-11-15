@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2023 Molokov Klim
+#
+# SPDX-License-Identifier: MIT
+
 """Element coordinates module for Shadowstep framework.
 
 This module provides coordinate-related functionality for elements,

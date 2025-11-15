@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2023 Molokov Klim
+#
+# SPDX-License-Identifier: MIT
+
 """Mapping from Shadowstep Dict format to UiSelector expressions.
 
 This module provides functions to convert Shadowstep dictionary locators

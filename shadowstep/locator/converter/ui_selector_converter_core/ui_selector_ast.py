@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2023 Molokov Klim
+#
+# SPDX-License-Identifier: MIT
+
 """Abstract Syntax Tree (AST) classes for UiSelector parsing.
 
 This module defines the AST node classes used to represent

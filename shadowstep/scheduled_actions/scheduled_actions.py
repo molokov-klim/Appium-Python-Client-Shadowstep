@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2023 Molokov Klim
+#
+# SPDX-License-Identifier: MIT
+
 """Scheduled actions management for Shadowstep framework.
 
 This module provides functionality for managing and executing

@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2023 Molokov Klim
+#
+# SPDX-License-Identifier: MIT
+
 """Mapping from XPath attributes to Shadowstep dictionary format.
 
 This module provides the mapping dictionary that converts XPath

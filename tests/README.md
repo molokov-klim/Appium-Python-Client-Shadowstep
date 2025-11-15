@@ -1,3 +1,9 @@
+<!--
+SPDX-FileCopyrightText: 2023 Molokov Klim
+
+SPDX-License-Identifier: MIT
+-->
+
 # SHADOWSTEP TESTING MANIFEST
 
 > **Principle:** Test BEHAVIOR, not implementation. Test CONTRACTS, not details.

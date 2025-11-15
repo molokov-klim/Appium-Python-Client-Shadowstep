@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2023 Molokov Klim
+#
+# SPDX-License-Identifier: MIT
+
 """General utility functions for Shadowstep framework.
 
 This module provides various utility functions including coordinate calculations,

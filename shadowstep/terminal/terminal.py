@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2023 Molokov Klim
+#
+# SPDX-License-Identifier: MIT
+
 """Terminal interface for Shadowstep framework.
 
 This module provides the Terminal class for executing ADB commands

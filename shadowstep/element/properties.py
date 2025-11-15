@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2023 Molokov Klim
+#
+# SPDX-License-Identifier: MIT
+
 """Element properties module for Shadowstep framework.
 
 This module provides property access functionality for elements,

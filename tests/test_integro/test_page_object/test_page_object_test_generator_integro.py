@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2023 Molokov Klim
+#
+# SPDX-License-Identifier: MIT
+
 """Smoke integration tests for PageObjectTestGenerator class.
 
 This module contains minimal smoke tests that verify PageObjectTestGenerator works

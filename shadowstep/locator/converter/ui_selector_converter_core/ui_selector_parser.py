@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2023 Molokov Klim
+#
+# SPDX-License-Identifier: MIT
+
 """Parser for UiSelector expressions.
 
 This module provides the Parser class for parsing tokenized

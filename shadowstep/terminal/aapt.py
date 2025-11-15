@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2023 Molokov Klim
+#
+# SPDX-License-Identifier: MIT
+
 """AAPT (Android Asset Packaging Tool) integration for Shadowstep framework.
 
 This module provides the Aapt class for extracting package information

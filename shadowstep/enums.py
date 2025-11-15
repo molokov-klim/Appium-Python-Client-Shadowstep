@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2023 Molokov Klim
+#
+# SPDX-License-Identifier: MIT
+
 """Enums for Shadowstep framework.
 
 This module contains enumerations used throughout the framework.

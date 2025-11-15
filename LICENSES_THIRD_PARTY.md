@@ -1,3 +1,9 @@
+<!--
+SPDX-FileCopyrightText: 2023 Molokov Klim
+
+SPDX-License-Identifier: MIT
+-->
+
 # Third-Party Licenses
 
 Generated via `pip-licenses`.

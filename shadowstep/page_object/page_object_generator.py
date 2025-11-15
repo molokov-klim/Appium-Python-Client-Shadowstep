@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2023 Molokov Klim
+#
+# SPDX-License-Identifier: MIT
+
 """Page object generator for Shadowstep framework.
 
 This module provides the PageObjectGenerator class for automatically

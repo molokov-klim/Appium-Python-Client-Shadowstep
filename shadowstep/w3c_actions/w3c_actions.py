@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2023 Molokov Klim
+#
+# SPDX-License-Identifier: MIT
+
 """W3C WebDriver Actions implementation for mobile gestures.
 
 This module provides a stable, cross-platform implementation of mobile gestures

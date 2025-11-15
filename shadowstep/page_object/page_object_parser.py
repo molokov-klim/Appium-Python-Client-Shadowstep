@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2023 Molokov Klim
+#
+# SPDX-License-Identifier: MIT
+
 """Page Object Parser for Android UI XML parsing and tree building.
 
 This module provides functionality to parse Android UI XML (uiautomator2 output)

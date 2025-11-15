@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2023 Molokov Klim
+#
+# SPDX-License-Identifier: MIT
+
 ---
 # Dependabot Configuration
 # Purpose: Automatically keeps Python dependencies up-to-date

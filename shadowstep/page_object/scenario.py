@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2023 Molokov Klim
+#
+# SPDX-License-Identifier: MIT
+
 """Architecture design document for ShadowstepScenarioEngine.
 
 **What's above Navigator? What's the next level of architectural evolution?**

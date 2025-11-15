@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2023 Molokov Klim
+#
+# SPDX-License-Identifier: MIT
+
 """Smoke integration tests for DictConverter class.
 
 This module contains minimal smoke tests that verify DictConverter works

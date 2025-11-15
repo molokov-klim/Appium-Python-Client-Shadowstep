@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2023 Molokov Klim
+#
+# SPDX-License-Identifier: MIT
+
 """Navigation utilities for the Shadowstep framework.
 
 This module provides navigation functionality for mobile applications,

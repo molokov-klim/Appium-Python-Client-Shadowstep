@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2023 Molokov Klim
+#
+# SPDX-License-Identifier: MIT
+
 """Image-based interaction module for Shadowstep framework.
 
 This module provides the ShadowstepImage class for performing

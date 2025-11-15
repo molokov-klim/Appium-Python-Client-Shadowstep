@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2023 Molokov Klim
+#
+# SPDX-License-Identifier: MIT
+
 """Mapping from UiSelector attributes to XPath format.
 
 This module provides the mapping dictionary and utility functions

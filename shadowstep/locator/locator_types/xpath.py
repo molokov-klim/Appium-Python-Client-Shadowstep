@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2023 Molokov Klim
+#
+# SPDX-License-Identifier: MIT
+
 """XPath attribute types.
 
 This module defines the XPathAttribute enum that represents
