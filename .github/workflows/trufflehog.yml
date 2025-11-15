@@ -1,6 +1,6 @@
 name: TruffleHog
 
-on: [push, pull_request]
+on: [ push, pull_request ]
 
 jobs:
   # Purpose: Scans repository for accidentally committed secrets and credentials
@@ -8,7 +8,7 @@ jobs:
   # Problems it solves: Prevents security breaches from exposed credentials, detects leaked secrets,
   #                     protects sensitive information from being committed to version control
   trufflehog:
-    runs-on: [ self-hosted, linux, x64 ]
+    runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
       - name: Checkout repository
@@ -20,4 +20,3 @@ jobs:
         uses: trufflesecurity/trufflehog@v3.80.0
         with:
           extra_args: --only-verified
-
