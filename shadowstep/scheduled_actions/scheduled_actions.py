@@ -14,6 +14,8 @@ from __future__ import annotations
 import logging
 from typing import Any
 
+from shadowstep.decorators.shadowstep_decorators import fail_safe_shadowstep
+from shadowstep.exceptions.shadowstep_exceptions import ShadowstepScheduledActionsException
 from shadowstep.scheduled_actions.action_history import ActionHistory
 from shadowstep.scheduled_actions.action_step import ActionStep  # noqa: TC001
 from shadowstep.ui_automator.mobile_commands import MobileCommands
@@ -33,20 +35,22 @@ class ScheduledActions:
     - Performing repeated gestures or interactions
     """
 
-    def __init__(self) -> None:
+    def __init__(self, timeout: float = 30) -> None:
         """Initialize ScheduledActions with mobile commands."""
         self._mobile_commands = MobileCommands()
         self.logger = logging.getLogger(f"{__name__}.{self.__class__.__name__}")
+        self.timeout = timeout
 
+    @fail_safe_shadowstep(raise_exception=ShadowstepScheduledActionsException)
     def schedule(  # noqa: PLR0913
-        self,
-        name: str,
-        steps: list[ActionStep],
-        max_pass: int | None = None,
-        max_fail: int | None = None,
-        times: int = 1,
-        interval_ms: int = 1000,
-        max_history_items: int = 20,
+            self,
+            name: str,
+            steps: list[ActionStep],
+            max_pass: int | None = None,
+            max_fail: int | None = None,
+            times: int = 1,
+            interval_ms: int = 1000,
+            max_history_items: int = 20,
     ) -> Any:
         """Schedule an action for asynchronous execution.
 
@@ -96,6 +100,7 @@ class ScheduledActions:
         self.logger.info("Scheduling action '%s' with %d steps", name, len(steps))
         return self._mobile_commands.schedule_action(params)
 
+    @fail_safe_shadowstep(raise_exception=ShadowstepScheduledActionsException)
     def unschedule(self, name: str) -> ActionHistory:
         """Unschedule a previously scheduled action and get its history.
 
@@ -122,6 +127,7 @@ class ScheduledActions:
         result["name"] = name
         return ActionHistory(result)
 
+    @fail_safe_shadowstep(raise_exception=ShadowstepScheduledActionsException)
     def get_history(self, name: str) -> ActionHistory:
         """Get execution history of a scheduled action.
 

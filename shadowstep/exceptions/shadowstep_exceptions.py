@@ -1060,3 +1060,13 @@ class ShadowstepImageNotImplementedError(ShadowstepImageException):
         """Construct message from context kwargs."""
         feature = context_kwargs.get("feature", "functionality")
         return f"{feature} is not yet implemented"
+
+class ShadowstepScheduledActionsException(ShadowstepException):
+    """Raised when screen name normalization fails."""
+
+    default_message = "ShadowstepScheduledActionsException occurred"
+
+    def _construct_message_from_context(self, **context_kwargs: Any) -> str:
+        """Construct message from context kwargs."""
+        text = context_kwargs.get("text", "unknown")
+        return f"Failed to shedule action '{text}'"
