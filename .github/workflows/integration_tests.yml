@@ -169,8 +169,7 @@ jobs:
 
             echo "Waiting for Android emulator to fully boot..."
             adb wait-for-device
-            adb shell 'while [[ -z $(getprop sys.boot_completed) ]]; \
-              do sleep 1; done;'
+            adb shell 'while [[ -z $(getprop sys.boot_completed) ]]; do sleep 1; done;'
             echo "✅ Emulator boot completed"
 
             # Install dependencies first
@@ -178,13 +177,11 @@ jobs:
 
             # Test basic imports
             echo "Testing basic imports..."
-            uv run python -c "import shadowstep; \
-              print('✅ Shadowstep imports successfully')"
+            uv run python -c "import shadowstep; print('✅ Shadowstep imports successfully')"
 
             # Start Appium server
             echo "Starting Appium server..."
-            appium server -p 4723 -a 0.0.0.0 -pa /wd/hub --relaxed-security \
-              > appium.log 2>&1 &
+            appium server -p 4723 -a 0.0.0.0 -pa /wd/hub --relaxed-security > appium.log 2>&1 &
             APPIUM_PID=$!
 
             # Wait a bit for server to start
@@ -200,8 +197,7 @@ jobs:
 
             # Run tests if Appium server is working
             echo "Running tests for ${{ matrix.test_dir }}..."
-            PYTHONPATH=$PWD uv run pytest ${{ matrix.test_dir }} -svl \
-              --log-cli-level INFO --tb=short --setup-show --reruns 2
+            PYTHONPATH=$PWD uv run pytest ${{ matrix.test_dir }} -svl --log-cli-level INFO --tb=short --setup-show --reruns 2
 
             # Kill Appium server
             kill $APPIUM_PID || true
