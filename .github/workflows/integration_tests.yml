@@ -1,3 +1,4 @@
+# yamllint disable-file
 # SPDX-FileCopyrightText: 2023 Molokov Klim
 #
 # SPDX-License-Identifier: MIT
@@ -5,8 +6,8 @@
 ---
 name: Integration Tests
 
-on:  # yamllint disable-line rule:truthy
-  workflow_dispatch: {}
+on: # yamllint disable-line rule:truthy
+  workflow_dispatch: { }
 
 jobs:
   # Purpose: Executes comprehensive integration tests on Android emulator

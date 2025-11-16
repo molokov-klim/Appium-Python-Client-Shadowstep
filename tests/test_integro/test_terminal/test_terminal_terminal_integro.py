@@ -269,9 +269,9 @@ class TestTerminalIntegration:
         assert result is True  # noqa: S101
 
     def test_input_keycode_num(self, terminal: Terminal):
-        """Test inputting numeric keycode."""
+        """Test inputting numeric keycode using input_keycode."""
         # Act
-        result = terminal.input_keycode_num_(5)
+        result = terminal.input_keycode("KEYCODE_NUMPAD_5")
 
         # Assert
         assert result is True  # noqa: S101
