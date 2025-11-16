@@ -36,3 +36,4 @@ element.scroll_to_bottom(strategy=GestureStrategy.W3C_ACTIONS)
 element.scroll_to_top(strategy=GestureStrategy.W3C_ACTIONS)
 element.scroll_to_element(locator={"text": "System"}, strategy=GestureStrategy.W3C_ACTIONS)
 assert element.is_displayed(), "JOPA"
+
