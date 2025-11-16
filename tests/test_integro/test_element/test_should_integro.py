@@ -16,9 +16,8 @@ from shadowstep.shadowstep import Shadowstep
 uv run pytest -svl --log-cli-level INFO --tb=short --setup-show  tests/element/test_element_should.py
 """
 
-@pytest.fixture
-def sample_element(app: Shadowstep):
-    app.terminal.start_activity(package="com.android.settings", activity=".Settings")
+@pytest.fixture(scope="function")
+def sample_element(app: Shadowstep, android_settings_open_close: None):
     time.sleep(3)
     container = app.get_element({"resource-id": "com.android.settings:id/main_content_scrollable_container"})
     sample_element = container.scroll_to_element(locator={
