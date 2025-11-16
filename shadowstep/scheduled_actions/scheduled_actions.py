@@ -15,7 +15,7 @@ import logging
 from typing import Any
 
 from shadowstep.scheduled_actions.action_history import ActionHistory
-from shadowstep.scheduled_actions.action_step import ActionStep
+from shadowstep.scheduled_actions.action_step import ActionStep  # noqa: TC001
 from shadowstep.ui_automator.mobile_commands import MobileCommands
 from shadowstep.utils.utils import get_current_func_name
 
