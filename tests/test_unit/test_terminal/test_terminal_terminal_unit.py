@@ -736,18 +736,19 @@ class TestTerminal:
 
     @pytest.mark.unit
     def test_input_keycode_num_success(self):
-        """Test successful numeric keycode input."""
+        """Test successful numeric keycode input using input_keycode."""
         # Arrange
         num = 5
+        keycode = f"KEYCODE_NUMPAD_{num}"
 
         with patch.object(self.terminal, "adb_shell", return_value="success"):
             # Act
-            result = self.terminal.input_keycode_num_(num)
+            result = self.terminal.input_keycode(keycode)
 
             # Assert
             assert result is True  # noqa: S101
             self.terminal.adb_shell.assert_called_once_with(
-                command="input", args=f"keyevent KEYCODE_NUMPAD_{num}"
+                command="input", args=f"keyevent {keycode}"
             )
 
     @pytest.mark.unit
@@ -755,10 +756,11 @@ class TestTerminal:
         """Test numeric keycode input with driver exception."""
         # Arrange
         num = 5
+        keycode = f"KEYCODE_NUMPAD_{num}"
 
         with patch.object(self.terminal, "adb_shell", side_effect=KeyError("Driver not found")):
             # Act
-            result = self.terminal.input_keycode_num_(num)
+            result = self.terminal.input_keycode(keycode)
 
             # Assert
             assert result is False  # noqa: S101
