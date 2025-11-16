@@ -64,6 +64,7 @@ jobs:
           tests/test_integro/test_shadowstep_integro_part_2.py,
           tests/test_integro/test_shadowstep_integro_part_3.py,
           tests/test_integro/test_shadowstep_integro_part_4.py,
+          tests/test_integro/test_terminal/test_keyevent_integro.py,
           tests/test_integro/test_terminal/test_terminal_aapt_integro.py,
           tests/test_integro/test_terminal/test_terminal_adb_integro.py,
           tests/test_integro/test_terminal/test_terminal_terminal_integro.py,
