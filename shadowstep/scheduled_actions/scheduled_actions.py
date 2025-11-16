@@ -12,14 +12,12 @@ https://github.com/appium/appium-uiautomator2-driver?tab=readme-ov-file#mobile-s
 from __future__ import annotations
 
 import logging
-from typing import TYPE_CHECKING, Any
+from typing import Any
 
 from shadowstep.scheduled_actions.action_history import ActionHistory
+from shadowstep.scheduled_actions.action_step import ActionStep
 from shadowstep.ui_automator.mobile_commands import MobileCommands
 from shadowstep.utils.utils import get_current_func_name
-
-if TYPE_CHECKING:
-    from shadowstep.scheduled_actions.action_step import ActionStep
 
 logger = logging.getLogger(__name__)
 

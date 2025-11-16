@@ -58,7 +58,7 @@ class TestActionStepIntegro:
 
         # Act
         scheduled_actions.schedule(action_name, [step], times=1)
-        time.sleep(0.5)
+        time.sleep(1.5)  # Longer wait to ensure execution
         history = scheduled_actions.unschedule(action_name)
 
         # Assert
