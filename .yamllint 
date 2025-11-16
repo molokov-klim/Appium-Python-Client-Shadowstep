@@ -1,0 +1,15 @@
+---
+# SPDX-FileCopyrightText: 2023 Molokov Klim
+#
+# SPDX-License-Identifier: MIT
+
+extends: default
+rules:
+  line-length:
+    max: 120
+  comments:
+    min-spaces-from-content: 1
+  truthy:
+    allowed: ['true', 'false']
+  indentation:
+    spaces: 2
