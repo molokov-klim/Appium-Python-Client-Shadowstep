@@ -220,42 +220,14 @@ class Terminal:
 
         :return: True if the back button press was successfully simulated, False otherwise.
         """
-        try:
-            self.input_keycode(keycode="KEYCODE_BACK")
-        except KeyError:
-            logger.exception("shadowstep_terminal.press_back()")
-            return False
-        else:
-            return True
+        return self.keyevent.press_back()
 
     def press_menu(self) -> bool:
         """Simulate pressing the menu button on the device.
 
         :return: True if the menu button press was successfully simulated, False otherwise.
         """
-        try:
-            self.input_keycode(keycode="KEYCODE_MENU")
-        except KeyError:
-            logger.exception("shadowstep_terminal.press_menu()")
-            return False
-        else:
-            return True
-
-    def input_keycode_num_(self, num: int) -> bool:
-        """Send a numeric key event to the device using ADB.
-
-        0-9, ADD, COMMA, DIVIDE, DOT, ENTER, EQUALS (read https://developer.android.com/reference/android/view/KeyEvent)
-
-        :param num: The numeric value of the key to press.
-        :return: True if the command was executed successfully, False otherwise.
-        """
-        try:
-            self.adb_shell(command="input", args=f"keyevent KEYCODE_NUMPAD_{num}")
-        except KeyError:
-            logger.exception("shadowstep_terminal.input_keycode_num_()")
-            return False
-        else:
-            return True
+        return self.keyevent.press_menu()
 
     def input_keycode(self, keycode: str) -> bool:
         """Send a key event to the device using ADB.
