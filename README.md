@@ -93,6 +93,8 @@ ___
 - **Page Object Pattern** — structured UI representation
 - **Singleton Pattern** — single point of access to driver
 - **Navigator Pattern** — graph-based page navigation
+- **DSL over locator syntax** — type-safe fluent API for UiSelector with IDE autocomplete  
+- **Flexible locator system** — dict, xpath, UiSelector with auto-conversion
 
 ### Functionality
 
