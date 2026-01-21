@@ -28,7 +28,7 @@ dependencies = [
     "jinja2>=3.1.6", # page object generator
     "anyascii>=0.3.3", # page object generator
     "eulxml>=1.1.3", # ast parsing xpath
-    "setuptools==80.9.0", # nessecary dependency for eulxml
+    "setuptools==80.10.1", # nessecary dependency for eulxml
     "wheel>=0.45.1",
     "pyright>=1.1.405",
     "ruff>=0.13.2",
